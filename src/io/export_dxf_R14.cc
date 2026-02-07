@@ -153,44 +153,43 @@
 // OBJECTS dictionaries is constant regardless of geometry content.
 // Entities are allocated sequentially starting at HANDLE_ENT_START.
 // ---------------------------------------------------------------------
-static constexpr int H_LTYPE_TABLE    = 0x1;
-static constexpr int H_LTYPE_CONT     = 0x2;
-static constexpr int H_LAYER_TABLE    = 0x3;
-static constexpr int H_LAYER_0        = 0x4;
-static constexpr int H_STYLE_TABLE    = 0x5;
+static constexpr int H_LTYPE_TABLE = 0x1;
+static constexpr int H_LTYPE_CONT = 0x2;
+static constexpr int H_LAYER_TABLE = 0x3;
+static constexpr int H_LAYER_0 = 0x4;
+static constexpr int H_STYLE_TABLE = 0x5;
 static constexpr int H_BLOCKREC_TABLE = 0x6;
 static constexpr int H_BLOCKREC_MODEL = 0x7;
 static constexpr int H_BLOCKREC_PAPER = 0x8;
-static constexpr int H_BLOCK_MODEL    = 0x9;
-static constexpr int H_ENDBLK_MODEL   = 0xA;
-static constexpr int H_BLOCK_PAPER    = 0xB;
-static constexpr int H_ENDBLK_PAPER   = 0xC;
-static constexpr int H_DICT_ROOT      = 0xD;
-static constexpr int H_DICT_GROUP     = 0xE;
-static constexpr int H_ENT_START      = 0xF;  // first entity
+static constexpr int H_BLOCK_MODEL = 0x9;
+static constexpr int H_ENDBLK_MODEL = 0xA;
+static constexpr int H_BLOCK_PAPER = 0xB;
+static constexpr int H_ENDBLK_PAPER = 0xC;
+static constexpr int H_DICT_ROOT = 0xD;
+static constexpr int H_DICT_GROUP = 0xE;
+static constexpr int H_ENT_START = 0xF;  // first entity
 
 // Emit group 5 (handle) as uppercase hex.
-static void h(std::ostream& o, int handle) {
+static void h(std::ostream& o, int handle)
+{
   o << "  5\n" << std::uppercase << std::hex << handle << std::dec << "\n";
 }
 
 // Emit group 330 (owner handle) as uppercase hex.
-static void own(std::ostream& o, int handle) {
+static void own(std::ostream& o, int handle)
+{
   o << "330\n" << std::uppercase << std::hex << handle << std::dec << "\n";
 }
 
 // Emit a bare hex value (no group code) — used for 350 soft-pointer
 // and $HANDSEED value lines.
-static void hexval(std::ostream& o, int handle) {
+static void hexval(std::ostream& o, int handle)
+{
   o << std::uppercase << std::hex << handle << std::dec << "\n";
 }
 
-static void export_dxf_header_R14(std::ostream& output,
-                              double xMin, double yMin,
-                              double xMax, double yMax,
-                              int handseed,
-                              int insunits,
-                              int lunits)
+static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin, double xMax,
+                                  double yMax, int handseed, int insunits, int lunits)
 {
   output << "999\n"
          << "DXF from OpenSCAD\n";
@@ -211,20 +210,29 @@ static void export_dxf_header_R14(std::ostream& output,
          << " 30\n0.0\n"
 
          << "  9\n$EXTMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$EXTMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  9\n$LINMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$LINMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax
+         << "\n"
 
          // $HANDSEED — uses group code 5 (it is a handle value).
          << "  9\n$HANDSEED\n"
@@ -240,9 +248,11 @@ static void export_dxf_header_R14(std::ostream& output,
   output << "  9\n$MEASUREMENT\n"
          << " 70\n1\n"
          << "  9\n$INSUNITS\n"
-         << " 70\n" << insunits << "\n"
+         << " 70\n"
+         << insunits << "\n"
          << "  9\n$LUNITS\n"
-         << " 70\n" << lunits << "\n";
+         << " 70\n"
+         << lunits << "\n";
 
   output << "  0\nENDSEC\n";
 
@@ -284,12 +294,12 @@ static void export_dxf_header_R14(std::ostream& output,
 
          << "  0\nLAYER\n";
   h(output, H_LAYER_0);
-  own(output, H_LAYER_TABLE);   // LAYER "0" owns -> LAYER table
+  own(output, H_LAYER_TABLE);  // LAYER "0" owns -> LAYER table
   output << "100\nAcDbSymbolTableRecord\n"
          << "100\nAcDbLayerTableRecord\n"
-         << "  2\n0\n"           // layer name
+         << "  2\n0\n"  // layer name
          << " 70\n0\n"
-         << " 62\n7\n"           // color
+         << " 62\n7\n"  // color
          << "  6\nCONTINUOUS\n"
 
          << "  0\nENDTAB\n";
@@ -306,7 +316,7 @@ static void export_dxf_header_R14(std::ostream& output,
   output << "  0\nTABLE\n"
          << "  2\nBLOCK_RECORD\n";
   h(output, H_BLOCKREC_TABLE);
-  output << " 70\n2\n"           // 2 entries
+  output << " 70\n2\n"  // 2 entries
 
          << "  0\nBLOCK_RECORD\n";
   h(output, H_BLOCKREC_MODEL);
@@ -385,7 +395,7 @@ static void export_dxf_objects_R14(std::ostream& output)
          // Root dictionary
          << "  0\nDICTIONARY\n";
   h(output, H_DICT_ROOT);
-  own(output, 0);                // owner -> handle 0 (drawing object)
+  own(output, 0);  // owner -> handle 0 (drawing object)
   output << "100\nAcDbDictionary\n"
          << "281\n1\n"           // hard-owner flag
          << "  3\nACAD_GROUP\n"  // key
@@ -395,7 +405,7 @@ static void export_dxf_objects_R14(std::ostream& output)
   // ACAD_GROUP child dictionary (empty)
   output << "  0\nDICTIONARY\n";
   h(output, H_DICT_GROUP);
-  own(output, H_DICT_ROOT);     // owner -> root
+  own(output, H_DICT_ROOT);  // owner -> root
   output << "100\nAcDbDictionary\n"
          << "281\n1\n"
 
@@ -443,8 +453,10 @@ static void export_dxf_R14(const Polygon2d& poly, std::ostream& output)
              << "  6\nByLayer\n"
              << " 62\n256\n"
              << "100\nAcDbPoint\n"
-             << " 10\n" << p[0] << "\n"
-             << " 20\n" << p[1] << "\n";
+             << " 10\n"
+             << p[0] << "\n"
+             << " 20\n"
+             << p[1] << "\n";
     } break;
     case 2: {
       // LINE
@@ -457,10 +469,14 @@ static void export_dxf_R14(const Polygon2d& poly, std::ostream& output)
              << "  6\nByLayer\n"
              << " 62\n256\n"
              << "100\nAcDbLine\n"
-             << " 10\n" << p1[0] << "\n"
-             << " 20\n" << p1[1] << "\n"
-             << " 11\n" << p2[0] << "\n"
-             << " 21\n" << p2[1] << "\n";
+             << " 10\n"
+             << p1[0] << "\n"
+             << " 20\n"
+             << p1[1] << "\n"
+             << " 11\n"
+             << p2[0] << "\n"
+             << " 21\n"
+             << p2[1] << "\n";
     } break;
     default:
       // LWPOLYLINE (closed)
@@ -471,12 +487,15 @@ static void export_dxf_R14(const Polygon2d& poly, std::ostream& output)
              << "  6\nByLayer\n"
              << " 62\n256\n"
              << "100\nAcDbPolyline\n"
-             << " 90\n" << o.vertices.size() << "\n"
-             << " 70\n1\n"       // closed
-             << " 43\n0\n";      // constant width
+             << " 90\n"
+             << o.vertices.size() << "\n"
+             << " 70\n1\n"   // closed
+             << " 43\n0\n";  // constant width
       for (const auto& p : o.vertices) {
-        output << " 10\n" << p[0] << "\n"
-               << " 20\n" << p[1] << "\n";
+        output << " 10\n"
+               << p[0] << "\n"
+               << " 20\n"
+               << p[1] << "\n";
       }
       break;
     }
