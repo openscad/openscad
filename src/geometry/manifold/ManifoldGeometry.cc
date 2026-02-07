@@ -328,9 +328,19 @@ ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) cons
 
 ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const
 {
+#if defined(USE_MANIFOLD_MINKOWSKI)
+  auto result = getManifold().MinkowskiSum(other.getManifold());
+  std::set<uint32_t> originalIDs;
+  auto id = result.OriginalID();
+  if (id >= 0) {
+    originalIDs.insert(id);
+  }
+  return {result, originalIDs};
+#else
   std::shared_ptr<ManifoldGeometry> geom = minkowskiOp(*this, other);
   if (geom) return *geom;
   else return {};
+#endif
 }
 
 Polygon2d ManifoldGeometry::slice() const
