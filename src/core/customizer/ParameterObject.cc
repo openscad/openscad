@@ -542,6 +542,10 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
         }
       }
     }
+  } else if (const auto *lit = dynamic_cast<const Literal *>(parameter)) {
+    if (lit->isString() && lit->toString() == "Color") {
+      isColor = true;
+    }
   }
 
   std::string description;
