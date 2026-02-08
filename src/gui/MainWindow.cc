@@ -3652,7 +3652,6 @@ void MainWindow::setupDocks()
     menuWindow->addAction(dock->toggleViewAction());
 
     auto dockAction = navigationMenu->addAction(title);
-    dockAction->setShortcut(QKeySequence::mnemonic(title));
     dockAction->setProperty("id", QVariant::fromValue(dock));
     connect(dockAction, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
     connect(dockAction, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
@@ -3687,7 +3686,7 @@ void MainWindow::setupMenusAndActions()
 
   //
   // File menu
-  // 
+  //
 
 
   // Recent files
