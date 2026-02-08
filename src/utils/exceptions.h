@@ -112,8 +112,8 @@ private:
   VectorEchoStringException(const std::string& what_arg) : EvaluationException(what_arg) {}
 };
 
-class HardWarningException : public EvaluationException
+class HardFailException : public EvaluationException
 {
 public:
-  HardWarningException(const std::string& what_arg) : EvaluationException(what_arg) {}
+  HardFailException(const std::string& what_arg) : EvaluationException(what_arg) {}
 };

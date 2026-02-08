@@ -187,7 +187,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
     this->scope->instantiateModules(*file_context, node);
-  } catch (HardWarningException& e) {
+  } catch (HardFailException& e) {
     throw;
   } catch (EvaluationException& e) {
     // LOG(message_group::NONE,,e.what()); //please output the message before throwing the exception

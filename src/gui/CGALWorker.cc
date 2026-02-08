@@ -64,7 +64,7 @@ void CGALWorker::work()
 #endif
   } catch (const ProgressCancelException& e) {
     LOG("Rendering cancelled.");
-  } catch (const HardWarningException& e) {
+  } catch (const HardFailException& e) {
     LOG("Rendering cancelled on first warning.");
   } catch (const std::exception& e) {
     LOG(message_group::Error, "Rendering cancelled by exception %1$s", e.what());

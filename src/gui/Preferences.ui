@@ -2475,20 +2475,37 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_15">
                <item>
-                <widget class="QGroupBox" name="groupBox_warn">
+                <widget class="QGroupBox" name="groupBox_errors">
                  <property name="title">
-                  <string>Warnings</string>
+                  <string>Error Handling</string>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_15a">
                   <item>
-                   <widget class="QCheckBox" name="enableHardwarningsCheckBox">
-                    <property name="text">
-                     <string>Stop on the first warning</string>
-                    </property>
-                    <property name="checked">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
+                   <layout class="QHBoxLayout" name="horizontalHardFailLevel">
+                    <item>
+                     <widget class="QLabel" name="labelHardFailLevel">
+                      <property name="text">
+                       <string>Stop on the first</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QComboBox" name="comboBoxHardFailLevel"/>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_38">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
                   </item>
                   <item>
                    <widget class="QCheckBox" name="enableRangeCheckBox">
