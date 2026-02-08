@@ -308,6 +308,91 @@ void EnumParameter::apply(Assignment *assignment) const
   }
 }
 
+bool ColorParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
+{
+  if (format == ColorFormat::Hex) {
+    if (store) {
+      stringValue = encodedValue.data();
+    }
+    return true;
+  } else {
+    std::vector<double> decoded;
+    std::string encoded = boost::algorithm::erase_all_copy(encodedValue.data(), " ");
+    if (encoded.size() < 2 || encoded[0] != '[' || encoded[encoded.size() - 1] != ']') {
+      return false;
+    }
+    encoded.erase(encoded.begin());
+    encoded.erase(encoded.end() - 1);
+
+    std::vector<std::string> items;
+    boost::algorithm::split(items, encoded, boost::algorithm::is_any_of(","));
+
+    for (const std::string& item : items) {
+      std::stringstream stream(item);
+      double itemValue;
+      stream >> itemValue;
+      if (!stream || !stream.eof()) {
+        return false;
+      }
+      decoded.push_back(itemValue);
+    }
+
+    if (decoded.size() < 3 || decoded.size() > 4) {
+      return false;
+    }
+
+    if (store) {
+      vectorValue = std::move(decoded);
+    }
+    return true;
+  }
+}
+
+boost::property_tree::ptree ColorParameter::exportValue() const
+{
+  boost::property_tree::ptree output;
+  if (format == ColorFormat::Hex) {
+    output.data() = stringValue;
+  } else {
+    std::stringstream encoded;
+    encoded << "[";
+    for (size_t i = 0; i < vectorValue.size(); i++) {
+      if (i > 0) {
+        encoded << ", ";
+      }
+      encoded << vectorValue[i];
+    }
+    encoded << "]";
+    output.data() = encoded.str();
+  }
+  return output;
+}
+
+json ColorParameter::jsonValue() const
+{
+  json o;
+  o["type"] = "color";
+  if (format == ColorFormat::Hex) {
+    o["initial"] = defaultStringValue;
+  } else {
+    o["initial"] = defaultVectorValue;
+  }
+  return o;
+}
+
+void ColorParameter::apply(Assignment *assignment) const
+{
+  if (format == ColorFormat::Hex) {
+    assignment->setExpr(std::make_shared<Literal>(stringValue));
+  } else {
+    std::shared_ptr<Vector> vector = std::make_shared<Vector>(Location::NONE);
+    for (double item : vectorValue) {
+      vector->emplace_back(new Literal(item));
+    }
+    assignment->setExpr(std::move(vector));
+  }
+}
+
 struct EnumValues {
   std::vector<EnumParameter::EnumItem> items;
   int defaultValueIndex;
@@ -448,6 +533,21 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
   }
   parameter = parameterAnnotation->getExpr().get();
 
+  bool isColor = false;
+  if (const auto *vec = dynamic_cast<const Vector *>(parameter)) {
+    if (vec->getChildren().size() == 1) {
+      if (const auto *lit = dynamic_cast<const Literal *>(vec->getChildren()[0].get())) {
+        if (lit->isString() && lit->toString() == "Color") {
+          isColor = true;
+        }
+      }
+    }
+  } else if (const auto *lit = dynamic_cast<const Literal *>(parameter)) {
+    if (lit->isString() && lit->toString() == "Color") {
+      isColor = true;
+    }
+  }
+
   std::string description;
   const Annotation *descriptionAnnotation = assignment->annotation("Description");
   if (descriptionAnnotation) {
@@ -483,10 +583,12 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
         value = expression->toString();
         key = expression->toString();
       }
-      EnumValues values = parseEnumItems(parameter, key, value);
-      if (!values.items.empty()) {
-        return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex,
-                                               values.items);
+      if (!isColor) {
+        EnumValues values = parseEnumItems(parameter, key, value);
+        if (!values.items.empty()) {
+          return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex,
+                                                 values.items);
+        }
       }
     }
 
@@ -496,6 +598,9 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
       const auto *maximumSizeExpression = dynamic_cast<const Literal *>(parameter);
       if (maximumSizeExpression && maximumSizeExpression->isDouble()) {
         maximumSize = (size_t)(maximumSizeExpression->toDouble());
+      }
+      if (isColor) {
+        return std::make_unique<ColorParameter>(name, description, group, value);
       }
       return std::make_unique<StringParameter>(name, description, group, value, maximumSize);
     }
@@ -523,6 +628,9 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
       value.push_back(item->toDouble());
     }
 
+    if (isColor) {
+      return std::make_unique<ColorParameter>(name, description, group, value);
+    }
     NumericLimits limits = parseNumericLimits(parameter, value);
     return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum,
                                              limits.maximum, limits.step);
