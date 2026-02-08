@@ -15,7 +15,6 @@
 #include "utils/printutils.h"
 
 #ifndef NULLGL
-#include "glview/cgal/CGALRenderer.h"
 #include "glview/PolySetRenderer.h"
 
 #ifdef ENABLE_OPENCSG
@@ -46,16 +45,8 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
-  std::shared_ptr<Renderer> geomRenderer;
-  // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
-  // know that all geometries are convertible to PolySet.
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
-      std::dynamic_pointer_cast<const PolySet>(root_geom) ||
-      std::dynamic_pointer_cast<const Polygon2d>(root_geom)) {
-    geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
-  } else {
-    geomRenderer = std::make_shared<CGALRenderer>(root_geom);
-  }
+  const std::shared_ptr<Renderer> geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
+
   const BoundingBox bbox = geomRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 

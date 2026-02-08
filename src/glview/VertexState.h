@@ -93,6 +93,9 @@ public:
   [[nodiscard]] inline GLuint elementsVBO() const { return elements_vbo_; }
   inline void setElementsVBO(GLuint vbo) { elements_vbo_ = vbo; }
 
+  [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
+  void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
+
 private:
   GLenum draw_mode_;
   GLsizei draw_size_;
@@ -101,27 +104,9 @@ private:
   size_t element_offset_;
   GLuint vertices_vbo_;
   GLuint elements_vbo_;
+  size_t csg_object_index_;
   std::vector<std::function<void()>> gl_begin_;
   std::vector<std::function<void()>> gl_end_;
-};
-
-// Allows Renderers to override VertexState objects with their own derived
-// type. VertexArray will create the appropriate type for creating
-// a VertexState object.
-class VertexStateFactory
-{
-public:
-  VertexStateFactory() = default;
-  virtual ~VertexStateFactory() = default;
-
-  // Create and return a VertexState object
-  [[nodiscard]] virtual std::shared_ptr<VertexState> createVertexState(
-    GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset,
-    GLuint vertices_vbo, GLuint elements_vbo) const
-  {
-    return std::make_shared<VertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset,
-                                         vertices_vbo, elements_vbo);
-  }
 };
 
 class VertexStateContainer
