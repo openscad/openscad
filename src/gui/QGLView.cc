@@ -203,7 +203,7 @@ void QGLView::paintGL()
   double d = us.count();
   double rawFPS = 1000.0 * 1000.0 / d;
   const double decay = 0.9;  // weigh previous value at 90%
-  smoothedFPS = smoothedFPS ? (smoothedFPS * decay) + (rawFPS * (1-decay)) : rawFPS;
+  smoothedFPS = smoothedFPS ? (smoothedFPS * decay) + (rawFPS * (1 - decay)) : rawFPS;
 
   if (statusLabel) {
     auto status = QString("%1 (%2x%3) %4 FPS")
