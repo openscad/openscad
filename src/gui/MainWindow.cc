@@ -2994,6 +2994,23 @@ QString MainWindow::getCurrentFileName() const
   return fname.replace("&", "&&");
 }
 
+/**
+ * Convert a dock title to a base name for action naming.
+ * Removes mnemonic markers (&) and hyphens, creating a camelCase name.
+ * Examples: "&Editor" -> "Editor", "Error-&Log" -> "ErrorLog"
+ */
+QString MainWindow::getDockBaseName(const QString& title) const
+{
+  QString baseName = title;
+  // Remove mnemonic marker
+  baseName.remove('&');
+  // Remove hyphens
+  baseName.remove('-');
+  // Remove spaces
+  baseName.remove(' ');
+  return baseName;
+}
+
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
   // This slots is in charge of closing properly the preview when the
@@ -3646,7 +3663,11 @@ void MainWindow::setupDocks()
     // correctly processed when the dock are floating (is in a different window that the mainwindow)
     dock->installEventFilter(this);
 
-    menuWindow->addAction(dock->toggleViewAction());
+    // Get the toggle action from Qt and set an objectName for DBus accessibility
+    QAction *toggleAction = dock->toggleViewAction();
+    QString baseName = getDockBaseName(title);
+    toggleAction->setObjectName("windowActionToggle" + baseName);
+    menuWindow->addAction(toggleAction);
 
     auto dockAction = navigationMenu->addAction(title);
     dockAction->setShortcut(QKeySequence::mnemonic(title));
