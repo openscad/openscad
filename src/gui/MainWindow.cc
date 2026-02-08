@@ -673,7 +673,7 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
-  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardFailLevel = Settings::Settings::hardFailLevel.value();
   OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
   OpenSCAD::traceUsermoduleParameters =
     GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
@@ -753,7 +753,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     // Had any errors in the parse that would have caused exceptions via PRINT.
-    if (would_have_thrown()) throw HardWarningException("");
+    if (would_have_thrown()) throw HardFailException("");
     // If we're auto-reloading, listen for a cascade of changes by starting a timer
     // if something changed _and_ there are any external dependencies
     if (reload && didcompile && this->rootFile) {
@@ -765,7 +765,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     compileDone(didcompile | forcedone);
-  } catch (const HardWarningException&) {
+  } catch (const HardFailException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
     UnknownExceptionCleanup(ex.what());
@@ -834,7 +834,7 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
-  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardFailLevel = Settings::Settings::hardFailLevel.value();
   try {
     const char *callslot;
     if (didchange) {
@@ -847,7 +847,7 @@ void MainWindow::compileDone(bool didchange)
 
     this->procevents = false;
     QMetaObject::invokeMethod(this, callslot);
-  } catch (const HardWarningException&) {
+  } catch (const HardFailException&) {
     exceptionCleanup();
   }
 }
@@ -958,7 +958,7 @@ void MainWindow::instantiateRoot()
  */
 void MainWindow::compileCSG()
 {
-  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardFailLevel = Settings::Settings::hardFailLevel.value();
   try {
     assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");
@@ -984,8 +984,8 @@ void MainWindow::compileCSG()
       this->processEvents();
     } catch (const ProgressCancelException&) {
       LOG("CSG generation cancelled.");
-    } catch (const HardWarningException&) {
-      LOG("CSG generation cancelled due to hardwarning being enabled.");
+    } catch (const HardFailException&) {
+      LOG("CSG generation cancelled due to hard failure.");
     }
     progress_report_fin();
     updateStatusBar(nullptr);
@@ -1058,7 +1058,7 @@ void MainWindow::compileCSG()
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
-  } catch (const HardWarningException&) {
+  } catch (const HardFailException&) {
     exceptionCleanup();
   }
 }
@@ -3037,7 +3037,7 @@ void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEdit
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
     parseDocument(reloadedEditor);
-  } catch (const HardWarningException&) {
+  } catch (const HardFailException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
     UnknownExceptionCleanup(ex.what());

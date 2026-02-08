@@ -64,7 +64,7 @@ public slots:
   void on_checkNowButton_clicked();
   void on_launcherBox_toggled(bool);
   void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
-  void on_enableHardwarningsCheckBox_toggled(bool);
+  void on_comboBoxHardFailLevel_activated(int);
   void on_traceDepthEdit_textChanged(const QString&);
   void on_enableTraceUsermoduleParametersCheckBox_toggled(bool);
   void on_enableParameterCheckBox_toggled(bool);
@@ -201,6 +201,8 @@ private:
 
   /** Set value from combobox to settings */
   void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
+  void applyComboBox(QComboBox *comboBox, int val,
+                     Settings::SettingsEntryEnum<OpenSCAD::HardFailLevel>& entry);
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;

@@ -11,6 +11,7 @@
 
 #include "io/export_enums.h"
 #include "core/SettingsGuiEnums.h"
+#include "utils/printutils.h"
 
 namespace Settings {
 
@@ -428,6 +429,7 @@ public:
   static SettingsEntryEnum<std::string> renderBackend3D;
   static SettingsEntryEnum<std::string> toolbarExport3D;
   static SettingsEntryEnum<std::string> toolbarExport2D;
+  static SettingsEntryEnum<OpenSCAD::HardFailLevel> hardFailLevel;
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;

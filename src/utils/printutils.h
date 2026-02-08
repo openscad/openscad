@@ -105,9 +105,10 @@ extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
 
 namespace OpenSCAD {
+enum class HardFailLevel { FATAL, ERROR, WARNING };
 extern std::string debug;
 extern bool quiet;
-extern bool hardwarnings;
+extern HardFailLevel hardFailLevel;
 extern int traceDepth;
 extern bool traceUsermoduleParameters;
 extern bool parameterCheck;

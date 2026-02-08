@@ -245,9 +245,13 @@ void Preferences::init()
   menu->addAction(actionLocalAppParameterSourceDir);
   toolButtonLocalAppParameterAddFile->setMenu(menu);
 
+  if (getValue("advanced/enableHardwarnings").toBool()) {
+    Settings::Settings::hardFailLevel.setValue(OpenSCAD::HardFailLevel::WARNING);
+  }
   Settings::Settings::visit(SettingsReader());
 
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
+  initComboBox(this->comboBoxHardFailLevel, Settings::Settings::hardFailLevel);
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
   initComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
@@ -827,10 +831,9 @@ void Preferences::on_comboBoxModifierNumberScrollWheel_activated(int val)
   applyComboBox(comboBoxModifierNumberScrollWheel, val, Settings::Settings::modifierNumberScrollWheel);
 }
 
-void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
+void Preferences::on_comboBoxHardFailLevel_activated(int val)
 {
-  QSettingsCached settings;
-  settings.setValue("advanced/enableHardwarnings", state);
+  applyComboBox(comboBoxHardFailLevel, val, Settings::Settings::hardFailLevel);
 }
 
 void Preferences::on_traceDepthEdit_textChanged(const QString& text)
@@ -1379,8 +1382,7 @@ void Preferences::updateGUI()
   updateGUIFontFamily(customizerFontChooser, "advanced/customizerFontFamily");
   updateGUIFontSize(customizerFontSize, "advanced/customizerFontSize");
 
-  BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)
-    ->setChecked(getValue("advanced/enableHardwarnings").toBool());
+  updateComboBox(this->comboBoxHardFailLevel, Settings::Settings::hardFailLevel);
   BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
   BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)
     ->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
@@ -1463,6 +1465,13 @@ void Preferences::updateGUI()
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
                                 Settings::SettingsEntryEnum<std::string>& entry)
+{
+  entry.setIndex(val);
+  writeSettings();
+}
+
+void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
+                                Settings::SettingsEntryEnum<OpenSCAD::HardFailLevel>& entry)
 {
   entry.setIndex(val);
   writeSettings();
