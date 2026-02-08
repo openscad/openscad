@@ -24,6 +24,7 @@
  */
 #pragma once
 
+#include <optional>
 #include <map>
 #include <atomic>
 #include <string>

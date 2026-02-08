@@ -2,6 +2,7 @@
 #include "TestMainWindow.h"
 #include "TestTabManager.h"
 
+#include <iostream>
 #include <QTest>
 
 template <typename TestClass>

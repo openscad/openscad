@@ -2,6 +2,10 @@
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
+#include <filesystem>
+#include <memory>
+#include <utility>
+#include <string>
 #include <boost/property_tree/json_parser.hpp>
 
 std::shared_ptr<EditorColorScheme> EditorColorScheme::load(const fs::path& path)

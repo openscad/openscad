@@ -19,6 +19,7 @@
 
 #include "gui/ColorLabel.h"
 
+#include <algorithm>
 #include <QDrag>
 #include <QMimeData>
 #include <QPainter>

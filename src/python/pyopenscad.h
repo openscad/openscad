@@ -1,4 +1,5 @@
 #include <Python.h>
+#include <string>
 #include <memory>
 #include "python_public.h"
 #include "geometry/Polygon2d.h"

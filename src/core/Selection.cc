@@ -1,4 +1,5 @@
 #include "core/Selection.h"
+#include <string>
 #include <Eigen/Dense>
 #include <sstream>
 #include <iomanip>

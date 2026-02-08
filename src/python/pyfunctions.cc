@@ -24,6 +24,9 @@
  *
  */
 
+#include <memory>
+#include <optional>
+#include <string>
 #include <Python.h>
 #include "python/pyopenscad.h"
 #include "core/primitives.h"

@@ -1,5 +1,6 @@
 #include "io/import.h"
 
+#include <filesystem>
 #include <charconv>
 #include <cstddef>
 #include <cstdint>

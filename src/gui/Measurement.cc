@@ -28,6 +28,7 @@
 #include "gui/Measurement.h"
 #include "utils/vector_math.h"
 
+#include <limits>
 #include <QPoint>
 #include <QString>
 #include <cmath>

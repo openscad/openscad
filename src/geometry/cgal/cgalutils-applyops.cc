@@ -13,6 +13,7 @@
 #endif
 #include "core/node.h"
 
+#include <string>
 #include <cassert>
 #include <utility>
 #include <exception>

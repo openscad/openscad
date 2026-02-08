@@ -1,4 +1,5 @@
 #include <catch2/catch_all.hpp>
+#include <limits>
 #include "vector_math.h"
 #include "src/geometry/Grid.h"
 

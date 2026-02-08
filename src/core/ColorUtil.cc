@@ -1,4 +1,6 @@
 #include <boost/spirit/home/support/common_terminals.hpp>
+#include <algorithm>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include "geometry/linalg.h"

@@ -25,6 +25,7 @@
  */
 #include "io/export.h"
 
+#include <string>
 #include <cassert>
 #include <clocale>
 #include <cmath>
