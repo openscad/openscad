@@ -241,6 +241,7 @@ private:
   Dock *getNextDockFromSender(QObject *sender);
   void addExportActions(QToolBar *toolbar, QAction *action) const;
   QAction *formatIdentifierToAction(const std::string& identifier) const;
+  QString getDockBaseName(const QString& title) const;
 
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};
