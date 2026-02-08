@@ -37,6 +37,7 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 
+#include <string>
 #include <iterator>
 #include <cassert>
 #include <list>

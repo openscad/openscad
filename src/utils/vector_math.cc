@@ -1,6 +1,7 @@
 #include "utils/vector_math.h"
 #include "geometry/Grid.h"
 
+#include <limits>
 #include <algorithm>
 
 double calculateLinePointDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& pt,

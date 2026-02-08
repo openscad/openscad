@@ -41,6 +41,7 @@
 #include "io/fileutils.h"
 #include "version.h"
 
+#include <string>
 #include <utility>
 #include <cstdint>
 #include <memory>

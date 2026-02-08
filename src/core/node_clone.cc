@@ -24,6 +24,9 @@
  *
  */
 
+#include <iostream>
+#include <memory>
+#include <vector>
 #include "geometry/linalg.h"
 #include "geometry/GeometryUtils.h"
 #include "core/primitives.h"

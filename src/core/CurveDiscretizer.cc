@@ -1,5 +1,10 @@
 #include "core/CurveDiscretizer.h"
 
+#include <functional>
+#include <ostream>
+#include <optional>
+#include <utility>
+#include <vector>
 #include <algorithm>
 #include <cmath>
 #include <queue>

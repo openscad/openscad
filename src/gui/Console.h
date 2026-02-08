@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <utility>
 #include <QTextCursor>
 #include <QWidget>
 #include <QPlainTextEdit>

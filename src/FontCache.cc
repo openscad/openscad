@@ -26,6 +26,7 @@
 
 #include "FontCache.h"
 
+#include <memory>
 #include <cassert>
 #include <cstdlib>
 #include <cstdint>

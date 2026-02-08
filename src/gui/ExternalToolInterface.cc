@@ -26,6 +26,7 @@
 
 #include "gui/ExternalToolInterface.h"
 
+#include <string>
 #include <functional>
 #include <memory>
 #include <QDir>

@@ -1,5 +1,6 @@
 #include "io/import.h"
 
+#include <filesystem>
 #include <cstddef>
 #include <fstream>
 #include <ios>

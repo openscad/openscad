@@ -16,6 +16,7 @@
  *  License along with this program; if not, see
  *  <https://www.gnu.org/licenses/>.
  */
+#include <functional>
 #include <algorithm>
 #include <QtWidgets>
 

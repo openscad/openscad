@@ -34,6 +34,8 @@
 #include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
+#include <algorithm>
+#include <memory>
 #include <ios>
 #include <utility>
 #include <cmath>
