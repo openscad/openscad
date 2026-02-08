@@ -36,7 +36,9 @@
  */
 #include "glview/offscreen-old/OffscreenContextGLX.h"
 
+#include "glview/OffscreenContext.h"
 #include "glview/system-gl.h"
+#include <cstdlib>
 #include <iostream>
 #include <cstdint>
 #include <memory>

@@ -37,6 +37,8 @@
 #include <fontconfig/fontconfig.h>
 #include <hb-ft.h>
 
+#include "core/CurveDiscretizer.h"
+#include "core/Value.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 

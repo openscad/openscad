@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <Eigen/Core>
 #include <Eigen/Geometry>

@@ -8,6 +8,7 @@
 #include <boost/optional.hpp>
 
 #include "core/Assignment.h"
+#include "core/Context.h"
 #include "core/Value.h"
 
 class EvaluationSession;

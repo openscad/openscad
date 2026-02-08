@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <memory>
 #include <QDialog>
 

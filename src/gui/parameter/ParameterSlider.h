@@ -2,6 +2,7 @@
 
 #include "gui/parameter/ParameterVirtualWidget.h"
 #include <QWidget>
+#include "core/customizer/ParameterObject.h"
 #include "ui_ParameterSlider.h"
 
 class ParameterSlider : public ParameterVirtualWidget, Ui::ParameterSlider

@@ -29,6 +29,7 @@
 #include <string>
 #include <iostream>
 
+#include "libsvg/shape.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

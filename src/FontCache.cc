@@ -45,6 +45,7 @@
 #include FT_TYPES_H
 #include FT_TRUETYPE_IDS_H
 
+#include "core/AST.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"

@@ -1,4 +1,5 @@
 #include <QTest>
+#include <QString>
 #include <QStringList>
 #include "platform/PlatformUtils.h"
 #include "TestTabManager.h"

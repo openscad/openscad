@@ -1,8 +1,10 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include "core/Selection.h"
 #include "gui/MouseSelector.h"
 
+#include <memory>
 #include <array>
 #include <QImage>
 #include <QMouseEvent>

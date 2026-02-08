@@ -39,6 +39,8 @@
 #include <utility>
 #include <variant>
 
+#include "core/AST.h"
+#include "core/Assignment.h"
 #include "Feature.h"
 #include "core/Context.h"
 #include "core/EvaluationSession.h"

@@ -27,6 +27,7 @@
 #include <boost/tokenizer.hpp>
 
 #include <string>
+#include "libsvg/shape.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

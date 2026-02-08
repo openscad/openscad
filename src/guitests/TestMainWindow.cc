@@ -1,4 +1,5 @@
 #include <QTest>
+#include <QString>
 #include <QStringList>
 #include "TestMainWindow.h"
 #include "platform/PlatformUtils.h"

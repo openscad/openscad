@@ -26,6 +26,7 @@
 
 #include "gui/Console.h"
 
+#include <cmath>
 #include <QBrush>
 #include <QColor>
 #include <QContextMenuEvent>

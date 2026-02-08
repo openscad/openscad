@@ -2,6 +2,7 @@
 
 #include "gui/qtgettext.h"
 #include "ui_ViewportControl.h"
+#include <QColor>
 #include <QResizeEvent>
 #include <QWidget>
 #include <QStandardItemModel>

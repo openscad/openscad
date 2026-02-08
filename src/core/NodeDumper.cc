@@ -1,5 +1,7 @@
 #include "core/NodeDumper.h"
 #include "core/State.h"
+#include "core/BaseVisitable.h"
+#include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include <algorithm>
 #include <iterator>

@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "core/callables.h"
 #include "core/AST.h"
 #include "core/EvaluationSession.h"
 #include "core/function.h"

@@ -1,4 +1,6 @@
 #include "core/Tree.h"
+#include "core/node.h"
+#include "core/NodeCache.h"
 #include "core/NodeDumper.h"
 
 #include <memory>

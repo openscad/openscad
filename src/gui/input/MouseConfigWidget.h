@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gui/qtgettext.h"
+#include <map>
 #include <QComboBox>
 #include <QWidget>
 #include "ui_MouseConfigWidget.h"

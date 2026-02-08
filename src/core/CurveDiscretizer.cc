@@ -1,5 +1,7 @@
 #include "core/CurveDiscretizer.h"
 
+#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <ostream>
 #include <optional>

@@ -32,6 +32,7 @@
 #include <boost/format.hpp>
 #include <utility>
 
+#include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "utils/printutils.h"
 

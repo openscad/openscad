@@ -26,6 +26,8 @@
 
 #include "core/SourceFile.h"
 
+#include "core/AST.h"
+#include "core/Context.h"
 #include "core/EvaluationSession.h"
 #include "core/node.h"
 #include "core/ScopeContext.h"

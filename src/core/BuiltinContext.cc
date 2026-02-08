@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "core/AST.h"
+#include "core/callables.h"
 #include "core/Builtins.h"
 #include "core/Expression.h"
 #include "core/function.h"

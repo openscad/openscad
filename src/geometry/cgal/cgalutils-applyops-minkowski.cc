@@ -1,5 +1,7 @@
 #include "geometry/cgal/cgalutils.h"
 
+#include <cassert>
+#include <cstddef>
 #include <utility>
 #include <vector>
 #include <memory>
@@ -7,6 +9,7 @@
 #include <CGAL/Timer.h>
 #include <CGAL/convex_hull_3.h>
 
+#include "core/node.h"
 #include "utils/printutils.h"
 
 namespace CGALUtils {

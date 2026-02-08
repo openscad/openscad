@@ -25,6 +25,7 @@
  */
 
 #include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/Geometry.h"
@@ -37,6 +38,7 @@
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <cstddef>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
