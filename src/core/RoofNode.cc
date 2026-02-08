@@ -3,11 +3,13 @@
 
 #include "core/RoofNode.h"
 
+#include <set>
 #include <algorithm>
 #include <utility>
 #include <memory>
 #include <sstream>
 
+#include "utils/printutils.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"

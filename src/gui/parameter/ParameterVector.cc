@@ -1,10 +1,12 @@
 #include "gui/parameter/ParameterVector.h"
 
+#include <cmath>
 #include <QWidget>
 #include <algorithm>
 #include <cassert>
 #include <limits>
 #include <cstddef>
+#include "gui/parameter/ParameterVirtualWidget.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 
 ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter,

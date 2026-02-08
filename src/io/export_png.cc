@@ -1,5 +1,6 @@
 #include "io/export.h"
 
+#include <cassert>
 #include <ostream>
 #include <cstdio>
 #include <memory>

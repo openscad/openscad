@@ -10,6 +10,7 @@
 
 #include "utils/printutils.h"
 #define GLAD_EGL_IMPLEMENTATION
+#include "glview/OffscreenContext.h"
 #include "glad/egl.h"
 #include <GL/gl.h>
 

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "core/module.h"
+#include "core/Assignment.h"
 #include "core/AST.h"
 #include "core/LocalScope.h"
 

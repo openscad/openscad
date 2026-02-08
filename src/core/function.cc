@@ -26,6 +26,9 @@
 
 #include "core/function.h"
 
+#include "core/Value.h"
+#include "core/Context.h"
+#include "core/Assignment.h"
 #include "core/AST.h"
 #include "core/Arguments.h"
 #include "core/Expression.h"

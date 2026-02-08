@@ -1,6 +1,8 @@
 #include "geometry/GeometryEvaluator.h"
 
 #include "Feature.h"
+#include "core/node.h"
+#include "core/BaseVisitable.h"
 #include "geometry/boolean_utils.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/ClipperUtils.h"
@@ -37,6 +39,7 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 
+#include <cmath>
 #include <string>
 #include <iterator>
 #include <cassert>

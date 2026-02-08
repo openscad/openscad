@@ -6,6 +6,7 @@
 #include <QString>
 #include <optional>
 #include "geometry/linalg.h"
+#include "core/Selection.h"
 #include "gui/QGLView.h"
 
 namespace Measurement {

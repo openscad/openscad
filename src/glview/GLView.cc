@@ -1,5 +1,7 @@
 #include "glview/GLView.h"
 #include "geometry/linalg.h"
+#include "glview/ShaderUtils.h"
+#include "core/Selection.h"
 #include "glview/system-gl.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"

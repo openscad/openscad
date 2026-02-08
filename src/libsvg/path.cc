@@ -40,6 +40,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "libsvg/shape.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
 #include "libsvg/util.h"

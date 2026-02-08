@@ -42,6 +42,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "core/CurveDiscretizer.h"
 #include "core/Value.h"
 #include "geometry/Grid.h"
 #include "geometry/linalg.h"

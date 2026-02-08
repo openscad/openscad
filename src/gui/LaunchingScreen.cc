@@ -1,5 +1,6 @@
 #include "gui/LaunchingScreen.h"
 
+#include <QString>
 #include <string>
 #include <QDialog>
 #include <QModelIndex>

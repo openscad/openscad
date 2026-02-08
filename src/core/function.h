@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/AST.h"
+#include "core/Context.h"
 #include "core/Assignment.h"
 #include "Feature.h"
 #include "core/Value.h"

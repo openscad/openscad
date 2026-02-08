@@ -29,6 +29,7 @@
 #include <Qsci/qscicommandset.h>
 
 #include "gui/Editor.h"
+#include "utils/printutils.h"
 #include "gui/ImportUtils.h"
 #include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"

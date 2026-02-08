@@ -26,6 +26,7 @@
 
 #include "gui/ExportPdfDialog.h"
 
+#include <QApplication>
 #include <QString>
 #include <QDialog>
 #include <QColorDialog>

@@ -31,6 +31,8 @@
 #include <filesystem>
 
 #include "pyopenscad.h"
+#include "core/node.h"
+#include "utils/printutils.h"
 #include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
 #include "platform/PlatformUtils.h"

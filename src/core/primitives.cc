@@ -26,6 +26,7 @@
 
 #include "core/primitives.h"
 
+#include "core/Value.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"

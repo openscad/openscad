@@ -24,11 +24,13 @@
  *
  */
 #include "gui/input/InputEventMapper.h"
+#include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "core/Settings.h"
 #include "gui/Preferences.h"
 #include "gui/input/AxisConfigWidget.h"
 #include "gui/input/ButtonConfigWidget.h"
+#include <cassert>
 #include <array>
 #include <QMetaObject>
 #include <QTimer>

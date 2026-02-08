@@ -1,5 +1,6 @@
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
+#include <cmath>
 #include <vector>
 #include <list>
 #include <cstddef>

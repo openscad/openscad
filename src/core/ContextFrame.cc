@@ -32,6 +32,7 @@
 #include "core/Value.h"
 
 #ifdef DEBUG
+#include <cassert>
 #include <boost/format.hpp>
 #include <sstream>
 #endif

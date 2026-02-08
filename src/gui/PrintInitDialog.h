@@ -29,6 +29,7 @@
 #include "gui/qtgettext.h"       // IWYU pragma: keep
 #include "ui_PrintInitDialog.h"  // generated, but needs qtgettext.h
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -12,6 +12,7 @@
 #include "core/node.h"
 #include "utils/degree_trig.h"
 
+#include <cmath>
 #include <cassert>
 #include <set>
 #include <utility>

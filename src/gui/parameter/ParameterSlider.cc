@@ -1,8 +1,11 @@
 #include "gui/parameter/ParameterSlider.h"
+
 #include <QWidget>
 #include <cmath>
 #include <cassert>
 #include <limits>
+#include "gui/parameter/ParameterVirtualWidget.h"
+#include "core/customizer/ParameterObject.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 
 ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter,

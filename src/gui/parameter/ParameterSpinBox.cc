@@ -1,7 +1,11 @@
 #include "gui/parameter/ParameterSpinBox.h"
+
+#include <cmath>
 #include <QWidget>
 #include <algorithm>
 #include <limits>
+#include "gui/parameter/ParameterVirtualWidget.h"
+#include "core/customizer/ParameterObject.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 
 ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter,

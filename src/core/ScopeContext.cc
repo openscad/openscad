@@ -1,5 +1,8 @@
 #include "core/ScopeContext.h"
 #include "core/Expression.h"
+#include "core/Value.h"
+#include "core/callables.h"
+#include "core/Context.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "core/SourceFileCache.h"

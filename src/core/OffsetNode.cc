@@ -26,6 +26,8 @@
 
 #include "core/OffsetNode.h"
 
+#include "core/CurveDiscretizer.h"
+#include "utils/printutils.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/module.h"
