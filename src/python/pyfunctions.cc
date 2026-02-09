@@ -5318,6 +5318,56 @@ PyObject *python_oo_clone(PyObject *self, PyObject *args, PyObject *kwargs)
   return Py_None;
 }
 
+PyObject *python_oo_hasattr(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  PyObject *dict;
+  char *keyword = NULL;
+  char *kwlist[] = {"keyword", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist, &keyword)) {
+    PyErr_SetString(PyExc_TypeError, "Error during hasattr");
+    return NULL;
+  }
+  PyObject* pykeyword = PyUnicode_FromString(keyword);
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
+  return  PyDict_Contains(dict, pykeyword)? Py_True:Py_False;
+}
+
+
+PyObject *python_oo_getattr(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  PyObject *dict;
+  char *keyword = NULL;
+  char *kwlist[] = {"keyword", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist, &keyword)) {
+    PyErr_SetString(PyExc_TypeError, "Error during getattr");
+    return NULL;
+  }
+  PyObject* pykeyword = PyUnicode_FromString(keyword);
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
+  PyObject *prop = PyDict_GetItem(dict, pykeyword);
+  Py_INCREF(prop);
+  return prop;
+}
+
+PyObject *python_oo_setattr(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  PyObject *dict;
+  char *keyword = NULL;
+  PyObject *setvalue;
+  char *kwlist[] = {"keyword", "setvalue", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO", kwlist, &keyword, &setvalue)) {
+    PyErr_SetString(PyExc_TypeError, "Error during setattr");
+    return NULL;
+  }
+  PyObject* pykeyword = PyUnicode_FromString(keyword);
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
+  PyDict_SetItem(dict, pykeyword, setvalue);
+  return Py_None;
+}
+
 PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return do_import_python(self, args, kwargs, ImportType::UNKNOWN);
@@ -6300,7 +6350,11 @@ PyMethodDef PyOpenSCADMethods[] = {
                                             OO_METHOD_ENTRY(pull, "Pull Obejct apart")
                                               OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
                                                 OO_METHOD_ENTRY(render, "Render Object")
-                                                  OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
+                                                  OO_METHOD_ENTRY(clone, "Clone Object") 
+                                                  OO_METHOD_ENTRY(hasattr, "Check if an attribute exists") 
+                                                  OO_METHOD_ENTRY(setattr, "Sets an attribute on a solid") 
+                                                  OO_METHOD_ENTRY(getattr, "Gets an attribute from a solid") 
+						  OO_METHOD_ENTRY(
                                                     dict, "return all dictionary"){NULL, NULL, 0, NULL}};
 
 PyNumberMethods PyOpenSCADNumbers = {
