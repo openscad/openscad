@@ -91,6 +91,39 @@
        </layout>
       </item>
 
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayoutInitCode">
+        <item>
+         <widget class="QLabel" name="labelInitCode">
+          <property name="text">
+           <string>Init Code:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="valueInitCode">
+         </widget>
+        </item>
+       </layout>
+      </item>
+
+      <item>
+       <layout class="QHBoxLayout" name="horizontalExitCode">
+        <item>
+         <widget class="QLabel" name="labelExitCode">
+          <property name="text">
+           <string>Exit Code:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="valueExitCode">
+         </widget>
+        </item>
+       </layout>
+      </item>
+
+
 
      </layout>
     </widget>

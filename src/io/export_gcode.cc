@@ -104,10 +104,12 @@ void export_gcode(const std::shared_ptr<const Geometry>& geom, std::ostream& out
 
 
   auto  options = exportInfo.optionsGcode;
+  output << options->initCode << "\r\n";
   if(options->lasermode == 1) output	<< "M4 S0\r\n";
 	  else output	<< "M3 S0\r\n";
 	  output << "S0\r\n" ;
   append_gcode(geom, output, exportInfo);
   output	<< "M5 S0\r\n";
+  output << options->exitCode;
   setlocale(LC_NUMERIC, "");  // Set default locale
 }
