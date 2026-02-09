@@ -19,6 +19,7 @@
 
 #include "gui/ColorList.h"
 
+#include <QObject>
 #include <QApplication>
 #include <QWidget>
 #include <QColor>

@@ -6,6 +6,7 @@
 #include <cstddef>
 #include "core/NodeVisitor.h"
 #include <memory>
+#include "core/enums.h"
 #include "core/node.h"
 #include "core/BaseVisitable.h"
 #include "core/ModuleInstantiation.h"

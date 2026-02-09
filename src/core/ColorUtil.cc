@@ -1,4 +1,6 @@
 #include <boost/spirit/home/support/common_terminals.hpp>
+#include <cctype>
+#include <cmath>
 #include <algorithm>
 #include <optional>
 #include <string>

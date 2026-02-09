@@ -6,6 +6,7 @@
 #include <stack>
 
 #include "core/CSGNode.h"
+#include "core/enums.h"
 #include "utils/printutils.h"
 
 // Helper function to debug normalization bugs

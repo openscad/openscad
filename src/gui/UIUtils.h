@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <QList>
 #include <QColor>
 #include <QString>
 #include <QWidget>

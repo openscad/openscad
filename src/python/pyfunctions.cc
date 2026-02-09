@@ -24,12 +24,14 @@
  *
  */
 
+#include <sstream>
 #include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
 #include <Python.h>
 #include "python/pyopenscad.h"
+#include "core/enums.h"
 #include "core/node.h"
 #include "core/primitives.h"
 #include "core/CsgOpNode.h"

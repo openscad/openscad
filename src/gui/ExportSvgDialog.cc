@@ -1,4 +1,5 @@
 #include "ExportSvgDialog.h"
+#include <QPalette>
 #include <QColorDialog>
 #include <QPushButton>
 

@@ -35,6 +35,7 @@
 #include <QStringList>
 #include <QTemporaryFile>
 
+#include "glview/Camera.h"
 #include "utils/printutils.h"
 #include "core/Settings.h"
 #include "gui/OctoPrint.h"

@@ -1,6 +1,7 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
 #include "geometry/cgal/cgal.h"
+#include "core/enums.h"
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
