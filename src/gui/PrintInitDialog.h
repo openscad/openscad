@@ -26,19 +26,17 @@
 
 #pragma once
 
-#include "gui/qtgettext.h"       // IWYU pragma: keep
-#include "ui_PrintInitDialog.h"  // generated, but needs qtgettext.h
-
+#include <QDialog>
+#include <QList>
+#include <QPushButton>
 #include <cstdint>
 #include <string>
 #include <vector>
 
-#include <QList>
-#include <QDialog>
-#include <QPushButton>
-
-#include "io/export.h"
 #include "gui/InitConfigurator.h"
+#include "gui/qtgettext.h"  // IWYU pragma: keep
+#include "io/export.h"
+#include "ui_PrintInitDialog.h"  // generated, but needs qtgettext.h
 
 // Property name for remote print servive buttons
 constexpr inline auto PROPERTY_NAME = "printServiceName";

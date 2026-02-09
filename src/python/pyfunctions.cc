@@ -24,38 +24,40 @@
  *
  */
 
-#include <sstream>
+#include <Python.h>
+
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
-#include <Python.h>
-#include "python/pyopenscad.h"
+
+#include "core/CgalAdvNode.h"
+#include "core/ColorNode.h"
+#include "core/ColorUtil.h"
+#include "core/CsgOpNode.h"
+#include "core/CurveDiscretizer.h"
+#include "core/FreetypeRenderer.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/OffsetNode.h"
+#include "core/ProjectionNode.h"
+#include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/SurfaceNode.h"
+#include "core/TextNode.h"
+#include "core/TransformNode.h"
+#include "core/Tree.h"
 #include "core/enums.h"
 #include "core/node.h"
 #include "core/primitives.h"
-#include "core/CsgOpNode.h"
-#include "core/ColorNode.h"
-#include "core/ColorUtil.h"
-#include "core/FreetypeRenderer.h"
-#include "core/TransformNode.h"
-#include "core/LinearExtrudeNode.h"
-#include "core/RotateExtrudeNode.h"
-#include "core/CgalAdvNode.h"
-#include "core/RoofNode.h"
-#include "core/RenderNode.h"
-#include "core/SurfaceNode.h"
-#include "core/TextNode.h"
-#include "core/CurveDiscretizer.h"
-#include "core/OffsetNode.h"
-#include "core/ProjectionNode.h"
-#include "core/Tree.h"
+#include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include "geometry/GeometryEvaluator.h"
-#include "utils/degree_trig.h"
-#include "io/fileutils.h"
 #include "handle_dep.h"
+#include "io/fileutils.h"
+#include "python/pyopenscad.h"
+#include "utils/degree_trig.h"
 
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {

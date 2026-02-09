@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+
 #include "platform/PlatformUtils.h"
 
 #if defined(_MSC_VER)

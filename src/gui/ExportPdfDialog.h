@@ -26,14 +26,14 @@
 
 #pragma once
 
-#include <memory>
-#include <QDialog>
 #include <QColor>
+#include <QDialog>
+#include <memory>
 
+#include "gui/InitConfigurator.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_ExportPdfDialog.h"
-#include "gui/InitConfigurator.h"
 
 class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog, public InitConfigurator
 {

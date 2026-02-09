@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QString>
 #include <QAction>
 #include <QDockWidget>
+#include <QString>
 
 class Dock : public QDockWidget
 {

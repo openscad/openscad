@@ -25,14 +25,14 @@
  */
 #include "gui/FontListTableView.h"
 
+#include <QDrag>
+#include <QMimeData>
+#include <QPainter>
+#include <QPixmap>
 #include <QRect>
 #include <QString>
-#include <QWidget>
-#include <QDrag>
-#include <QPixmap>
-#include <QPainter>
-#include <QMimeData>
 #include <QTableView>
+#include <QWidget>
 
 FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent)
 {

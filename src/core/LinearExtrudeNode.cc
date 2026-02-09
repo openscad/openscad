@@ -26,21 +26,20 @@
 
 #include "core/LinearExtrudeNode.h"
 
+#include <cmath>
+#include <filesystem>
+#include <memory>
+#include <sstream>
+#include <utility>
+
+#include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "utils/printutils.h"
-#include "io/fileutils.h"
-#include "core/Builtins.h"
+#include "core/module.h"
 #include "handle_dep.h"
-
-#include <utility>
-#include <memory>
-#include <cmath>
-#include <sstream>
-
-#include <filesystem>
+#include "io/fileutils.h"
+#include "utils/printutils.h"
 
 namespace {
 std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst,

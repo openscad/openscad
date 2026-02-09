@@ -1,27 +1,30 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/ManifoldGeometry.h"
-#include "utils/printutils.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include <map>
-#include <set>
-#include <functional>
-#include <exception>
-#include <sstream>
-#include <utility>
-#include <cstdint>
+
 #include <manifold/cross_section.h>
 #include <manifold/manifold.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <utility>
+
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "geometry/manifold/manifoldutils.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
-#include <cstddef>
-#include <string>
-#include <memory>
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif

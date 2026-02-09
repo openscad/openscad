@@ -18,11 +18,11 @@
  */
 #pragma once
 
-#include <QWidget>
 #include <QColor>
 #include <QLabel>
-#include <QString>
 #include <QMouseEvent>
+#include <QString>
+#include <QWidget>
 
 class ColorLabel : public QLabel
 {

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <utility>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "core/node.h"
-#include "core/ModuleInstantiation.h"
 #include "core/FreetypeRenderer.h"
+#include "core/ModuleInstantiation.h"
+#include "core/node.h"
 #include "geometry/Polygon2d.h"
 
 class TextModule;

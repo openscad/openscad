@@ -1,9 +1,10 @@
 #include "gui/parameter/ParameterText.h"
 
-#include "gui/parameter/ParameterVirtualWidget.h"
 #include <QString>
 #include <QWidget>
 #include <string>
+
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterText::ParameterText(QWidget *parent, StringParameter *parameter,
                              DescriptionStyle descriptionStyle)

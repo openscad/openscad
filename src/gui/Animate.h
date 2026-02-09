@@ -1,19 +1,19 @@
 #pragma once
 
-#include <QColor>
-#include <QString>
 #include <QAction>
+#include <QColor>
+#include <QIcon>
 #include <QList>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QString>
 #include <QTimer>
 #include <QWidget>
 #include <string>
 
+#include "gui/input/InputDriverEvent.h"
 #include "gui/qtgettext.h"
 #include "ui_Animate.h"
-#include <QIcon>
-#include "gui/input/InputDriverEvent.h"
 
 class MainWindow;
 

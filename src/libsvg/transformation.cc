@@ -24,10 +24,10 @@
  */
 #include "libsvg/transformation.h"
 
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "libsvg/util.h"
 #include "utils/degree_trig.h"

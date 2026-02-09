@@ -1,10 +1,11 @@
 #include "gui/IgnoreWheelWhenNotFocused.h"
+
+#include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QEvent>
 #include <QObject>
-#include <QWidget>
-#include <QComboBox>
 #include <QSpinBox>
-#include <QDoubleSpinBox>
+#include <QWidget>
 
 void installIgnoreWheelWhenNotFocused(QWidget *parent)
 {

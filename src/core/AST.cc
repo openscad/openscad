@@ -1,9 +1,11 @@
 #include "core/AST.h"
+
 #include <filesystem>
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
+
 #include "io/fileutils.h"
 
 const Location Location::NONE(0, 0, 0, 0, std::make_shared<fs::path>(fs::path{}));

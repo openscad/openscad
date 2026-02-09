@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm.hpp>
 #include <filesystem>
 #include <iostream>
 #include <iterator>
@@ -9,12 +11,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/range/algorithm.hpp>
-#include <boost/range/adaptor/map.hpp>
-
 #include "core/Settings.h"
-#include "core/Tree.h"
 #include "core/SourceFile.h"
+#include "core/Tree.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "glview/Camera.h"

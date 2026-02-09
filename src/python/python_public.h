@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "core/node.h"
 
 extern bool python_active;

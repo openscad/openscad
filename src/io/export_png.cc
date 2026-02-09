@@ -1,9 +1,7 @@
-#include "io/export.h"
-
 #include <cassert>
-#include <ostream>
 #include <cstdio>
 #include <memory>
+#include <ostream>
 
 #include "core/Tree.h"
 #include "geometry/Geometry.h"
@@ -11,17 +9,19 @@
 #include "glview/Camera.h"
 #include "glview/CsgInfo.h"
 #include "glview/OffscreenView.h"
-#include "glview/Renderer.h"
 #include "glview/RenderSettings.h"
+#include "glview/Renderer.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifndef NULLGL
-#include "glview/cgal/CGALRenderer.h"
 #include "glview/PolySetRenderer.h"
+#include "glview/cgal/CGALRenderer.h"
 
 #ifdef ENABLE_OPENCSG
-#include "glview/preview/OpenCSGRenderer.h"
 #include <opencsg.h>
+
+#include "glview/preview/OpenCSGRenderer.h"
 #endif  // ENABLE_OPENCSG
 
 #include "glview/preview/ThrownTogetherRenderer.h"

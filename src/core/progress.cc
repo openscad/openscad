@@ -1,6 +1,7 @@
 #include "core/progress.h"
 
 #include <memory>
+
 #include "core/node.h"
 
 int progress_report_count;

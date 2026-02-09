@@ -24,16 +24,17 @@
  */
 #include "libsvg/libsvg.h"
 
-#include <utility>
-#include <iostream>
-#include <memory>
-#include <map>
-#include <string>
-#include <vector>
+#include <libxml/xmlreader.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <boost/format.hpp>
-#include <libxml/xmlreader.h>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "libsvg/shape.h"
 #include "libsvg/use.h"

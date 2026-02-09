@@ -1,13 +1,13 @@
 #pragma once
 
-#include <utility>
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "clipper2/clipper.h"
 #include "core/CurveDiscretizer.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "clipper2/clipper.h"
 
 class OffsetNode : public AbstractPolyNode
 {

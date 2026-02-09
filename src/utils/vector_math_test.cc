@@ -1,6 +1,8 @@
+#include "vector_math.h"
+
 #include <catch2/catch_all.hpp>
 #include <limits>
-#include "vector_math.h"
+
 #include "src/geometry/Grid.h"
 
 #define NOT_APPLICABLE 0.0

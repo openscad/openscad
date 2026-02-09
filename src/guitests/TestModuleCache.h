@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStringList>
+
 #include "UXTest.h"
 
 class TestModuleCache : public UXTest

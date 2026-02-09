@@ -1,8 +1,10 @@
-#include <QTest>
+#include "TestTabManager.h"
+
 #include <QString>
 #include <QStringList>
+#include <QTest>
+
 #include "platform/PlatformUtils.h"
-#include "TestTabManager.h"
 
 void TestTabManager::initTestCase()
 {

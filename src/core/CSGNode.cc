@@ -25,20 +25,20 @@
  */
 
 #include "core/CSGNode.h"
-#include "core/enums.h"
-#include "geometry/PolySet.h"
-#include "geometry/linalg.h"
 
+#include <boost/range/iterator_range.hpp>
 #include <cassert>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <stack>
 #include <tuple>
-
-#include <boost/range/iterator_range.hpp>
 #include <utility>
+
+#include "core/enums.h"
+#include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 
 /*!
    \class CSGNode

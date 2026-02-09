@@ -26,24 +26,8 @@
 
 #include "gui/MainWindow.h"
 
-#include <algorithm>
-#include <cassert>
-#include <cstring>
-#include <deque>
-#include <exception>
-#include <filesystem>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
 #include <sys/stat.h>
 
-#include <boost/version.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
@@ -86,44 +70,58 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <algorithm>
+#include <boost/range/adaptor/reversed.hpp>
+#include <boost/version.hpp>
+#include <cassert>
+#include <cstring>
+#include <deque>
+#include <exception>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
 #include "core/CSGNode.h"
 #include "core/Context.h"
-#include "core/customizer/CommentParser.h"
 #include "core/EvaluationSession.h"
 #include "core/Expression.h"
-#include "core/node.h"
-#include "core/parsersettings.h"
-#include "core/progress.h"
 #include "core/RenderVariables.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
 #include "core/SourceFileCache.h"
+#include "core/customizer/CommentParser.h"
+#include "core/node.h"
+#include "core/parsersettings.h"
+#include "core/progress.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/GeometryEvaluator.h"
 #include "glview/PolySetRenderer.h"
+#include "glview/RenderSettings.h"
 #include "glview/cgal/CGALRenderer.h"
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
-#include "glview/RenderSettings.h"
 #include "gui/AboutDialog.h"
 #include "gui/CGALWorker.h"
 #include "gui/ColorList.h"
-#include "gui/Editor.h"
 #include "gui/Dock.h"
-#include "gui/Measurement.h"
+#include "gui/Editor.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/ImportUtils.h"
-#include "gui/input/InputDriverEvent.h"
-#include "gui/input/InputDriverManager.h"
 #include "gui/LibraryInfoDialog.h"
+#include "gui/Measurement.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/Preferences.h"
 #include "gui/PrintInitDialog.h"
@@ -131,10 +129,12 @@
 #include "gui/QGLView.h"
 #include "gui/QSettingsCached.h"
 #include "gui/QWordSearchField.h"
-#include "gui/SettingsWriter.h"
 #include "gui/ScintillaEditor.h"
+#include "gui/SettingsWriter.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
 #include "io/dxfdim.h"
 #include "io/export.h"
 #include "io/fileutils.h"
@@ -145,27 +145,28 @@
 #include "version.h"
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgal.h"
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/manifoldutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif  // ENABLE_MANIFOLD
 #ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
-#include <opencsg.h>
 #endif
 #ifdef OPENSCAD_UPDATER
 #include "gui/AutoUpdater.h"
 #endif
 
 #ifdef ENABLE_PYTHON
-#include "python/python_public.h"
-#include "nettle/sha2.h"
 #include "nettle/base64.h"
+#include "nettle/sha2.h"
+#include "python/python_public.h"
 
 std::string SHA256HashString(std::string aString)
 {

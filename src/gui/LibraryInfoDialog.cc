@@ -4,6 +4,7 @@
 #include <QString>
 #include <QStringRef>
 #include <QTextEdit>
+
 #include "LibraryInfo.h"
 
 LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)

@@ -16,14 +16,14 @@
  *  License along with this program; if not, see
  *  <https://www.gnu.org/licenses/>.
  */
-#include <utility>
-#include <cmath>
-#include <QWidget>
-#include <functional>
-#include <algorithm>
-#include <QtWidgets>
-
 #include "gui/ColorLayout.h"
+
+#include <QWidget>
+#include <QtWidgets>
+#include <algorithm>
+#include <cmath>
+#include <functional>
+#include <utility>
 
 void ColorLayout::sort(const std::function<bool(const QWidget *l1, const QWidget *l2)>& func)
 {

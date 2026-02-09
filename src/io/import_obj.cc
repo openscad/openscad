@@ -1,22 +1,21 @@
 #include "io/import.h"
 
-#include <filesystem>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
 #include <ios>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/regex.hpp>
-
 #include "core/AST.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 
 std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location& loc)
