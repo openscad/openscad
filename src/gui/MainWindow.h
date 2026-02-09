@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <ctime>
 #include <tuple>
 #include <unordered_map>
@@ -34,6 +35,7 @@
 #include <QSignalMapper>
 #include <QShortcut>
 #include "core/Context.h"
+#include "glview/Camera.h"
 #include "glview/Renderer.h"
 #include "core/SourceFile.h"
 #ifdef STATIC_QT_SVG_PLUGIN
