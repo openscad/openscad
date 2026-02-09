@@ -1303,6 +1303,7 @@ void MainWindow::on_fileActionSaveACopy_triggered()
 
 void MainWindow::on_fileShowLibraryFolder_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
     LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", path);
