@@ -205,6 +205,7 @@ void QGLView::paintGL()
                     .arg(size().rheight());
     statusLabel->setText(status);
   }
+  emit frameRendered();
 }
 
 void QGLView::mousePressEvent(QMouseEvent *event)

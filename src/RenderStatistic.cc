@@ -330,7 +330,7 @@ void LogVisitor::printCacheStatistic()
 void LogVisitor::printRenderingTime(const std::chrono::milliseconds ms)
 {
   // always enabled
-  LOG("Total rendering time: %1$d:%2$02d:%3$02d.%4$03d", (ms.count() / 1000 / 60 / 60),
+  LOG("Time to first image: %1$d:%2$02d:%3$02d.%4$03d", (ms.count() / 1000 / 60 / 60),
       (ms.count() / 1000 / 60 % 60), (ms.count() / 1000 % 60), (ms.count() % 1000));
 }
 
