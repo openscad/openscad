@@ -21,6 +21,11 @@ do_enable_python() {
 	PYTHON_DEFINE="-DENABLE_PYTHON=ON"
 }
 
+do_enable_libfive() {
+	echo "do_enable_libfive()"
+	LIBFIVE_DEFINE="-DENABLE_LIBFIVE=ON"
+}
+
 do_qt5() {
 	echo "do_qt5()"
 	QT="-DUSE_QT6=OFF"
@@ -38,7 +43,7 @@ do_build() {
 	mkdir "$BUILDDIR"
 	(
 		cd "$BUILDDIR"
-		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${EXPERIMENTAL} ${PYTHON_DEFINE} ${QT} .. && make $PARALLEL_MAKE
+		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${EXPERIMENTAL} ${PYTHON_DEFINE} ${LIBFIVE_DEFINE} ${QT} .. && make $PARALLEL_MAKE
 	)
 	if [[ $? != 0 ]]; then
 		echo "Build failure"

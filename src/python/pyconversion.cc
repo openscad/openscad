@@ -57,7 +57,7 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor)
     return 0;
   }
   if (PyUnicode_Check(number) && flags != nullptr) {
-    PyObjectUniquePtr str(PyUnicode_AsEncodedString(number, "utf-8", "~"), PyObjectDeleter);
+    PyObjectUniquePtr str(PyUnicode_AsEncodedString(number, "utf-8", "~"), &PyObjectDeleter);
     const char *str1 = PyBytes_AS_STRING(str.get());
     sscanf(str1, "%lf", result);
     *flags |= flagor;

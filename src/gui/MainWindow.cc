@@ -433,6 +433,12 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupStatusBar();
   setupViewportControl();
   setupAnimate();
+  // Must be initialized before setupEditor(), because creating a tab triggers
+  // tabSwitched -> onLanguageActiveChanged -> updateLanguageLabel() which
+  // dereferences these pointers.
+  this->versionLabel = nullptr;
+  this->languageLabel = nullptr;
+
   setupEditor(filenames);
   setupCustomizer();
   setupErrorLog();
@@ -443,8 +449,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setup3DView();
   setupPreferences();
 
-  this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
-  this->languageLabel = nullptr;  // must be initialized before calling updateLanguageLabel()
   updateStatusBar(nullptr);
   updateLanguageLabel();
   setupInput();

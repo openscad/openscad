@@ -41,6 +41,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DHEADLESS=${{ matrix.headless }} \
           -DENABLE_MANIFOLD=${{ matrix.enable_manifold }} \
-          -DENABLE_TESTS=${{ matrix.enable_tests }}
+          -DENABLE_TESTS=${{ matrix.enable_tests }} \
+          -DENABLE_LIBFIVE=ON
     - name: Build OpenSCAD
       run: cmake --build build

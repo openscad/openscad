@@ -136,6 +136,9 @@ scripts/run-clang-tidy-cached
 resources/icons/pythonscad.desktop
 pythonscad.appdata.xml.in2
 .clangd
+python_mingw/
+python_embed/
+artifacts/
 
 # Python pip build artifacts
 src/core/lexer.cc

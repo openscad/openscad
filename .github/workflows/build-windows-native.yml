@@ -89,6 +89,7 @@ jobs:
             -DSNAPSHOT=ON \
             -DUSE_QT6=ON \
             -DENABLE_PYTHON=ON \
+            -DENABLE_LIBFIVE=ON \
             -DENABLE_TESTS=OFF \
             -DPACKAGE_ARCH=windows-x86-64
           cmake --build . -j4
