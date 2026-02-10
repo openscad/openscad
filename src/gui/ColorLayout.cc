@@ -16,6 +16,8 @@
  *  License along with this program; if not, see
  *  <https://www.gnu.org/licenses/>.
  */
+#include <utility>
+#include <cmath>
 #include <QWidget>
 #include <functional>
 #include <algorithm>

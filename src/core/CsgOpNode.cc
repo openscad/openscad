@@ -26,6 +26,7 @@
 
 #include "core/CsgOpNode.h"
 
+#include "core/enums.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/module.h"

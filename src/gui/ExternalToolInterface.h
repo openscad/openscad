@@ -34,6 +34,7 @@
 #include <QString>
 
 #include "gui/PrintService.h"
+#include "glview/Camera.h"
 #include "geometry/Geometry.h"
 #include "core/Settings.h"
 #include "io/export.h"

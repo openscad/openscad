@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include <QList>
 #include <QWidget>
 #include <functional>
 
