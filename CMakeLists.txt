@@ -1593,6 +1593,9 @@ if(ENABLE_MANIFOLD)
   if (USE_MANIFOLD_TRIANGULATOR)
     target_compile_definitions(OpenSCADLibInternal PUBLIC USE_MANIFOLD_TRIANGULATOR)
   endif()
+  if (USE_MANIFOLD_MINKOWSKI)
+    target_compile_definitions(OpenSCADLibInternal PUBLIC USE_MANIFOLD_MINKOWSKI)
+  endif()
 endif()
 
 #
