@@ -125,6 +125,14 @@
         "qt5-qtmultimedia-devel",
         "qt5-qtsvg-devel"
       ]
+    },
+    "msys2": {
+      "extends": null,
+      "packages": [
+        "qscintilla-qt5:p",
+        "qt5-multimedia:p",
+        "qt5-svg:p"
+      ]
     }
   }
 }

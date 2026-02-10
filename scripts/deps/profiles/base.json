@@ -334,13 +334,18 @@
     },
     "macos": {
       "manager": "brew",
-      "pre_commands": [],
+      "pre_commands": [
+        "brew tap openscad/homebrew-tap"
+      ],
       "post_commands": [],
       "packages": [
         "bison",
         "boost",
         "cairo",
+        "catch2",
+        "ccache",
         "cgal",
+        "clipper2",
         "cmake",
         "curl",
         "double-conversion",
@@ -357,6 +362,7 @@
         "gtk-doc",
         "harfbuzz",
         "imagemagick",
+        "lib3mf",
         "libffi",
         "libxml2",
         "libzip",
@@ -597,6 +603,39 @@
         "ragel",
         "tbb-devel",
         "xorg-x11-server-Xvfb"
+      ],
+      "version_overrides": {}
+    },
+    "msys2": {
+      "manager": "pacboy",
+      "pre_commands": [],
+      "post_commands": [],
+      "packages": [
+        "git:",
+        "make:",
+        "cmake:",
+        "bison:",
+        "flex:",
+        "toolchain:p",
+        "cmake:p",
+        "ninja:p",
+        "boost:p",
+        "cgal:p",
+        "eigen3:p",
+        "glew:p",
+        "opencsg:p",
+        "lib3mf:p",
+        "libzip:p",
+        "mimalloc:p",
+        "double-conversion:p",
+        "cairo:p",
+        "ghostscript:p",
+        "imagemagick:p",
+        "tbb:p",
+        "python:p",
+        "python-pip:p",
+        "python-numpy:p",
+        "python-pillow:p"
       ],
       "version_overrides": {}
     }
