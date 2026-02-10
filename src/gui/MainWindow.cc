@@ -428,9 +428,17 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   // Docks
   setupConsole();
+  auto guard = scopedSetCurrentOutput();
+
   setupStatusBar();
   setupViewportControl();
   setupAnimate();
+  // Must be initialized before setupEditor(), because creating a tab triggers
+  // tabSwitched -> onLanguageActiveChanged -> updateLanguageLabel() which
+  // dereferences these pointers.
+  this->versionLabel = nullptr;
+  this->languageLabel = nullptr;
+
   setupEditor(filenames);
   setupCustomizer();
   setupErrorLog();
@@ -441,8 +449,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setup3DView();
   setupPreferences();
 
-  this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
-  this->languageLabel = nullptr;  // must be initialized before calling updateLanguageLabel()
   updateStatusBar(nullptr);
   updateLanguageLabel();
   setupInput();
@@ -565,6 +571,7 @@ void MainWindow::updateExportActions()
 void MainWindow::openFileFromPath(const QString& path, int line)
 {
   if (editorDock->isVisible()) {
+    auto guard = scopedSetCurrentOutput();
     activeEditor->setFocus();
     if (!path.isEmpty()) tabManager->open(path);
     activeEditor->setFocus();
@@ -917,6 +924,7 @@ MainWindow::~MainWindow()
   // Mark that we're being destroyed so eventFilter won't access freed members
   isBeingDestroyed = true;
 
+  delete this->cgalworker;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
@@ -1395,6 +1403,7 @@ void MainWindow::compileCSGDone()
 
 void MainWindow::on_fileActionOpen_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
     if (!i.exists()) {
@@ -1422,6 +1431,7 @@ void MainWindow::on_fileActionOpenWindow_triggered()
 
 void MainWindow::actionOpenRecent()
 {
+  auto guard = scopedSetCurrentOutput();
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
   // recomputeLanguageActive(); // should be done in open
@@ -2152,8 +2162,8 @@ void MainWindow::csgReloadRender()
 
 void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, bool preview)
 {
-  autoReloadTimer->stop();
   setCurrentOutput();
+  autoReloadTimer->stop();
   LOG(" ");
   LOG("Parsing design (AST generation)...");
   this->processEvents();
@@ -2258,8 +2268,6 @@ void MainWindow::on_designAction3DPrint_triggered()
   if (GuiLocker::isLocked()) return;
   const GuiLocker lock;
 
-  setCurrentOutput();
-
   // Make sure we can export:
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
@@ -2268,6 +2276,7 @@ void MainWindow::on_designAction3DPrint_triggered()
   const auto status = printInitDialog.exec();
 
   if (status == QDialog::Accepted) {
+    auto guard = scopedSetCurrentOutput();
     const print_service_t serviceType = printInitDialog.getServiceType();
     const QString serviceName = printInitDialog.getServiceName();
     const FileFormat fileFormat = printInitDialog.getFileFormat();
@@ -2749,7 +2758,7 @@ void MainWindow::exceptionCleanup()
 
 void MainWindow::UnknownExceptionCleanup(std::string msg)
 {
-  setCurrentOutput();  // we need to show this error
+  auto guard = scopedSetCurrentOutput();  // we need to show this error
   if (msg.size() == 0) {
     LOG(message_group::Error, "Compilation aborted by unknown exception");
   } else {
@@ -2777,10 +2786,9 @@ void MainWindow::showTextInWindow(const QString& type, const QString& content)
 
 void MainWindow::on_designActionDisplayAST_triggered()
 {
-  setCurrentOutput();
+  auto guard = scopedSetCurrentOutput();
   QString text = (rootFile) ? QString::fromStdString(rootFile->dump("")) : "";
   showTextInWindow("AST", text);
-  clearCurrentOutput();
 }
 
 void MainWindow::on_designActionDisplayPython_triggered()
@@ -2804,15 +2812,14 @@ void MainWindow::on_designActionDisplayPython_triggered()
 
 void MainWindow::on_designActionDisplayCSGTree_triggered()
 {
-  setCurrentOutput();
+  auto guard = scopedSetCurrentOutput();
   QString text = (rootNode) ? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
   showTextInWindow("CSG", text);
-  clearCurrentOutput();
 }
 
 void MainWindow::on_designActionDisplayCSGProducts_triggered()
 {
-  setCurrentOutput();
+  auto guard = scopedSetCurrentOutput();
   // a small lambda to avoid code duplication
   auto constexpr dump = [](auto node) { return QString::fromStdString(node ? node->dump() : "N/A"); };
   auto text =
@@ -2822,7 +2829,6 @@ void MainWindow::on_designActionDisplayCSGProducts_triggered()
       .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts),
            dump(backgroundProducts));
   showTextInWindow("CSG Products Dump", text);
-  clearCurrentOutput();
 }
 
 void html_encode(std::string& data)
@@ -3012,17 +3018,15 @@ void MainWindow::on_designCheckValidity_triggered()
 {
   if (GuiLocker::isLocked()) return;
   const GuiLocker lock;
-  setCurrentOutput();
+  auto guard = scopedSetCurrentOutput();
 
   if (!rootGeom) {
     LOG("Nothing to validate! Try building first (press F6).");
-    clearCurrentOutput();
     return;
   }
 
   if (rootGeom->getDimension() != 3) {
     LOG("Current top level object is not a 3D object.");
-    clearCurrentOutput();
     return;
   }
 
@@ -3038,16 +3042,15 @@ void MainWindow::on_designCheckValidity_triggered()
   }
 #endif
   LOG("Valid:      %1$6s", (valid ? "yes" : "no"));
-  clearCurrentOutput();
 }
 
 // Returns if we can export (true) or not(false) (bool)
 // Separated into it's own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
+  auto guard = scopedSetCurrentOutput();
   if (!rootGeom) {
     LOG(message_group::Error, "Nothing to export! Try rendering first (press F6)");
-    clearCurrentOutput();
     return false;
   }
 
@@ -3075,13 +3078,11 @@ bool MainWindow::canExport(unsigned int dim)
 
   if (this->rootGeom->getDimension() != dim && dim != 0) {
     LOG(message_group::UI_Error, "Current top level object is not a %1$dD object.", dim);
-    clearCurrentOutput();
     return false;
   }
 
   if (rootGeom->isEmpty()) {
     LOG(message_group::UI_Error, "Current top level object is empty.");
-    clearCurrentOutput();
     return false;
   }
 
@@ -3116,7 +3117,7 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   if (GuiLocker::isLocked()) return;
   const GuiLocker lock;
 
-  setCurrentOutput();
+  auto guard = scopedSetCurrentOutput();
 
   // Return if something is wrong and we can't export.
   if (!canExport(dim)) return;
@@ -3124,8 +3125,8 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   auto title = QString(_("Export %1 File")).arg(type_name);
   auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
+  auto guard2 = scopedSetCurrentOutput();
   if (exportFilename.isEmpty()) {
-    clearCurrentOutput();
     return;
   }
   this->exportPaths[suffix] = exportFilename;
@@ -3133,7 +3134,6 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   const bool exportResult = exportFileByName(rootGeom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
-  clearCurrentOutput();
 }
 
 void MainWindow::actionExportFileFormat(int fmt)
@@ -3164,11 +3164,10 @@ void MainWindow::actionExportFileFormat(int fmt)
     actionExport(3, exportInfo);
   } break;
   case FileFormat::CSG: {
-    setCurrentOutput();
+    auto guard = scopedSetCurrentOutput();
 
     if (!this->rootNode) {
       LOG(message_group::Error, "Nothing to export. Please try compiling first.");
-      clearCurrentOutput();
       return;
     }
     const QString suffix = "csg";
@@ -3176,10 +3175,10 @@ void MainWindow::actionExportFileFormat(int fmt)
                                                      _("CSG Files (*.csg)"));
 
     if (csg_filename.isEmpty()) {
-      clearCurrentOutput();
       return;
     }
 
+    auto guard2 = scopedSetCurrentOutput();
     std::ofstream fstream(std::filesystem::u8path(csg_filename.toStdString()));
     if (!fstream.is_open()) {
       LOG("Can't open file \"%1$s\" for export", csg_filename.toStdString());
@@ -3190,7 +3189,6 @@ void MainWindow::actionExportFileFormat(int fmt)
       this->exportPaths[suffix] = csg_filename;
     }
 
-    clearCurrentOutput();
   } break;
   case FileFormat::PNG: {
     // Grab first to make sure dialog box isn't part of the grabbed image
@@ -3202,9 +3200,8 @@ void MainWindow::actionExportFileFormat(int fmt)
       const bool saveResult = qglview->save(img_filename.toStdString().c_str());
       if (saveResult) {
         this->exportPaths[suffix] = img_filename;
-        setCurrentOutput();
+        auto guard = scopedSetCurrentOutput();
         fileExportedMessage("PNG", img_filename);
-        clearCurrentOutput();
       } else {
         LOG("Can't open file \"%1$s\" for export image", img_filename.toStdString());
       }
@@ -3249,13 +3246,13 @@ void MainWindow::on_editActionCopyViewport_triggered()
 
 void MainWindow::on_designActionFlushCaches_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   GeometryCache::instance()->clear();
   CGALCache::instance()->clear();
   dxf_dim_cache.clear();
   dxf_cross_cache.clear();
   SourceFileCache::instance()->clear();
 
-  setCurrentOutput();
   LOG("Caches Flushed");
 }
 
@@ -3814,12 +3811,11 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void MainWindow::dropEvent(QDropEvent *event)
 {
-  setCurrentOutput();
+  auto guard = scopedSetCurrentOutput();
   const QList<QUrl> urls = event->mimeData()->urls();
   for (const auto& url : urls) {
     handleFileDrop(url);
   }
-  clearCurrentOutput();
 }
 
 void MainWindow::handleFileDrop(const QUrl& url)
@@ -4116,6 +4112,18 @@ void MainWindow::setupPreferences()
   GlobalPreferences::inst()->apply_win();
   GlobalPreferences::inst()->ButtonConfig->init();
   GlobalPreferences::inst()->MouseConfig->init();
+
+  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 }
 
 /**
@@ -4278,9 +4286,7 @@ void MainWindow::setup3DView()
   const QString cs = GlobalPreferences::inst()->getValue("3dview/colorscheme").toString();
   this->setColorScheme(cs);
 
-  // Initialize View Mode and Logging
-  setCurrentOutput();
-
+  // Initialize View Mode
   // Default to ThrownTogether as OpenCSG support is not known until initializeGL()
   // runs (after show()). The initialized() signal will trigger an update to
   // Preview mode if supported.
@@ -4288,8 +4294,6 @@ void MainWindow::setup3DView()
 
   loadViewSettings();
   loadDesignSettings();
-
-  clearCurrentOutput();
 
   connect(this->qglview, &QGLView::cameraChanged, animateWidget, &Animate::cameraChanged);
   connect(this->qglview, &QGLView::cameraChanged, viewportControlWidget,
@@ -4357,7 +4361,6 @@ void MainWindow::setupDocks()
     menuWindow->addAction(dock->toggleViewAction());
 
     auto dockAction = navigationMenu->addAction(title);
-    dockAction->setShortcut(QKeySequence::mnemonic(title));
     dockAction->setProperty("id", QVariant::fromValue(dock));
     connect(dockAction, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
     connect(dockAction, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
@@ -4392,7 +4395,7 @@ void MainWindow::setupMenusAndActions()
 
   //
   // File menu
-  // 
+  //
 
 
   // Recent files

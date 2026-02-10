@@ -80,7 +80,7 @@ jobs:
             -DSNAPSHOT=ON \
             -DENABLE_PYTHON=ON \
             -DENABLE_TBB=OFF \
-            -DENABLE_LIBFIVE=OFF \
+            -DENABLE_LIBFIVE=ON \
             -DENABLE_GAMEPAD=OFF \
             -DUSE_BUILTIN_CLIPPER2=OFF \
             -DUSE_BUILTIN_MANIFOLD=ON
@@ -221,7 +221,7 @@ jobs:
             -DSNAPSHOT=ON \
             -DENABLE_PYTHON=ON \
             -DENABLE_TBB=OFF \
-            -DENABLE_LIBFIVE=OFF \
+            -DENABLE_LIBFIVE=ON \
             -DENABLE_GAMEPAD=OFF \
             -DUSE_BUILTIN_CLIPPER2=OFF \
             -DUSE_BUILTIN_MANIFOLD=ON

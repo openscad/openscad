@@ -46,6 +46,7 @@
 #include "libfive/render/brep/dc/dc_worker_pool.hpp"
 #include "libfive/render/brep/region.hpp"
 #include "libfive/render/brep/mesh.hpp"
+#include "libfive.h"
 
 #include <hash.h>
 #include <unordered_set>
@@ -55,15 +56,6 @@ using namespace libfive;
 std::unique_ptr<const Geometry> FrepNode::createGeometry() const
 {
   PolySetBuilder builder(0, 0, 3, true);
-#ifdef LIBFIVE_IS_SHARED
-  std::shared_ptr<Mesh> mesh = NULL;
-#else
-  std::unique_ptr<Mesh> mesh = NULL;
-#endif
-  libfive::Region<3> reg({this->x1, this->y1, this->z1}, {this->x2, this->y2, this->z2});
-  libfive::BRepSettings settings;
-  settings.workers = 1;
-  settings.min_feature = 1.0 / this->res;
 
 #ifdef ENABLE_PYTHON
   PyObject *exp = this->expression;
@@ -71,72 +63,29 @@ std::unique_ptr<const Geometry> FrepNode::createGeometry() const
 
   if (exp->ob_type == &PyDataType) {
     std::vector<Tree *> tree = PyDataObjectToTree(exp);
-    // TODO fidget rein
-#ifdef FAKE
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(-0.500000, -0.500000, 3.500000));
-    builder.addVertex(Vector3d(-0.500000, 3.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(-0.500000, 3.500000, 3.500000));
-    builder.addVertex(Vector3d(-0.500000, 3.500000, -0.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(3.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(3.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, 3.500000));
-    builder.addVertex(Vector3d(3.500000, -0.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, -0.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, -0.500000, 3.500000));
-    builder.addVertex(Vector3d(-0.500000, -0.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, 3.500000, -0.500000));
-    builder.addVertex(Vector3d(-0.500000, 3.500000, 3.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, 3.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, 3.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, -0.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(-0.500000, 3.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, -0.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, -0.500000));
-    builder.addVertex(Vector3d(3.500000, -0.500000, -0.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, 3.500000));
-    builder.addVertex(Vector3d(3.500000, -0.500000, 3.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, 3.500000));
-    builder.beginPolygon(3);
-    builder.addVertex(Vector3d(-0.500000, -0.500000, 3.500000));
-    builder.addVertex(Vector3d(3.500000, 3.500000, 3.500000));
-    builder.addVertex(Vector3d(-0.500000, 3.500000, 3.500000));
-#else
-    mesh = Mesh::render(*tree[0], reg, settings);
+    // Use libfive C API on all platforms to avoid heap allocation mismatches.
+    // Mesh::render() allocates using Eigen's aligned_allocator, but the
+    // unique_ptr destructor would run here with a potentially different
+    // allocator, causing crashes. The C API handles all allocation and
+    // deallocation inside the libfive library.
+    libfive_region3 reg = {{(float)this->x1, (float)this->x2},
+                           {(float)this->y1, (float)this->y2},
+                           {(float)this->z1, (float)this->z2}};
+    libfive_tree lt = tree[0]->get();
+    libfive_mesh *mesh = libfive_tree_render_mesh_st(lt, reg, (float)this->res);
     if (mesh != nullptr) {
-      libfive_tri t;
-      for (const auto& t : mesh->branes) {
+      for (uint32_t ti = 0; ti < mesh->tri_count; ti++) {
         builder.beginPolygon(3);
+        uint32_t indices[3] = {mesh->tris[ti].a, mesh->tris[ti].b, mesh->tris[ti].c};
         for (int i = 0; i < 3; i++) {
           builder.addVertex(builder.vertexIndex(
-            Vector3d(mesh->verts[t[i]].x(), mesh->verts[t[i]].y(), mesh->verts[t[i]].z())));
+            Vector3d(mesh->verts[indices[i]].x, mesh->verts[indices[i]].y, mesh->verts[indices[i]].z)));
         }
       }
+      libfive_mesh_delete(mesh);
     }
-#endif
   } else if (exp->ob_type == &PyFunction_Type) {
     printf("Python Function!\n");
-    mesh = NULL;
   } else {
     printf("xxx\n");
   }

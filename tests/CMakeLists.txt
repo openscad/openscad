@@ -263,6 +263,11 @@ file(GLOB PYTHONSCAD_FILES    ${TEST_PYTHONSCAD_DIR}/*.py)
 file(GLOB PYTHONSCAD_ECHO_FILES    ${TEST_PYTHONSCAD_ECHO_DIR}/*.py)
 # Exclude add_parameter_pure.py as it has a separate test with feature flag
 list(REMOVE_ITEM PYTHONSCAD_ECHO_FILES "${TEST_PYTHONSCAD_ECHO_DIR}/add_parameter_pure.py")
+# Exclude libfive tests if libfive is not enabled
+if(NOT ENABLE_LIBFIVE)
+  list(REMOVE_ITEM PYTHONSCAD_FILES "${TEST_PYTHONSCAD_DIR}/libfive-union-stairs.py")
+  list(REMOVE_ITEM PYTHONSCAD_FILES "${TEST_PYTHONSCAD_DIR}/sdf.py")
+endif()
 if(NOT MINGW)
   # GhostScript on MSYS2/MINGW can't handle the names.
   list(APPEND SCAD_PDF_FILES
