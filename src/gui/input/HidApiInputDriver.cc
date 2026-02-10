@@ -31,22 +31,22 @@
 
 #include "gui/input/HidApiInputDriver.h"
 
-#include <ios>
-#include <sstream>
-#include <cstdint>
 #include <bitset>
 #include <boost/format.hpp>
 #include <boost/nowide/convert.hpp>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
+#include <ios>
+#include <sstream>
 #include <string>
 
 #include "core/Settings.h"
-#include "platform/PlatformUtils.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
+#include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
 static constexpr int BUFLEN = 64;

@@ -25,12 +25,13 @@
  */
 #pragma once
 
+#include <Eigen/Core>
+#include <cmath>
 #include <memory>
 #include <vector>
-#include <cmath>
-#include <Eigen/Core>
-#include "geometry/linalg.h"
+
 #include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 
 class Polygon2d;
 class Geometry;

@@ -27,14 +27,14 @@
 #include "gui/ExportPdfDialog.h"
 
 #include <QApplication>
-#include <QString>
-#include <QDialog>
 #include <QColorDialog>
+#include <QDialog>
+#include <QString>
 
-#include "io/export.h"
 #include "core/Settings.h"
-#include "gui/UIUtils.h"
 #include "gui/SettingsWriter.h"
+#include "gui/UIUtils.h"
+#include "io/export.h"
 
 using S = Settings::SettingsExportPdf;
 

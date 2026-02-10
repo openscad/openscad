@@ -1,41 +1,41 @@
 #include "gui/TabManager.h"
 
-#include <tuple>
-#include <string>
 #include <QApplication>
 #include <QStringBuilder>
+#include <string>
+#include <tuple>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
 #endif
-#include <QPoint>
-#include <QTabBar>
-#include <QWidget>
-#include <cassert>
-#include <functional>
-#include <exception>
-#include <QFileInfo>
-#include <QFile>
-#include <QDir>
-#include <QByteArray>
-#include <QStringList>
-#include <QSaveFile>
-#include <QShortcut>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QClipboard>
-#include <QDesktopServices>
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
-#include "gui/Editor.h"
-#include "utils/printutils.h"
-#include "gui/ImportUtils.h"
-#include "gui/ScintillaEditor.h"
-#include "gui/Preferences.h"
-#include "gui/MainWindow.h"
-
+#include <QByteArray>
+#include <QClipboard>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QPoint>
+#include <QSaveFile>
+#include <QShortcut>
+#include <QStringList>
+#include <QTabBar>
+#include <QTextStream>
+#include <QWidget>
+#include <cassert>
 #include <cstddef>
+#include <exception>
+#include <functional>
+
+#include "gui/Editor.h"
+#include "gui/ImportUtils.h"
+#include "gui/MainWindow.h"
+#include "gui/Preferences.h"
+#include "gui/ScintillaEditor.h"
+#include "utils/printutils.h"
 
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {

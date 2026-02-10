@@ -24,10 +24,10 @@
  */
 #include "libsvg/ellipse.h"
 
-#include <sstream>
 #include <cstdlib>
-#include <string>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "libsvg/shape.h"
 #include "libsvg/util.h"

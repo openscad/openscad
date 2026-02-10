@@ -23,17 +23,16 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <system_error>
 #include <Python.h>
 
-#include <string>
-#include <vector>
 #include <cstdlib>
 #include <filesystem>
+#include <string>
+#include <system_error>
+#include <vector>
 
 #include "core/Settings.h"
 #include "platform/PlatformUtils.h"
-
 #include "pyopenscad.h"
 
 namespace fs = std::filesystem;

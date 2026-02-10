@@ -1,9 +1,9 @@
 #pragma once
 
+#include <boost/property_tree/ptree.hpp>
 #include <map>
 #include <string>
 #include <vector>
-#include <boost/property_tree/ptree.hpp>
 
 class ParameterSet : public std::map<std::string, boost::property_tree::ptree>
 {

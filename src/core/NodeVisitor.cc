@@ -1,7 +1,8 @@
 #include "core/NodeVisitor.h"
-#include "core/node.h"
+
 #include "core/BaseVisitable.h"
 #include "core/State.h"
+#include "core/node.h"
 
 State NodeVisitor::nullstate(nullptr);
 

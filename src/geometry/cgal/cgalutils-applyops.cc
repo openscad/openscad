@@ -1,39 +1,36 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
-#include "geometry/cgal/cgal.h"
-#include "core/enums.h"
-#include "geometry/Geometry.h"
-#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
+#include "core/enums.h"
 #include "core/progress.h"
+#include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "core/node.h"
-
-#include <string>
-#include <cassert>
-#include <utility>
-#include <exception>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
-
 #include <CGAL/config.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/version.h>
 
-#include <CGAL/convex_hull_3.h>
-
-#include "geometry/Reindexer.h"
-#include "geometry/GeometryUtils.h"
-
+#include <cassert>
 #include <cstddef>
+#include <exception>
 #include <memory>
 #include <queue>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include "core/node.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Reindexer.h"
 
 namespace CGALUtils {
 

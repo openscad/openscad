@@ -26,28 +26,29 @@
 
 #include "gui/Console.h"
 
-#include <cmath>
 #include <QBrush>
 #include <QColor>
 #include <QContextMenuEvent>
-#include <QFocusEvent>
-#include <QPlainTextEdit>
-#include <QStringLiteral>
-#include <QTextCharFormat>
-#include <QWidget>
-#include <QWheelEvent>
-#include <QMenu>
-#include <QFileInfo>
 #include <QFileDialog>
-#include <QTextStream>
+#include <QFileInfo>
+#include <QFocusEvent>
+#include <QMenu>
+#include <QPlainTextEdit>
 #include <QRegularExpression>
 #include <QString>
+#include <QStringLiteral>
+#include <QTextCharFormat>
+#include <QTextStream>
+#include <QWheelEvent>
+#include <QWidget>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
+
 #include "gui/MainWindow.h"
-#include "utils/printutils.h"
 #include "gui/Preferences.h"
 #include "gui/UIUtils.h"
+#include "utils/printutils.h"
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {

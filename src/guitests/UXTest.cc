@@ -1,5 +1,7 @@
 #include "UXTest.h"
+
 #include <QString>
+
 #include "platform/PlatformUtils.h"
 
 void UXTest::setWindow(MainWindow *window_)

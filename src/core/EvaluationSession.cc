@@ -30,12 +30,12 @@
 #include <cstddef>
 #include <string>
 
-#include "core/callables.h"
 #include "core/AST.h"
 #include "core/ContextFrame.h"
+#include "core/Value.h"
+#include "core/callables.h"
 #include "core/function.h"
 #include "core/module.h"
-#include "core/Value.h"
 #include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)

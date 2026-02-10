@@ -24,25 +24,24 @@
  *
  */
 
-#include "io/export.h"
-
-#include "utils/printutils.h"
 #include "geometry/Geometry.h"
+#include "io/export.h"
+#include "utils/printutils.h"
 #include "version.h"
 
 #ifdef ENABLE_CGAL
+#include "geometry/cgal/CGALNefGeometry.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 
 #include <algorithm>
-#include <iterator>
 #include <cassert>
-#include <exception>
-#include <ostream>
-#include <memory>
 #include <cstddef>
+#include <exception>
+#include <iterator>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 

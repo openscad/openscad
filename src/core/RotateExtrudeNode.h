@@ -1,13 +1,13 @@
 #pragma once
 
-#include <utility>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "core/CurveDiscretizer.h"
-#include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
+#include "core/node.h"
 
 class CurveDiscretizer;
 

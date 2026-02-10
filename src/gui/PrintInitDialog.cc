@@ -27,17 +27,16 @@
 #include "gui/PrintInitDialog.h"
 
 #include <QApplication>
-#include <vector>
-#include <string>
-
 #include <QDialog>
-#include <QString>
 #include <QPushButton>
+#include <QString>
+#include <string>
+#include <vector>
 
-#include "utils/printutils.h"
-#include "io/export.h"
 #include "core/Settings.h"
 #include "gui/PrintService.h"
+#include "io/export.h"
+#include "utils/printutils.h"
 
 using S = Settings::Settings;
 

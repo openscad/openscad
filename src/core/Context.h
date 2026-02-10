@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cassert>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "core/callables.h"
 #include "core/AST.h"
 #include "core/ContextFrame.h"
 #include "core/EvaluationSession.h"
+#include "core/callables.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the

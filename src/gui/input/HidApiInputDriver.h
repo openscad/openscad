@@ -26,9 +26,10 @@
 
 #pragma once
 
+#include <hidapi.h>
+
 #include <cstddef>
 #include <string>
-#include <hidapi.h>
 
 #include "core/Settings.h"
 #include "gui/input/InputDriver.h"

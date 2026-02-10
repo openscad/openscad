@@ -1,26 +1,26 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #ifdef ENABLE_MANIFOLD
 
-#include <iterator>
+#include <CGAL/Surface_mesh/Surface_mesh.h>
+#include <CGAL/convex_hull_3.h>
+
 #include <cassert>
-#include <list>
 #include <exception>
+#include <iterator>
+#include <list>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include <CGAL/convex_hull_3.h>
-#include <CGAL/Surface_mesh/Surface_mesh.h>
-
-#include "geometry/cgal/cgal.h"
 #include "core/enums.h"
 #include "geometry/Geometry.h"
-#include "geometry/cgal/cgalutils.h"
 #include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "geometry/manifold/manifoldutils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #include "utils/parallel.h"
+#include "utils/printutils.h"
 
 namespace ManifoldUtils {
 

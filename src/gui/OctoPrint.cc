@@ -39,8 +39,8 @@
 #include <vector>
 
 #include "core/Settings.h"
-#include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 const QString OctoPrint::url() const
 {

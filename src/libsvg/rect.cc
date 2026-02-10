@@ -24,13 +24,12 @@
  */
 #include "libsvg/rect.h"
 
-#include <sstream>
+#include <boost/format.hpp>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <cmath>
+#include <sstream>
 #include <string>
-
-#include <boost/format.hpp>
 
 #include "libsvg/shape.h"
 #include "libsvg/util.h"

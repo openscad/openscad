@@ -25,9 +25,9 @@
 #pragma once
 
 #include <exception>
-#include <utility>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "libsvg/shape.h"

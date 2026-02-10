@@ -2,22 +2,22 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "core/RotateExtrudeNode.h"
 #include "core/CurveDiscretizer.h"
-#include "geometry/GeometryUtils.h"
+#include "core/RotateExtrudeNode.h"
 #include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/linalg.h"
-#include "geometry/PolySet.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"

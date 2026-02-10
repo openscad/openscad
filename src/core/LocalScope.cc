@@ -1,10 +1,10 @@
 #include "core/LocalScope.h"
 
-#include <optional>
 #include <cassert>
-#include <ostream>
-#include <memory>
 #include <cstddef>
+#include <memory>
+#include <optional>
+#include <ostream>
 #include <string>
 #include <vector>
 

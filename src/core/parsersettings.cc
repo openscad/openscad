@@ -1,14 +1,14 @@
 #include "core/parsersettings.h"
 
-#include <cstdlib>
 #include <algorithm>
-#include <iterator>
+#include <boost/algorithm/string.hpp>
 #include <cassert>
+#include <cstdlib>
+#include <filesystem>
+#include <iterator>
 #include <string>
 #include <vector>
 
-#include <filesystem>
-#include <boost/algorithm/string.hpp>
 #include "platform/PlatformUtils.h"
 
 namespace fs = std::filesystem;

@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "core/Arguments.h"
-#include "core/Context.h"
-#include "core/Assignment.h"
 #include "core/AST.h"
+#include "core/Arguments.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
 #include "core/ContextFrame.h"
 
 /*

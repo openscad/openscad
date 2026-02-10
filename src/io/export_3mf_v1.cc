@@ -24,25 +24,24 @@
  *
  */
 
-#include "io/export.h"
+#include <Common/Platform/NMR_WinTypes.h>
+#include <Model/COM/NMR_DLLInterfaces.h>
 
-#include <cstddef>
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
 
-#include <Common/Platform/NMR_WinTypes.h>
-#include <Model/COM/NMR_DLLInterfaces.h>
-
 #include "core/ColorUtil.h"
 #include "export_enums.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifdef ENABLE_MANIFOLD
@@ -50,8 +49,8 @@
 #endif
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 #undef BOOL

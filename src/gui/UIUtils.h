@@ -25,12 +25,12 @@
  */
 #pragma once
 
-#include <QList>
 #include <QColor>
-#include <QString>
-#include <QWidget>
-#include <QStringList>
 #include <QFileInfoList>
+#include <QList>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
 #include <filesystem>
 
 namespace fs = std::filesystem;

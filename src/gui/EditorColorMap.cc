@@ -1,14 +1,15 @@
 #include "gui/EditorColorMap.h"
-#include "platform/PlatformUtils.h"
-#include "utils/printutils.h"
 
-#include <exception>
 #include <QStringList>
+#include <boost/property_tree/json_parser.hpp>
+#include <exception>
 #include <filesystem>
 #include <memory>
-#include <utility>
 #include <string>
-#include <boost/property_tree/json_parser.hpp>
+#include <utility>
+
+#include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 std::shared_ptr<EditorColorScheme> EditorColorScheme::load(const fs::path& path)
 {

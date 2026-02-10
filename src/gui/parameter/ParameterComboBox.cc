@@ -2,8 +2,9 @@
 
 #include <QString>
 #include <QWidget>
-#include "gui/parameter/ParameterVirtualWidget.h"
+
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter,
                                      DescriptionStyle descriptionStyle)

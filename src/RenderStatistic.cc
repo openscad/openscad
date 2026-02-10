@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/range/algorithm/find.hpp>
 #include <cassert>
 #include <chrono>
 #include <fstream>
@@ -35,20 +36,17 @@
 #include <string>
 #include <vector>
 
-#include <boost/range/algorithm/find.hpp>
-
-#include "json/json.hpp"
-
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "glview/Camera.h"
+#include "json/json.hpp"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGALNefGeometry.h"
 #include "geometry/cgal/CGALCache.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"

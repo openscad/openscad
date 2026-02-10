@@ -1,12 +1,13 @@
 #pragma once
 
-#include <utility>
 #include <cstddef>
-#include <string>
-#include <vector>
 #include <memory>
-#include "geometry/linalg.h"
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "core/enums.h"
+#include "geometry/linalg.h"
 
 class PolySet;
 
