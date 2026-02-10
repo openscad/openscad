@@ -26,6 +26,7 @@
 
 #include "gui/OctoPrintApiKeyDialog.h"
 
+#include <QObject>
 #include <QString>
 #include <QCheckBox>
 #include <QColor>

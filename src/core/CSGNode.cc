@@ -25,6 +25,7 @@
  */
 
 #include "core/CSGNode.h"
+#include "core/enums.h"
 #include "geometry/PolySet.h"
 #include "geometry/linalg.h"
 

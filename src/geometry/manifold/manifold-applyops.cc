@@ -5,6 +5,7 @@
 
 #include <memory>
 #include "geometry/manifold/manifoldutils.h"
+#include "core/enums.h"
 #include "geometry/Geometry.h"
 #include "core/AST.h"
 #include "geometry/manifold/ManifoldGeometry.h"

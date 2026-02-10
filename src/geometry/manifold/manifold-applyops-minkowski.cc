@@ -13,6 +13,7 @@
 #include <CGAL/Surface_mesh/Surface_mesh.h>
 
 #include "geometry/cgal/cgal.h"
+#include "core/enums.h"
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/PolySet.h"

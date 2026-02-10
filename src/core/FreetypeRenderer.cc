@@ -25,6 +25,7 @@
  */
 #include "core/FreetypeRenderer.h"
 
+#include <iterator>
 #include <ostream>
 #include <algorithm>
 #include <limits>
