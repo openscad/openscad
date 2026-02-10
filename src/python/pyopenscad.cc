@@ -23,6 +23,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <array>
+#include <memory>
+#include <optional>
+#include <string>
 #include <Python.h>
 #include "genlang/genlang.h"
 #include <filesystem>

@@ -1,5 +1,6 @@
 #include "utils/hash.h"
 
+#include <functional>
 #include <cstddef>
 #include <cstdint>
 

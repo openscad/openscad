@@ -1,4 +1,5 @@
 #include <QTest>
+#include <memory>
 #include <QStringList>
 #include "TestModuleCache.h"
 #include "platform/PlatformUtils.h"

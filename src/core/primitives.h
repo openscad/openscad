@@ -31,6 +31,7 @@
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
 
+#include <utility>
 #include <memory>
 #include <cstddef>
 #include <sstream>

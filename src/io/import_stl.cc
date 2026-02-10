@@ -1,5 +1,6 @@
 #include "io/import.h"
 
+#include <filesystem>
 #include <array>
 #include <cstddef>
 #include <cstdint>

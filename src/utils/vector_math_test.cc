@@ -1,5 +1,9 @@
 #include <catch2/catch_all.hpp>
+<<<<<<< HEAD
 #if 0
+=======
+#include <limits>
+>>>>>>> c9d5e5c349b7a415f1a8f121996aaf4ecde042e9
 #include "vector_math.h"
 #include "src/geometry/Grid.h"
 

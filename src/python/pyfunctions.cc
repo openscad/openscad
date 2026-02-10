@@ -29,6 +29,9 @@
 #include "linalg.h"
 #include "export.h"
 #include "GeometryUtils.h"
+#include <memory>
+#include <optional>
+#include <string>
 #include <Python.h>
 #include "pyfunctions.h"
 #include "python/pyopenscad.h"

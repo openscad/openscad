@@ -25,6 +25,7 @@
  */
 #include "io/import.h"
 
+#include <filesystem>
 #include <exception>
 #include <fstream>
 #include <string>

@@ -25,6 +25,7 @@
  */
 
 #include "openscad_gui.h"
+#include <array>
 #include <QtCore/qstringliteral.h>
 #include <memory>
 #include <filesystem>

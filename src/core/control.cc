@@ -24,6 +24,7 @@
  *
  */
 
+#include <string>
 #include <utility>
 #include <memory>
 #include <cstddef>

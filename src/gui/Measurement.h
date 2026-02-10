@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <vector>
 #include <QPoint>
 #include <QString>
 #include "geometry/linalg.h"

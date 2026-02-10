@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <string>
 
 #include "core/CurveDiscretizer.h"
