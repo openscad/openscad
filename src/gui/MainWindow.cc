@@ -3374,7 +3374,7 @@ void MainWindow::setupWindow()
  */
 void MainWindow::setupCoreSubsystems()
 {
-  renderCompleteSoundEffect = new QSoundEffect();
+  renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
   this->cgalworker = new CGALWorker();
