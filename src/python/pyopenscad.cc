@@ -990,47 +990,44 @@ int python__setattro__(PyObject *dict, PyObject *key, PyObject *v)
   return python__setitem__(dict, key, v);
 }
 
-
 // -------
 // ItemRef
 // -------
 
-
 typedef struct {
-    PyObject_HEAD
-    PyOpenSCADObject* parent;
-    size_t index;
+  PyObject_HEAD PyOpenSCADObject *parent;
+  size_t index;
 } PyOpenSCADItemRef;
 
-static void
-PyOpenSCADItemRef_dealloc(PyOpenSCADItemRef* self)
+static void PyOpenSCADItemRef_dealloc(PyOpenSCADItemRef *self)
 {
-    Py_XDECREF(self->parent);
-    Py_TYPE(self)->tp_free((PyObject*)self);
+  Py_XDECREF(self->parent);
+  Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-
-PyObject* PyOpenSCADItemRef_get_value(PyOpenSCADItemRef* self, void* closure)
+PyObject *PyOpenSCADItemRef_get_value(PyOpenSCADItemRef *self, void *closure)
 {
   PyObject *dummydict;
 
-  std::shared_ptr<AbstractNode>  parnode  = PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self->parent), &dummydict); 
+  std::shared_ptr<AbstractNode> parnode =
+    PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self->parent), &dummydict);
   if (self->index < 0 || self->index >= parnode->children.size()) {
     PyErr_SetString(PyExc_IndexError, "child index out of range");
     return NULL;
   }
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,parnode->children[self->index]);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, parnode->children[self->index]);
 }
 
-int PyOpenSCADItemRef_set_value(PyOpenSCADItemRef* self, PyObject* value, void* closure)
+int PyOpenSCADItemRef_set_value(PyOpenSCADItemRef *self, PyObject *value, void *closure)
 {
   PyObject *dummydict;
-  std::shared_ptr<AbstractNode>  parnode  = PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self->parent), &dummydict); 
+  std::shared_ptr<AbstractNode> parnode =
+    PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self->parent), &dummydict);
   if (self->index < 0 || self->index >= parnode->children.size()) {
     PyErr_SetString(PyExc_IndexError, "child index out of range");
     return -1;
   }
-  std::shared_ptr<AbstractNode>  childnode  = PyOpenSCADObjectToNode(value, &dummydict); 
+  std::shared_ptr<AbstractNode> childnode = PyOpenSCADObjectToNode(value, &dummydict);
   if (!childnode) {
     PyErr_SetString(PyExc_TypeError, "invalid OpenSCAD object");
     return -1;
@@ -1039,54 +1036,44 @@ int PyOpenSCADItemRef_set_value(PyOpenSCADItemRef* self, PyObject* value, void* 
   return 0;
 }
 
-static PyObject*
-PyOpenSCADItemRef_getattro(PyObject* self_obj, PyObject* attr_name)
+static PyObject *PyOpenSCADItemRef_getattro(PyObject *self_obj, PyObject *attr_name)
 {
-    PyOpenSCADItemRef* self = (PyOpenSCADItemRef*)self_obj;
+  PyOpenSCADItemRef *self = (PyOpenSCADItemRef *)self_obj;
 
-    // ZUERST: normale Attribute versuchen (z.B. "value")
-    PyObject* result = PyObject_GenericGetAttr(self_obj, attr_name);
-    if (result)
-        return result;
+  // ZUERST: normale Attribute versuchen (z.B. "value")
+  PyObject *result = PyObject_GenericGetAttr(self_obj, attr_name);
+  if (result) return result;
 
-    // Wenn nicht gefunden → Fehler löschen
-    PyErr_Clear();
+  // Wenn nicht gefunden → Fehler löschen
+  PyErr_Clear();
 
-    // Jetzt: echtes Kind holen
-    PyObject* value = PyOpenSCADItemRef_get_value(self, NULL);
-    if (!value)
-        return NULL;
+  // Jetzt: echtes Kind holen
+  PyObject *value = PyOpenSCADItemRef_get_value(self, NULL);
+  if (!value) return NULL;
 
-    // Attribut auf dem echten Objekt suchen
-    PyObject* forwarded = PyObject_GetAttr(value, attr_name);
-    Py_DECREF(value);
-    return forwarded;
+  // Attribut auf dem echten Objekt suchen
+  PyObject *forwarded = PyObject_GetAttr(value, attr_name);
+  Py_DECREF(value);
+  return forwarded;
 }
 
 static PyGetSetDef PyOpenSCADItemRef_getset[] = {
-    {"value",
-     (getter)PyOpenSCADItemRef_get_value,
-     (setter)PyOpenSCADItemRef_set_value,
-     "child object",
-     NULL},
-    {NULL}
-};
+  {"value", (getter)PyOpenSCADItemRef_get_value, (setter)PyOpenSCADItemRef_set_value, "child object",
+   NULL},
+  {NULL}};
 
 static PyTypeObject PyOpenSCADItemRefType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "pyopenscad.ChildRef",
-    .tp_basicsize = sizeof(PyOpenSCADItemRef),
-    .tp_dealloc = (destructor)PyOpenSCADItemRef_dealloc,
-    .tp_getattro = PyOpenSCADItemRef_getattro,
-    .tp_flags =  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_getset = PyOpenSCADItemRef_getset,
-    .tp_new = PyType_GenericNew
-};
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pyopenscad.ChildRef",
+  .tp_basicsize = sizeof(PyOpenSCADItemRef),
+  .tp_dealloc = (destructor)PyOpenSCADItemRef_dealloc,
+  .tp_getattro = PyOpenSCADItemRef_getattro,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+  .tp_getset = PyOpenSCADItemRef_getset,
+  .tp_new = PyType_GenericNew};
 
 // ---------------------
 // PyOpenSCADObjectIter
 // ---------------------
-
 
 typedef struct {
   PyObject_HEAD PyObject *container;  // Referenz auf das Original-Objekt
@@ -1125,11 +1112,11 @@ PyObject *PyOpenSCADType_iternext(PyObject *self)
 
   // Nächstes Element holen
 
-  PyOpenSCADItemRef* ref = PyObject_New(PyOpenSCADItemRef, &PyOpenSCADItemRefType);
+  PyOpenSCADItemRef *ref = PyObject_New(PyOpenSCADItemRef, &PyOpenSCADItemRefType);
   ref->parent = container;
   Py_INCREF(container);
   ref->index = iter->index++;
-  return (PyObject*)ref;
+  return (PyObject *)ref;
 }
 
 // Iterator dealloc
@@ -1154,29 +1141,31 @@ PyTypeObject PyOpenSCADObjectIterType = {
 // PythonSCAD Sequence methods
 // ---------------------------
 
-PyObject* PyOpenSCAD_sq_item(PyOpenSCADObject* self, Py_ssize_t i)
+PyObject *PyOpenSCAD_sq_item(PyOpenSCADObject *self, Py_ssize_t i)
 {
   PyObject *dummydict;
-  std::shared_ptr<AbstractNode>  node  = PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self), &dummydict); 
+  std::shared_ptr<AbstractNode> node =
+    PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self), &dummydict);
   if (i < 0 || i >= node->children.size()) {
     PyErr_SetString(PyExc_IndexError, "index out of range");
     return nullptr;
   }
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node->children[i]);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node->children[i]);
 }
 
-Py_ssize_t PyOpenSCAD_sq_length(PyOpenSCADObject* self)
+Py_ssize_t PyOpenSCAD_sq_length(PyOpenSCADObject *self)
 {
   PyObject *dummydict;
-  std::shared_ptr<AbstractNode>  node  = PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self), &dummydict); 
+  std::shared_ptr<AbstractNode> node =
+    PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self), &dummydict);
   return node->children.size();
 }
 
 static PySequenceMethods PyOpenSCAD_sequence_methods = {
-    (lenfunc)PyOpenSCAD_sq_length,
-    0,
-    0,
-    (ssizeargfunc)PyOpenSCAD_sq_item,
+  (lenfunc)PyOpenSCAD_sq_length,
+  0,
+  0,
+  (ssizeargfunc)PyOpenSCAD_sq_item,
 };
 
 PyTypeObject PyOpenSCADType = {
@@ -1231,15 +1220,37 @@ static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
 
 extern "C" PyObject *PyInit_openscad(void)
 {
-  return PyModule_Create(&OpenSCADModule);
+  PyObject *m = PyModule_Create(&OpenSCADModule);
+  if (m == nullptr) return nullptr;
+
+  // When loaded as a pip module the full runtime (initPython) is never
+  // called, so the globals it normally sets up are still null.  Initialise
+  // them here so that show(), export(), etc. work from a plain
+  // "from openscad import *" session.
+  if (!pythonMainModule) {
+    pythonMainModule.reset(PyImport_AddModule("__main__"));
+    pythonMainModuleInitialized = pythonMainModule != nullptr;
+    if (pythonMainModule) {
+      pythonInitDict.reset(PyModule_GetDict(pythonMainModule.get()));
+      pythonRuntimeInitialized = pythonInitDict != nullptr;
+    }
+    // Placeholder nodes used as sentinels (void / full space)
+    if (!void_node) {
+      DECLARE_INSTANCE();
+      void_node = std::make_shared<CubeNode>(instance);
+      full_node = std::make_shared<CubeNode>(instance);
+    }
+  }
+
+  return m;
 }
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {
   PyObject *m;
 
-  if (PyType_Ready(&PyOpenSCADType)          < 0) return nullptr;
-  if (PyType_Ready(&PyOpenSCADItemRefType)   < 0) return nullptr;
+  if (PyType_Ready(&PyOpenSCADType) < 0) return nullptr;
+  if (PyType_Ready(&PyOpenSCADItemRefType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADObjectIterType) < 0) return nullptr;
 
   m = PyInit_openscad();
@@ -1253,7 +1264,6 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 
   Py_INCREF(&PyOpenSCADObjectIterType);
   PyModule_AddObject(m, "ChildIterator", reinterpret_cast<PyObject *>(&PyOpenSCADObjectIterType));
-
 
   return m;
 }

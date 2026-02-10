@@ -51,6 +51,7 @@ def main():
     python =[
               "src/genlang/genlang.cc",
               "src/python/pyfunctions.cc",
+              "src/python/pyconversion.cc",
               "src/python/pydata.cc",
               "src/python/pyopenscad.cc",
               "src/python/pymod.cc",
@@ -59,6 +60,8 @@ def main():
     geometry = [
               "src/geometry/GeometryEvaluator.cc",
               "src/geometry/rotate_extrude.cc",
+              "src/geometry/roof_ss.cc",
+              "src/geometry/roof_vd.cc",
               "src/geometry/skin.cc",
               "src/geometry/linear_extrude.cc",
               "src/geometry/cgal/CGALCache.cc",
@@ -296,7 +299,6 @@ def main():
                   "/usr/lib/x86_64-linux-gnu/glib-2.0/include"
                 ],libraries=[
                   "freetype",
-                  "jpeg",
                   "xml2",
                   "fontconfig",
                   "double-conversion",

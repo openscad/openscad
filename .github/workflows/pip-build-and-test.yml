@@ -1,0 +1,46 @@
+# Validates that the application can be built as a pip-installable module.
+# Fails when there is an issue with building the application as a pip module (e.g. setup.py or
+# Python extension sources). Uses a simple smoke test instead of ctest (ctest is covered by
+# other Linux workflows).
+name: Pip build and test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pip-build-and-test:
+    runs-on: ubuntu-24.04
+    name: pip install -e . and smoke test
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+
+    - name: Fetch tags for version detection
+      run: |
+        git fetch --unshallow --tags || git fetch --tags
+        git describe --tags --always --dirty
+
+    - name: Install dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
+      run: |
+        which sudo || ( apt update && apt install -y sudo )
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
+
+    - name: Create venv and build with pip
+      run: |
+        python3 -m venv .venv
+        . .venv/bin/activate
+        pip install -e .
+
+    - name: Smoke test
+      run: |
+        . .venv/bin/activate
+        python scripts/smoke-test-pip.py
