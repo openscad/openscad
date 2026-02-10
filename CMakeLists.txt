@@ -1070,12 +1070,6 @@ message(STATUS "curl: found in ${CURL_INCLUDE_DIRS}")
 
 find_package(BISON REQUIRED)
 message(STATUS "Bison: ${BISON_VERSION}")
-if(APPLE)
-	target_include_directories(OpenSCADLibInternal PRIVATE "/usr/local/include")
-	target_link_directories(OpenSCADLibInternal PRIVATE "/usr/local/lib")
-	target_link_libraries(OpenSCADLibInternal PRIVATE "libjpeg.a")
-endif()
-
 find_package(Lib3MF)
 if (Lib3MF_FOUND)
   message(STATUS "lib3mf: ${Lib3MF_VERSION}")

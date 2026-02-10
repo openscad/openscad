@@ -625,6 +625,8 @@ public:
   static SettingsEntryDouble exportGcodeFeedRate;
   static SettingsEntryDouble exportGcodeLaserPower;
   static SettingsEntryInt exportGcodeLaserMode;
+  static SettingsEntryString exportGcodeInitCode;
+  static SettingsEntryString exportGcodeExitCode;
 
   static constexpr std::array<const SettingsEntryBase *, 3> cmdline{
     &exportGcodeFeedRate, &exportGcodeLaserPower, &exportGcodeLaserMode,

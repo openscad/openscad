@@ -498,6 +498,8 @@ SettingsEntryDouble SettingsExportGcode::exportGcodeFeedRate(SECTION_EXPORT_GCOD
 SettingsEntryDouble SettingsExportGcode::exportGcodeLaserPower(SECTION_EXPORT_GCODE, "laser power", 0, 0.01, 2000, 1000);
 SettingsEntryInt SettingsExportGcode::exportGcodeLaserMode(SECTION_EXPORT_GCODE, "laser mode", 0,1,0);
 SettingsEntryBool SettingsExportGcode::exportGcodeAlwaysShowDialog(SECTION_EXPORT_GCODE, "always-show-dialog", true);
+SettingsEntryString SettingsExportGcode::exportGcodeInitCode("gcode", "initCode", "G90");
+SettingsEntryString SettingsExportGcode::exportGcodeExitCode("gcode", "exitCode", "");
 
 SettingsEntryEnum<ColorListFilterType> SettingsColorList::colorListFilterType(
   SECTION_COLOR_LIST, "filter-type",
