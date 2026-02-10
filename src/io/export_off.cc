@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "utils/printutils.h"
 #include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"

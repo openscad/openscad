@@ -28,6 +28,7 @@
 #include "version.h"
 
 #ifdef _WIN32
+#include <cassert>
 #include <io.h>
 #include <fcntl.h>
 #endif

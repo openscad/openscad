@@ -26,6 +26,7 @@
 
 #include "gui/PrintInitDialog.h"
 
+#include <QApplication>
 #include <vector>
 #include <string>
 
@@ -33,6 +34,7 @@
 #include <QString>
 #include <QPushButton>
 
+#include "utils/printutils.h"
 #include "io/export.h"
 #include "core/Settings.h"
 #include "gui/PrintService.h"

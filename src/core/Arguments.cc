@@ -28,6 +28,7 @@
 
 #include <ostream>
 #include <memory>
+#include "core/Assignment.h"
 #include "core/Context.h"
 #include "core/Expression.h"
 #include "core/EvaluationSession.h"

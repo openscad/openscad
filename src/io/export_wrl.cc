@@ -29,6 +29,7 @@
 #include <memory>
 #include <cstddef>
 
+#include "utils/printutils.h"
 #include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"

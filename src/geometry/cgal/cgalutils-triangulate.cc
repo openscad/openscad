@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/cgal/cgalutils.h"
 
+#include <cstddef>
 #include <cassert>
 #include <list>
 #include <memory>
@@ -13,6 +14,7 @@
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/exceptions.h>
 
+#include "utils/printutils.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"
 #include "src/core/ColorUtil.h"

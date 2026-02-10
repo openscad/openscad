@@ -2,6 +2,7 @@
 #include "utils/vector_math.h"
 #include "geometry/Grid.h"
 
+#include <cmath>
 #include <limits>
 #include <algorithm>
 

@@ -1,8 +1,11 @@
 #include "gui/MouseSelector.h"
 
 #include "glview/system-gl.h"
+#include "glview/ShaderUtils.h"
+#include "utils/printutils.h"
 #include "glview/fbo.h"
 
+#include <cstdio>
 #include <cstdint>
 #include <string>
 #include <memory>

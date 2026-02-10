@@ -1,4 +1,5 @@
 #include "gui/ViewportControl.h"
+
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QLayoutItem>

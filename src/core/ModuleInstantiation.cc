@@ -6,6 +6,7 @@
 #include <string>
 
 #include "utils/compiler_specific.h"
+#include "core/callables.h"
 #include "core/Context.h"
 #include "core/Expression.h"
 #include "core/module.h"

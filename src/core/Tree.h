@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/node.h"
 #include "core/NodeCache.h"
 #include <tuple>
 #include <memory>

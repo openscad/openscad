@@ -28,6 +28,7 @@
 #include <memory>
 #include <vector>
 #include "geometry/linalg.h"
+#include "core/node.h"
 #include "geometry/GeometryUtils.h"
 #include "core/primitives.h"
 #include "core/TransformNode.h"

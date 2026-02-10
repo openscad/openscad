@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QColor>
+#include <QString>
 #include <QAction>
 #include <QList>
 #include <QPushButton>

@@ -33,6 +33,8 @@
 
 #include "pyopenscad.h"
 #include "pydata.h"
+#include "core/node.h"
+#include "utils/printutils.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
 #ifndef PYTHON_EXECUTABLE_NAME

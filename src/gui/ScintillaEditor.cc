@@ -30,6 +30,7 @@
 #include <genlang/genlang.h>
 
 #include "gui/Preferences.h"
+#include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 #include "core/Settings.h"
 #include "gui/ScadLexer.h"

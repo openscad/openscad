@@ -26,6 +26,7 @@
 
 #include "io/export.h"
 
+#include "utils/printutils.h"
 #include "geometry/Geometry.h"
 #include "version.h"
 

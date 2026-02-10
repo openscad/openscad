@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/AST.h"
+#include "core/Assignment.h"
 #include "core/LocalScope.h"
 #include <ostream>
 #include <memory>

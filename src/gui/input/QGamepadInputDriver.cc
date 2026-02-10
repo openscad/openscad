@@ -26,6 +26,7 @@
 
 #include "gui/input/QGamepadInputDriver.h"
 
+#include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 
 #include <string>

@@ -30,6 +30,8 @@
 #include <memory>
 #include <vector>
 
+#include "core/Context.h"
+#include "core/Assignment.h"
 #include "core/AST.h"
 #include "core/Arguments.h"
 #include "core/Expression.h"

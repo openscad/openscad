@@ -26,6 +26,7 @@
 
 #include "gui/UIUtils.h"
 
+#include <QColor>
 #include <algorithm>
 #include <utility>
 #include <filesystem>

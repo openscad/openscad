@@ -12,6 +12,7 @@
 #include <map>
 #include <boost/polygon/voronoi.hpp>
 #include <vector>
+#include "core/CurveDiscretizer.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/PolySetBuilder.h"

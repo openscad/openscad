@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <utility>
 #include "core/NodeVisitor.h"
+#include "core/BaseVisitable.h"
 #include "core/node.h"
 #include "core/NodeCache.h"
 

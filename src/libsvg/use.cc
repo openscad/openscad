@@ -24,6 +24,7 @@
  */
 #include "libsvg/use.h"
 
+#include <cstdio>
 #include <sstream>
 #include <memory>
 #include <cstdlib>
@@ -31,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "libsvg/shape.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

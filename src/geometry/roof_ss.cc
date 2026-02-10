@@ -3,6 +3,7 @@
 
 #include "geometry/roof_ss.h"
 
+#include <cmath>
 #include <vector>
 #include <clipper2/clipper.engine.h>
 #include <iterator>

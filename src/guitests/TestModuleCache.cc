@@ -1,7 +1,9 @@
 #include <QTest>
+#include <QString>
 #include <memory>
 #include <QStringList>
 #include "TestModuleCache.h"
+#include "core/node.h"
 #include "platform/PlatformUtils.h"
 
 void touchFile(const QString& filename)

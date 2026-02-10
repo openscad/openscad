@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/Assignment.h"
 #include "core/AST.h"
 #include "core/Context.h"
 #include "core/EvaluationSession.h"

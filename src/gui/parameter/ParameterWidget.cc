@@ -38,6 +38,8 @@
 #include <QAction>
 #include <QToolButton>
 
+#include "core/customizer/ParameterObject.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 #include "gui/parameter/GroupWidget.h"
 #include "gui/parameter/ParameterSpinBox.h"
 #include "gui/parameter/ParameterComboBox.h"

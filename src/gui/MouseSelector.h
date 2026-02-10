@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glview/GLView.h"
+#include "glview/ShaderUtils.h"
 #include "glview/Renderer.h"
 #include "glview/fbo.h"
 

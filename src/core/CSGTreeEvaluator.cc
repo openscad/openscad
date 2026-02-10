@@ -1,5 +1,7 @@
 #include "core/CSGTreeEvaluator.h"
 #include "geometry/Geometry.h"
+#include "core/node.h"
+#include "core/BaseVisitable.h"
 #include "geometry/linalg.h"
 #include "core/State.h"
 #include "core/CsgOpNode.h"

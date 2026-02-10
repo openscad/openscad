@@ -35,6 +35,7 @@
 #include <Eigen/Geometry>
 #include <clipper2/clipper.h>
 
+#include "core/CurveDiscretizer.h"
 #include "core/AST.h"
 #include "geometry/ClipperUtils.h"
 #include "geometry/Polygon2d.h"

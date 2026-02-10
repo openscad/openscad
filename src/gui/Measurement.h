@@ -5,6 +5,7 @@
 #include <QPoint>
 #include <QString>
 #include "geometry/linalg.h"
+#include "core/Selection.h"
 #include "gui/QGLView.h"
 
 namespace Measurement {

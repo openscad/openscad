@@ -2,6 +2,7 @@
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
+#include <QStringList>
 #include <filesystem>
 #include <memory>
 #include <utility>

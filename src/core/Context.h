@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "core/callables.h"
+#include "core/AST.h"
 #include "core/ContextFrame.h"
 #include "core/EvaluationSession.h"
 
