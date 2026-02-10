@@ -29,6 +29,7 @@
 #include "linalg.h"
 #include "export.h"
 #include "GeometryUtils.h"
+#include <sstream>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -37,6 +38,7 @@
 #include "pyfunctions.h"
 #include "python/pyopenscad.h"
 #include "python/pyconversion.h"
+#include "core/enums.h"
 #include "core/node.h"
 #include "core/primitives.h"
 #include "core/CsgOpNode.h"

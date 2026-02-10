@@ -25,6 +25,8 @@
  */
 #include "io/import.h"
 
+#include <iomanip>
+#include <list>
 #include <algorithm>
 #include <cstdint>
 #include <memory>
@@ -35,6 +37,7 @@
 
 #include <lib3mf_implicit.hpp>
 
+#include "core/enums.h"
 #include "core/AST.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"

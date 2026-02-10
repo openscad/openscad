@@ -23,6 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <sstream>
 #include <array>
 #include <memory>
 #include <optional>
@@ -33,6 +34,7 @@
 
 #include "pyopenscad.h"
 #include "pydata.h"
+#include "core/enums.h"
 #include "core/node.h"
 #include "utils/printutils.h"
 #include "core/CsgOpNode.h"

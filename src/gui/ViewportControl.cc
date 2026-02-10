@@ -1,5 +1,6 @@
 #include "gui/ViewportControl.h"
 
+#include <QPalette>
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QLayoutItem>

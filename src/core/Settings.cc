@@ -2,6 +2,7 @@
 
 #include "core/MouseConfig.h"
 
+#include <algorithm>
 #include <ostream>
 #include <cassert>
 #include <cstddef>

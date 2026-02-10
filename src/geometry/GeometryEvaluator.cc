@@ -1,6 +1,7 @@
 #include "geometry/GeometryEvaluator.h"
 
 #include "Feature.h"
+#include "core/enums.h"
 #include "core/node.h"
 #include "core/BaseVisitable.h"
 #include "geometry/boolean_utils.h"
