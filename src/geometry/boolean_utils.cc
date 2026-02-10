@@ -93,7 +93,11 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
 #if ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+#if defined(USE_MANIFOLD_MINKOWSKI)
+    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
+#else
     return ManifoldUtils::applyMinkowski(children);
+#endif
   }
 #endif  // ENABLE_MANIFOLD
   return CGALUtils::applyMinkowski3D(children);
