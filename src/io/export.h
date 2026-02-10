@@ -293,6 +293,8 @@ struct ExportGcodeOptions {
   double feedrate;
   double laserpower;  
   int lasermode;
+  std::string initCode;
+  std::string exitCode;
 };
 
 struct ExportInfo {
