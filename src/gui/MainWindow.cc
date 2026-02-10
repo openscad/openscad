@@ -1499,6 +1499,7 @@ void MainWindow::show_examples()
 
 void MainWindow::actionOpenExample()
 {
+  auto guard = scopedSetCurrentOutput();
   const auto action = qobject_cast<QAction *>(sender());
   if (action) {
     const auto& path = action->data().toString();
@@ -1668,6 +1669,7 @@ void MainWindow::on_fileShowBackupFiles_triggered()
 
 void MainWindow::on_fileActionReload_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   if (checkEditorModified()) {
     fileChangedOnDisk();                  // force cached autoReloadId to update
     (void)tabManager->refreshDocument();  // ignore errors opening the file
