@@ -103,11 +103,17 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   QStringList renderColorSchemes;
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
-  syntaxHighlight->clear();
-  syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+  {
+    const BlockSignals<QComboBox *> blocker(syntaxHighlight);
+    syntaxHighlight->clear();
+    syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+  }
 
-  colorSchemeChooser->clear();
-  colorSchemeChooser->addItems(renderColorSchemes);
+  {
+    const BlockSignals<QListWidget *> blocker(colorSchemeChooser);
+    colorSchemeChooser->clear();
+    colorSchemeChooser->addItems(renderColorSchemes);
+  }
   init();
   AxisConfig->init();
   setupFeaturesPage();
