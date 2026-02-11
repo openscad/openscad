@@ -25,26 +25,53 @@
  */
 
 #include <Python.h>
-
+#include "linalg.h"
+#include "export.h"
+#include "pyfunctions.h"
+#include "GeometryUtils.h"
 #include <cstddef>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
+#include "python/pyconversion.h"
 
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
+#include "BuiltinContext.h"
+#include <PolySetBuilder.h>
+#include "genlang/genlang.h"
+extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename,
+                  const std::string& mainFile, int debug);
+
+#include <python/pydata.h>
+#ifdef ENABLE_LIBFIVE
+#include "python/FrepNode.h"
+#endif
+
 #include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
 #include "core/FreetypeRenderer.h"
 #include "core/LinearExtrudeNode.h"
+#include "core/PathExtrudeNode.h"
+#include "core/ImportNode.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
+#include "core/PullNode.h"
+#include "core/WrapNode.h"
+#include "core/OversampleNode.h"
+#include "core/DebugNode.h"
+#include "core/RepairNode.h"
+#include "core/FilletNode.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
+#include "Expression.h"
 #include "core/RenderNode.h"
 #include "core/RoofNode.h"
 #include "core/RotateExtrudeNode.h"
 #include "core/SurfaceNode.h"
+#include "core/SheetNode.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
 #include "core/Tree.h"
@@ -55,7 +82,10 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "handle_dep.h"
+#include <fstream>
+#include <ostream>
 #include "io/fileutils.h"
+#include "PlatformUtils.h"
 #include "python/pyopenscad.h"
 #include "utils/degree_trig.h"
 

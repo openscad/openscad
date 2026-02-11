@@ -62,11 +62,13 @@
 #ifdef ENABLE_PYTHON
 #include <python_public.h>
 #endif
+#include <math.h>
 
 #include <cstdio>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "utils/vector_math.h"
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>

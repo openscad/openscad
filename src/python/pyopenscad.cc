@@ -43,6 +43,11 @@
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
+#include "primitives.h"
+#ifndef PYTHON_EXECUTABLE_NAME
+#include "executable.h"
+#endif
+
 namespace fs = std::filesystem;
 
 // #define HAVE_PYTHON_YIELD

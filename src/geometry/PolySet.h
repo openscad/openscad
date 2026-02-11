@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include "geometry/Curve.h"
+#include "geometry/Surface.h"
 #include <cstdint>
 #include <memory>
 #include <string>

@@ -1,6 +1,7 @@
 #include "gui/OpenSCADApp.h"
 
 #include "gui/MainWindow.h"
+#include "gui/Preferences.h"
 #ifdef Q_OS_MACOS
 #include "gui/EventFilter.h"
 #endif
@@ -15,6 +16,7 @@
 #include <QProgressDialog>
 #include <QString>
 #include <QStringList>
+#include <QStyleFactory>
 #include <boost/foreach.hpp>
 #include <cassert>
 #include <exception>

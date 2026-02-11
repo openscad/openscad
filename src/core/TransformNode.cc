@@ -26,6 +26,7 @@
 
 #include "core/TransformNode.h"
 
+#include "geometry/PolySet.h"
 #include <algorithm>
 #include <boost/assign/std/vector.hpp>
 #include <cassert>

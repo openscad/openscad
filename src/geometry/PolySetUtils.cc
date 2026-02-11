@@ -22,6 +22,7 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
+#include "src/core/ColorUtil.h"
 
 namespace PolySetUtils {
 

@@ -20,6 +20,7 @@
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
 #include "utils/svg.h"
+#include "src/core/ColorUtil.h"
 
 static void add_outline_to_poly(
   CGAL_Nef_polyhedron2::Explorer& explorer,

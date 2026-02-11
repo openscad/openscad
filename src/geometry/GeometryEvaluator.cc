@@ -10,6 +10,14 @@
 
 #include "Feature.h"
 #include "core/BaseVisitable.h"
+#include "geometry/Barcode1d.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
+#include "core/PathExtrudeNode.h"
+#include "core/PullNode.h"
+#include "core/DebugNode.h"
+#include "core/RepairNode.h"
+#include "core/WrapNode.h"
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
@@ -25,6 +33,7 @@
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
 #include "core/Tree.h"
+#include "glview/ColorMap.h"
 #include "core/enums.h"
 #include "core/node.h"
 #include "geometry/ClipperUtils.h"
@@ -55,6 +64,7 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
+#include "geometry/skin.h"
 
 #ifdef ENABLE_PYTHON
 #include <src/python/python_public.h>

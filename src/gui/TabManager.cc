@@ -33,6 +33,7 @@
 #include "gui/Editor.h"
 #include "gui/ImportUtils.h"
 #include "gui/MainWindow.h"
+#include <genlang/genlang.h>
 #include "gui/Preferences.h"
 #include "gui/ScintillaEditor.h"
 #include "utils/printutils.h"

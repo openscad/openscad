@@ -24,8 +24,10 @@
  *
  */
 
+#include "io/export.h"
 #include <Common/Platform/NMR_WinTypes.h>
 #include <Model/COM/NMR_DLLInterfaces.h>
+
 
 #include <algorithm>
 #include <cassert>

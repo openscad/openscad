@@ -1,4 +1,6 @@
+#include "core/Selection.h"
 #include "utils/vector_math.h"
+#include "geometry/Grid.h"
 
 #include <algorithm>
 #include <cmath>

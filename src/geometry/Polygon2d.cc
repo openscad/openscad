@@ -16,6 +16,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/cgal/cgalutils.h"
 #include "glview/RenderSettings.h"
+#include "clipper2/clipper.h"
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true)
 {

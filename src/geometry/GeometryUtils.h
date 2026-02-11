@@ -12,7 +12,12 @@ using Polygons = std::vector<Polygon>;
 
 // faces are usually triangles or quads
 using IndexedFace = boost::container::small_vector<int, 4>;
+struct IndexedColorFace {
+  IndexedFace face;
+  int color;
+};
 using IndexedTriangle = Vector3i;
+using IndexedColorTriangle = Vector4i;
 using PolygonIndices = std::vector<IndexedFace>;
 
 struct IndexedPolygons {
