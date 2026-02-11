@@ -8,23 +8,23 @@
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
 #
-"""Install build dependencies across supported Unix flavors.
+"""Install build dependencies across supported platforms.
 
 Features:
  - Detect distro & version (Debian, Ubuntu, Arch, Gentoo, Fedora, NetBSD, FreeBSD, macOS,
-    openSUSE, Mageia, Solus, ALT Linux, Qomo, NixOS)
+    openSUSE, Mageia, Solus, ALT Linux, Qomo, MSYS2)
  - Configurable package lists via JSON with inheritance & version overrides
  - Dry-run & confirmation support
  - Minimal duplication ("extends" + per-version add/remove)
  - Support for pre_commands and post_commands in the config for additional setup or cleanup
 
 Usage examples:
-  scripts/uni-get-dependencies.py                                     # auto-detect and show plan (base profile)
-  scripts/uni-get-dependencies.py --profile openscad-qt5              # single profile
-  scripts/uni-get-dependencies.py --profile base --profile qt5        # multiple profiles combined in order
-  scripts/uni-get-dependencies.py --yes                               # auto-install without prompt
-  scripts/uni-get-dependencies.py --dry-run                           # show commands only
-  scripts/uni-get-dependencies.py --distro fedora --version 42 --yes
+  scripts/get-dependencies.py                                     # auto-detect and show plan (base profile)
+  scripts/get-dependencies.py --profile openscad-qt5              # single profile
+  scripts/get-dependencies.py --profile base --profile qt5        # multiple profiles combined in order
+  scripts/get-dependencies.py --yes                               # auto-install without prompt
+  scripts/get-dependencies.py --dry-run                           # show commands only
+  scripts/get-dependencies.py --distro fedora --version 42 --yes
 
 Config schema (profiles/*.json):
   distros: {
@@ -62,7 +62,7 @@ class DistroInfo:
 
 
 SUPPORTED = {"debian", "ubuntu", "arch", "gentoo", "fedora", "netbsd", "freebsd", "macos",
-             "opensuse", "mageia", "solus", "altlinux", "qomo"}
+             "opensuse", "mageia", "solus", "altlinux", "qomo", "msys2"}
 
 
 def detect_distro() -> DistroInfo:
@@ -70,6 +70,11 @@ def detect_distro() -> DistroInfo:
     if sys.platform == "darwin":
         ver = platform.mac_ver()[0]
         return DistroInfo("macos", ver or "")
+
+    # MSYS2 on Windows (check MSYSTEM env var set by MSYS2 shells)
+    msystem = os.environ.get("MSYSTEM", "")
+    if msystem or (sys.platform == "win32" and shutil.which("pacman")):
+        return DistroInfo("msys2", msystem or "UCRT64")
 
     uname_s = platform.system().lower()
     if "freebsd" in uname_s:
@@ -258,6 +263,12 @@ def build_commands(cfg: dict, distro: DistroInfo, packages: List[str], assume_ye
     elif mgr == "urpmi":
         # Mageia
         cmds.append(["urpmi", "--auto", *packages])
+    elif mgr == "pacboy":
+        # MSYS2 - pacboy is a pacman wrapper that handles MINGW_PACKAGE_PREFIX
+        # Package suffixes: :p = MINGW_PACKAGE_PREFIX-only, : = no prefix translation
+        confirm = "--noconfirm" if assume_yes else "--needed"
+        cmds.append(["pacman", "--sync", "--needed", confirm, "pactoys", "libxml2"])
+        cmds.append(["pacboy", "--sync", "--needed", confirm, *packages])
     elif mgr == "eopkg":
         # Solus
         cmds.append(["eopkg", "-y", "install", *packages])
@@ -273,11 +284,27 @@ def run_commands(cmds: List[List[str]], dry_run: bool):
         print("$", " ".join(cmd))
         if dry_run:
             continue
-        try:
-            subprocess.check_call(cmd)
-        except subprocess.CalledProcessError as e:
-            print(f"Command failed ({e.returncode}): {' '.join(cmd)}", file=sys.stderr)
-            raise
+        # Use subprocess.run to get better error information
+        result = subprocess.run(cmd, capture_output=False, text=True)
+        if result.returncode != 0:
+            print(f"\nCommand failed with exit code {result.returncode}: {' '.join(cmd)}", file=sys.stderr)
+            print(f"Attempting to re-run command with captured output for debugging...", file=sys.stderr)
+            # Re-run with captured output to show any stderr that might have been missed
+            debug_result = subprocess.run(cmd, capture_output=True, text=True)
+            if debug_result.stdout:
+                print(f"STDOUT:\n{debug_result.stdout}", file=sys.stderr)
+            if debug_result.stderr:
+                print(f"STDERR:\n{debug_result.stderr}", file=sys.stderr)
+
+            # Check if this is a brew command where all packages are already installed
+            # Brew returns exit code 1 when packages are already installed, which is not a real error
+            if cmd[0] == 'brew' and 'install' in cmd:
+                stderr_lower = debug_result.stderr.lower()
+                if 'already installed' in stderr_lower or 'up-to-date' in stderr_lower:
+                    print(f"Note: Packages are already installed, treating as success", file=sys.stderr)
+                    continue
+
+            raise subprocess.CalledProcessError(result.returncode, cmd)
 
 
 def load_profile_with_inheritance(profile_name: str, loaded_profiles: set = None) -> dict:
@@ -400,6 +427,16 @@ def main():
     parser.add_argument("--yes", action="store_true", help="Assume yes / non-interactive")
     parser.add_argument("--dry-run", action="store_true", help="Show commands without executing")
     parser.add_argument("--list", action="store_true", help="Only list resolved packages")
+    parser.add_argument(
+        "--output-env",
+        metavar="FILE",
+        help="Append PACKAGES=<space-separated list> to FILE (for CI integration, e.g. $GITHUB_ENV)",
+    )
+    parser.add_argument(
+        "--env-var",
+        default="PACKAGES",
+        help="Variable name to use with --output-env (default: PACKAGES)",
+    )
     args = parser.parse_args()
 
     # Default to base profile if no profiles specified
@@ -427,6 +464,14 @@ def main():
     print(f"Detected distro: {distro.id} version: {distro.version}")
     print(f"Active profiles: {', '.join(cfg.get('active_profiles', []))}")
     print(f"Package count: {len(packages)}")
+    # --output-env: write package list to a file (e.g. $GITHUB_ENV) and exit
+    if args.output_env:
+        pkg_str = " ".join(packages)
+        with open(args.output_env, "a") as fh:
+            fh.write(f"{args.env_var}={pkg_str}\n")
+        print(f"Wrote {args.env_var}={pkg_str} to {args.output_env}")
+        return 0
+
     # Always show package list for transparency; --list prints raw for scripting
     if args.list:
         for p in packages:

@@ -46,20 +46,11 @@ jobs:
           brew unlink python3
           brew link --overwrite python3
 
-      - name: Install Homebrew prerequisites
+      - name: Install dependencies
         env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
-          brew install automake libtool cmake pkg-config wget meson python-packaging
-
-      - name: Install Homebrew dependencies
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-        run: |
-          ./scripts/macosx-build-homebrew.sh qt6
-          brew install clipper2
+          ./scripts/get-dependencies.py --yes --profile pythonscad-qt6
 
       - name: Build x86_64 Application
         env:
@@ -160,7 +151,7 @@ jobs:
           retention-days: 1
 
   build-arm64:
-    runs-on: macos-latest
+    runs-on: macos-14
     name: macOS arm64 Build
     timeout-minutes: 90
     steps:
@@ -187,20 +178,11 @@ jobs:
           brew unlink python3
           brew link --overwrite python3
 
-      - name: Install Homebrew prerequisites
+      - name: Install dependencies
         env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
-          brew install automake libtool cmake pkg-config wget meson python-packaging
-
-      - name: Install Homebrew dependencies
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-        run: |
-          ./scripts/macosx-build-homebrew.sh qt6
-          brew install clipper2
+          ./scripts/get-dependencies.py --yes --profile pythonscad-qt6
 
       - name: Build arm64 Application
         env:

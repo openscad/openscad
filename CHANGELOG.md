@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.13.0](https://github.com/pythonscad/pythonscad/compare/v0.12.3...v0.13.0) (2026-02-10)
+
+
+### Features
+
+* add hasattr, getattr, setattr ([1bf0ddf](https://github.com/pythonscad/pythonscad/commit/1bf0ddfbc0a7928118cd49b072936bb128929341))
+* add hasattr, getattr, setattr ([b70016c](https://github.com/pythonscad/pythonscad/commit/b70016ca788e24fe2972a7f03cb59aedd76f5ea7))
+* added gcode init and exit code ([da7013a](https://github.com/pythonscad/pythonscad/commit/da7013a7aa4d1d669acc89f73fe336daaea36551))
+* added gcode init and exit code ([e52d766](https://github.com/pythonscad/pythonscad/commit/e52d766af6eec5ed50e3c32829ad299600af2690))
+* enable libfive across all platforms and fix Python module path ([#427](https://github.com/pythonscad/pythonscad/issues/427)) ([c15e8aa](https://github.com/pythonscad/pythonscad/commit/c15e8aae30be34bd4ee39b0be958b6ef96f1e0a2))
+* solids are iteratble ([765a289](https://github.com/pythonscad/pythonscad/commit/765a2897095ce4711e6384d88ad3547c3079be1e))
+
+
+### Bug Fixes
+
+* cleaned 7 tests ([1bfdb1d](https://github.com/pythonscad/pythonscad/commit/1bfdb1d38f90f1fb00c3c1ad597733759d41fdf2))
+* filter git describe to match only PythonSCAD version tags ([de9223d](https://github.com/pythonscad/pythonscad/commit/de9223d4097f85144749d385301ffd67a2fa92f8))
+* filter git describe to match only PythonSCAD version tags ([a9d5262](https://github.com/pythonscad/pythonscad/commit/a9d526283caf482cc0fe09f8b56fb21bac0092bb))
+* fixed plan script ([3ade205](https://github.com/pythonscad/pythonscad/commit/3ade2059687fa4c7826fbc49e00c7560c56f6b45))
+* Merge commit '030f55de832cd024c64c489a440180d7c3725303' into sync/openscad-2026-02-03 ([fe3d4a2](https://github.com/pythonscad/pythonscad/commit/fe3d4a2f2bf5a45ea14e31d78de2f86bb0395cef))
+* minor sync ([9fa18b6](https://github.com/pythonscad/pythonscad/commit/9fa18b625a0480e69a8143b1ca3e20d041733aa4))
+* switch clang-tidy to install qt6 dependencies as that's the new default ([857c2f2](https://github.com/pythonscad/pythonscad/commit/857c2f290aa5e612a3720341f903f71c11029e16))
+
 ## [0.12.3](https://github.com/pythonscad/pythonscad/compare/v0.12.2...v0.12.3) (2026-02-02)
 
 
