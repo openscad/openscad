@@ -1,10 +1,8 @@
-#include "core/Selection.h"
 #include "utils/vector_math.h"
-#include "geometry/Grid.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
-#include <algorithm>
 
 // this function resolves a 3x3 linear eqauation system
 /*

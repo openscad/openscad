@@ -1,19 +1,17 @@
 #pragma once
 
-#include "core/NodeVisitor.h"
-#include "core/node.h"
-#include "core/BaseVisitable.h"
-#include "geometry/linalg.h"
-#include "core/enums.h"
-#include "geometry/Geometry.h"
-
 #include <cassert>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <map>
-#include "GeometryUtils.h"
-#include <boost/functional/hash.hpp>
+
+#include "core/BaseVisitable.h"
+#include "core/NodeVisitor.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 
 class CGALNefGeometry;
 class Polygon2d;

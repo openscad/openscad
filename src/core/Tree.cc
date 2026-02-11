@@ -1,12 +1,13 @@
 #include "core/Tree.h"
-#include "core/node.h"
-#include "core/NodeCache.h"
-#include "core/NodeDumper.h"
 
-#include <memory>
 #include <cassert>
+#include <memory>
 #include <string>
 #include <tuple>
+
+#include "core/NodeCache.h"
+#include "core/NodeDumper.h"
+#include "core/node.h"
 
 Tree::~Tree()
 {

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "version.h"
-#include <QString>
-#include <string>
 #include <QDialog>
+#include <QString>
 #include <QWidget>
+#include <string>
+
 #include "gui/qtgettext.h"
 #include "ui_AboutDialog.h"
+#include "version.h"
 
 class AboutDialog : public QDialog, public Ui::AboutDialog
 {

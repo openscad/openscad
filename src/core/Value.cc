@@ -26,30 +26,31 @@
 
 #include "core/Value.h"
 
-#include <filesystem>
-#include <cmath>
-#include <variant>
-#include <limits>
-#include <ostream>
-#include <utility>
-#include <cstdint>
+#include <double-conversion/double-conversion.h>
+#include <double-conversion/ieee.h>
+#include <double-conversion/utils.h>
+
+#include <boost/lexical_cast.hpp>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
+#include <filesystem>
+#include <limits>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <variant>
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "core/EvaluationSession.h"
 #include "io/fileutils.h"
-#include "utils/exceptions.h"
-#include "utils/printutils.h"
 #include "utils/StackCheck.h"
 #include "utils/boost-utils.h"
-#include <double-conversion/double-conversion.h>
-#include <double-conversion/utils.h>
-#include <double-conversion/ieee.h>
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 

@@ -2,10 +2,9 @@
 
 #include <string>
 
-#include "core/node.h"
 #include "core/ModuleInstantiation.h"
+#include "core/node.h"
 #include "geometry/linalg.h"
-#include "geometry/PolySet.h"
 
 class TransformNode : public AbstractNode
 {

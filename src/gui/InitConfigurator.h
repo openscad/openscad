@@ -1,12 +1,12 @@
 #pragma once
 
-#include <QSettings>
-#include <QObject>
-#include <QComboBox>
-#include <QSpinBox>
-#include <QCheckBox>
-#include <QListWidget>
 #include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QListWidget>
+#include <QObject>
+#include <QSettings>
+#include <QSpinBox>
 #include <optional>
 #include <string>
 

@@ -24,20 +24,17 @@
  */
 #pragma once
 
-#include <optional>
-#include <map>
-#include <atomic>
-#include <string>
-#include <vector>
-#include <memory>
-#include <functional>
-
-#include <iostream>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-
+#include <atomic>
 #include <boost/optional.hpp>
+#include <functional>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
 
 #include "clipper2/clipper.h"
 

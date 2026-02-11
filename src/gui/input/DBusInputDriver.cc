@@ -24,14 +24,16 @@
  *
  */
 #include "gui/input/DBusInputDriver.h"
+
 #include <QDBusConnection>
 #include <QList>
 #include <QStringList>
+
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
-#include "utils/printutils.h"
 #include "openscad_adaptor.h"
 #include "openscad_interface.h"
+#include "utils/printutils.h"
 
 void DBusInputDriver::run()
 {

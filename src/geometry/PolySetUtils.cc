@@ -1,29 +1,27 @@
 #include "geometry/PolySetUtils.h"
 
-#include <string>
+#include <boost/range/adaptor/reversed.hpp>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <cstddef>
 #include <sstream>
+#include <string>
 #include <vector>
 
-#include <boost/range/adaptor/reversed.hpp>
-
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
-#include "geometry/GeometryUtils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
-#include "src/core/ColorUtil.h"
 
 namespace PolySetUtils {
 

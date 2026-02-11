@@ -1,8 +1,10 @@
-#include <QTest>
-#include <QString>
-#include <memory>
-#include <QStringList>
 #include "TestModuleCache.h"
+
+#include <QString>
+#include <QStringList>
+#include <QTest>
+#include <memory>
+
 #include "core/node.h"
 #include "platform/PlatformUtils.h"
 

@@ -19,16 +19,16 @@
 
 #include "gui/ColorList.h"
 
-#include <QObject>
 #include <QApplication>
-#include <QWidget>
+#include <QClipboard>
 #include <QColor>
+#include <QColorDialog>
+#include <QObject>
+#include <QPalette>
 #include <QString>
+#include <QWidget>
 #include <cmath>
 #include <functional>
-#include <QPalette>
-#include <QColorDialog>
-#include <QClipboard>
 #include <optional>
 
 #include "core/ColorUtil.h"
@@ -36,7 +36,6 @@
 #include "core/SettingsGuiEnums.h"
 #include "gui/ColorLabel.h"
 #include "gui/SettingsWriter.h"
-
 #include "gui/qtgettext.h"
 #include "ui_ColorList.h"
 

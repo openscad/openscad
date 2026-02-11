@@ -27,13 +27,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "geometry/linalg.h"
-#include "core/node.h"
-#include "geometry/GeometryUtils.h"
-#include "core/primitives.h"
-#include "core/TransformNode.h"
-#include "core/RotateExtrudeNode.h"
-#include "core/LinearExtrudeNode.h"
+
 #include "core/PathExtrudeNode.h"
 #include "core/PullNode.h"
 #include "core/DebugNode.h"
@@ -42,18 +36,22 @@
 #include "core/OversampleNode.h"
 #include "core/FilletNode.h"
 #include "core/CgalAdvNode.h"
-#include "core/CsgOpNode.h"
 #include "core/ColorNode.h"
-#include "core/RoofNode.h"
-#include "core/RenderNode.h"
-#include "core/SkinNode.h"
-#include "core/ConcatNode.h"
-#include "core/SurfaceNode.h"
-#include "core/SheetNode.h"
-#include "core/TextNode.h"
+#include "core/CsgOpNode.h"
+#include "core/ImportNode.h"
+#include "core/LinearExtrudeNode.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
-#include "core/ImportNode.h"
+#include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/SurfaceNode.h"
+#include "core/TextNode.h"
+#include "core/TransformNode.h"
+#include "core/node.h"
+#include "core/primitives.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
 
 std::vector<ModuleInstantiation *> modinsts_list;
 

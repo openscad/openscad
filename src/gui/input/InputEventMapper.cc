@@ -24,20 +24,22 @@
  *
  */
 #include "gui/input/InputEventMapper.h"
-#include "gui/input/InputDriverEvent.h"
-#include "gui/input/InputDriverManager.h"
+
+#include <QMetaObject>
+#include <QSettings>
+#include <QTimer>
+#include <array>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <string>
+
 #include "core/Settings.h"
 #include "gui/Preferences.h"
 #include "gui/input/AxisConfigWidget.h"
 #include "gui/input/ButtonConfigWidget.h"
-#include <cassert>
-#include <array>
-#include <QMetaObject>
-#include <QTimer>
-#include <cstddef>
-#include <string>
-#include <cmath>
-#include <QSettings>
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
 
 using S = Settings::Settings;
 

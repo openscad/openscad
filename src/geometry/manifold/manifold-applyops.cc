@@ -4,13 +4,14 @@
 #ifdef ENABLE_MANIFOLD
 
 #include <memory>
-#include "geometry/manifold/manifoldutils.h"
-#include "core/enums.h"
-#include "geometry/Geometry.h"
+
 #include "core/AST.h"
-#include "geometry/manifold/ManifoldGeometry.h"
+#include "core/enums.h"
 #include "core/node.h"
 #include "core/progress.h"
+#include "geometry/Geometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #include "utils/printutils.h"
 
 namespace ManifoldUtils {

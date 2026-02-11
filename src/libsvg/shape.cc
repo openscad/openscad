@@ -24,37 +24,35 @@
  */
 #include "libsvg/shape.h"
 
+#include <clipper2/clipper.offset.h>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/tokenizer.hpp>
+#include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <memory>
-#include <cstdio>
-#include <cmath>
 #include <string>
 #include <vector>
 
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/spirit/include/qi.hpp>
-
-#include <clipper2/clipper.offset.h>
-
 #include "geometry/ClipperUtils.h"
 #include "libsvg/circle.h"
-#include "libsvg/ellipse.h"
-#include "libsvg/line.h"
-#include "libsvg/text.h"
-#include "libsvg/tspan.h"
 #include "libsvg/data.h"
+#include "libsvg/ellipse.h"
+#include "libsvg/group.h"
+#include "libsvg/line.h"
+#include "libsvg/path.h"
 #include "libsvg/polygon.h"
 #include "libsvg/polyline.h"
 #include "libsvg/rect.h"
 #include "libsvg/svgpage.h"
-#include "libsvg/path.h"
-#include "libsvg/group.h"
-#include "libsvg/use.h"
-
+#include "libsvg/text.h"
 #include "libsvg/transformation.h"
-#include "utils/degree_trig.h"
+#include "libsvg/tspan.h"
+#include "libsvg/use.h"
 #include "utils/calc.h"
+#include "utils/degree_trig.h"
 
 namespace libsvg {
 

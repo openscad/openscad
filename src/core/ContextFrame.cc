@@ -27,20 +27,20 @@
 #include "core/ContextFrame.h"
 
 #include "core/AST.h"
-#include "core/callables.h"
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
+#include "core/callables.h"
 
 #ifdef DEBUG
-#include <cassert>
 #include <boost/format.hpp>
+#include <cassert>
 #include <sstream>
 #endif
-#include <utility>
+#include <boost/format.hpp>
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
-#include <boost/format.hpp>
 ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session)
 {
 }

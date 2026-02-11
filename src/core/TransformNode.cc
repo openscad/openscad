@@ -26,29 +26,25 @@
 
 #include "core/TransformNode.h"
 
-#include "geometry/linalg.h"
-#include "geometry/Geometry.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetUtils.h"
-#include "core/ModuleInstantiation.h"
-#include "core/Children.h"
-#include "core/Builtins.h"
-#include "core/Children.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/Parameters.h"
-#include "core/Value.h"
-#include "utils/printutils.h"
-#include "utils/degree_trig.h"
 #include <algorithm>
+#include <boost/assign/std/vector.hpp>
+#include <cassert>
 #include <cmath>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <cassert>
-#include <boost/assign/std/vector.hpp>
+
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "core/Value.h"
+#include "core/module.h"
+#include "geometry/linalg.h"
+#include "utils/degree_trig.h"
+#include "utils/printutils.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 enum class transform_type_e { SCALE, ROTATE, MIRROR, TRANSLATE, MULTMATRIX };

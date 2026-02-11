@@ -1,17 +1,18 @@
 #include "gui/CGALWorker.h"
+
+#include <QThread>
 #include <exception>
 #include <memory>
-#include <QThread>
 
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #include "core/Tree.h"
-#include "geometry/GeometryEvaluator.h"
 #include "core/progress.h"
-#include "utils/printutils.h"
+#include "geometry/GeometryEvaluator.h"
 #include "utils/exceptions.h"
+#include "utils/printutils.h"
 
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"

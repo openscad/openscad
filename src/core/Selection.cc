@@ -24,14 +24,12 @@
  *
  */
 
-#include <Eigen/Core>
 #include "core/Selection.h"
-// #include "system-gl.h"
-#include <string>
 #include <Eigen/Dense>
-#include <sstream>
 #include <iomanip>
 #include <limits>
+#include <sstream>
+#include <string>
 
 std::string SelectionTypeToString(SelectionType type)
 {

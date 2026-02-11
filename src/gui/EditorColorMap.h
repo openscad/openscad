@@ -1,12 +1,12 @@
 #pragma once
 
-#include <functional>
 #include <QString>
 #include <QStringList>
+#include <boost/property_tree/ptree.hpp>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <memory>
-#include <boost/property_tree/ptree.hpp>
 
 namespace fs = std::filesystem;
 

@@ -1,17 +1,17 @@
 #pragma once
 
-#include <ostream>
-#include <memory>
 #include <cstddef>
+#include <deque>
+#include <memory>
+#include <ostream>
+#include <string>
 #include <utility>
 #include <vector>
-#include <string>
-#include <deque>
 
-#include "core/BaseVisitable.h"
 #include "core/AST.h"
+#include "core/BaseVisitable.h"
 #include "core/ModuleInstantiation.h"
-#include <Eigen/StdVector>
+#include "geometry/linalg.h"
 #include "geometry/Geometry.h"
 
 extern int progress_report_count;
@@ -23,7 +23,6 @@ void progress_report_prep(const std::shared_ptr<AbstractNode>& root,
                           void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark),
                           void *vp);
 void progress_report_fin();
-using Eigen::Vector3d;
 class DragMod
 {
 public:

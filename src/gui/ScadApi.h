@@ -1,12 +1,12 @@
 #pragma once
 
+#include <Qsci/qsciapis.h>
+
 #include <QList>
-#include <utility>
 #include <QObject>
 #include <QString>
 #include <QStringList>
-
-#include <Qsci/qsciapis.h>
+#include <utility>
 
 class ApiFunc
 {

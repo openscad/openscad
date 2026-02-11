@@ -25,17 +25,16 @@
  */
 #include "io/import.h"
 
-#include <filesystem>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <utility>
 
-#include "json/json.hpp"
-
 #include "core/AST.h"
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
+#include "json/json.hpp"
 #include "utils/printutils.h"
 
 using json = nlohmann::json;

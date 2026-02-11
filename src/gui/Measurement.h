@@ -1,11 +1,13 @@
 
 #pragma once
 
-#include <vector>
 #include <QPoint>
 #include <QString>
-#include "geometry/linalg.h"
+#include <optional>
+#include <vector>
+
 #include "core/Selection.h"
+#include "geometry/linalg.h"
 #include "gui/QGLView.h"
 
 namespace Measurement {

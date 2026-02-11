@@ -25,12 +25,11 @@
  */
 #include "core/DrawingCallback.h"
 
-#include <memory>
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "geometry/Polygon2d.h"
-#include "src/core/ColorUtil.h"
 
 DrawingCallback::DrawingCallback(unsigned long fn, double size)
   : pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn), size(size)

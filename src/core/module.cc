@@ -26,14 +26,15 @@
 
 #include "core/module.h"
 
-#include <utility>
-#include <string>
 #include <memory>
-#include "utils/printutils.h"
+#include <string>
+#include <utility>
+
 #include "core/Arguments.h"
 #include "core/Children.h"
 #include "core/Context.h"
 #include "core/ModuleInstantiation.h"
+#include "utils/printutils.h"
 
 BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode> (*instantiate)(
                                const ModuleInstantiation *, const std::shared_ptr<const Context>&),

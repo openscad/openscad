@@ -1,18 +1,16 @@
 #pragma once
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/GeometryUtils.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/Curve.h"
-#include "geometry/Surface.h"
-#include "utils/boost-utils.h"
-
+#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <cstddef>
 #include <string>
 #include <vector>
+
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "utils/boost-utils.h"
 
 class PolySetBuilder;
 

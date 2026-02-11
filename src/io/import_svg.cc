@@ -23,25 +23,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
 #include "io/import.h"
 
+#include <clipper2/clipper.h>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <exception>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <clipper2/clipper.h>
-
-#include "core/CurveDiscretizer.h"
 #include "core/AST.h"
+#include "core/CurveDiscretizer.h"
 #include "geometry/ClipperUtils.h"
 #include "geometry/Polygon2d.h"
 #include "libsvg/libsvg.h"
-#include "libsvg/svgpage.h"
 #include "libsvg/shape.h"
+#include "libsvg/svgpage.h"
 #include "libsvg/util.h"
 #include "utils/printutils.h"
 #include "src/core/ColorUtil.h"

@@ -1,14 +1,14 @@
 #include "gui/MouseSelector.h"
 
-#include "glview/system-gl.h"
-#include "glview/ShaderUtils.h"
-#include "utils/printutils.h"
-#include "glview/fbo.h"
-
-#include <cstdio>
 #include <cstdint>
-#include <string>
+#include <cstdio>
 #include <memory>
+#include <string>
+
+#include "glview/ShaderUtils.h"
+#include "glview/fbo.h"
+#include "glview/system-gl.h"
+#include "utils/printutils.h"
 /**
  * The selection is making use of a special shader, that renders each object in a color
  * that is derived from its index(), by using the first 24 bits of the identifier as a

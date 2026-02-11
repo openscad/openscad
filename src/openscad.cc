@@ -25,37 +25,18 @@
  */
 
 #include "openscad.h"
+
 #include "version.h"
 
 #ifdef _WIN32
-#include <cassert>
-#include <io.h>
 #include <fcntl.h>
-#endif
-#include <array>
-#include <clocale>
-#include <cstddef>
-#include <cstdlib>
-#include <exception>
-#include <filesystem>
-#include <fstream>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <istream>
-#include <iterator>
-#include <libintl.h>
-#include <map>
-#include <memory>
-#include <ostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <tuple>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <io.h>
 
+#include <cassert>
+#endif
+#include <libintl.h>
+
+#include <array>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -72,27 +53,49 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/iterator_range_core.hpp>
+#include <clocale>
+#include <cstddef>
+#include <cstdlib>
+#include <exception>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <ios>
+#include <iostream>
+#include <istream>
+#include <iterator>
+#include <map>
+#include <memory>
+#include <ostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #ifdef ENABLE_CGAL
 #include <CGAL/assertions.h>
 #include <CGAL/assertions_behaviour.h>
 #endif
 
+#include "Feature.h"
+#include "LibraryInfo.h"
+#include "RenderStatistic.h"
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
-#include "core/Context.h"
 #include "core/CSGTreeEvaluator.h"
-#include "core/customizer/CommentParser.h"
-#include "core/customizer/ParameterObject.h"
-#include "core/customizer/ParameterSet.h"
+#include "core/Context.h"
 #include "core/EvaluationSession.h"
-#include "core/node.h"
-#include "core/parsersettings.h"
 #include "core/RenderVariables.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
-#include "executable.h"
-#include "Feature.h"
+#include "core/customizer/CommentParser.h"
+#include "core/customizer/ParameterObject.h"
+#include "core/customizer/ParameterSet.h"
+#include "core/node.h"
+#include "core/parsersettings.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/GeometryUtils.h"
@@ -103,14 +106,12 @@
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
 #include "io/export.h"
-#include "LibraryInfo.h"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
 #include "platform/PlatformUtils.h"
-#include "RenderStatistic.h"
+#include "utils/StackCheck.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
-#include "utils/StackCheck.h"
 
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"

@@ -2,33 +2,31 @@
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
 #include "geometry/cgal/cgalutils.h"
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/cgal/cgal.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetUtils.h"
-#include "core/node.h"
-#include "utils/degree_trig.h"
-
-#include <cmath>
-#include <cassert>
-#include <set>
-#include <utility>
-#include <memory>
 #include <CGAL/Aff_transformation_3.h>
-#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 #include <CGAL/Surface_mesh.h>
-
 #include <CGAL/config.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/version.h>
 
-#include <CGAL/convex_hull_3.h>
+#include <cassert>
+#include <cmath>
+#include <memory>
+#include <set>
+#include <utility>
 
-#include "geometry/Reindexer.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/Reindexer.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/linalg.h"
+#include "utils/degree_trig.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif

@@ -1,10 +1,8 @@
-#include <catch2/catch_all.hpp>
-<<<<<<< HEAD
-#if 0
-=======
-#include <limits>
->>>>>>> c9d5e5c349b7a415f1a8f121996aaf4ecde042e9
 #include "vector_math.h"
+#if 0
+#include <catch2/catch_all.hpp>
+#include <limits>
+
 #include "src/geometry/Grid.h"
 
 #define NOT_APPLICABLE 0.0

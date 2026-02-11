@@ -1,8 +1,8 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
 #include <optional>
+#include <string>
+#include <unordered_map>
 
 #include "geometry/linalg.h"
 

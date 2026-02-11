@@ -1,10 +1,10 @@
 #pragma once
 
 #include <algorithm>
-#include <ostream>
 #include <functional>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <sstream>
 #include <string>
 

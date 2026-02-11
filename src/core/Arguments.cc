@@ -26,12 +26,13 @@
 
 #include "core/Arguments.h"
 
-#include <ostream>
 #include <memory>
+#include <ostream>
+
 #include "core/Assignment.h"
 #include "core/Context.h"
-#include "core/Expression.h"
 #include "core/EvaluationSession.h"
+#include "core/Expression.h"
 
 Arguments::Arguments(const AssignmentList& argument_expressions,
                      const std::shared_ptr<const Context>& context)

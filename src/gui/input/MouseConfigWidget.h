@@ -1,12 +1,13 @@
 #pragma once
 
-#include "gui/qtgettext.h"
-#include <map>
 #include <QComboBox>
 #include <QWidget>
-#include "ui_MouseConfigWidget.h"
+#include <map>
+
 #include "core/MouseConfig.h"
 #include "core/Settings.h"
+#include "gui/qtgettext.h"
+#include "ui_MouseConfigWidget.h"
 
 class MouseConfigWidget : public QWidget, public Ui::Mouse
 {

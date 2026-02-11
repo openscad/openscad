@@ -7,37 +7,37 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
 #endif
-#include <QMenu>
-#include <QObject>
-#include <QTimer>
-#include <QVBoxLayout>
-#include <QWidget>
-#include <functional>
-#include <exception>
-#include <memory>
-#include <cstdlib>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <filesystem>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <QString>
-#include <QChar>
-#include <QRegularExpression>
-#include <QShortcut>
 #include <Qsci/qscicommandset.h>
 #include <genlang/genlang.h>
 
-#include "gui/Preferences.h"
-#include "utils/printutils.h"
-#include "platform/PlatformUtils.h"
-#include "core/Settings.h"
-#include "gui/ScadLexer.h"
-
-#include <QWheelEvent>
+#include <QChar>
+#include <QMenu>
+#include <QObject>
 #include <QPoint>
+#include <QRegularExpression>
+#include <QShortcut>
+#include <QString>
+#include <QTimer>
 #include <QToolTip>
+#include <QVBoxLayout>
+#include <QWheelEvent>
+#include <QWidget>
+#include <algorithm>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <cstdlib>
+#include <exception>
+#include <filesystem>
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "core/Settings.h"
+#include "gui/Preferences.h"
+#include "gui/ScadLexer.h"
+#include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 

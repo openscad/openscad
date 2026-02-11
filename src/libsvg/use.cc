@@ -25,10 +25,10 @@
 #include "libsvg/use.h"
 
 #include <cstdio>
-#include <sstream>
-#include <memory>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 

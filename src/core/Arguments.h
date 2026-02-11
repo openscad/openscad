@@ -1,11 +1,11 @@
 #pragma once
 
+#include <boost/optional.hpp>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
-#include <boost/optional.hpp>
 
 #include "core/Assignment.h"
 #include "core/Context.h"

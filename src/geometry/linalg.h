@@ -1,12 +1,12 @@
 #pragma once
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <algorithm>
 #include <cstddef>
-#include <functional>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/Dense>
 #include <cstdint>
+#include <functional>
 #include <vector>
 
 using Eigen::Vector2d;
