@@ -18,6 +18,7 @@
 #include <QStringList>
 #include <QStyleFactory>
 #include <boost/foreach.hpp>
+#include <QStyleHints>
 #include <cassert>
 #include <exception>
 
