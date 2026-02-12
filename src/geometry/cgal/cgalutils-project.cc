@@ -10,10 +10,8 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/version.h>
 
-#include <CGAL/convex_hull_3.h>
+#include <memory>
 #include "src/core/ColorUtil.h"
-#include "utils/svg.h"
-
 #include <vector>
 
 #include "geometry/PolySet.h"

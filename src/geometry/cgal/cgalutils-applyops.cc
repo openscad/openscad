@@ -156,13 +156,6 @@ std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode& node,
                                                              : "UNKNOWN";
     LOG(message_group::Error, "exception in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
   }
-  //
-  if (node.r != 0) {
-    //    std::unique_ptr<const Geometry> geom_u = addFillets(N, children, node.r, node.fn);
-    //    std::shared_ptr<const Geometry> geom_s(geom_u.release());
-    //    N=geom_s; //  = ManifoldUtils::createManifoldFromGeometry(geom_s);
-  }
-
   return N;
 }
 

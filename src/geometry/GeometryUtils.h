@@ -16,8 +16,8 @@ struct IndexedColorFace {
   IndexedFace face;
   int color;
 };
-using IndexedTriangle = Vector3i;
 using IndexedColorTriangle = Vector4i;
+using IndexedTriangle = Vector3i;
 using PolygonIndices = std::vector<IndexedFace>;
 
 struct IndexedPolygons {

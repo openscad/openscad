@@ -9,48 +9,7 @@
 #include <utility>
 
 #include "Feature.h"
-#include "geometry/boolean_utils.h"
-#include "geometry/cgal/cgal.h"
-#include "geometry/ClipperUtils.h"
-#include "geometry/linalg.h"
-#include "geometry/linear_extrude.h"
-#include "geometry/Geometry.h"
-#include "geometry/GeometryCache.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/Barcode1d.h"
-#include "core/ModuleInstantiation.h"
-#include "core/State.h"
-#include "core/ColorNode.h"
-#include "core/OffsetNode.h"
-#include "core/TransformNode.h"
-#include "core/SkinNode.h"
-#include "core/ConcatNode.h"
-#include "core/LinearExtrudeNode.h"
-#include "core/PathExtrudeNode.h"
-#include "core/RoofNode.h"
-#include "geometry/roof_ss.h"
-#include "geometry/roof_vd.h"
-#include "core/RotateExtrudeNode.h"
-#include "core/PullNode.h"
-#include "core/DebugNode.h"
-#include "core/RepairNode.h"
-#include "core/WrapNode.h"
-#include "core/CgalAdvNode.h"
-#include "core/ProjectionNode.h"
-#include "core/CsgOpNode.h"
-#include "core/TextNode.h"
-#include "core/RenderNode.h"
-#include "geometry/ClipperUtils.h"
-#include "geometry/PolySetUtils.h"
-#include "geometry/PolySet.h"
-#include "glview/Renderer.h"
-#include "geometry/PolySetBuilder.h"
-#include "geometry/roof_ss.h"
-#include "geometry/roof_vd.h"
-#include "geometry/rotate_extrude.h"
-
-#include "glview/RenderSettings.h"
-
+#include "core/BaseVisitable.h"
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
@@ -62,6 +21,15 @@
 #include "core/RenderNode.h"
 #include "core/RoofNode.h"
 #include "core/RotateExtrudeNode.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
+#include "core/PathExtrudeNode.h"
+#include "core/PullNode.h"
+#include "core/DebugNode.h"
+#include "core/RepairNode.h"
+#include "core/WrapNode.h"
+#include "glview/ColorMap.h"
+#include "geometry/Barcode1d.h"
 #include "core/State.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
@@ -86,34 +54,21 @@
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
-
-#include <iterator>
-#include <cassert>
-#include <list>
-#include <utility>
-#include <memory>
-#include "geometry/boolean_utils.h"
-#include <src/utils/hash.h>
-#include <src/core/Selection.h>
 #ifdef ENABLE_CGAL
 #include <CGAL/Point_2.h>
 #include <CGAL/convex_hull_2.h>
 
 #include "geometry/cgal/CGALCache.h"
-#include <unordered_set>
 #include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "geometry/linear_extrude.h"
-#include "geometry/rotate_extrude.h"
 #include "geometry/skin.h"
 
 #ifdef ENABLE_PYTHON
 #include <src/python/python_public.h>
 #endif
-#include <cstddef>
 #include <vector>
 
 class Geometry;
@@ -327,7 +282,6 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned 
   return true;
 }
 
-using Eigen::Vector4d;
 typedef std::vector<IndexedFace> indexedFaceList;
 
 bool mergeTrianglesOpposite(const IndexedFace& poly1, const IndexedFace& poly2)

@@ -9,7 +9,6 @@
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
-#include "Feature.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
@@ -17,10 +16,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/cgal/cgalutils.h"
 #include "glview/RenderSettings.h"
-#include "utils/hash.h"
 #include "clipper2/clipper.h"
-#include <clipper2/clipper.engine.h>
-#include <locale.h>
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true)
 {

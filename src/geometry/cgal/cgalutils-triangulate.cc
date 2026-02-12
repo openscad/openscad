@@ -6,7 +6,6 @@
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/exceptions.h>
-#include <geometry/PolySet.h>
 
 #include <cassert>
 #include <cstddef>
@@ -15,6 +14,8 @@
 
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
 #include "src/core/ColorUtil.h"
 
 namespace CGALUtils {

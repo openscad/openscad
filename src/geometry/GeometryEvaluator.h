@@ -1,14 +1,19 @@
 #pragma once
-#include "core/NodeVisitor.h"
-#include "core/enums.h"
+
 #include <cassert>
 #include <map>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <map>
 #include "GeometryUtils.h"
 #include <boost/functional/hash.hpp>
+
+#include "core/BaseVisitable.h"
+#include "core/NodeVisitor.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 
 class CGALNefGeometry;
 class Polygon2d;
@@ -124,11 +129,11 @@ public:
   Response visit(State& state, const ColorNode& node) override;
   Response visit(State& state, const AbstractIntersectionNode& node) override;
   Response visit(State& state, const AbstractPolyNode& node) override;
+  Response visit(State& state, const LinearExtrudeNode& node) override;
+  Response visit(State& state, const RotateExtrudeNode& node) override;
   Response visit(State& state, const SkinNode& node) override;
   Response visit(State& state, const ConcatNode& node) override;
-  Response visit(State& state, const LinearExtrudeNode& node) override;
   Response visit(State& state, const PathExtrudeNode& node) override;
-  Response visit(State& state, const RotateExtrudeNode& node) override;
   Response visit(State& state, const PullNode& node) override;
   Response visit(State& state, const DebugNode& node) override;
   Response visit(State& state, const RepairNode& node) override;
