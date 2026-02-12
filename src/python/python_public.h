@@ -1,4 +1,8 @@
 #pragma once
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "core/node.h"
 #include "core/function.h"
 #include "geometry/Polygon2d.h"

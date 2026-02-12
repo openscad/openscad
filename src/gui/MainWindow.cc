@@ -91,45 +91,59 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <algorithm>
+#include <boost/range/adaptor/reversed.hpp>
+#include <boost/version.hpp>
+#include <cassert>
+#include <cstring>
+#include <deque>
+#include <exception>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
 #include "core/CSGNode.h"
 #include "core/Context.h"
-#include "core/customizer/CommentParser.h"
 #include "core/EvaluationSession.h"
 #include "core/Expression.h"
-#include "core/node.h"
-#include "core/parsersettings.h"
-#include "core/progress.h"
 #include "core/RenderVariables.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
 #include "core/SourceFileCache.h"
+#include "core/customizer/CommentParser.h"
+#include "core/node.h"
+#include "core/parsersettings.h"
+#include "core/progress.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/GeometryEvaluator.h"
 #include "glview/PolySetRenderer.h"
+#include "glview/RenderSettings.h"
 #include "glview/cgal/CGALRenderer.h"
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
-#include "glview/RenderSettings.h"
 #include "gui/AboutDialog.h"
 #include "gui/CGALWorker.h"
 #include "gui/ColorList.h"
-#include "gui/Editor.h"
 #include "gui/Dock.h"
-#include "gui/Measurement.h"
+#include "gui/Editor.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExportGcodeDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/ImportUtils.h"
-#include "gui/input/InputDriverEvent.h"
-#include "gui/input/InputDriverManager.h"
 #include "gui/LibraryInfoDialog.h"
+#include "gui/Measurement.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/Preferences.h"
 #include "gui/PrintInitDialog.h"
@@ -137,10 +151,12 @@
 #include "gui/QGLView.h"
 #include "gui/QSettingsCached.h"
 #include "gui/QWordSearchField.h"
-#include "gui/SettingsWriter.h"
 #include "gui/ScintillaEditor.h"
+#include "gui/SettingsWriter.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
 #include "io/dxfdim.h"
 #include "io/export.h"
 #include "io/fileutils.h"
@@ -152,18 +168,19 @@
 #include "genlang/genlang.h"
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgal.h"
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/manifoldutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif  // ENABLE_MANIFOLD
 #ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
-#include <opencsg.h>
 #endif
 #ifdef OPENSCAD_UPDATER
 #include "gui/AutoUpdater.h"
@@ -174,9 +191,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #ifdef ENABLE_PYTHON
-#include "python/python_public.h"
-#include "nettle/sha2.h"
 #include "nettle/base64.h"
+#include "nettle/sha2.h"
+#include "python/python_public.h"
 
 std::string SHA256HashString(std::string aString)
 {
@@ -1499,6 +1516,7 @@ void MainWindow::show_examples()
 
 void MainWindow::actionOpenExample()
 {
+  auto guard = scopedSetCurrentOutput();
   const auto action = qobject_cast<QAction *>(sender());
   if (action) {
     const auto& path = action->data().toString();
@@ -1642,6 +1660,7 @@ void MainWindow::on_fileActionSaveACopy_triggered()
 
 void MainWindow::on_fileShowLibraryFolder_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
     LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", path);
@@ -1667,6 +1686,7 @@ void MainWindow::on_fileShowBackupFiles_triggered()
 
 void MainWindow::on_fileActionReload_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   if (checkEditorModified()) {
     fileChangedOnDisk();                  // force cached autoReloadId to update
     (void)tabManager->refreshDocument();  // ignore errors opening the file
@@ -3680,6 +3700,23 @@ QString MainWindow::getCurrentFileName() const
   return fname.replace("&", "&&");
 }
 
+/**
+ * Convert a dock title to a base name for action naming.
+ * Removes mnemonic markers (&) and hyphens, creating a camelCase name.
+ * Examples: "&Editor" -> "Editor", "Error-&Log" -> "ErrorLog"
+ */
+QString MainWindow::getDockBaseName(const QString& title) const
+{
+  QString baseName = title;
+  // Remove mnemonic marker
+  baseName.remove('&');
+  // Remove hyphens
+  baseName.remove('-');
+  // Remove spaces
+  baseName.remove(' ');
+  return baseName;
+}
+
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
   // This slots is in charge of closing properly the preview when the
@@ -4060,7 +4097,7 @@ void MainWindow::setupWindow()
  */
 void MainWindow::setupCoreSubsystems()
 {
-  renderCompleteSoundEffect = new QSoundEffect();
+  renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
   this->cgalworker = new CGALWorker();
@@ -4358,7 +4395,11 @@ void MainWindow::setupDocks()
     // correctly processed when the dock are floating (is in a different window that the mainwindow)
     dock->installEventFilter(this);
 
-    menuWindow->addAction(dock->toggleViewAction());
+    // Get the toggle action from Qt and set an objectName for DBus accessibility
+    QAction *toggleAction = dock->toggleViewAction();
+    QString baseName = getDockBaseName(title);
+    toggleAction->setObjectName("windowActionToggle" + baseName);
+    menuWindow->addAction(toggleAction);
 
     auto dockAction = navigationMenu->addAction(title);
     dockAction->setProperty("id", QVariant::fromValue(dock));

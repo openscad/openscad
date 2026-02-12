@@ -26,54 +26,55 @@
 
 #include "gui/Preferences.h"
 
-#include <unordered_map>
-#include <vector>
+#include <QActionGroup>
+#include <QDialog>
+#include <QFileDialog>
 #include <QFont>
 #include <QFontComboBox>
-#include <QMainWindow>
-#include <QObject>
-#include <QDialog>
-#include <QSizePolicy>
-#include <QSpacerItem>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-#include <tuple>
-#include <cassert>
-#include <list>
-#include <QMenu>
-#include <QActionGroup>
-#include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QFileDialog>
-#include <QRegularExpression>
-#include <QRegularExpressionValidator>
-#include <QStatusBar>
-#include <QSettings>
-#include <QTextDocument>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QObject>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSettings>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QStatusBar>
+#include <QString>
+#include <QStringList>
+#include <QTextDocument>
+#include <QWidget>
 #include <boost/algorithm/string.hpp>
+#include <cassert>
+#include <list>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+#include "Feature.h"
 #include "OctoPrintApiKeyDialog.h"
+#include "core/Settings.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
-#include "Feature.h"
-#include "core/Settings.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
+#include <string>
+
 #include "glview/ColorMap.h"
-#include "gui/EditorColorMap.h"
 #include "glview/RenderSettings.h"
+#include "gui/EditorColorMap.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/OctoPrint.h"
+#include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
-#include "gui/OctoPrint.h"
-#include "gui/IgnoreWheelWhenNotFocused.h"
-#include "gui/PrintService.h"
-
-#include <string>
 
 static const char *featurePropertyName = "FeatureProperty";
 

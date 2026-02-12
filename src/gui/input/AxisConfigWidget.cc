@@ -30,16 +30,16 @@
 #include <QDoubleSpinBox>
 #include <QFont>
 #include <QProgressBar>
-#include <cmath>
 #include <QWidget>
+#include <cmath>
 #include <cstddef>
 #include <string>
 
 #include "core/Settings.h"
-#include "gui/input/InputDriverManager.h"
-#include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/InitConfigurator.h"
+#include "gui/SettingsWriter.h"
+#include "gui/input/InputDriverManager.h"
 #include "gui/input/InputEventMapper.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)

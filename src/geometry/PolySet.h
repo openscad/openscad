@@ -10,9 +10,14 @@
 
 #include <cstdint>
 #include <memory>
-#include <cstddef>
 #include <string>
 #include <vector>
+
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "utils/boost-utils.h"
 
 class PolySetBuilder;
 

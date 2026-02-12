@@ -1,16 +1,18 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include "geometry/Geometry.h"
-#include <functional>
-#include <cstdint>
-#include <memory>
-#include "geometry/linalg.h"
 #include <manifold/manifold.h>
+
 #include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 
 namespace manifold {
 class Manifold;

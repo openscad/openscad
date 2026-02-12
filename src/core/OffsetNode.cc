@@ -26,18 +26,21 @@
 
 #include "core/OffsetNode.h"
 
-#include "core/Builtins.h"
-#include "core/Children.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/Parameters.h"
-
 #include <clipper2/clipper.offset.h>
+
+#include <boost/assign/std/vector.hpp>
 #include <ios>
-#include <utility>
 #include <memory>
 #include <sstream>
-#include <boost/assign/std/vector.hpp>
+#include <utility>
+
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/CurveDiscretizer.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "core/module.h"
+#include "utils/printutils.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments,

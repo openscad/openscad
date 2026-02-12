@@ -1,11 +1,8 @@
 #pragma once
-
 #include "core/NodeVisitor.h"
-#include "geometry/linalg.h"
 #include "core/enums.h"
-#include "geometry/Geometry.h"
-
 #include <cassert>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>

@@ -24,11 +24,12 @@
  *
  */
 #include "gui/SettingsWriter.h"
-#include "core/Settings.h"
-#include "gui/QSettingsCached.h"
 
 #include <QString>
 #include <string>
+
+#include "core/Settings.h"
+#include "gui/QSettingsCached.h"
 
 void SettingsWriter::handle(Settings::SettingsEntryBase& entry) const
 {

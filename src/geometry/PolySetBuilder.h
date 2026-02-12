@@ -6,8 +6,6 @@
 
 #include "geometry/Reindexer.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
 #include "utils/boost-utils.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Curve.h"

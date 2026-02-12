@@ -1,19 +1,19 @@
 #pragma once
 
-#include <ostream>
-#include <utility>
-#include <cstddef>
-#include <functional>
-#include <string>
-#include <vector>
-#include <memory>
 #include <boost/logic/tribool.hpp>
 #include <boost/optional.hpp>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "core/Assignment.h"
 #include "core/AST.h"
-#include "core/callables.h"
+#include "core/Assignment.h"
 #include "core/Value.h"
+#include "core/callables.h"
 
 template <class T>
 class ContextHandle;

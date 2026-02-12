@@ -26,9 +26,8 @@
  */
 
 #include "io/export.h"
-
-#include <ostream>
 #include <memory>
+#include <ostream>
 
 #include "Feature.h"
 #include "geometry/Geometry.h"

@@ -37,6 +37,7 @@
 #include <mpfr.h>
 #endif
 
+#include "utils/printutils.h"
 #include "glview/system-gl.h"
 #include "core/Selection.h"
 #include "geometry/cgal/cgalutils.h"

@@ -25,24 +25,27 @@
  */
 
 #include "geometry/PolySetBuilder.h"
-#include "geometry/linalg.h"
-#include "geometry/PolySet.h"
+
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #include <algorithm>
-#include <iterator>
 #include <cassert>
-#include <utility>
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <memory>
+#include <utility>
 #include <vector>
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)

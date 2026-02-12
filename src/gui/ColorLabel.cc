@@ -19,10 +19,12 @@
 
 #include "gui/ColorLabel.h"
 
+#include <QApplication>
 #include <QDrag>
 #include <QMimeData>
 #include <QPainter>
-#include <QApplication>
+#include <QString>
+#include <algorithm>
 
 #include "core/ColorUtil.h"
 

@@ -2,29 +2,33 @@
 
 #include <QApplication>
 #include <QStringBuilder>
+#include <string>
+#include <tuple>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
 #endif
-#include <QPoint>
-#include <QTabBar>
-#include <QWidget>
-#include <cassert>
-#include <functional>
-#include <exception>
-#include <QFileInfo>
-#include <QFile>
-#include <QDir>
-#include <QByteArray>
-#include <QStringList>
-#include <QSaveFile>
-#include <QShortcut>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QClipboard>
-#include <QDesktopServices>
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
+
+#include <QByteArray>
+#include <QClipboard>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QPoint>
+#include <QSaveFile>
+#include <QShortcut>
+#include <QStringList>
+#include <QTabBar>
+#include <QTextStream>
+#include <QWidget>
+#include <cassert>
+#include <cstddef>
+#include <exception>
+#include <functional>
 
 #include "gui/Editor.h"
 #include "gui/ImportUtils.h"

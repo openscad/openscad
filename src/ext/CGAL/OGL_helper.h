@@ -21,12 +21,13 @@
 
 #pragma once
 
+#include <CGAL/Nef_3/SNC_decorator.h>
 #include <CGAL/Nef_S2/OGL_base_object.h>
 #include <CGAL/Simple_cartesian.h>
-#include <CGAL/Nef_3/SNC_decorator.h>
+
+#include <cstdlib>
 
 #include "glview/system-gl.h"
-#include <cstdlib>
 
 // Overridden in CGAL_renderer
 /*

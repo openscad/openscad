@@ -25,8 +25,11 @@
  */
 
 #include "gui/QGLView.h"
+#include <cmath>
+#include <memory>
 #include <QtCore/qpoint.h>
 
+#include "core/Selection.h"
 #include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"

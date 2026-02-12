@@ -26,10 +26,10 @@
 
 #pragma once
 
-#include <QIcon>
-#include <QTimer>
 #include <QDialog>
+#include <QIcon>
 #include <QString>
+#include <QTimer>
 
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_OctoPrintApiKeyDialog.h"

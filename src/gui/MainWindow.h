@@ -1,41 +1,43 @@
 #pragma once
 
-#include <ctime>
-#include <tuple>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include <QAction>
 #include <QCloseEvent>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QElapsedTimer>
 #include <QEvent>
 #include <QFile>
+#include <QIODevice>
+#include <QIcon>
 #include <QLabel>
 #include <QList>
+#include <QMainWindow>
 #include <QMap>
+#include <QMutex>
 #include <QObject>
 #include <QPoint>
+#include <QShortcut>
+#include <QSignalMapper>
+#include <QSoundEffect>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryFile>
+#include <QTime>
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
-#include <QMainWindow>
-#include <QElapsedTimer>
-#include <QIcon>
-#include <QIODevice>
-#include <QMutex>
-#include <QSoundEffect>
-#include <QTime>
-#include <QSignalMapper>
-#include <QShortcut>
+#include <ctime>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "core/Context.h"
-#include "glview/Renderer.h"
 #include "core/SourceFile.h"
+#include "glview/Camera.h"
+#include "glview/Renderer.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QSvgPlugin)
@@ -53,20 +55,19 @@ class ProgressWidget;
 class ThrownTogetherRenderer;
 class CSGTreeEvaluator;
 
+#include "RenderStatistic.h"
 #include "core/Tree.h"
 #include "geometry/Geometry.h"
 #include "gui/Editor.h"
-#include "gui/input/InputDriverEvent.h"
 #include "gui/Measurement.h"
-#include "gui/qt-obsolete.h"  // IWYU pragma: keep
-#include "gui/qtgettext.h"    // IWYU pragma: keep
 #include "gui/RubberBandManager.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/qt-obsolete.h"  // IWYU pragma: keep
+#include "gui/qtgettext.h"    // IWYU pragma: keep
+#include "io/export.h"
 #include "io/export_enums.h"
-#include "io/export.h"
-#include "io/export.h"
-#include "RenderStatistic.h"
 #include "ui_MainWindow.h"
 #include "utils/printutils.h"
 #include "utils/scope_guard.hpp"
@@ -254,6 +255,7 @@ private:
   Dock *getNextDockFromSender(QObject *sender);
   void addExportActions(QToolBar *toolbar, QAction *action) const;
   QAction *formatIdentifierToAction(const std::string& identifier) const;
+  QString getDockBaseName(const QString& title) const;
 
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};

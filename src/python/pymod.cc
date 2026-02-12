@@ -25,17 +25,17 @@
  */
 #include <Python.h>
 
-#include <string>
-#include <vector>
 #include <cstdlib>
 #include <filesystem>
+#include <string>
+#include <system_error>
+#include <vector>
 
 #include "core/Settings.h"
 #ifndef PYTHON_EXECUTABLE_NAME
 #include "executable.h"
 #endif
 #include "platform/PlatformUtils.h"
-
 #include "pyopenscad.h"
 
 namespace fs = std::filesystem;

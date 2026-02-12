@@ -1,5 +1,13 @@
 #include "geometry/GeometryEvaluator.h"
 
+#include <cassert>
+#include <cmath>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "Feature.h"
 #include "geometry/boolean_utils.h"
 #include "geometry/cgal/cgal.h"
@@ -46,8 +54,9 @@
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
-#include "core/ModuleInstantiation.h"
+#include "core/CurveDiscretizer.h"
 #include "core/LinearExtrudeNode.h"
+#include "core/ModuleInstantiation.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/RenderNode.h"
@@ -56,8 +65,24 @@
 #include "core/State.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
-#include "core/CurveDiscretizer.h"
 #include "core/Tree.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/boolean_utils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/linalg.h"
+#include "geometry/linear_extrude.h"
+#include "geometry/roof_ss.h"
+#include "geometry/roof_vd.h"
+#include "geometry/rotate_extrude.h"
+#include "glview/RenderSettings.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
@@ -71,11 +96,12 @@
 #include <src/utils/hash.h>
 #include <src/core/Selection.h>
 #ifdef ENABLE_CGAL
+#include <CGAL/Point_2.h>
+#include <CGAL/convex_hull_2.h>
+
 #include "geometry/cgal/CGALCache.h"
 #include <unordered_set>
 #include "geometry/cgal/cgalutils.h"
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/Point_2.h>
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"

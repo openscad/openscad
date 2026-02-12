@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
-#include <string>
-
+#include <cstdint>
 #include <filesystem>
+#include <string>
 namespace fs = std::filesystem;
 
 static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;

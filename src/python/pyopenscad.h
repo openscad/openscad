@@ -1,11 +1,14 @@
 #include <Python.h>
+
 #include <memory>
-#include "python_public.h"
-#include "geometry/Polygon2d.h"
-#include "core/node.h"
-#include "core/function.h"
+#include <string>
+
 #include "core/ScopeContext.h"
 #include "core/UserModule.h"
+#include "core/function.h"
+#include "core/node.h"
+#include "geometry/Polygon2d.h"
+#include "python_public.h"
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 

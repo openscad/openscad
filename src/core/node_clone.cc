@@ -50,6 +50,15 @@
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/ImportNode.h"
+#include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/SurfaceNode.h"
+#include "core/TextNode.h"
+#include "core/TransformNode.h"
+#include "core/node.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
 
 std::vector<ModuleInstantiation *> modinsts_list;
 

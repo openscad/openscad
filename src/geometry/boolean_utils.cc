@@ -1,13 +1,14 @@
 #include "geometry/boolean_utils.h"
 
-#include <utility>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGALNefGeometry.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/convex_hull_3.h>
+
+#include "geometry/cgal/CGALNefGeometry.h"
 #include "geometry/cgal/cgalutils.h"
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
@@ -15,12 +16,11 @@
 #include "geometry/manifold/manifoldutils.h"
 #endif  // ENABLE_MANIFOLD
 
-#include "glview/RenderSettings.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-
-#include "geometry/Reindexer.h"
 #include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/Reindexer.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
@@ -93,7 +93,11 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
 #if ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+#if defined(USE_MANIFOLD_MINKOWSKI)
+    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
+#else
     return ManifoldUtils::applyMinkowski(children);
+#endif
   }
 #endif  // ENABLE_MANIFOLD
   return CGALUtils::applyMinkowski3D(children);

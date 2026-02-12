@@ -26,21 +26,21 @@
 
 #include "core/ColorNode.h"
 
-#include <utility>
-#include <memory>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/assign/std/vector.hpp>
 #include <cctype>
 #include <cstddef>
+#include <memory>
 #include <string>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/std/vector.hpp>
-#include <boost/assign/list_of.hpp>
+#include <utility>
 
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
+#include "core/ColorUtil.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "core/ColorUtil.h"
+#include "core/module.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 

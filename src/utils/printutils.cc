@@ -1,5 +1,8 @@
 #include "utils/printutils.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/circular_buffer.hpp>
 #include <cassert>
 #include <cstdio>
 #include <exception>
@@ -8,10 +11,6 @@
 #include <list>
 #include <set>
 #include <string>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/circular_buffer.hpp>
 
 #include "utils/exceptions.h"
 

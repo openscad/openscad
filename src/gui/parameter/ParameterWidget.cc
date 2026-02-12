@@ -36,25 +36,34 @@
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
-#include <QToolButton>
-
-#include "gui/parameter/GroupWidget.h"
-#include "gui/parameter/ParameterSpinBox.h"
-#include "gui/parameter/ParameterComboBox.h"
-#include "gui/parameter/ParameterSlider.h"
-#include "gui/parameter/ParameterCheckBox.h"
-#include "gui/parameter/ParameterText.h"
-#include "gui/parameter/ParameterVector.h"
-#include "gui/Preferences.h"
-
-#include <filesystem>
-
 #include <QInputDialog>
+#include <QLayoutItem>
+#include <QMenu>
 #include <QMessageBox>
+#include <QString>
+#include <QToolButton>
+#include <QWidget>
+#include <cassert>
 #include <cstddef>
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "core/customizer/ParameterObject.h"
+#include "gui/Preferences.h"
+#include "gui/parameter/GroupWidget.h"
+#include "gui/parameter/ParameterCheckBox.h"
+#include "gui/parameter/ParameterComboBox.h"
+#include "gui/parameter/ParameterSlider.h"
+#include "gui/parameter/ParameterSpinBox.h"
+#include "gui/parameter/ParameterText.h"
+#include "gui/parameter/ParameterVector.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {

@@ -1,27 +1,18 @@
 #pragma once
 
-#include <QStringList>
-#include <filesystem>
-#include <map>
-#include <functional>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+#include <Qsci/qsciscintilla.h>
 
 #include <QMap>
 #include <QObject>
 #include <QString>
-#include <QWidget>
+#include <QStringList>
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexerpython.h>
 
 #include "gui/Editor.h"
-#include "gui/ScadApi.h"
 #include "gui/EditorColorMap.h"
+#include "gui/ScadApi.h"
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;

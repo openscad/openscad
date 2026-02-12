@@ -8,21 +8,21 @@
 #include <QFontComboBox>
 #include <QHash>
 #include <QKeyEvent>
+#include <QMainWindow>
+#include <QSettings>
 #include <QShowEvent>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
 #include <QWidget>
-#include <QMainWindow>
-#include <QSettings>
 #include <string>
 
+#include "core/Settings.h"
 #include "glview/RenderSettings.h"
+#include "gui/InitConfigurator.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
-#include "core/Settings.h"
-#include "gui/InitConfigurator.h"
 
 class GlobalPreferences;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator

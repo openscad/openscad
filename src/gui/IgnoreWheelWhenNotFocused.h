@@ -13,9 +13,9 @@
 #pragma once
 
 #include <QEvent>
+#include <QMouseEvent>
 #include <QObject>
 #include <QWidget>
-#include <QMouseEvent>
 
 void installIgnoreWheelWhenNotFocused(QWidget *parent);
 

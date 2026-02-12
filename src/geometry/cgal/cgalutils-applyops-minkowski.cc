@@ -1,10 +1,17 @@
-#include "geometry/cgal/cgalutils.h"
-
-#include <memory>
-
 #include <CGAL/Timer.h>
 #include <CGAL/convex_hull_3.h>
 
+#include <cassert>
+#include <cstddef>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
 
 namespace CGALUtils {

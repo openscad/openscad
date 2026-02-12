@@ -1,4 +1,5 @@
 #include "gui/OpenSCADApp.h"
+
 #include "gui/MainWindow.h"
 #include "gui/Preferences.h"
 #include "gui/QSettingsCached.h"
@@ -10,8 +11,6 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
-#include "glview/RenderSettings.h"
-
 #include <QApplication>
 #include <QColor>
 #include <QEvent>
@@ -26,7 +25,7 @@
 #include <cassert>
 #include <exception>
 #include <QProgressDialog>
-#include <boost/foreach.hpp>
+#include "glview/RenderSettings.h"
 
 OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 {
