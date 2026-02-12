@@ -27,6 +27,8 @@
 #include <sstream>
 #include <string>
 
+#include "libsvg/shape.h"
+
 namespace libsvg {
 
 const std::string data::name("data");

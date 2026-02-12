@@ -1,6 +1,7 @@
 #include "core/RenderVariables.h"
-#include "core/Context.h"
+
 #include "core/BuiltinContext.h"
+#include "core/Context.h"
 
 void RenderVariables::applyToContext(ContextHandle<BuiltinContext>& context) const
 {

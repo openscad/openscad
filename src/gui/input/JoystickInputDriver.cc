@@ -25,19 +25,20 @@
  */
 #include "gui/input/JoystickInputDriver.h"
 
-#include <string>
 #include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <boost/format.hpp>
-#include <utility>
-
-#include "gui/input/InputDriverManager.h"
-#include "utils/printutils.h"
-
-#include <unistd.h>
 #include <linux/input.h>
 #include <linux/joystick.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <boost/format.hpp>
+#include <string>
+#include <utility>
+
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
+#include "utils/printutils.h"
 
 void JoystickInputDriver::run()
 {

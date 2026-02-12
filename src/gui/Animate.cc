@@ -1,22 +1,23 @@
 #include "gui/Animate.h"
 
-#include <string>
 #include <QAction>
 #include <QBoxLayout>
+#include <QFormLayout>
 #include <QIcon>
 #include <QList>
+#include <QPalette>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QWidget>
-#include <iostream>
 #include <filesystem>
-#include <QFormLayout>
+#include <iostream>
+#include <string>
 
-#include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/UIUtils.h"
 #include "openscad_gui.h"
+#include "utils/printutils.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {

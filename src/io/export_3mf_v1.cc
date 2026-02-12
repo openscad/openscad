@@ -25,9 +25,13 @@
  */
 
 #include "io/export.h"
+#include <Common/Platform/NMR_WinTypes.h>
+#include <Model/COM/NMR_DLLInterfaces.h>
+
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <ostream>
@@ -55,15 +59,13 @@ static uint32_t lib3mf_seek_callback_my(uint64_t pos, std::ostream *stream)
   return !(*stream);
 }
 
-#include <Common/Platform/NMR_WinTypes.h>
-#include <Model/COM/NMR_DLLInterfaces.h>
-
 #include "core/ColorUtil.h"
 #include "export_enums.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifdef ENABLE_MANIFOLD
@@ -71,8 +73,8 @@ static uint32_t lib3mf_seek_callback_my(uint64_t pos, std::ostream *stream)
 #endif
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 #undef BOOL

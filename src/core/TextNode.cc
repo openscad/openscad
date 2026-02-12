@@ -26,19 +26,18 @@
 
 #include "core/TextNode.h"
 
-#include <utility>
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/EvaluationSession.h"
-#include "core/module.h"
+#include "core/FreetypeRenderer.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
+#include "core/module.h"
 #include "utils/printutils.h"
-#include "core/Builtins.h"
-
-#include "core/FreetypeRenderer.h"
 
 static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments)
 {

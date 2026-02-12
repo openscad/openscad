@@ -26,14 +26,15 @@
 
 #pragma once
 
-#include <memory>
+#include <QColor>
 #include <QDialog>
+#include <memory>
 
 #include "core/Settings.h"
+#include "gui/InitConfigurator.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_Export3mfDialog.h"
-#include "gui/InitConfigurator.h"
 
 using SEBool = Settings::SettingsEntryBool;
 using SEString = Settings::SettingsEntryString;

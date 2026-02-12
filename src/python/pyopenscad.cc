@@ -23,24 +23,31 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <Python.h>
-#include "genlang/genlang.h"
-#include <filesystem>
-
 #include "pyopenscad.h"
-#include "pydata.h"
+
+#include <Python.h>
+
+#include <array>
+#include <filesystem>
+#include <memory>
+#include <optional>
+#include "genlang/genlang.h"
+#include <sstream>
+#include <string>
+
 #include "core/CsgOpNode.h"
-#include "Value.h"
+#include "Expression.h"
+#include "core/CurveDiscretizer.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
+
+#include "primitives.h"
 #ifndef PYTHON_EXECUTABLE_NAME
 #include "executable.h"
 #endif
-#include "Expression.h"
-#include "PlatformUtils.h"
-#include <Context.h>
-#include <Selection.h>
-#include "core/CurveDiscretizer.h"
-#include "platform/PlatformUtils.h"
-#include "primitives.h"
+
 namespace fs = std::filesystem;
 
 // #define HAVE_PYTHON_YIELD

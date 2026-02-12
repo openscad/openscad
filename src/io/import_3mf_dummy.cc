@@ -23,14 +23,15 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/import.h"
 
 #include <memory>
 #include <string>
-#include "io/import.h"
+
 #include "core/AST.h"
-#include "utils/printutils.h"
 #include "geometry/PolySet.h"
 #include "io/lib3mf_utils.h"
+#include "utils/printutils.h"
 
 std::string get_lib3mf_version()
 {

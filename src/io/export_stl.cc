@@ -24,7 +24,7 @@
  *
  */
 
-#include "io/export.h"
+#include <double-conversion/double-conversion.h>
 
 #include <algorithm>
 #include <array>
@@ -39,13 +39,12 @@
 #include <string>
 #include <vector>
 
-#include <double-conversion/double-conversion.h>
-
 #include "Feature.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifdef ENABLE_MANIFOLD

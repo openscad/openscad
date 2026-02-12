@@ -1,5 +1,5 @@
 #include "gui/ErrorLog.h"
-#include "utils/printutils.h"
+
 #include <QAbstractItemView>
 #include <QColor>
 #include <QList>
@@ -9,6 +9,8 @@
 #include <QString>
 #include <QWidget>
 #include <filesystem>
+
+#include "utils/printutils.h"
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {

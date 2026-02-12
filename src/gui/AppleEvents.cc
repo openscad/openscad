@@ -1,8 +1,11 @@
 #include "gui/AppleEvents.h"
-#include <MacTypes.h>
+
 #include <AssertMacros.h>
 #include <CoreServices/CoreServices.h>
+#include <MacTypes.h>
+
 #include <QApplication>
+
 #include "gui/MainWindow.h"
 
 extern "C" {

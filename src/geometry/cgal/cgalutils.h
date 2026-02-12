@@ -6,15 +6,16 @@
 #include "core/CsgOpNode.h"
 #ifdef ENABLE_CGAL
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+
 #include "geometry/cgal/CGALNefGeometry.h"
 #include "geometry/cgal/cgal.h"
 #endif
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySet.h"
 #include "core/enums.h"
+#include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 
 namespace CGALUtils {
 

@@ -25,16 +25,15 @@
  */
 #pragma once
 
+#include <QIcon>
 #include <QList>
 #include <QObject>
 #include <QString>
-#include <list>
-#include <QWidget>
 #include <QThread>
 #include <QTimer>
-#include <QIcon>
-
+#include <QWidget>
 #include <cstddef>
+#include <list>
 #include <string>
 
 #include "gui/input/InputDriver.h"

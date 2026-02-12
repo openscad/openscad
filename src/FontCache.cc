@@ -26,24 +26,26 @@
 
 #include "FontCache.h"
 
+#include <fontconfig/fontconfig.h>
+#include <ft2build.h>
+#include <hb.h>
+
+#include <boost/algorithm/string.hpp>
 #include <cassert>
-#include <cstdlib>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-#include <hb.h>
-#include <fontconfig/fontconfig.h>
-#include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TYPES_H
 #include FT_TRUETYPE_IDS_H
 
+#include "core/AST.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"

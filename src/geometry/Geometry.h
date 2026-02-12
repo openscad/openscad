@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cassert>
-#include <utility>
 #include <cstddef>
-#include <string>
 #include <list>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "geometry/linalg.h"
 

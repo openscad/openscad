@@ -26,23 +26,25 @@
 
 #include "core/UserModule.h"
 
-#include <ostream>
+#include <cstddef>
 #include <memory>
+#include <ostream>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "core/AST.h"
 #include "core/Arguments.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
 #include "core/Expression.h"
 #include "core/ModuleInstantiation.h"
-#include "core/node.h"
 #include "core/ScopeContext.h"
+#include "core/node.h"
+#include "utils/StackCheck.h"
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
-#include "utils/StackCheck.h"
-#include <cstddef>
-#include <sstream>
-#include <string>
 
 std::vector<std::string> StaticModuleNameStack::stack;
 

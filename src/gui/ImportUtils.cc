@@ -1,5 +1,7 @@
 #include "gui/ImportUtils.h"
 
+#include <QString>
+
 QMap<QString, QString> Importer::knownFileExtensions;
 
 int Importer::init()

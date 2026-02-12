@@ -26,17 +26,18 @@
 
 #include "core/CsgOpNode.h"
 
+#include <cassert>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
 #include "geometry/PolySet.h"
-
-#include <utility>
-#include <memory>
-#include <string>
-#include <cassert>
+#include "core/enums.h"
+#include "core/module.h"
 
 static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments,
                                                    const Children& children)

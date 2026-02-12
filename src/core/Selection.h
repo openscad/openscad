@@ -25,8 +25,9 @@
  */
 
 #pragma once
-#include "geometry/linalg.h"
 #include <string>
+
+#include "geometry/linalg.h"
 
 enum class SelectionType {
   SELECTION_POINT,
@@ -35,6 +36,7 @@ enum class SelectionType {
   SELECTION_HANDLE,
   SELECTION_INVALID
 };
+
 
 std::string SelectionTypeToString(SelectionType type);
 
