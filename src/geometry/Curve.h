@@ -1,7 +1,6 @@
+
 #pragma once
 #include <vector>
-#include "geometry/linalg.h"
-
 class Curve
 {
 public:

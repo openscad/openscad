@@ -524,7 +524,7 @@ void GLView::showObject(const SelectedObject& obj, const Vector3d& eyedir)
     glEnd();
 
   } break;
-  case SelectionType::SELECTION_SEGMENT: {
+  case SelectionType::SELECTION_LINE: {
     if (obj.pt.size() < 2) break;
     Vector3d p1 = obj.pt[0];
     Vector3d p2 = obj.pt[1];

@@ -28,29 +28,16 @@
 #endif
 #include "gui/MainWindow.h"
 
-#include <cstring>
-#include <filesystem>
-#include <deque>
-#include <cassert>
-#include <functional>
-#include <exception>
-#include <sstream>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-#include <cstdio>
-#include <memory>
-#include <utility>
-#include <memory>
-#include <string>
-#include <fstream>
-#include <algorithm>
 #include <sys/stat.h>
-
-#include <boost/version.hpp>
+#include "gui/CSGWorker.h"
+#include "gui/LoadShareDesignDialog.h"
+#include "gui/ShareDesignDialog.h"
+#include <QToolTip>
+#include <curl/curl.h>
 #include <sys/stat.h>
-
+#include <fcntl.h>
+#include "gui/ExportGcodeDialog.h"
+#include "genlang/genlang.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
@@ -141,7 +128,6 @@
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExportSvgDialog.h"
-#include "gui/ExportGcodeDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/ImportUtils.h"
 #include "gui/LibraryInfoDialog.h"
@@ -167,7 +153,6 @@
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 #include "version.h"
-#include "genlang/genlang.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
@@ -187,11 +172,7 @@
 #ifdef OPENSCAD_UPDATER
 #include "gui/AutoUpdater.h"
 #endif
-#include <QToolTip>
 
-#include <curl/curl.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #ifdef ENABLE_PYTHON
 #include "nettle/base64.h"
 #include "nettle/sha2.h"
@@ -216,7 +197,6 @@ std::string SHA256HashString(std::string aString)
   return digest_base64;
 }
 
-#include <iostream>
 static size_t curl_download_write(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   QFile *fh = (QFile *)stream;
@@ -251,14 +231,6 @@ int curl_download(const std::string& url, const std::string& path)
 }
 #endif  // ifdef ENABLE_PYTHON
 
-#include "gui/PrintService.h"
-
-#include <boost/regex.hpp>
-#include "gui/CSGWorker.h"
-
-#include "gui/LoadShareDesignDialog.h"
-#include "gui/ShareDesignDialog.h"
-#include "input/MouseConfigWidget.h"
 
 // Global application state
 unsigned int GuiLocker::guiLocked = 0;
@@ -933,7 +905,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
-  for (auto& [dock, name, configKey] : docks) {
+  for (auto& [dock, name] : docks) {
     dock->setTitleBarVisibility(!reorderMode);
   }
 }
@@ -1453,7 +1425,6 @@ void MainWindow::actionOpenRecent()
   auto guard = scopedSetCurrentOutput();
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
-  // recomputeLanguageActive(); // should be done in open
 }
 
 void MainWindow::on_fileActionClearRecent_triggered()
@@ -1924,7 +1895,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     auto keyEvent = static_cast<QKeyEvent *>(event);
     if (keyEvent->key() == Qt::Key_Escape) {
       if (this->qglview->measure_state != Measurement::MEASURE_IDLE) {
-        this->designActionMeasureDistance->setChecked(false);
+        this->designActionMeasureDist->setChecked(false);
         this->designActionMeasureAngle->setChecked(false);
         this->designActionFindHandle->setChecked(false);
         this->qglview->handle_mode = false;
@@ -2209,8 +2180,6 @@ void MainWindow::actionRenderPreview()
   GuiLocker::lock();
   preview_requested = false;
 
-  this->designActionMeasureDistance->setEnabled(false);
-  this->designActionMeasureAngle->setEnabled(false);
   resetMeasurementsState(false, "Render (not preview) to enable measurements");
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
@@ -2382,8 +2351,6 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     // Go to CGAL view mode
     viewModeRender();
     resetMeasurementsState(true, "Click to start measuring");
-    this->designActionMeasureDistance->setEnabled(true);
-    this->designActionMeasureAngle->setEnabled(true);
   } else {
     resetMeasurementsState(false, "No top level geometry; render something to enable measurements");
     LOG(message_group::UI_Warning, "No top level geometry to render");
@@ -2418,7 +2385,7 @@ void MainWindow::handleMeasurementClicked(QAction *clickedAction)
   clickedAction->setChecked(true);
   activeMeasurement = clickedAction;
 
-  if (clickedAction == designActionMeasureDistance) {
+  if (clickedAction == designActionMeasureDist) {
     meas.startMeasureDistance();
   }
   if (clickedAction == designActionMeasureAngle) {
@@ -3794,9 +3761,8 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
 
 Dock *MainWindow::findVisibleDockToActivate(int offset) const
 {
-  const unsigned int dockCount = docks.size();
-
-  int focusedDockIndice = -1;
+  const auto dockCount = docks.size();
+  int focusedDockIndex = 0;
 
   // search among the docks the one that is having the focus. This is done by
   // traversing the widget hierarchy from the focused widget up to the docks that
@@ -3804,23 +3770,18 @@ Dock *MainWindow::findVisibleDockToActivate(int offset) const
   const auto focusWidget = QApplication::focusWidget();
   for (auto widget = focusWidget; widget != nullptr; widget = widget->parentWidget()) {
     for (unsigned int index = 0; index < dockCount; ++index) {
-      auto dock = std::get<0>(docks[index]);
-      if (dock == focusWidget) {
-        focusedDockIndice = index;
+      if (docks[index].first == focusWidget) {
+        focusedDockIndex = index;
       }
     }
   }
 
-  if (focusedDockIndice < 0) {
-    focusedDockIndice = 0;
-  }
-
   for (size_t o = 1; o < dockCount; ++o) {
-    // starting from dockCount + focusedDockIndice move left or right (o*offset)
+    // starting from dockCount + focusedDockIndex move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
     // (-1) % dockCount
-    const int target = (dockCount + focusedDockIndice + o * offset) % dockCount;
-    const auto& dock = std::get<0>(docks.at(target));
+    const int target = (dockCount + focusedDockIndex + o * offset) % dockCount;
+    const auto& dock = docks.at(target).first;
 
     if (dock->isVisible()) {
       return dock;
@@ -4064,15 +4025,15 @@ void MainWindow::resetMeasurementsState(bool enable, const QString& tooltipMessa
     enable = false;
     static const auto noCGALMessage =
       "Measurements only work with Manifold backend; Preferences->Advanced->3D Rendering->Backend";
-    this->designActionMeasureDistance->setToolTip(noCGALMessage);
+    this->designActionMeasureDist->setToolTip(noCGALMessage);
     this->designActionMeasureAngle->setToolTip(noCGALMessage);
   } else {
-    this->designActionMeasureDistance->setToolTip(tooltipMessage);
+    this->designActionMeasureDist->setToolTip(tooltipMessage);
     this->designActionMeasureAngle->setToolTip(tooltipMessage);
   }
 
-  this->designActionMeasureDistance->setEnabled(enable);
-  this->designActionMeasureDistance->setChecked(false);
+  this->designActionMeasureDist->setEnabled(enable);
+  this->designActionMeasureDist->setChecked(false);
   this->designActionMeasureAngle->setEnabled(enable);
   this->designActionMeasureAngle->setChecked(false);
   this->designActionFindHandle->setChecked(false);
@@ -4367,16 +4328,16 @@ void MainWindow::setupDocks()
   setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
   // clang-format off
-
-  docks = {{editorDock, _("&Editor"), "view/hideEditor"},
-           {consoleDock, _("&Console"), "view/hideConsole"},
-           {parameterDock, _("C&ustomizer"), "view/hideCustomizer"},
-           {errorLogDock, _("Error-&Log"), "view/hideErrorLog"},
-           {animateDock, _("&Animate"), "view/hideAnimate"},
-           {fontListDock, _("&Font List"), "view/hideFontList"},
-           {colorListDock, _("C&olor List"), "view/hideColorList"},
-           {viewportControlDock, _("&Viewport-Control"), "view/hideViewportControl"}};
-
+  docks = {
+    {editorDock, _("&Editor")},
+    {consoleDock, _("&Console")},
+    {parameterDock, _("C&ustomizer")},
+    {errorLogDock, _("Error-&Log")},
+    {animateDock, _("&Animate")},
+    {fontListDock, _("&Font List")},
+    {colorListDock, _("C&olor List")},
+    {viewportControlDock, _("&Viewport-Control")},
+  };
   // clang-format off
 
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
@@ -4387,10 +4348,8 @@ void MainWindow::setupDocks()
   navigationMenu = new QMenu();
 
   // Create the docks, connect corresponding action and install menu entries
-  for (auto& [dock, title, configKey] : docks) {
+  for (auto& [dock, title] : docks) {
     dock->setName(title);
-//    dock->setConfigKey(configKey);
-    dock->setVisible(!GlobalPreferences::inst()->getValue(configKey).toBool());
     dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
     // It is neede to have the event filter installed in each dock so that the events are
@@ -4477,7 +4436,7 @@ void MainWindow::setupMenusAndActions()
   // Design menu
   //
   measurementGroup = new QActionGroup(this);
-  measurementGroup->addAction(designActionMeasureDistance);
+  measurementGroup->addAction(designActionMeasureDist);
   measurementGroup->addAction(designActionMeasureAngle);
   connect(this->measurementGroup, &QActionGroup::triggered, this, &MainWindow::handleMeasurementClicked);
 

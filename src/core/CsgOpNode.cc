@@ -27,6 +27,7 @@
 #include "core/CsgOpNode.h"
 
 #include <cassert>
+#include "geometry/PolySet.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -35,7 +36,6 @@
 #include "core/Children.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "geometry/PolySet.h"
 #include "core/enums.h"
 #include "core/module.h"
 

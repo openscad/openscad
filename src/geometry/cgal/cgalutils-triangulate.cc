@@ -14,9 +14,9 @@
 
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"
-#include "src/core/ColorUtil.h"
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
+#include "src/core/ColorUtil.h"
 
 namespace CGALUtils {
 

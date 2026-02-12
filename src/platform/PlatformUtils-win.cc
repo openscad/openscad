@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <ios>
 #include <map>
-#include <string>
+#include <boost/nowide/convert.hpp>
 
 #include "platform/PlatformUtils.h"
 #include "utils/findversion.h"

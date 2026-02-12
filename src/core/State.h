@@ -22,11 +22,7 @@ public:
   void setNumChildren(unsigned int numc) { this->numchildren = numc; }
   void setParent(const std::shared_ptr<const AbstractNode>& parent) { this->parentnode = parent; }
   void setMatrix(const Transform3d& m) { this->matrix_ = m; }
-  void setColor(const Color4f& c, int textureind)
-  {
-    this->color_ = c;
-    this->textureind_ = textureind;
-  }
+  void setColor(const Color4f& c) { this->color_ = c; }
   void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
   [[nodiscard]] bool preferNef() const { return this->flags & PREFERNEF; }
 
@@ -38,7 +34,6 @@ public:
   [[nodiscard]] std::shared_ptr<const AbstractNode> parent() const { return this->parentnode; }
   [[nodiscard]] const Transform3d& matrix() const { return this->matrix_; }
   [[nodiscard]] const Color4f& color() const { return this->color_; }
-  [[nodiscard]] const int& textureind() const { return this->textureind_; }
 
 private:
   enum StateFlags : unsigned int {

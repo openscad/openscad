@@ -11,6 +11,7 @@
 #include <CGAL/version.h>
 
 #include <memory>
+#include "src/core/ColorUtil.h"
 #include <vector>
 
 #include "geometry/PolySet.h"
@@ -20,7 +21,6 @@
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
 #include "utils/svg.h"
-#include "src/core/ColorUtil.h"
 
 static void add_outline_to_poly(
   CGAL_Nef_polyhedron2::Explorer& explorer,

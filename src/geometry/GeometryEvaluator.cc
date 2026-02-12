@@ -10,14 +10,6 @@
 
 #include "Feature.h"
 #include "core/BaseVisitable.h"
-#include "geometry/Barcode1d.h"
-#include "core/SkinNode.h"
-#include "core/ConcatNode.h"
-#include "core/PathExtrudeNode.h"
-#include "core/PullNode.h"
-#include "core/DebugNode.h"
-#include "core/RepairNode.h"
-#include "core/WrapNode.h"
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
@@ -29,11 +21,19 @@
 #include "core/RenderNode.h"
 #include "core/RoofNode.h"
 #include "core/RotateExtrudeNode.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
+#include "core/PathExtrudeNode.h"
+#include "core/PullNode.h"
+#include "core/DebugNode.h"
+#include "core/RepairNode.h"
+#include "core/WrapNode.h"
+#include "glview/ColorMap.h"
+#include "geometry/Barcode1d.h"
 #include "core/State.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
 #include "core/Tree.h"
-#include "glview/ColorMap.h"
 #include "core/enums.h"
 #include "core/node.h"
 #include "geometry/ClipperUtils.h"
@@ -282,7 +282,6 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned 
   return true;
 }
 
-using Eigen::Vector4d;
 typedef std::vector<IndexedFace> indexedFaceList;
 
 bool mergeTrianglesOpposite(const IndexedFace& poly1, const IndexedFace& poly2)

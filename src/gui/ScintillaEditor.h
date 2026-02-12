@@ -7,8 +7,6 @@
 #include <QString>
 #include <QStringList>
 #include <QVBoxLayout>
-#include <Qsci/qsciscintilla.h>
-#include <Qsci/qscilexerpython.h>
 #include <QWidget>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -18,6 +16,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <Qsci/qsciscintilla.h>
+#include <Qsci/qscilexerpython.h>
 
 #include "gui/Editor.h"
 #include "gui/EditorColorMap.h"
