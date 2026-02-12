@@ -247,6 +247,8 @@ def main():
               "submodules/manifold/src/sdf.cpp",
               "submodules/manifold/src/polygon.cpp",
               "submodules/manifold/src/tree2d.cpp",
+              "submodules/manifold/src/lazy_collider.cpp",
+              "submodules/manifold/src/minkowski.cpp",
               "submodules/manifold/src/impl.cpp" ]
     clipper = [
               "submodules/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp",

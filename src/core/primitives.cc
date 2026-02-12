@@ -47,6 +47,7 @@
 #include "core/Value.h"
 #include "core/module.h"
 #include "core/node.h"
+#include "core/ColorUtil.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"

@@ -34,6 +34,7 @@
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
 #include "core/Tree.h"
+#include "glview/ColorMap.h"
 #include "core/enums.h"
 #include "core/node.h"
 #include "geometry/ClipperUtils.h"

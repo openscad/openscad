@@ -2,9 +2,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "core/node.h"
 #include "core/function.h"
+#include "core/node.h"
 #include "geometry/Polygon2d.h"
 #include <core/Selection.h>
 

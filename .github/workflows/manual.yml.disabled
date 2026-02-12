@@ -135,7 +135,7 @@ jobs:
       run: |
         which sudo || ( apt update && apt install -y sudo )
 
-        sudo ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
+        sudo ./scripts/get-dependencies.py --yes --profile pythonscad-qt5
     - name: Build
       run: |
         cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DUSE_BUILTIN_OPENCSG=${{ inputs.use_builtin_opencsg }} -B b .

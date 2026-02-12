@@ -24,7 +24,6 @@
  *
  */
 
-#include <Eigen/Core>
 #include "core/Selection.h"
 
 #include <Eigen/Dense>
@@ -37,7 +36,7 @@ std::string SelectionTypeToString(SelectionType type)
 {
   switch (type) {
   case SelectionType::SELECTION_POINT: return "point";
-  case SelectionType::SELECTION_LINE:  return "line";
+  case SelectionType::SELECTION_SEGMENT:  return "segment";
   default:                             return "unknown_SelectionType";
   }
 }
@@ -53,6 +52,7 @@ std::string Vector3dtoString(const Eigen::Vector3d& vec,
   return oss.str();
 }
 
+/*
 std::string SelectedObject::toString() const
 {
   if (type == SelectionType::SELECTION_LINE) {

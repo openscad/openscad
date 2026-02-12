@@ -178,8 +178,9 @@ RUN apt-get update && apt-get -y full-upgrade && \
 
 WORKDIR /openscad
 
-RUN --mount=type=bind,source=scripts/uni-get-dependencies.sh,target=./uni-get-dependencies.sh \
-    ./uni-get-dependencies.sh qt6 && \
+RUN --mount=type=bind,source=scripts/get-dependencies.py,target=./get-dependencies.py \
+    --mount=type=bind,source=scripts/deps,target=./deps \
+    ./get-dependencies.py --yes --profile pythonscad-qt6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

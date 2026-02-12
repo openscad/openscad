@@ -1,0 +1,4 @@
+# Relax line length for documentation (default 80 is strict)
+MD013:
+  line_length: 120
+  code_block_line_length: 120

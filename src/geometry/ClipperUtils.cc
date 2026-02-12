@@ -10,12 +10,11 @@
 #include <utility>
 #include <vector>
 #include "src/core/ColorUtil.h"
-#include <glview/RenderSettings.h>
-
 #include "clipper2/clipper.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
+#include <glview/RenderSettings.h>
 
 namespace ClipperUtils {
 

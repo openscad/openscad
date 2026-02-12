@@ -52,6 +52,8 @@
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/RenderNode.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
 #include "core/RoofNode.h"
 #include "core/RotateExtrudeNode.h"
 #include "core/TextNode.h"
