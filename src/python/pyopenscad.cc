@@ -152,6 +152,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **d
   }
 
   // Verify obj is actually a PyOpenSCADType before casting
+  if (obj->ob_type != &PyOpenSCADType) return nullptr;
   if (!PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
     *dict = nullptr;
     return void_node;
@@ -203,7 +204,7 @@ PyTypeObject *PyOpenSCADObjectType(PyObject *objs)
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result = nullptr;
-  if (PyObject_IsInstance(objs, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+  if (objs->ob_type == &PyOpenSCADType && PyObject_IsInstance(objs, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
     result = (reinterpret_cast<PyOpenSCADObject *>(objs))->node;
     if (result.use_count() > 2 && result != void_node && result != full_node) {
       result = result->clone();
@@ -218,7 +219,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
     PyObject *subdict;
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
-      if (PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+      if (obj->ob_type == &PyOpenSCADType && PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
         std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj, &subdict);
         if (child == nullptr) continue;
         node->children.push_back(child);
@@ -270,6 +271,7 @@ void python_build_hashmap(const std::shared_ptr<AbstractNode>& node, int level)
   //  python_hierdump(stream, node);
   std::string code = stream.str();
   while (PyDict_Next(maindict, &pos, &key, &value)) {
+    if (value->ob_type != &PyOpenSCADType) continue;
     if (!PyObject_IsInstance(value, reinterpret_cast<PyObject *>(&PyOpenSCADType))) continue;
     std::shared_ptr<AbstractNode> testnode = (reinterpret_cast<PyOpenSCADObject *>(value))->node;
     if (testnode != node) continue;
@@ -621,8 +623,7 @@ std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_mo
       error = "function not executed";
       return nullptr;
     }
-
-    if (PyObject_IsInstance(funcresult, reinterpret_cast<PyObject *>(&PyOpenSCADType)))
+    if (funcresult->ob_type == &PyOpenSCADType && PyObject_IsInstance(funcresult, reinterpret_cast<PyObject *>(&PyOpenSCADType)))
       result = PyOpenSCADObjectToNode(funcresult, &dummydict);
     Py_XDECREF(funcresult);
   }
@@ -1101,6 +1102,7 @@ PyObject *PyOpenSCADType_iter(PyObject *self)
 PyObject *PyOpenSCADType_iternext(PyObject *self)
 {
   PyOpenSCADObjectIter *iter = reinterpret_cast<PyOpenSCADObjectIter *>(self);
+  if (iter->container->ob_type != &PyOpenSCADType) return nullptr;
   PyOpenSCADObject *container = reinterpret_cast<PyOpenSCADObject *>(iter->container);
 
   // Prüfe ob noch Elemente vorhanden
