@@ -43,8 +43,7 @@ jobs:
       - name: Calculate PACBOY_PACKAGES
         shell: bash
         run: |
-          pwd
-          ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
+          python3 ./scripts/get-dependencies.py --distro msys2 --profile pythonscad-${{ matrix.qt }} --output-env "$GITHUB_ENV" --env-var PACBOY_PACKAGES
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         id: msys2

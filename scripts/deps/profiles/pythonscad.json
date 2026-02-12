@@ -78,6 +78,12 @@
       "packages": [
         "libcurl-devel"
       ]
+    },
+    "msys2": {
+      "extends": null,
+      "packages": [
+        "curl:p"
+      ]
     }
   }
 }

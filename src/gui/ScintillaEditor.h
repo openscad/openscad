@@ -18,6 +18,15 @@
 #include <vector>
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexerpython.h>
+#include <QWidget>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <filesystem>
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "gui/Editor.h"
 #include "gui/EditorColorMap.h"

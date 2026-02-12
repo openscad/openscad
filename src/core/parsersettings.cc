@@ -120,7 +120,8 @@ static bool path_contains_file(fs::path dir, fs::path file)
   // with the std::equal check below, so we strip it before proceeding.
   if (dir.filename() == ".") dir.remove_filename();
   // We're also not interested in the file's name.
-  if (file.has_filename()) file.remove_filename();
+  assert(file.has_filename());
+  file.remove_filename();
 
   // If dir has more components than file, then file can't possibly
   // reside in dir.

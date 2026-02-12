@@ -31,11 +31,12 @@
 
 #include "Feature.h"
 #include "geometry/Geometry.h"
-#include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif
+#include "geometry/PolySetUtils.h"
+#include "io/export.h"
 
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {

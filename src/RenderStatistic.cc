@@ -38,9 +38,6 @@
 
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/Barcode1d.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/linalg.h"

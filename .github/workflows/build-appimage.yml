@@ -62,7 +62,7 @@ jobs:
         TZ: Etc/UTC
       run: |
         sudo apt-get update
-        sudo -E ./scripts/uni-get-dependencies.py --yes --profile ${{ matrix.profile }}
+        sudo -E ./scripts/get-dependencies.py --yes --profile ${{ matrix.profile }}
         sudo apt-get install -y wget file libfuse2
 
     - name: Build AppImage (x86_64)
@@ -91,7 +91,7 @@ jobs:
             set -e
             apt-get update
             apt-get install -y git python3 wget file libfuse2
-            ./scripts/uni-get-dependencies.py --yes --profile ${{ matrix.profile }}
+            ./scripts/get-dependencies.py --yes --profile ${{ matrix.profile }}
             chmod +x ./scripts/create_appimage.sh
             ./scripts/create_appimage.sh
           '

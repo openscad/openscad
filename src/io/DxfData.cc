@@ -50,7 +50,6 @@
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
-#include "utils/printutils.h"
 #include "src/core/ColorUtil.h"
 
 namespace fs = std::filesystem;

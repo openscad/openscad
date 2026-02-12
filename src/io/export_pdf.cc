@@ -20,6 +20,7 @@
 #include <cairo-pdf.h>
 #include "src/geometry/PolySetUtils.h"
 #include "export_foldable.h"
+#include <cairo.h>
 
 constexpr inline auto FONT = "Liberation Sans";
 constexpr double MARGIN = 30.0;

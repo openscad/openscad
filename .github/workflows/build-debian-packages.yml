@@ -135,8 +135,8 @@ jobs:
           fi
           echo "Using profile: $QT_PROFILE for ${{ matrix.distro }}"
 
-          # Install base dependencies using uni-get-dependencies
-          sudo ./scripts/uni-get-dependencies.py --yes --profile "$QT_PROFILE"
+          # Install base dependencies using get-dependencies
+          sudo ./scripts/get-dependencies.py --yes --profile "$QT_PROFILE"
           # Install Debian packaging tools
           sudo apt-get install -y \
             debhelper \
@@ -166,8 +166,8 @@ jobs:
           fi
           echo "Using profile: $QT_PROFILE for ${{ matrix.distro }}"
 
-          # Install base dependencies using uni-get-dependencies (running as root, no sudo needed)
-          ./scripts/uni-get-dependencies.py --yes --profile "$QT_PROFILE"
+          # Install base dependencies using get-dependencies (running as root, no sudo needed)
+          ./scripts/get-dependencies.py --yes --profile "$QT_PROFILE"
           # Install Debian packaging tools
           apt-get install -y \
             debhelper \
@@ -228,7 +228,7 @@ jobs:
               apt-get install -y git python3 gnupg
 
               # Install build dependencies
-              ./scripts/uni-get-dependencies.py --yes --profile \"$QT_PROFILE\"
+              ./scripts/get-dependencies.py --yes --profile \"$QT_PROFILE\"
               apt-get install -y debhelper devscripts lintian dpkg-dev fakeroot libboost-all-dev
 
               # Import GPG signing key if building for release

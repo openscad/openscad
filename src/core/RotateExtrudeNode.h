@@ -7,7 +7,7 @@
 #include "core/CurveDiscretizer.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
-#include "geometry/linalg.h"
+#include "core/node.h"
 
 #ifdef ENABLE_PYTHON
 #include <src/python/python_public.h>

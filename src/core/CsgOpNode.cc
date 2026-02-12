@@ -36,6 +36,7 @@
 #include "core/Children.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
+#include "geometry/PolySet.h"
 #include "core/enums.h"
 #include "core/module.h"
 

@@ -1,5 +1,3 @@
-#include <catch2/catch_all.hpp>
-#if 0
 #include "vector_math.h"
 
 #include <catch2/catch_all.hpp>

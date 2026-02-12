@@ -12,6 +12,10 @@
 #include "utils/boost-utils.h"
 #include "geometry/Curve.h"
 #include "geometry/Surface.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/Reindexer.h"
+#include "geometry/linalg.h"
+#include "utils/boost-utils.h"
 
 class PolySet;
 

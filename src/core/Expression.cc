@@ -54,9 +54,6 @@
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
-#include "utils/boost-utils.h"
-#include <boost/regex.hpp>
-#include <boost/assign/std/vector.hpp>
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif

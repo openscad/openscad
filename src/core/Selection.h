@@ -37,6 +37,7 @@ enum class SelectionType {
   SELECTION_INVALID
 };
 
+
 std::string SelectionTypeToString(SelectionType type);
 
 struct SelectedObject {

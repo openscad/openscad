@@ -22,7 +22,7 @@ jobs:
         TZ: Etc/UTC
       run: |
         which sudo || ( apt update && apt install -y sudo )
-        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
+        sudo -E ./scripts/get-dependencies.py --yes --profile pythonscad-qt5
     - name: Install gcovr
       run: uv sync --frozen --project .github/ci/openscad-coverage
     - name: Build and test

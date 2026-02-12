@@ -17,6 +17,8 @@
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
 #include "src/core/ColorUtil.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
 
 namespace CGALUtils {
 

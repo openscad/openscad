@@ -24,7 +24,6 @@
  *
  */
 
-#include <Eigen/Core>
 #include "core/Selection.h"
 
 #include <Eigen/Dense>
