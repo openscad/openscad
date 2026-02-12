@@ -24,23 +24,20 @@
  *
  */
 
-#include <Python.h>
+#include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 #include "linalg.h"
 #include "export.h"
 #include "GeometryUtils.h"
 #include <Python.h>
 #include "pyfunctions.h"
-#include "GeometryUtils.h"
-#include <cstddef>
-#include <memory>
-#include <optional>
-#include <sstream>
-#include <string>
+#include "python/pyopenscad.h"
 #include "python/pyconversion.h"
-
-#include "core/CgalAdvNode.h"
+#include "core/primitives.h"
+#include "core/CsgOpNode.h"
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
+#include "SourceFile.h"
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
 #include "genlang/genlang.h"
@@ -49,15 +46,13 @@
 #ifdef ENABLE_LIBFIVE
 #include "python/FrepNode.h"
 #endif
-
-#include "core/CsgOpNode.h"
-#include "core/CurveDiscretizer.h"
+#include "GeometryUtils.h"
 #include "core/FreetypeRenderer.h"
+#include "core/TransformNode.h"
 #include "core/LinearExtrudeNode.h"
+#include "core/RotateExtrudeNode.h"
 #include "core/PathExtrudeNode.h"
 #include "core/ImportNode.h"
-#include "core/OffsetNode.h"
-#include "core/ProjectionNode.h"
 #include "core/PullNode.h"
 #include "core/WrapNode.h"
 #include "core/OversampleNode.h"
@@ -66,6 +61,7 @@
 #include "core/FilletNode.h"
 #include "core/SkinNode.h"
 #include "core/ConcatNode.h"
+#include "core/CgalAdvNode.h"
 #include "Expression.h"
 #include "core/RoofNode.h"
 #include "core/RenderNode.h"
@@ -96,10 +92,14 @@
 #include "handle_dep.h"
 #include <fstream>
 #include <ostream>
-#include "io/fileutils.h"
+#include <cmath>
+#include <boost/functional/hash.hpp>
+#include "core/customizer/Annotation.h"
+#include <ScopeContext.h>
 #include "PlatformUtils.h"
-#include "python/pyopenscad.h"
-#include "utils/degree_trig.h"
+#include "Feature.h"
+#include <iostream>
+#include <filesystem>
 
 extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename,
                   const std::string& mainFile, int debug);

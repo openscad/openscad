@@ -28,7 +28,6 @@
 #include <Common/Platform/NMR_WinTypes.h>
 #include <Model/COM/NMR_DLLInterfaces.h>
 
-
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
