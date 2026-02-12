@@ -2,7 +2,6 @@
 
 #include "gui/MainWindow.h"
 #include "gui/Preferences.h"
-#include "gui/QSettingsCached.h"
 #ifdef Q_OS_MACOS
 #include "gui/EventFilter.h"
 #endif
@@ -12,19 +11,17 @@
 #include "geometry/cgal/CGALCache.h"
 #endif
 #include <QApplication>
-#include <QColor>
 #include <QEvent>
-#include <QGuiApplication>
-#include <QIcon>
 #include <QObject>
-#include <QPalette>
+#include <QProgressDialog>
 #include <QString>
 #include <QStringList>
 #include <QStyleFactory>
+#include <boost/foreach.hpp>
 #include <QStyleHints>
 #include <cassert>
 #include <exception>
-#include <QProgressDialog>
+
 #include "glview/RenderSettings.h"
 
 OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)

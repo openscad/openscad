@@ -32,12 +32,11 @@
 
 #include "gui/Editor.h"
 #include "gui/ImportUtils.h"
-#include "gui/ScintillaEditor.h"
-#include "gui/Preferences.h"
 #include "gui/MainWindow.h"
+#include "gui/Preferences.h"
+#include "gui/ScintillaEditor.h"
+#include "utils/printutils.h"
 #include <genlang/genlang.h>
-
-#include <cstddef>
 
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
@@ -702,8 +701,8 @@ bool TabManager::shouldClose()
 
 void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)
 {
-  const char *fileName = filepath.toLocal8Bit().constData();
-  LOG("%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
+  const std::string fileName = filepath.toStdString();
+  LOG("%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toStdString());
 
   const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
   const QString dialogFormat(dialogFormatStr.c_str());
@@ -719,7 +718,6 @@ void TabManager::saveError(const QIODevice& file, const std::string& msg, const 
 bool TabManager::save(EditorInterface *edt)
 {
   assert(edt != nullptr);
-
   if (edt->filepath.endsWith("Untitled.py")) edt->filepath = "";
   if (edt->filepath.isEmpty()) {
     return saveAs(edt);

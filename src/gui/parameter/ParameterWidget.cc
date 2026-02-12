@@ -25,16 +25,6 @@
  */
 #include "gui/parameter/ParameterWidget.h"
 
-#include <QCoreApplication>
-#include <QLayoutItem>
-#include <QString>
-#include <stdexcept>
-#include <cassert>
-#include <map>
-#include <set>
-#include <memory>
-#include <QWidget>
-#include <QMenu>
 #include <QAction>
 #include <QInputDialog>
 #include <QLayoutItem>
