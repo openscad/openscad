@@ -220,16 +220,16 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 Value Value::clone() const
 {
   switch (this->type()) {
-  case Type::UNDEFINED:   return {};
-  case Type::BOOL:        return std::get<bool>(this->value);
-  case Type::NUMBER:      return std::get<double>(this->value);
-  case Type::STRING:      return std::get<str_utf8_wrapper>(this->value).clone();
-  case Type::RANGE:       return std::get<RangePtr>(this->value).clone();
+  case Type::UNDEFINED: return {};
+  case Type::BOOL:      return std::get<bool>(this->value);
+  case Type::NUMBER:    return std::get<double>(this->value);
+  case Type::STRING:    return std::get<str_utf8_wrapper>(this->value).clone();
+  case Type::RANGE:     return std::get<RangePtr>(this->value).clone();
   case Type::PYTHONCLASS: return std::get<PythonClassPtr>(this->value).clone();
-  case Type::VECTOR:      return std::get<VectorType>(this->value).clone();
-  case Type::OBJECT:      return std::get<ObjectType>(this->value).clone();
-  case Type::FUNCTION:    return std::get<FunctionPtr>(this->value).clone();
-  default:                assert(false && "unknown Value variant type"); return {};
+  case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
+  case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
+  case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
+  default:              assert(false && "unknown Value variant type"); return {};
   }
 }
 
@@ -241,16 +241,16 @@ Value Value::undef(const std::string& why)
 std::string Value::typeName(Type type)
 {
   switch (type) {
-  case Type::UNDEFINED:   return "undefined";
-  case Type::BOOL:        return "bool";
-  case Type::NUMBER:      return "number";
-  case Type::STRING:      return "string";
-  case Type::VECTOR:      return "vector";
-  case Type::RANGE:       return "range";
+  case Type::UNDEFINED: return "undefined";
+  case Type::BOOL:      return "bool";
+  case Type::NUMBER:    return "number";
+  case Type::STRING:    return "string";
+  case Type::VECTOR:    return "vector";
+  case Type::RANGE:     return "range";
   case Type::PYTHONCLASS: return "pythonclass";
-  case Type::OBJECT:      return "object";
-  case Type::FUNCTION:    return "function";
-  default:                assert(false && "unknown Value variant type"); return "<unknown>";
+  case Type::OBJECT:    return "object";
+  case Type::FUNCTION:  return "function";
+  default:              assert(false && "unknown Value variant type"); return "<unknown>";
   }
 }
 

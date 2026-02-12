@@ -15,7 +15,6 @@
 #include "core/FunctionType.h"
 #include "core/RangeType.h"
 #include "core/PythonClassType.h"
-#include "core/str_utf8_wrapper.h"
 #include "core/UndefType.h"
 #include "core/str_utf8_wrapper.h"
 

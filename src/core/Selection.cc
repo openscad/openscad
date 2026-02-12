@@ -33,12 +33,11 @@
 #include <sstream>
 #include <string>
 
-/*
 std::string SelectionTypeToString(SelectionType type)
 {
   switch (type) {
   case SelectionType::SELECTION_POINT: return "point";
-  case SelectionType::SELECTION_SEGMENT:  return "segment";
+  case SelectionType::SELECTION_LINE:  return "line";
   default:                             return "unknown_SelectionType";
   }
 }
@@ -57,9 +56,7 @@ std::string Vector3dtoString(const Eigen::Vector3d& vec,
 std::string SelectedObject::toString() const
 {
   if (type == SelectionType::SELECTION_LINE) {
-    return Vector3dtoString(p1) + " to " + Vector3dtoString(p2);
+    return Vector3dtoString(pt[0]) + " to " + Vector3dtoString(pt[1]);
   }
-  return Vector3dtoString(p1);
+  return Vector3dtoString(pt[0]);
 }
-*/
-

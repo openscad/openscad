@@ -26,24 +26,8 @@
 
 #include "core/primitives.h"
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/PolySet.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/Barcode1d.h"
-#include "utils/calc.h"
-#include "core/node.h"
 #include "src/core/ColorUtil.h"
-#include "utils/degree_trig.h"
-#include "core/Builtins.h"
-#include "core/Children.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/node.h"
-#include "core/Parameters.h"
-#include "utils/calc.h"
-#include "utils/degree_trig.h"
-#include "utils/printutils.h"
 #include <algorithm>
 #include <boost/assign/std/vector.hpp>
 #include <cassert>

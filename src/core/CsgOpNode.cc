@@ -26,14 +26,8 @@
 
 #include "core/CsgOpNode.h"
 
-#include "core/Builtins.h"
-#include "core/Children.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/Parameters.h"
+#include <cassert>
 #include "geometry/PolySet.h"
-
-#include <utility>
 #include <memory>
 #include <string>
 #include <utility>

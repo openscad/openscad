@@ -16,5 +16,4 @@ public:
   std::string name() const override;
 
   Color4f color;
-  int textureind;
 };

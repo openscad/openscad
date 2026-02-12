@@ -229,7 +229,6 @@ SettingsEntryEnum<std::string> Settings::octoPrintFileFormat(
 
 SettingsEntryString Settings::localAppExecutable("printing", "localAppExecutable", "");
 SettingsEntryString Settings::localAppTempDir("printing", "localAppTempDir", "");
-
 SettingsEntryEnum<std::string> Settings::localAppFileFormat(
   "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
   fileformat::info(FileFormat::ASCII_STL).description);
