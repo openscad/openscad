@@ -3,6 +3,10 @@
 
 #include <QPoint>
 #include <QString>
+#include <optional>
+#include <vector>
+
+#include "core/Selection.h"
 #include "geometry/linalg.h"
 #include "gui/QGLView.h"
 

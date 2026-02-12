@@ -3,6 +3,8 @@
 #include "geometry/Grid.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 // this function resolves a 3x3 linear eqauation system
 /*

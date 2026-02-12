@@ -1,7 +1,7 @@
 #pragma once
+#include <array>
 #include <map>
 #include <string>
-#include <array>
 
 namespace MouseConfig {
 

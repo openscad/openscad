@@ -1,20 +1,13 @@
-<h1 align="center"> <a href="https://pythonscad.org"
-  target="_blank"><img src="https://pythonscad.org/pictures/plogo.PNG"
-  alt="PythonSCAD Logo" width="200"></a> <br> PythonSCAD <br> </h1>
-  <h3 align="center">Script-based 3D modeling app which lets you use
-  Python as its native language</h3>
+# PythonSCAD
 
-<p align="center"> <a href="https://groups.google.com/g/pythonscad"
-target="_blank"> <img
-src="https://img.shields.io/badge/Google%20Groups-4285F4?logo=Google&logoColor=white"/>
-</a><a href="https://www.reddit.com/r/OpenPythonSCAD/"
-target="_blank"> <img
-src="https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white"/>
-</a><a href="https://pythonscad.org" target="_blank"> <img
-src="https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white"/>
-</a> <a href="https://deepwiki.com/pythonscad/pythonscad"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
-</p>
+[![PythonSCAD Logo](https://pythonscad.org/pictures/plogo.PNG)](https://pythonscad.org)
 
+Script-based 3D modeling app which lets you use Python as its native language.
+
+[![Google Groups](https://img.shields.io/badge/Google%20Groups-4285F4?logo=Google&logoColor=white)](https://groups.google.com/g/pythonscad)
+[![Reddit](https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white)](https://www.reddit.com/r/OpenPythonSCAD/)
+[![Website](https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white)](https://pythonscad.org)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pythonscad/pythonscad)
 
 PythonSCAD is a programmatic 3D modeling application. It allows you to
 turn simple code into 3D models suitable for 3D printing.
@@ -34,18 +27,17 @@ features and improves existing ones.
 - [Example code](#example-code)
 - [Documentation](#documentation)
 - [Building PythonSCAD from source](#building-pythonscad-from-source)
-    - [Prerequisites](#prerequisites)
-    - [Getting the source code](#getting-the-source-code)
-    - [Contributing Changes](#contributing-changes)
-    - [Building for macOS](#building-for-macos)
-    - [Building for Linux/BSD](#building-for-linuxbsd)
-    - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
-    - [Building on Nix](#building-on-nix)
-    - [Building for Windows](#building-for-windows)
-    - [Building for WebAssembly](#building-for-webassembly)
+  - [Prerequisites](#prerequisites)
+  - [Getting the source code](#getting-the-source-code)
+  - [Contributing Changes](#contributing-changes)
+  - [Building for macOS](#building-for-macos)
+  - [Building for Linux/BSD](#building-for-linuxbsd)
+  - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
+  - [Building on Nix](#building-on-nix)
+  - [Building for Windows](#building-for-windows)
+  - [Building for WebAssembly](#building-for-webassembly)
 
-
-# When to not use PythonSCAD
+## When to not use PythonSCAD
 
 If you need to create complex organic shapes, animate models, or
 produce visual effects, PythonSCAD is not the ideal choice. You will
@@ -57,7 +49,7 @@ engineering-oriented modeling. If you prefer a point-and-click style
 design approach you might want to try
 [FreeCAD](https://www.freecad.org/).
 
-# Difference to OpenSCAD
+## Difference to OpenSCAD
 
 PythonSCAD is a direct fork of OpenSCAD and thus includes all
 functionality from OpenSCAD and it is closely kept in sync with it's
@@ -138,7 +130,7 @@ programming with Python or even other languages.
 PythonSCAD follows a functional language model while OpenSCAD is
 closer to a descriptive language. Both have their pro's and con's.
 
-# Installing
+## Installing
 
 Pre-built binaries are available at
 <https://www.pythonscad.org/downloads.php>.
@@ -146,7 +138,7 @@ Pre-built binaries are available at
 You could also [build PythonSCAD from
 source](#building-pythonscad-from-source).
 
-# Example code
+## Example code
 
 ```python
 # Import the openscad module's contents
@@ -161,17 +153,16 @@ show(c)
 
 ![Example code rendered in PythonSCAD](resources/images/red-box-example.png)
 
-# Documentation
+### Documentation
 
-Have a look at the PythonSCAD Homepage
-(https://pythonscad.org/tutorial/site/index.html) for a small tutorial
+Have a look at the [PythonSCAD Homepage](https://pythonscad.org/tutorial/site/index.html) for a small tutorial.
 
-# Building PythonSCAD from source
+### Building PythonSCAD from source
 
 To build PythonSCAD from source, follow the instructions for the
 platform applicable to you below.
 
-### Prerequisites
+## Prerequisites
 
 To build PythonSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
@@ -184,40 +175,43 @@ the libraries from source.
 
 Follow the instructions for the platform you're compiling on below.
 
-* A C++ compiler supporting C++17
-* [cmake (3.5 ->)](https://cmake.org/)
-* [Qt (5.12 ->)](https://qt.io/)
-* [QScintilla2 (2.9
+- A C++ compiler supporting C++17
+- [cmake (3.5 ->)](https://cmake.org/)
+- [Qt (5.12 ->)](https://qt.io/)
+- [QScintilla2 (2.9
   ->)](https://riverbankcomputing.com/software/qscintilla/)
-* [CGAL (5.4 ->)](https://www.cgal.org/)
-* [GMP (5.x)](https://gmplib.org/)
-* [MPFR (3.x)](https://www.mpfr.org/)
-* [boost (1.70 ->)](https://www.boost.org/)
-* [curl (7.58 ->)](https://curl.se/)
-* [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
-* [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
-* [Eigen (3.x)](https://eigen.tuxfamily.org/)
-* [glib2 (2.x)](https://developer.gnome.org/glib/)
-* [fontconfig (2.10 -> )](https://fontconfig.org/)
-* [freetype2 (2.4 -> )](https://freetype.org/)
-* [harfbuzz (0.9.19 ->
+- [CGAL (5.4 ->)](https://www.cgal.org/)
+- [GMP (5.x)](https://gmplib.org/)
+- [MPFR (3.x)](https://www.mpfr.org/)
+- [boost (1.70 ->)](https://www.boost.org/)
+- [curl (7.58 ->)](https://curl.se/)
+- [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
+- [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
+- [Eigen (3.x)](https://eigen.tuxfamily.org/)
+- [glib2 (2.x)](https://developer.gnome.org/glib/)
+- [fontconfig (2.10 -> )](https://fontconfig.org/)
+- [freetype2 (2.4 -> )](https://freetype.org/)
+- [harfbuzz (0.9.19 ->
   )](https://www.freedesktop.org/wiki/Software/HarfBuzz/)
-* [libzip (0.10.1 -> )](https://libzip.org/)
-* [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
-* [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
-* [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
-* [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
+- [libzip (0.10.1 -> )](https://libzip.org/)
+- [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
+- [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
+- [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
+- [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
 
 For the test suite, additional requirements are:
-* Python3 (3.8 -> )
-* [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
-* [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
-### Getting the source code
+- Python3 (3.8 -> )
+- [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
+- [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
-Install git (https://git-scm.com/) onto your system. Then run a clone:
+## Getting the source code
 
-    git clone https://github.com/pythonscad/pythonscad.git
+Install [git](https://git-scm.com/) onto your system. Then run a clone:
+
+```bash
+git clone https://github.com/pythonscad/pythonscad.git
+```
 
 This will download the latest sources into a directory named
 `pythonscad`.
@@ -229,23 +223,24 @@ cd pythonscad
 git submodule update --init --recursive
 ```
 
+## Contributing Changes
 
-### Contributing Changes
+You can create an issue to plan and discuss your change by visiting
+<https://github.com/openscad/openscad/issues>.
 
-You can create an issue to plan and discuss your change by visiting https://github.com/openscad/openscad/issues.
-
-If you want to work on an existing issue and plan to contribute changes via a PR later, you can assign the issue to yourself by commenting:
+If you want to work on an existing issue and plan to contribute changes via a
+PR later, you can assign the issue to yourself by commenting:
 
 `/assign-me`
 
 in a comment on the issue.
 
-### Building for macOS
+## Building for macOS
 
 Prerequisites:
 
-* Xcode
-* automake, libtool, cmake, pkg-config, wget, meson, python-packaging (we recommend installing these using Homebrew)
+- Xcode
+- automake, libtool, cmake, pkg-config, wget, meson, python-packaging (we recommend installing these using Homebrew)
 
 Install Dependencies:
 
@@ -253,19 +248,25 @@ After building dependencies using one of the following options, follow the instr
 
 1. **From source**
 
-    Run the script that sets up the environment variables:
+   Run the script that sets up the environment variables:
 
-        source scripts/setenv-macos.sh
+   ```bash
+   source scripts/setenv-macos.sh
+   ```
 
-    Then run the script to compile all the dependencies:
+   Then run the script to compile all the dependencies:
 
-        ./scripts/macosx-build-dependencies.sh
+   ```bash
+   ./scripts/macosx-build-dependencies.sh
+   ```
 
 2. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
-        ./scripts/macosx-build-homebrew.sh
+   ```bash
+   ./scripts/macosx-build-homebrew.sh
+   ```
 
-### Building for Linux/BSD
+## Building for Linux/BSD
 
 First, make sure that you have git installed (often packaged as 'git-core'
 or 'scmgit'). Once you've cloned this git repository, download and install
@@ -274,7 +275,7 @@ manager. A convenience script is provided that can help with this
 process on some systems:
 
 ```shell
-sudo ./scripts/uni-get-dependencies.py --profile pythonscad-qt5
+sudo ./scripts/get-dependencies.py --profile pythonscad-qt5
 ```
 
 After installing dependencies, check their versions. You can run this
@@ -288,7 +289,6 @@ Take care that you don't have old local copies anywhere (`/usr/local/`).
 If all dependencies are present and of a high enough version, skip ahead
 to the Compilation instructions. These are as simple as:
 
-
 ```shell
 mkdir build
 cd build
@@ -298,27 +298,30 @@ make test
 sudo make install
 ```
 
-### Building for Linux/BSD on systems with older or missing dependencies
+## Building for Linux/BSD on systems with older or missing dependencies
 
 If some of your system dependency libraries are missing or old, then you
 can download and build newer versions into `$HOME/openscad_deps` by
 following this process. First, run the script that sets up the
 environment variables.
 
-    source ./scripts/setenv-unibuild.sh
+```bash
+source ./scripts/setenv-unibuild.sh
+```
 
 Then run the script to compile all the prerequisite libraries above:
-
 
 Note that huge dependencies like gcc, qt, or glib2 are not included
 here, only the smaller ones (boost, CGAL, opencsg, etc). After the
 build, again check dependencies.
 
-    ./scripts/check-dependencies.sh
+```bash
+./scripts/check-dependencies.sh
+```
 
 After that, follow the Compilation instructions below.
 
-### Building on Nix
+## Building on Nix
 
 A [development Nix shell](scripts/nix) is included for local, incremental compilation.
 
@@ -331,17 +334,17 @@ make test
 sudo make install
 ```
 
-### Building for Windows
+## Building for Windows
 
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
 attempt an MSVC build on Windows, please see this site:
-https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+<https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows>
 
 MSVC build support has been added to OpenSCAD. For instructions on how to build it,
 refer to [building with MSVC](doc/win-build.md).
 
 To cross-build, first make sure that you have all necessary dependencies
-of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
+of the MXE project (listed at <https://mxe.cc/#requirements>). Don't install
 MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
 
 Then get your development tools installed to get GCC. Then after you've
@@ -349,17 +352,17 @@ cloned this git repository, start a new clean bash shell and run the
 script that sets up the environment variables.
 
 ```bash
-    source ./scripts/setenv-mingw-xbuild.sh 64
+source ./scripts/setenv-mingw-xbuild.sh 64
 ```
 
 Then run the script to download & compile all the prerequisite libraries above:
 
 ```bash
-    ./scripts/mingw-x-build-dependencies.sh 64
+./scripts/mingw-x-build-dependencies.sh 64
 ```
 
 Note that this process can take several hours, and tens of gigabytes of
-disk space, as it uses the [https://mxe.cc](https://mxe.cc) system to cross-build many
+disk space, as it uses the [MXE](https://mxe.cc) system to cross-build many
 libraries. After it is complete, build OpenSCAD and package it to an
 installer:
 
@@ -369,11 +372,14 @@ installer:
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
-### Building for WebAssembly
+## Building for WebAssembly
 
-We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a premade Docker image built in [openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which also has usage examples)
+We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a
+premade Docker image built in
+[openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which
+also has usage examples).
 
-#### Browser
+### Browser
 
 The following command creates `build-web/openscad.wasm` & `build-web/openscad.js`:
 

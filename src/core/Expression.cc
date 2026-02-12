@@ -25,35 +25,35 @@
  */
 #include "core/Expression.h"
 
-#include <set>
-#include <functional>
-#include <ostream>
-#include <cstdint>
-#include <cmath>
-#include <cassert>
-#include <cstddef>
-#include <memory>
-#include <sstream>
 #include <algorithm>
+#include <boost/assign/std/vector.hpp>
+#include <boost/regex.hpp>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <ostream>
+#include <set>
+#include <sstream>
 #include <typeinfo>
 #include <utility>
 #include <variant>
 
 #include "Feature.h"
+#include "core/AST.h"
+#include "core/Assignment.h"
 #include "core/Context.h"
 #include "core/EvaluationSession.h"
-#include "core/function.h"
 #include "core/Parameters.h"
 #include "core/Value.h"
-
-#include "utils/compiler_specific.h"
-#include "utils/printutils.h"
+#include "core/function.h"
 #include "utils/StackCheck.h"
+#include "utils/boost-utils.h"
+#include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
-#include "utils/boost-utils.h"
-#include <boost/regex.hpp>
-#include <boost/assign/std/vector.hpp>
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif

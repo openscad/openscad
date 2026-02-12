@@ -1,5 +1,7 @@
 #include "glview/fbo.h"
 
+#include <cstddef>
+#include <string>
 #include <memory>
 
 #include "glview/system-gl.h"

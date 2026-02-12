@@ -72,7 +72,8 @@
     "macos": {
       "extends": null,
       "packages": [
-        "qt"
+        "qt",
+        "qscintilla2"
       ]
     },
     "mageia": {
@@ -106,6 +107,15 @@
         "qt6-qt5compat-devel",
         "qt6-qtmultimedia-devel",
         "qt6-qtsvg-devel"
+      ]
+    },
+    "msys2": {
+      "extends": null,
+      "packages": [
+        "qscintilla-qt6:p",
+        "qt6-5compat:p",
+        "qt6-multimedia:p",
+        "qt6-svg:p"
       ]
     }
   }

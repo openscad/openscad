@@ -40,6 +40,7 @@ option(ENABLE_TESTS "Run testsuite after building." ON)
 option(ENABLE_GUI_TESTS "Compile a special version of the PythonSCAD gui with feature for testing." OFF)
 option(EXPERIMENTAL "Enable Experimental Features" ON)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
+option(USE_MANIFOLD_MINKOWSKI "Use Manifold's Minkowski instead of CGAL's" OFF)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
@@ -84,8 +85,9 @@ set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
-  # Minimum version required for Qt-6.8
-  set(DEPLOYMENT_TARGET "12.0")
+  # Minimum version required for PythonSCAD: macOS 14.0 (Sonoma)
+  # Only currently Apple-supported macOS versions are targeted.
+  set(DEPLOYMENT_TARGET "14.0")
 else()
   # Minimum version required for std::filesystem
   set(DEPLOYMENT_TARGET "10.15")
@@ -896,13 +898,6 @@ if(ENABLE_PYTHON)
   else()
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
   endif()
-  if(APPLE) # Nettle
-    target_include_directories(OpenSCADPy PRIVATE "/usr/local/include")
-    target_link_directories(OpenSCADPy PRIVATE "/usr/local/lib")
-    target_link_directories(OpenSCADExe PRIVATE "/usr/local/lib")
-    target_link_libraries(OpenSCADPy PRIVATE "libnettle.a")
-    target_link_libraries(OpenSCADExe PRIVATE "libnettle.a")
-  endif()
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
   target_link_libraries(OpenSCADPy PRIVATE ${GLIB2_LIBRARIES})
@@ -1591,6 +1586,9 @@ if(ENABLE_MANIFOLD)
 
   if (USE_MANIFOLD_TRIANGULATOR)
     target_compile_definitions(OpenSCADLibInternal PUBLIC USE_MANIFOLD_TRIANGULATOR)
+  endif()
+  if (USE_MANIFOLD_MINKOWSKI)
+    target_compile_definitions(OpenSCADLibInternal PUBLIC USE_MANIFOLD_MINKOWSKI)
   endif()
 endif()
 

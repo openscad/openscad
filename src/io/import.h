@@ -1,9 +1,8 @@
 #pragma once
 
+#include <boost/optional.hpp>
 #include <memory>
 #include <string>
-
-#include <boost/optional.hpp>
 
 #include "core/AST.h"
 #include "core/CurveDiscretizer.h"

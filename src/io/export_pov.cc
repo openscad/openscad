@@ -24,8 +24,6 @@
  *
  */
 
-#include "io/export.h"
-
 #include <cstddef>
 #include <memory>
 #include <ostream>
@@ -36,6 +34,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/linalg.h"
+#include "io/export.h"
 
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo)

@@ -27,6 +27,8 @@
 #include "io/DxfData.h"
 
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
@@ -39,17 +41,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
+#include "core/CurveDiscretizer.h"
 #include "core/Value.h"
 #include "geometry/Grid.h"
-#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "io/fileutils.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
-#include "utils/printutils.h"
 #include "utils/printutils.h"
 #include "src/core/ColorUtil.h"
 

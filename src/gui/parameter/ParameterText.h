@@ -1,11 +1,11 @@
 #pragma once
 
-#include "gui/parameter/ParameterVirtualWidget.h"
-#include "ui_ParameterText.h"
-
 #include <QString>
 #include <QWidget>
 #include <string>
+
+#include "gui/parameter/ParameterVirtualWidget.h"
+#include "ui_ParameterText.h"
 
 class ParameterText : public ParameterVirtualWidget, Ui::ParameterText
 {

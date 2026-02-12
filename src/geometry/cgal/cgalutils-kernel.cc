@@ -1,7 +1,8 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
-#include "geometry/cgal/cgalutils.h"
 #include <CGAL/Cartesian_converter.h>
 #include <CGAL/gmpxx.h>
+
+#include "geometry/cgal/cgalutils.h"
 
 namespace CGALUtils {
 

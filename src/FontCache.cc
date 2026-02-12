@@ -26,24 +26,26 @@
 
 #include "FontCache.h"
 
+#include <fontconfig/fontconfig.h>
+#include <ft2build.h>
+#include <hb.h>
+
+#include <boost/algorithm/string.hpp>
 #include <cassert>
-#include <cstdlib>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-#include <hb.h>
-#include <fontconfig/fontconfig.h>
-#include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TYPES_H
 #include FT_TRUETYPE_IDS_H
 
+#include "core/AST.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
@@ -428,10 +430,12 @@ FontFacePtr FontCache::find_face_fontconfig(const std::string& font) const
 
   FcChar8 *font_features;
   std::string font_features_str;
+#ifdef FC_FONT_FEATURES
   if (FcPatternGetString(match, FC_FONT_FEATURES, 0, &font_features) == FcResultMatch) {
     font_features_str = (const char *)(font_features);
     PRINTDB("Found font features: '%s'", font_features_str);
   }
+#endif
 
   FT_Face ftFace;
   const FT_Error error = FT_New_Face(this->library, (const char *)file_value, font_index, &ftFace);

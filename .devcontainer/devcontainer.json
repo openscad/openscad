@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile",
     // Build docker container using the scripts directory as context,
-    // in order that it can copy the install dependencies script.
+    // in order that it can copy the install dependencies script and profiles.
     "context": "../scripts"
   },
 
@@ -26,8 +26,10 @@
     Configuration to allow OpenSCAD running inside the container to connect to host display.
 
     Some background information on this configuration was found at:
-    - For Wayland: https://universal-blue.discourse.group/t/devcontainer-for-developing-an-application-with-a-gui/4634/4
-    - For X11 (Legacy): https://github.com/microsoft/vscode-remote-release/issues/550#issuecomment-501293753
+    - For Wayland:
+    https://universal-blue.discourse.group/t/devcontainer-for-developing-an-application-with-a-gui/4634/4
+    - For X11 (Legacy):
+    https://github.com/microsoft/vscode-remote-release/issues/550#issuecomment-501293753
 
     Setting this up in April 2025 we found that some of the properties mentioned above are
     already being set by the VSCode Dev Containers extension, so we do not set them below.

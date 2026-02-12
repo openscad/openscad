@@ -26,18 +26,21 @@
 
 #include "gui/ExternalToolInterface.h"
 
-#include <functional>
-#include <memory>
 #include <QDir>
-#include <QString>
 #include <QFileInfo>
+#include <QString>
 #include <QStringList>
 #include <QTemporaryFile>
+#include <functional>
+#include <memory>
+#include <string>
 
 #include "core/Settings.h"
+#include "geometry/Geometry.h"
+#include "glview/Camera.h"
 #include "gui/OctoPrint.h"
 #include "io/export.h"
-#include "geometry/Geometry.h"
+#include "utils/printutils.h"
 
 namespace {
 

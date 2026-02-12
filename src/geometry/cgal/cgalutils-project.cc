@@ -3,26 +3,24 @@
 
 #ifdef ENABLE_CGAL
 
-#include "geometry/cgal/cgal.h"
-#include "geometry/cgal/cgalutils.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetUtils.h"
-
-#include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
-
 #include <CGAL/config.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/version.h>
 
-#include <CGAL/convex_hull_3.h>
-#include "src/core/ColorUtil.h"
-#include "utils/svg.h"
-
+#include <memory>
 #include <vector>
+
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
+#include "utils/svg.h"
+#include "src/core/ColorUtil.h"
 
 static void add_outline_to_poly(
   CGAL_Nef_polyhedron2::Explorer& explorer,

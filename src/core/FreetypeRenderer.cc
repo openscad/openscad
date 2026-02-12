@@ -25,23 +25,26 @@
  */
 #include "core/FreetypeRenderer.h"
 
-#include <algorithm>
-#include <limits>
-#include <cstdint>
-#include <memory>
-#include <cmath>
-#include <cstdio>
-#include <vector>
-
 #include <fontconfig/fontconfig.h>
 #include <hb-ft.h>
 
-#include "geometry/linalg.h"
-#include "utils/printutils.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <ostream>
+#include <vector>
 
 #include "FontCache.h"
+#include "core/CurveDiscretizer.h"
 #include "core/DrawingCallback.h"
+#include "core/Value.h"
+#include "geometry/linalg.h"
 #include "utils/calc.h"
+#include "utils/printutils.h"
 
 #include FT_OUTLINE_H
 // NOLINTNEXTLINE(bugprone-macro-parentheses)

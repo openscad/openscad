@@ -26,19 +26,18 @@
 
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include <string>
-#include <vector>
-#include <mutex>
-
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QString>
 #include <QStringList>
-#include <QJsonObject>
-#include <QJsonDocument>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-#include "io/export.h"
 #include "gui/Network.h"
+#include "io/export.h"
 
 using PrintServices = std::unordered_map<std::string, std::unique_ptr<class PrintService>>;
 

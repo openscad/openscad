@@ -24,20 +24,21 @@
  *
  */
 
-#include <boost/format.hpp>
-#include <boost/algorithm/string.hpp>
+#include <Python.h>
 #include "linalg.h"
 #include "export.h"
-#include "GeometryUtils.h"
-#include <Python.h>
 #include "pyfunctions.h"
-#include "python/pyopenscad.h"
+#include "GeometryUtils.h"
+#include <cstddef>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
 #include "python/pyconversion.h"
-#include "core/primitives.h"
-#include "core/CsgOpNode.h"
+
+#include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
-#include "SourceFile.h"
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
 #include "genlang/genlang.h"
@@ -48,13 +49,15 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #ifdef ENABLE_LIBFIVE
 #include "python/FrepNode.h"
 #endif
-#include "GeometryUtils.h"
+
+#include "core/CsgOpNode.h"
+#include "core/CurveDiscretizer.h"
 #include "core/FreetypeRenderer.h"
-#include "core/TransformNode.h"
 #include "core/LinearExtrudeNode.h"
-#include "core/RotateExtrudeNode.h"
 #include "core/PathExtrudeNode.h"
 #include "core/ImportNode.h"
+#include "core/OffsetNode.h"
+#include "core/ProjectionNode.h"
 #include "core/PullNode.h"
 #include "core/WrapNode.h"
 #include "core/OversampleNode.h"
@@ -63,35 +66,28 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/FilletNode.h"
 #include "core/SkinNode.h"
 #include "core/ConcatNode.h"
-#include "core/CgalAdvNode.h"
 #include "Expression.h"
-#include "core/RoofNode.h"
 #include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
 #include "core/SurfaceNode.h"
 #include "core/SheetNode.h"
 #include "core/TextNode.h"
-#include "core/CurveDiscretizer.h"
-#include "core/OffsetNode.h"
-#include <hash.h>
-#include "geometry/PolySetUtils.h"
-#include "core/ProjectionNode.h"
+#include "core/TransformNode.h"
 #include "core/Tree.h"
-#include "geometry/PolySet.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "core/primitives.h"
 #include "geometry/GeometryEvaluator.h"
-#include "utils/degree_trig.h"
-#include "printutils.h"
-#include "io/fileutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 #include "handle_dep.h"
 #include <fstream>
 #include <ostream>
-#include <cmath>
-#include <boost/functional/hash.hpp>
-#include "core/customizer/Annotation.h"
-#include <ScopeContext.h>
+#include "io/fileutils.h"
 #include "PlatformUtils.h"
-#include "Feature.h"
-#include <iostream>
-#include <filesystem>
+#include "python/pyopenscad.h"
+#include "utils/degree_trig.h"
 
 // using namespace boost::assign; // bring 'operator+=()' into scope
 

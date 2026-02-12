@@ -25,9 +25,9 @@
  */
 #pragma once
 
-#include <utility>
 #include <QEvent>
 #include <string>
+#include <utility>
 
 class InputEventHandler
 {

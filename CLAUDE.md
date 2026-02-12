@@ -4,7 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PythonSCAD is a fork of OpenSCAD that adds native Python language support for 3D modeling. It's a C++ application with integrated Python interpreter, Qt-based GUI, and OpenGL rendering. The project maintains close sync with upstream OpenSCAD while adding Python-specific features.
+PythonSCAD is a fork of OpenSCAD that adds native Python language support for
+3D modeling. It's a C++ application with integrated Python interpreter,
+Qt-based GUI, and OpenGL rendering. The project maintains close sync with
+upstream OpenSCAD while adding Python-specific features.
 
 ## Build Commands
 
@@ -12,7 +15,7 @@ PythonSCAD is a fork of OpenSCAD that adds native Python language support for 3D
 
 ```bash
 # Install dependencies (Linux/BSD)
-sudo ./scripts/uni-get-dependencies.py --profile pythonscad-qt5
+sudo ./scripts/get-dependencies.py --profile pythonscad-qt5
 
 # Configure and build
 mkdir build
@@ -27,6 +30,7 @@ make -j$(nproc)
 ### Build Configuration Options
 
 Key CMake options (pass with `-D` flag):
+
 - `ENABLE_TESTS=ON/OFF` - Enable test suite (default: ON)
 - `HEADLESS=ON/OFF` - Build without GUI
 - `EXPERIMENTAL=ON/OFF` - Enable experimental features (default: ON)
@@ -72,7 +76,7 @@ ctest -C All                   # Run all tests
 
 **CRITICAL:** PythonSCAD uses Conventional Commits for automated versioning. All commits MUST follow this format:
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -81,6 +85,7 @@ ctest -C All                   # Run all tests
 ```
 
 Valid types:
+
 - `feat:` - New feature (bumps version)
 - `fix:` - Bug fix (bumps version)
 - `docs:` - Documentation only
@@ -95,7 +100,8 @@ Valid types:
 Breaking changes: Add `!` after type (e.g., `feat!:`) or include `BREAKING CHANGE:` in footer.
 
 Examples:
-```
+
+```text
 feat: add GPU-accelerated rendering
 fix(python): resolve memory leak in pyopenscad module
 docs: update build instructions for Ubuntu 24.04
@@ -104,6 +110,7 @@ docs: update build instructions for Ubuntu 24.04
 ### Pre-commit Hooks
 
 The project uses pre-commit hooks that run automatically:
+
 - Code formatting (clang-format)
 - Trailing whitespace removal
 - YAML validation
@@ -111,6 +118,7 @@ The project uses pre-commit hooks that run automatically:
 - Private key detection
 
 Install with:
+
 ```bash
 pip install pre-commit
 pre-commit install --hook-type commit-msg --hook-type pre-commit
@@ -123,6 +131,7 @@ Both `--hook-type` flags are required to validate both code and commit messages.
 ### Core Components
 
 **Evaluation Pipeline:**
+
 1. **Lexer/Parser** (`src/core/lexer.l`, `src/core/parser.y`) - Tokenizes and parses OpenSCAD/Python scripts into AST
 2. **AST & Expression** (`src/core/AST.h`, `src/core/Expression.h`) - Abstract syntax tree representation
 3. **Module/Function** (`src/core/module.h`, `src/core/function.h`) - Built-in and user-defined operations
@@ -133,21 +142,30 @@ Both `--hook-type` flags are required to validate both code and commit messages.
 
 **Key Architectural Concepts:**
 
-- **Node System**: Operations are represented as nodes (e.g., `CsgOpNode`, `TransformNode`, `LinearExtrudeNode`). Each node type handles specific geometric operations.
-- **Geometry Backends**: Supports multiple backends (CGAL for exact geometry, Manifold for fast mesh operations). Backend selection happens at geometry evaluation.
-- **Value System**: `Value` class (`src/core/Value.h`) is a variant type supporting numbers, strings, vectors, ranges, functions, and Python objects.
-- **Context System**: Variables and functions are looked up through nested `Context` objects that maintain scope hierarchy.
-- **Caching**: Heavy use of caching (`GeometryCache`, `FontCache`) to avoid recomputation during interactive editing.
+- **Node System**: Operations are represented as nodes (e.g., `CsgOpNode`,
+  `TransformNode`, `LinearExtrudeNode`). Each node type handles specific
+  geometric operations.
+- **Geometry Backends**: Supports multiple backends (CGAL for exact geometry,
+  Manifold for fast mesh operations). Backend selection happens at geometry
+  evaluation.
+- **Value System**: `Value` class (`src/core/Value.h`) is a variant type
+  supporting numbers, strings, vectors, ranges, functions, and Python objects.
+- **Context System**: Variables and functions are looked up through nested
+  `Context` objects that maintain scope hierarchy.
+- **Caching**: Heavy use of caching (`GeometryCache`, `FontCache`) to avoid
+  recomputation during interactive editing.
 
 ### Python Integration
 
 Python support is implemented in `src/python/`:
+
 - `pyfunctions.cc` - Python builtin functions exposed to scripts
 - `pyopenscad.cc` - Python type for 3D objects (solids as first-class objects)
 - `pydata.cc` - Conversion between Python and OpenSCAD Value types
 - `FrepNode.cc` - Function representation nodes for Python functions
 
 Python scripts use OpenSCAD as a library:
+
 ```python
 from openscad import *
 cube([10, 20, 30]).color("Tomato")
@@ -172,11 +190,13 @@ show(c)
 PythonSCAD supports two geometry computation backends:
 
 **CGAL** (`src/geometry/cgal/`):
+
 - Exact arithmetic, robust for complex operations
 - Used for: minkowski, hull, convex operations
 - Primary types: `CGALNefGeometry`, `CGALPolyhedron`
 
 **Manifold** (`src/geometry/manifold/`):
+
 - Fast mesh-based operations
 - Used for: boolean operations, extrusions (when enabled)
 - Can be toggled with `USE_MANIFOLD_TRIANGULATOR` build option
@@ -205,6 +225,7 @@ PythonSCAD supports two geometry computation backends:
 ### Adding Tests
 
 **Regression tests:**
+
 1. Create test file in `tests/data/scad/[category]/`
 2. Add test in `tests/CMakeLists.txt`
 3. Generate expected output: `TEST_GENERATE=1 ctest -R testname`
@@ -212,6 +233,7 @@ PythonSCAD supports two geometry computation backends:
 5. Commit test file and expected output
 
 **Unit tests:**
+
 - Add to appropriate `*_test.cc` file in `tests/` or create new one
 - Uses Catch2 framework
 - Run specific test: `./OpenSCADUnitTests "test name"`
@@ -219,21 +241,26 @@ PythonSCAD supports two geometry computation backends:
 ## Platform-Specific Notes
 
 ### macOS Build
-```bash
-# Install dependencies via Homebrew
-./scripts/macosx-build-homebrew.sh
 
-# Or build from source
-source scripts/setenv-macos.sh
-./scripts/macosx-build-dependencies.sh
+```bash
+# Install dependencies via Homebrew (Qt6 only on macOS)
+./scripts/get-dependencies.py --yes --profile pythonscad-qt6
+
+# Configure and build
+mkdir build
+cd build
+cmake ..
+make -j$(sysctl -n hw.ncpu)
 ```
 
 ### Windows Build
+
 - Typically cross-compiled from Linux using MXE
 - See `doc/win-build.md` for MSVC build instructions
 - Cross-build: `./scripts/mingw-x-build-dependencies.sh 64`
 
 ### WebAssembly Build
+
 ```bash
 ./scripts/wasm-base-docker-run.sh emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Debug
 ./scripts/wasm-base-docker-run.sh cmake --build build-web -j2
@@ -275,6 +302,7 @@ source scripts/setenv-macos.sh
 ## Versioning
 
 PythonSCAD uses automated semantic versioning via Release Please bot:
+
 - Version is determined from conventional commit messages
 - `feat:` commits bump minor version (in pre-1.0) or patch version
 - `fix:` commits bump patch version

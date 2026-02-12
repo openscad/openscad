@@ -27,24 +27,26 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iomanip>
+#include <lib3mf_implicit.hpp>
+#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include <lib3mf_implicit.hpp>
-
 #include "core/AST.h"
+#include "core/enums.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
 #include "glview/RenderSettings.h"
+#include "io/lib3mf_utils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
-#include "io/lib3mf_utils.h"
 
 namespace {
 

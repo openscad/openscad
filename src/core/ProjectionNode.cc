@@ -26,16 +26,16 @@
 
 #include "core/ProjectionNode.h"
 
+#include <boost/assign/std/vector.hpp>
+#include <cassert>
+#include <memory>
+#include <utility>
+
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-
-#include <utility>
-#include <memory>
-#include <cassert>
-#include <boost/assign/std/vector.hpp>
+#include "core/module.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiation *inst,

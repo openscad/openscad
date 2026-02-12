@@ -24,14 +24,15 @@
  *
  */
 
-#include <utility>
 #include <memory>
+#include <utility>
+
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/node.h"
 #include "core/Parameters.h"
+#include "core/module.h"
+#include "core/node.h"
 
 std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments,
                                             const Children& children)
