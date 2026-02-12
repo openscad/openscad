@@ -25,8 +25,11 @@
  */
 
 #include "gui/QGLView.h"
+#include <cmath>
+#include <memory>
 #include <QtCore/qpoint.h>
 
+#include "core/Selection.h"
 #include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"
@@ -215,7 +218,7 @@ void QGLView::paintGL()
         status = QString("Point %4(%1/%2/%3)").arg(p1[0]).arg(p1[1]).arg(p1[2]).arg(shown_obj->ind);
         statusLabel->setText(status);
         break;
-      case SelectionType::SELECTION_SEGMENT:
+      case SelectionType::SELECTION_LINE:
         if (shown_obj->pt.size() < 2) break;
         p1 = shown_obj->pt[0];
         p2 = shown_obj->pt[1];

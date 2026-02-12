@@ -23,7 +23,7 @@ jobs:
         TZ: Etc/UTC
       run: |
         which sudo || ( apt update && apt install -y sudo )
-        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
+        sudo -E ./scripts/get-dependencies.py --yes --profile pythonscad-qt5
     - name: Build and test
       run: ./scripts/github-ci.sh ${{ matrix.experimental && 'experimental' || ''}} enable_python build test_examples test
     - name: Upload Test Result Report

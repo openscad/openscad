@@ -26,8 +26,8 @@
 
 #include "core/customizer/Annotation.h"
 
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 

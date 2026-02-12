@@ -39,6 +39,8 @@
 #include <Context.h>
 #include <Selection.h>
 #include "core/CurveDiscretizer.h"
+#include "core/enums.h"
+#include "core/node.h"
 #include "platform/PlatformUtils.h"
 #include "primitives.h"
 namespace fs = std::filesystem;

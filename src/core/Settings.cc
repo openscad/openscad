@@ -1,25 +1,24 @@
 #include "core/Settings.h"
 
-#include "core/MouseConfig.h"
-
-#include <ostream>
+#include <algorithm>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/range/adaptors.hpp>
 #include <cassert>
 #include <cstddef>
 #include <istream>
 #include <iterator>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/range/adaptors.hpp>
 
+#include "core/MouseConfig.h"
 #include "core/SettingsGuiEnums.h"
-#include "io/export_enums.h"
 #include "io/export.h"
-#include "utils/printutils.h"
-
+#include "io/export_enums.h"
 #include "json/json.hpp"
+#include "utils/printutils.h"
 
 using json = nlohmann::json;
 
@@ -230,7 +229,6 @@ SettingsEntryEnum<std::string> Settings::octoPrintFileFormat(
 
 SettingsEntryString Settings::localAppExecutable("printing", "localAppExecutable", "");
 SettingsEntryString Settings::localAppTempDir("printing", "localAppTempDir", "");
-
 SettingsEntryEnum<std::string> Settings::localAppFileFormat(
   "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
   fileformat::info(FileFormat::ASCII_STL).description);

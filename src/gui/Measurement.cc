@@ -25,9 +25,12 @@
  */
 
 #include "geometry/linalg.h"
+#include "core/Selection.h"
 #include "gui/Measurement.h"
 #include "utils/vector_math.h"
 
+#include <cassert>
+#include <limits>
 #include <QPoint>
 #include <QString>
 #include <cmath>
@@ -92,13 +95,13 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
     SelectedObject ruler;
     Vector3d side1, side2;
     ruler = {
-      .type = SelectionType::SELECTION_SEGMENT,
+      .type = SelectionType::SELECTION_LINE,
     };
     ruler.pt.push_back(p1);
     ruler.pt.push_back(p2);
     this->qglview->selected_obj.push_back(ruler);
     ruler = {
-      .type = SelectionType::SELECTION_SEGMENT,
+      .type = SelectionType::SELECTION_LINE,
     };
     ruler.pt.clear();
     ruler.pt.push_back(p3);
@@ -133,11 +136,11 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         dist = diff.norm();
         ret.push_back(QStringLiteral("dx: %1  dy: %2  dz: %3").arg(diff[0]).arg(diff[1]).arg(diff[2]));
       } else if ((obj1.type == SelectionType::SELECTION_POINT &&
-                  obj2.type == SelectionType::SELECTION_SEGMENT) ||
+                  obj2.type == SelectionType::SELECTION_LINE) ||
                  (obj2.type == SelectionType::SELECTION_POINT &&
-                  obj1.type == SelectionType::SELECTION_SEGMENT)) {
+                  obj1.type == SelectionType::SELECTION_LINE)) {
         SelectedObject pt = obj1.type == SelectionType::SELECTION_POINT ? obj1 : obj2;
-        SelectedObject ln = obj1.type == SelectionType::SELECTION_SEGMENT ? obj1 : obj2;
+        SelectedObject ln = obj1.type == SelectionType::SELECTION_LINE ? obj1 : obj2;
         const Eigen::Vector3d& P = pt.pt[0];
         const Eigen::Vector3d& A = ln.pt[0];
         const Eigen::Vector3d& B = ln.pt[1];
@@ -183,8 +186,8 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
                         .arg(diff2[1])
                         .arg(diff2[2]));
 
-      } else if (obj1.type == SelectionType::SELECTION_SEGMENT &&
-                 obj2.type == SelectionType::SELECTION_SEGMENT) {
+      } else if (obj1.type == SelectionType::SELECTION_LINE &&
+                 obj2.type == SelectionType::SELECTION_LINE) {
         ruler = calculateSegSegDistance(obj1.pt[0], obj1.pt[1], obj2.pt[0], obj2.pt[1]);
         dist = (ruler.pt[0] - ruler.pt[1]).norm();
       } else if (obj1.type == SelectionType::SELECTION_POINT &&
@@ -219,19 +222,19 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
       Vector3d side1, side2;
-      if (obj1.type == SelectionType::SELECTION_SEGMENT && obj2.type == SelectionType::SELECTION_POINT) {
+      if (obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT) {
         side1 = (obj1.pt[1] - obj1.pt[0]).normalized();
         side2 = (obj1.pt[1] - obj2.pt[0]).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
         goto display_angle;
       } else if (obj1.type == SelectionType::SELECTION_POINT &&
-                 obj2.type == SelectionType::SELECTION_SEGMENT) {
+                 obj2.type == SelectionType::SELECTION_LINE) {
         side1 = (obj2.pt[1] - obj2.pt[0]).normalized();
         side2 = (obj2.pt[1] - obj1.pt[0]).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
         goto display_angle;
-      } else if (obj1.type == SelectionType::SELECTION_SEGMENT &&
-                 obj2.type == SelectionType::SELECTION_SEGMENT) {
+      } else if (obj1.type == SelectionType::SELECTION_LINE &&
+                 obj2.type == SelectionType::SELECTION_LINE) {
         // Check all 4 permutations of the lines' directions and use the one where the starting points
         // are closest to one another as the corner point for the angle
         double nearestDist = INFINITY;

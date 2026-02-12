@@ -1,13 +1,14 @@
 #pragma once
 
-#include <utility>
-#include <memory>
 #include <cstddef>
+#include <memory>
+#include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
+
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
-#include <numeric>
 
 /*!
    A single contour.
@@ -51,10 +52,10 @@ public:
   [[nodiscard]] double area() const;
 
   using Outlines2d = std::vector<Outline2d>;
-  //// Note: The "using" here is a kludge to avoid a compiler warning.
-  //// It would be better to fix the class relationships, so that Polygon2d does
-  //// not inherit an unused 3d transform function.
-  //// But that will likely require significant refactoring.
+  // Note: The "using" here is a kludge to avoid a compiler warning.
+  // It would be better to fix the class relationships, so that Polygon2d does
+  // not inherit an unused 3d transform function.
+  // But that will likely require significant refactoring.
   const Outlines2d& outlines() const
   {
     return trans3dState == Transform3dState::NONE ? theoutlines : transformedOutlines();

@@ -3,8 +3,8 @@
 #include <string>
 
 #include "core/BaseVisitable.h"
-#include "core/node.h"
 #include "core/ModuleInstantiation.h"
+#include "core/node.h"
 #include "geometry/linalg.h"
 
 class ColorNode : public AbstractNode
@@ -16,5 +16,4 @@ public:
   std::string name() const override;
 
   Color4f color;
-  int textureind;
 };

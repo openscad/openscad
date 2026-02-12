@@ -25,19 +25,20 @@
  */
 
 #include "core/CSGNode.h"
-#include "geometry/PolySet.h"
-#include "geometry/linalg.h"
 
+#include <boost/range/iterator_range.hpp>
 #include <cassert>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <stack>
 #include <tuple>
-
-#include <boost/range/iterator_range.hpp>
 #include <utility>
+
+#include "core/enums.h"
+#include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 
 /*!
    \class CSGNode
@@ -69,7 +70,7 @@
 
 std::shared_ptr<CSGNode> CSGNode::createEmptySet()
 {
-  return std::shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), 0, "empty()", 0));
+  return std::shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), "empty()", 0));
 }
 
 std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type,
@@ -122,12 +123,8 @@ std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type,
 }
 
 CSGLeaf::CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color,
-                 int textureind, std::string label, const int index)
-  : label(std::move(label)),
-    matrix(std::move(matrix)),
-    color(std::move(color)),
-    textureind(textureind),
-    index(index)
+                 std::string label, const int index)
+  : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
 {
   if (ps && !ps->isEmpty()) this->polyset = ps;
   CSGLeaf::initBoundingBox();

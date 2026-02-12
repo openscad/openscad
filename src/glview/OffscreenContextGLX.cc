@@ -1,5 +1,6 @@
 #include "glview/OffscreenContextGLX.h"
 
+#include <cstdlib>
 #include <memory>
 
 #define GLAD_GLX_IMPLEMENTATION
@@ -11,6 +12,7 @@
 #include <string>
 
 #include "utils/scope_guard.hpp"
+#include "glview/OffscreenContext.h"
 #include "utils/printutils.h"
 
 namespace {

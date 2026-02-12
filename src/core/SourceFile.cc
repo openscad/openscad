@@ -25,35 +25,34 @@
  */
 
 #include "core/SourceFile.h"
-
-#include "core/EvaluationSession.h"
-#include "core/node.h"
-#include "core/ScopeContext.h"
-#include "core/SourceFileCache.h"
-#include "core/parsersettings.h"
-#include "core/StatCache.h"
 #include "platform/PlatformUtils.h"
-#include "utils/printutils.h"
-#include "utils/exceptions.h"
 #include <algorithm>
-#include <ctime>
-#include <ostream>
-#include <memory>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <filesystem>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
-#include <fstream>
-#include <streambuf>
 #include <vector>
 
+#include "core/AST.h"
+#include "core/Context.h"
+#include "core/EvaluationSession.h"
+#include "core/ScopeContext.h"
+#include "core/SourceFileCache.h"
+#include "core/StatCache.h"
+#include "core/node.h"
+#include "core/parsersettings.h"
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
+
 namespace fs = std::filesystem;
-#include "FontCache.h"
 #include <sys/stat.h>
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif
+
+#include "FontCache.h"
 
 SourceFile::SourceFile(std::string path, std::string filename)
   : ASTNode(Location::NONE),

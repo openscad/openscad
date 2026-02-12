@@ -20,7 +20,7 @@ NSString *const SUEnableSnapshotsKey = @"SUEnableSnapshots";
 class SparkleAutoUpdater::Private
 {
 public:
-  SUUpdater *updater;
+  SUUpdater* updater;
 };
 
 SparkleAutoUpdater::SparkleAutoUpdater()
@@ -39,7 +39,10 @@ SparkleAutoUpdater::~SparkleAutoUpdater()
   delete d;
 }
 
-void SparkleAutoUpdater::checkForUpdates() { [d->updater checkForUpdatesInBackground]; }
+void SparkleAutoUpdater::checkForUpdates()
+{
+  [d->updater checkForUpdatesInBackground];
+}
 
 void SparkleAutoUpdater::setAutomaticallyChecksForUpdates(bool on)
 {
@@ -71,10 +74,8 @@ QString SparkleAutoUpdater::lastUpdateCheckDate()
 
 void SparkleAutoUpdater::updateFeed()
 {
-  NSString *urlstring = [NSString stringWithFormat:@"https://files.openscad.org/appcast%@.xml",
-                                                   enableSnapshots() ? @"-snapshots" : @""];
+  NSString *urlstring = [NSString stringWithFormat:@"https://files.openscad.org/appcast%@.xml", enableSnapshots() ? @"-snapshots" : @""];
   [d->updater setFeedURL:[NSURL URLWithString:urlstring]];
-  NSString *userAgent = [NSString stringWithFormat:@"OpenSCAD %s %s", openscad_versionnumber.c_str(),
-                                                   PlatformUtils::sysinfo(false).c_str()];
-  [d->updater setUserAgentString:userAgent];
+  NSString *userAgent = [NSString stringWithFormat:@"OpenSCAD %s %s", openscad_versionnumber.c_str(), PlatformUtils::sysinfo(false).c_str()];
+  [d->updater setUserAgentString: userAgent];
 }

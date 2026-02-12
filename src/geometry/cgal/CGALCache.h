@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Cache.h"
 #include <cstddef>
 #include <memory>
 #include <string>
+
+#include "Cache.h"
 #include "geometry/Geometry.h"
 
 class CGALCache

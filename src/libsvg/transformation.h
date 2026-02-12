@@ -24,12 +24,11 @@
  */
 #pragma once
 
-#include <utility>
-#include <string>
-#include <vector>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace libsvg {
 

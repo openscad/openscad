@@ -2,9 +2,9 @@
 #define QWORDSEARCHFIELD_H
 
 #include <QFrame>
-#include <QResizeEvent>
-#include <QLineEdit>
 #include <QLabel>
+#include <QLineEdit>
+#include <QResizeEvent>
 
 class QWordSearchField : public QLineEdit
 {

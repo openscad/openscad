@@ -1,10 +1,11 @@
 #include "geometry/GeometryCache.h"
-#include "utils/printutils.h"
-#include "geometry/Geometry.h"
 
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <string>
+
+#include "geometry/Geometry.h"
+#include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"

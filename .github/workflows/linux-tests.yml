@@ -37,7 +37,7 @@ jobs:
         TZ: Etc/UTC
       run: |
         which sudo || ( apt update && apt install -y sudo )
-        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-${{ matrix.qt }}
+        sudo -E ./scripts/get-dependencies.py --yes --profile pythonscad-${{ matrix.qt }}
     - name: Install gcovr
       run: python -m pip install -U gcovr
     - name: Build and test

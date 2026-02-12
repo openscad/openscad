@@ -41,8 +41,6 @@
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
 #include "genlang/genlang.h"
-extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename,
-                  const std::string& mainFile, int debug);
 
 #include <python/pydata.h>
 #ifdef ENABLE_LIBFIVE
@@ -71,11 +69,21 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/SheetNode.h"
 #include "core/TextNode.h"
 #include "core/CurveDiscretizer.h"
+#include "core/FreetypeRenderer.h"
+#include "core/LinearExtrudeNode.h"
 #include "core/OffsetNode.h"
 #include <hash.h>
 #include "geometry/PolySetUtils.h"
 #include "core/ProjectionNode.h"
+#include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/TextNode.h"
+#include "core/TransformNode.h"
 #include "core/Tree.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySet.h"
 #include "geometry/GeometryEvaluator.h"
 #include "utils/degree_trig.h"
@@ -92,6 +100,9 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "Feature.h"
 #include <iostream>
 #include <filesystem>
+
+extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename,
+                  const std::string& mainFile, int debug);
 
 // using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -2380,7 +2391,6 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
     return nullptr;
   }
 
-  node->textureind = -1;
   node->children.push_back(child);
 
   PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "geometry/linalg.h"
-#include "geometry/Geometry.h"
-#include <vector>
 #include <boost/container/small_vector.hpp>
 #include <memory>
+#include <vector>
+
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 
 using Polygon = std::vector<Vector3d>;
 using Polygons = std::vector<Polygon>;
@@ -15,8 +16,8 @@ struct IndexedColorFace {
   IndexedFace face;
   int color;
 };
-using IndexedTriangle = Vector3i;
 using IndexedColorTriangle = Vector4i;
+using IndexedTriangle = Vector3i;
 using PolygonIndices = std::vector<IndexedFace>;
 
 struct IndexedPolygons {

@@ -23,8 +23,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "io/export.h"
-
 #include <cassert>
 #include <clocale>
 #include <limits>
@@ -32,9 +30,10 @@
 #include <ostream>
 
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 
 /*!
     Saves the current Polygon2d as DXF to the given absolute filename.

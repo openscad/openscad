@@ -51,7 +51,7 @@ jobs:
       - name: Calculate PACBOY_PACKAGES
         shell: bash
         run: |
-          ./scripts/msys2-install-dependencies.sh qt6
+          python3 ./scripts/get-dependencies.py --distro msys2 --profile pythonscad-qt6 --output-env "$GITHUB_ENV" --env-var PACBOY_PACKAGES
 
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2

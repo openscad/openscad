@@ -1,25 +1,22 @@
-#include "io/export.h"
-
-#include <cassert>
-#include <ostream>
-#include <memory>
-#include <string>
-#include <cmath>
-
 #include <Eigen/Core>
+#include <cassert>
+#include <cmath>
+#include <memory>
+#include <ostream>
+#include <string>
 
 #include "core/ColorUtil.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 #include "io/export_enums.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 
 #ifdef ENABLE_CAIRO
 
-#include <cairo.h>
 #include <cairo-pdf.h>
 #include "src/geometry/PolySetUtils.h"
 #include "export_foldable.h"

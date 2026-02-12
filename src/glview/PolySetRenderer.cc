@@ -37,6 +37,7 @@
 #include <mpfr.h>
 #endif
 
+#include "utils/printutils.h"
 #include "glview/system-gl.h"
 #include "core/Selection.h"
 #include "geometry/cgal/cgalutils.h"
@@ -358,7 +359,7 @@ std::shared_ptr<SelectedObject> PolySetRenderer::findModelObject(const Vector3d&
 
   if (!isnan(dist_nearest)) {
     // We found an acceptable line segment.
-    const SelectedObject obj = {.type = SelectionType::SELECTION_SEGMENT,
+    const SelectedObject obj = {.type = SelectionType::SELECTION_LINE,
                                 .pt = {pt1_nearest, pt2_nearest}};
     return std::make_shared<SelectedObject>(obj);
   }

@@ -1,26 +1,30 @@
 #include "core/CSGTreeEvaluator.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "core/State.h"
+
+#include <boost/range/adaptor/reversed.hpp>
+#include <cassert>
+#include <cstddef>
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+
+#include "core/BaseVisitable.h"
+#include "core/CSGNode.h"
+#include "core/CgalAdvNode.h"
+#include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
 #include "core/ModuleInstantiation.h"
-#include "core/CSGNode.h"
-#include "core/TransformNode.h"
-#include "core/ColorNode.h"
 #include "core/RenderNode.h"
-#include "core/CgalAdvNode.h"
-#include "utils/printutils.h"
+#include "core/State.h"
+#include "core/TransformNode.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
-
-#include <memory>
-#include <string>
-#include <map>
-#include <list>
-#include <cassert>
-#include <cstddef>
-#include <boost/range/adaptor/reversed.hpp>
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
 /*!
    \class CSGTreeEvaluator
@@ -239,8 +243,7 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
     }
   }
 
-  std::shared_ptr<CSGLeaf> t(new CSGLeaf(ps, state.matrix(), state.color(), state.textureind(),
-                                         STR(node.name(), node.index()), node.index()));
+  std::shared_ptr<CSGLeaf> t(new CSGLeaf(ps, state.matrix(), state.color(),                                          STR(node.name(), node.index()), node.index()));
   t->is_2d = is_2d;
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
   if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
@@ -295,7 +298,7 @@ Response CSGTreeEvaluator::visit(State& state, const TransformNode& node)
 Response CSGTreeEvaluator::visit(State& state, const ColorNode& node)
 {
   if (state.isPrefix()) {
-    if (!state.color().isValid()) state.setColor(node.color, node.textureind);
+    if (!state.color().isValid()) state.setColor(node.color);
   }
   if (state.isPostfix()) {
     applyToChildren(state, node, OpenSCADOperator::UNION);

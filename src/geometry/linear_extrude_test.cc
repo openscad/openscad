@@ -1,16 +1,15 @@
-#include <catch2/catch_all.hpp>
 #include "linear_extrude.h"
 
 #include <algorithm>
-#include <iterator>
-#include <cassert>
-#include <cmath>
-#include <utility>
-#include <memory>
-#include <cstddef>
-#include <vector>
-
 #include <boost/logic/tribool.hpp>
+#include <cassert>
+#include <catch2/catch_all.hpp>
+#include <cmath>
+#include <cstddef>
+#include <iterator>
+#include <memory>
+#include <utility>
+#include <vector>
 #ifdef ENABLE_CGAL
 #include <CGAL/config.h>
 // I think this is correct; see https://github.com/openscad/openscad/pull/6407#issuecomment-3593484960
@@ -24,23 +23,23 @@ inline const CGAL::Gmpq& exact(const CGAL::Gmpq& d)
 }
 }  // namespace CGAL
 #endif
-#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #endif  // ENABLE_CGAL
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/GeometryUtils.h"
-#include "glview/RenderSettings.h"
 #include "core/LinearExtrudeNode.h"
-#include "geometry/cgal/cgalutils.h"
-#include "geometry/manifold/manifoldutils.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/linalg.h"
+#include "geometry/manifold/manifoldutils.h"
+#include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
 
 namespace LinearExtrudeInternals {

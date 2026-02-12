@@ -1,12 +1,13 @@
 #pragma once
 
-#include <utility>
 #include <cstddef>
-#include <string>
-#include <vector>
 #include <memory>
-#include "geometry/linalg.h"
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "core/enums.h"
+#include "geometry/linalg.h"
 
 class PolySet;
 
@@ -89,8 +90,8 @@ class CSGLeaf : public CSGNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color, int textureind,
-          std::string label, const int index);
+  CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color, std::string label,
+          const int index);
   void initBoundingBox() override;
   virtual void applyMatrix(const Transform3d& mat) override;
   [[nodiscard]] bool isEmptySet() const override;
@@ -100,7 +101,6 @@ public:
   bool is_2d = false;
   Transform3d matrix;
   Color4f color;
-  int textureind;
 
   const int index;
 

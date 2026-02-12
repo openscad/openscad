@@ -9,8 +9,8 @@ export NUMCPU=$(sysctl -n hw.ncpu)
 human_filesize()
 {
   awk -v sum=$1 'BEGIN {
-    hum[1024**3]="GB"; hum[1024**2]="MB"; hum[1024]="KB"; 
-    for (x=1024**3; x>=1024; x/=1024) { 
+    hum[1024**3]="GB"; hum[1024**2]="MB"; hum[1024]="KB";
+    for (x=1024**3; x>=1024; x/=1024) {
       if (sum>=x) { printf "%.1f %s\n",sum/x,hum[x]; break }
     }
   }'
@@ -27,14 +27,14 @@ update_www_download_links()
     incfile=inc/mac_snapshot_links.js
     BASEURL='http://files.openscad.org/snapshots'
     DATECODE=`date +"%Y.%m.%d"`
-    
+
     if [ -f $webdir/$incfile ]; then
         cd $webdir
         echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL/$packagefile'" > $incfile
         echo "fileinfo['MAC_SNAPSHOT_NAME'] = 'OpenSCAD $version'" >> $incfile
         echo "fileinfo['MAC_SNAPSHOT_SIZE'] = '$filesize'" >> $incfile
         echo 'modified mac_snapshot_links.js'
-        
+
         git --no-pager diff
         echo "Web page updated. Remember to commit and push openscad.github.com"
     else
@@ -61,7 +61,7 @@ SHORTVERSION=${VERSION%%-*}
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 
-export MACOSX_DEPLOYMENT_TARGET=10.9
+export MACOSX_DEPLOYMENT_TARGET=14.0
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install

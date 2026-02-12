@@ -1,10 +1,10 @@
 #pragma once
 
-#include <utility>
-#include <string>
-#include <unordered_map>
 #include <cassert>
 #include <cstddef>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "core/node.h"
 #include "utils/printutils.h"

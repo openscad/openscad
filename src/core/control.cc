@@ -24,9 +24,11 @@
  *
  */
 
-#include <utility>
-#include <memory>
 #include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "core/Arguments.h"
@@ -35,12 +37,11 @@
 #include "core/Context.h"
 #include "core/ContextFrame.h"
 #include "core/Expression.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/node.h"
 #include "core/Parameters.h"
+#include "core/module.h"
+#include "core/node.h"
 #include "utils/printutils.h"
-#include <cstdint>
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
 {

@@ -173,7 +173,7 @@
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
          <addaction name="viewActionResetView"/>
-         <addaction name="designActionMeasureDistance"/>
+         <addaction name="designActionMeasureDist"/>
          <addaction name="designActionMeasureAngle"/>
          <addaction name="designActionFindHandle"/>
          <addaction name="separator"/>
@@ -328,7 +328,7 @@
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
-    <addaction name="designActionMeasureDistance"/>
+    <addaction name="designActionMeasureDist"/>
     <addaction name="designActionMeasureAngle"/>
     <addaction name="designActionFindHandle"/>
     <addaction name="designShareDesign"/>
@@ -1016,8 +1016,7 @@
     <string>F8</string>
    </property>
   </action>
-
-  <action name="designActionMeasureDistance">
+  <action name="designActionMeasureDist">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1671,12 +1670,12 @@
   </action>
   <action name="fileActionPythonCreateVenv">
    <property name="text">
-    <string>Create Virtual Environment...</string>
+    <string>Create Virtual Environment</string>
    </property>
   </action>
   <action name="fileActionPythonSelectVenv">
    <property name="text">
-    <string>Select Virtual Environment...</string>
+    <string>Select Virtual Environment</string>
    </property>
   </action>
  </widget>

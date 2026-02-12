@@ -4,12 +4,12 @@
 #include <memory>
 #include <vector>
 
-#include "geometry/Reindexer.h"
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "utils/boost-utils.h"
 #include "geometry/GeometryUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/Reindexer.h"
+#include "geometry/linalg.h"
+#include "utils/boost-utils.h"
 #include "geometry/Curve.h"
 #include "geometry/Surface.h"
 

@@ -1,11 +1,13 @@
 #pragma once
 
-#include "core/NodeCache.h"
-#include <tuple>
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
+
+#include "core/NodeCache.h"
+#include "core/node.h"
 
 /*!
    For now, just an abstraction of the node tree which keeps a dump
