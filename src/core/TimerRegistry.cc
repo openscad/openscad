@@ -133,4 +133,3 @@ const std::string& TimerRegistry::timer_name(const std::string& document_root, i
   }
   return timers[id]->name;
 }
-
