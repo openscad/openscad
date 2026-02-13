@@ -1131,9 +1131,9 @@ static void timer_error(const char *function_name, const Location& loc, const st
   throw EvaluationException(msg);
 }
 
-static EvaluationSession::TimerType parse_timer_type_value(const char *function_name,
-                                                           const Arguments& arguments,
-                                                           const Location& loc, const Value& value)
+static TimerRegistry::Kind parse_timer_type_value(const char *function_name,
+                                                  const Arguments& arguments,
+                                                  const Location& loc, const Value& value)
 {
   if (value.type() != Value::Type::STRING) {
     timer_error(function_name, loc, arguments.documentRoot(),
@@ -1143,14 +1143,14 @@ static EvaluationSession::TimerType parse_timer_type_value(const char *function_
   std::transform(type.begin(), type.end(), type.begin(),
                  [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
   if (type.empty() || type == "monotonic") {
-    return EvaluationSession::TimerType::Monotonic;
+    return TimerRegistry::Kind::Monotonic;
   }
   if (type == "cpu") {
-    return EvaluationSession::TimerType::Cpu;
+    return TimerRegistry::Kind::Cpu;
   }
   timer_error(function_name, loc, arguments.documentRoot(),
               STR(function_name, "() unknown timer type '", type, "'"));
-  return EvaluationSession::TimerType::Monotonic;
+  return TimerRegistry::Kind::Monotonic;
 }
 
 static bool format_timer_value_us(double time_us, const std::string& format, const std::string& name,
@@ -1265,7 +1265,7 @@ static bool format_timer_value_us(double time_us, const std::string& format, con
 
 static void timer_echo(const Arguments& arguments, const Location& loc, int id, double elapsed_us)
 {
-  const auto& name = arguments.session()->timer_name(id, loc);
+  const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
   LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
 }
@@ -1273,7 +1273,7 @@ static void timer_echo(const Arguments& arguments, const Location& loc, int id, 
 static void timer_echo(const std::shared_ptr<const Context>& context, const Location& loc, int id,
                        double elapsed_us)
 {
-  const auto& name = context->session()->timer_name(id, loc);
+  const auto& name = context->session()->timers().timer_name(context->documentRoot(), id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
   LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
 }
@@ -1290,7 +1290,7 @@ Value builtin_timer_new(Arguments arguments, const Location& loc)
   const auto canonical = spec.normalize(arguments, fail);
 
   std::string name;
-  EvaluationSession::TimerType type = EvaluationSession::TimerType::Monotonic;
+  TimerRegistry::Kind type = TimerRegistry::Kind::Monotonic;
   bool start_now = false;
 
   name = canonical[0]->toString();
@@ -1304,9 +1304,10 @@ Value builtin_timer_new(Arguments arguments, const Location& loc)
 
   start_now = canonical[2]->toBool();
 
-  const int id = arguments.session()->timer_new(name, type);
+  auto& timers = arguments.session()->timers();
+  const int id = timers.create_timer(name, type);
   if (start_now) {
-    arguments.session()->timer_start(id, loc);
+    timers.start_timer(arguments.documentRoot(), id, loc);
   }
   return Value(static_cast<double>(id));
 }
@@ -1332,7 +1333,7 @@ Value builtin_timer_start(Arguments arguments, const Location& loc)
     timer_error("timer_start", loc, arguments.documentRoot(), "timer_start() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
-  arguments.session()->timer_start(id, loc);
+  arguments.session()->timers().start_timer(arguments.documentRoot(), id, loc);
   return Value::undefined.clone();
 }
 
@@ -1357,7 +1358,7 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
     timer_error("timer_clear", loc, arguments.documentRoot(), "timer_clear() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
-  arguments.session()->timer_clear(id, loc);
+  arguments.session()->timers().clear_timer(arguments.documentRoot(), id, loc);
   return Value::undefined.clone();
 }
 
@@ -1412,7 +1413,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
                     Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
   }
 
-  const double elapsed_us = arguments.session()->timer_stop(id, loc);
+  const double elapsed_us = arguments.session()->timers().stop_timer(arguments.documentRoot(), id, loc);
   Value result = Value::undefined.clone();
   if (return_number) {
     if (do_echo) {
@@ -1420,7 +1421,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
     }
     result = Value(elapsed_us);
   } else {
-    const auto& name = arguments.session()->timer_name(id, loc);
+    const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
     std::string label = name.empty() ? std::to_string(id) : name;
     std::string formatted;
     std::string format_error;
@@ -1433,7 +1434,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
     result = Value(formatted);
   }
   if (delete_timer) {
-    arguments.session()->timer_delete(id, loc);
+    arguments.session()->timers().delete_timer(arguments.documentRoot(), id, loc);
   }
   return result;
 }
@@ -1469,7 +1470,7 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
   }
   const int id = static_cast<int>(id_val);
 
-  const double elapsed_us = arguments.session()->timer_elapsed(id, loc);
+  const double elapsed_us = arguments.session()->timers().elapsed_timer(arguments.documentRoot(), id, loc);
   bool return_number = false;
   bool do_echo = false;
   std::string format{};
@@ -1494,7 +1495,7 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
     return Value(elapsed_us);
   }
 
-  const auto& name = arguments.session()->timer_name(id, loc);
+  const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
   std::string formatted;
   std::string format_error;
@@ -1528,7 +1529,7 @@ Value builtin_timer_delete(Arguments arguments, const Location& loc)
     timer_error("timer_delete", loc, arguments.documentRoot(), "timer_delete() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
-  arguments.session()->timer_delete(id, loc);
+  arguments.session()->timers().delete_timer(arguments.documentRoot(), id, loc);
   return Value::undefined.clone();
 }
 
@@ -1567,20 +1568,21 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
   std::string name = fixed[0]->toString();
 
   EvaluationSession *session = arguments.session();
-  const int id = session->timer_new(name, EvaluationSession::TimerType::Monotonic);
-  session->timer_start(id, call->location());
+  auto& timers = session->timers();
+  const int id = timers.create_timer(name, TimerRegistry::Kind::Monotonic);
+  timers.start_timer(arguments.documentRoot(), id, call->location());
 
   Value result = Value::undefined.clone();
   try {
     result = call_function_value(context, call->location(), fixed[1]->clone(), normalized.variadic);
   } catch (...) {
-    session->timer_delete(id, call->location());
+    timers.delete_timer(arguments.documentRoot(), id, call->location());
     throw;
   }
 
-  const double elapsed_us = session->timer_stop(id, call->location());
+  const double elapsed_us = timers.stop_timer(arguments.documentRoot(), id, call->location());
   timer_echo(context, call->location(), id, elapsed_us);
-  session->timer_delete(id, call->location());
+  timers.delete_timer(arguments.documentRoot(), id, call->location());
   return result;
 }
 
