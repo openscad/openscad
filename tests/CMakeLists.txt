@@ -382,6 +382,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
   ${TEST_SCAD_DIR}/misc/timer-tests.scad
+  ${TEST_SCAD_DIR}/misc/timer-stop-invalid-order-tests.scad
 )
 
 list(APPEND ASTDUMP_FILES ${MISC_FILES}
