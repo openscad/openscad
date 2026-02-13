@@ -23,8 +23,7 @@ std::vector<const Value *> Spec::normalize(const Arguments& arguments, const Err
   return normalizeWithVariadic(arguments, fail).fixed;
 }
 
-Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
-                                                  const ErrorFn& fail) const
+Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments, const ErrorFn& fail) const
 {
   NormalizeResult result;
   result.fixed.assign(params_.size(), &Value::undefined);
@@ -44,19 +43,18 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
     return STR("positional argument ", source.arg_index);
   };
 
-  const auto assign = [&](size_t param_index, const Value *value, bool from_named,
-                          size_t arg_index, const std::string *named_key) {
+  const auto assign = [&](size_t param_index, const Value *value, bool from_named, size_t arg_index,
+                          const std::string *named_key) {
     if (param_index >= params_.size()) {
       fail(STR(function_name_, "() internal error: parameter index out of bounds"));
     }
     if (slot_sources[param_index]) {
       const auto& previous = *slot_sources[param_index];
-      const std::string current_desc = from_named
-                                         ? STR("named argument '", *named_key, "' at argument ", arg_index)
-                                         : STR("positional argument ", arg_index);
-      fail(STR(function_name_, "() parameter '", params_[param_index].name,
-               "' was already set by ", source_desc(previous),
-               "; cannot set again by ", current_desc));
+      const std::string current_desc =
+        from_named ? STR("named argument '", *named_key, "' at argument ", arg_index)
+                   : STR("positional argument ", arg_index);
+      fail(STR(function_name_, "() parameter '", params_[param_index].name, "' was already set by ",
+               source_desc(previous), "; cannot set again by ", current_desc));
     }
     slot_sources[param_index] = SlotSource{arg_index, from_named ? named_key : nullptr};
     result.fixed[param_index] = value;
@@ -70,9 +68,8 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
       const std::string& key = *argument.name;
 
       if (named_first_arg.count(key)) {
-        fail(STR(function_name_, "() named argument '", key,
-                 "' supplied more than once (at arguments ", named_first_arg[key],
-                 " and ", arg_index, ")"));
+        fail(STR(function_name_, "() named argument '", key, "' supplied more than once (at arguments ",
+                 named_first_arg[key], " and ", arg_index, ")"));
       }
       named_first_arg.emplace(key, arg_index);
 
@@ -82,8 +79,7 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
         first_named_arg_index = arg_index;
       }
 
-      const bool is_variadic_block_name =
-        variadic_block_name_ && key == variadic_block_name_;
+      const bool is_variadic_block_name = variadic_block_name_ && key == variadic_block_name_;
       if (is_variadic_block_name) {
         in_variadic_block = true;
         result.variadic.emplace_back(&argument.value);
@@ -103,8 +99,8 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
     } else {
       if (seen_named && !in_variadic_block) {
         fail(STR(function_name_, "() positional argument ", arg_index,
-                 " is not allowed after named argument '", *first_named_key,
-                 "' at argument ", first_named_arg_index));
+                 " is not allowed after named argument '", *first_named_key, "' at argument ",
+                 first_named_arg_index));
       }
 
       if (seen_named && in_variadic_block) {
@@ -118,8 +114,8 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
           result.variadic.emplace_back(&argument.value);
           continue;
         }
-        fail(STR(function_name_, "() expected up to ", params_.size(),
-                 " positional arguments, got ", positional_index));
+        fail(STR(function_name_, "() expected up to ", params_.size(), " positional arguments, got ",
+                 positional_index));
       }
       assign(param_index, &argument.value, false, arg_index, nullptr);
     }
@@ -139,4 +135,4 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments,
   return result;
 }
 
-} // namespace FunctionArgs
+}  // namespace FunctionArgs
