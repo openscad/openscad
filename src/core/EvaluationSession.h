@@ -13,6 +13,7 @@
 
 class Value;
 class ContextFrame;
+class TimerRegistry;
 
 class EvaluationSession
 {
@@ -49,8 +50,6 @@ public:
   const std::string& timer_name(int id, const Location& loc) const;
 
 private:
-  struct TimerRegistry;
-
   std::string document_root;
   std::vector<ContextFrame *> stack;
   ContextMemoryManager context_memory_manager;
