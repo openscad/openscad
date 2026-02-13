@@ -23,34 +23,69 @@ function/builtin arguments into canonical form.
 - accept mixed positional/named syntax consistently
 - receive canonical fixed values (and optional variadic values)
 - keep consistent structural diagnostics
+- disallows positional arguments after the first named argument.  This avoids
+  ambiguous reads and keeps normalization deterministic.
 
-This _DOES NOT_ allow placing positional parameters _after_ named ones.  I felt
-that it was too confusing.  Example:
+  Example:
 
-```openscad
-function fn(a,b,c,d) =
-  echo(a=a, b=b, c=c, d=d)
-;
-x = fn("a", c="c", "d");
-```
+  ```openscad
+  function fn(a,b,c,d) =
+    echo(a=a, b=b, c=c, d=d)
+  ;
+  x = fn("a", c="c", "d");
+  ```
 
-Personally, I would have expected:
+  If positional-after-named were allowed, users may reasonably expect:
 
-```text
-ECHO: a = "a", b = undef, c = "c", d = "d"
-```
+  ```text
+  ECHO: a = "a", b = undef, c = "c", d = "d"
+  ```
 
-Instead I got:
+  But instead it's:
 
-```text
-ECHO: a = "a", b = "d", c = "c", d = undef
-```
+  ```text
+  ECHO: a = "a", b = "d", c = "c", d = undef
+  ```
 
-So I just nixed it.
+  This structural filling can produce surprising results. To keep call shape
+  predictable, this helper rejects positional-after-named.  This is in line with
+  other languages such as Python.
 
-It also _DOES NOT_ perform semantic validation (type/range/meaning); callers do that
-after normalization.  Might think about doing that in future if can establish a
-specification that isn't crazy.
+- allows an optional variadic block parameter.  It can be used named, and named
+  arguments can follow it.
+
+  Example:
+
+  ```openscad
+  x = timer_run(fn=function(a,b,c,d) 1, args="a", "b", "c", "d", name="foo");
+  ```
+
+  > NOTE:
+  >
+  > `"a", "b", "c", "d"` are a variadic argument block, so it doesn't conflict
+  > with the positional after named rule.
+
+- does not perform semantic validation (type/range/meaning); callers can do that
+  after normalization as it's currently done within the function's execution.
+
+  Might think about doing that in future if we can establish a specification
+  that isn't crazy, but I think that that would have to be a different
+  specification as there would have to be ways to disambiguate calls if merged
+  into this positional/named model.
+
+  Adding type-based overload resolution to this positional/named model would
+  require a separate disambiguation layer, similar in spirit to C# overload
+  resolution:
+
+  1. Determine candidate signatures.
+  2. Bind named arguments by exact parameter name.
+  3. Apply positional arguments in order.
+  4. Enforce positional/named ordering rules.
+  5. Resolve best match by deterministic conversion ranking.
+  6. Fail with explicit ambiguity diagnostics when no unique match exists.
+
+  This is likely too complex for this helper's scope and may be harder for users
+  to reason about, so `FunctionArgs::Spec` remains structural-only.
 
 ## Core Types
 
