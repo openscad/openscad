@@ -86,7 +86,9 @@ size_t EvaluationSession::push_frame(ContextFrame *frame)
   return index;
 }
 
-EvaluationSession::EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot)) {}
+EvaluationSession::EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot))
+{
+}
 
 EvaluationSession::~EvaluationSession() = default;
 
@@ -187,8 +189,7 @@ void EvaluationSession::timer_start(int id, const Location& loc)
   if (!timer_registry) {
     timer_error(*this, loc, STR("timer_start(", id, ") unknown timer id"));
   }
-  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) ||
-      !timer_registry->timers[id]) {
+  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) || !timer_registry->timers[id]) {
     timer_error(*this, loc, STR("timer_start(", id, ") unknown timer id"));
   }
   auto& timer = *timer_registry->timers[id];
@@ -209,8 +210,7 @@ void EvaluationSession::timer_clear(int id, const Location& loc)
   if (!timer_registry) {
     timer_error(*this, loc, STR("timer_clear(", id, ") unknown timer id"));
   }
-  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) ||
-      !timer_registry->timers[id]) {
+  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) || !timer_registry->timers[id]) {
     timer_error(*this, loc, STR("timer_clear(", id, ") unknown timer id"));
   }
   auto& timer = *timer_registry->timers[id];
@@ -223,8 +223,7 @@ double EvaluationSession::timer_stop(int id, const Location& loc)
   if (!timer_registry) {
     timer_error(*this, loc, STR("timer_stop(", id, ") unknown timer id"));
   }
-  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) ||
-      !timer_registry->timers[id]) {
+  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) || !timer_registry->timers[id]) {
     timer_error(*this, loc, STR("timer_stop(", id, ") unknown timer id"));
   }
   auto& timer = *timer_registry->timers[id];
@@ -245,8 +244,7 @@ double EvaluationSession::timer_elapsed(int id, const Location& loc)
   if (!timer_registry) {
     timer_error(*this, loc, STR("timer_elapsed(", id, ") unknown timer id"));
   }
-  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) ||
-      !timer_registry->timers[id]) {
+  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) || !timer_registry->timers[id]) {
     timer_error(*this, loc, STR("timer_elapsed(", id, ") unknown timer id"));
   }
   auto& timer = *timer_registry->timers[id];
@@ -264,8 +262,7 @@ void EvaluationSession::timer_delete(int id, const Location& loc)
   if (!timer_registry) {
     timer_error(*this, loc, STR("timer_delete(", id, ") unknown timer id"));
   }
-  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) ||
-      !timer_registry->timers[id]) {
+  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) || !timer_registry->timers[id]) {
     timer_error(*this, loc, STR("timer_delete(", id, ") unknown timer id"));
   }
   timer_registry->timers[id].reset();
@@ -277,8 +274,7 @@ const std::string& EvaluationSession::timer_name(int id, const Location& loc) co
   if (!timer_registry) {
     timer_error(*this, loc, STR("timer_name(", id, ") unknown timer id"));
   }
-  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) ||
-      !timer_registry->timers[id]) {
+  if (id < 0 || id >= static_cast<int>(timer_registry->timers.size()) || !timer_registry->timers[id]) {
     timer_error(*this, loc, STR("timer_name(", id, ") unknown timer id"));
   }
   return timer_registry->timers[id]->name;

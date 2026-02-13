@@ -1131,7 +1131,8 @@ static void timer_error(const char *function_name, const Location& loc, const st
   throw EvaluationException(msg);
 }
 
-static EvaluationSession::TimerType parse_timer_type_value(const char *function_name, const Arguments& arguments,
+static EvaluationSession::TimerType parse_timer_type_value(const char *function_name,
+                                                           const Arguments& arguments,
                                                            const Location& loc, const Value& value)
 {
   if (value.type() != Value::Type::STRING) {
@@ -1279,11 +1280,6 @@ static void timer_echo(const std::shared_ptr<const Context>& context, const Loca
 
 Value builtin_timer_new(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() > 3) {
-    timer_error("timer_new", loc, arguments.documentRoot(),
-                STR("timer_new() expected 0-3 arguments, got ", arguments.size()));
-  }
-
   const auto fail = [&](const std::string& msg) {
     timer_error("timer_new", loc, arguments.documentRoot(), msg);
   };
@@ -1297,23 +1293,16 @@ Value builtin_timer_new(Arguments arguments, const Location& loc)
   EvaluationSession::TimerType type = EvaluationSession::TimerType::Monotonic;
   bool start_now = false;
 
-    if (canonical[0]->type() != Value::Type::UNDEFINED) {
-      name = canonical[0]->toString();
-    }
+  name = canonical[0]->toString();
 
-  if (canonical[1]->type() != Value::Type::UNDEFINED) {
-    if (canonical[1]->type() != Value::Type::STRING) {
-      timer_error("timer_new", loc, arguments.documentRoot(),
-                  STR("timer_new() type must be string; got ",
-                      Value::typeName(canonical[1]->type()), " (",
-                      canonical[1]->toEchoStringNoThrow(), ")"));
-    }
-    type = parse_timer_type_value("timer_new", arguments, loc, *canonical[1]);
+  if (canonical[1]->type() != Value::Type::STRING) {
+    timer_error("timer_new", loc, arguments.documentRoot(),
+                STR("timer_new() type must be string; got ", Value::typeName(canonical[1]->type()), " (",
+                    canonical[1]->toEchoStringNoThrow(), ")"));
   }
+  type = parse_timer_type_value("timer_new", arguments, loc, *canonical[1]);
 
-    if (canonical[2]->type() != Value::Type::UNDEFINED) {
-      start_now = canonical[2]->toBool();
-    }
+  start_now = canonical[2]->toBool();
 
   const int id = arguments.session()->timer_new(name, type);
   if (start_now) {
@@ -1324,10 +1313,6 @@ Value builtin_timer_new(Arguments arguments, const Location& loc)
 
 Value builtin_timer_start(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() != 1) {
-    timer_error("timer_start", loc, arguments.documentRoot(),
-                STR("timer_start() expected 1 argument, got ", arguments.size()));
-  }
   const auto fail = [&](const std::string& msg) {
     timer_error("timer_start", loc, arguments.documentRoot(), msg);
   };
@@ -1338,12 +1323,13 @@ Value builtin_timer_start(Arguments arguments, const Location& loc)
   const auto canonical = spec.normalize(arguments, fail);
   if (canonical[0]->type() != Value::Type::NUMBER) {
     timer_error("timer_start", loc, arguments.documentRoot(),
-                "timer_start() timer_id must be a number");
+                STR("timer_start() timer_id must be a number; got ",
+                    Value::typeName(canonical[0]->type()), " (",
+                    canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
-    timer_error("timer_start", loc, arguments.documentRoot(),
-                "timer_start() timer_id must be finite");
+    timer_error("timer_start", loc, arguments.documentRoot(), "timer_start() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
   arguments.session()->timer_start(id, loc);
@@ -1352,10 +1338,6 @@ Value builtin_timer_start(Arguments arguments, const Location& loc)
 
 Value builtin_timer_clear(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() != 1) {
-    timer_error("timer_clear", loc, arguments.documentRoot(),
-                STR("timer_clear() expected 1 argument, got ", arguments.size()));
-  }
   const auto fail = [&](const std::string& msg) {
     timer_error("timer_clear", loc, arguments.documentRoot(), msg);
   };
@@ -1366,12 +1348,13 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
   const auto canonical = spec.normalize(arguments, fail);
   if (canonical[0]->type() != Value::Type::NUMBER) {
     timer_error("timer_clear", loc, arguments.documentRoot(),
-                "timer_clear() timer_id must be a number");
+                STR("timer_clear() timer_id must be a number; got ",
+                    Value::typeName(canonical[0]->type()), " (",
+                    canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
-    timer_error("timer_clear", loc, arguments.documentRoot(),
-                "timer_clear() timer_id must be finite");
+    timer_error("timer_clear", loc, arguments.documentRoot(), "timer_clear() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
   arguments.session()->timer_clear(id, loc);
@@ -1380,11 +1363,6 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
 
 Value builtin_timer_stop(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() < 1 || arguments.size() > 4) {
-    timer_error("timer_stop", loc, arguments.documentRoot(),
-                STR("timer_stop() expected 1-4 arguments, got ", arguments.size()));
-  }
-
   const auto fail = [&](const std::string& msg) {
     timer_error("timer_stop", loc, arguments.documentRoot(), msg);
   };
@@ -1402,41 +1380,37 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
   bool return_number = false;
   bool do_echo = false;
   bool delete_timer = false;
-  std::string format;
+  std::string format{};
 
   if (canonical[0]->type() == Value::Type::UNDEFINED) {
-    timer_error("timer_stop", loc, arguments.documentRoot(),
-                "timer_stop() requires timer_id");
+    timer_error("timer_stop", loc, arguments.documentRoot(), "timer_stop() requires timer_id");
   }
   if (canonical[0]->type() != Value::Type::NUMBER) {
-    timer_error("timer_stop", loc, arguments.documentRoot(),
-                STR("timer_stop() timer_id must be a number; got ",
-                    Value::typeName(canonical[0]->type()), " (",
-                    canonical[0]->toEchoStringNoThrow(), ")"));
+    timer_error(
+      "timer_stop", loc, arguments.documentRoot(),
+      STR("timer_stop() timer_id must be a number; got ", Value::typeName(canonical[0]->type()), " (",
+          canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
-    timer_error("timer_stop", loc, arguments.documentRoot(),
-                "timer_stop() timer_id must be finite");
+    timer_error("timer_stop", loc, arguments.documentRoot(), "timer_stop() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
 
   const Value& fmt_value = *canonical[1];
   if (fmt_value.type() == Value::Type::UNDEFINED) {
     return_number = true;
+    do_echo = canonical[2]->toBool();
+    delete_timer = canonical[3]->toBool();
   } else if (fmt_value.type() == Value::Type::STRING) {
     format = fmt_value.toStrUtf8Wrapper().toString();
+    do_echo = canonical[2]->toBool();
+    delete_timer = canonical[3]->toBool();
   } else {
     timer_error("timer_stop", loc, arguments.documentRoot(),
                 STR("timer_stop() fmt_str must be string or undef; got ",
                     Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
   }
-
-  const Value& output_value = *canonical[2];
-  do_echo = output_value.toBool();
-
-  const Value& delete_value = *canonical[3];
-  delete_timer = delete_value.toBool();
 
   const double elapsed_us = arguments.session()->timer_stop(id, loc);
   Value result = Value::undefined.clone();
@@ -1451,8 +1425,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
     std::string formatted;
     std::string format_error;
     if (!format_timer_value_us(elapsed_us, format, label, formatted, format_error)) {
-      timer_error("timer_stop", loc, arguments.documentRoot(),
-                  STR("timer_stop() ", format_error));
+      timer_error("timer_stop", loc, arguments.documentRoot(), STR("timer_stop() ", format_error));
     }
     if (do_echo) {
       LOG(message_group::Echo, "%1$s", formatted);
@@ -1467,10 +1440,6 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
 
 Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() < 1 || arguments.size() > 3) {
-    timer_error("timer_elapsed", loc, arguments.documentRoot(),
-                STR("timer_elapsed() expected 1-3 arguments, got ", arguments.size()));
-  }
   const auto fail = [&](const std::string& msg) {
     timer_error("timer_elapsed", loc, arguments.documentRoot(), msg);
   };
@@ -1485,14 +1454,13 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
   const auto canonical = spec.normalize(arguments, fail);
 
   if (canonical[0]->type() == Value::Type::UNDEFINED) {
-    timer_error("timer_elapsed", loc, arguments.documentRoot(),
-                "timer_elapsed() requires timer_id");
+    timer_error("timer_elapsed", loc, arguments.documentRoot(), "timer_elapsed() requires timer_id");
   }
   if (canonical[0]->type() != Value::Type::NUMBER) {
-    timer_error("timer_elapsed", loc, arguments.documentRoot(),
-                STR("timer_elapsed() timer_id must be a number; got ",
-                    Value::typeName(canonical[0]->type()), " (",
-                    canonical[0]->toEchoStringNoThrow(), ")"));
+    timer_error(
+      "timer_elapsed", loc, arguments.documentRoot(),
+      STR("timer_elapsed() timer_id must be a number; got ", Value::typeName(canonical[0]->type()), " (",
+          canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
@@ -1504,21 +1472,20 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
   const double elapsed_us = arguments.session()->timer_elapsed(id, loc);
   bool return_number = false;
   bool do_echo = false;
-  std::string format;
+  std::string format{};
 
   const Value& fmt_value = *canonical[1];
   if (fmt_value.type() == Value::Type::UNDEFINED) {
     return_number = true;
+    do_echo = canonical[2]->toBool();
   } else if (fmt_value.type() == Value::Type::STRING) {
     format = fmt_value.toStrUtf8Wrapper().toString();
+    do_echo = canonical[2]->toBool();
   } else {
     timer_error("timer_elapsed", loc, arguments.documentRoot(),
                 STR("timer_elapsed() fmt_str must be string or undef; got ",
                     Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
   }
-
-  const Value& output_value = *canonical[2];
-  do_echo = output_value.toBool();
 
   if (return_number) {
     if (do_echo) {
@@ -1532,8 +1499,7 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
   std::string formatted;
   std::string format_error;
   if (!format_timer_value_us(elapsed_us, format, label, formatted, format_error)) {
-    timer_error("timer_elapsed", loc, arguments.documentRoot(),
-                STR("timer_elapsed() ", format_error));
+    timer_error("timer_elapsed", loc, arguments.documentRoot(), STR("timer_elapsed() ", format_error));
   }
   if (do_echo) {
     LOG(message_group::Echo, "%1$s", formatted);
@@ -1543,10 +1509,6 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
 
 Value builtin_timer_delete(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() != 1) {
-    timer_error("timer_delete", loc, arguments.documentRoot(),
-                STR("timer_delete() expected 1 argument, got ", arguments.size()));
-  }
   const auto fail = [&](const std::string& msg) {
     timer_error("timer_delete", loc, arguments.documentRoot(), msg);
   };
@@ -1557,12 +1519,13 @@ Value builtin_timer_delete(Arguments arguments, const Location& loc)
   const auto canonical = spec.normalize(arguments, fail);
   if (canonical[0]->type() != Value::Type::NUMBER) {
     timer_error("timer_delete", loc, arguments.documentRoot(),
-                "timer_delete() timer_id must be a number");
+                STR("timer_delete() timer_id must be a number; got ",
+                    Value::typeName(canonical[0]->type()), " (",
+                    canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
-    timer_error("timer_delete", loc, arguments.documentRoot(),
-                "timer_delete() timer_id must be finite");
+    timer_error("timer_delete", loc, arguments.documentRoot(), "timer_delete() timer_id must be finite");
   }
   const int id = static_cast<int>(id_val);
   arguments.session()->timer_delete(id, loc);
@@ -1821,19 +1784,19 @@ void register_builtin_functions()
                  {
                    "timer_stop(timer_id) -> string",
                    "timer_stop(timer_id, fmt_str) -> string",
+                   "timer_stop(timer_id, undef  ) -> number",
                    "timer_stop(timer_id, fmt_str, output) -> string",
+                   "timer_stop(timer_id, undef  , output) -> number",
                    "timer_stop(timer_id, fmt_str, output, delete) -> string",
-                   "timer_stop(timer_id, undef) -> number",
-                   "timer_stop(timer_id, undef, output) -> number",
-                   "timer_stop(timer_id, undef, output, delete) -> number",
+                   "timer_stop(timer_id, undef  , output, delete) -> number",
                  });
   Builtins::init("timer_elapsed", new BuiltinFunction(&builtin_timer_elapsed),
                  {
                    "timer_elapsed(timer_id) -> string",
                    "timer_elapsed(timer_id, fmt_str) -> string",
+                   "timer_elapsed(timer_id, undef  ) -> number",
                    "timer_elapsed(timer_id, fmt_str, output) -> string",
-                   "timer_elapsed(timer_id, undef) -> number",
-                   "timer_elapsed(timer_id, undef, output) -> number",
+                   "timer_elapsed(timer_id, undef  , output) -> number",
                  });
   Builtins::init("timer_delete", new BuiltinFunction(&builtin_timer_delete),
                  {

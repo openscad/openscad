@@ -144,4 +144,4 @@ private:
   const char *variadic_block_name_;
 };
 
-} // namespace FunctionArgs
+}  // namespace FunctionArgs
