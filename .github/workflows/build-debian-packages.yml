@@ -338,10 +338,14 @@ jobs:
 
       - name: Setup SSH key for SFTP
         run: |
+          if [ -z "${{ secrets.REPO_SFTP_HOST }}" ] || [ -z "${{ secrets.REPO_SFTP_SSH_KEY }}" ]; then
+            echo "::error::Required secrets REPO_SFTP_HOST and REPO_SFTP_SSH_KEY must be set in repository settings."
+            exit 1
+          fi
           mkdir -p ~/.ssh
           echo "${{ secrets.REPO_SFTP_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.REPO_SFTP_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.REPO_SFTP_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Download existing repository from SFTP
         run: |
