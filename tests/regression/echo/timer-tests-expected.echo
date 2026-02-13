@@ -1,1 +1,5 @@
 ECHO: timer 0 0:00.000
+ECHO: done
+ERROR: timer_new() positional argument 3 is not allowed after named argument 'start' at argument 2 in file timer-tests.scad, line 22
+TRACE: called by 'timer_new' in file timer-tests.scad, line 22
+TRACE: assignment to "z" in file timer-tests.scad, line 22

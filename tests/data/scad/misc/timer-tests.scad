@@ -16,3 +16,7 @@ va = timer_stop(v, delete=true);
 
 w = timer_new(start=true);
 wa = timer_stop(w, undef, delete=true);
+zx = timer_new("named-id-tail", start=true);
+zy = timer_stop(fmt_str="done", output=true, timer_id=zx, delete=true);
+
+z = timer_new("mixed", start=true, "CPU");
