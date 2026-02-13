@@ -38,14 +38,7 @@
 #include "core/function.h"
 #include "core/module.h"
 #include "core/Value.h"
-#include "utils/exceptions.h"
 #include "utils/printutils.h"
-
-static void timer_error(const EvaluationSession& session, const Location& loc, const std::string& msg)
-{
-  LOG(message_group::Error, loc, session.documentRoot(), "%1$s", msg);
-  throw EvaluationException(msg);
-}
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
 {
@@ -119,61 +112,4 @@ boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(con
   }
   LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown module '%1$s'", name);
   return boost::none;
-}
-
-int EvaluationSession::timer_new(const std::string& name, TimerType type)
-{
-  if (!timer_registry) {
-    timer_registry = std::make_unique<TimerRegistry>();
-  }
-  return timer_registry->create_timer(
-    name, type == TimerType::Cpu ? TimerRegistry::Kind::Cpu : TimerRegistry::Kind::Monotonic);
-}
-
-void EvaluationSession::timer_start(int id, const Location& loc)
-{
-  if (!timer_registry) {
-    timer_error(*this, loc, STR("timer_start(", id, ") unknown timer id"));
-  }
-  timer_registry->start_timer(document_root, id, loc);
-}
-
-void EvaluationSession::timer_clear(int id, const Location& loc)
-{
-  if (!timer_registry) {
-    timer_error(*this, loc, STR("timer_clear(", id, ") unknown timer id"));
-  }
-  timer_registry->clear_timer(document_root, id, loc);
-}
-
-double EvaluationSession::timer_stop(int id, const Location& loc)
-{
-  if (!timer_registry) {
-    timer_error(*this, loc, STR("timer_stop(", id, ") unknown timer id"));
-  }
-  return timer_registry->stop_timer(document_root, id, loc);
-}
-
-double EvaluationSession::timer_elapsed(int id, const Location& loc)
-{
-  if (!timer_registry) {
-    timer_error(*this, loc, STR("timer_elapsed(", id, ") unknown timer id"));
-  }
-  return timer_registry->elapsed_timer(document_root, id, loc);
-}
-
-void EvaluationSession::timer_delete(int id, const Location& loc)
-{
-  if (!timer_registry) {
-    timer_error(*this, loc, STR("timer_delete(", id, ") unknown timer id"));
-  }
-  timer_registry->delete_timer(document_root, id, loc);
-}
-
-const std::string& EvaluationSession::timer_name(int id, const Location& loc) const
-{
-  if (!timer_registry) {
-    timer_error(*this, loc, STR("timer_name(", id, ") unknown timer id"));
-  }
-  return timer_registry->timer_name(document_root, id, loc);
 }
