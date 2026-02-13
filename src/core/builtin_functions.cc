@@ -1131,8 +1131,7 @@ static void timer_error(const char *function_name, const Location& loc, const st
   throw EvaluationException(msg);
 }
 
-static TimerRegistry::Kind parse_timer_type_value(const char *function_name,
-                                                  const Arguments& arguments,
+static TimerRegistry::Kind parse_timer_type_value(const char *function_name, const Arguments& arguments,
                                                   const Location& loc, const Value& value)
 {
   if (value.type() != Value::Type::STRING) {
@@ -1323,10 +1322,10 @@ Value builtin_timer_start(Arguments arguments, const Location& loc)
   };
   const auto canonical = spec.normalize(arguments, fail);
   if (canonical[0]->type() != Value::Type::NUMBER) {
-    timer_error("timer_start", loc, arguments.documentRoot(),
-                STR("timer_start() timer_id must be a number; got ",
-                    Value::typeName(canonical[0]->type()), " (",
-                    canonical[0]->toEchoStringNoThrow(), ")"));
+    timer_error(
+      "timer_start", loc, arguments.documentRoot(),
+      STR("timer_start() timer_id must be a number; got ", Value::typeName(canonical[0]->type()), " (",
+          canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
@@ -1348,10 +1347,10 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
   };
   const auto canonical = spec.normalize(arguments, fail);
   if (canonical[0]->type() != Value::Type::NUMBER) {
-    timer_error("timer_clear", loc, arguments.documentRoot(),
-                STR("timer_clear() timer_id must be a number; got ",
-                    Value::typeName(canonical[0]->type()), " (",
-                    canonical[0]->toEchoStringNoThrow(), ")"));
+    timer_error(
+      "timer_clear", loc, arguments.documentRoot(),
+      STR("timer_clear() timer_id must be a number; got ", Value::typeName(canonical[0]->type()), " (",
+          canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {
@@ -1470,7 +1469,8 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
   }
   const int id = static_cast<int>(id_val);
 
-  const double elapsed_us = arguments.session()->timers().elapsed_timer(arguments.documentRoot(), id, loc);
+  const double elapsed_us =
+    arguments.session()->timers().elapsed_timer(arguments.documentRoot(), id, loc);
   bool return_number = false;
   bool do_echo = false;
   std::string format{};
@@ -1519,10 +1519,10 @@ Value builtin_timer_delete(Arguments arguments, const Location& loc)
   };
   const auto canonical = spec.normalize(arguments, fail);
   if (canonical[0]->type() != Value::Type::NUMBER) {
-    timer_error("timer_delete", loc, arguments.documentRoot(),
-                STR("timer_delete() timer_id must be a number; got ",
-                    Value::typeName(canonical[0]->type()), " (",
-                    canonical[0]->toEchoStringNoThrow(), ")"));
+    timer_error(
+      "timer_delete", loc, arguments.documentRoot(),
+      STR("timer_delete() timer_id must be a number; got ", Value::typeName(canonical[0]->type()), " (",
+          canonical[0]->toEchoStringNoThrow(), ")"));
   }
   const double id_val = canonical[0]->toDouble();
   if (!std::isfinite(id_val)) {

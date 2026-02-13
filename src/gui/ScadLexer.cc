@@ -138,7 +138,8 @@ void Lex::default_rules()
     "abs sign rands min max sin cos asin acos tan atan atan2 round "
     "ceil floor pow sqrt exp len log ln str chr ord concat lookup "
     "search version version_num norm cross parent_module dxf_dim "
-    "dxf_cross timer_new timer_start timer_clear timer_stop timer_elapsed timer_format timer_delete timer_run "
+    "dxf_cross timer_new timer_start timer_clear timer_stop timer_elapsed timer_format timer_delete "
+    "timer_run "
     "is_undef is_list is_num is_bool is_string "
     "is_function is_object");
   defineRules(functions, efunction);
