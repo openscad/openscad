@@ -87,6 +87,7 @@ public:
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
   RenderStatistic renderStatistic;
+  bool isWaitingForFirstFrame{false};
 
   std::shared_ptr<SourceFile> rootFile;            // Result of parsing
   std::shared_ptr<SourceFile> parsedFile;          // Last parse for include list
@@ -345,6 +346,7 @@ private slots:
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
+  void onFrameRendered();
   void handleMeasurementClicked(QAction *clickedAction);
   void on_designCheckValidity_triggered();
   void on_designActionDisplayAST_triggered();
