@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/pythonscad/pythonscad/compare/v0.14.0...v0.14.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* **ci:** validate SFTP secrets and quote host in ssh-keyscan ([#449](https://github.com/pythonscad/pythonscad/issues/449)) ([b17d375](https://github.com/pythonscad/pythonscad/commit/b17d37507b865b3c1c164488c9f4f70419742351))
+
 ## [0.14.0](https://github.com/pythonscad/pythonscad/compare/v0.13.0...v0.14.0) (2026-02-13)
 
 
