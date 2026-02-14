@@ -459,7 +459,15 @@ def main():
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
-    print("report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,''))
+    if os.environ.get("CI"):
+        # relative path because this ultimately this file will end up inside a zip archive
+        report_path = html_filename.replace(os.getcwd() + os.path.sep, "")
+        print("report saved:\n", report_path)
+    else:
+        report_path = os.path.abspath(html_filename)
+        report_uri = pathlib.Path(report_path).as_uri()
+        report_link = f"\033]8;;{report_uri}\033\\{report_path}\033]8;;\033\\"
+        print("report saved:\n", report_link)
 
     debug('test_pretty_print complete')
 
