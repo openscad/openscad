@@ -34,6 +34,26 @@ class LaserCutter:
             cut=obj.divmatrix(mat).projection(cut=True)
             self.faces.append(cut.multmatrix(mat))
 
+    def add_volume_tri(self,obj, cols=4):
+        unitmatrix = rotx(cube().origin, 90)
+
+        height=obj.size[2]
+
+        pitch=obj.size[0]/cols
+        pos=obj.position
+        center=[obj.position[i] + obj.size[i]/2 for i in range(3)]
+        diffangle=60
+
+        for r in range(3):
+            for i in range(cols):
+                mat = translate(rotz(translate(unitmatrix,[0,(2*i-cols+1)*pitch/2,0]),r*diffangle),center)
+                obj.divmatrix(mat)
+                cut=obj.divmatrix(mat).projection(cut=True)
+                face=cut.multmatrix(mat)
+                face.stack = [r,3]
+                self.faces.append(face)
+
+
 
     def add_faces(self, facelist):
         self.faces = self.faces + facelist
@@ -46,7 +66,7 @@ class LaserCutter:
         conn_type1 = [ [0.0,-1, 0], [0.25,-1, 0], [0.25,1, 0], [0.5,1, 0], [0.5,-1, 0], [0.75,-1, 0], [0.75, 1, 0], [1,1, 0]]
         conn_type2 = [ [0.0,-1, 0], [0.4,-1, 0], [0.4,1, 0], [0.6,1, 0], [0.6,-1, 0], [1,-1, 0] ]
         conn_type2_ = [[0.4,-1, 0],[0.6 , -1, 0] ,[0.6,1, 0],[0.4,1, 0]]
-        conn_type3  = [[0,-1, 0],[1, -1,3],[1,1,3],[0,1,0]]
+        conn_type3  = [[0,-1, 0],[1, -1,0],[1,1,0],[0,1,0]]
 
         late_cuts = []
         total_cuts = []
@@ -57,17 +77,17 @@ class LaserCutter:
         edge_inv = {}
 
         # make sure all faces are polygons
-        for i,f in enumerate(self.faces):
-            pol, = f.children()
-            points = []
-            paths = []
-            for pts in pol.mesh():
-                s=len(points)
-                n=len(pts)
-                points = points + pts
-                paths.append(list(range(s, s+n)))
-            pol = polygon(points=points, paths = paths)
-            self.faces[i] = pol.multmatrix(f.matrix)
+        for f in self.faces:
+            for pol in f:
+                points = []
+                paths = []
+                for pts in pol.mesh():
+                    s=len(points)
+                    n=len(pts)
+                    points = points + pts
+                    paths.append(list(range(s, s+n)))
+                pol.value  = polygon(points=points, paths = paths)
+
 
         # faces, outlines, segments, other
         ifaces = [] # indexed ifaces[face][pathnum][ptnum]
@@ -110,158 +130,170 @@ class LaserCutter:
                     edge_inv[tuple(edge)]=1
             ifaces.append(ipaths)
 
-
         # Process faces and edges now
 
-        faceprocess = self.faces
-        self.faces = []
-        for i, f in enumerate(faceprocess):
+        for i, f in enumerate(self.faces):
             mat = f.matrix
-            pol, = f.children()
-            if len(pol.paths) == 0:
-                pol.paths=[list(range(len(pol.points)))]
-            newpolpoints=[]
-            newpolpaths=[]
-            totalcuts=[]
-            for j, path in enumerate(pol.paths):
-                newpts=[]
-                curface=ifaces[i][j]
+            for pol in f:
+                if len(pol.paths) == 0:
+                    pol.paths=[list(range(len(pol.points)))]
+                newpolpoints=[]
+                newpolpaths=[]
+                totalcuts=[]
+                for j, path in enumerate(pol.paths):
+                    newpts=[]
+                    curface=ifaces[i][j]
+    
+                    n=len(curface)
+    
+                    stripes = [] # pattern on each side
+    
+                    for k in range(n): # all edges
+                        conn=conn_plain
+                        partedge=[curface[(k+1)%n],curface[k]]
+                        if tuple(partedge) in edge_inv:
+                            conn = conn_type1
+    
+                        if conn == conn_plain:
+                            pt1=multmatrix(pol.points[path[k]] + [0], mat)
+                            pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
+    
+                            # go through all faces and check if they are inside
+                            for l, oface in enumerate(self.faces):
+                                if l == i:
+                                    continue
+                                # pos auf oface
+                                pt1x=divmatrix(pt1, oface.matrix)
+                                pt2x=divmatrix(pt2, oface.matrix)
+                                oshape,  = oface.children()
+                                valid=True
+                                if abs(pt1x[2]) > 1e-3:
+                                    valid = False
+                                if abs(pt2x[2]) > 1e-3:
+                                    valid = False
+                                if not oface.inside(pt1x):
+                                    valid = False
+                                if not oface.inside(pt2x):
+                                    valid = False
+    
+                                if valid == True:
+                                    conn = conn_type2
+                                    cutout = self.jigging(pt1x, pt2x, conn_type2_)
+                                    late_cuts[l] = union(late_cuts[l], polygon(cutout))
 
-                n=len(curface)
+                        beg = pol.points[path[k]]
+                        end = pol.points[path[(k+1)%n]]
+                        stripe = self.jigging(beg,end, conn)
+                        stripes.append(stripe)
 
-                stripes = [] # pattern on each side
 
-                for k in range(n): # all edges
-                    conn=conn_plain
-                    partedge=[curface[(k+1)%n],curface[k]]
-                    if tuple(partedge) in edge_inv:
-                        conn = conn_type1
-
-                    if conn == conn_plain:
-                        pt1=multmatrix(pol.points[path[k]] + [0], mat)
-                        pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
-
-                        # go through all faces and check if they are inside
-                        for l, oface in enumerate(faceprocess):
-                            if l == i:
-                                continue
-                            # pos auf oface
+                    for k, oface in enumerate(self.faces):
+                        if k == i:
+                            continue
+                        oshape,  = oface.children()
+    
+                        for l in range(n):
+    
+                            pt1=multmatrix(pol.points[path[l]] + [0], mat)
+                            pt2=multmatrix(pol.points[path[(l+1)%n]] + [0], mat) # TODO hier out of index
                             pt1x=divmatrix(pt1, oface.matrix)
                             pt2x=divmatrix(pt2, oface.matrix)
-                            oshape,  = oface.children()
-                            valid=True
-                            if abs(pt1x[2]) > 1e-3:
-                                valid = False
-                            if abs(pt2x[2]) > 1e-3:
-                                valid = False
-                            if not oface.inside(pt1x):
-                                valid = False
-                            if not oface.inside(pt2x):
-                                valid = False
-
-                            if valid == True:
-                                conn = conn_type2
-                                cutout = self.jigging(pt1x, pt2x, conn_type2_)
-                                late_cuts[l] = union(late_cuts[l], polygon(cutout))
-
-                    beg = pol.points[path[k]]
-                    end = pol.points[path[(k+1)%n]]
-                    stripe = self.jigging(beg,end, conn)
-                    stripes.append(stripe)
-
-
-                for k, oface in enumerate(faceprocess):
-                    if k == i:
-                        continue
-                    oshape,  = oface.children()
-
-                    for l in range(n):
-
-                        pt1=multmatrix(pol.points[path[l]] + [0], mat)
-                        pt2=multmatrix(pol.points[path[(l+1)%n]] + [0], mat) # TODO hier out of index
-                        pt1x=divmatrix(pt1, oface.matrix)
-                        pt2x=divmatrix(pt2, oface.matrix)
-
-                        fact=None
-                        if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
-                            # calculate exact cut
-                            fact=pt1x[2]/(pt1x[2]-pt2x[2])
-
-                        if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
-                            fact= pt1x[2]/(pt1x[2]-pt2x[2])
-                        if fact is not None:
-                            ptcut=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
-                            total_cuts[k].append(ptcut)
-                        if len(total_cuts[k])%3 == 2:
-                            total_cuts[k].append(i) # 2->3, info about other plate
+    
+                            fact=None
+                            if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
+                                # calculate exact cut
+                                fact=pt1x[2]/(pt1x[2]-pt2x[2])
+        
+                            if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
+                                fact= pt1x[2]/(pt1x[2]-pt2x[2])
+                            if fact is not None:
+                                ptcut=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
+                                total_cuts[k].append(ptcut)
+                            if len(total_cuts[k])%3 == 2:
+                                total_cuts[k].append(i) # 2->3, info about other plate
 
 
 
-                #finished all edges, alle
-                # Now concatenate all strips with extrapolation
-                for k, stripe in enumerate(stripes):
-                    nextstr = stripes[(k+1)%n]
-
-                    # middle part of edge
-                    newpts = newpts + stripe[1:-1] # skip 1st and last
-                    #calculate joint point
-                    p1=stripe[-2]
-                    p2=stripe[-1]
-                    p3=nextstr[0]
-                    p4=nextstr[1]
-                    x21=p2[0]-p1[0]
-                    y21=p2[1]-p1[1]
-                    x31=p3[0]-p1[0]
-                    y31=p3[1]-p1[1]
-                    x43=p4[0]-p3[0]
-                    y43=p4[1]-p3[1]
-                    s=(x43*y31-x31*y43)/(x43*y21-x21*y43)
-                    pt = [p1[0]+ s*x21, p1[1] + s*y21]
-                    newpts.append(pt)
-
-                s=len(newpolpoints)
-                n=len(newpts)
-                newpolpoints = newpolpoints + newpts
-                newpolpaths.append(list(range(s, s+n)))
-            # finished all outlines
-            piece = polygon(points=newpolpoints, paths=newpolpaths).multmatrix(mat)
-            self.faces.append(piece)
+                    #finished all edges, alle
+                    # Now concatenate all strips with extrapolation
+                    for k, stripe in enumerate(stripes):
+                        nextstr = stripes[(k+1)%n]
+    
+                        # middle part of edge
+                        newpts = newpts + stripe[1:-1] # skip 1st and last
+                        #calculate joint point
+                        p1=stripe[-2]
+                        p2=stripe[-1]
+                        p3=nextstr[0]
+                        p4=nextstr[1]
+                        x21=p2[0]-p1[0]
+                        y21=p2[1]-p1[1]
+                        x31=p3[0]-p1[0]
+                        y31=p3[1]-p1[1]
+                        x43=p4[0]-p3[0]
+                        y43=p4[1]-p3[1]
+                        s=(x43*y31-x31*y43)/(x43*y21-x21*y43)
+                        pt = [p1[0]+ s*x21, p1[1] + s*y21]
+                        newpts.append(pt)
+    
+                    s=len(newpolpoints)
+                    n=len(newpts)
+                    newpolpoints = newpolpoints + newpts
+                    newpolpaths.append(list(range(s, s+n)))
+                # finished all outlines
+                pol.value = polygon(points=newpolpoints, paths=newpolpaths)
 
             #zvec = list(zip(*f.matrix))[2][:3] # Z vector
             #dann poly2  als 3d divmatrix mit plane1 z=0 punkte sammeln sortieren nach x oder y, 2er gruppen bilden
             #nur wenn 1 gruppe und auf kante liegt
             #n1 cross n2 z>0: oben  sonst uinten
 
-        # create more late cuts from toal cuts
+        # create more late cuts from total cuts
         # finished all faces
         for i, cuts in enumerate(total_cuts):
-            f = faceprocess[i]
+            f = self.faces[i]
 
             fn = [f.matrix[0][2], f.matrix[1][2], f.matrix[2][2]]
 
             for j in range(int(len(cuts)/3)):
                 p1=cuts[3*j+0]
                 p2=cuts[3*j+1]
-
                 oi=cuts[3*j+2]
-                fo = faceprocess[oi]
+                fo = self.faces[oi]
                 fno = [fo.matrix[0][2], fo.matrix[1][2], fo.matrix[2][2]]
-                fc=cross(fn, fno)
-                pmid = [(p1[i]+p2[i])/2.0 for i in range(2) ]
-                # Strecke halbierem oben oder unten
-                if cross(fn, fno)[2] > 0:
-                    cutout = self.jigging(pmid,p1, conn_type3)
+                if self.faces[i].hasattr("stack"):
+                    m=self.faces[i].stack[0]
+                    n=self.faces[i].stack[1]
+                    wf=1.0/Tan(90/n)
+                    conn  = [[0,-wf, 0],[1, -wf,0],[1,wf,0],[0,wf,0]]
+                    if m > 0:
+                        #lower cut 0-m
+                        pmid = [(p2[i]*m+p1[i]*(n-m))/n for i in range(2) ]
+                        cutout = self.jigging(pmid,p1, conn)
+                        late_cuts[i] = union(late_cuts[i], polygon(cutout))
+                    if m < n-1:
+                        # upper cut m+1-n
+                        pmid = [(p2[i]*(m+1)+p1[i]*(n-m-1))/n for i in range(2) ]
+                        cutout = self.jigging(pmid,p2, conn)
+                        late_cuts[i] = union(late_cuts[i], polygon(cutout))
+                        # make gap thicker by tan(phi/2)
+                        pass
                 else:
-                    cutout = self.jigging(pmid,p2, conn_type3)
-                late_cuts[i] = union(late_cuts[i], polygon(cutout))
+                    # cross regelung
+                    fc=cross(fn, fno)
+                    pmid = [(p1[i]+p2[i])/2.0 for i in range(2) ]
+                    # Strecke halbierem oben oder unten
+                    if cross(fn, fno)[2] > 0:
+                        cutout = self.jigging(pmid,p1, conn_type3)
+                    else:
+                        cutout = self.jigging(pmid,p2, conn_type3)
+                    late_cuts[i] = union(late_cuts[i], polygon(cutout))
 
         # Apply late cuts now
-        newfaces = []
         for i, piece in enumerate(self.faces):
-            pol, = piece.children()
-            newpol = pol - late_cuts[i]
-            newfaces.append(multmatrix(newpol, piece.matrix))
-        self.faces = newfaces
+            for pol in piece:
+                if late_cuts[i] != False:
+                    pol.value = pol.value - late_cuts[i]
 
     def jigging(self, beg, end, conn):
         diff = [end[0]-beg[0], end[1]-beg[1]]
@@ -279,15 +311,15 @@ class LaserCutter:
     def preview(self):
         for piece in self.faces:
             col = [ (random()+1)*0.5 for i in range(3)]
-            pol, = piece.children()
-            pol.linear_extrude(height=self.depth).down(self.depth/2).multmatrix(piece.matrix).color(col).show()
+            for pol in piece:
+                pol.linear_extrude(height=self.depth).down(self.depth/2).multmatrix(piece.matrix).color(col).show()
 
     def collision(self):
         items=[]
         for piece in self.faces:
-            pol, = piece.children()
-            item = pol.offset(-0.01).linear_extrude(height=self.depth).down(self.depth/2).multmatrix(piece.matrix)
-            items.append(item)
+            for pol in piece:
+                item = pol.offset(-0.01).linear_extrude(height=self.depth).down(self.depth/2).multmatrix(piece.matrix)
+                items.append(item)
         n=len(items)
         for i in range(n):
             for j in range(n):
@@ -314,16 +346,10 @@ class LaserCutter:
         return [xmin, ymin, xmax, ymax]
 
 
-    def finalize(self,kerf=0.1, dist=1, maxwidth=None, maxheight=None):
-        # Calculate boundingbox
-        puzzles = []
-        for piece in self.faces:
-            puzzle, = piece.children()
-            puzzle = puzzle.offset(kerf)
-            puzzle.bbox = self.calc_bbox(puzzle)
-            puzzles.append(puzzle)
+ 
+        
 
-        # combine all of them by abuting width/length
+    def finalize_auto(self, puzzles):
         done=True
         while done == True:
             n=len(puzzles)
@@ -364,6 +390,7 @@ class LaserCutter:
                 hei_j = puzzles[j].bbox[3] - puzzles[j].bbox[1]
                 if bestcomb[0] == 0: # vertical match
 
+                    pieces = [puzzles[i], puzzles[j]]
                     comb = puzzles[i]
                     comb |= puzzles[j] + [
                                        puzzles[i].bbox[0] - puzzles[j].bbox[0],
@@ -387,6 +414,65 @@ class LaserCutter:
                     del puzzles[j]
                     done=True
         return puzzles[0]
+
+    def finalize_combine_vert(self, pieces, dist):
+        if len(pieces) == 0:
+            return None
+        comb=pieces[0]
+
+        ref_x = pieces[0].bbox[0]
+        ref_y = pieces[0].bbox[3]
+        for piece in pieces[1:]:
+            comb |= piece + [ ref_x - piece.bbox[0], ref_y - piece.bbox[1]+dist]
+            ref_y = ref_y + piece.bbox[3]-piece.bbox[1]+dist
+            
+        comb.bbox = self.calc_bbox(comb)
+        return comb
+
+    def finalize_combine_hor(self, pieces, dist):
+        if len(pieces) == 0:
+            return None
+        comb=pieces[0]
+
+        ref_x = pieces[0].bbox[2]
+        ref_y = pieces[0].bbox[1]
+        for piece in pieces[1:]:
+            comb |= piece + [ ref_x - piece.bbox[0]+dist, ref_y - piece.bbox[1]]
+            ref_x = ref_x + piece.bbox[2]-piece.bbox[0]+dist
+            
+        comb.bbox = self.calc_bbox(comb)
+        return comb
+
+
+    def finalize_sub(self, puzzles, recipe,dist):
+        if isinstance(recipe, list):
+            pieces = [self.finalize_sub(puzzles, term, dist) for term in recipe]
+            return self.finalize_combine_vert(pieces,dist)
+
+        if isinstance(recipe, tuple):
+            pieces = [self.finalize_sub(puzzles, term, dist) for term in recipe]
+            return self.finalize_combine_hor(pieces,dist)
+
+        if isinstance(recipe, int):
+            if recipe >= 0 and recipe  < len(puzzles):
+                return puzzles[recipe]
+        return None
+
+    def finalize(self,recipe = None, kerf=0.1, dist=1, maxwidth=None, maxheight=None):
+        # Calculate boundingbox
+        puzzles = []
+        for piece in self.faces:
+            for puzzle in piece:
+                puzzle = puzzle.offset(kerf)
+                puzzle.bbox = self.calc_bbox(puzzle)
+                print("size %f %f\n"%(puzzle.bbox[2]-puzzle.bbox[0], puzzle.bbox[3]-puzzle.bbox[1]))
+                puzzles.append(puzzle)
+
+        # combine all of them by abuting width/length
+        if recipe != None:
+            return self.finalize_sub(puzzles, recipe, dist)
+
+        return self.finalize_auto(puzzles)
 
 
     def alter_face(self, dir, alterfunc):
