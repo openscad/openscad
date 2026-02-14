@@ -635,6 +635,9 @@ bool TabManager::refreshDocument()
       file_opened = true;
     }
   }
+  if (file_opened) {
+    parent->fileChangedOnDisk();
+  }
   return file_opened;
 }
 
