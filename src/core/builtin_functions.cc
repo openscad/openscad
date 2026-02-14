@@ -948,7 +948,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
   auto *session = arguments.session();
   Parameters parameters =
     Parameters::parse(std::move(arguments), loc, {"text", "size", "font"},
-                      {"direction", "language", "script", "halign", "valign", "spacing"});
+                      {"direction", "language", "script", "halign", "valign", "spacing", "em"});
   parameters.set_caller("textmetrics");
 
   FreetypeRenderer::Params ftparams(parameters);
@@ -998,7 +998,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 {
   auto *session = arguments.session();
-  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"size", "font"});
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"size", "font", "em"});
   parameters.set_caller("fontmetrics");
 
   FreetypeRenderer::Params ftparams(parameters);
@@ -1228,16 +1228,17 @@ void register_builtin_functions()
                    "chr(range) -> string",
                  });
 
-  Builtins::init(
-    "textmetrics", new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
-    {
-      "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
-    });
+  Builtins::init("textmetrics",
+                 new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
+                 {
+                   "textmetrics(text, size, font, direction, language, script, halign, valign, spacing, "
+                   "em) -> object",
+                 });
 
   Builtins::init("fontmetrics",
                  new BuiltinFunction(&builtin_fontmetrics, &Feature::ExperimentalTextMetricsFunctions),
                  {
-                   "fontmetrics(size, font) -> object",
+                   "fontmetrics(size, font, em) -> object",
                  });
 
   Builtins::init("ord", new BuiltinFunction(&builtin_ord),

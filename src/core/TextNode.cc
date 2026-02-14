@@ -44,7 +44,7 @@ static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *ins
   auto *session = arguments.session();
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"text", "size", "font"},
-                      {"direction", "language", "script", "halign", "valign", "spacing"});
+                      {"direction", "language", "script", "halign", "valign", "spacing", "em"});
   parameters.set_caller("text");
 
   auto p = FreetypeRenderer::Params(parameters);
@@ -72,6 +72,8 @@ void register_builtin_text()
   Builtins::init(
     "text", new BuiltinModule(builtin_text),
     {
-      R"(text(text = "", size = 10, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", spacing = 1 [, $fn]))",
+      // Why em=13.9?  Because that's the em size that you get with size=10.
+      // See the commentary in FreetypeRenderer.cc.
+      R"(text(text = "", size = 10, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", spacing = 1, em = 13.9 [, $fn]))",
     });
 }
