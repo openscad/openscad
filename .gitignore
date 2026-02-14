@@ -31,6 +31,7 @@ __pycache__/
 # IDEs and editors
 .vs/
 .vscode/
+*.code-workspace
 .idea/
 
 .cache/
