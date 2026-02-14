@@ -132,6 +132,8 @@ public:
     double max_ascent;
     double max_descent;
     double interline;
+    double underline_position;
+    double underline_thickness;
     std::string family_name;
     std::string style_name;
     FontMetrics(const FreetypeRenderer::Params& params);

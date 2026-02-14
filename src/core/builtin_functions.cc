@@ -1023,11 +1023,16 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   font.set("family", metrics.family_name);
   font.set("style", metrics.style_name);
 
+  ObjectType underline(arguments.session());
+  underline.set("position", metrics.underline_position);
+  underline.set("thickness", metrics.underline_thickness);
+
   ObjectType font_metrics(session);
   font_metrics.set("nominal", nominal);
   font_metrics.set("max", max);
   font_metrics.set("interline", metrics.interline);
   font_metrics.set("font", font);
+  font_metrics.set("underline", underline);
 
   return std::move(font_metrics);
 }
