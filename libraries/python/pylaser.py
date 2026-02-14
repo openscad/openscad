@@ -346,16 +346,10 @@ class LaserCutter:
         return [xmin, ymin, xmax, ymax]
 
 
-    def finalize(self,kerf=0.1, dist=1, maxwidth=None, maxheight=None):
-        # Calculate boundingbox
-        puzzles = []
-        for piece in self.faces:
-            for puzzle in piece:
-                puzzle = puzzle.offset(kerf)
-                puzzle.bbox = self.calc_bbox(puzzle)
-                puzzles.append(puzzle)
+ 
+        
 
-        # combine all of them by abuting width/length
+    def finalize_auto(self, puzzles):
         done=True
         while done == True:
             n=len(puzzles)
@@ -396,6 +390,7 @@ class LaserCutter:
                 hei_j = puzzles[j].bbox[3] - puzzles[j].bbox[1]
                 if bestcomb[0] == 0: # vertical match
 
+                    pieces = [puzzles[i], puzzles[j]]
                     comb = puzzles[i]
                     comb |= puzzles[j] + [
                                        puzzles[i].bbox[0] - puzzles[j].bbox[0],
@@ -419,6 +414,65 @@ class LaserCutter:
                     del puzzles[j]
                     done=True
         return puzzles[0]
+
+    def finalize_combine_vert(self, pieces, dist):
+        if len(pieces) == 0:
+            return None
+        comb=pieces[0]
+
+        ref_x = pieces[0].bbox[0]
+        ref_y = pieces[0].bbox[3]
+        for piece in pieces[1:]:
+            comb |= piece + [ ref_x - piece.bbox[0], ref_y - piece.bbox[1]+dist]
+            ref_y = ref_y + piece.bbox[3]-piece.bbox[1]+dist
+            
+        comb.bbox = self.calc_bbox(comb)
+        return comb
+
+    def finalize_combine_hor(self, pieces, dist):
+        if len(pieces) == 0:
+            return None
+        comb=pieces[0]
+
+        ref_x = pieces[0].bbox[2]
+        ref_y = pieces[0].bbox[1]
+        for piece in pieces[1:]:
+            comb |= piece + [ ref_x - piece.bbox[0]+dist, ref_y - piece.bbox[1]]
+            ref_x = ref_x + piece.bbox[2]-piece.bbox[0]+dist
+            
+        comb.bbox = self.calc_bbox(comb)
+        return comb
+
+
+    def finalize_sub(self, puzzles, recipe,dist):
+        if isinstance(recipe, list):
+            pieces = [self.finalize_sub(puzzles, term, dist) for term in recipe]
+            return self.finalize_combine_vert(pieces,dist)
+
+        if isinstance(recipe, tuple):
+            pieces = [self.finalize_sub(puzzles, term, dist) for term in recipe]
+            return self.finalize_combine_hor(pieces,dist)
+
+        if isinstance(recipe, int):
+            if recipe >= 0 and recipe  < len(puzzles):
+                return puzzles[recipe]
+        return None
+
+    def finalize(self,recipe = None, kerf=0.1, dist=1, maxwidth=None, maxheight=None):
+        # Calculate boundingbox
+        puzzles = []
+        for piece in self.faces:
+            for puzzle in piece:
+                puzzle = puzzle.offset(kerf)
+                puzzle.bbox = self.calc_bbox(puzzle)
+                print("size %f %f\n"%(puzzle.bbox[2]-puzzle.bbox[0], puzzle.bbox[3]-puzzle.bbox[1]))
+                puzzles.append(puzzle)
+
+        # combine all of them by abuting width/length
+        if recipe != None:
+            return self.finalize_sub(puzzles, recipe, dist)
+
+        return self.finalize_auto(puzzles)
 
 
     def alter_face(self, dir, alterfunc):
