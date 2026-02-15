@@ -1021,3 +1021,75 @@ void LcLet::print(std::ostream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
+
+ObjectExpression::ObjectExpression(AssignmentList members, const Location& loc)
+  : Expression(loc), members(std::move(members))
+{
+}
+
+Value ObjectExpression::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  Value::ObjectType obj(context->session());
+  for (const auto& member : members) {
+    Value val = member->getExpr()->evaluate(context);
+    obj.set(member->getName(), std::move(val));
+  }
+  return Value(std::move(obj));
+}
+
+void ObjectExpression::print(std::ostream& stream, const std::string& indent) const
+{
+  stream << "@{ ";
+  for (const auto& member : members) {
+    stream << member->getName() << " = " << *member->getExpr() << "; ";
+  }
+  stream << "}";
+}
+
+void UnaryOp::collectDependencies(std::set<std::string>& deps) const
+{
+  this->expr->collectDependencies(deps);
+}
+
+void BinaryOp::collectDependencies(std::set<std::string>& deps) const
+{
+  this->left->collectDependencies(deps);
+  this->right->collectDependencies(deps);
+}
+
+void TernaryOp::collectDependencies(std::set<std::string>& deps) const
+{
+  this->cond->collectDependencies(deps);
+  this->ifexpr->collectDependencies(deps);
+  this->elseexpr->collectDependencies(deps);
+}
+
+void ArrayLookup::collectDependencies(std::set<std::string>& deps) const
+{
+  this->array->collectDependencies(deps);
+  this->index->collectDependencies(deps);
+}
+
+void Range::collectDependencies(std::set<std::string>& deps) const
+{
+  this->begin->collectDependencies(deps);
+  if (this->step) this->step->collectDependencies(deps);
+  this->end->collectDependencies(deps);
+}
+
+void Vector::collectDependencies(std::set<std::string>& deps) const
+{
+  for (const auto& child : this->children) {
+    if (child) child->collectDependencies(deps);
+  }
+}
+
+void Lookup::collectDependencies(std::set<std::string>& deps) const
+{
+  deps.insert(this->name);
+}
+
+void MemberLookup::collectDependencies(std::set<std::string>& deps) const
+{
+  this->expr->collectDependencies(deps);
+}
