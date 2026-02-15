@@ -9,6 +9,7 @@
 #include "core/AST.h"
 #include "core/ContextMemoryManager.h"  // FIXME: don't use as value type so we don't need to include header
 #include "core/callables.h"
+#include "core/TimerRegistry.h"
 
 class Value;
 class ContextFrame;
@@ -16,7 +17,8 @@ class ContextFrame;
 class EvaluationSession
 {
 public:
-  EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot)) {}
+  EvaluationSession(std::string documentRoot);
+  ~EvaluationSession();
 
   size_t push_frame(ContextFrame *frame);
   void replace_frame(size_t index, ContextFrame *frame);
@@ -32,9 +34,12 @@ public:
   [[nodiscard]] const std::string& documentRoot() const { return document_root; }
   ContextMemoryManager& contextMemoryManager() { return context_memory_manager; }
   HeapSizeAccounting& accounting() { return context_memory_manager.accounting(); }
+  TimerRegistry& timers() { return timer_registry; }
+  const TimerRegistry& timers() const { return timer_registry; }
 
 private:
   std::string document_root;
   std::vector<ContextFrame *> stack;
   ContextMemoryManager context_memory_manager;
+  TimerRegistry timer_registry;
 };
