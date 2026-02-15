@@ -85,6 +85,7 @@ private slots:
   void copyFilePath();
   void openFolder();
   void closeTab();
+  void closeAllButThisTab();
 
   void showContextMenuEvent(const QPoint&);
   void showTabHeaderContextMenu(const QPoint&);

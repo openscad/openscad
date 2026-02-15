@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.14.1](https://github.com/pythonscad/pythonscad/compare/v0.14.0...v0.14.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* **ci:** validate SFTP secrets and quote host in ssh-keyscan ([#449](https://github.com/pythonscad/pythonscad/issues/449)) ([b17d375](https://github.com/pythonscad/pythonscad/commit/b17d37507b865b3c1c164488c9f4f70419742351))
+
+## [0.14.0](https://github.com/pythonscad/pythonscad/compare/v0.13.0...v0.14.0) (2026-02-13)
+
+
+### Features
+
+* **macos:** add code signing and notarization for release builds ([#447](https://github.com/pythonscad/pythonscad/issues/447)) ([07172e3](https://github.com/pythonscad/pythonscad/commit/07172e3bd463292244b66ed91bd31eb672652f18))
+
+
+### Bug Fixes
+
+* added missing include ([30d828b](https://github.com/pythonscad/pythonscad/commit/30d828b747536487cfdbad9ce95808f03aec0049))
+* additional sync to upstream/master ([ef871b6](https://github.com/pythonscad/pythonscad/commit/ef871b68a3c40df76d50ab8e8e164df05b7f1d01))
+* compiles ([dfe60b4](https://github.com/pythonscad/pythonscad/commit/dfe60b4eded34243091ad092da02eb9f64f2029b))
+* **pip:** add minkowski.cpp to manifold sources for pip build ([f05d185](https://github.com/pythonscad/pythonscad/commit/f05d18571bd2a8aeeb07484a835489e0fb70db8b))
+* sync all in src/core ([060942a](https://github.com/pythonscad/pythonscad/commit/060942a930ae736416fa2b7e36d4ba853f2beb25))
+* sync in src/geometry ([72e9ad8](https://github.com/pythonscad/pythonscad/commit/72e9ad81f8695c565be7f492040c06aec91ed288))
+
 ## [0.13.0](https://github.com/pythonscad/pythonscad/compare/v0.12.3...v0.13.0) (2026-02-10)
 
 
