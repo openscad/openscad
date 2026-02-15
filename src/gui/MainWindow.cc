@@ -138,6 +138,7 @@
 #include "io/dxfdim.h"
 #include "io/export.h"
 #include "io/fileutils.h"
+#include "genlang/genlang.h"
 #include "openscad.h"
 #include "platform/PlatformUtils.h"
 #include "utils/exceptions.h"
@@ -293,6 +294,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupPreferences();
 
   setupInput();
+  this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
+  this->languageLabel = nullptr;  // must be initialized before calling updateLanguageLabel()
+  updateStatusBar(nullptr);
+  updateLanguageLabel();
 
   restoreWindowState();
 
@@ -916,7 +921,11 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
-    if (python_result_node != NULL && this->python_active) this->absoluteRootNode = python_result_node;
+    // OpenSCAD: only the last show() counts (python_result_node). show_final() is for another feature.
+    if (currentLanguage == LANG_PYTHON && python_result_node != NULL)
+      this->absoluteRootNode = python_result_node;
+    else if (genlang_result_node != NULL && currentLanguage != LANG_SCAD)
+      this->absoluteRootNode = genlang_result_node;
     else
 #endif
       this->absoluteRootNode = this->rootFile->instantiate(*builtin_context, &file_context);
@@ -1097,6 +1106,7 @@ void MainWindow::actionOpenRecent()
   auto guard = scopedSetCurrentOutput();
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
+  // recomputeLanguageActive(); // should be done in open
 }
 
 void MainWindow::on_fileActionClearRecent_triggered()
@@ -1202,7 +1212,7 @@ void MainWindow::saveBackup()
 
   if (!this->tempFile) {
 #ifdef ENABLE_PYTHON
-    const QString suffix = this->python_active ? "py" : "scad";
+    const QString suffix = currentLanguage == LANG_PYTHON ? "py" : "scad";
 #else
     const QString suffix = "scad";
 #endif
@@ -1522,6 +1532,11 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+  if (obj == languageLabel && event->type() == QEvent::MouseButtonPress) {
+    showLanguageMenu();
+    return true;
+  }
+
   if (rubberBandManager.isVisible()) {
     if (event->type() == QEvent::KeyRelease) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -1646,19 +1661,14 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   auto document = editor->toPlainText();
   auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
 
-  const std::string fname = editor->filepath.isEmpty() ? "" : editor->filepath.toStdString();
+  auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
+  auto fnameba = editor->filepath.toUtf8();
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
+  SourceFile *sourceFile;
 #ifdef ENABLE_PYTHON
-  this->python_active = false;
-  if (boost::algorithm::ends_with(fname, ".py")) {
-    std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
-    if (Feature::ExperimentalPythonEngine.is_enabled() && trust_python_file(fname, content))
-      this->python_active = true;
-    else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-  }
-
-  if (this->python_active) {
-    auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
-
+  if (editor->language == LANG_PYTHON && !trust_python_file(std::string(fname), fulltext_py)) {
+    LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+  } else if (editor->language == LANG_PYTHON) {
     const auto& venv = venvBinDirFromSettings();
     initPython(venv, this->animateWidget->getAnimTval());
 
@@ -1670,11 +1680,11 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     }
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
+    finishPython();
     fulltext = "\n";
   }
 #endif  // ifdef ENABLE_PYTHON
 
-  SourceFile *sourceFile;
   sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
 
   editor->resetHighlighting();
@@ -1696,6 +1706,7 @@ void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
 
+  currentLanguage = activeEditor->language;
   this->lastCompiledDoc = activeEditor->toPlainText();
 
   activeEditor->resetHighlighting();
@@ -2272,6 +2283,74 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->versionLabel = nullptr;
     }
     sb->addPermanentWidget(progressWidget);
+  }
+}
+
+void MainWindow::updateLanguageLabel()
+{
+  auto sb = this->statusBar();
+
+  if (languageLabel == nullptr) {
+    languageLabel = new QLabel();
+    languageLabel->setCursor(Qt::PointingHandCursor);
+    languageLabel->installEventFilter(this);
+    languageLabel->setToolTip(_("Click to change language"));
+    sb->addPermanentWidget(this->languageLabel);
+  }
+
+  QString languageText;
+  switch (currentLanguage) {
+  case LANG_SCAD:   languageText = "OpenSCAD"; break;
+  case LANG_PYTHON: languageText = "Python"; break;
+  case LANG_JS:     languageText = "JavaScript"; break;
+  case LANG_LUA:    languageText = "Lua"; break;
+  default:          languageText = "Unknown"; break;
+  }
+
+  languageLabel->setText(languageText);
+}
+
+void MainWindow::showLanguageMenu()
+{
+  if (!activeEditor) return;
+
+  QMenu menu(this);
+
+  QAction *scadAction = menu.addAction(QIcon(":/icons/filetype-openscad.svg"), "OpenSCAD");
+  scadAction->setCheckable(true);
+  scadAction->setChecked(activeEditor->language == LANG_SCAD);
+
+#ifdef ENABLE_PYTHON
+  QAction *pythonAction = menu.addAction(QIcon(":/icons/filetype-python.svg"), "Python");
+  pythonAction->setCheckable(true);
+  pythonAction->setChecked(activeEditor->language == LANG_PYTHON);
+#endif
+
+  menu.addSeparator();
+
+  QAction *autoDetectAction =
+    menu.addAction(QIcon(":/icons/filetype-autodetect.svg"), _("Auto-detect from file extension"));
+  autoDetectAction->setCheckable(true);
+  autoDetectAction->setChecked(!activeEditor->languageManuallySet);
+
+  QAction *selected = menu.exec(QCursor::pos());
+
+  if (selected == scadAction) {
+    activeEditor->setLanguageManually(LANG_SCAD);
+    onLanguageActiveChanged(LANG_SCAD);
+    tabManager->updateTabIcon(activeEditor);
+  }
+#ifdef ENABLE_PYTHON
+  else if (selected == pythonAction) {
+    activeEditor->setLanguageManually(LANG_PYTHON);
+    onLanguageActiveChanged(LANG_PYTHON);
+    tabManager->updateTabIcon(activeEditor);
+  }
+#endif
+  else if (selected == autoDetectAction) {
+    activeEditor->resetLanguageDetection();
+    onLanguageActiveChanged(activeEditor->language);
+    tabManager->updateTabIcon(activeEditor);
   }
 }
 
@@ -3060,6 +3139,8 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   activeEditor = newEditor;
 
   if (newEditor == nullptr) return;
+
+  onLanguageActiveChanged(newEditor->language);
 
   parameterDock->setWidget(newEditor->parameterWidget);
   editActionUndo->setEnabled(newEditor->canUndo());

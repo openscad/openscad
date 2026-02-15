@@ -1,5 +1,6 @@
 #include "gui/TabManager.h"
 
+#include "genlang/genlang.h"
 #include <QApplication>
 #include <QStringBuilder>
 #include <string>
@@ -97,6 +98,8 @@ void TabManager::tabSwitched(int x)
     setTabsCloseButtonVisibility(idx, isVisible);
   }
 
+  editor->recomputeLanguageActive();
+  parent->onLanguageActiveChanged(editor->language);
   emit currentEditorChanged(editor);
 }
 
@@ -160,6 +163,10 @@ void TabManager::open(const QString& filename)
   if (editor->filepath.isEmpty() && !editor->isContentModified() &&
       !editor->parameterWidget->isModified()) {
     openTabFile(filename);
+    editor->recomputeLanguageActive();
+    parent->onLanguageActiveChanged(editor->language);
+    updateTabIcon(editor);
+    emit editorContentReloaded(editor);
   } else {
     createTab(filename);
   }
@@ -236,6 +243,11 @@ void TabManager::createTab(const QString& filename)
   if (tabWidget->currentWidget() != editor) {
     tabWidget->setCurrentWidget(editor);
   }
+
+  editor->recomputeLanguageActive();
+  parent->onLanguageActiveChanged(editor->language);
+  updateTabIcon(editor);
+
   emit tabCountChanged(editorList.size());
 }
 
@@ -561,6 +573,23 @@ void TabManager::setEditorTabName(const QString& tabName, const QString& tabTool
   tabWidget->setTabToolTip(index, tabToolTip);
 }
 
+void TabManager::updateTabIcon(EditorInterface *edt)
+{
+  if (!edt) return;
+
+  int index = tabWidget->indexOf(edt);
+  if (index < 0) return;
+
+  QIcon icon;
+  switch (edt->language) {
+  case LANG_PYTHON: icon = QIcon(":/icons/filetype-python.svg"); break;
+  case LANG_SCAD:
+  default:          icon = QIcon(":/icons/filetype-openscad.svg"); break;
+  }
+
+  tabWidget->setTabIcon(index, icon);
+}
+
 bool TabManager::refreshDocument()
 {
   bool file_opened = false;
@@ -579,7 +608,12 @@ bool TabManager::refreshDocument()
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState();  // since last render
+        editor->recomputeLanguageActive();
       }
+#ifdef ENABLE_PYTHON
+      if (editor->language == LANG_PYTHON)
+        parent->trust_python_file(editor->filepath.toStdString(), text.toStdString());
+#endif
       file_opened = true;
     }
   }
