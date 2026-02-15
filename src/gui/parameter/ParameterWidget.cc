@@ -44,6 +44,8 @@
 #include <utility>
 #include <vector>
 
+#include "core/Context.h"
+
 #include "core/customizer/ParameterObject.h"
 #include "gui/Preferences.h"
 #include "gui/parameter/GroupWidget.h"
@@ -136,18 +138,58 @@ void ParameterWidget::saveBackupFile(const QString& scadFile)
   sets.writeFile(getJsonFile(scadFile).toStdString());
 }
 
-void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::string& source)
+void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::string& source,
+                                    std::shared_ptr<const Context> context,
+                                    std::unique_ptr<EvaluationSession> session)
 {
   if (this->source == source) {
+    this->context = std::move(context);
+    this->session = std::move(session);
+
+    updateParameterStates();
     return;
   }
   this->source = source;
 
-  this->parameters = ParameterObjects::fromSourceFile(sourceFile);
+  QLayout *layout = this->scrollAreaWidgetContents->layout();
+  while (layout && layout->count() > 0) {
+    QLayoutItem *child = layout->takeAt(0);
+    delete child->widget();
+    delete child;
+  }
+
+  this->widgets.clear();
+  this->dependencyMap.clear();
+  this->parameters.clear();
+  if (this->context) {
+    this->context.reset();
+  }
+  this->session = std::move(session);
+  this->context = std::move(context);
+  this->parameters = ParameterObjects::fromSourceFile(sourceFile, this->context.get());
   rebuildWidgets();
   loadSet(comboBoxPreset->currentIndex());
+  updateParameterStates();
 }
 
+// updates every parameter
+void ParameterWidget::updateParameterStates()
+{
+  if (!this->context) return;
+
+  for (const auto& param : this->parameters) {
+    param->updateContext(const_cast<Context *>(this->context.get()));
+  }
+  for (const auto& param : this->parameters) {
+    param->updateAttributes(this->context.get());
+    if (widgets.count(param.get())) {
+      for (auto *widget : widgets.at(param.get())) {
+        widget->setEnabled(!param->isLocked());
+        widget->setHidden(param->isHidden());
+      }
+    }
+  }
+}
 void ParameterWidget::applyParameters(SourceFile *sourceFile)
 {
   this->parameters.apply(sourceFile);
@@ -270,8 +312,13 @@ void ParameterWidget::onExpandAll()
 void ParameterWidget::parameterModified(bool immediate)
 {
   auto *widget = (ParameterVirtualWidget *)sender();
+  if (!widget) return;
   ParameterObject *parameter = widget->getParameter();
 
+  if (parameter && this->context) {
+    parameter->updateContext(const_cast<Context *>(this->context.get()));
+    updateDependentAttributes(parameter);
+  }
   // When attempting to modify the design default, create a new set to edit.
   if (comboBoxPreset->currentIndex() == 0) {
     std::set<std::string> setNames;
@@ -378,6 +425,7 @@ void ParameterWidget::rebuildWidgets()
     groupWidget->setExpanded(it == expandedGroups.end() || it->second);
     layout->addWidget(groupWidget);
   }
+  rebuildDependencyMap();
 }
 
 std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups()
@@ -418,25 +466,31 @@ std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups
 ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *parameter,
                                                                DescriptionStyle descriptionStyle)
 {
+  ParameterVirtualWidget *widget = nullptr;
   if (parameter->type() == ParameterObject::ParameterType::Bool) {
-    return new ParameterCheckBox(this, static_cast<BoolParameter *>(parameter), descriptionStyle);
+    widget = new ParameterCheckBox(this, static_cast<BoolParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::String) {
-    return new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
+    widget = new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Number) {
     auto *numberParameter = static_cast<NumberParameter *>(parameter);
     if (numberParameter->minimum && numberParameter->maximum) {
-      return new ParameterSlider(this, numberParameter, descriptionStyle);
+      widget = new ParameterSlider(this, numberParameter, descriptionStyle);
     } else {
-      return new ParameterSpinBox(this, numberParameter, descriptionStyle);
+      widget = new ParameterSpinBox(this, numberParameter, descriptionStyle);
     }
   } else if (parameter->type() == ParameterObject::ParameterType::Vector) {
-    return new ParameterVector(this, static_cast<VectorParameter *>(parameter), descriptionStyle);
+    widget = new ParameterVector(this, static_cast<VectorParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Enum) {
-    return new ParameterComboBox(this, static_cast<EnumParameter *>(parameter), descriptionStyle);
+    widget = new ParameterComboBox(this, static_cast<EnumParameter *>(parameter), descriptionStyle);
   } else {
     assert(false);
     throw std::runtime_error("Unsupported parameter widget type");
   }
+  if (widget) {
+    widget->setEnabled(!parameter->isLocked());
+    widget->setHidden(parameter->isHidden());
+  }
+  return widget;
 }
 
 QString ParameterWidget::getJsonFile(const QString& scadFile)
@@ -473,4 +527,43 @@ void ParameterWidget::setFontFamilySize(const QString& fontFamily, uint fontSize
 {
   scrollArea->setStyleSheet(
     QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
+}
+
+void ParameterWidget::rebuildDependencyMap()
+{
+  this->dependencyMap.clear();
+
+  for (const auto& param_ptr : this->parameters) {
+    ParameterObject *param = param_ptr.get();
+
+    for (const std::string& depName : param->getDependencies()) {
+      this->dependencyMap.insert({depName, param});
+    }
+  }
+}
+
+void ParameterWidget::updateDependentAttributes(ParameterObject *parameter)
+{
+  if (!context) return;
+
+  parameter->updateContext(const_cast<Context *>(this->context.get()));
+
+  auto range = dependencyMap.equal_range(parameter->name());
+
+  for (auto it = range.first; it != range.second; ++it) {
+    ParameterObject *dependentParam = it->second;
+
+    if (dependentParam == parameter) continue;
+    dependentParam->updateAttributes(context.get());
+
+    if (widgets.count(dependentParam)) {
+      for (auto *widget : widgets.at(dependentParam)) {
+        widget->setEnabled(!dependentParam->isLocked());
+        widget->setHidden(dependentParam->isHidden());
+        // potentially update other visual properties here later
+      }
+    }
+
+    updateDependentAttributes(dependentParam);
+  }
 }
