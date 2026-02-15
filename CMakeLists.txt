@@ -34,7 +34,6 @@ configure_file(
   ${CMAKE_BINARY_DIR}/version.cc
   @ONLY
 )
-
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
