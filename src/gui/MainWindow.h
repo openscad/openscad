@@ -115,8 +115,8 @@ public:
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
-  QLabel *versionLabel;
-  QLabel *languageLabel;
+  QLabel *versionLabel{nullptr};
+  QLabel *languageLabel{nullptr};
 
   Measurement::Measurement meas;
 
