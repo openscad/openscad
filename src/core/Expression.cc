@@ -659,7 +659,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
                            const std::shared_ptr<const Context>& context)
 {
   Parameters parameters =
-    Parameters::parse(Arguments(arguments, context), location, {"condition"}, {"message"});
+    Parameters::parse(Arguments(arguments, context), location, {"condition"}, {"message", "abort"});
   const Expression *conditionExpression = nullptr;
   for (const auto& argument : arguments) {
     if (argument->getName() == "" || argument->getName() == "condition") {
@@ -672,9 +672,11 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
     std::string conditionString = conditionExpression ? STR(" '", *conditionExpression, "'") : "";
     std::string messageString =
       parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
-    LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s",
-        conditionString, messageString);
-    throw AssertionFailedException("Assertion Failed", location);
+    bool abort = !parameters.contains("abort") || parameters["abort"].toBool();
+    message_group group = abort ? message_group::Error : message_group::Warning;
+    LOG(group, location, context->documentRoot(), "Assertion%1$s failed%2$s", conditionString,
+        messageString);
+    if (abort) throw AssertionFailedException("Assertion Failed", location);
   }
 }
 
