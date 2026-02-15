@@ -3786,6 +3786,7 @@ void MainWindow::setupMenusAndActions()
   exportMap[FileFormat::POV] = this->fileActionExportPOV;
   exportMap[FileFormat::AMF] = this->fileActionExportAMF;
   exportMap[FileFormat::DXF] = this->fileActionExportDXF;
+  exportMap[FileFormat::DXF_R14] = this->fileActionExportDXF_R14;
   exportMap[FileFormat::SVG] = this->fileActionExportSVG;
   exportMap[FileFormat::PDF] = this->fileActionExportPDF;
   exportMap[FileFormat::CSG] = this->fileActionExportCSG;
