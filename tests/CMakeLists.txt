@@ -37,7 +37,7 @@ function(disable_tests_safe)
     endif()
 endfunction()
 
-# When configuring OpenSCADTests as a top-level project, we 
+# When configuring OpenSCADTests as a top-level project, we
 # expect a self-contained OpenSCAD installation to exist.
 # The location can be specified via the OPENSCAD_BINARY CMake or
 # environment variable.
@@ -99,7 +99,7 @@ if(PROJECT_IS_TOP_LEVEL)
     message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
     message(FATAL_ERROR "Please place an OpenSCAD binary at: ${OPENSCAD_BINPATH}")
     unset(OPENSCAD_BINPATH)
-  else() 
+  else()
     message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
   endif()
 endif()
@@ -321,6 +321,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/assert-fail3-test.scad
   ${TEST_SCAD_DIR}/misc/assert-fail4-test.scad
   ${TEST_SCAD_DIR}/misc/assert-fail5-test.scad
+  ${TEST_SCAD_DIR}/misc/assert-fail6-test.scad
+  ${TEST_SCAD_DIR}/misc/assert-fail7-test.scad
   ${TEST_SCAD_DIR}/misc/for-c-style-infinite-loop.scad
   ${TEST_SCAD_DIR}/misc/parser-tests.scad
   ${TEST_SCAD_DIR}/misc/builtin-tests.scad
@@ -446,7 +448,7 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
-list(REMOVE_ITEM ALL_RENDER_FILES 
+list(REMOVE_ITEM ALL_RENDER_FILES
   # These tests only makes sense in preview mode
   ${PREVIEW_ONLY_FILES}
 )
@@ -736,8 +738,8 @@ set_test_config(Heavy FILES
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
  render-cgal render-manifold render-csg-cgal preview-cgal preview-manifold throwntogether-cgal throwntogether-manifold)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
-  preview-off render-monotone 
-  preview-stl 
+  preview-off render-monotone
+  preview-stl
   render-stl render-stl-manifold
   render-stk-force
   render-off render-force-manifold)
@@ -753,7 +755,7 @@ set_test_config(Bugs FILES
 # Remove bugs fixed by manifold from the Bugs tag, to guard against regressions
 remove_test_config(Bugs FILES
   render-manifold_issue591
-  render-manifold_issue791 
+  render-manifold_issue791
   # FIXME: #802
   render-manifold_issue1455
 )
@@ -762,8 +764,8 @@ remove_test_config(Bugs FILES
 if(EXAMPLES_DIR)
   set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
     render-cgal render-manifold
-    preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
-    render-csg-cgal render-monotone 
+    preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold
+    render-csg-cgal render-monotone
     preview-off render-off dump-examples)
   set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
 endif(EXAMPLES_DIR)
@@ -872,7 +874,7 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
-# 
+#
 # OBJECT echo tests
 #
 
@@ -941,8 +943,8 @@ ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 
 #
 # There are some caveats with export and import, so we need to test a few combinations:
-# 1. It may be possible to export a non-manifold mesh (e.g. malformed polyhedron) due to 
-#    no manifoldness checks at export time. This is by design, e.g. to allow users to 
+# 1. It may be possible to export a non-manifold mesh (e.g. malformed polyhedron) due to
+#    no manifoldness checks at export time. This is by design, e.g. to allow users to
 #    troubleshoot externally.
 # 2. It may be possible to import such non-manifolds and preview or render them, but it will
 #    likely fail when trying to construct a data structure requiring manifold objects (e.g. --render=force)
@@ -1307,7 +1309,7 @@ disable_tests_safe(
   # Disable tests failing due to https://github.com/openscad/openscad/issues/4632
   relative-output_csg_run
   relative-output_csg_check
-  relative-output_ast_run 
+  relative-output_ast_run
   relative-output_ast_check
 
 ###################################
@@ -1388,7 +1390,7 @@ disable_tests_safe(
   render-cgal_issue2841b
   preview-cgal_issue2841b
   render-csg-cgal_issue2841b
-  
+
   # OpenCSG z fighting
   preview-cgal_surface_image
   throwntogether-cgal_surface_image
@@ -1398,9 +1400,9 @@ disable_tests_safe(
   render-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
-  #render-cgal_example017 
+  #render-cgal_example017
   #throwntogether-cgal_example017
-  
+
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text
 
@@ -1528,7 +1530,7 @@ if(NOT ENABLE_MANIFOLD)
     openscad-colorscheme-metallic-render_CSG
     lazyunion-render_lazyunion-difference-for
     render-manifold_roof
-  ) 
+  )
 endif()
 
 ####################
