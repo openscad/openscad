@@ -20,6 +20,7 @@
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
 #include "io/export_enums.h"
+#include "io/export_dxf.h"
 
 using SPDF = Settings::SettingsExportPdf;
 using S3MF = Settings::SettingsExport3mf;
@@ -35,6 +36,7 @@ enum class FileFormat {
   AMF,
   _3MF,
   DXF,
+  DXF_R14,
   SVG,
   NEFDBG,
   NEF3,
@@ -294,7 +296,8 @@ struct ExportInfo {
   const Camera *camera;
   const Color4f defaultColor;
   const ColorScheme *colorScheme;
-
+  DxfVersion dxfVersion = DxfVersion::Legacy;
+  
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
   std::shared_ptr<const ExportSvgOptions> optionsSvg;
@@ -316,8 +319,6 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_dxf_R14(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
