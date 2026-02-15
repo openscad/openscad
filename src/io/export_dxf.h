@@ -82,8 +82,7 @@ enum class DxfVersion {
 };
 
 // Export DXF with explicit version selection
-void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
-                DxfVersion version);
+void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, DxfVersion version);
 
 // Export DXF with default version (Legacy - preserves original behaviour)
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
