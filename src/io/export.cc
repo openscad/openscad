@@ -180,8 +180,7 @@ bool is2D(FileFormat format)
   return format == FileFormat::DXF ||
          // format == FileFormat::DXF_R10 ||
          // format == FileFormat::DXF_R12 ||
-         format == FileFormat::DXF_R14 ||                  
-         format == FileFormat::SVG || format == FileFormat::PDF;
+         format == FileFormat::DXF_R14 || format == FileFormat::SVG || format == FileFormat::PDF;
 }
 
 }  // namespace fileformat
@@ -235,8 +234,8 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   case FileFormat::PDF:        export_pdf(root_geom, output, exportInfo); break;
   case FileFormat::POV:        export_pov(root_geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
-  case FileFormat::NEFDBG:     export_nefdbg(root_geom, output); break;
-  case FileFormat::NEF3:       export_nef3(root_geom, output); break;
+  case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
+  case FileFormat::NEF3:   export_nef3(root_geom, output); break;
 #endif
   default: assert(false && "Unknown file format");
   }

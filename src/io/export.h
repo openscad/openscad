@@ -297,7 +297,7 @@ struct ExportInfo {
   const Color4f defaultColor;
   const ColorScheme *colorScheme;
   DxfVersion dxfVersion = DxfVersion::Legacy;
-  
+
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
   std::shared_ptr<const ExportSvgOptions> optionsSvg;
