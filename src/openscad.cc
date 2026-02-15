@@ -511,11 +511,11 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
     exportInfo.dxfVersion = arg_dxf_version;
-    
+
     if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
     }
-    
+
     if (export_format == FileFormat::PNG) {
       bool success = true;
       bool const wrote = with_output(
@@ -1121,9 +1121,9 @@ int openscad_main(int argc, char **argv)
 
   if (vm.count("dxf-version")) {
     const auto& ver = vm["dxf-version"].as<std::string>();
-    if (ver == "R12")       arg_dxf_version = DxfVersion::R12;
-    else if (ver == "R14")  arg_dxf_version = DxfVersion::R14;
-    else if (ver == "R10")  arg_dxf_version = DxfVersion::R10;
+    if (ver == "R12") arg_dxf_version = DxfVersion::R12;
+    else if (ver == "R14") arg_dxf_version = DxfVersion::R14;
+    else if (ver == "R10") arg_dxf_version = DxfVersion::R10;
     else {
       LOG("Unknown --dxf-version '%1$s'. Use R10, R12, or R14.", ver);
       exit(1);
@@ -1141,10 +1141,10 @@ int openscad_main(int argc, char **argv)
       return 1;
     }
   }
-  
+
   // If vm.count("dxf-version") == 0, arg_dxf_version stays DxfVersion::Legacy
   // (the global default), which preserves original OpenSCAD LWPOLYLINE behaviour.
-  
+
   AnimateArgs const animate = get_animate(vm);
   const Camera camera = get_camera(vm);
 
