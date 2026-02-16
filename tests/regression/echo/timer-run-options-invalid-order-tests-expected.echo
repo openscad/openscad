@@ -1,0 +1,3 @@
+ERROR: timer_run() positional argument 5 is not allowed after named argument 'args' at argument 3 in file timer-run-options-invalid-order-tests.scad, line 1
+TRACE: called by 'timer_run' in file timer-run-options-invalid-order-tests.scad, line 1
+TRACE: assignment to "za" in file timer-run-options-invalid-order-tests.scad, line 1

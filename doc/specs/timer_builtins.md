@@ -32,13 +32,14 @@ pathways.
 - `timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false, delete=false) -> number | string`
 - `timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false) -> number | string`
 - `timer_delete(timer_id) -> undef`
-- `timer_run(name, fn, args...) -> any`
+- `timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1) -> any`
 
 ## Argument Shape Rules
 
 All timer builtins use canonical argument normalization (`FunctionArgs::Spec`).
 See [FunctionArgs Specification](function_args.md) for the canonical argument-shape rules, including
 named/positional constraints and `timer_run` variadic-block behavior.
+For `timer_run`, parameters declared after variadic `args` must be passed by name.
 
 ## Overload-Like Accepted Forms
 
@@ -73,6 +74,12 @@ named/positional constraints and `timer_run` variadic-block behavior.
 - `timer_elapsed(timer_id, fmt_str, iterations, output)`
 - `timer_elapsed(timer_id, undef  , iterations, output)`
 - `timer_elapsed(timer_id=..., fmt_str=..., iterations=..., output=...)`
+
+`timer_run`:
+
+- `timer_run(name, fn)`
+- `timer_run(name, fn, args...)`
+- `timer_run(name, fn, args..., fmt_str=..., iterations=...)`
 
 ## Units and Return Values
 
@@ -126,7 +133,7 @@ Rules:
 - `timer_stop()` and `timer_elapsed()` echo only when `output=true`.
 - If `fmt_str` is a string, echoed value is formatted text.
 - If `fmt_str=undef`, echoed value is `timer <name_or_id> = <value> μs`.
-- `timer_run()` always echoes `timer <name_or_id> = <value> μs`.
+- `timer_run()` always echoes a value using `fmt_str` (or `timer <name_or_id> = <value> μs` when `fmt_str=undef`).
 
 Name fallback (`{n}` token and numeric echo label):
 
@@ -135,12 +142,12 @@ Name fallback (`{n}` token and numeric echo label):
 
 ## timer_run
 
-`timer_run(name, fn, args...)` behavior:
+`timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1)` behavior:
 
 1. Create a monotonic timer with `name`.
 2. Start timer.
 3. Invoke `fn(args...)`.
-4. Stop timer and echo elapsed microseconds.
+4. Stop timer, divide elapsed microseconds by `iterations`, and echo using `fmt_str`.
 5. Delete timer.
 6. Return the value produced by `fn(...)`.
 
@@ -148,6 +155,8 @@ Errors:
 
 - missing required `fn` (by shape)
 - non-function `fn`
+- invalid `fmt_str` type (must be string or `undef`)
+- invalid `iterations` (must be positive integer)
 
 ## Formatting (`timer_stop` / `timer_elapsed`)
 
