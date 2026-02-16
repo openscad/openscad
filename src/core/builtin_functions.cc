@@ -1153,7 +1153,7 @@ static TimerRegistry::Kind parse_timer_type_value(const char *function_name, con
 }
 
 static bool format_timer_value_us(double time_us, const std::string& format, const std::string& name,
-                                  std::string& rendered, std::string& error)
+                                  uint64_t iterations, std::string& rendered, std::string& error)
 {
   const bool negative = time_us < 0.0;
   const uint64_t total_us = static_cast<uint64_t>(std::llround(std::fabs(time_us)));
@@ -1214,6 +1214,8 @@ static bool format_timer_value_us(double time_us, const std::string& format, con
         out << name;
       } else if (token == "f") {
         out << Value(time_us).toString();
+      } else if (token == "i") {
+        out << iterations;
       } else if (token == "hh") {
         out << zero_pad(hours, 2);
       } else if (token == "h") {
@@ -1275,6 +1277,23 @@ static void timer_echo(const std::shared_ptr<const Context>& context, const Loca
   const auto& name = context->session()->timers().timer_name(context->documentRoot(), id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
   LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
+}
+
+static uint64_t parse_timer_iterations(const char *function_name, const Arguments& arguments,
+                                       const Location& loc, const Value& value)
+{
+  if (value.type() != Value::Type::NUMBER) {
+    timer_error(function_name, loc, arguments.documentRoot(),
+                STR(function_name, "() iterations must be a number; got ", Value::typeName(value.type()),
+                    " (", value.toEchoStringNoThrow(), ")"));
+  }
+  const double numeric = value.toDouble();
+  if (!std::isfinite(numeric) || numeric < 1.0 || std::floor(numeric) != numeric) {
+    timer_error(
+      function_name, loc, arguments.documentRoot(),
+      STR(function_name, "() iterations must be a positive integer; got ", value.toEchoStringNoThrow()));
+  }
+  return static_cast<uint64_t>(numeric);
 }
 
 Value builtin_timer_new(Arguments arguments, const Location& loc)
@@ -1371,6 +1390,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
     {
       {"timer_id"},
       {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+      {"iterations", 1},
       {"output", false},
       {"delete", false},
     },
@@ -1397,15 +1417,17 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
   }
   const int id = static_cast<int>(id_val);
 
+  const uint64_t iterations = parse_timer_iterations("timer_stop", arguments, loc, *canonical[2]);
+
   const Value& fmt_value = *canonical[1];
   if (fmt_value.type() == Value::Type::UNDEFINED) {
     return_number = true;
-    do_echo = canonical[2]->toBool();
-    delete_timer = canonical[3]->toBool();
+    do_echo = canonical[3]->toBool();
+    delete_timer = canonical[4]->toBool();
   } else if (fmt_value.type() == Value::Type::STRING) {
     format = fmt_value.toStrUtf8Wrapper().toString();
-    do_echo = canonical[2]->toBool();
-    delete_timer = canonical[3]->toBool();
+    do_echo = canonical[3]->toBool();
+    delete_timer = canonical[4]->toBool();
   } else {
     timer_error("timer_stop", loc, arguments.documentRoot(),
                 STR("timer_stop() fmt_str must be string or undef; got ",
@@ -1413,18 +1435,19 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
   }
 
   const double elapsed_us = arguments.session()->timers().stop_timer(arguments.documentRoot(), id, loc);
+  const double timed_us = elapsed_us / static_cast<double>(iterations);
   Value result = Value::undefined.clone();
   if (return_number) {
     if (do_echo) {
-      timer_echo(arguments, loc, id, elapsed_us);
+      timer_echo(arguments, loc, id, timed_us);
     }
-    result = Value(elapsed_us);
+    result = Value(timed_us);
   } else {
     const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
     std::string label = name.empty() ? std::to_string(id) : name;
     std::string formatted;
     std::string format_error;
-    if (!format_timer_value_us(elapsed_us, format, label, formatted, format_error)) {
+    if (!format_timer_value_us(timed_us, format, label, iterations, formatted, format_error)) {
       timer_error("timer_stop", loc, arguments.documentRoot(), STR("timer_stop() ", format_error));
     }
     if (do_echo) {
@@ -1448,6 +1471,7 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
     {
       {"timer_id"},
       {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+      {"iterations", 1},
       {"output", false},
     },
   };
@@ -1474,32 +1498,35 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
   bool return_number = false;
   bool do_echo = false;
   std::string format{};
+  const uint64_t iterations = parse_timer_iterations("timer_elapsed", arguments, loc, *canonical[2]);
 
   const Value& fmt_value = *canonical[1];
   if (fmt_value.type() == Value::Type::UNDEFINED) {
     return_number = true;
-    do_echo = canonical[2]->toBool();
+    do_echo = canonical[3]->toBool();
   } else if (fmt_value.type() == Value::Type::STRING) {
     format = fmt_value.toStrUtf8Wrapper().toString();
-    do_echo = canonical[2]->toBool();
+    do_echo = canonical[3]->toBool();
   } else {
     timer_error("timer_elapsed", loc, arguments.documentRoot(),
                 STR("timer_elapsed() fmt_str must be string or undef; got ",
                     Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
   }
 
+  const double timed_us = elapsed_us / static_cast<double>(iterations);
+
   if (return_number) {
     if (do_echo) {
-      timer_echo(arguments, loc, id, elapsed_us);
+      timer_echo(arguments, loc, id, timed_us);
     }
-    return Value(elapsed_us);
+    return Value(timed_us);
   }
 
   const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
   std::string formatted;
   std::string format_error;
-  if (!format_timer_value_us(elapsed_us, format, label, formatted, format_error)) {
+  if (!format_timer_value_us(timed_us, format, label, iterations, formatted, format_error)) {
     timer_error("timer_elapsed", loc, arguments.documentRoot(), STR("timer_elapsed() ", format_error));
   }
   if (do_echo) {
@@ -1787,18 +1814,22 @@ void register_builtin_functions()
                    "timer_stop(timer_id) -> string",
                    "timer_stop(timer_id, fmt_str) -> string",
                    "timer_stop(timer_id, undef  ) -> number",
-                   "timer_stop(timer_id, fmt_str, output) -> string",
-                   "timer_stop(timer_id, undef  , output) -> number",
-                   "timer_stop(timer_id, fmt_str, output, delete) -> string",
-                   "timer_stop(timer_id, undef  , output, delete) -> number",
+                   "timer_stop(timer_id, fmt_str, iterations) -> string",
+                   "timer_stop(timer_id, undef  , iterations) -> number",
+                   "timer_stop(timer_id, fmt_str, iterations, output) -> string",
+                   "timer_stop(timer_id, undef  , iterations, output) -> number",
+                   "timer_stop(timer_id, fmt_str, iterations, output, delete) -> string",
+                   "timer_stop(timer_id, undef  , iterations, output, delete) -> number",
                  });
   Builtins::init("timer_elapsed", new BuiltinFunction(&builtin_timer_elapsed),
                  {
                    "timer_elapsed(timer_id) -> string",
                    "timer_elapsed(timer_id, fmt_str) -> string",
                    "timer_elapsed(timer_id, undef  ) -> number",
-                   "timer_elapsed(timer_id, fmt_str, output) -> string",
-                   "timer_elapsed(timer_id, undef  , output) -> number",
+                   "timer_elapsed(timer_id, fmt_str, iterations) -> string",
+                   "timer_elapsed(timer_id, undef  , iterations) -> number",
+                   "timer_elapsed(timer_id, fmt_str, iterations, output) -> string",
+                   "timer_elapsed(timer_id, undef  , iterations, output) -> number",
                  });
   Builtins::init("timer_delete", new BuiltinFunction(&builtin_timer_delete),
                  {

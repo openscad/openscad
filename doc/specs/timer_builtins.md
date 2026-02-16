@@ -19,16 +19,18 @@ This document defines the behavior contract for OpenSCAD `timer_*` builtins.
 
 ## Scope
 
-These timers are intended for script-level profiling and diagnostics.
-Timer storage is per evaluation/render session.
+These timers are for script-level ___expression evaluation___ profiling and
+diagnostics. Timer storage is per evaluation/render session.  It ___does not___
+profile script parsing or module rendering as those are different execution
+pathways.
 
 ## Signatures
 
 - `timer_new(name="", type="monotonic", start=false) -> number`
 - `timer_start(timer_id) -> undef`
 - `timer_clear(timer_id) -> undef`
-- `timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", output=false, delete=false) -> number | string`
-- `timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", output=false) -> number | string`
+- `timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false, delete=false) -> number | string`
+- `timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false) -> number | string`
 - `timer_delete(timer_id) -> undef`
 - `timer_run(name, fn, args...) -> any`
 
@@ -52,21 +54,25 @@ named/positional constraints and `timer_run` variadic-block behavior.
 
 - `timer_stop(timer_id)`
 - `timer_stop(timer_id, fmt_str)`
-- `timer_stop(timer_id, fmt_str, output)`
-- `timer_stop(timer_id, fmt_str, output, delete)`
-- `timer_stop(timer_id, undef)`
-- `timer_stop(timer_id, undef, output)`
-- `timer_stop(timer_id, undef, output, delete)`
-- `timer_stop(timer_id=..., fmt_str=..., output=..., delete=...)`
+- `timer_stop(timer_id, undef  )`
+- `timer_stop(timer_id, fmt_str, iterations)`
+- `timer_stop(timer_id, undef  , iterations)`
+- `timer_stop(timer_id, fmt_str, iterations, output)`
+- `timer_stop(timer_id, undef  , iterations, output)`
+- `timer_stop(timer_id, fmt_str, iterations, output, delete)`
+- `timer_stop(timer_id, undef  , iterations, output, delete)`
+- `timer_stop(timer_id=..., fmt_str=..., iterations=..., output=..., delete=...)`
 
 `timer_elapsed`:
 
 - `timer_elapsed(timer_id)`
 - `timer_elapsed(timer_id, fmt_str)`
-- `timer_elapsed(timer_id, fmt_str, output)`
-- `timer_elapsed(timer_id, undef)`
-- `timer_elapsed(timer_id, undef, output)`
-- `timer_elapsed(timer_id=..., fmt_str=..., output=...)`
+- `timer_elapsed(timer_id, undef  )`
+- `timer_elapsed(timer_id, fmt_str, iterations)`
+- `timer_elapsed(timer_id, undef  , iterations)`
+- `timer_elapsed(timer_id, fmt_str, iterations, output)`
+- `timer_elapsed(timer_id, undef  , iterations, output)`
+- `timer_elapsed(timer_id=..., fmt_str=..., iterations=..., output=...)`
 
 ## Units and Return Values
 
@@ -75,6 +81,7 @@ named/positional constraints and `timer_run` variadic-block behavior.
 - `timer_stop()` and `timer_elapsed()` return:
   - formatted `string` when `fmt_str` is a string
   - numeric microseconds when `fmt_str` is `undef`
+- Returned/echoed numeric value and `{f}` use average microseconds per iteration (`elapsed/iterations`), with default `iterations=1`.
 
 ## Timer Types
 
@@ -90,6 +97,7 @@ named/positional constraints and `timer_run` variadic-block behavior.
 - `type` must be a string.
 - `start`, `output`, `delete` are treated as truthy/falsy.
 - `fmt_str` must be string or `undef`.
+- `iterations` must be a positive integer when provided.
 - `fn` in `timer_run` must be a function.
 
 ## Lifecycle and State Rules
@@ -151,6 +159,7 @@ Supported brace tokens:
 
 - `{n}` timer name text
 - `{f}` elapsed microseconds as numeric string
+- `{i}` iterations value
 - `{h}` hours, 1+ digits
 - `{hh}` hours, 2-digit zero-padded
 - `{m}` minute within hour (`0..59`)
