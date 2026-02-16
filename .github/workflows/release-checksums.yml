@@ -1,0 +1,70 @@
+# Compute SHA256 and SHA512 for all release assets and upload them to the release.
+# Runs once when a release is published (after all build workflows have uploaded).
+name: Release checksums
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  checksums:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          mkdir -p release-assets
+          cd release-assets
+          gh release download "$TAG" -R "${{ github.repository }}"
+          ls -la
+
+      - name: Compute and upload checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG="${{ github.event.release.tag_name }}"
+          cd release-assets
+
+          # Skip checksum/signature files and our own checksums.txt
+          skip_suffixes='.sha256 .sha512 .asc'
+          CHECKSUMS_TXT="checksums.txt"
+          SHA256_TMP=$(mktemp)
+          SHA512_TMP=$(mktemp)
+          printf '# SHA256\n' > "$SHA256_TMP"
+          printf '# SHA512\n' > "$SHA512_TMP"
+
+          for f in *; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            skip=
+            for suf in $skip_suffixes; do
+              case "$base" in *"$suf") skip=1; break ;; esac
+            done
+            [ "$base" = "$CHECKSUMS_TXT" ] && skip=1
+            [ -n "$skip" ] && continue
+
+            echo "Hashing: $base"
+            sha256sum "$f" | tee "${f}.sha256" | awk -v b="$base" '{print $1 "  " b}' >> "$SHA256_TMP"
+            sha512sum "$f" | tee "${f}.sha512" | awk -v b="$base" '{print $1 "  " b}' >> "$SHA512_TMP"
+          done
+
+          cat "$SHA256_TMP" "$SHA512_TMP" > "$CHECKSUMS_TXT"
+          rm -f "$SHA256_TMP" "$SHA512_TMP"
+
+          echo "--- $CHECKSUMS_TXT ---"
+          cat "$CHECKSUMS_TXT"
+
+          # Upload all checksum files (nullglob: no match = empty list)
+          shopt -s nullglob
+          uploads=()
+          for x in *.sha256 *.sha512; do uploads+=( "$x" ); done
+          [ -f "$CHECKSUMS_TXT" ] && uploads+=( "$CHECKSUMS_TXT" )
+          if [ ${#uploads[@]} -gt 0 ]; then
+            gh release upload "$TAG" "${uploads[@]}" -R "${{ github.repository }}" --clobber
+          fi

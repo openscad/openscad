@@ -572,6 +572,20 @@ jobs:
             fi
           fi
 
+          # Remove broken site-packages symlink that points outside the bundle
+          # This must happen after Python.framework is fully assembled (regardless of merge path)
+          echo "=== Cleaning up Python.framework ==="
+          SITE_PACKAGES_LINK="$MERGED_DIR/$APP_NAME/Contents/Frameworks/Python.framework/Versions/*/lib/python*/site-packages"
+          for link in $SITE_PACKAGES_LINK; do
+            if [ -L "$link" ] && [ ! -e "$link" ]; then
+              echo "Removing broken site-packages symlink: $link"
+              rm "$link"
+              # Create an empty directory instead
+              mkdir -p "$link"
+              echo "✓ Created empty site-packages directory"
+            fi
+          done
+
           # Merge Qt plugin .dylib files from both bundles
           echo "=== Merging Qt plugins ==="
           PLUGIN_PATHS=""
@@ -754,49 +768,75 @@ jobs:
             fi
           done
 
-          echo "=== Signing all binaries ==="
-          # Sign all dylibs (timestamp + runtime required for notarization)
+          echo "=== Signing all binaries (inside-out approach) ==="
+          # Step 1: Sign all standalone dylibs (not in frameworks)
           find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA {} \; 2>&1 | grep -v "replacing existing signature" || true
           find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA {} \; 2>&1 | grep -v "replacing existing signature" || true
 
-          # Sign Qt framework binaries
-          for fw in "$APP_BUNDLE/Contents/Frameworks"/Qt*.framework; do
-            [ ! -d "$fw" ] && continue
-            fw_name=$(basename "$fw" .framework)
-
-            # Sign the versioned binary
-            if [ -f "$fw/Versions/A/$fw_name" ]; then
-              codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$fw/Versions/A/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
-            fi
-          done
-
-          # Sign Python framework completely (required for notarization: all Mach-Os + timestamp + hardened runtime)
+          # Step 2: Sign Python framework components (innermost first)
           if [ -d "$APP_BUNDLE/Contents/Frameworks/Python.framework" ]; then
+            echo "=== Signing Python framework ==="
             PY_FW="$APP_BUNDLE/Contents/Frameworks/Python.framework"
             PY_VER=$(ls "$PY_FW/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
             if [ -n "$PY_VER" ]; then
               PY_ROOT="$PY_FW/Versions/$PY_VER"
               # Sign all .so extension modules (lib-dynload and any other Mach-O)
+              echo "Signing Python .so modules..."
               find "$PY_ROOT" -name "*.so" -type f 2>/dev/null | while read f; do
                 if file "$f" | grep -q Mach-O; then
                   codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$f" 2>&1 | grep -v "replacing existing signature" || true
                 fi
               done
               # Sign bin/python3.x and any other Mach-O in bin
+              echo "Signing Python binaries..."
               for bin in "$PY_ROOT/bin"/*; do
                 [ -f "$bin" ] && file "$bin" | grep -q Mach-O && codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$bin" 2>&1 | grep -v "replacing existing signature" || true
               done
               # Sign nested Python.app: executable first, then the app bundle
               if [ -f "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" ]; then
+                echo "Signing nested Python.app..."
                 codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" 2>&1 | grep -v "replacing existing signature" || true
                 codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_ROOT/Resources/Python.app" 2>&1 | grep -v "replacing existing signature" || true
               fi
               # Sign main Python framework binary
               if [ -f "$PY_ROOT/Python" ]; then
+                echo "Signing Python framework binary..."
                 codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_ROOT/Python" 2>&1 | grep -v "replacing existing signature" || true
               fi
+              # Sign the Python framework itself as a bundle
+              echo "Signing Python.framework as a bundle..."
+              codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_FW" 2>&1 | grep -v "replacing existing signature" || true
             fi
           fi
+
+          # Step 3: Sign Qt frameworks (each framework as a bundle)
+          echo "=== Signing Qt frameworks ==="
+          for fw in "$APP_BUNDLE/Contents/Frameworks"/Qt*.framework; do
+            [ ! -d "$fw" ] && continue
+            fw_name=$(basename "$fw" .framework)
+            echo "Signing $fw_name..."
+
+            # Find the actual version directory (usually 'A')
+            if [ -d "$fw/Versions" ]; then
+              ACTUAL_VERSION=$(ls "$fw/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              if [ -n "$ACTUAL_VERSION" ]; then
+                # Sign any dylibs within the framework version
+                find "$fw/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while read lib; do
+                  if file "$lib" | grep -q "Mach-O"; then
+                    codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$lib" 2>&1 | grep -v "replacing existing signature" || true
+                  fi
+                done
+
+                # Sign the main framework binary if it exists
+                if [ -f "$fw/Versions/$ACTUAL_VERSION/$fw_name" ]; then
+                  codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$fw/Versions/$ACTUAL_VERSION/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
+                fi
+              fi
+            fi
+
+            # Sign the framework itself as a bundle (this is critical for spctl validation)
+            codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$fw" 2>&1 | grep -v "replacing existing signature" || true
+          done
 
           # Diagnose framework structure before signing
           echo "=== Diagnosing framework structures ==="
@@ -826,16 +866,72 @@ jobs:
             echo ""
           done
 
-          # Sign the app bundle with --deep to recursively sign all nested code
+          # Step 4: Sign the main executable
+          echo "=== Signing main executable ==="
+          if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" ]; then
+            codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" 2>&1 | grep -v "replacing existing signature" || true
+          fi
+
+          # Step 5: Sign the app bundle itself (NOT with --deep, since we already signed components)
+          # This is the proper way to sign bundles according to Apple's guidelines
           # CODESIGN_EXTRA adds --timestamp --options runtime for notarization when using Developer ID
-          echo "=== Signing app bundle (deep) ==="
-          codesign --deep --force --sign "$SIGN_ID" $CODESIGN_EXTRA --verbose=4 "$APP_BUNDLE" 2>&1 || true
+          echo "=== Signing app bundle ==="
+          codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA --verbose=4 "$APP_BUNDLE" 2>&1 || true
 
           # Remove quarantine attributes
           xattr -cr "$APP_BUNDLE" 2>/dev/null || true
 
-          echo "=== App bundle fixed and signed ==="
+          echo "=== App bundle signing complete ==="
           codesign -dv "$APP_BUNDLE" 2>&1 || echo "Verification complete"
+
+      - name: Validate code signature
+        run: |
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          EXEC_NAME=$(basename "$APP_BUNDLE" .app)
+
+          echo "=== Validating code signature with codesign ==="
+          # Don't use --deep here as it can fail on framework symlinks
+          # We already signed all components individually, so just verify the bundle
+          codesign --verify --strict --verbose=2 "$APP_BUNDLE" 2>&1 || {
+            echo "ERROR: Code signature verification failed!"
+            exit 1
+          }
+
+          echo "=== Validating with Gatekeeper (spctl) ==="
+          # This is the critical validation that checks if macOS will allow the app to run
+          # At this stage, "Unnotarized Developer ID" is acceptable (notarization happens later with DMG)
+          # But we want to catch issues like "invalid destination for symbolic link"
+          SPCTL_OUTPUT=$(spctl --assess --type execute --verbose=4 "$APP_BUNDLE" 2>&1) || SPCTL_RESULT=$?
+          echo "$SPCTL_OUTPUT"
+
+          if echo "$SPCTL_OUTPUT" | grep -q "rejected"; then
+            if echo "$SPCTL_OUTPUT" | grep -q "source=Unnotarized Developer ID"; then
+              echo "⚠ App is signed but not yet notarized (expected at this stage)"
+              echo "✓ Notarization will happen when creating the DMG"
+            else
+              echo "ERROR: Gatekeeper validation failed with unexpected error!"
+              echo "This indicates a code signing or bundle structure issue."
+              exit 1
+            fi
+          else
+            echo "✓ App passes Gatekeeper validation"
+          fi
+
+          echo "=== Checking notarization status ==="
+          if codesign -dv "$APP_BUNDLE" 2>&1 | grep -q "Authority=Developer ID Application"; then
+            echo "✓ App is signed with Developer ID certificate"
+
+            # Try to verify the app has notarization ticket (will be added later if notarized)
+            if stapler validate "$APP_BUNDLE" 2>&1 | grep -q "validate action worked"; then
+              echo "✓ App has notarization ticket stapled"
+            else
+              echo "⚠ App does not have notarization ticket yet (will be added to DMG)"
+            fi
+          else
+            echo "⚠ App is using ad-hoc signature (testing only)"
+          fi
+
+          echo "=== Signature validation passed ==="
 
       - name: Run macOS sanity check
         run: |
@@ -857,13 +953,27 @@ jobs:
           APP_NAME=$(basename "$APP_BUNDLE")
           DMG_NAME="PythonSCAD-${VERSION}.dmg"
 
+          echo "=== DEBUG: Framework structure BEFORE DMG creation ==="
+          for fw in "$APP_BUNDLE/Contents/Frameworks"/*.framework; do
+            [ ! -d "$fw" ] && continue
+            echo "--- $(basename "$fw") ---"
+            ls -la "$fw/" | head -10
+            echo "Symlinks:"
+            find "$fw" -type l -ls 2>/dev/null | head -5
+            echo ""
+          done
+
+          echo "=== DEBUG: Running spctl on app BEFORE DMG ==="
+          spctl --assess --type execute --verbose=4 "$APP_BUNDLE" 2>&1 || echo "spctl failed with: $?"
+
           # Create staging directory for DMG contents
           DMG_STAGING="/tmp/dmg-staging"
           rm -rf "$DMG_STAGING"
           mkdir -p "$DMG_STAGING"
 
-          # Copy app bundle to staging directory
-          cp -R "$APP_BUNDLE" "$DMG_STAGING/"
+          # Copy app bundle to staging directory preserving symlinks
+          echo "=== Copying app to DMG staging with rsync to preserve symlinks ==="
+          rsync -a "$APP_BUNDLE" "$DMG_STAGING/"
 
           # Create symlink to Applications folder for drag-and-drop installation
           ln -s /Applications "$DMG_STAGING/Applications"
@@ -871,11 +981,52 @@ jobs:
           echo "DMG staging contents:"
           ls -la "$DMG_STAGING"
 
+          echo "=== DEBUG: Framework structure in DMG staging ==="
+          STAGED_APP="$DMG_STAGING/$APP_NAME"
+          for fw in "$STAGED_APP/Contents/Frameworks"/*.framework; do
+            [ ! -d "$fw" ] && continue
+            echo "--- $(basename "$fw") ---"
+            ls -la "$fw/" | head -10
+            echo "Symlinks:"
+            find "$fw" -type l -exec sh -c 'echo "$1 -> $(readlink "$1")"' _ {} \; 2>/dev/null | head -5
+            echo ""
+          done
+
           # Create DMG using hdiutil
+          echo "=== Creating DMG ==="
           hdiutil create -volname "PythonSCAD" -srcfolder "$DMG_STAGING" -ov -format UDZO "$DMG_NAME"
 
           echo "dmg_file=$DMG_NAME" >> $GITHUB_OUTPUT
           echo "Created DMG: $DMG_NAME"
+
+          echo "=== DEBUG: Mounting DMG to inspect contents ==="
+          TEST_MOUNT="/tmp/test-mount-$$"
+          mkdir -p "$TEST_MOUNT"
+          hdiutil attach "$DMG_NAME" -readonly -nobrowse -mountpoint "$TEST_MOUNT" 2>&1 | grep -v "expected" || true
+
+          if [ -d "$TEST_MOUNT/$APP_NAME" ]; then
+            echo "=== DEBUG: Framework structure INSIDE mounted DMG ==="
+            for fw in "$TEST_MOUNT/$APP_NAME/Contents/Frameworks"/*.framework; do
+              [ ! -d "$fw" ] && continue
+              echo "--- $(basename "$fw") ---"
+              ls -la "$fw/" | head -10
+              echo "Symlinks:"
+              find "$fw" -type l -exec sh -c 'link="$1"; target=$(readlink "$link"); echo "$link -> $target"; [ -e "$target" ] || echo "  BROKEN!"' _ {} \; 2>/dev/null | head -10
+              echo ""
+            done
+
+            echo "=== DEBUG: Running spctl on app INSIDE DMG ==="
+            spctl --assess --type execute --verbose=4 "$TEST_MOUNT/$APP_NAME" 2>&1 || echo "spctl failed with: $?"
+
+            echo "=== DEBUG: Comparing symlink targets ==="
+            echo "Original app Python.framework/Versions/Current:"
+            readlink "$APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/Current" || echo "Failed to read"
+            echo "DMG app Python.framework/Versions/Current:"
+            readlink "$TEST_MOUNT/$APP_NAME/Contents/Frameworks/Python.framework/Versions/Current" || echo "Failed to read"
+          fi
+
+          hdiutil detach "$TEST_MOUNT" 2>&1 | grep -v "expected" || true
+          rm -rf "$TEST_MOUNT"
 
       - name: Sign DMG
         if: steps.install_cert.outputs.cert_installed == 'true'
@@ -929,40 +1080,165 @@ jobs:
           xcrun stapler staple "$DMG_FILE"
           echo "DMG notarized and stapled."
 
+      - name: Validate final DMG and app bundle
+        id: validation
+        continue-on-error: true
+        run: |
+          DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+
+          echo "=== Final validation of DMG and app bundle ==="
+          VALIDATION_FAILED=0
+
+          # Validate DMG signature
+          echo "Checking DMG signature..."
+          if ! codesign -dv "$DMG_FILE" 2>&1; then
+            echo "ERROR: DMG signature verification failed!"
+            VALIDATION_FAILED=1
+          fi
+
+          # Validate DMG with spctl (install type)
+          echo "Checking DMG with Gatekeeper..."
+          if ! spctl --assess --type install --verbose=4 "$DMG_FILE" 2>&1; then
+            echo "ERROR: DMG Gatekeeper validation failed!"
+            VALIDATION_FAILED=1
+          fi
+
+          # Validate DMG notarization ticket
+          if [ "${{ steps.install_cert.outputs.cert_installed }}" = "true" ]; then
+            echo "Checking DMG notarization ticket..."
+            if ! stapler validate "$DMG_FILE" 2>&1 | grep -q "validate action worked"; then
+              echo "ERROR: DMG notarization ticket validation failed!"
+              VALIDATION_FAILED=1
+            else
+              echo "✓ DMG notarization ticket is valid"
+            fi
+          fi
+
+          # Mount DMG and validate app inside
+          echo "Mounting DMG to validate app bundle inside..."
+          MOUNT_POINT="/tmp/dmg-validation-$RANDOM"
+          mkdir -p "$MOUNT_POINT"
+          if ! hdiutil attach "$DMG_FILE" -readonly -nobrowse -mountpoint "$MOUNT_POINT" 2>&1 | grep -v "expected"; then
+            echo "ERROR: Failed to mount DMG!"
+            VALIDATION_FAILED=1
+          else
+            # Find the app in the DMG
+            APP_IN_DMG=$(find "$MOUNT_POINT" -name "*.app" -maxdepth 1 -type d | head -1)
+            if [ -z "$APP_IN_DMG" ]; then
+              echo "ERROR: No .app found in DMG!"
+              VALIDATION_FAILED=1
+            else
+              echo "Validating app bundle inside DMG: $APP_IN_DMG"
+
+              # Validate app in DMG with spctl (execute type) - this is the critical test
+              echo "=== Running spctl on app in DMG ==="
+              if ! spctl --assess --type execute --verbose=4 "$APP_IN_DMG" 2>&1; then
+                echo "ERROR: App bundle in DMG fails Gatekeeper validation!"
+                echo "This means users will see 'cannot be verified' errors."
+                VALIDATION_FAILED=1
+              else
+                echo "✓ App bundle in DMG passes Gatekeeper validation"
+              fi
+
+              # Validate app signature in DMG
+              echo "=== Checking codesign on app in DMG ==="
+              if ! codesign --verify --strict --verbose=2 "$APP_IN_DMG" 2>&1; then
+                echo "ERROR: App bundle signature verification failed!"
+                VALIDATION_FAILED=1
+              else
+                echo "✓ App bundle signature is valid"
+              fi
+            fi
+
+            # Clean up
+            hdiutil detach "$MOUNT_POINT" 2>&1 | grep -v "expected" || true
+          fi
+          rm -rf "$MOUNT_POINT"
+
+          if [ $VALIDATION_FAILED -eq 0 ]; then
+            echo "=== All validations passed! ==="
+            echo "✓ DMG is properly signed and notarized"
+            echo "✓ App bundle passes Gatekeeper validation"
+            echo "✓ Users will be able to run the app without verification errors"
+          else
+            echo "=== VALIDATION FAILED ==="
+            echo "See errors above. DMG will still be uploaded as artifact for inspection."
+            exit 1
+          fi
+
       - name: Prepare artifacts
         id: artifacts
+        if: always()
         run: |
           mkdir -p /tmp/out
 
           DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
           basename_dmg=$(basename "$DMG_FILE")
 
           echo "Copying DMG: $DMG_FILE"
           cp -v "$DMG_FILE" /tmp/out/"$basename_dmg"
 
+          # Also create a tar of the pre-DMG app bundle for comparison
+          echo "Creating tar of pre-DMG app bundle for debugging..."
+          tar -czf /tmp/out/pre-dmg-app-bundle.tar.gz -C "$(dirname "$APP_BUNDLE")" "$(basename "$APP_BUNDLE")"
+
           echo "dmg_path=/tmp/out/$basename_dmg" >> $GITHUB_OUTPUT
           echo "dmg_name=$(basename "$basename_dmg" .dmg)" >> $GITHUB_OUTPUT
+          echo "validation_status=${{ steps.validation.outcome }}" >> $GITHUB_OUTPUT
 
           # List what we have
           echo "Artifacts prepared:"
           ls -lh /tmp/out/
 
       - name: Upload DMG package
-        if: steps.artifacts.outputs.dmg_path != ''
+        if: always() && steps.artifacts.outputs.dmg_path != ''
         uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.artifacts.outputs.dmg_name }}
           path: ${{ steps.artifacts.outputs.dmg_path }}
           retention-days: 30
 
+      - name: Upload pre-DMG app bundle for debugging
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: pre-dmg-app-bundle-debug
+          path: /tmp/out/pre-dmg-app-bundle.tar.gz
+          retention-days: 7
+
+      - name: Post validation status
+        if: always()
+        run: |
+          if [ "${{ steps.validation.outcome }}" = "failure" ]; then
+            echo "⚠️ VALIDATION FAILED - DMG has been uploaded for manual inspection"
+            echo "Download the artifacts to inspect the issue locally:"
+            echo "  - DMG: ${{ steps.artifacts.outputs.dmg_name }}"
+            echo "  - Pre-DMG app bundle: pre-dmg-app-bundle-debug"
+          else
+            echo "✅ All validations passed!"
+          fi
+
       - name: Upload artifacts to release
-        if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+        if: (github.event_name == 'release' || github.event.inputs.upload_to_release != '') && steps.validation.outcome == 'success'
         uses: softprops/action-gh-release@v2
         with:
           files: /tmp/out/*.dmg
           tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail workflow if validation failed
+        if: always()
+        run: |
+          if [ "${{ steps.validation.outcome }}" != "success" ]; then
+            echo "❌ Workflow failed because validation did not pass"
+            echo "DMG and artifacts are available for inspection but were NOT uploaded to the release"
+            exit 1
+          else
+            echo "✅ Validation passed - DMG was uploaded to release (if applicable)"
+          fi
 
       - name: Clean up signing keychain
         if: always() && steps.install_cert.outputs.cert_installed == 'true'

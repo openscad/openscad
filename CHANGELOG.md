@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.2](https://github.com/pythonscad/pythonscad/compare/v0.14.1...v0.14.2) (2026-02-15)
+
+
+### Bug Fixes
+
+* add latest pylaser.py file ([01af6cd](https://github.com/pythonscad/pythonscad/commit/01af6cd7ca04dc1e0802f55f0bbb7cdb9da1c942))
+* **macos:** resolve spctl framework validation on macOS 15 and add validation checks ([#451](https://github.com/pythonscad/pythonscad/issues/451)) ([daae2c6](https://github.com/pythonscad/pythonscad/commit/daae2c6ec2d82445ef8a6282c385442e000eaa57))
+
 ## [0.14.1](https://github.com/pythonscad/pythonscad/compare/v0.14.0...v0.14.1) (2026-02-13)
 
 

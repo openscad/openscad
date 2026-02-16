@@ -39,3 +39,25 @@
     border-radius: 5px;
     overflow-x: auto;
 }
+
+/* Downloads page: platform tables */
+#download-links table {
+    border-collapse: collapse;
+    margin-bottom: 1.5em;
+    width: 100%;
+}
+#download-links table th,
+#download-links table td {
+    border: 1px solid var(--md-default-fg-color--lightest, #eee);
+    padding: 0.4em 0.75em;
+    text-align: left;
+}
+#download-links table th {
+    background-color: var(--md-default-fg-color--lightest, #eee);
+}
+#download-links table tbody tr:hover {
+    background-color: var(--md-default-fg-color--lightest, #fafafa);
+}
+#download-links h4 { margin-top: 1em; }
+#download-links h4:first-of-type { margin-top: 0; }
+#download-links .downloads-repo-note { margin: 0.25em 0 0.75em 0; opacity: 0.9; }

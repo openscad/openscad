@@ -103,6 +103,33 @@ jobs:
         echo "filename=$(basename ${APPIMAGE_FILE})" >> $GITHUB_OUTPUT
         echo "filepath=${APPIMAGE_FILE}" >> $GITHUB_OUTPUT
 
+    - name: Sign AppImage (release only)
+      id: sign
+      if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+      env:
+        DEB_SIGNING_KEY: ${{ secrets.DEB_SIGNING_KEY }}
+        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      run: |
+        set -e
+        APPIMAGE_FILE="${{ steps.appimage.outputs.filepath }}"
+        if [ ! -f "$APPIMAGE_FILE" ]; then
+          echo "AppImage not found: $APPIMAGE_FILE"
+          exit 1
+        fi
+        sudo apt-get update -qq && sudo apt-get install -y -qq gnupg 2>/dev/null || true
+        export GNUPGHOME="${HOME}/.gnupg"
+        mkdir -p "$GNUPGHOME"
+        chmod 700 "$GNUPGHOME"
+        printf 'allow-loopback-pinentry\n' > "$GNUPGHOME/gpg-agent.conf"
+        gpgconf --kill gpg-agent 2>/dev/null || true
+        echo "$DEB_SIGNING_KEY" | gpg --batch --import
+        printf '%s' "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+          -u "$GPG_KEY_ID" --detach-sign --armor "$APPIMAGE_FILE"
+        echo "Signed: ${APPIMAGE_FILE}.asc"
+        gpg --verify "${APPIMAGE_FILE}.asc" "$APPIMAGE_FILE"
+        echo "asc_path=${APPIMAGE_FILE}.asc" >> $GITHUB_OUTPUT
+
     - name: Upload AppImage as artifact
       uses: actions/upload-artifact@v4
       with:
@@ -114,7 +141,9 @@ jobs:
       if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
       uses: softprops/action-gh-release@v2
       with:
-        files: ${{ steps.appimage.outputs.filepath }}
+        files: |
+          ${{ steps.appimage.outputs.filepath }}
+          ${{ steps.sign.outputs.asc_path }}
         tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
