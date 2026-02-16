@@ -2322,7 +2322,7 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
   if (node != nullptr) {
-    result = python__getsetitem_hier(node, keystr, nullptr, 2);
+    result = python__getsetitem_hier(node, keystr, nullptr, 0);
     if (result != nullptr) return result;
   }
 
