@@ -6,8 +6,8 @@ echo(version=version());
 // those as 3 stacked layers.
 
 for (a = [1, 2, 3])
-    color([a/6 + 0.5, 0, 0])
-       linear_extrude(height = 2 * a, convexity = 10)
+    color([a/6 + 0.5, 0, 0]) translate([0,0,2*(a-1)])
+       linear_extrude(height = 2, convexity = 10)
             projection(cut = true)
                 translate([0, 0, -30 * a])
                     surface("surface_image.png", center = true);
