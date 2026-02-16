@@ -129,6 +129,7 @@ static const FunctionArgs::Spec stop_spec{
   {
     {"timer_id"},
     {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+    {"iterations", 1},
     {"output", false},
     {"delete", false},
   },
