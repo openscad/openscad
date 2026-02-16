@@ -82,20 +82,20 @@ jobs:
           tar -xf workspace.tar
           rm workspace.tar
 
-      # - name: Get Week Number
-      #   id: get-date
-      #   run: echo "week=$(date +'%Y-%V')" >> $GITHUB_OUTPUT
+      - name: Get Week Number
+        id: get-date
+        run: echo "week=$(date +'%Y-%V')" >> $GITHUB_OUTPUT
 
-      # - name: Restore Apt Cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: /var/cache/apt/archives
-      #     key: apt-${{ matrix.os }}-${{ matrix.qt }}-${{ steps.get-date.outputs.week }}-${{ hashFiles('scripts/uni-get-dependencies.sh') }}
+      - name: Restore Apt Cache
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: apt-${{ matrix.os }}-${{ matrix.qt }}-${{ steps.get-date.outputs.week }}-${{ hashFiles('scripts/uni-get-dependencies.sh') }}
 
-      # - name: Install System Dependencies
-      #   run: |
-      #     which sudo || apt install -y sudo
-      #     sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
+      - name: Install System Dependencies
+        run: |
+          which sudo || apt install -y sudo
+          sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
 
       - uses: astral-sh/setup-uv@v7
         with:
