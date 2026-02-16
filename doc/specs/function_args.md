@@ -8,7 +8,7 @@ Author: _Adrian Hawryluk_ (a.k.a. [Ma-XX-oN](https://github.com/Ma-XX-oN))
 - [Spec Definition](#spec-definition)
 - [Normalization APIs](#normalization-apis)
 - [Structural Rules](#structural-rules)
-- [Variadic Block Rules](#variadic-block-rules)
+- [Variadic Rules](#variadic-rules)
 - [Error Routing](#error-routing)
 - [Design Constraints](#design-constraints)
 
@@ -51,8 +51,8 @@ function/builtin arguments into canonical form.
   predictable, this helper rejects positional-after-named.  This is in line with
   other languages such as Python.
 
-- allows an optional variadic block parameter.  It can be used named, and named
-  arguments can follow it.
+- allows an optional variadic parameter declared inline in `params`.
+  It can be used named, and named arguments can follow it.
 
   Example:
 
@@ -62,7 +62,7 @@ function/builtin arguments into canonical form.
 
   > NOTE:
   >
-  > `"a", "b", "c", "d"` are a variadic argument block, so it doesn't conflict
+  > `"a", "b", "c", "d"` are a variadic argument sequence, so it doesn't conflict
   > with the positional after named rule.
 
 - does not perform semantic validation (type/range/meaning); callers can do that
@@ -115,11 +115,11 @@ If a slot is omitted and has no default, normalized value is `&Value::undefined`
 
 ## Spec Definition
 
-`Spec(function_name, params, variadic_block_name = nullptr)`
+`Spec(function_name, params)`
 
 - `function_name` is used in diagnostics
 - `params` defines fixed canonical order and names
-- `variadic_block_name` optionally enables one named variadic block
+- at most one parameter in `params` may be variadic via `Spec::Variadic(...)`
 
 Example (fixed only):
 
@@ -141,8 +141,13 @@ Example (fixed + named variadic block):
 ```cpp
 static const FunctionArgs::Spec run_spec{
   "timer_run",
-  {{"name"}, {"fn"}},
-  "args",
+  {
+    {"name"},
+    {"fn"},
+    {"args", Spec::Variadic{}},
+    {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+    {"iterations", 1},
+  },
 };
 ```
 
@@ -166,15 +171,17 @@ Applied during normalization:
 - unknown `$`-prefixed named keys are ignored
 - duplicate assignment to same fixed parameter is an error
 
-## Variadic Block Rules
+## Variadic Rules
 
-When `variadic_block_name` is configured:
+When one variadic parameter is configured:
 
-- named `<variadic_block_name> = value` appends `value` to `variadic`
+- named `<variadic_name> = value` appends `value` to `variadic`
 - positional values immediately after that named argument are appended to `variadic`
 - collection continues until the next named argument appears
+- if positional binding reaches variadic, remaining positional values append to `variadic`
+- parameters declared after variadic must be passed by name
 - after a non-variadic named argument, normal positional-after-named error rule applies
-- extra positional values beyond fixed slots go to `variadic` (instead of count error)
+- variadic defaults are used only when variadic received no explicit values
 
 ## Error Routing
 

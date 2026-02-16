@@ -1271,14 +1271,6 @@ static void timer_echo(const Arguments& arguments, const Location& loc, int id, 
   LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
 }
 
-static void timer_echo(const std::shared_ptr<const Context>& context, const Location& loc, int id,
-                       double elapsed_us)
-{
-  const auto& name = context->session()->timers().timer_name(context->documentRoot(), id, loc);
-  std::string label = name.empty() ? std::to_string(id) : name;
-  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
-}
-
 static uint64_t parse_timer_iterations(const char *function_name, const Arguments& arguments,
                                        const Location& loc, const Value& value)
 {
@@ -1294,6 +1286,59 @@ static uint64_t parse_timer_iterations(const char *function_name, const Argument
       STR(function_name, "() iterations must be a positive integer; got ", value.toEchoStringNoThrow()));
   }
   return static_cast<uint64_t>(numeric);
+}
+
+struct TimerDisplaySpec {
+  bool return_number = false;
+  uint64_t iterations = 1;
+  std::string format{};
+};
+
+static TimerDisplaySpec parse_timer_display_spec(const char *function_name, const Arguments& arguments,
+                                                 const Location& loc, const Value& fmt_value,
+                                                 const Value& iterations_value)
+{
+  TimerDisplaySpec spec;
+  spec.iterations = parse_timer_iterations(function_name, arguments, loc, iterations_value);
+  if (fmt_value.type() == Value::Type::UNDEFINED) {
+    spec.return_number = true;
+    return spec;
+  }
+  if (fmt_value.type() == Value::Type::STRING) {
+    spec.format = fmt_value.toStrUtf8Wrapper().toString();
+    return spec;
+  }
+  timer_error(function_name, loc, arguments.documentRoot(),
+              STR(function_name, "() fmt_str must be string or undef; got ",
+                  Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
+  return spec;
+}
+
+static Value make_timer_display_value(const char *function_name, const Arguments& arguments,
+                                      const Location& loc, int id, double timed_us,
+                                      const TimerDisplaySpec& spec)
+{
+  if (spec.return_number) {
+    return Value(timed_us);
+  }
+  const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
+  std::string label = name.empty() ? std::to_string(id) : name;
+  std::string formatted;
+  std::string format_error;
+  if (!format_timer_value_us(timed_us, spec.format, label, spec.iterations, formatted, format_error)) {
+    timer_error(function_name, loc, arguments.documentRoot(), STR(function_name, "() ", format_error));
+  }
+  return Value(formatted);
+}
+
+static void echo_timer_display_value(const Arguments& arguments, const Location& loc, int id,
+                                     const Value& rendered)
+{
+  if (rendered.type() == Value::Type::NUMBER) {
+    timer_echo(arguments, loc, id, rendered.toDouble());
+    return;
+  }
+  LOG(message_group::Echo, "%1$s", rendered.toString());
 }
 
 Value builtin_timer_new(Arguments arguments, const Location& loc)
@@ -1397,10 +1442,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
   };
   const auto canonical = spec.normalize(arguments, fail);
 
-  bool return_number = false;
-  bool do_echo = false;
   bool delete_timer = false;
-  std::string format{};
 
   if (canonical[0]->type() == Value::Type::UNDEFINED) {
     timer_error("timer_stop", loc, arguments.documentRoot(), "timer_stop() requires timer_id");
@@ -1417,43 +1459,16 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
   }
   const int id = static_cast<int>(id_val);
 
-  const uint64_t iterations = parse_timer_iterations("timer_stop", arguments, loc, *canonical[2]);
-
-  const Value& fmt_value = *canonical[1];
-  if (fmt_value.type() == Value::Type::UNDEFINED) {
-    return_number = true;
-    do_echo = canonical[3]->toBool();
-    delete_timer = canonical[4]->toBool();
-  } else if (fmt_value.type() == Value::Type::STRING) {
-    format = fmt_value.toStrUtf8Wrapper().toString();
-    do_echo = canonical[3]->toBool();
-    delete_timer = canonical[4]->toBool();
-  } else {
-    timer_error("timer_stop", loc, arguments.documentRoot(),
-                STR("timer_stop() fmt_str must be string or undef; got ",
-                    Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
-  }
+  const TimerDisplaySpec display =
+    parse_timer_display_spec("timer_stop", arguments, loc, *canonical[1], *canonical[2]);
+  const bool do_echo = canonical[3]->toBool();
+  delete_timer = canonical[4]->toBool();
 
   const double elapsed_us = arguments.session()->timers().stop_timer(arguments.documentRoot(), id, loc);
-  const double timed_us = elapsed_us / static_cast<double>(iterations);
-  Value result = Value::undefined.clone();
-  if (return_number) {
-    if (do_echo) {
-      timer_echo(arguments, loc, id, timed_us);
-    }
-    result = Value(timed_us);
-  } else {
-    const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
-    std::string label = name.empty() ? std::to_string(id) : name;
-    std::string formatted;
-    std::string format_error;
-    if (!format_timer_value_us(timed_us, format, label, iterations, formatted, format_error)) {
-      timer_error("timer_stop", loc, arguments.documentRoot(), STR("timer_stop() ", format_error));
-    }
-    if (do_echo) {
-      LOG(message_group::Echo, "%1$s", formatted);
-    }
-    result = Value(formatted);
+  const double timed_us = elapsed_us / static_cast<double>(display.iterations);
+  Value result = make_timer_display_value("timer_stop", arguments, loc, id, timed_us, display);
+  if (do_echo) {
+    echo_timer_display_value(arguments, loc, id, result);
   }
   if (delete_timer) {
     arguments.session()->timers().delete_timer(arguments.documentRoot(), id, loc);
@@ -1495,44 +1510,15 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
 
   const double elapsed_us =
     arguments.session()->timers().elapsed_timer(arguments.documentRoot(), id, loc);
-  bool return_number = false;
-  bool do_echo = false;
-  std::string format{};
-  const uint64_t iterations = parse_timer_iterations("timer_elapsed", arguments, loc, *canonical[2]);
-
-  const Value& fmt_value = *canonical[1];
-  if (fmt_value.type() == Value::Type::UNDEFINED) {
-    return_number = true;
-    do_echo = canonical[3]->toBool();
-  } else if (fmt_value.type() == Value::Type::STRING) {
-    format = fmt_value.toStrUtf8Wrapper().toString();
-    do_echo = canonical[3]->toBool();
-  } else {
-    timer_error("timer_elapsed", loc, arguments.documentRoot(),
-                STR("timer_elapsed() fmt_str must be string or undef; got ",
-                    Value::typeName(fmt_value.type()), " (", fmt_value.toEchoStringNoThrow(), ")"));
-  }
-
-  const double timed_us = elapsed_us / static_cast<double>(iterations);
-
-  if (return_number) {
-    if (do_echo) {
-      timer_echo(arguments, loc, id, timed_us);
-    }
-    return Value(timed_us);
-  }
-
-  const auto& name = arguments.session()->timers().timer_name(arguments.documentRoot(), id, loc);
-  std::string label = name.empty() ? std::to_string(id) : name;
-  std::string formatted;
-  std::string format_error;
-  if (!format_timer_value_us(timed_us, format, label, iterations, formatted, format_error)) {
-    timer_error("timer_elapsed", loc, arguments.documentRoot(), STR("timer_elapsed() ", format_error));
-  }
+  const TimerDisplaySpec display =
+    parse_timer_display_spec("timer_elapsed", arguments, loc, *canonical[1], *canonical[2]);
+  const bool do_echo = canonical[3]->toBool();
+  const double timed_us = elapsed_us / static_cast<double>(display.iterations);
+  Value result = make_timer_display_value("timer_elapsed", arguments, loc, id, timed_us, display);
   if (do_echo) {
-    LOG(message_group::Echo, "%1$s", formatted);
+    echo_timer_display_value(arguments, loc, id, result);
   }
-  return Value(formatted);
+  return result;
 }
 
 Value builtin_timer_delete(Arguments arguments, const Location& loc)
@@ -1582,8 +1568,13 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
   };
   static const FunctionArgs::Spec spec{
     "timer_run",
-    {{"name"}, {"fn"}},
-    "args",
+    {
+      {"name"},
+      {"fn"},
+      {"args", FunctionArgs::Spec::Variadic{}},
+      {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+      {"iterations", 1},
+    },
   };
   const auto normalized = spec.normalizeWithVariadic(arguments, fail);
   const auto& fixed = normalized.fixed;
@@ -1592,6 +1583,9 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
     timer_error("timer_run", call->location(), arguments.documentRoot(),
                 "timer_run() fn must be a function");
   }
+  const TimerDisplaySpec display =
+    parse_timer_display_spec("timer_run", arguments, call->location(), *fixed[2], *fixed[3]);
+
   std::string name = fixed[0]->toString();
 
   EvaluationSession *session = arguments.session();
@@ -1608,7 +1602,9 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
   }
 
   const double elapsed_us = timers.stop_timer(arguments.documentRoot(), id, call->location());
-  timer_echo(context, call->location(), id, elapsed_us);
+  const double timed_us = elapsed_us / static_cast<double>(display.iterations);
+  Value rendered = make_timer_display_value("timer_run", arguments, call->location(), id, timed_us, display);
+  echo_timer_display_value(arguments, call->location(), id, rendered);
   timers.delete_timer(arguments.documentRoot(), id, call->location());
   return result;
 }
@@ -1838,6 +1834,7 @@ void register_builtin_functions()
   Builtins::init("timer_run", new BuiltinFunction(&builtin_timer_run),
                  {
                    "timer_run(name, fn, args...) -> any",
+                   "timer_run(name, fn, args..., fmt_str=..., iterations=...) -> any",
                  });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
