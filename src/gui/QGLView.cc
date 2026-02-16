@@ -199,13 +199,21 @@ void QGLView::resizeGL(int w, int h)
 
 void QGLView::paintGL()
 {
+  const std::chrono::steady_clock::time_point begin{std::chrono::steady_clock::now()};
   GLView::paintGL();
+  const std::chrono::steady_clock::time_point end{std::chrono::steady_clock::now()};
+  const std::chrono::microseconds us{std::chrono::duration_cast<std::chrono::microseconds>(end - begin)};
+  double d = us.count();
+  double rawFPS = 1000.0 * 1000.0 / d;
+  const double decay = 0.9;  // weigh previous value at 90%
+  smoothedFPS = smoothedFPS ? (smoothedFPS * decay) + (rawFPS * (1 - decay)) : rawFPS;
 
   if (statusLabel) {
-    auto status = QString("%1 (%2x%3)")
+    auto status = QString("%1 (%2x%3) %4 FPS")
                     .arg(QString::fromStdString(cam.statusText()))
                     .arg(size().rwidth())
-                    .arg(size().rheight());
+                    .arg(size().rheight())
+                    .arg(smoothedFPS, 0, 'g', 4);
     statusLabel->setText(status);
   }
 }
