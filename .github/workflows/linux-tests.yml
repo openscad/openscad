@@ -24,23 +24,8 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Get Week Number
-        id: get-date
-        run: echo "week=$(date +'%Y-%V')" >> $GITHUB_OUTPUT
-
-        # This might not be worth it.
-      - name: Cache Apt Packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: apt-${{ matrix.os }}-${{ matrix.qt }}-${{ steps.get-date.outputs.week }}-${{ hashFiles('scripts/uni-get-dependencies.sh') }}
-          # Intentionally not using restore-keys so we don't build up old packages over time
-
       - name: Install dependencies
         run: |
-          # Configure apt to keep debs in the cache directory.
-          # This is not the default in GH runners.
-          echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' | sudo tee /etc/apt/apt.conf.d/01keep-debs
           which sudo || apt install -y sudo
           sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
 
@@ -65,7 +50,7 @@ jobs:
       matrix:
         os: [ ubuntu-22.04, ubuntu-24.04 ]
         qt: [ qt5, qt6 ]
-        task: [ "test coverage", "test_examples test" ]
+        task: [ "test", "test_examples test coverage" ] # examples are faster than non-examples, so they get coverage
         exclude:
           - os: ubuntu-22.04
             qt: qt6
@@ -81,16 +66,6 @@ jobs:
         run: |
           tar -xf workspace.tar
           rm workspace.tar
-
-      - name: Get Week Number
-        id: get-date
-        run: echo "week=$(date +'%Y-%V')" >> $GITHUB_OUTPUT
-
-      - name: Restore Apt Cache
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: apt-${{ matrix.os }}-${{ matrix.qt }}-${{ steps.get-date.outputs.week }}-${{ hashFiles('scripts/uni-get-dependencies.sh') }}
 
       - name: Install System Dependencies
         run: |
