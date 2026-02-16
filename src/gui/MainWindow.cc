@@ -2314,20 +2314,20 @@ void MainWindow::showLanguageMenu()
 
   QMenu menu(this);
 
-  QAction *scadAction = menu.addAction(QIcon(":/icons/filetype-openscad.svg"), "OpenSCAD");
+  QAction *scadAction = menu.addAction(QIcon::fromTheme("chokusen-filetype-scad"), "OpenSCAD");
   scadAction->setCheckable(true);
   scadAction->setChecked(activeEditor->language == LANG_SCAD);
 
 #ifdef ENABLE_PYTHON
-  QAction *pythonAction = menu.addAction(QIcon(":/icons/filetype-python.svg"), "Python");
+  QAction *pythonAction = menu.addAction(QIcon::fromTheme("chokusen-filetype-python"), "Python");
   pythonAction->setCheckable(true);
   pythonAction->setChecked(activeEditor->language == LANG_PYTHON);
 #endif
 
   menu.addSeparator();
 
-  QAction *autoDetectAction =
-    menu.addAction(QIcon(":/icons/filetype-autodetect.svg"), _("Auto-detect from file extension"));
+  QAction *autoDetectAction = menu.addAction(QIcon::fromTheme("chokusen-filetype-autodetect"),
+                                             _("Auto-detect from file extension"));
   autoDetectAction->setCheckable(true);
   autoDetectAction->setChecked(!activeEditor->languageManuallySet);
 
