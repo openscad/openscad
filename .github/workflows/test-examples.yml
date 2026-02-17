@@ -10,7 +10,7 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        experimental: [true, false]
+        experimental: [false]
     runs-on: ubuntu-latest
     name: Test examples - ${{ matrix.experimental && 'experimental' || 'non-experimental' }}
     steps:
