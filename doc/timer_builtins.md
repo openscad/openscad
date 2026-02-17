@@ -102,57 +102,51 @@ timer_run("bad", function(a, b) a + b, 1, 2, undef, 10);
 ## Timer Lifecycle
 
 ```text
-                                      [NONE]
-                                        │
-                         ┌──────────────┴───────────────────┐
-                         │                                  │
-                    timer_new()                     timer_new(start=true)
-           ┌──────── stored=0                             stored=0 ─────────┐
-           │                                                                │
-           │                                  timer_clear()                 │
-           │                                ┌── stored=0 ──┐                │
-           │                                │              │                │
-           └─────────────────────────▶[STOPPED]◀───────────┘                │
-                                         │  ▲                               │
-                                         │  │                               │
-                                         │  │ timer_stop()                  │
-           ┌──────── timer_delete() ─────┤  │ stored += since last start    │
-           │                             │  │  or                           │
-           │                             │  │ timer_clear()                 │
-           │                             │  │ stored=0                      │
-           │               timer_start() │  │                               │
-           │            stored unchanged │  │                               │
-           │                             │  │                               │
-           │                             │  │                               │
-           │                             ▼  │                               │
-           │                           [RUNNING]◀───────────────────────────┘
-           │                             │
-           │     timer_stop(delete=true) │
-           │                        or   │
-           │              timer_delete() │
-           │                             │
-           │                             ▼
-           └─────────────────────────▶[GONE]
+                                   ┌──────┐
+                                   │ NONE │
+                                   └──────┘
+                timer_new()           │         timer_new(start=true)
+       ┌──────── stored=0  ───────────┴────────────── stored=0 ─────────┐
+       │                                                                │
+       │                                                                │
+       │                                  timer_clear()                 │
+       │                                ┌── stored=0 ──┐                │
+       │                                │              │                │
+       │                        ┌─────────┐            │                │
+       └───────────────────────▶│ STOPPED │◀───────────┘                │
+                                └─────────┘                             │
+       ┌───────┐                  │  │  ▲                               │
+       │ ERROR │◀─ timer_stop() ──┘  │  │                               │
+       └───────┘                     │  │                               │
+                                     │  │ timer_stop()                  │
+       ┌──────── timer_delete() ─────┤  │ stored += since last start    │
+       │                             │  │  or                           │
+       │                             │  │ timer_clear()                 │
+       │                             │  │ stored=0                      │
+       │               timer_start() │  │                               │
+       │            stored unchanged │  │                               │
+       │                             │  │                               │
+       │                             │  │                               │
+       │                             ▼  │                               │
+       │                         ┌─────────┐                            │
+       │                         │ RUNNING │◀───────────────────────────┘
+       │                         └─────────┘
+       │                              │  |
+       │      timer_stop(delete=true) │  │                      ┌───────┐
+       │            or timer_delete() │  └─── timer_start() ───▶│ ERROR │
+       │                              │                         └───────┘
+       │                              ▼
+       │                           ┌──────┐
+       └──────────────────────────▶│ GONE │
+                                   └──────┘
 ```
+
+Timers do not persist across renders — all timers are implicitly deleted when a render completes.
 
 `timer_elapsed` is read-only — no state change — and returns:
 
-- when Running: stored + live elapsed since last start
-- when Stopped: stored elapsed
-
-| Operation                    | From    | To      | Stored elapsed      | Notes                     |
-| ---------------------------- | ------- | ------- | ------------------- | ------------------------- |
-| `timer_new()`                | —       | Stopped | 0                   |                           |
-| `timer_new(start=true)`      | —       | Running | 0                   | create + start in one call|
-| `timer_start(t)`             | Stopped | Running | unchanged           | resumes from stored value |
-| `timer_start(t)`             | Running | —       | —                   | **error**                 |
-| `timer_stop(t)`              | Running | Stopped | += since last start |                           |
-| `timer_stop(t, delete=true)` | Running | gone    | —                   |                           |
-| `timer_stop(t)`              | Stopped | —       | —                   | **error**                 |
-| `timer_clear(t)`             | either  | Stopped | reset to 0          |                           |
-| `timer_elapsed(t)`           | Running | Running | unchanged           | returns stored + live     |
-| `timer_elapsed(t)`           | Stopped | Stopped | unchanged           | returns stored elapsed    |
-| `timer_delete(t)`            | either  | gone    | —                   |                           |
+- when `RUNNING`: stored + live elapsed since last start
+- when `STOPPED`: stored elapsed
 
 ## Manual Timer Control
 
