@@ -1612,7 +1612,8 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
 
   const double elapsed_us = timers.stop_timer(arguments.documentRoot(), id, call->location());
   const double timed_us = elapsed_us / static_cast<double>(display.iterations);
-  Value rendered = make_timer_display_value("timer_run", arguments, call->location(), id, timed_us, display);
+  Value rendered =
+    make_timer_display_value("timer_run", arguments, call->location(), id, timed_us, display);
   echo_timer_display_value(arguments, call->location(), id, rendered);
   timers.delete_timer(arguments.documentRoot(), id, call->location());
   return result;
