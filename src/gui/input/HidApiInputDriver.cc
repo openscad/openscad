@@ -97,6 +97,8 @@ static const struct device_id device_ids[] = {
   // This is reported to be used with a 3Dconnexion Space Mouse Wireless 256f:c62e
   {0x256f, 0xc652, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button,
    "3Dconnexion Universal Receiver"},
+  {0x046d, 0xc21d, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button,
+   "Logitech Gamepad F310"},
   {-1, -1, nullptr, nullptr, nullptr},
 };
 
@@ -290,6 +292,211 @@ bool HidApiInputDriver::open()
 
   std::tie(this->hid_dev, this->dev) = enumerate();
   if (this->dev) {
+int usagePage = 0;
+uint8_t descriptor[HID_API_MAX_REPORT_DESCRIPTOR_SIZE];
+ssize_t descriptor_size = hid_get_report_descriptor(this->hid_dev, descriptor, sizeof (descriptor));
+if (descriptor_size < 0) {
+  HIDAPI_LOG("hid_get_report_descriptor failed");
+} else {
+  HIDAPI_LOG("Descriptor:");
+  hidapi_log_input(descriptor, descriptor_size);
+  int len;
+  for (size_t i = 0; i < descriptor_size; i += len) {
+    int bSize = descriptor[i] & 0x03;
+    if (bSize == 3) {
+      bSize = 4;
+    }
+    int bType = (descriptor[i] & 0x0c) >> 2;
+    int bTag = (descriptor[i] & 0xf0) >> 4;
+    uint8_t *data;
+    int bDataSize;
+    int tag;
+    // HIDAPI_LOGP("%zd: bSize %d bType %d bTag 0x%x", i % bSize % bType % bTag);
+    if (bTag == 0x0f) {
+      bDataSize = descriptor[i+1];
+      int bLongItemTag = descriptor[i+2];
+      data = descriptor + i + 3;
+      len = bDataSize + 3;
+      tag = bLongItemTag;
+    } else {
+      bDataSize = bSize;
+      len = bSize + 1;
+      data = descriptor + i + 1;
+      tag = bTag;
+    }
+
+    // Pick up a data item up to 32 bits, if any.  If actual data item is longer than that,
+    // or is best not viewed as a single integer, you're on your own.
+    uint32_t dataVal = 0;
+    if (bSize > 0) {
+      dataVal |= data[0];
+    }
+    if (bSize > 1) {
+      dataVal |= data[1] << 8;
+    }
+    if (bSize > 2) {
+      dataVal |= data[2] << 16;
+    }
+    if (bSize > 3) {
+      dataVal |= data[3] << 24;
+    }
+
+    enum { HID_TYPE_MAIN=0, HID_TYPE_GLOBAL=1, HID_TYPE_LOCAL=2, HID_TYPE_RESERVED=3 };
+    static const char *types[] = { "Main", "Global", "Local", "Reserved" };
+    switch (bType) {
+      case HID_TYPE_MAIN:
+        enum {
+          HID_MAIN_INPUT = 0x08,
+          HID_MAIN_OUTPUT = 0x09,
+          HID_MAIN_FEATURE = 0x0b,
+          HID_MAIN_COLLECTION = 0x0a,
+          HID_MAIN_ENDCOLLECTION = 0x0c
+        };
+        switch (tag) {
+          case HID_MAIN_INPUT:
+            HIDAPI_LOGP("%zd: Main Input 0x%02x", i % dataVal);
+            break;
+          case HID_MAIN_OUTPUT:
+            HIDAPI_LOGP("%zd: Main Output 0x%02x", i % dataVal);
+            break;
+          case HID_MAIN_FEATURE:
+            HIDAPI_LOGP("%zd: Main Feature 0x%02x", i % dataVal);
+            break;
+          case HID_MAIN_COLLECTION:
+            HIDAPI_LOGP("%zd: Main Collection 0x%02x", i % dataVal);
+            break;
+          case HID_MAIN_ENDCOLLECTION:
+            HIDAPI_LOGP("%zd: Main End collection", i);
+            break;
+          default:
+            HIDAPI_LOGP("%zd: Main tag 0x%02x", i % tag);
+            break;
+        }
+        break;
+      case HID_TYPE_GLOBAL:
+        enum {
+          HID_GLOBAL_USAGE_PAGE = 0x00,
+          HID_GLOBAL_LMIN = 0x01,
+          HID_GLOBAL_LMAX = 0x02,
+          HID_GLOBAL_PMIN = 0x03,
+          HID_GLOBAL_PMAX = 0x04,
+          HID_GLOBAL_UNIT_EXP = 0x05,
+          HID_GLOBAL_UNIT = 0x06,
+          HID_GLOBAL_REPORT_SIZE = 0x07,
+          HID_GLOBAL_REPORT_ID = 0x08,
+          HID_GLOBAL_REPORT_COUNT = 0x09,
+          HID_GLOBAL_PUSH = 0x0a,
+          HID_GLOBAL_POP = 0x0b,
+        };
+        switch (tag) {
+          case HID_GLOBAL_USAGE_PAGE:
+            HIDAPI_LOGP("%zd: Glob Usage page 0x%02x", i % dataVal);
+            usagePage = dataVal << 8;
+            break;
+          case HID_GLOBAL_LMIN:
+            HIDAPI_LOGP("%zd: Glob Logical minimum 0x%02x", i % dataVal);
+            break;
+          case HID_GLOBAL_LMAX:
+            HIDAPI_LOGP("%zd: Glob Logical maximum 0x%02x", i % dataVal);
+            break;
+          case HID_GLOBAL_PMIN:
+            HIDAPI_LOGP("%zd: Glob Physical minimum 0x%02x", i % dataVal);
+            break;
+          case HID_GLOBAL_PMAX:
+            HIDAPI_LOGP("%zd: Glob Physical maximum 0x%02x", i % dataVal);
+            hidapi_log_input(descriptor+i, len);
+            break;
+          case HID_GLOBAL_UNIT_EXP:
+            HIDAPI_LOGP("%zd: Glob Unit exponent 0x%02x", i % dataVal);
+            break;
+          case HID_GLOBAL_UNIT:
+            HIDAPI_LOGP("%zd: Glob Unit 0x%02x", i % dataVal);
+            // hidapi_log_input(data, bDataSize);
+            hidapi_log_input(descriptor+i, len);
+            break;
+          case HID_GLOBAL_REPORT_SIZE:
+            HIDAPI_LOGP("%zd: Glob Report size 0x%02x", i % dataVal);
+            break;
+          case HID_GLOBAL_REPORT_ID:
+            HIDAPI_LOGP("%zd: Glob Report ID 0x%02x", i % dataVal);
+            break;
+          case HID_GLOBAL_REPORT_COUNT:
+            HIDAPI_LOGP("%zd: Glob Report count %d", i % dataVal);
+            break;
+          case HID_GLOBAL_PUSH:
+            HIDAPI_LOGP("%zd: Glob Push", i);
+            break;
+          case HID_GLOBAL_POP:
+            HIDAPI_LOGP("%zd: Glob Pop", i);
+            break;
+          default:
+            HIDAPI_LOGP("%zd: Glob tag 0x%02x", i % tag);
+            hidapi_log_input(data, bDataSize);
+            break;
+        }
+        break;
+      case HID_TYPE_LOCAL:
+        enum {
+          HID_LOCAL_USAGE = 0x00,
+          HID_LOCAL_USAGE_MIN = 0x01,
+          HID_LOCAL_USAGE_MAX = 0x02,
+          HID_LOCAL_D_INDEX = 0x03,
+          HID_LOCAL_D_MIN = 0x04,
+          HID_LOCAL_D_MAX = 0x05,
+          HID_LOCAL_S_INDEX = 0x07,
+          HID_LOCAL_S_MIN = 0x08,
+          HID_LOCAL_S_MAX = 0x09,
+          HID_LOCAL_DELIMITER = 0x0a,
+        };
+        switch (tag) {
+          case HID_LOCAL_USAGE:
+            HIDAPI_LOGP("%zd: Loc  Usage 0x%02x", i % (usagePage + dataVal));
+            break;
+          case HID_LOCAL_USAGE_MIN:
+            HIDAPI_LOGP("%zd: Loc  Usage min 0x%02x", i % (usagePage + dataVal));
+            break;
+          case HID_LOCAL_USAGE_MAX:
+            HIDAPI_LOGP("%zd: Loc  Usage max 0x%02x", i % (usagePage + dataVal));
+            break;
+          case HID_LOCAL_D_INDEX:
+            HIDAPI_LOGP("%zd: Loc  Designator index 0x%02x", i % dataVal);
+            break;
+          case HID_LOCAL_D_MIN:
+            HIDAPI_LOGP("%zd: Loc  Designator min 0x%02x", i % dataVal);
+            break;
+          case HID_LOCAL_D_MAX:
+            HIDAPI_LOGP("%zd: Loc  Designator max 0x%02x", i % dataVal);
+            break;
+          case HID_LOCAL_S_INDEX:
+            HIDAPI_LOGP("%zd: Loc  String index %02x", i % dataVal);
+            break;
+          case HID_LOCAL_S_MIN:
+            HIDAPI_LOGP("%zd: Loc  String min %02x", i % dataVal);
+            break;
+          case HID_LOCAL_S_MAX:
+            HIDAPI_LOGP("%zd: Loc  String max %02x", i % dataVal);
+            break;
+          case HID_LOCAL_DELIMITER:
+            HIDAPI_LOGP("%zd: Loc  Delimiter %d", i % dataVal);
+            break;
+          default:
+            HIDAPI_LOGP("%zd: Loc  tag 0x%02x", i % tag);
+            hidapi_log_input(data, bDataSize);
+            break;
+        }
+        break;
+      case HID_TYPE_RESERVED:
+        HIDAPI_LOGP("%zd: %s tag 0x%02x", i % types[bType] % tag);
+        hidapi_log_input(data, bDataSize);
+        break;
+      default:
+        HIDAPI_LOGP("%zd: type 0x%02x tag 0x%02x", i % bType % tag);
+        hidapi_log_input(data, bDataSize);
+        break;
+    }
+  }
+}
+
     name = STR(std::setfill('0'), std::setw(4), std::hex, "HidApiInputDriver (", dev->vendor_id, ":",
                dev->product_id, " - ", dev->name, ")");
     start();
