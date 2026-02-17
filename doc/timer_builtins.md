@@ -138,8 +138,8 @@ elapsed = timer_stop(t, iterations=1000, output=true, delete=true);
 > stored value and pauses.  `timer_start` resumes accumulating from that
 > stored value — it does **not** reset to zero.  Use `timer_clear` to reset
 > elapsed to zero without starting.
-> - A bare `for` loop cannot be sandwiched between timer calls in the same scope
-> — see [Common Mistakes](#common-mistakes).
+> - A bare `for` loop shouldn't be sandwiched between timer calls in the same
+>   module scope.  It doesn't do what you think it does. See [Common Mistakes](#common-mistakes).
 > - Calling `timer_start` is an error if the timer is already running.
 > - Calling `timer_stop` is an error if the timer is not running.
 > - Calling `timer_elapsed` is valid in either state.
