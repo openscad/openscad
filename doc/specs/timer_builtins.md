@@ -1,4 +1,4 @@
-# Timer Builtins Requirements <!-- omit in toc -->
+# Timer Builtins Design Requirements <!-- omit in toc -->
 
 Author: _Adrian Hawryluk_ (a.k.a. [Ma-XX-oN](https://github.com/Ma-XX-oN))
 
@@ -119,10 +119,12 @@ Rules:
 - `timer_new()` creates a timer in `Stopped` state with elapsed `0`.
 - If `start=true`, `timer_new()` immediately transitions to `Running`.
 - `timer_start()` is valid only in `Stopped`; calling in `Running` is an error.
+  Resumes accumulating from the current stored elapsed.
 - `timer_stop()` is valid only in `Running`; calling in `Stopped` is an error.
+  Adds elapsed since last start to stored elapsed.
 - If `delete=true`, `timer_stop()` removes the timer after producing return/output.
 - `timer_elapsed()` is valid in both states.
-- In `Running`, `timer_elapsed()` returns current elapsed from start.
+- In `Running`, `timer_elapsed()` returns stored elapsed plus current live elapsed since last start.
 - In `Stopped`, `timer_elapsed()` returns stored elapsed.
 - `timer_clear()` sets state to `Stopped` and elapsed to `0`.
 - `timer_delete()` removes timer; deleted IDs may be reused.
@@ -167,10 +169,11 @@ Default format:
 Supported brace tokens:
 
 - `{n}` timer name text
-- `{f}` elapsed microseconds as numeric string
+- `{f}` elapsed microseconds formatted using OpenSCAD's standard number-to-string
+  conversion (trailing zeros stripped; e.g. `123456`, not `123456.0`)
 - `{i}` iterations value
 - `{h}` hours, 1+ digits
-- `{hh}` hours, 2-digit zero-padded
+- `{hh}` hours, 2-digit zero-padded (no rollover)
 - `{m}` minute within hour (`0..59`)
 - `{mm}` minute within hour, 2-digit zero-padded
 - `{mmm}` total minutes (no 60 rollover)

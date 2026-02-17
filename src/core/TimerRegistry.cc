@@ -64,7 +64,6 @@ void TimerRegistry::start_timer(const std::string& document_root, int id, const 
   if (timer.state == Timer::State::Running) {
     timer_error(document_root, loc, STR("timer_start(", id, ") timer already running"));
   }
-  timer.elapsed_us = 0.0;
   if (timer.kind == Kind::Cpu) {
     timer.cpu_start = std::clock();
   } else {
@@ -93,9 +92,9 @@ double TimerRegistry::stop_timer(const std::string& document_root, int id, const
     timer_error(document_root, loc, STR("timer_stop(", id, ") timer not running"));
   }
   if (timer.kind == Kind::Cpu) {
-    timer.elapsed_us = cpu_elapsed_us(timer.cpu_start);
+    timer.elapsed_us += cpu_elapsed_us(timer.cpu_start);
   } else {
-    timer.elapsed_us = steady_elapsed_us(timer.steady_start);
+    timer.elapsed_us += steady_elapsed_us(timer.steady_start);
   }
   timer.state = Timer::State::Stopped;
   return timer.elapsed_us;
@@ -109,9 +108,9 @@ double TimerRegistry::elapsed_timer(const std::string& document_root, int id, co
   auto& timer = *timers[id];
   if (timer.state == Timer::State::Running) {
     if (timer.kind == Kind::Cpu) {
-      return cpu_elapsed_us(timer.cpu_start);
+      return timer.elapsed_us + cpu_elapsed_us(timer.cpu_start);
     }
-    return steady_elapsed_us(timer.steady_start);
+    return timer.elapsed_us + steady_elapsed_us(timer.steady_start);
   }
   return timer.elapsed_us;
 }
