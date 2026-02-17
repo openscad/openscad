@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/pythonscad/pythonscad/compare/v0.14.2...v0.15.0) (2026-02-16)
+
+
+### Features
+
+* **release:** AppImage signing, release checksums, downloads page improvements ([#454](https://github.com/pythonscad/pythonscad/issues/454)) ([8bea546](https://github.com/pythonscad/pythonscad/commit/8bea546696a9f3e03a6941b474913a086a5f3b05))
+
 ## [0.14.2](https://github.com/pythonscad/pythonscad/compare/v0.14.1...v0.14.2) (2026-02-15)
 
 
