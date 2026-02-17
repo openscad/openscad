@@ -136,6 +136,7 @@ public:
     std::string style_name;
     std::string version;
     FontMetrics(const FreetypeRenderer::Params& params);
+
   private:
     static std::string getFontVersion(FT_Face face_);
     static std::string getUTF16BE(uint8_t *string, int len);

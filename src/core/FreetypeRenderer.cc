@@ -50,7 +50,6 @@
 #include FT_TRUETYPE_IDS_H
 #include FT_SFNT_NAMES_H
 
-
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define SCRIPT_UNTAG(tag) \
   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
@@ -580,7 +579,7 @@ std::string FreetypeRenderer::FontMetrics::getFontVersion(FT_Face face_)
     // the same handling.  One way to do that would be to arithmetically combine the platform and
     // encoding IDs, and switch on the result.
     if ((pid == TT_PLATFORM_APPLE_UNICODE && eid == TT_APPLE_ID_UNICODE_2_0) ||
-      (pid == TT_PLATFORM_MICROSOFT && eid == TT_MS_ID_UNICODE_CS)) {
+        (pid == TT_PLATFORM_MICROSOFT && eid == TT_MS_ID_UNICODE_CS)) {
       // UCS-2 / UTF-16?
       s = getUTF16BE(sfnt.string, sfnt.string_len);
     } else if (pid == TT_PLATFORM_MACINTOSH && eid == TT_MAC_ID_ROMAN) {
