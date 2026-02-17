@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace FunctionArgs {
@@ -43,6 +44,16 @@ struct SpecVariadic {
   }
 };
 
+struct FixedParamDef {
+  const char *name;
+  std::shared_ptr<const Value> default_value;
+};
+
+struct VariadicParamDef {
+  const char *name;
+  std::vector<std::shared_ptr<const Value>> default_values;
+};
+
 /**
  * @brief Canonical parameter declaration.
  *
@@ -51,35 +62,57 @@ struct SpecVariadic {
  * - one variadic slot with optional default values
  */
 struct ParamDef {
-  const char *name;
-  bool is_variadic = false;
-  std::shared_ptr<const Value> default_value;
-  std::vector<std::shared_ptr<const Value>> variadic_default_values;
+  std::variant<FixedParamDef, VariadicParamDef> param;
 
-  ParamDef(const char *param_name) : name(param_name) {}
+  ParamDef(const char *param_name) : param(FixedParamDef{param_name, nullptr}) {}
   ParamDef(const char *param_name, const char *default_string)
-    : name(param_name), default_value(std::make_shared<Value>(default_string))
+    : param(FixedParamDef{param_name, std::make_shared<Value>(default_string)})
   {
   }
   ParamDef(const char *param_name, bool default_bool)
-    : name(param_name), default_value(std::make_shared<Value>(default_bool))
+    : param(FixedParamDef{param_name, std::make_shared<Value>(default_bool)})
   {
   }
   ParamDef(const char *param_name, int default_number)
-    : name(param_name), default_value(std::make_shared<Value>(default_number))
+    : param(FixedParamDef{param_name, std::make_shared<Value>(default_number)})
   {
   }
   ParamDef(const char *param_name, double default_number)
-    : name(param_name), default_value(std::make_shared<Value>(default_number))
+    : param(FixedParamDef{param_name, std::make_shared<Value>(default_number)})
   {
   }
   ParamDef(const char *param_name, Value default_complex)
-    : name(param_name), default_value(std::make_shared<Value>(std::move(default_complex)))
+    : param(FixedParamDef{param_name, std::make_shared<Value>(std::move(default_complex))})
   {
   }
   ParamDef(const char *param_name, SpecVariadic variadic_defaults)
-    : name(param_name), is_variadic(true), variadic_default_values(std::move(variadic_defaults.default_values))
+    : param(VariadicParamDef{param_name, std::move(variadic_defaults.default_values)})
   {
+  }
+
+  const char *name() const
+  {
+    return std::visit([](const auto& p) { return p.name; }, param);
+  }
+
+  bool isVariadic() const { return std::holds_alternative<VariadicParamDef>(param); }
+
+  const std::shared_ptr<const Value>& defaultValue() const
+  {
+    static const std::shared_ptr<const Value> empty;
+    if (const auto *fixed = std::get_if<FixedParamDef>(&param)) {
+      return fixed->default_value;
+    }
+    return empty;
+  }
+
+  const std::vector<std::shared_ptr<const Value>>& variadicDefaultValues() const
+  {
+    static const std::vector<std::shared_ptr<const Value>> empty;
+    if (const auto *variadic = std::get_if<VariadicParamDef>(&param)) {
+      return variadic->default_values;
+    }
+    return empty;
   }
 };
 
@@ -93,13 +126,13 @@ struct ParamDef {
  *   - positional after first named is an error
  * - ignores unknown named keys prefixed with '$'
  * - applies fixed-slot defaults
- * - optionally supports one variadic slot in `params`
+ * - optionally supports variadic slots in `params`
  *
- * Variadic slot behavior (when one parameter is `Spec::Variadic`):
- * - named `<variadic_name>=...` appends its value to `variadic`
+ * Variadic slot behavior:
+ * - named `<variadic_name>=...` appends its value to that variadic slot
  * - positional values immediately following it are appended to `variadic`
  *   until the next named argument appears
- * - parameters declared after variadic must be passed by name
+ * - parameters declared after the first variadic must be passed by name
  * - after another named argument, normal positional-after-named rules apply
  *
  * Fixed-only example (`timer_stop`):
@@ -115,8 +148,9 @@ struct ParamDef {
  *   },
  * };
  *
- * const auto fixed = stop_spec.normalize(arguments, fail);
- * // fixed[0]=timer_id, fixed[1]=fmt_str, fixed[2]=iterations, fixed[3]=output, fixed[4]=delete
+ * const auto normalized = stop_spec.normalize(arguments, fail);
+ * // normalized.params[0]=timer_id, normalized.params[1]=fmt_str
+ * // normalized.params[2]=iterations, normalized.params[3]=output, normalized.params[4]=delete
  * @endcode
  *
  * Fixed + variadic block example (`timer_run`):
@@ -126,10 +160,9 @@ struct ParamDef {
  *   {{"name"}, {"fn"}, {"args", Spec::Variadic{}}},
  * };
  *
- * const auto normalized = run_spec.normalizeWithVariadic(arguments, fail);
- * // normalized.fixed[0]=name, normalized.fixed[1]=fn
- * // normalized.variadic is std::vector<const Value*> for args...
- * // use normalized.variadic.size() and normalized.variadic[i]
+ * const auto normalized = run_spec.normalize(arguments, fail);
+ * // normalized.params[0]=name, normalized.params[1]=fn
+ * // normalized.params[2] is list Value for args...
  * @endcode
  */
 class Spec
@@ -138,32 +171,25 @@ public:
   using Variadic = SpecVariadic;
 
   /**
-   * @brief Normalization result for fixed slots + optional variadic tail.
+   * @brief Normalization result in canonical `params` order.
    */
   struct NormalizeResult {
-    /// Canonical non-variadic slots in declaration order (`params` minus variadic).
-    std::vector<const Value *> fixed;
-    /// Values collected into variadic slot, if configured/used.
-    std::vector<const Value *> variadic;
+    /// Canonical values in declaration order (`params`).
+    std::vector<const Value *> params;
+    /// Owns synthesized values (for example variadic list materialization).
+    std::vector<std::shared_ptr<const Value>> owned_values;
+
+    const Value *operator[](size_t index) const { return params[index]; }
+    size_t size() const { return params.size(); }
   };
 
   /**
    * @param function_name Function name for diagnostics.
-   * @param params Canonical parameters in order (at most one variadic).
+   * @param params Canonical parameters in order.
    */
   Spec(const char *function_name, std::initializer_list<ParamDef> params);
 
-  /**
-   * @brief Normalize fixed parameters only.
-   *
-   * Equivalent to `normalizeWithVariadic(...).fixed`.
-   */
-  std::vector<const Value *> normalize(const Arguments& arguments, const ErrorFn& fail) const;
-
-  /**
-   * @brief Normalize fixed parameters plus optional variadic block.
-   */
-  NormalizeResult normalizeWithVariadic(const Arguments& arguments, const ErrorFn& fail) const;
+  NormalizeResult normalize(const Arguments& arguments, const ErrorFn& fail) const;
 
 private:
   struct SlotSource {
