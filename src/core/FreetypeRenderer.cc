@@ -528,7 +528,7 @@ std::string FreetypeRenderer::FontMetrics::getASCII(FT_Byte *string, int len)
 {
   for (int j = 0; j < len; j += 2) {
     // Accept only ASCII.
-    if (!isascii(string[j])) {
+    if (!isascii(string[j]) || !isprint(string[j])) {
       return "";
     }
   }
@@ -549,7 +549,7 @@ std::string FreetypeRenderer::FontMetrics::getUTF16BE(FT_Byte *string, int len)
       return "";
     }
     char c = string[j + 1];
-    if (!isascii(c)) {
+    if (!isascii(c) || !isprint(c)) {
       return "";
     }
     s += c;
