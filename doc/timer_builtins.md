@@ -135,9 +135,10 @@ timer_run("bad", function(a, b) a + b, 1, 2, undef, 10);
            └─────────────────────────▶[GONE]
 ```
 
-`timer_elapsed` is read-only with no state change:
-`[Running]` returns stored + live elapsed since last start;
-`[Stopped]` returns stored elapsed.
+`timer_elapsed` is read-only — no state change — and returns:
+
+- when Running: stored + live elapsed since last start
+- when Stopped: stored elapsed
 
 | Operation                    | From    | To      | Stored elapsed      | Notes                     |
 | ---------------------------- | ------- | ------- | ------------------- | ------------------------- |
