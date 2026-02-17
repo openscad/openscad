@@ -24,7 +24,7 @@
      showguides="true"
      inkscape:zoom="1.6303862"
      inkscape:cx="429.6528"
-     inkscape:cy="451.73346"
+     inkscape:cy="260.36776"
      inkscape:window-width="1920"
      inkscape:window-height="1046"
      inkscape:window-x="863"
@@ -111,7 +111,7 @@
     .e    { stroke: #cccccc; stroke-width: 1.6; fill: none; stroke-linejoin: round; stroke-linecap: round; }
     .e-normal { stroke: #0072B2; marker-end: url(#arr-normal); stroke-dasharray: none; }
     .e-error { stroke: #D55E00; marker-end: url(#arr-error); stroke-dasharray: 7 5; }
-    .e-destructive { stroke: #E69F00; marker-end: url(#arr-destructive); stroke-width: 2.4; }
+    .e-destructive { stroke: #E69F00; marker-end: url(#arr-destructive); }
     .e-reset { stroke: #009E73; marker-end: url(#arr-reset); stroke-dasharray: 2 5; }
     .dash { stroke: #cccccc; stroke-width: 1.6; fill: none; stroke-dasharray: 6 4; stroke-linejoin: round; stroke-linecap: round; }
     text  { font-family: 'Courier New', Courier, monospace; font-size: 12px; fill: #cccccc; }
@@ -135,14 +135,54 @@
      y="112"
      class="legend-title"
      id="legend-title">Legend</text>
-  <line x1="32" y1="128" x2="58" y2="128" class="e e-normal" id="legend-normal-line" />
-  <text x="66" y="131" class="legend-text" id="legend-normal-text">normal</text>
-  <line x1="32" y1="146" x2="58" y2="146" class="e e-error" id="legend-error-line" />
-  <text x="66" y="149" class="legend-text" id="legend-error-text">error</text>
-  <line x1="32" y1="164" x2="58" y2="164" class="e e-destructive" id="legend-destr-line" />
-  <text x="66" y="167" class="legend-text" id="legend-destr-text">destructive</text>
-  <line x1="32" y1="182" x2="58" y2="182" class="e e-reset" id="legend-reset-line" />
-  <text x="66" y="185" class="legend-text" id="legend-reset-text">reset</text>
+  <line
+     x1="32"
+     y1="128"
+     x2="58"
+     y2="128"
+     class="e e-normal"
+     id="legend-normal-line" />
+  <text
+     x="66"
+     y="131"
+     class="legend-text"
+     id="legend-normal-text">normal</text>
+  <line
+     x1="32"
+     y1="146"
+     x2="58"
+     y2="146"
+     class="e e-error"
+     id="legend-error-line" />
+  <text
+     x="66"
+     y="149"
+     class="legend-text"
+     id="legend-error-text">error</text>
+  <line
+     x1="32"
+     y1="164"
+     x2="58"
+     y2="164"
+     class="e e-destructive"
+     id="legend-destr-line" />
+  <text
+     x="66"
+     y="167"
+     class="legend-text"
+     id="legend-destr-text">destructive</text>
+  <line
+     x1="32"
+     y1="182"
+     x2="58"
+     y2="182"
+     class="e e-reset"
+     id="legend-reset-line" />
+  <text
+     x="66"
+     y="185"
+     class="legend-text"
+     id="legend-reset-text">reset</text>
   <!-- ── State boxes ── -->
   <!-- NONE: center (400, 45), 80×28 -->
   <rect
@@ -272,48 +312,59 @@
      style="stroke:#0072B2"
      id="line8" />
   <!-- Split line labels -->
-  <rect
-     x="226"
-     y="57"
-     width="96"
-     height="34"
-     rx="4"
-     ry="4"
-     class="tbg"
-     id="rect28" />
-  <text
-     x="275.11035"
-     y="70.755859"
-     text-anchor="middle"
-     class="tlabel"
-     id="text8"><tspan
+  <g
+     id="g9"
+     transform="translate(8,-14)">
+    <rect
+       x="226"
+       y="57"
+       width="96"
+       height="34"
+       rx="4"
+       ry="4"
+       class="tbg"
+       id="rect28" />
+    <text
        x="275.11035"
-       dy="0"
-       id="tspan28">timer_new()</tspan><tspan
-       x="275.11035"
-       dy="15"
-       id="tspan29">stored=0</tspan></text>
-  <rect
-     x="480"
-     y="57"
-     width="160"
-     height="34"
-     rx="4"
-     ry="4"
-     class="tbg"
-     id="rect29" />
-  <text
-     x="561.11035"
-     y="70.755859"
-     text-anchor="middle"
-     class="tlabel"
-     id="text10"><tspan
-       x="561.11035"
-       dy="0"
-       id="tspan30">timer_new(start=true)</tspan><tspan
-       x="561.11035"
-       dy="15"
-       id="tspan31">stored=0</tspan></text>
+       y="70.755859"
+       text-anchor="middle"
+       class="tlabel"
+       id="text8"><tspan
+         x="275.11035"
+         dy="0"
+         id="tspan28">timer_new()</tspan><tspan
+         x="275.11035"
+         dy="15"
+         id="tspan29">stored=0</tspan></text>
+  </g>
+  <g
+     id="g4"
+     transform="translate(-16,-14)">
+    <g
+       id="g3">
+      <rect
+         x="480"
+         y="57"
+         width="160"
+         height="34"
+         rx="4"
+         ry="4"
+         class="tbg"
+         id="rect29" />
+      <text
+         x="561.11035"
+         y="70.755859"
+         text-anchor="middle"
+         class="tlabel"
+         id="text10"><tspan
+           x="561.11035"
+           dy="0"
+           id="tspan30">timer_new(start=true)</tspan><tspan
+           x="561.11035"
+           dy="15"
+           id="tspan31">stored=0</tspan></text>
+    </g>
+  </g>
   <!-- Left branch → STOPPED (solid) -->
   <path
      d="M 204 75 Q 188 75 188 91 L 188 234 Q 188 250 204 250 L 350 250"
@@ -331,26 +382,28 @@
      class="e e-reset"
      id="polyline13" />
   <g
-     id="g13">
+     id="g10"
+     transform="translate(-4,24)">
     <rect
-       x="454"
-       y="167"
+       x="430"
+       y="127"
        width="102"
-       height="34"
+       height="37.066757"
        rx="4"
-       ry="4"
+       ry="4.360795"
        class="tbg"
-       id="rect30" />
+       id="rect30"
+       style="stroke-width:1.04413" />
     <text
-       x="505"
-       y="181"
+       x="482.11035"
+       y="141.78925"
        text-anchor="middle"
        class="tlabel"
        id="text13"><tspan
-         x="505"
+         x="482.11035"
          dy="0"
          id="tspan32">timer_clear()</tspan><tspan
-         x="505"
+         x="482.11035"
          dy="15"
          id="tspan33">stored=0</tspan></text>
   </g>
@@ -361,7 +414,7 @@
      id="polyline14" />
   <g
      id="g5"
-     transform="translate(0,16)">
+     transform="translate(0,6)">
     <rect
        x="198"
        y="260"
@@ -467,7 +520,7 @@
      id="polyline22" />
   <g
      id="g6"
-     transform="translate(0,16)">
+     transform="translate(0,10)">
     <rect
        x="237"
        y="325.77328"
@@ -527,8 +580,7 @@
      class="e e-error"
      id="polyline25" />
   <g
-     id="g2"
-     transform="translate(0,8)">
+     id="g2">
     <rect
        x="497"
        y="480"
