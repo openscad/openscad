@@ -266,8 +266,8 @@ Value Range::evaluate(const std::shared_ptr<const Context>& context) const
   double end_d;
   if (!begin_val.getDouble(begin_d) || !end_val.getDouble(end_d)) {
     LOG(message_group::Warning, loc, context->documentRoot(),
-        "Unable to convert [%1$s:...:%2$s] to a range",
-        begin_val.toEchoStringNoThrow(), end_val.toEchoStringNoThrow());
+        "Unable to convert [%1$s:...:%2$s] to a range", begin_val.toEchoStringNoThrow(),
+        end_val.toEchoStringNoThrow());
     return Value::undefined.clone();
   }
 
@@ -276,8 +276,7 @@ Value Range::evaluate(const std::shared_ptr<const Context>& context) const
     const Value& step_val = this->step->evaluate(context);
     if (!step_val.getDouble(step_d)) {
       LOG(message_group::Warning, loc, context->documentRoot(),
-          "Unable to convert [...:%1$s:...] to a step value",
-          step_val.toEchoStringNoThrow());
+          "Unable to convert [...:%1$s:...] to a step value", step_val.toEchoStringNoThrow());
       return Value::undefined.clone();
     }
   }
