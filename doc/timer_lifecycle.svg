@@ -43,7 +43,7 @@
        orient="auto">
       <path
          d="M 0 0 L 10 5 L 0 10 z"
-         fill="#7aa2f7"
+         fill="#0072B2"
          id="path-normal" />
     </marker>
     <marker
@@ -56,7 +56,7 @@
        orient="auto">
       <path
          d="M 0 0 L 10 5 L 0 10 z"
-         fill="#ef4444"
+         fill="#D55E00"
          id="path-error" />
     </marker>
     <marker
@@ -69,7 +69,7 @@
        orient="auto">
       <path
          d="M 0 0 L 10 5 L 0 10 z"
-         fill="#f59e0b"
+         fill="#E69F00"
          id="path-destructive" />
     </marker>
     <marker
@@ -82,7 +82,7 @@
        orient="auto">
       <path
          d="M 0 0 L 10 5 L 0 10 z"
-         fill="#22c55e"
+         fill="#009E73"
          id="path-reset" />
     </marker>
     <marker
@@ -109,10 +109,10 @@
      id="style1">
     .node { fill: #bcbcbc; stroke: #8f8f8f; stroke-width: 1.5; }
     .e    { stroke: #cccccc; stroke-width: 1.6; fill: none; stroke-linejoin: round; stroke-linecap: round; }
-    .e-normal { stroke: #7aa2f7; marker-end: url(#arr-normal); }
-    .e-error { stroke: #ef4444; marker-end: url(#arr-error); }
-    .e-destructive { stroke: #f59e0b; marker-end: url(#arr-destructive); }
-    .e-reset { stroke: #22c55e; marker-end: url(#arr-reset); }
+    .e-normal { stroke: #0072B2; marker-end: url(#arr-normal); }
+    .e-error { stroke: #D55E00; marker-end: url(#arr-error); }
+    .e-destructive { stroke: #E69F00; marker-end: url(#arr-destructive); }
+    .e-reset { stroke: #009E73; marker-end: url(#arr-reset); }
     .dash { stroke: #cccccc; stroke-width: 1.6; fill: none; stroke-dasharray: 6 4; stroke-linejoin: round; stroke-linecap: round; }
     text  { font-family: 'Courier New', Courier, monospace; font-size: 12px; fill: #cccccc; }
     .state-label { fill: #242424; font-weight: bold; }
@@ -260,7 +260,7 @@
      x2="400"
      y2="75"
      class="e"
-     style="stroke:#7aa2f7"
+     style="stroke:#0072B2"
      id="line7" />
   <!-- Horizontal split bar -->
   <line
@@ -269,7 +269,7 @@
      x2="634"
      y2="75"
      class="e"
-     style="stroke:#7aa2f7"
+     style="stroke:#0072B2"
      id="line8" />
   <!-- Split line labels -->
   <rect
