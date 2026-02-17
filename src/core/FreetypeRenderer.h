@@ -134,7 +134,12 @@ public:
     double interline;
     std::string family_name;
     std::string style_name;
+    std::string version;
     FontMetrics(const FreetypeRenderer::Params& params);
+  private:
+    static std::string getFontVersion(FT_Face face_);
+    static std::string getUTF16BE(uint8_t *string, int len);
+    static std::string getASCII(uint8_t *string, int len);
   };
   FreetypeRenderer();
   virtual ~FreetypeRenderer() = default;
