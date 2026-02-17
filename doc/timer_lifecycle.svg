@@ -109,10 +109,10 @@
      id="style1">
     .node { fill: #bcbcbc; stroke: #8f8f8f; stroke-width: 1.5; }
     .e    { stroke: #cccccc; stroke-width: 1.6; fill: none; stroke-linejoin: round; stroke-linecap: round; }
-    .e-normal { stroke: #0072B2; marker-end: url(#arr-normal); }
-    .e-error { stroke: #D55E00; marker-end: url(#arr-error); }
-    .e-destructive { stroke: #E69F00; marker-end: url(#arr-destructive); }
-    .e-reset { stroke: #009E73; marker-end: url(#arr-reset); }
+    .e-normal { stroke: #0072B2; marker-end: url(#arr-normal); stroke-dasharray: none; }
+    .e-error { stroke: #D55E00; marker-end: url(#arr-error); stroke-dasharray: 7 5; }
+    .e-destructive { stroke: #E69F00; marker-end: url(#arr-destructive); stroke-width: 2.4; }
+    .e-reset { stroke: #009E73; marker-end: url(#arr-reset); stroke-dasharray: 2 5; }
     .dash { stroke: #cccccc; stroke-width: 1.6; fill: none; stroke-dasharray: 6 4; stroke-linejoin: round; stroke-linecap: round; }
     text  { font-family: 'Courier New', Courier, monospace; font-size: 12px; fill: #cccccc; }
     .state-label { fill: #242424; font-weight: bold; }
