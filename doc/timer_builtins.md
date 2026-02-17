@@ -100,46 +100,7 @@ timer_run("bad", function(a, b) a + b, 1, 2, undef, 10);
 ```
 
 ## Timer Lifecycle
-
-```text
-                                   ┌──────┐
-                                   │ NONE │
-                                   └──────┘
-                timer_new()           │         timer_new(start=true)
-       ┌──────── stored=0  ───────────┴────────────── stored=0 ─────────┐
-       │                                                                │
-       │                                                                │
-       │                                  timer_clear()                 │
-       │                                ┌── stored=0 ──┐                │
-       │                                │              │                │
-       │                        ┌─────────┐            │                │
-       └───────────────────────▶│ STOPPED │◀───────────┘                │
-                                └─────────┘                             │
-       ┌───────┐                  │  │  ▲                               │
-       │ ERROR │◀─ timer_stop() ──┘  │  │                               │
-       └───────┘                     │  │                               │
-                                     │  │ timer_stop()                  │
-       ┌──────── timer_delete() ─────┤  │ stored += since last start    │
-       │                             │  │  or                           │
-       │                             │  │ timer_clear()                 │
-       │                             │  │ stored=0                      │
-       │               timer_start() │  │                               │
-       │            stored unchanged │  │                               │
-       │                             │  │                               │
-       │                             │  │                               │
-       │                             ▼  │                               │
-       │                         ┌─────────┐                            │
-       │                         │ RUNNING │◀───────────────────────────┘
-       │                         └─────────┘
-       │                              │  |
-       │      timer_stop(delete=true) │  │                      ┌───────┐
-       │            or timer_delete() │  └─── timer_start() ───▶│ ERROR │
-       │                              │                         └───────┘
-       │                              ▼
-       │                           ┌──────┐
-       └──────────────────────────▶│ GONE │
-                                   └──────┘
-```
+![Timer Lifecycle](timer_lifecycle.svg)
 
 Timers do not persist across renders — all timers are implicitly deleted when a render completes.
 
