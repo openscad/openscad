@@ -132,15 +132,18 @@ _ = _loop(function(i) sum(big_list), 0, 1000);
 elapsed = timer_stop(t, iterations=1000, output=true, delete=true);
 ```
 
-> **Note:** `timer_stop` adds elapsed since the last `timer_start` to the
+> **Notes:**
+> 
+> - `timer_stop` adds elapsed since the last `timer_start` to the
 > stored value and pauses.  `timer_start` resumes accumulating from that
 > stored value — it does **not** reset to zero.  Use `timer_clear` to reset
 > elapsed to zero without starting.
-> A bare `for` loop cannot be sandwiched between timer calls in the same scope
+> - A bare `for` loop cannot be sandwiched between timer calls in the same scope
 > — see [Common Mistakes](#common-mistakes).
-> `timer_start` is an error if the timer is already running.
-> `timer_stop` is an error if the timer is not running.
-> `timer_elapsed` is valid in either state.
+> - Calling `timer_start` is an error if the timer is already running.
+> - Calling `timer_stop` is an error if the timer is not running.
+> - Calling `timer_elapsed` is valid in either state.
+> - See [Timer Lifecycle](#timer-lifecycle) for a full view of the lifecycle.
 
 ## Output Format
 
