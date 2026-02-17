@@ -5,13 +5,15 @@ echo(version=version());
 // The example takes 3 cuts from the height map and displays
 // those as 3 stacked layers.
 
-for (a = [1, 2, 3])
-    color([a/6 + 0.5, 0, 0]) translate([0,0,2*(a-1)])
-       linear_extrude(height = 2, convexity = 10)
-            projection(cut = true)
-                translate([0, 0, -30 * a])
-                    surface("surface_image.png", center = true);
-
+for (a = [1, 2, 3]) {
+    overlap = a==1 ? 0 : 0.1; // Overlapping ensures one mesh.
+    color([a/6 + 0.5, 0, 0])
+        translate([0,0,2*(a-1)-overlap])
+            linear_extrude(height = 2+overlap, convexity = 10)
+                projection(cut = true)
+                    translate([0, 0, -30 * a])
+                        surface("surface_image.png", center = true);
+}
 
 
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
