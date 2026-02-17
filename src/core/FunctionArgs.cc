@@ -124,7 +124,8 @@ Spec::NormalizeResult Spec::normalize(const Arguments& arguments, const ErrorFn&
         continue;
       }
 
-      if (first_variadic_param_index < params_.size() && positional_index >= first_variadic_param_index) {
+      if (first_variadic_param_index < params_.size() &&
+          positional_index >= first_variadic_param_index) {
         append_variadic(first_variadic_param_index, &argument.value);
         continue;
       }
