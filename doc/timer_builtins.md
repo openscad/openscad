@@ -5,6 +5,8 @@ Author: _Adrian Hawryluk_ (a.k.a. [Ma-XX-oN](https://github.com/Ma-XX-oN))
 - [What These Timers Measure](#what-these-timers-measure)
 - [Quick Start](#quick-start)
 - [Signatures](#signatures)
+  - [Return Behavior](#return-behavior)
+  - [`timer_run` Named Args After `args...`](#timer_run-named-args-after-args)
 - [Timer Lifecycle](#timer-lifecycle)
 - [Manual Timer Control](#manual-timer-control)
 - [Output Format](#output-format)
@@ -45,9 +47,20 @@ result = timer_run("dot", function(a, b) a * b, [1,2,3], [4,5,6]);
 // ECHO: timer dot 0:00.001
 ```
 
+For benchmarking, get average microseconds directly:
+
+```openscad
+function _loop(fn, i, n) = i >= n ? undef : let(_ = fn(i)) _loop(fn, i+1, n);
+
+avg_us = timer_run("sum1000",
+                   function() _loop(function(i) sum(big_list), 0, 1000),
+                   fmt_str=undef, iterations=1000);
+// avg_us is a number
+```
+
 ## Signatures
 
-```
+```text
 timer_new(name="", type="monotonic", start=false) -> number
 timer_start(timer_id) -> undef
 timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false, delete=false) -> number | string
@@ -65,42 +78,80 @@ timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1)
   returning.
 - `type` may be `"monotonic"` (wall-clock, default) or `"CPU"` (case-insensitive).
 
+### Return Behavior
+
+| Call form | Return type | Echo behavior |
+|-----------|-------------|---------------|
+| `timer_stop/elapsed(..., fmt_str=undef)` | `number` (microseconds) | only when `output=true` |
+| `timer_stop/elapsed(..., fmt_str="...")` | `string` | only when `output=true` |
+| `timer_run(...)` | result of `fn(...)` | always echoes timing |
+
+### `timer_run` Named Args After `args...`
+
+`timer_run` has a variadic `args...` block. Parameters after that block must be
+passed by name.
+
+```openscad
+// valid
+timer_run("ok", function(a, b) a + b, 1, 2, fmt_str=undef, iterations=10);
+
+// invalid: positional arg after args... block
+timer_run("bad", function(a, b) a + b, 1, 2, undef, 10);
+```
+
 ## Timer Lifecycle
 
 ```text
-   [none] ──timer_new()──────────────────────────────► [Stopped]  stored=0
-   [none] ──timer_new(start=true)────────────────────► [Running]  stored=0
-
-                         timer_start()
-              ┌──────── (stored unchanged) ──────┐
-              │                                  │
-              ▼                                  │
-         [Stopped] ◄─────────────────────── [Running]
-                          timer_stop()
-                    (stored += since last start)
-
-   [either] ──timer_clear()────────────────────────────► [Stopped]  stored=0
-   [either] ──timer_delete()───────────────────────────► [gone]
-   [Running] ──timer_stop(delete=true)─────────────────► [gone]
+                                      [NONE]
+                                        │
+                         ┌──────────────┴───────────────────┐
+                         │                                  │
+                    timer_new()                     timer_new(start=true)
+           ┌──────── stored=0                             stored=0 ─────────┐
+           │                                                                │
+           │                                  timer_clear()                 │
+           │                                ┌── stored=0 ──┐                │
+           │                                │              │                │
+           └─────────────────────────▶[STOPPED]◀───────────┘                │
+                                         │  ▲                               │
+                                         │  │                               │
+                                         │  │ timer_stop()                  │
+           ┌──────── timer_delete() ─────┤  │ stored += since last start    │
+           │                             │  │  or                           │
+           │                             │  │ timer_clear()                 │
+           │                             │  │ stored=0                      │
+           │               timer_start() │  │                               │
+           │            stored unchanged │  │                               │
+           │                             │  │                               │
+           │                             │  │                               │
+           │                             ▼  │                               │
+           │                           [RUNNING]◀───────────────────────────┘
+           │                             │
+           │     timer_stop(delete=true) │
+           │                        or   │
+           │              timer_delete() │
+           │                             │
+           │                             ▼
+           └─────────────────────────▶[GONE]
 ```
 
 `timer_elapsed` is read-only with no state change:
 `[Running]` returns stored + live elapsed since last start;
 `[Stopped]` returns stored elapsed.
 
-| Operation | From | To | Stored elapsed | Notes |
-| ----------- | ------ | ---- | ---------------- | ------- |
-| `timer_new()` | — | Stopped | 0 | |
-| `timer_new(start=true)` | — | Running | 0 | create + start in one call |
-| `timer_start(t)` | Stopped | Running | unchanged | resumes from stored value |
-| `timer_start(t)` | Running | — | — | **error** |
-| `timer_stop(t)` | Running | Stopped | += since last start | |
-| `timer_stop(t, delete=true)` | Running | gone | — | |
-| `timer_stop(t)` | Stopped | — | — | **error** |
-| `timer_clear(t)` | either | Stopped | reset to 0 | |
-| `timer_elapsed(t)` | Running | Running | unchanged | returns stored + live |
-| `timer_elapsed(t)` | Stopped | Stopped | unchanged | returns stored elapsed |
-| `timer_delete(t)` | either | gone | — | |
+| Operation                    | From    | To      | Stored elapsed      | Notes                     |
+| ---------------------------- | ------- | ------- | ------------------- | ------------------------- |
+| `timer_new()`                | —       | Stopped | 0                   |                           |
+| `timer_new(start=true)`      | —       | Running | 0                   | create + start in one call|
+| `timer_start(t)`             | Stopped | Running | unchanged           | resumes from stored value |
+| `timer_start(t)`             | Running | —       | —                   | **error**                 |
+| `timer_stop(t)`              | Running | Stopped | += since last start |                           |
+| `timer_stop(t, delete=true)` | Running | gone    | —                   |                           |
+| `timer_stop(t)`              | Stopped | —       | —                   | **error**                 |
+| `timer_clear(t)`             | either  | Stopped | reset to 0          |                           |
+| `timer_elapsed(t)`           | Running | Running | unchanged           | returns stored + live     |
+| `timer_elapsed(t)`           | Stopped | Stopped | unchanged           | returns stored elapsed    |
+| `timer_delete(t)`            | either  | gone    | —                   |                           |
 
 ## Manual Timer Control
 
