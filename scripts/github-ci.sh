@@ -72,6 +72,8 @@ do_coverage() {
 	(
 		cd "$BUILDDIR"
 		echo "Generating code coverage report..."
+		# This works so long as the binary was built with -DPROFILE
+		# and you exercised the binary beforehand.
 		uv run --project "$REPO_ROOT/.github/ci/openscad-coverage" gcovr -r ../src CMakeFiles/OpenSCADLibInternal.dir $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
 		if [[ $? != 0 ]]; then
 			exit 1
