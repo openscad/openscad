@@ -1576,17 +1576,16 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
       {"iterations", 1},
     },
   };
-  const auto normalized = spec.normalizeWithVariadic(arguments, fail);
-  const auto& fixed = normalized.fixed;
+  const auto normalized = spec.normalize(arguments, fail);
 
-  if (fixed[1]->type() != Value::Type::FUNCTION) {
+  if (normalized[1]->type() != Value::Type::FUNCTION) {
     timer_error("timer_run", call->location(), arguments.documentRoot(),
                 "timer_run() fn must be a function");
   }
   const TimerDisplaySpec display =
-    parse_timer_display_spec("timer_run", arguments, call->location(), *fixed[2], *fixed[3]);
+    parse_timer_display_spec("timer_run", arguments, call->location(), *normalized[3], *normalized[4]);
 
-  std::string name = fixed[0]->toString();
+  std::string name = normalized[0]->toString();
 
   EvaluationSession *session = arguments.session();
   auto& timers = session->timers();
@@ -1595,7 +1594,17 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
 
   Value result = Value::undefined.clone();
   try {
-    result = call_function_value(context, call->location(), fixed[1]->clone(), normalized.variadic);
+    if (normalized[2]->type() != Value::Type::VECTOR) {
+      timer_error("timer_run", call->location(), arguments.documentRoot(),
+                  "timer_run() internal error: args must normalize to a list");
+    }
+    std::vector<const Value *> call_args;
+    const auto& args_list = normalized[2]->toVector();
+    call_args.reserve(args_list.size());
+    for (const auto& arg : args_list) {
+      call_args.emplace_back(&arg);
+    }
+    result = call_function_value(context, call->location(), normalized[1]->clone(), call_args);
   } catch (...) {
     timers.delete_timer(arguments.documentRoot(), id, call->location());
     throw;

@@ -51,8 +51,8 @@ function/builtin arguments into canonical form.
   predictable, this helper rejects positional-after-named.  This is in line with
   other languages such as Python.
 
-- allows an optional variadic parameter declared inline in `params`.
-  It can be used named, and named arguments can follow it.
+- allows optional variadic parameters declared inline in `params`.
+  They can be used named, and only named arguments can follow them.
 
   Example:
 
@@ -119,7 +119,7 @@ If a slot is omitted and has no default, normalized value is `&Value::undefined`
 
 - `function_name` is used in diagnostics
 - `params` defines fixed canonical order and names
-- at most one parameter in `params` may be variadic via `Spec::Variadic(...)`
+- any parameter in `params` may be variadic via `Spec::Variadic(...)`
 
 Example (fixed only):
 
@@ -153,13 +153,12 @@ static const FunctionArgs::Spec run_spec{
 
 ## Normalization APIs
 
-- `normalize(arguments, fail) -> std::vector<const Value *>`
-- `normalizeWithVariadic(arguments, fail) -> NormalizeResult`
+- `normalize(arguments, fail) -> NormalizeResult`
 
 `NormalizeResult`:
 
-- `fixed`: fixed canonical values in `params` order
-- `variadic`: collected variadic values (if enabled/used)
+- `params`: canonical values in `params` order
+- for variadic parameters, the corresponding `params[i]` is a list value
 
 ## Structural Rules
 
@@ -173,15 +172,15 @@ Applied during normalization:
 
 ## Variadic Rules
 
-When one variadic parameter is configured:
+When variadic parameters are configured:
 
-- named `<variadic_name> = value` appends `value` to `variadic`
-- positional values immediately after that named argument are appended to `variadic`
+- named `<variadic_name> = value` starts that variadic sequence
+- positional values immediately after that named argument are appended to that same variadic sequence
 - collection continues until the next named argument appears
-- if positional binding reaches variadic, remaining positional values append to `variadic`
-- parameters declared after variadic must be passed by name
+- once all preceding fixed params relative to the first variadic are filled positionally, excess positional values are collected by that variadic
+- parameters declared after the first variadic parameter must be passed by name
 - after a non-variadic named argument, normal positional-after-named error rule applies
-- variadic defaults are used only when variadic received no explicit values
+- variadic defaults are used only when that variadic received no explicit values
 
 ## Error Routing
 

@@ -9,47 +9,34 @@ namespace FunctionArgs {
 Spec::Spec(const char *function_name, std::initializer_list<ParamDef> params)
   : function_name_(function_name), params_(params)
 {
-  size_t variadic_count = 0;
   for (size_t i = 0; i < params_.size(); ++i) {
-    const auto [it, inserted] = param_index_by_name_.emplace(params_[i].name, i);
+    const auto [it, inserted] = param_index_by_name_.emplace(params_[i].name(), i);
     if (!inserted) {
-      throw std::logic_error(STR("Duplicate parameter name in FunctionArgs::Spec: ", params_[i].name));
+      throw std::logic_error(STR("Duplicate parameter name in FunctionArgs::Spec: ", params_[i].name()));
     }
-    if (params_[i].is_variadic) {
-      variadic_count++;
-      if (variadic_count > 1) {
-        throw std::logic_error(STR("FunctionArgs::Spec supports at most one variadic parameter: ", function_name_));
+  }
+}
+
+Spec::NormalizeResult Spec::normalize(const Arguments& arguments, const ErrorFn& fail) const
+{
+  NormalizeResult result;
+  size_t first_variadic_param_index = params_.size();
+  for (size_t i = 0; i < params_.size(); ++i) {
+    if (params_[i].isVariadic()) {
+      if (first_variadic_param_index >= params_.size()) {
+        first_variadic_param_index = i;
       }
     }
   }
-}
 
-std::vector<const Value *> Spec::normalize(const Arguments& arguments, const ErrorFn& fail) const
-{
-  return normalizeWithVariadic(arguments, fail).fixed;
-}
-
-Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments, const ErrorFn& fail) const
-{
-  NormalizeResult result;
-  std::vector<size_t> fixed_index_by_param(params_.size(), params_.size());
-  size_t fixed_count = 0;
-  size_t variadic_param_index = params_.size();
-  for (size_t i = 0; i < params_.size(); ++i) {
-    if (params_[i].is_variadic) {
-      variadic_param_index = i;
-    } else {
-      fixed_index_by_param[i] = fixed_count++;
-    }
-  }
-
-  result.fixed.assign(fixed_count, &Value::undefined);
-  std::vector<std::optional<SlotSource>> slot_sources(fixed_count);
+  result.params.assign(params_.size(), &Value::undefined);
+  std::vector<std::optional<SlotSource>> slot_sources(params_.size());
+  std::vector<bool> variadic_assigned(params_.size(), false);
+  std::vector<std::vector<const Value *>> variadic_values_by_param(params_.size());
 
   std::unordered_map<std::string, size_t> named_first_arg;
   bool seen_named = false;
-  bool in_variadic_block = false;
-  bool variadic_assigned = false;
+  size_t active_variadic_param_index = params_.size();
   const std::string *first_named_key = nullptr;
   size_t first_named_arg_index = 0;
   size_t positional_index = 0;
@@ -63,23 +50,30 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments, co
 
   const auto assign = [&](size_t param_index, const Value *value, bool from_named, size_t arg_index,
                           const std::string *named_key) {
-    if (param_index >= params_.size() || params_[param_index].is_variadic) {
+    if (param_index >= params_.size() || params_[param_index].isVariadic()) {
       fail(STR(function_name_, "() internal error: parameter index out of bounds"));
     }
-    const size_t fixed_index = fixed_index_by_param[param_index];
-    if (fixed_index >= slot_sources.size()) {
+    if (param_index >= slot_sources.size()) {
       fail(STR(function_name_, "() internal error: fixed parameter index out of bounds"));
     }
-    if (slot_sources[fixed_index]) {
-      const auto& previous = *slot_sources[fixed_index];
+    if (slot_sources[param_index]) {
+      const auto& previous = *slot_sources[param_index];
       const std::string current_desc =
         from_named ? STR("named argument '", *named_key, "' at argument ", arg_index)
                    : STR("positional argument ", arg_index);
-      fail(STR(function_name_, "() parameter '", params_[param_index].name, "' was already set by ",
+      fail(STR(function_name_, "() parameter '", params_[param_index].name(), "' was already set by ",
                source_desc(previous), "; cannot set again by ", current_desc));
     }
-    slot_sources[fixed_index] = SlotSource{arg_index, from_named ? named_key : nullptr};
-    result.fixed[fixed_index] = value;
+    slot_sources[param_index] = SlotSource{arg_index, from_named ? named_key : nullptr};
+    result.params[param_index] = value;
+  };
+
+  const auto append_variadic = [&](size_t param_index, const Value *value) {
+    if (param_index >= params_.size() || !params_[param_index].isVariadic()) {
+      fail(STR(function_name_, "() internal error: variadic parameter index out of bounds"));
+    }
+    variadic_assigned[param_index] = true;
+    variadic_values_by_param[param_index].emplace_back(value);
   };
 
   for (size_t i = 0; i < arguments.size(); ++i) {
@@ -110,39 +104,35 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments, co
       }
 
       const size_t param_index = it->second;
-      if (params_[param_index].is_variadic) {
-        in_variadic_block = true;
-        variadic_assigned = true;
-        result.variadic.emplace_back(&argument.value);
+      if (params_[param_index].isVariadic()) {
+        active_variadic_param_index = param_index;
+        append_variadic(param_index, &argument.value);
         continue;
       }
 
-      in_variadic_block = false;
+      active_variadic_param_index = params_.size();
       assign(param_index, &argument.value, true, arg_index, &key);
     } else {
-      if (seen_named && !in_variadic_block) {
+      if (seen_named && active_variadic_param_index >= params_.size()) {
         fail(STR(function_name_, "() positional argument ", arg_index,
                  " is not allowed after named argument '", *first_named_key, "' at argument ",
                  first_named_arg_index));
       }
 
-      if (seen_named && in_variadic_block) {
-        variadic_assigned = true;
-        result.variadic.emplace_back(&argument.value);
+      if (seen_named && active_variadic_param_index < params_.size()) {
+        append_variadic(active_variadic_param_index, &argument.value);
         continue;
       }
 
-      if (variadic_param_index < params_.size() && positional_index >= variadic_param_index) {
-        variadic_assigned = true;
-        result.variadic.emplace_back(&argument.value);
+      if (first_variadic_param_index < params_.size() && positional_index >= first_variadic_param_index) {
+        append_variadic(first_variadic_param_index, &argument.value);
         continue;
       }
 
       const size_t param_index = positional_index++;
       if (param_index >= params_.size()) {
-        if (variadic_param_index < params_.size()) {
-          variadic_assigned = true;
-          result.variadic.emplace_back(&argument.value);
+        if (first_variadic_param_index < params_.size()) {
+          append_variadic(first_variadic_param_index, &argument.value);
           continue;
         }
         fail(STR(function_name_, "() expected up to ", params_.size(), " positional arguments, got ",
@@ -153,27 +143,43 @@ Spec::NormalizeResult Spec::normalizeWithVariadic(const Arguments& arguments, co
   }
 
   for (size_t i = 0; i < params_.size(); ++i) {
-    if (params_[i].is_variadic) {
+    if (params_[i].isVariadic()) {
       continue;
     }
-    const size_t fixed_index = fixed_index_by_param[i];
-    if (fixed_index >= slot_sources.size()) {
+    if (i >= slot_sources.size()) {
       fail(STR(function_name_, "() internal error: fixed parameter index out of bounds"));
     }
-    if (slot_sources[fixed_index]) {
+    if (slot_sources[i]) {
       continue;
     }
-    if (params_[i].default_value) {
-      result.fixed[fixed_index] = params_[i].default_value.get();
+    if (params_[i].defaultValue()) {
+      result.params[i] = params_[i].defaultValue().get();
     } else {
-      result.fixed[fixed_index] = &Value::undefined;
+      result.params[i] = &Value::undefined;
     }
   }
 
-  if (!variadic_assigned && variadic_param_index < params_.size()) {
-    for (const auto& value : params_[variadic_param_index].variadic_default_values) {
-      result.variadic.emplace_back(value.get());
+  for (size_t i = 0; i < params_.size(); ++i) {
+    if (!params_[i].isVariadic() || variadic_assigned[i]) {
+      continue;
     }
+    for (const auto& value : params_[i].variadicDefaultValues()) {
+      variadic_values_by_param[i].emplace_back(value.get());
+    }
+  }
+
+  for (size_t i = 0; i < params_.size(); ++i) {
+    if (!params_[i].isVariadic()) {
+      continue;
+    }
+    VectorType vec(arguments.session());
+    vec.reserve(variadic_values_by_param[i].size());
+    for (const Value *value : variadic_values_by_param[i]) {
+      vec.emplace_back(value->clone());
+    }
+    auto list_value = std::make_shared<Value>(std::move(vec));
+    result.params[i] = list_value.get();
+    result.owned_values.emplace_back(std::move(list_value));
   }
 
   return result;
