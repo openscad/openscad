@@ -62,9 +62,6 @@ do_test() {
 	(
 		cd "$BUILDDIR"
 		ctest $PARALLEL_CTEST $CTEST_ARGS
-		if [[ $? != 0 ]]; then
-			exit 1
-		fi
 	)
 	if [[ $? != 0 ]]; then
 		echo "Test failure"
