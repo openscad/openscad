@@ -76,15 +76,16 @@ timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations
 - `iterations` divides the elapsed time, for averaging across a loop.
 - `output=true` makes `timer_stop`/`timer_elapsed` echo in addition to
   returning.
-- `type` may be `"monotonic"` (wall-clock, default) or `"CPU"` (case-insensitive).
+- `type` may be `"monotonic"` (wall-clock, default) or `"CPU"`
+  (case-insensitive).
 
 ### Return Behavior
 
-| Call form | Return type | Echo behavior |
-|-----------|-------------|---------------|
+| Call form                                | Return type             | Echo behavior           |
+| ---------------------------------------- | ----------------------- | ----------------------- |
 | `timer_stop/elapsed(..., fmt_str=undef)` | `number` (microseconds) | only when `output=true` |
-| `timer_stop/elapsed(..., fmt_str="...")` | `string` | only when `output=true` |
-| `timer_run(...)` | result of `fn(...)` | always echoes timing |
+| `timer_stop/elapsed(..., fmt_str="...")` | `string`                | only when `output=true` |
+| `timer_run(...)`                         | result of `fn(...)`     | always echoes timing    |
 
 ### `timer_run` Named Args After `args...`
 
@@ -100,6 +101,7 @@ timer_run("bad", function(a, b) a + b, 1, 2, undef, 10);
 ```
 
 ## Timer Lifecycle
+
 ![Timer Lifecycle](timer_lifecycle.svg)
 
 Timers do not persist across renders — all timers are implicitly deleted when a render completes.
@@ -168,40 +170,40 @@ s = timer_stop(t, "{sss}.{dddddd} s");  // e.g. "0.123456 s"
 
 ## Format Tokens
 
-| Token | Meaning |
-|-------|---------|
-| `{n}` | timer name |
-| `{f}` | elapsed microseconds (numeric string) |
-| `{i}` | `iterations` value |
-| `{h}` | hours (1+ digits) |
-| `{hh}` | hours, 2-digit zero-padded (no rollover) |
-| `{m}` | minute within hour (0–59) |
-| `{mm}` | minute within hour, 2-digit zero-padded |
-| `{mmm}` | total minutes (no 60 rollover) |
-| `{s}` | second within minute (0–59) |
-| `{ss}` | second within minute, 2-digit zero-padded |
-| `{sss}` | total seconds (no 60 rollover) |
+| Token    | Meaning                                                                             |
+| -------- | ----------------------------------------------------------------------------------- |
+| `{n}`    | timer name                                                                          |
+| `{f}`    | elapsed microseconds (numeric string)                                               |
+| `{i}`    | `iterations` value                                                                  |
+| `{h}`    | hours (1+ digits)                                                                   |
+| `{hh}`   | hours, 2-digit zero-padded (no rollover)                                            |
+| `{m}`    | minute within hour (0–59)                                                           |
+| `{mm}`   | minute within hour, 2-digit zero-padded                                             |
+| `{mmm}`  | total minutes (no 60 rollover)                                                      |
+| `{s}`    | second within minute (0–59)                                                         |
+| `{ss}`   | second within minute, 2-digit zero-padded                                           |
+| `{sss}`  | total seconds (no 60 rollover)                                                      |
 | `{d...}` | fractional seconds — number of `d`s sets decimal places (up to 6 meaningful digits) |
 
 Use `{{` and `}}` for literal braces.
 
 Examples:
 
-| `fmt_str` | Example output |
-|-----------|----------------|
+| `fmt_str`                                   | Example output          |
+| ------------------------------------------- | ----------------------- |
 | `"timer {n} {mmm}:{ss}.{dddddd}"` (default) | `timer foo 0:00.123456` |
-| `"{sss}.{dddddd} s"` | `0.123456 s` |
-| `"{f} μs"` | `123456 μs` |
-| `"{h}h {mm}m {ss}s"` | `0h 00m 00s` |
+| `"{sss}.{dddddd} s"`                        | `0.123456 s`            |
+| `"{f} μs"`                                  | `123456 μs`             |
+| `"{h}h {mm}m {ss}s"`                        | `0h 00m 00s`            |
 
 ## When to Use Which
 
-| Situation | Recommended |
-|-----------|-------------|
-| Time a single function call | `timer_run` |
-| Time an expression inline | `timer_new` + `timer_start` + `timer_stop` |
-| Average over many iterations | `timer_stop(..., iterations=N)` |
-| Multiple checkpoints in sequence | Manual timers, one per checkpoint |
+| Situation                          | Recommended                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| Time a single function call        | `timer_run`                                           |
+| Time an expression inline          | `timer_new` + `timer_start` + `timer_stop`            |
+| Average over many iterations       | `timer_stop(..., iterations=N)`                       |
+| Multiple checkpoints in sequence   | Manual timers, one per checkpoint                     |
 | Benchmark repeated calls in a loop | Recursive helper + manual timer (see Common Patterns) |
 
 ## Common Patterns

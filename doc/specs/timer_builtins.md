@@ -37,9 +37,10 @@ pathways.
 ## Argument Shape Rules
 
 All timer builtins use canonical argument normalization (`FunctionArgs::Spec`).
-See [FunctionArgs Specification](function_args.md) for the canonical argument-shape rules, including
-named/positional constraints and `timer_run` variadic-block behavior.
-For `timer_run`, parameters declared after variadic `args` must be passed by name.
+See [FunctionArgs Specification](function_args.md) for the canonical
+argument-shape rules, including named/positional constraints and `timer_run`
+variadic-block behavior. For `timer_run`, parameters declared after variadic
+`args` must be passed by name.
 
 ## Overload-Like Accepted Forms
 
@@ -122,9 +123,11 @@ Rules:
   Resumes accumulating from the current stored elapsed.
 - `timer_stop()` is valid only in `Running`; calling in `Stopped` is an error.
   Adds elapsed since last start to stored elapsed.
-- If `delete=true`, `timer_stop()` removes the timer after producing return/output.
+- If `delete=true`, `timer_stop()` removes the timer after producing
+  return/output.
 - `timer_elapsed()` is valid in both states.
-- In `Running`, `timer_elapsed()` returns stored elapsed plus current live elapsed since last start.
+- In `Running`, `timer_elapsed()` returns stored elapsed plus current live
+  elapsed since last start.
 - In `Stopped`, `timer_elapsed()` returns stored elapsed.
 - `timer_clear()` sets state to `Stopped` and elapsed to `0`.
 - `timer_delete()` removes timer; deleted IDs may be reused.
@@ -169,8 +172,9 @@ Default format:
 Supported brace tokens:
 
 - `{n}` timer name text
-- `{f}` elapsed microseconds formatted using OpenSCAD's standard number-to-string
-  conversion (trailing zeros stripped; e.g. `123456`, not `123456.0`)
+- `{f}` elapsed microseconds formatted using OpenSCAD's standard
+  number-to-string conversion (trailing zeros stripped; e.g. `123456`, not
+  `123456.0`)
 - `{i}` iterations value
 - `{h}` hours, 1+ digits
 - `{hh}` hours, 2-digit zero-padded (no rollover)
