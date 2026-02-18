@@ -39,8 +39,14 @@ jobs:
         python-version: '3.13'
     - name: Install gcovr
       run: uv sync --project .github/ci/openscad-coverage
-    - name: Build and test
-      run: ./scripts/github-ci.sh experimental enable_python ${{ matrix.qt }} build test coverage
+    - name: Build
+      run: ./scripts/github-ci.sh experimental enable_python ${{ matrix.qt }} build
+    - name: Test
+      # This is a bit wonky to use github-ci as it is.
+      # `test` runs ctest, `test_examples` sets a persistent flag for ctest to run a different "configuration".
+      # So we're running the default tests (no specified configuration), then the example tests. Has to be in that order.
+      # Finally coverage reports what code paths got executed.
+      run: ./scripts/github-ci.sh test test_examples test coverage
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v6
       if: ${{ always() }}
