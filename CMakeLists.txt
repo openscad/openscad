@@ -34,16 +34,17 @@ configure_file(
   ${CMAKE_BINARY_DIR}/version.cc
   @ONLY
 )
+
 option(INFO "Display build configuration info at end of cmake config" ON)
-option(ENABLE_TESTS "Run testsuite after building." ON)
+option(ENABLE_TESTS "Run testsuite after building." OFF)
 option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
-option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(EXPERIMENTAL "Enable Experimental Features" ON)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
-option(USE_QT6 "Build the GUI with Qt6" ON)
+option(USE_QT6 "Build the GUI with Qt6" OFF)
 option(ENABLE_EGL "Enable EGL support if available" ON)
 option(ENABLE_GLX "Enable GLX support if available" ON)
 # For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
@@ -1279,6 +1280,7 @@ set(GUI_SOURCES
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
   src/gui/Export3mfDialog.cc
+  src/gui/ExportDxfDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/ExportSvgDialog.cc
   src/gui/OctoPrintApiKeyDialog.cc
@@ -1353,6 +1355,7 @@ set(GUI_HEADERS
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
     src/gui/Export3mfDialog.h
+    src/gui/ExportDxfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/ExportSvgDialog.h
     src/gui/OctoPrintApiKeyDialog.h
@@ -1411,6 +1414,7 @@ set(GUI_UIS
     src/gui/Console.ui
     src/gui/ErrorLog.ui
     src/gui/Export3mfDialog.ui
+    src/gui/ExportDxfDialog.ui
     src/gui/ExportPdfDialog.ui
     src/gui/ExportSvgDialog.ui
     src/gui/OctoPrintApiKeyDialog.ui
