@@ -117,6 +117,7 @@
 #include "gui/Dock.h"
 #include "gui/Measurement.h"
 #include "gui/Export3mfDialog.h"
+#include "gui/ExportDxfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
@@ -2537,6 +2538,14 @@ void MainWindow::actionExportFileFormat(int fmt)
     exportInfo.optionsSvg = std::make_shared<ExportSvgOptions>(exportSvgDialog.getOptions());
     actionExport(2, exportInfo);
   } break;
+  case FileFormat::DXF: {
+    ExportDxfDialog exportDxfDialog;
+    if (exportDxfDialog.exec() == QDialog::Rejected) {
+      return;
+    }
+    exportInfo.optionsDxf = std::make_shared<ExportDxfOptions>(exportDxfDialog.getOptions());
+    actionExport(2, exportInfo);
+  } break;
   default: actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
   }
 }
@@ -3786,7 +3795,6 @@ void MainWindow::setupMenusAndActions()
   exportMap[FileFormat::POV] = this->fileActionExportPOV;
   exportMap[FileFormat::AMF] = this->fileActionExportAMF;
   exportMap[FileFormat::DXF] = this->fileActionExportDXF;
-  exportMap[FileFormat::DXF_R14] = this->fileActionExportDXF_R14;
   exportMap[FileFormat::SVG] = this->fileActionExportSVG;
   exportMap[FileFormat::PDF] = this->fileActionExportPDF;
   exportMap[FileFormat::CSG] = this->fileActionExportCSG;

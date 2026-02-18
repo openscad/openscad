@@ -236,7 +236,6 @@
      <addaction name="fileActionExportAMF"/>
      <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
-     <addaction name="fileActionExportDXF_R14"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
      <addaction name="fileActionExportPDF"/>
@@ -1362,15 +1361,6 @@
     <string>Export as &amp;DXF...</string>
    </property>
   </action>
-  <action name="fileActionExportDXF_R14">
-   <property name="icon">
-    <iconset theme="chokusen-export-dxf">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>Export as &amp;DXF (R14)...</string>
-   </property>
-  </action>  
   <action name="fileActionPythonRevoke">
    <property name="text">
     <string>Revoke Trusted Python Files</string>
