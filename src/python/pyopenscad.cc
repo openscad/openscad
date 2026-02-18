@@ -38,6 +38,7 @@
 #include "core/CurveDiscretizer.h"
 #include "core/enums.h"
 #include "core/node.h"
+#include "genlang/genlang.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
