@@ -1425,6 +1425,8 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
   return Value::undefined.clone();
 }
 
+static constexpr const char *kTimerDefaultFormat = "timer {n} {mmm}:{ss}.{dddddd}";
+
 Value builtin_timer_stop(Arguments arguments, const Location& loc)
 {
   const auto fail = [&](const std::string& msg) {
@@ -1434,7 +1436,7 @@ Value builtin_timer_stop(Arguments arguments, const Location& loc)
     "timer_stop",
     {
       {"timer_id"},
-      {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+      {"fmt_str", kTimerDefaultFormat},
       {"iterations", 1},
       {"output", false},
       {"delete", false},
@@ -1485,7 +1487,7 @@ Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
     "timer_elapsed",
     {
       {"timer_id"},
-      {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+      {"fmt_str", kTimerDefaultFormat},
       {"iterations", 1},
       {"output", false},
     },
@@ -1572,7 +1574,7 @@ Value builtin_timer_run(const std::shared_ptr<const Context>& context, const Fun
       {"name"},
       {"fn"},
       {"args", FunctionArgs::Spec::Variadic{}},
-      {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+      {"fmt_str", kTimerDefaultFormat},
       {"iterations", 1},
     },
   };

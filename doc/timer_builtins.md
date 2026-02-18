@@ -63,11 +63,11 @@ avg_us = timer_run("sum1000",
 ```text
 timer_new(name="", type="monotonic", start=false) -> number
 timer_start(timer_id) -> undef
-timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false, delete=false) -> number | string
-timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false) -> number | string
+timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1, output=false, delete=false) -> number | string
+timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1, output=false) -> number | string
 timer_clear(timer_id) -> undef
 timer_delete(timer_id) -> undef
-timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1) -> any
+timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1) -> any
 ```
 
 - `timer_id` is the number returned by `timer_new()`.
@@ -189,7 +189,7 @@ Examples:
 
 | `fmt_str` | Example output |
 |-----------|----------------|
-| `"timer {n} {mmm}:{ss}.{ddd}"` (default) | `timer foo 0:00.123` |
+| `"timer {n} {mmm}:{ss}.{dddddd}"` (default) | `timer foo 0:00.123456` |
 | `"{sss}.{dddddd} s"` | `0.123456 s` |
 | `"{f} μs"` | `123456 μs` |
 | `"{h}h {mm}m {ss}s"` | `0h 00m 00s` |
