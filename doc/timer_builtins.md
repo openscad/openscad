@@ -143,7 +143,7 @@ elapsed = timer_stop(t, iterations=1000, output=true, delete=true);
 > - A bare `for` loop shouldn't be sandwiched between timer calls in the same
 >   module scope.  It doesn't do what you think it does. See [Common Mistakes](#common-mistakes).
 > - Calling `timer_start` is an error if the timer is already running.
-> - Calling `timer_stop` is an error if the timer is not running.
+> - Calling `timer_stop` on a stopped timer is allowed (idempotent) and returns the stored elapsed value unchanged.
 > - Calling `timer_elapsed` is valid in either state.
 > - See [Timer Lifecycle](#timer-lifecycle) for a full view of the lifecycle.
 
@@ -246,8 +246,8 @@ echo(v);
 
 ## Common Mistakes
 
-- **Stopping a timer that is not running** — `timer_stop` on a stopped timer
-  is a hard error.  Use `timer_elapsed` if you just want to read the value.
+- **Expecting `timer_stop` to add time while stopped** — `timer_stop` on a
+  stopped timer is idempotent; it returns stored elapsed unchanged.
 - **Starting a timer that is already running** — `timer_start` on a running
   timer is a hard error.  Call `timer_stop` or `timer_clear` first.
 - **Expecting `timer_clear` and `timer_stop` to behave the same** —
