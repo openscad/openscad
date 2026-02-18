@@ -119,7 +119,6 @@ namespace fs = std::filesystem;
 
 std::string commandline_commands;
 std::string arg_colorscheme;
-DxfVersion arg_dxf_version = DxfVersion::Legacy;
 
 namespace {
 
@@ -243,6 +242,7 @@ void help_export()
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
   help_export(Settings::SettingsExportSvg::cmdline);
+  help_export(Settings::SettingsExportDxf::cmdline);
   exit(0);
 }
 
@@ -510,12 +510,10 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
-    exportInfo.dxfVersion = arg_dxf_version;
 
     if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
     }
-
     if (export_format == FileFormat::PNG) {
       bool success = true;
       bool const wrote = with_output(
@@ -912,12 +910,6 @@ int openscad_main(int argc, char **argv)
            "\n")
             .c_str())
 
-    ("dxf-version", po::value<std::string>(),
-      "=DXF export version (spec-correct output): R10 | R12 | R14\n"
-      "  R10 - AC1006, POLYLINE entities, maximum compatibility\n"
-      "  R12 - AC1009, POLYLINE entities with handles\n"
-      "  R14 - AC1014, LWPOLYLINE entities, full object model\n"
-      "  If not specified, original OpenSCAD LWPOLYLINE behaviour is preserved.\n")    
     ("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
@@ -1119,17 +1111,6 @@ int openscad_main(int argc, char **argv)
     arg_colorscheme = vm["colorscheme"].as<std::string>();
   }
 
-  if (vm.count("dxf-version")) {
-    const auto& ver = vm["dxf-version"].as<std::string>();
-    if (ver == "R12") arg_dxf_version = DxfVersion::R12;
-    else if (ver == "R14") arg_dxf_version = DxfVersion::R14;
-    else if (ver == "R10") arg_dxf_version = DxfVersion::R10;
-    else {
-      LOG("Unknown --dxf-version '%1$s'. Use R10, R12, or R14.", ver);
-      exit(1);
-    }
-  }
-
   if (vm.count("export-format")) {
     const auto format_str = vm["export-format"].as<std::string>();
     FileFormat format;
@@ -1141,9 +1122,6 @@ int openscad_main(int argc, char **argv)
       return 1;
     }
   }
-
-  // If vm.count("dxf-version") == 0, arg_dxf_version stays DxfVersion::Legacy
-  // (the global default), which preserves original OpenSCAD LWPOLYLINE behaviour.
 
   AnimateArgs const animate = get_animate(vm);
   const Camera camera = get_camera(vm);
