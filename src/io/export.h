@@ -36,7 +36,6 @@ enum class FileFormat {
   AMF,
   _3MF,
   DXF,
-  DXF_R14,
   SVG,
   NEFDBG,
   NEF3,
@@ -288,6 +287,27 @@ struct ExportSvgOptions {
   }
 };
 
+// =====================================================================
+// DXF EXPORT OPTIONS
+// =====================================================================
+//
+// Mirrors the pattern used by ExportPdfOptions, Export3mfOptions, and
+// ExportSvgOptions.  Populated from -O export-dxf/version=<R10|R12|R14>
+// on the command line, or from the GUI settings store via fromSettings().
+//
+// Command-line usage:
+//   openscad -o out.dxf -O export-dxf/version=R14 input.scad
+//
+// =====================================================================
+
+struct ExportDxfOptions {
+  DxfVersion version = DxfVersion::Legacy;
+
+  static std::shared_ptr<const ExportDxfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions);
+
+  static std::shared_ptr<const ExportDxfOptions> fromSettings();
+};
+
 struct ExportInfo {
   FileFormat format;
   FileFormatInfo info;
@@ -296,11 +316,11 @@ struct ExportInfo {
   const Camera *camera;
   const Color4f defaultColor;
   const ColorScheme *colorScheme;
-  DxfVersion dxfVersion = DxfVersion::Legacy;
 
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
   std::shared_ptr<const ExportSvgOptions> optionsSvg;
+  std::shared_ptr<const ExportDxfOptions> optionsDxf;
 };
 
 ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,

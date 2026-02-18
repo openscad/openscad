@@ -172,13 +172,13 @@ static void export_dxf_header_Legacy(std::ostream& output, double xMin, double y
          << " 20\n"
          << yMax << "\n"
 
-         << "  9\n$LINMIN\n"  // original typo â€” preserved
+         << "  9\n$LINMIN\n"  // original typo Ã¢â‚¬â€ preserved
          << " 10\n"
          << xMin << "\n"
          << " 20\n"
          << yMin << "\n"
 
-         << "  9\n$LINMAX\n"  // original typo â€” preserved
+         << "  9\n$LINMAX\n"  // original typo Ã¢â‚¬â€ preserved
          << " 10\n"
          << xMax << "\n"
          << " 20\n"
@@ -626,7 +626,7 @@ static void export_dxf_objects_R14(std::ostream& output)
 //   R14:     LWPOLYLINE (spec-correct R14+ entity, with handles)
 //
 // POINT (1 vertex) and LINE (2 vertices) are handled the same in all
-// modes â€” they are valid in all DXF versions.
+// modes Ã¢â‚¬â€ they are valid in all DXF versions.
 //
 // SEQEND in R12 also receives a handle. The handseed for R12 is
 // calculated as:
@@ -659,7 +659,7 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
   // Calculate handseed for R12 and R14
   //
   // R14: one handle per entity (LWPOLYLINE, POINT, LINE)
-  // R12: POLYLINE=1, VERTEX=N, SEQEND=1 per outline  â†’  (2+N) per outline
+  // R12: POLYLINE=1, VERTEX=N, SEQEND=1 per outline  Ã¢â€ â€™  (2+N) per outline
   //      POINT and LINE outlines consume 1 handle each (no VERTEX/SEQEND)
   // ---------------------------------------------------------------
   int handseed_r12 = H_ENT_START_R12;
@@ -712,14 +712,14 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
 
     if (n == 1) {
       // -----------------------------------------------------------
-      // POINT entity â€” single vertex (valid in all versions)
+      // POINT entity Ã¢â‚¬â€ single vertex (valid in all versions)
       // -----------------------------------------------------------
       const Vector2d& p = o.vertices[0];
       output << "  0\nPOINT\n";
       if (version == DxfVersion::R12 || version == DxfVersion::R14) {
         emit_handle(output, ent_handle++);
       }
-      // Legacy and R14 both emit subclass markers â€" the original OpenSCAD
+      // Legacy and R14 both emit subclass markers Ã¢â‚¬" the original OpenSCAD
       // code always emitted these for all entity types.
       if (version == DxfVersion::Legacy || version == DxfVersion::R14) {
         output << "100\nAcDbEntity\n";
@@ -739,7 +739,7 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
 
     } else if (n == 2) {
       // -----------------------------------------------------------
-      // LINE entity â€” two vertices (valid in all versions)
+      // LINE entity Ã¢â‚¬â€ two vertices (valid in all versions)
       // -----------------------------------------------------------
       const Vector2d& p1 = o.vertices[0];
       const Vector2d& p2 = o.vertices[1];
@@ -747,7 +747,7 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
       if (version == DxfVersion::R12 || version == DxfVersion::R14) {
         emit_handle(output, ent_handle++);
       }
-      // Legacy and R14 both emit subclass markers â€" the original OpenSCAD
+      // Legacy and R14 both emit subclass markers Ã¢â‚¬" the original OpenSCAD
       // code always emitted these for all entity types.
       if (version == DxfVersion::Legacy || version == DxfVersion::R14) {
         output << "100\nAcDbEntity\n";
@@ -771,18 +771,18 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
 
     } else {
       // -----------------------------------------------------------
-      // Polyline entity â€” three or more vertices (most common)
+      // Polyline entity Ã¢â‚¬â€ three or more vertices (most common)
       //
       // Legacy/R14: LWPOLYLINE (single compact record)
       // R10/R12:    POLYLINE + VERTEX*N + SEQEND (pre-R14 spec)
       // -----------------------------------------------------------
       if (version == DxfVersion::Legacy || version == DxfVersion::R14) {
-        // LWPOLYLINE â€” compact single-record form
+        // LWPOLYLINE Ã¢â‚¬â€ compact single-record form
         output << "  0\nLWPOLYLINE\n";
         if (version == DxfVersion::R14) {
           emit_handle(output, ent_handle++);
         }
-        // Both Legacy and R14 emit subclass markers â€” the original OpenSCAD
+        // Both Legacy and R14 emit subclass markers Ã¢â‚¬â€ the original OpenSCAD
         // code always emitted these even though they are technically R14-only.
         output << "100\nAcDbEntity\n";
         output << "  8\n0\n";
@@ -805,7 +805,7 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
         }
 
       } else {
-        // POLYLINE / VERTEX / SEQEND â€” spec-correct for R10 and R12
+        // POLYLINE / VERTEX / SEQEND Ã¢â‚¬â€ spec-correct for R10 and R12
         output << "  0\nPOLYLINE\n";
         if (version == DxfVersion::R12) {
           emit_handle(output, ent_handle++);
@@ -874,7 +874,7 @@ void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }
 }
 
-// Overload without version parameter â€” defaults to Legacy (original behaviour)
+// Overload without version parameter Ã¢â‚¬â€ defaults to Legacy (original behaviour)
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   export_dxf(geom, output, DxfVersion::Legacy);
