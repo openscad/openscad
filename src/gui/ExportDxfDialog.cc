@@ -1,10 +1,14 @@
 #include "ExportDxfDialog.h"
 #include <QPushButton>
 #include "core/Settings.h"
+#include "gui/SettingsWriter.h"
+
+using S = Settings::SettingsExportDxf;
 
 ExportDxfDialog::ExportDxfDialog()
 {
   setupUi(this);
+  this->checkBoxAlwaysShowDialog->setChecked(S::exportDxfAlwaysShowDialog.value());
 
   // Populate combo box from settings entry (fills items + selects persisted value)
   initComboBox(comboBoxVersion, Settings::SettingsExportDxf::exportDxfVersion);
@@ -15,7 +19,20 @@ ExportDxfDialog::ExportDxfDialog()
 
 int ExportDxfDialog::exec()
 {
-  return QDialog::exec();
+  bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
+  if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+    showDialog = true;
+  }
+
+  const auto result = showDialog ? QDialog::exec() : QDialog::Accepted;
+
+  if (result == QDialog::Accepted) {
+    S::exportDxfAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
+    Settings::Settings::visit(SettingsWriter());
+  }
+
+  return result;
+  // return QDialog::exec();
 }
 
 void ExportDxfDialog::accept()

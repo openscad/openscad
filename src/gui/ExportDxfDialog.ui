@@ -46,6 +46,13 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayoutDialogButtons">
      <item>
+      <widget class="QCheckBox" name="checkBoxAlwaysShowDialog">
+       <property name="text">
+        <string>Always show dialog</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacerDialogButtons">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -81,6 +88,7 @@
  </widget>
  <tabstops>
   <tabstop>comboBoxVersion</tabstop>
+  <tabstop>checkBoxAlwaysShowDialog</tabstop>  
   <tabstop>pushButtonCancel</tabstop>
   <tabstop>pushButtonOk</tabstop>
  </tabstops>
