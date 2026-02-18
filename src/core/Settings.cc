@@ -491,7 +491,7 @@ SettingsEntryDouble SettingsExportSvg::exportSvgStrokeWidth(SECTION_EXPORT_SVG, 
                                                             999, 0.35);
 
 SettingsEntryBool SettingsExportDxf::exportDxfAlwaysShowDialog(SECTION_EXPORT_DXF, "always-show-dialog",
-                                                               false);
+                                                               true);
 SettingsEntryEnum<DxfVersion> SettingsExportDxf::exportDxfVersion(
   SECTION_EXPORT_DXF, "version",
   {
