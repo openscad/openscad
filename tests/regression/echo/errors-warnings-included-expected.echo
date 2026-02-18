@@ -51,6 +51,7 @@ WARNING: begin is greater than the end, but step is positive in file ../3D/featu
 WARNING: begin is greater than the end, but step is positive in file ../3D/features/for-tests.scad, line 31
 WARNING: Bad range parameter in for statement: too many elements (4294967295) in file ../3D/features/for-tests.scad, line 35
 WARNING: begin is smaller than the end, but step is negative in file ../3D/features/for-tests.scad, line 38
+WARNING: Unable to convert [...:true:...] to a step value in file ../3D/features/for-tests.scad, line 41
 ECHO: "a"
 ECHO: "↑"
 ECHO: "b"
