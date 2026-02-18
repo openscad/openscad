@@ -23,8 +23,8 @@
      showgrid="false"
      showguides="true"
      inkscape:zoom="1.6303862"
-     inkscape:cx="429.6528"
-     inkscape:cy="260.36776"
+     inkscape:cx="276.3149"
+     inkscape:cy="474.42747"
      inkscape:window-width="1920"
      inkscape:window-height="1046"
      inkscape:window-x="863"
@@ -257,23 +257,6 @@
      id="text5"><tspan
        id="tspan12">GONE</tspan></text>
   <!-- ERROR left (near STOPPED): center (95, 286), 72×28 -->
-  <rect
-     x="59"
-     y="272"
-     width="72"
-     height="28"
-     rx="6"
-     ry="6"
-     class="node"
-     id="rect6" />
-  <text
-     x="95"
-     y="286"
-     text-anchor="middle"
-     dy="0.34999999em"
-     class="state-label"
-     id="text6"><tspan
-       id="tspan10">ERROR</tspan></text>
   <!-- ERROR right (near RUNNING): center (715, 500), 72×28 -->
   <rect
      x="679"
@@ -378,7 +361,7 @@
   <!-- ── timer_clear self-loop on STOPPED ── -->
   <!-- Exits top of STOPPED at x=440, loops right, re-enters right side at y=250 -->
   <path
-     d="M 440 236 L 440 201 Q 440 185 456 185 L 499 185 Q 515 185 515 201 L 515 234 Q 515 250 499 250 L 450 250"
+     d="M 425 236 L 425 201 Q 425 185 441 185 L 499 185 Q 515 185 515 201 L 515 234 Q 515 250 499 250 L 450 250"
      class="e e-reset"
      id="polyline13" />
   <g
@@ -407,51 +390,58 @@
          dy="15"
          id="tspan33">stored=0</tspan></text>
   </g>
-  <!-- ── STOPPED → ERROR-L  (timer_stop on a stopped timer) ── -->
+  <!-- ── STOPPED timer_stop self-loop (idempotent) ── -->
   <path
-     d="M 370 264 L 370 270 Q 370 286 354 286 L 131 286"
-     class="e e-error"
+     d="M 375 236 L 375 201 Q 375 185 359 185 L 301 185 Q 285 185 285 201 L 285 234 Q 285 250 301 250 L 350 250"
+     class="e e-normal"
      id="polyline14" />
   <g
      id="g5"
-     transform="translate(0,6)">
+     transform="translate(13.444858,23.85378)">
     <rect
-       x="198"
-       y="260"
-       width="108"
-       height="24"
-       rx="4"
-       ry="4"
+       x="250.86865"
+       y="127"
+       width="136.2627"
+       height="37"
+       rx="5.3436356"
+       ry="4.360795"
        class="tbg"
-       id="rect31" />
+       id="rect31"
+       style="stroke-width:1.15582" />
     <text
-       x="253.11035"
-       y="274.05078"
+       x="319.11035"
+       y="141.78925"
        text-anchor="middle"
        class="tlabel"
-       id="text15">timer_stop()</text>
+       id="text15"><tspan
+         x="319.11035"
+         dy="0"
+         id="tspan41">timer_stop()</tspan><tspan
+         x="319.11035"
+         dy="15"
+         id="tspan42">stored unchanged</tspan></text>
   </g>
   <!-- ── Center channels: STOPPED ↔ RUNNING ── -->
-  <!-- Down (STOPPED→RUNNING, timer_start): x=410 -->
+  <!-- Down (STOPPED→RUNNING, timer_start): x=400 -->
   <line
-     x1="410"
+     x1="400"
      y1="264"
-     x2="410"
+     x2="400"
      y2="446"
      class="e e-normal"
      id="line15" />
-  <!-- Up (RUNNING→STOPPED, timer_stop/clear): x=430 -->
+  <!-- Up (RUNNING→STOPPED, timer_stop/clear): x=425 -->
   <line
-     x1="430"
+     x1="425"
      y1="446"
-     x2="430"
+     x2="425"
      y2="264"
      class="e e-normal"
      id="line16" />
   <!-- Left channel label (timer_start) — right-anchored left of x=410 -->
   <g
      id="g7"
-     transform="translate(4,16)">
+     transform="translate(-9.0111525,16)">
     <rect
        x="281.6792"
        y="371"
@@ -477,10 +467,10 @@
          id="tspan35"
          style="text-align:center;text-anchor:middle">stored unchanged</tspan></text>
   </g>
-  <!-- Right channel label (timer_stop / timer_clear) — left-anchored right of x=430 -->
+  <!-- Right channel label (timer_stop / timer_clear) — left-anchored right of x=425 -->
   <g
      id="g8"
-     transform="translate(-4,34)">
+     transform="translate(-8.3370508,34.433705)">
     <rect
        x="430"
        y="268"
@@ -513,9 +503,9 @@
          dy="15"
          id="tspan40">stored=0</tspan></text>
   </g>
-  <!-- ── timer_delete branch: direct branch from STOPPED bottom at x=390 to GONE ── -->
+  <!-- ── timer_delete branch: direct branch from STOPPED bottom at x=375 to GONE ── -->
   <path
-     d="M 390 264 L 390 339 Q 390 355 374 355 L 204 355 Q 188 355 188 371 L 188 624 Q 188 640 204 640 L 360 640"
+     d="M 375 264 L 375 339 Q 375 355 359 355 L 204 355 Q 188 355 188 371 L 188 624 Q 188 640 204 640 L 360 640"
      class="e e-destructive"
      id="polyline22" />
   <g

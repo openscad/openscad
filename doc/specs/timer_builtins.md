@@ -121,8 +121,11 @@ Rules:
 - If `start=true`, `timer_new()` immediately transitions to `Running`.
 - `timer_start()` is valid only in `Stopped`; calling in `Running` is an error.
   Resumes accumulating from the current stored elapsed.
-- `timer_stop()` is valid only in `Running`; calling in `Stopped` is an error.
-  Adds elapsed since last start to stored elapsed.
+- `timer_stop()` is valid in both states.
+- In `Running`, `timer_stop()` adds elapsed since last start to stored elapsed,
+  transitions to `Stopped`, and returns stored elapsed.
+- In `Stopped`, `timer_stop()` is idempotent and returns stored elapsed
+  unchanged.
 - If `delete=true`, `timer_stop()` removes the timer after producing
   return/output.
 - `timer_elapsed()` is valid in both states.
