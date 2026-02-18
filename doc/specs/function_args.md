@@ -128,7 +128,7 @@ static const FunctionArgs::Spec stop_spec{
   "timer_stop",
   {
     {"timer_id"},
-    {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+    {"fmt_str", "timer {n} {mmm}:{ss}.{dddddd}"},
     {"iterations", 1},
     {"output", false},
     {"delete", false},
@@ -145,7 +145,7 @@ static const FunctionArgs::Spec run_spec{
     {"name"},
     {"fn"},
     {"args", Spec::Variadic{}},
-    {"fmt_str", "timer {n} {mmm}:{ss}.{ddd}"},
+    {"fmt_str", "timer {n} {mmm}:{ss}.{dddddd}"},
     {"iterations", 1},
   },
 };

@@ -29,10 +29,10 @@ pathways.
 - `timer_new(name="", type="monotonic", start=false) -> number`
 - `timer_start(timer_id) -> undef`
 - `timer_clear(timer_id) -> undef`
-- `timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false, delete=false) -> number | string`
-- `timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1, output=false) -> number | string`
+- `timer_stop(timer_id, fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1, output=false, delete=false) -> number | string`
+- `timer_elapsed(timer_id, fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1, output=false) -> number | string`
 - `timer_delete(timer_id) -> undef`
-- `timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1) -> any`
+- `timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1) -> any`
 
 ## Argument Shape Rules
 
@@ -144,7 +144,7 @@ Name fallback (`{n}` token and numeric echo label):
 
 ## timer_run
 
-`timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{ddd}", iterations=1)` behavior:
+`timer_run(name, fn, args..., fmt_str="timer {n} {mmm}:{ss}.{dddddd}", iterations=1)` behavior:
 
 1. Create a monotonic timer with `name`.
 2. Start timer.
@@ -164,7 +164,7 @@ Errors:
 
 Default format:
 
-- `"timer {n} {mmm}:{ss}.{ddd}"`
+- `"timer {n} {mmm}:{ss}.{dddddd}"`
 
 Supported brace tokens:
 
