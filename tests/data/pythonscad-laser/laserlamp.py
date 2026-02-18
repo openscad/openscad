@@ -3,7 +3,7 @@ from openscad import *
 from pylaser import *
 
 # Start with a basic cylinder
-b=cylinder(r=30,h=60)
+b=cylinder(r=30,h=60,fn=13)
 unitmatrix=b.origin
 
 faces=b.faces()
@@ -20,8 +20,7 @@ for pol in faces[topind]:
 faces = [faces[topind], faces[botind]]
 
 for i in range(6):
-    mat = rotz(rotx(translate(unitmatrix , [15,0]), 90),60*i)
-    xface =square([10,60]).multmatrix(mat)
+    xface =square([10,60]).right(15).rotx(90).rotz(60*i) 
     faces.append(xface)
 
 lc = LaserCutter()

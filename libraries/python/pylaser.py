@@ -94,8 +94,6 @@ class LaserCutter:
                     break
                 mat = multmatrix(mat, newmat)
                 iter, = iter.children()
-                #break # TODO manche brauchen das manche nicht
-            print(iter)
             points = []
             paths = []
             for pts in iter.mesh():
@@ -103,7 +101,11 @@ class LaserCutter:
                 n=len(pts)
                 points = points + pts
                 paths.append(list(range(s, s+n)))
-            self.faces[i] = polygon(points=points, paths = paths).multmatrix(mat)
+            newface = polygon(points=points, paths = paths).multmatrix(mat)
+            d = self.faces[i].dict()
+            for key in list(d.keys()):
+                newface.setattr(key, d[key])
+            self.faces[i]=newface
 
 
         # faces, outlines, segments, other
