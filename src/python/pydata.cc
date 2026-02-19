@@ -56,7 +56,7 @@ PyObject *PyDataObjectFromModule(PyTypeObject *type, std::string modulepath, std
     Py_XINCREF(res);
     return (PyObject *)res;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 void PyDataObjectToModule(PyObject *obj, std::string& modulepath, std::string& modulename)
@@ -86,7 +86,7 @@ PyObject *PyDataObjectFromFunction(PyTypeObject *type, std::string functionpath,
     Py_XINCREF(res);
     return (PyObject *)res;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 void PyDataObjectToFunction(PyObject *obj, std::string& functionpath, std::string& functionname)
@@ -116,7 +116,7 @@ PyObject *PyDataObjectFromValue(PyTypeObject *type, double value)
     Py_XINCREF(res);
     return (PyObject *)res;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 double PyDataObjectToValue(PyObject *obj)
@@ -149,7 +149,7 @@ PyObject *python_data_str(PyObject *self)
 PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tree *>& tree)
 {
   if (tree.size() == 0) {
-    return Py_None;
+    Py_RETURN_NONE;
   } else if (tree.size() == 1) {
     PyDataObject *res;
     res = (PyDataObject *)type->tp_alloc(type, 0);
@@ -174,7 +174,7 @@ PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tr
     return res;
   }
 
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *obj)
@@ -258,13 +258,13 @@ PyObject *python_lv_bin_int(PyObject *self, PyObject *args, PyObject *kwargs, li
     }
   } else {
     printf("Cannot handle  bin %lu binop %lu \n", a1.size(), a2.size());
-    return Py_None;
+    Py_RETURN_NONE;
   }
 #else
   int i;
   PyObject *obj = NULL;
-  if (args == NULL) return Py_None;
-  if (PyTuple_Size(args) == 0) return Py_None;
+  if (args == NULL) Py_RETURN_NONE;
+  if (PyTuple_Size(args) == 0) Py_RETURN_NONE;
   obj = PyTuple_GetItem(args, 0);
   //  Py_INCREF(obj);
   Tree res = PyDataObjectToTree(obj);
@@ -304,7 +304,7 @@ PyObject *python_lv_binop_int(PyObject *arg1, PyObject *arg2, libfive::Opcode::O
     }
   } else {
     printf("Cannot handle bin %lu binop %lu \n", t1.size(), t2.size());
-    return Py_None;
+    Py_RETURN_NONE;
   }
 
   return PyDataObjectFromTree(&PyDataType, res);
@@ -401,7 +401,7 @@ PyObject *python_lv_print(PyObject *self, PyObject *args, PyObject *kwargs)
   for (int i = 0; i < tv.size(); i++) {
     //    printf("tree %d: %s\n",i,libfive_tree_print(tv[i]));
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 #endif
@@ -460,27 +460,27 @@ PyObject *python_lv_negate(PyObject *arg)
 #else
 PyObject *python_lv_add(PyObject *arg1, PyObject *arg2)
 {
-  return Py_None;
+  Py_RETURN_NONE;
 }
 PyObject *python_lv_substract(PyObject *arg1, PyObject *arg2)
 {
-  return Py_None;
+  Py_RETURN_NONE;
 }
 PyObject *python_lv_multiply(PyObject *arg1, PyObject *arg2)
 {
-  return Py_None;
+  Py_RETURN_NONE;
 }
 PyObject *python_lv_remainder(PyObject *arg1, PyObject *arg2)
 {
-  return Py_None;
+  Py_RETURN_NONE;
 }
 PyObject *python_lv_divide(PyObject *arg1, PyObject *arg2)
 {
-  return Py_None;
+  Py_RETURN_NONE;
 }
 PyObject *python_lv_negate(PyObject *arg)
 {
-  return Py_None;
+  Py_RETURN_NONE;
 }
 #endif
 
@@ -576,7 +576,7 @@ PyObject *PyDataObject_call_module(PyObject *self, PyObject *args, PyObject *kwa
   SourceFile *source;
   if (!parse(source, stream.str(), "python", "python", false)) {
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
-    return Py_None;
+    Py_RETURN_NONE;
   }
   source->handleDependencies(true);
 
@@ -594,7 +594,7 @@ PyObject *PyDataObject_call_module(PyObject *self, PyObject *args, PyObject *kwa
 PyObject *PyDataObject_call_function(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   if (pythonDryRun) {
-    return Py_None;
+    Py_RETURN_NONE;
   }
 
   std::string functionpath, functionname;
@@ -638,7 +638,7 @@ PyObject *PyDataObject_call_function(PyObject *self, PyObject *args, PyObject *k
   SourceFile *source;
   if (!parse(source, stream.str(), parentPath, parentPath, false)) {
     PyErr_SetString(PyExc_TypeError, "Error parsing SCAD file for function");
-    return Py_None;
+    Py_RETURN_NONE;
   }
   source->handleDependencies(true);
 
@@ -652,7 +652,7 @@ PyObject *PyDataObject_call_function(PyObject *self, PyObject *args, PyObject *k
   auto func_it = source->scope->functions.find(functionname);
   if (func_it == source->scope->functions.end()) {
     PyErr_SetString(PyExc_TypeError, "Function not found in SCAD file");
-    return Py_None;
+    Py_RETURN_NONE;
   }
 
   std::shared_ptr<UserFunction> userfunc = func_it->second;
@@ -689,7 +689,7 @@ PyObject *PyDataObject_call(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   PyErr_SetString(PyExc_TypeError, "PyDataObject is not callable");
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyNumberMethods PyDataNumbers = {
