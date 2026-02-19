@@ -43,6 +43,9 @@
 #include <QImage>
 #include <QOpenGLWidget>
 #include <QWidget>
+#include <QGestureEvent>
+#include <QPinchGesture>
+#include <QNativeGestureEvent>
 #include <iostream>
 #include <QApplication>
 #include <QWheelEvent>
@@ -91,6 +94,7 @@ void QGLView::init()
   this->statusLabel = nullptr;
 
   setMouseTracking(true);
+  grabGesture(Qt::PinchGesture);
 }
 
 void QGLView::resetView()
@@ -448,12 +452,46 @@ void QGLView::wheelEvent(QWheelEvent *event)
   const auto pos = Q_WHEEL_EVENT_POSITION(event);
   const int v = event->angleDelta().y();
   if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
-    zoomFov(v);
+    zoomFov(v, true);
   } else if (this->mouseCentricZoom) {
-    zoomCursor(pos.x(), pos.y(), v);
+    zoomCursor(pos.x(), pos.y(), v, true);
   } else {
     zoom(v, true);
   }
+}
+
+bool QGLView::event(QEvent *event)
+{
+  if (event->type() == QEvent::NativeGesture) {
+    auto *gestureEvent = static_cast<QNativeGestureEvent *>(event);
+    if (gestureEvent->gestureType() == Qt::ZoomNativeGesture) {
+      const QPointF pos = mapFromGlobal(gestureEvent->globalPosition());
+
+      // QApplication::keyboardModifiers is not updated correctly by gesture events. Use
+      // QGuiApplication::queryKeyboardModifiers instead.
+      if (QGuiApplication::queryKeyboardModifiers() & Qt::ShiftModifier) {
+        // From https://doc.qt.io/qt-6.9/qnativegestureevent.html:
+        // value is an incremental scaling factor, usually much less than 1, indicating that the target
+        // item should have its scale adjusted like this: item.scale = item.scale * (1 + event.value)
+
+        // tan(FOV / 2) is inversely proportional to apparent scale
+        const double fov = 2 * atan_degrees(tan_degrees(this->cam.fovValue() / 2) / (1 + gestureEvent->value()));
+        zoomFov(fov, false);
+      } else {
+        // Apparent scale is inversely proportional to viewer_distance
+        // ("zoom").
+        const double v = this->cam.zoomValue() / (1 + gestureEvent->value());
+        if (this->mouseCentricZoom) {
+          zoomCursor(pos.x(), pos.y(), v, false);
+        } else {
+          zoom(v, false);
+        }
+      }
+
+      return true;
+    }
+  }
+  return QOpenGLWidget::event(event);
 }
 
 void QGLView::ZoomIn()
@@ -473,17 +511,21 @@ void QGLView::zoom(double v, bool relative)
   emit cameraChanged();
 }
 
-void QGLView::zoomFov(double v)
+void QGLView::zoomFov(double v, bool relative)
 {
-  this->cam.setVpf(this->cam.fovValue() * pow(0.9, v / 120.0));
+  if (relative) {
+    this->cam.setVpf(this->cam.fovValue() * pow(0.9, v / 120.0));
+  } else {
+    this->cam.setVpf(v);
+  }
   update();
   emit cameraChanged();
 }
 
-void QGLView::zoomCursor(int x, int y, int zoom)
+void QGLView::zoomCursor(int x, int y, double zoom, bool relative)
 {
   const auto old_dist = cam.zoomValue();
-  this->cam.zoom(zoom, true);
+  this->cam.zoom(zoom, relative);
   const auto dist = cam.zoomValue();
   const auto ratio = old_dist / dist - 1.0;
   // screen coordinates from -1 to 1

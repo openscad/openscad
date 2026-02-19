@@ -73,7 +73,7 @@ void Camera::viewAll(const BoundingBox& bbox)
   }
 }
 
-void Camera::zoom(int zoom, bool relative)
+void Camera::zoom(double zoom, bool relative)
 {
   if (relative) {
     this->viewer_distance *= pow(0.9, zoom / 120.0);
