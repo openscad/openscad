@@ -490,8 +490,8 @@ double python_doublefunc(void *v_cbfunc, double arg)
 PyObject *python_fromopenscad(const Value& val)
 {
   switch (val.type()) {
-  case Value::Type::UNDEFINED: return Py_None;
-  case Value::Type::BOOL:      return val.toBool() ? Py_True : Py_False;
+  case Value::Type::UNDEFINED: Py_RETURN_NONE;
+  case Value::Type::BOOL:      if(val.toBool()) Py_RETURN_TRUE; else Py_RETURN_FALSE;
   case Value::Type::NUMBER:    return PyFloat_FromDouble(val.toDouble());
   case Value::Type::STRING:    return PyUnicode_FromString(val.toString().c_str());
   case Value::Type::VECTOR:    {
@@ -501,9 +501,9 @@ PyObject *python_fromopenscad(const Value& val)
     return result;
   }
     // TODO  more types RANGE, OBJECT, FUNCTION
-  default: return Py_None;
+  default: Py_RETURN_NONE;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 void python_catch_error(std::string& errorstr)
 {

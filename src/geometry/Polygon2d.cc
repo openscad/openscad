@@ -449,12 +449,12 @@ bool Polygon2d::point_inside(const Vector2d& pt) const
     for (int i = 0; i < n; i++) {
       Vector2d p1 = o.vertices[i];
       Vector2d p2 = o.vertices[(i + 1) % n];
-      if (fabs(p1[1] - p2[1]) > 1e-9) {
-        if (pt[1] < p1[1] && pt[1] > p2[1]) {
+      if (fabs(p1[1] - p2[1]) > 1e-9) { // not horizotal
+        if (pt[1] <= p1[1] && pt[1] > p2[1]) { // p2 ... pt .. p1
           double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
           if (x > pt[0]) cuts++;
         }
-        if (pt[1] < p2[1] && pt[1] > p1[1]) {
+        if (pt[1] < p2[1] && pt[1] >= p1[1]) { // p1 .. pt .. p2
           double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
           if (x > pt[0]) cuts++;
         }
