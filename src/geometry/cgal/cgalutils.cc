@@ -2,32 +2,31 @@
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
 #include "geometry/cgal/cgalutils.h"
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/cgal/cgal.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetUtils.h"
-#include "core/node.h"
-#include "utils/degree_trig.h"
-
-#include <cassert>
-#include <set>
-#include <utility>
-#include <memory>
 #include <CGAL/Aff_transformation_3.h>
-#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 #include <CGAL/Surface_mesh.h>
-
 #include <CGAL/config.h>
+#include <CGAL/convex_hull_3.h>
+#include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/version.h>
 
-#include <CGAL/convex_hull_3.h>
+#include <cassert>
+#include <cmath>
+#include <memory>
+#include <set>
+#include <utility>
 
-#include "geometry/Reindexer.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/Reindexer.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/linalg.h"
+#include "utils/degree_trig.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
@@ -42,6 +41,15 @@ namespace CGALUtils {
 // TODO: We could rewrite this to use PolygonMeshProcessing concepts, similar to how
 // we create Manifold geometries from PolySet; convert via Surface_mesh, check if it's closed,
 // use repair|orient_polygon_soup, etc.
+//
+// Overall approach:
+// 1. If the PolySet is convex, create the convex hull from its vertices. The idea is that this is is
+//    more likely to result in a good Nef Polyhedron than evaluating the faces.
+// 2. If the PolySet is known to be an epsilon-valid manifold, we can go through the new
+//    Surface_mesh-to-Nef path, which allows us to create Nef polyhedrons which are technically
+//    non-manifold (as that's a valid intermediate state).
+// 3. Otherwise, we try to create the Nef Polyhedron via the old Polyhedron_3 route, which requires the
+//    input to be manifold.
 std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps)
 {
   if (ps.isEmpty()) return std::make_unique<CGALNefGeometry>();
@@ -69,6 +77,13 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
     CGAL_Polyhedron r_exact;
     CGALUtils::copyPolyhedron(r, r_exact);
     return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(r_exact));
+  }
+
+  if (ps_tri->isManifold()) {
+    auto mesh = createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(*ps_tri);
+    assert(mesh->is_valid() && CGAL::is_closed(*mesh));
+    auto nef = convertSurfaceMeshToNef(*mesh);
+    return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(std::move(nef)));
   }
 
   std::shared_ptr<CGAL_Nef_polyhedron3> N;

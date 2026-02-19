@@ -1,7 +1,7 @@
 #pragma once
+#include <array>
 #include <map>
 #include <string>
-#include <array>
 
 namespace MouseConfig {
 
@@ -113,6 +113,7 @@ static std::map<ViewAction, std::string> viewActionNames = {
 
 const static int ACTION_DIMENSION = 14;
 static std::map<ViewAction, std::array<float, ACTION_DIMENSION>> viewActionArrays = {
+  // clang-format off
   {NONE,
    {
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
@@ -149,5 +150,6 @@ static std::map<ViewAction, std::array<float, ACTION_DIMENSION>> viewActionArray
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
      0.0f, 0.0f,                          // Zoom
    }},
+  // clang-format on
 };
 };  // namespace MouseConfig

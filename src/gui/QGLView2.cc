@@ -34,7 +34,10 @@
  */
 #include <QOpenGLContext>
 
-QOpenGLContext *getGLContext() { return (QOpenGLContext::currentContext()); }
+QOpenGLContext *getGLContext()
+{
+  return (QOpenGLContext::currentContext());
+}
 
 void setGLContext(QOpenGLContext *ctx)
 {

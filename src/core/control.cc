@@ -24,9 +24,11 @@
  *
  */
 
-#include <utility>
-#include <memory>
 #include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "core/Arguments.h"
@@ -35,12 +37,11 @@
 #include "core/Context.h"
 #include "core/ContextFrame.h"
 #include "core/Expression.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/node.h"
 #include "core/Parameters.h"
+#include "core/module.h"
+#include "core/node.h"
 #include "utils/printutils.h"
-#include <cstdint>
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
 {
@@ -74,35 +75,6 @@ static boost::optional<size_t> validChildIndex(const Value& value, const Childre
     return boost::none;
   }
   return validChildIndex(static_cast<int>(value.toDouble()), children, inst, context);
-}
-
-static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *inst,
-                                                   const std::shared_ptr<const Context>& context)
-{
-  LOG(message_group::Deprecated, "child() will be removed in future releases. Use children() instead.");
-
-  Arguments arguments{inst->arguments, context};
-
-  BuiltinModule::noChildren(inst, arguments);
-
-  Parameters parameters =
-    Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
-  const Children *children = context->user_module_children();
-  if (!children) {
-    // child() called outside any user module
-    return nullptr;
-  }
-
-  boost::optional<size_t> index;
-  if (!parameters.contains("index")) {
-    index = validChildIndex(0, children, inst, context);
-  } else {
-    index = validChildIndex(parameters["index"], children, inst, context);
-  }
-  if (!index) {
-    return nullptr;
-  }
-  return children->instantiate(lazyUnionNode(inst), {*index});
 }
 
 static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation *inst,
@@ -200,31 +172,6 @@ static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst
     .instantiate(lazyUnionNode(inst));
 }
 
-static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *inst,
-                                                    const std::shared_ptr<const Context>& context)
-{
-  // We create a new context to avoid arguments from influencing each other
-  // -> parallel evaluation. This is to be backwards compatible.
-  Arguments arguments{inst->arguments, context};
-  ContextHandle<Context> assignContext{Context::create<Context>(context)};
-  for (auto& argument : arguments) {
-    if (!argument.name) {
-      LOG(message_group::Warning, inst->location(), context->documentRoot(),
-          "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
-    } else {
-      if (assignContext->lookup_local_variable(*argument.name)) {
-        // TODO Should maybe quote the entire assignment with a new quoteExpr() or quoteStmt().
-        LOG(message_group::Warning, inst->location(), context->documentRoot(),
-            "Duplicate variable assignment %1$s = %2$s", quoteVar(*argument.name),
-            argument->toEchoStringNoThrow());
-      }
-      assignContext->set_variable(*argument.name, std::move(argument.value));
-    }
-  }
-
-  return Children(inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
-}
-
 static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst,
                                                  const std::shared_ptr<const Context>& context)
 {
@@ -268,9 +215,6 @@ static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst,
 
 void register_builtin_control()
 {
-  Builtins::init("assign", new BuiltinModule(builtin_assign));
-  Builtins::init("child", new BuiltinModule(builtin_child));
-
   Builtins::init("children", new BuiltinModule(builtin_children),
                  {
                    "children()",

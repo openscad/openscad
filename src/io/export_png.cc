@@ -1,8 +1,7 @@
-#include "io/export.h"
-
-#include <ostream>
+#include <cassert>
 #include <cstdio>
 #include <memory>
+#include <ostream>
 
 #include "core/Tree.h"
 #include "geometry/Geometry.h"
@@ -10,17 +9,19 @@
 #include "glview/Camera.h"
 #include "glview/CsgInfo.h"
 #include "glview/OffscreenView.h"
-#include "glview/Renderer.h"
 #include "glview/RenderSettings.h"
+#include "glview/Renderer.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifndef NULLGL
-#include "glview/cgal/CGALRenderer.h"
 #include "glview/PolySetRenderer.h"
+#include "glview/cgal/CGALRenderer.h"
 
 #ifdef ENABLE_OPENCSG
-#include "glview/preview/OpenCSGRenderer.h"
 #include <opencsg.h>
+
+#include "glview/preview/OpenCSGRenderer.h"
 #endif  // ENABLE_OPENCSG
 
 #include "glview/preview/ThrownTogetherRenderer.h"
@@ -137,6 +138,9 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 {
   return nullptr;
 }
-bool export_png(const OffscreenView& glview, std::ostream& output) { return false; }
+bool export_png(const OffscreenView& glview, std::ostream& output)
+{
+  return false;
+}
 
 #endif  // NULLGL

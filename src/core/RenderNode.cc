@@ -26,15 +26,15 @@
 
 #include "core/RenderNode.h"
 
+#include <boost/assign/std/vector.hpp>
+#include <memory>
+#include <utility>
+
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-
-#include <utility>
-#include <memory>
-#include <boost/assign/std/vector.hpp>
+#include "core/module.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *inst, Arguments arguments,
@@ -50,7 +50,10 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
   return children.instantiate(node);
 }
 
-std::string RenderNode::toString() const { return STR(this->name(), "(convexity = ", convexity, ")"); }
+std::string RenderNode::toString() const
+{
+  return STR(this->name(), "(convexity = ", convexity, ")");
+}
 
 void register_builtin_render()
 {

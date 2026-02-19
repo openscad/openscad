@@ -1,21 +1,20 @@
-#include "geometry/cgal/cgalutils.h"
-
-#include <unordered_map>
-#include <memory>
-#include <cstddef>
-#include <vector>
-
-#include <boost/range/adaptor/transformed.hpp>
 #include <CGAL/Point_3.h>
-#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
-#include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
-#include <CGAL/Surface_mesh.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
+#include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 
-#include "geometry/cgal/cgal.h"
-#include "geometry/linalg.h"
+#include <boost/range/adaptor/transformed.hpp>
+#include <cstddef>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+
 #include "geometry/PolySetBuilder.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/linalg.h"
 
 namespace CGALUtils {
 
@@ -55,14 +54,14 @@ std::shared_ptr<SurfaceMesh> createSurfaceMeshFromPolySet(const PolySet& ps)
     mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
   }
   for (const auto& face : ps.indices) {
+    // TODO(kintel): Technically, this could return nullface. Are we certain that won't happen here?
     mesh->add_face(face | boost::adaptors::transformed(
                             [](uint32_t i) { return typename SurfaceMesh::Vertex_index(i); }));
   }
   return mesh;
 }
 
-template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(
-  const PolySet& ps);
+template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet(const PolySet& ps);
 template std::shared_ptr<CGAL_Kernel3Mesh> createSurfaceMeshFromPolySet(const PolySet& ps);
 
 template <class SurfaceMesh>

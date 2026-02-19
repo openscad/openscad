@@ -1,16 +1,23 @@
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "utils/printutils.h"
-#include <sstream>
-#include <memory>
+
 #include <boost/foreach.hpp>
 #include <cstddef>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
-GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries)) {}
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
-std::unique_ptr<Geometry> GeometryList::copy() const { return std::make_unique<GeometryList>(*this); }
+GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
+{
+}
+
+std::unique_ptr<Geometry> GeometryList::copy() const
+{
+  return std::make_unique<GeometryList>(*this);
+}
 
 size_t GeometryList::memsize() const
 {

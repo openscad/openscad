@@ -25,13 +25,9 @@
  */
 
 #include "openscad_gui.h"
-#include <memory>
-#include <filesystem>
-#include <string>
-#include <vector>
 
-#include <QtGlobal>
-#include <Qt>
+#include <QtCore/qstringliteral.h>
+
 #include <QDialog>
 #include <QDir>
 #include <QFileInfo>
@@ -40,17 +36,25 @@
 #include <QIcon>
 #include <QObject>
 #include <QPalette>
-#include <QStyleHints>
 #include <QStringList>
+#include <QStyleHints>
+#include <Qt>
 #include <QtConcurrentRun>
+#include <QtGlobal>
+#include <array>
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "Feature.h"
-#include "core/parsersettings.h"
-#include "core/Settings.h"
 #include "FontCache.h"
+#include "core/Settings.h"
+#include "core/parsersettings.h"
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
 #include "gui/input/InputDriverManager.h"
+#include "version.h"
 #ifdef ENABLE_HIDAPI
 #include "gui/input/HidApiInputDriver.h"
 #endif
@@ -69,8 +73,8 @@
 #include "gui/LaunchingScreen.h"
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
-#include "gui/QSettingsCached.h"
 #include "gui/Preferences.h"
+#include "gui/QSettingsCached.h"
 #include "openscad.h"
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"
@@ -83,9 +87,6 @@ Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
 
 extern std::string arg_colorscheme;
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 
 namespace {
 
@@ -117,14 +118,17 @@ namespace {
 QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
 {
   if (fileName.empty()) return "";
-  auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
-  auto qsFile = QString::fromLocal8Bit(fileName.c_str());
+  auto qsDir = QString::fromStdString(absoluteBaseDir.generic_string());
+  auto qsFile = QString::fromStdString(fileName);
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   const QFileInfo fileInfo(qsDir, qsFile);
   return fileInfo.absoluteFilePath();
 }
 
-void dialogThreadFunc(FontCacheInitializer *initializer) { initializer->run(); }
+void dialogThreadFunc(FontCacheInitializer *initializer)
+{
+  initializer->run();
+}
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
@@ -158,7 +162,9 @@ void registerDefaultIcon(QString applicationFilePath)
                        QVariant(appPath));
 }
 #else
-void registerDefaultIcon(const QString&) {}
+void registerDefaultIcon(const QString&)
+{
+}
 #endif
 
 }  // namespace
@@ -179,7 +185,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QCoreApplication::setOrganizationName("OpenSCAD");
   QCoreApplication::setOrganizationDomain("openscad.org");
   QCoreApplication::setApplicationName("OpenSCAD");
-  QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+  QCoreApplication::setApplicationVersion(QString::fromStdString(std::string(openscad_versionnumber)));
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -250,6 +256,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
                    &OpenSCADApp::setApplicationFont);
+  QObject::connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, &app,
+                   &OpenSCADApp::setRenderBackend3D);
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;
@@ -260,7 +268,14 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
-  if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
+  bool showLauncher = noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool());
+#ifdef ENABLE_GUI_TESTS
+  if (gui_test != "none") {
+    showLauncher = false;
+  }
+#endif
+
+  if (showLauncher) {
     LaunchingScreen launcher;
     if (launcher.exec() == QDialog::Accepted) {
       if (launcher.isForceShowEditor()) {

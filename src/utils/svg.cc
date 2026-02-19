@@ -1,13 +1,12 @@
 #ifdef ENABLE_CGAL
 #include "utils/svg.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "geometry/cgal/cgalutils.h"
 
@@ -202,7 +201,10 @@ std::string point_dump(const CGAL::Sphere_point<CGAL_Kernel3>& p)
   return out.str();
 }
 
-std::string vert_dump(CGAL_Nef_polyhedron3::Vertex_const_handle vch) { return point_dump(vch->point()); }
+std::string vert_dump(CGAL_Nef_polyhedron3::Vertex_const_handle vch)
+{
+  return point_dump(vch->point());
+}
 
 std::string vert_dump(CGAL_Nef_polyhedron3::Nef_polyhedron_S2::SVertex_const_handle vch)
 {

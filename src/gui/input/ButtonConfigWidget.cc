@@ -32,13 +32,17 @@
 #include <QString>
 #include <QWidget>
 #include <cstddef>
+
 #include "core/Settings.h"
-#include "gui/input/InputDriverManager.h"
-#include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/SettingsWriter.h"
+#include "gui/input/InputDriverManager.h"
 #include "gui/input/InputEventMapper.h"
 
-ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
+ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
+{
+  setupUi(this);
+}
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const
 {
@@ -226,7 +230,10 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
   }
 }
 
-void ButtonConfigWidget::writeSettings() { Settings::Settings::visit(SettingsWriter()); }
+void ButtonConfigWidget::writeSettings()
+{
+  Settings::Settings::visit(SettingsWriter());
+}
 
 void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox,
                                             const Settings::SettingsEntryString& entry)

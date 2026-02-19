@@ -1,16 +1,16 @@
 #include "gui/ScadApi.h"
 
+#include <QDir>
+#include <QFileInfo>
 #include <QList>
+#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 #include <string>
-#include <QDir>
-#include <QFileInfo>
-#include <QRegularExpression>
 
 #include "core/Builtins.h"
-#include "gui/ScintillaEditor.h"
 #include "core/parsersettings.h"
+#include "gui/ScintillaEditor.h"
 
 namespace {
 
@@ -130,7 +130,9 @@ void ScadApi::autoCompleteFunctions(const QStringList& context, QStringList& lis
   }
 }
 
-void ScadApi::autoCompletionSelected(const QString& /*selection*/) {}
+void ScadApi::autoCompletionSelected(const QString& /*selection*/)
+{
+}
 
 QStringList ScadApi::callTips(const QStringList& context, int /*commas*/,
                               QsciScintilla::CallTipsStyle /*style*/, QList<int>& /*shifts*/)

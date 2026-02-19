@@ -1,12 +1,16 @@
 #include "core/NodeDumper.h"
-#include "core/State.h"
-#include "core/ModuleInstantiation.h"
+
 #include <algorithm>
+#include <boost/regex.hpp>
 #include <iterator>
 #include <ostream>
-#include <string>
 #include <sstream>
-#include <boost/regex.hpp>
+#include <string>
+
+#include "core/BaseVisitable.h"
+#include "core/ModuleInstantiation.h"
+#include "core/State.h"
+#include "core/node.h"
 
 void GroupNodeChecker::incChildCount(int groupNodeIndex)
 {
@@ -63,9 +67,15 @@ void NodeDumper::initCache()
   this->cache.clear();
 }
 
-void NodeDumper::finalizeCache() { this->cache.setRootString(this->dumpstream.str()); }
+void NodeDumper::finalizeCache()
+{
+  this->cache.setRootString(this->dumpstream.str());
+}
 
-bool NodeDumper::isCached(const AbstractNode& node) const { return this->cache.contains(node); }
+bool NodeDumper::isCached(const AbstractNode& node) const
+{
+  return this->cache.contains(node);
+}
 
 Response NodeDumper::visit(State& state, const GroupNode& node)
 {

@@ -1,28 +1,21 @@
 #include "geometry/GeometryEvaluator.h"
 
+#include <cassert>
+#include <cmath>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "Feature.h"
-#include "geometry/boolean_utils.h"
-#include "geometry/cgal/cgal.h"
-#include "geometry/ClipperUtils.h"
-#include "geometry/linalg.h"
-#include "geometry/linear_extrude.h"
-#include "geometry/Geometry.h"
-#include "geometry/GeometryCache.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetUtils.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetBuilder.h"
-#include "geometry/roof_ss.h"
-#include "geometry/roof_vd.h"
-#include "geometry/rotate_extrude.h"
-
-#include "glview/RenderSettings.h"
-
+#include "core/BaseVisitable.h"
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
-#include "core/ModuleInstantiation.h"
+#include "core/CurveDiscretizer.h"
 #include "core/LinearExtrudeNode.h"
+#include "core/ModuleInstantiation.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/RenderNode.h"
@@ -32,20 +25,32 @@
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
 #include "core/Tree.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/boolean_utils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/linalg.h"
+#include "geometry/linear_extrude.h"
+#include "geometry/roof_ss.h"
+#include "geometry/roof_vd.h"
+#include "geometry/rotate_extrude.h"
+#include "glview/RenderSettings.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
-
-#include <iterator>
-#include <cassert>
-#include <list>
-#include <utility>
-#include <memory>
 #ifdef ENABLE_CGAL
+#include <CGAL/Point_2.h>
+#include <CGAL/convex_hull_2.h>
+
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/cgalutils.h"
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/Point_2.h>
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -57,7 +62,9 @@ class Geometry;
 class Polygon2d;
 class Tree;
 
-GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) {}
+GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree)
+{
+}
 
 /*!
    Set allownef to false to force the result to _not_ be a Nef polyhedron
@@ -602,7 +609,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
       if (const auto polygon = applyToChildren2D(node, OpenSCADOperator::UNION)) {
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-        double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
+        double n = node.discretizer.getCircularSegmentCount(std::abs(node.delta)).value_or(3);
         double arc_tolerance = std::abs(node.delta) * (1 - cos_degrees(180 / n));
         geom = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit,
                                          arc_tolerance);
@@ -997,7 +1004,7 @@ static std::unique_ptr<Geometry> roofOverPolygon(const RoofNode& node, const Pol
 {
   std::unique_ptr<PolySet> roof;
   if (node.method == "voronoi") {
-    roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+    roof = roof_vd::voronoi_diagram_roof(poly, node.discretizer);
     roof->setConvexity(node.convexity);
   } else if (node.method == "straight") {
     roof = roof_ss::straight_skeleton_roof(poly);

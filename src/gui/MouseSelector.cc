@@ -1,11 +1,14 @@
 #include "gui/MouseSelector.h"
 
-#include "glview/system-gl.h"
-#include "glview/fbo.h"
-
 #include <cstdint>
-#include <string>
+#include <cstdio>
 #include <memory>
+#include <string>
+
+#include "glview/ShaderUtils.h"
+#include "glview/fbo.h"
+#include "glview/system-gl.h"
+#include "utils/printutils.h"
 /**
  * The selection is making use of a special shader, that renders each object in a color
  * that is derived from its index(), by using the first 24 bits of the identifier as a
@@ -69,6 +72,11 @@ void MouseSelector::setupFramebuffer(int width, int height)
   if (!this->framebuffer || this->framebuffer->width() != width ||
       this->framebuffer->height() != height) {
     this->framebuffer = createFBO(width, height);
+    if (!this->framebuffer) {
+      LOG(message_group::Error,
+          "MouseSelector: Failed to create framebuffer; disabling mouse selection.");
+      return;
+    }
     // We bind the framebuffer before initializing shaders since
     // shader validation requires a valid framebuffer.
     this->framebuffer->bind();
@@ -86,6 +94,8 @@ void MouseSelector::setupFramebuffer(int width, int height)
  */
 int MouseSelector::select(const Renderer *renderer, int x, int y)
 {
+  if (!this->framebuffer) return -1;
+
   // This function should render a frame, as usual, with the following changes:
   // * Render to as custom framebuffer
   // * The shader should be the selector shader

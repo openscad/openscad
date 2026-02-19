@@ -1,17 +1,19 @@
 #pragma once
 
 #include <QAction>
+#include <QColor>
+#include <QIcon>
 #include <QList>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QString>
 #include <QTimer>
 #include <QWidget>
 #include <string>
 
+#include "gui/input/InputDriverEvent.h"
 #include "gui/qtgettext.h"
 #include "ui_Animate.h"
-#include <QIcon>
-#include "gui/input/InputDriverEvent.h"
 
 class MainWindow;
 
@@ -80,9 +82,11 @@ private:
 signals:
 
 private slots:
-  void updatedAnimTval();
+  void on_e_tval_textChanged(const QString&);
+  void on_e_fps_textChanged(const QString&);
+  void on_e_fsteps_textChanged(const QString&);
+  void on_e_dump_toggled(bool checked);
   void updatedAnimFpsAndAnimSteps();
-  void updatedAnimDump(bool checked);
   void incrementTVal();
   void updateTVal();
   void on_pauseButton_pressed();

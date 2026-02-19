@@ -1,10 +1,10 @@
 #pragma once
-#include "core/Value.h"
-
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <unordered_map>
+#include <utility>
+
+#include "core/Value.h"
 
 // Wrapper for provide *futuristic* unordered_map features,
 // plus some functions specialized to our use case.

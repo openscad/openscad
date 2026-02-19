@@ -26,14 +26,15 @@
 
 #include "gui/ExportPdfDialog.h"
 
-#include <QString>
-#include <QDialog>
+#include <QApplication>
 #include <QColorDialog>
+#include <QDialog>
+#include <QString>
 
-#include "io/export.h"
 #include "core/Settings.h"
-#include "gui/UIUtils.h"
 #include "gui/SettingsWriter.h"
+#include "gui/UIUtils.h"
+#include "io/export.h"
 
 using S = Settings::SettingsExportPdf;
 
@@ -190,6 +191,12 @@ void ExportPdfDialog::on_toolButtonStrokeWidthReset_clicked()
   this->doubleSpinBoxStrokeWidth->setValue(this->defaultStrokeWidth);
 }
 
-void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked) { updateFillControlsEnabled(); }
+void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked)
+{
+  updateFillControlsEnabled();
+}
 
-void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked) { updateStrokeControlsEnabled(); }
+void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked)
+{
+  updateStrokeControlsEnabled();
+}

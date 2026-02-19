@@ -26,20 +26,28 @@
 
 #pragma once
 
+#include <QMouseEvent>
+#include <QPlainTextEdit>
+#include <QString>
 #include <QTextCursor>
 #include <QWidget>
-#include <QPlainTextEdit>
-#include <QMouseEvent>
-#include <QString>
+#include <utility>
 #include <vector>
-#include "utils/printutils.h"
+
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_Console.h"
+#include "utils/printutils.h"
 
 struct ConsoleMessageBlock {
   QString message;
   QString link;
   message_group group;
+  QString color;
+
+  ConsoleMessageBlock(QString& m, QString& l, message_group g, QString& c)
+    : message(std::move(m)), link(std::move(l)), group(g), color(std::move(c))
+  {
+  }
 };
 
 class Console : public QPlainTextEdit, public Ui::Console
@@ -55,6 +63,8 @@ public:
   Console(QWidget *parent = nullptr);
   QString clickedAnchor;
   void contextMenuEvent(QContextMenuEvent *event) override;
+
+  void wheelEvent(QWheelEvent *event) override;
 
   void mousePressEvent(QMouseEvent *e) override
   {
@@ -79,11 +89,13 @@ public:
 signals:
   void linkActivated(QString);
   void openFile(QString, int);
+  void openWindowRequested(const QString& window);
 
 public slots:
-  void actionClearConsole_triggered();
-  void actionSaveAs_triggered();
+  void on_actionClear_triggered();
+  void clear();
+  void on_actionSaveAs_triggered();
   void hyperlinkClicked(const QString& loc);
-  void setFont(const QString& fontFamily, uint ptSize);
+  void setConsoleFont(const QString& fontFamily, uint ptSize);
   void update();
 };

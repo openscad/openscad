@@ -14,10 +14,11 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Install dependencies
       run: |
+        which sudo || apt install -y sudo
         sudo apt update
         sudo apt -qq -y install clang-format
 
@@ -38,7 +39,7 @@ jobs:
 
     - name: Upload patch artifact
       if: steps.check.outcome == 'failure'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: beautify-patch
         path: ${{ runner.temp }}/beautify.patch

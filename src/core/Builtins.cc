@@ -1,14 +1,14 @@
 #include "core/Builtins.h"
 
-#include <unordered_map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "core/AST.h"
+#include "core/Expression.h"
 #include "core/function.h"
 #include "core/module.h"
-#include "core/Expression.h"
 
 std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
 
@@ -100,8 +100,6 @@ void Builtins::initialize()
   register_builtin_roof();
 #endif
   register_builtin_text();
-
-  this->deprecations.emplace("assign", "a regular assignment");
 }
 
 std::string Builtins::isDeprecated(const std::string& name) const
@@ -115,6 +113,10 @@ std::string Builtins::isDeprecated(const std::string& name) const
 Builtins::Builtins()
 {
   this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)));
+  // $fe doesn't need initializing because `undef` is treated identical to 0.0,
+  // but it could be used for feature detection when complete,
+  // but does have the problem that these are initialized only once in `openscad_main`,
+  // so enabling the feature wouldn't initialize the variable until the program is restarted.
   this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)));
   this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)));
   this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)));

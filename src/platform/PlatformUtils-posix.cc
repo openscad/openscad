@@ -1,18 +1,19 @@
-#include <iterator>
-#include <ios>
-#include <mutex>
-#include <string>
-#include <fstream>
-#include <unistd.h>
 #include <sys/resource.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 
-#include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <ios>
+#include <iterator>
+#include <mutex>
+#include <string>
 
-#include "version.h"
 #include "platform/PlatformUtils.h"
+#include "version.h"
 
 namespace fs = std::filesystem;
 
@@ -66,7 +67,10 @@ static std::string getXdgUserDir(const std::string& dir)
   return "";
 }
 
-std::string PlatformUtils::pathSeparatorChar() { return ":"; }
+std::string PlatformUtils::pathSeparatorChar()
+{
+  return ":";
+}
 
 std::string PlatformUtils::userDocumentsPath()
 {
@@ -271,4 +275,6 @@ const std::string PlatformUtils::sysinfo(bool extended)
   return result;
 }
 
-void PlatformUtils::ensureStdIO() {}
+void PlatformUtils::ensureStdIO()
+{
+}

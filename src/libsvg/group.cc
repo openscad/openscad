@@ -24,16 +24,21 @@
  */
 #include "libsvg/group.h"
 
-#include <sstream>
 #include <cstdlib>
-#include <string>
 #include <iostream>
+#include <sstream>
+#include <string>
+
+#include "libsvg/shape.h"
 
 namespace libsvg {
 
 const std::string group::name("g");
 
-void group::set_attrs(attr_map_t& attrs, void *context) { shape::set_attrs(attrs, context); }
+void group::set_attrs(attr_map_t& attrs, void *context)
+{
+  shape::set_attrs(attrs, context);
+}
 
 const std::string group::dump() const
 {

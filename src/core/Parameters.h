@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "core/Arguments.h"
 #include "core/AST.h"
+#include "core/Arguments.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
 #include "core/ContextFrame.h"
 
 /*
@@ -65,6 +67,9 @@ public:
 
   const std::string& documentRoot() const { return frame.documentRoot(); }
   const Location& location() const { return loc; }
+
+  static constexpr auto THIS_PARAMETER = "this";
+  static constexpr auto THIS_CONTEXT = "#THIS";
 
 private:
   Location loc;

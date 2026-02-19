@@ -30,19 +30,22 @@
 #include <QDoubleSpinBox>
 #include <QFont>
 #include <QProgressBar>
-#include <cmath>
 #include <QWidget>
+#include <cmath>
 #include <cstddef>
 #include <string>
 
 #include "core/Settings.h"
-#include "gui/input/InputDriverManager.h"
-#include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/InitConfigurator.h"
+#include "gui/SettingsWriter.h"
+#include "gui/input/InputDriverManager.h"
 #include "gui/input/InputEventMapper.h"
 
-AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
+AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
+{
+  setupUi(this);
+}
 
 void AxisConfigWidget::AxesChanged(int nr, double val) const
 {
@@ -75,11 +78,6 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const
 
 void AxisConfigWidget::init()
 {
-  connect(this->pushButtonAxisTrim, &QPushButton::clicked, this, &AxisConfigWidget::on_AxisTrim);
-  connect(this->pushButtonAxisTrimReset, &QPushButton::clicked, this,
-          &AxisConfigWidget::on_AxisTrimReset);
-  connect(this->pushButtonUpdate, &QPushButton::clicked, this, &AxisConfigWidget::updateStates);
-
   initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
   initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
   initComboBox(this->comboBoxTranslationZ, Settings::Settings::inputTranslationZ);
@@ -416,7 +414,7 @@ void AxisConfigWidget::on_doubleSpinBoxZoomGain_valueChanged(double val)
   writeSettings();
 }
 
-void AxisConfigWidget::on_AxisTrim()
+void AxisConfigWidget::on_pushButtonAxisTrim_clicked()
 {
   InputEventMapper::instance()->onAxisAutoTrim();
 
@@ -430,7 +428,7 @@ void AxisConfigWidget::on_AxisTrim()
   writeSettings();
 }
 
-void AxisConfigWidget::on_AxisTrimReset()
+void AxisConfigWidget::on_pushButtonAxisTrimReset_clicked()
 {
   InputEventMapper::instance()->onAxisTrimReset();
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
@@ -507,7 +505,15 @@ void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val,
   writeSettings();
 }
 
-void AxisConfigWidget::writeSettings() { Settings::Settings::visit(SettingsWriter()); }
+void AxisConfigWidget::writeSettings()
+{
+  Settings::Settings::visit(SettingsWriter());
+}
+
+void AxisConfigWidget::on_pushButtonUpdate_clicked()
+{
+  updateStates();
+}
 
 void AxisConfigWidget::updateStates()
 {

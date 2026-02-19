@@ -1,11 +1,18 @@
 #include "core/FunctionType.h"
 
 #include <ostream>
-#include "core/Value.h"
-#include "core/Expression.h"
 
-Value FunctionType::operator==(const FunctionType& other) const { return this == &other; }
-Value FunctionType::operator!=(const FunctionType& other) const { return this != &other; }
+#include "core/Expression.h"
+#include "core/Value.h"
+
+Value FunctionType::operator==(const FunctionType& other) const
+{
+  return this == &other;
+}
+Value FunctionType::operator!=(const FunctionType& other) const
+{
+  return this != &other;
+}
 Value FunctionType::operator<(const FunctionType& /*other*/) const
 {
   return Value::undef("operation undefined (function < function)");

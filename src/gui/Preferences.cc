@@ -26,53 +26,55 @@
 
 #include "gui/Preferences.h"
 
-#include <unordered_map>
-#include <vector>
+#include <QActionGroup>
+#include <QDialog>
+#include <QFileDialog>
 #include <QFont>
 #include <QFontComboBox>
-#include <QMainWindow>
-#include <QObject>
-#include <QDialog>
-#include <QSizePolicy>
-#include <QSpacerItem>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-#include <tuple>
-#include <cassert>
-#include <list>
-#include <QMenu>
-#include <QActionGroup>
-#include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QFileDialog>
-#include <QRegularExpression>
-#include <QRegularExpressionValidator>
-#include <QStatusBar>
-#include <QSettings>
-#include <QTextDocument>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QObject>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSettings>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QStatusBar>
+#include <QString>
+#include <QStringList>
+#include <QTextDocument>
+#include <QWidget>
 #include <boost/algorithm/string.hpp>
+#include <cassert>
+#include <list>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+#include "Feature.h"
 #include "OctoPrintApiKeyDialog.h"
+#include "core/Settings.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
-#include "Feature.h"
-#include "core/Settings.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
+#include <string>
+
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
+#include "gui/EditorColorMap.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/OctoPrint.h"
+#include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
-#include "gui/OctoPrint.h"
-#include "gui/IgnoreWheelWhenNotFocused.h"
-#include "gui/PrintService.h"
-
-#include <string>
 
 static const char *featurePropertyName = "FeatureProperty";
 
@@ -102,9 +104,17 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   QStringList renderColorSchemes;
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
-  syntaxHighlight->clear();
-  colorSchemeChooser->clear();
-  colorSchemeChooser->addItems(renderColorSchemes);
+  {
+    const BlockSignals<QComboBox *> blocker(syntaxHighlight);
+    syntaxHighlight->clear();
+    syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+  }
+
+  {
+    const BlockSignals<QListWidget *> blocker(colorSchemeChooser);
+    colorSchemeChooser->clear();
+    colorSchemeChooser->addItems(renderColorSchemes);
+  }
   init();
   AxisConfig->init();
   setupFeaturesPage();
@@ -181,6 +191,7 @@ void Preferences::init()
   this->defaultmap["view/hideAnimate"] = true;
   this->defaultmap["view/hideCustomizer"] = true;
   this->defaultmap["view/hideFontList"] = true;
+  this->defaultmap["view/hideColorList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
@@ -296,7 +307,10 @@ void Preferences::init()
   emit editorConfigChanged();
 }
 
-Preferences::~Preferences() { removeDefaultSettings(); }
+Preferences::~Preferences()
+{
+  removeDefaultSettings();
+}
 
 void Preferences::update()
 {
@@ -853,9 +867,9 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 void Preferences::on_comboBoxRenderBackend3D_activated(int val)
 {
   applyComboBox(this->comboBoxRenderBackend3D, val, Settings::Settings::renderBackend3D);
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
-      .value_or(DEFAULT_RENDERING_BACKEND_3D);
+  auto backend = renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
+                   .value_or(DEFAULT_RENDERING_BACKEND_3D);
+  emit renderBackend3DChanged(backend);
 }
 
 void Preferences::on_comboBoxToolbarExport3D_activated(int val)
@@ -1235,18 +1249,43 @@ void Preferences::writeSettings()
   fireEditorConfigChanged();
 }
 
-void Preferences::fireEditorConfigChanged() const { emit editorConfigChanged(); }
+void Preferences::fireEditorConfigChanged() const
+{
+  emit editorConfigChanged();
+}
+
+// Make sure Ctrl-W isn't passed up to MainWindow and only affects Preferences
+bool Preferences::event(QEvent *e)
+{
+  if (e->type() == QEvent::ShortcutOverride) {
+    QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+    if (ke->matches(QKeySequence::Close) || ke->key() == Qt::Key_Escape) {
+      e->accept();
+      return true;
+    }
+#ifdef Q_OS_MACOS
+    if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_Period) {
+      e->accept();
+      return true;
+    }
+#endif
+  }
+  return QMainWindow::event(e);
+}
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
+  if (e->matches(QKeySequence::Close) || e->key() == Qt::Key_Escape) {
+    close();
+    return;
+  }
 #ifdef Q_OS_MACOS
   if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
     close();
-  } else
-#endif
-    if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) || e->key() == Qt::Key_Escape) {
-    close();
+    return;
   }
+#endif
+  QMainWindow::keyPressEvent(e);
 }
 
 void Preferences::showEvent(QShowEvent *e)
@@ -1442,24 +1481,11 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-bool Preferences::hasHighlightingColorScheme() const
-{
-  return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
-}
-
-void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
-{
-  auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
-  combobox->clear();
-  combobox->addItems(colorSchemes);
-}
-
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 {
-  uint savedsize = getValue(setting).toUInt();
-  const QFontDatabase db;
+  const uint savedsize = getValue(setting).toUInt();
   BlockSignals<QComboBox *> box{boxarg};
-  for (auto size : db.standardSizes()) {
+  for (auto size : QFontDatabase::standardSizes()) {
     box->addItem(QString::number(size));
     if (static_cast<uint>(size) == savedsize) {
       box->setCurrentIndex(box->count() - 1);

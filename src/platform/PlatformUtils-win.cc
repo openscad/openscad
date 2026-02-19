@@ -1,12 +1,11 @@
-#include "platform/PlatformUtils.h"
-
 #include <filesystem>
 #include <ios>
-#include <string>
 #include <map>
+#include <string>
 
-#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
 #include "utils/findversion.h"
+#include "utils/printutils.h"
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif
@@ -24,39 +23,9 @@
 
 #include "version.h"
 
-std::string PlatformUtils::pathSeparatorChar() { return ";"; }
-
-// convert from windows api w_char strings (usually utf16) to utf8 std::string
-std::string winapi_wstr_to_utf8(std::wstring wstr)
+std::string PlatformUtils::pathSeparatorChar()
 {
-  UINT CodePage = CP_UTF8;
-  DWORD dwFlags = 0;
-  LPCWSTR lpWideCharStr = &wstr[0];
-  int cchWideChar = static_cast<int>(wstr.size());
-  LPSTR lpMultiByteStr = nullptr;
-  int cbMultiByte = 0;
-  LPCSTR lpDefaultChar = nullptr;
-  LPBOOL lpUsedDefaultChar = nullptr;
-
-  int numbytes = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
-                                     cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
-
-  // LOG(message_group::NONE,,"utf16 to utf8 conversion: numbytes %1$i",numbytes);
-
-  std::string utf8_str(numbytes, 0);
-  lpMultiByteStr = &utf8_str[0];
-  cbMultiByte = numbytes;
-
-  int result = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
-                                   cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
-
-  if (result != numbytes) {
-    DWORD errcode = GetLastError();
-    LOG(message_group::Error, "Error converting w_char str to utf8 string");
-    LOG(message_group::Error, "error code %1$i", errcode);
-  }
-
-  return utf8_str;
+  return ";";
 }
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
@@ -82,7 +51,10 @@ static const std::string getFolderPath(int nFolder)
   return "";
 }
 
-std::string PlatformUtils::userDocumentsPath() { return documentsPath(); }
+std::string PlatformUtils::userDocumentsPath()
+{
+  return documentsPath();
+}
 
 // retrieve the path to 'My Documents' for the current user under windows
 // In XP this is 'c:\documents and settings\username\my documents'
@@ -107,7 +79,10 @@ std::string PlatformUtils::userConfigPath()
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
-unsigned long PlatformUtils::stackLimit() { return STACK_LIMIT_DEFAULT; }
+unsigned long PlatformUtils::stackLimit()
+{
+  return STACK_LIMIT_DEFAULT;
+}
 
 // NOLINTNEXTLINE(modernize-use-using)
 typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
@@ -201,12 +176,16 @@ const std::string PlatformUtils::sysinfo(bool extended)
 }
 
 #include <io.h>
+
 #include <cstdio>
 
 #ifdef USE_MIMALLOC
 #include <mimalloc.h>
 // mimalloc needs an output handler that references stderr after we mess with it.
-static void mi_output(const char *msg, void *arg) { fputs(msg, stderr); }
+static void mi_output(const char *msg, void *arg)
+{
+  fputs(msg, stderr);
+}
 #endif
 
 // attach to parent console if standard IO handles not available

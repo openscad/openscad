@@ -37,6 +37,7 @@
 #include <mpfr.h>
 #endif
 
+#include "utils/printutils.h"
 #include "glview/system-gl.h"
 #include "core/Selection.h"
 #include "geometry/cgal/cgalutils.h"
@@ -45,12 +46,12 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "glview/ColorMap.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/VBORenderer.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"
 #include "glview/VBOBuilder.h"
 #include "glview/VertexState.h"
+#include "utils/vector_math.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"
@@ -305,12 +306,16 @@ std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& nea
                                                              int /*mouse_y*/, double tolerance)
 {
   std::vector<SelectedObject> results;
-  double dist_near;
   double dist_nearest = NAN;
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
+
+  // This only considers vertices near the line containing near_pt and far_pt, and chooses either the
+  // first one it iterates past which is on the near side of `near_pt` (due to clamping of dist_near) or
+  // the one with the closest tangent intersection to `near_pt`, if none are on the near side.
   for (const auto& ps : this->polysets_) {
     for (const auto& pt : ps->vertices) {
+      double dist_near;
       const double dist_pt = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
       if (dist_pt < tolerance) {
         if (isnan(dist_nearest) || dist_near < dist_nearest) {
@@ -321,6 +326,7 @@ std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& nea
     }
   }
   if (!isnan(dist_nearest)) {
+    // We found an acceptable vertex.
     const SelectedObject obj = {
       .type = SelectionType::SELECTION_POINT,
       .p1 = pt1_nearest,
@@ -334,19 +340,25 @@ std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& nea
       for (int i = 0; i < n; i++) {
         const int ind1 = pol[i];
         const int ind2 = pol[(i + 1) % n];
-        double dist_lat;
-        const double dist_norm = std::fabs(
-          calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt, dist_lat));
-        if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
-          dist_nearest = dist_lat;
+        double parametric_t;
+        const double dist_norm = std::fabs(calculateLineLineDistance(
+          ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt, parametric_t));
+        if (parametric_t >= 0 && parametric_t <= 1 && dist_norm < tolerance) {
+          // The closest point falls on the line segment from
+          // ps->vertices[ind1] to ps->vertices[ind2],
+          // and it's less than tolerance away.
+          dist_nearest = parametric_t;
           pt1_nearest = ps->vertices[ind1];
           pt2_nearest = ps->vertices[ind2];
+          // I don't know why we don't break out of the top for loop.
+          // Is there anything special about picking the last answer instead of the first?
         }
       }
     }
   }
 
   if (!isnan(dist_nearest)) {
+    // We found an acceptable line segment.
     const SelectedObject obj = {
       .type = SelectionType::SELECTION_LINE,
       .p1 = pt1_nearest,

@@ -1,41 +1,43 @@
 #pragma once
 
-#include <ctime>
-#include <tuple>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include <QAction>
 #include <QCloseEvent>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QElapsedTimer>
 #include <QEvent>
 #include <QFile>
+#include <QIODevice>
+#include <QIcon>
 #include <QLabel>
 #include <QList>
+#include <QMainWindow>
 #include <QMap>
+#include <QMutex>
 #include <QObject>
 #include <QPoint>
+#include <QShortcut>
+#include <QSignalMapper>
+#include <QSoundEffect>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryFile>
+#include <QTime>
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
-#include <QMainWindow>
-#include <QElapsedTimer>
-#include <QIcon>
-#include <QIODevice>
-#include <QMutex>
-#include <QSoundEffect>
-#include <QTime>
-#include <QSignalMapper>
-#include <QShortcut>
+#include <ctime>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "core/Context.h"
-#include "glview/Renderer.h"
 #include "core/SourceFile.h"
+#include "glview/Camera.h"
+#include "glview/Renderer.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QSvgPlugin)
@@ -51,22 +53,22 @@ class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
 
+#include "RenderStatistic.h"
 #include "core/Tree.h"
 #include "geometry/Geometry.h"
 #include "gui/Editor.h"
-#include "gui/input/InputDriverEvent.h"
 #include "gui/Measurement.h"
-#include "gui/qt-obsolete.h"  // IWYU pragma: keep
-#include "gui/qtgettext.h"    // IWYU pragma: keep
 #include "gui/RubberBandManager.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/qt-obsolete.h"  // IWYU pragma: keep
+#include "gui/qtgettext.h"    // IWYU pragma: keep
+#include "io/export.h"
 #include "io/export_enums.h"
-#include "io/export.h"
-#include "io/export.h"
-#include "RenderStatistic.h"
 #include "ui_MainWindow.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 
 class UXTest;
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -97,7 +99,7 @@ public:
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
   Tree tree;
-  EditorInterface *activeEditor;
+  EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> rootGeom;
@@ -109,13 +111,13 @@ public:
 
   QString lastCompiledDoc;
 
-  QAction *actionRecentFile[UIUtils::maxRecentFiles];
+  std::vector<QAction *> fileActionRecentFiles;
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
   QLabel *versionLabel;
 
-  Measurement meas;
+  Measurement::Measurement meas;
 
   int compileErrors;
   int compileWarnings;
@@ -126,13 +128,32 @@ public:
 private:
   RubberBandManager rubberBandManager;
 
-  std::vector<std::tuple<Dock *, QString, QString>> docks;
+  std::vector<std::pair<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                    EditorSelectionIndicatorStatus status);
+
+  void setupWindow();
+  void setupCoreSubsystems();
+  void setupStatusBar();
+  void setupConsole();
+  void setupErrorLog();
+  void setupEditor(const QStringList& filenames);
+  void setupCustomizer();
+  void setupAnimate();
+  void setupFontList();
+  void setupColorList();
+  void setupViewportControl();
+  void setupPreferences();
+  void setup3DView();
+  void setupInput();
+  void setupDocks();
+  void setupMenusAndActions();
+  void restoreWindowState();
+  void openRemainingFiles(const QStringList& filenames);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -219,6 +240,9 @@ private:
   void activateDock(Dock *);
   Dock *findVisibleDockToActivate(int offset) const;
   Dock *getNextDockFromSender(QObject *sender);
+  void addExportActions(QToolBar *toolbar, QAction *action) const;
+  QAction *formatIdentifierToAction(const std::string& identifier) const;
+  QString getDockBaseName(const QString& title) const;
 
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};
@@ -231,36 +255,35 @@ public slots:
   void handleFileDrop(const QUrl& url);
 
 private slots:
-  void actionOpen();
-  void actionNewWindow();
-  void actionOpenWindow();
+  void on_fileActionOpen_triggered();
+  void on_fileActionNewWindow_triggered();
+  void on_fileActionOpenWindow_triggered();
   void actionOpenRecent();
   void actionOpenExample();
-  void clearRecentFiles();
-  void actionSave();
-  void actionSaveAs();
-  void actionPythonRevokeTrustedFiles();
-  void actionPythonCreateVenv();
-  void actionPythonSelectVenv();
-  void actionSaveACopy();
-  void actionReload();
-  void actionShowLibraryFolder();
-  void convertTabsToSpaces();
-  void copyText();
+  void on_fileActionClearRecent_triggered();
+  void on_fileActionSave_triggered();
+  void on_fileActionSaveAs_triggered();
+  void on_fileActionPythonRevoke_triggered();
+  void on_fileActionPythonCreateVenv_triggered();
+  void on_fileActionPythonSelectVenv_triggered();
+  void on_fileActionSaveACopy_triggered();
+  void on_fileActionReload_triggered();
+  void on_fileShowLibraryFolder_triggered();
+  void on_editActionConvertTabsToSpaces_triggered();
+  void on_editActionCopy_triggered();
 
   void instantiateRoot();
   void compileDone(bool didchange);
   void compileEnded();
-  void changeParameterWidget();
 
 private slots:
-  void copyViewportTranslation();
-  void copyViewportRotation();
-  void copyViewportDistance();
-  void copyViewportFov();
-  void preferences();
-  void hideEditorToolbar();
-  void hide3DViewToolbar();
+  void on_editActionCopyVPT_triggered();
+  void on_editActionCopyVPR_triggered();
+  void on_editActionCopyVPD_triggered();
+  void on_editActionCopyVPF_triggered();
+  void on_editActionPreferences_triggered();
+  void on_viewActionHideEditorToolBar_toggled(bool checked);
+  void on_viewActionHide3DViewToolBar_toggled(bool checked);
   void showLink(const QString&);
 
   // Handle the Next/Prev dock menu action when the is hovered, currently this activate the rubberband
@@ -273,29 +296,33 @@ private slots:
   // Handle the Next/Prev shortcut, currently switch to the targetted dock
   // and adds the rubberband, the rubbreband is removed on shortcut key release.
   void onWindowShortcutNextPrevActivated();
+  void onWindowShortcutExport3DActivated();
 
   void onEditorDockVisibilityChanged(bool isVisible);
   void onConsoleDockVisibilityChanged(bool isVisible);
   void onErrorLogDockVisibilityChanged(bool isVisible);
   void onAnimateDockVisibilityChanged(bool isVisible);
   void onFontListDockVisibilityChanged(bool isVisible);
+  void onColorListDockVisibilityChanged(bool isVisible);
   void onViewportControlDockVisibilityChanged(bool isVisible);
   void onParametersDockVisibilityChanged(bool isVisible);
+
+  void onColorListColorSelected(const QString&);
 
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
 
 public slots:
   void hideFind();
-  void actionShowFind();
-  void actionShowFindAndReplace();
+  void on_editActionFind_triggered();
+  void on_editActionFindAndReplace_triggered();
 
 private slots:
   void actionSelectFind(int);
   void findString(const QString&);
-  void findNext();
-  void findPrev();
-  void useSelectionForFind();
+  void on_editActionFindNext_triggered();
+  void on_editActionFindPrevious_triggered();
+  void on_editActionUseSelectionForFind_triggered();
   void replace();
   void replaceAll();
 
@@ -309,31 +336,37 @@ protected:
 
 public slots:
   void actionRenderPreview();
+  void on_designActionPreview_triggered();
 private slots:
   void csgRender();
   void csgReloadRender();
-  void action3DPrint();
+  void on_designAction3DPrint_triggered();
   void sendToExternalTool(class ExternalToolInterface& externalToolService);
-  void actionRender();
+  void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
-  void actionMeasureDistance();
-  void actionMeasureAngle();
-  void actionCheckValidity();
-  void actionDisplayAST();
-  void actionDisplayCSGTree();
-  void actionDisplayCSGProducts();
+  void handleMeasurementClicked(QAction *clickedAction);
+  void on_designCheckValidity_triggered();
+  void on_designActionDisplayAST_triggered();
+  void on_designActionDisplayCSGTree_triggered();
+  void on_designActionDisplayCSGProducts_triggered();
   bool canExport(unsigned int dim);
   void actionExport(unsigned int dim, ExportInfo& exportInfo);
   void actionExportFileFormat(int fmt);
-  void actionCopyViewport();
-  void actionFlushCaches();
+  void on_editActionCopyViewport_triggered();
+  void on_designActionFlushCaches_triggered();
 
 public:
   void viewModeActionsUncheck();
   void setCurrentOutput();
   void clearCurrentOutput();
   void hideCurrentOutput();
+  auto scopedSetCurrentOutput()
+  {
+    setCurrentOutput();
+    return sg::make_scope_guard([this] { clearCurrentOutput(); });
+  }
+
   bool isEmpty();
 
   void onAxisChanged(InputEventAxisChanged *event) override;
@@ -351,6 +384,7 @@ public:
 
 public slots:
   void actionReloadRenderPreview();
+  void on_designActionReloadAndPreview_triggered();
   void on_toolButtonCompileResultClose_clicked();
   void processEvents();
   void jumpToLine(int, int);
@@ -359,41 +393,43 @@ public slots:
   void viewModeRender();
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
+  void on_viewActionPreview_triggered();
 #endif
   void viewModeThrownTogether();
-  void viewModeShowEdges();
-  void viewModeShowAxes();
-  void viewModeShowCrosshairs();
-  void viewModeShowScaleProportional();
-  void viewAngleTop();
-  void viewAngleBottom();
-  void viewAngleLeft();
-  void viewAngleRight();
-  void viewAngleFront();
-  void viewAngleBack();
-  void viewAngleDiagonal();
-  void viewCenter();
-  void viewPerspective();
-  void viewOrthogonal();
+  void on_viewActionThrownTogether_triggered();
+  void updateViewModeAfterGLInit();
+  void on_viewActionShowEdges_toggled(bool checked);
+  void on_viewActionShowAxes_toggled(bool checked);
+  void on_viewActionShowScaleProportional_toggled(bool checked);
+  void on_viewActionShowCrosshairs_toggled(bool checked);
+  void on_viewActionTop_triggered();
+  void on_viewActionBottom_triggered();
+  void on_viewActionLeft_triggered();
+  void on_viewActionRight_triggered();
+  void on_viewActionFront_triggered();
+  void on_viewActionBack_triggered();
+  void on_viewActionDiagonal_triggered();
+  void on_viewActionCenter_triggered();
+  void on_viewActionPerspective_triggered();
+  void on_viewActionOrthogonal_triggered();
   void viewTogglePerspective();
-  void viewResetView();
-  void viewAll();
+  void on_viewActionResetView_triggered();
+  void on_viewActionViewAll_triggered();
   void editorContentChanged();
   void leftClick(QPoint coordinate);
   void rightClick(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;
-  void helpAbout();
-  void helpHomepage();
-  void helpManual();
-  void helpOfflineManual();
-  void helpCheatSheet();
-  void helpOfflineCheatSheet();
-  void helpLibrary();
-  void helpFontInfo();
+  void on_helpActionAbout_triggered();
+  void on_helpActionHomepage_triggered();
+  void on_helpActionManual_triggered();
+  void on_helpActionOfflineManual_triggered();
+  void on_helpActionCheatSheet_triggered();
+  void on_helpActionOfflineCheatSheet_triggered();
+  void on_helpActionLibraryInfo_triggered();
   void checkAutoReload();
   void waitAfterReload();
-  void autoReloadSet(bool);
+  void on_designActionAutoReload_toggled(bool);
 
 private:
   bool network_progress_func(const double permille);
@@ -432,6 +468,13 @@ private:
   QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
+
+  void resetMeasurementsState(bool enable, const QString& tooltipMessage);
+  QActionGroup *measurementGroup;
+  QAction *activeMeasurement = nullptr;
+
+  QActionGroup *viewActionProjectionGroup;
+  QActionGroup *previewModeGroup;
 
 signals:
   void highlightError(int);

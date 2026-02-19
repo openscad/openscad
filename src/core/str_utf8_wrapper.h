@@ -1,13 +1,13 @@
 #pragma once
 
-#include <iterator>
-#include <utility>
-#include <cstdint>
+#include <glib.h>
+
 #include <cstddef>
+#include <cstdint>
+#include <iterator>
 #include <memory>
 #include <string>
-
-#include <glib.h>
+#include <utility>
 
 class str_utf8_wrapper
 {

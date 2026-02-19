@@ -1,5 +1,6 @@
 #include "glview/VBOBuilder.h"
 
+#include <cmath>
 #include <unordered_map>
 #include <cstring>
 #include <cassert>
@@ -32,7 +33,9 @@ Vector3d uniqueMultiply(std::unordered_map<Vector3d, Vector3d>& vert_mult_map, c
 
 }  // namespace
 
-void addAttributeValues(IAttributeData&) {}
+void addAttributeValues(IAttributeData&)
+{
+}
 
 void VertexData::getLastVertex(std::vector<GLbyte>& interleaved_buffer) const
 {

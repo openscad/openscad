@@ -25,8 +25,11 @@
  */
 
 #include "gui/QGLView.h"
+#include <cmath>
+#include <memory>
 #include <QtCore/qpoint.h>
 
+#include "core/Selection.h"
 #include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"
@@ -69,7 +72,10 @@
 #include "gui/qt-obsolete.h"
 #include "gui/Measurement.h"
 
-QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent) { init(); }
+QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
+{
+  init();
+}
 
 QGLView::~QGLView()
 {
@@ -87,7 +93,10 @@ void QGLView::init()
   setMouseTracking(true);
 }
 
-void QGLView::resetView() { cam.resetView(); }
+void QGLView::resetView()
+{
+  cam.resetView();
+}
 
 void QGLView::viewAll()
 {
@@ -118,9 +127,14 @@ void QGLView::initializeGL()
   }
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
 #endif  // ifdef USE_GLAD
+
+  PRINTD(gl_dump());
+
   GLView::initializeGL();
 
   this->selector = std::make_unique<MouseSelector>(this);
+
+  emit initialized();
 }
 
 std::string QGLView::getRendererInfo() const
@@ -203,7 +217,11 @@ void QGLView::mousePressEvent(QMouseEvent *event)
   }
 
   mouse_drag_active = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  last_mouse = event->globalPosition();
+#else
   last_mouse = event->globalPos();
+#endif
 }
 
 /*
@@ -301,8 +319,12 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  auto this_mouse = event->globalPosition();
+#else
   auto this_mouse = event->globalPos();
-  if (measure_state != MEASURE_IDLE) {
+#endif
+  if (measure_state != Measurement::MEASURE_IDLE) {
     QPoint pt = event->pos();
     this->shown_obj = findObject(pt.x(), pt.y());
     update();
@@ -416,7 +438,10 @@ const QImage& QGLView::grabFrame()
   return this->frame;
 }
 
-bool QGLView::save(const char *filename) const { return this->frame.save(filename, "PNG"); }
+bool QGLView::save(const char *filename) const
+{
+  return this->frame.save(filename, "PNG");
+}
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
@@ -431,9 +456,15 @@ void QGLView::wheelEvent(QWheelEvent *event)
   }
 }
 
-void QGLView::ZoomIn() { zoom(120, true); }
+void QGLView::ZoomIn()
+{
+  zoom(120, true);
+}
 
-void QGLView::ZoomOut() { zoom(-120, true); }
+void QGLView::ZoomOut()
+{
+  zoom(-120, true);
+}
 
 void QGLView::zoom(double v, bool relative)
 {

@@ -1,36 +1,45 @@
 #include "gui/TabManager.h"
 
 #include <QApplication>
-#include <QPoint>
-#include <QTabBar>
-#include <QWidget>
-#include <cassert>
-#include <functional>
-#include <exception>
-#include <QFileInfo>
-#include <QFile>
-#include <QDir>
-#include <QSaveFile>
-#include <QShortcut>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QClipboard>
-#include <QDesktopServices>
+#include <QStringBuilder>
+#include <string>
+#include <tuple>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QKeyCombination>
+#endif
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
+#include <QByteArray>
+#include <QClipboard>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QPoint>
+#include <QSaveFile>
+#include <QShortcut>
+#include <QStringList>
+#include <QTabBar>
+#include <QTextStream>
+#include <QWidget>
+#include <cassert>
+#include <cstddef>
+#include <exception>
+#include <functional>
+
 #include "gui/Editor.h"
 #include "gui/ImportUtils.h"
-#include "gui/ScintillaEditor.h"
-#include "gui/Preferences.h"
 #include "gui/MainWindow.h"
-
-#include <cstddef>
+#include "gui/Preferences.h"
+#include "gui/ScintillaEditor.h"
+#include "utils/printutils.h"
 
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
-  par = o;
+  parent = o;
 
   tabWidget = new QTabWidget();
   tabWidget->setTabsClosable(true);
@@ -44,6 +53,9 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::stopAnimation);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
+
+  connect(parent->editActionZoomTextIn, &QAction::triggered, this, &TabManager::zoomIn);
+  connect(parent->editActionZoomTextOut, &QAction::triggered, this, &TabManager::zoomOut);
 
   createTab(filename);
 
@@ -112,7 +124,7 @@ void TabManager::closeCurrentTab()
 
   /* Close tab or close the current window if only one tab is open. */
   if (tabWidget->count() > 1) this->closeTabRequested(tabWidget->currentIndex());
-  else par->close();
+  else parent->close();
 }
 
 void TabManager::nextTab()
@@ -129,8 +141,8 @@ void TabManager::prevTab()
 
 void TabManager::actionNew()
 {
-  if (!par->editorDock->isVisible())
-    par->editorDock->setVisible(true);  // if editor hidden, make it visible
+  if (!parent->editorDock->isVisible())
+    parent->editorDock->setVisible(true);  // if editor hidden, make it visible
   createTab("");
 }
 
@@ -155,27 +167,34 @@ void TabManager::open(const QString& filename)
 
 void TabManager::createTab(const QString& filename)
 {
-  assert(par != nullptr);
+  assert(parent != nullptr);
 
   auto scintillaEditor = new ScintillaEditor(tabWidget);
   editor = scintillaEditor;
-  par->activeEditor = editor;
-  editor->parameterWidget = new ParameterWidget(par->parameterDock);
-  connect(editor->parameterWidget, &ParameterWidget::parametersChanged, par,
+  parent->activeEditor = editor;
+  editor->parameterWidget = new ParameterWidget(parent->parameterDock);
+  connect(editor->parameterWidget, &ParameterWidget::parametersChanged, parent,
           &MainWindow::actionRenderPreview);
-  par->parameterDock->setWidget(editor->parameterWidget);
+  parent->parameterDock->setWidget(editor->parameterWidget);
 
   // clearing default mapping of keyboard shortcut for font size
   QsciCommandSet *qcmdset = scintillaEditor->qsci->standardCommands();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  QsciCommand *qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Plus).toCombined());
+  qcmd->setKey(0);
+  qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Minus).toCombined());
+  qcmd->setKey(0);
+#else
   QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
   qcmd->setKey(0);
   qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
   qcmd->setKey(0);
+#endif
 
-  connect(scintillaEditor, &ScintillaEditor::uriDropped, par, &MainWindow::handleFileDrop);
-  connect(scintillaEditor, &ScintillaEditor::previewRequest, par, &MainWindow::actionRenderPreview);
+  connect(scintillaEditor, &ScintillaEditor::uriDropped, parent, &MainWindow::handleFileDrop);
+  connect(scintillaEditor, &ScintillaEditor::previewRequest, parent, &MainWindow::actionRenderPreview);
   connect(editor, &EditorInterface::showContextMenuEvent, this, &TabManager::showContextMenuEvent);
-  connect(editor, &EditorInterface::focusIn, this, [this]() { par->setLastFocus(editor); });
+  connect(editor, &EditorInterface::focusIn, this, [this]() { parent->setLastFocus(editor); });
 
   connect(GlobalPreferences::inst(), &Preferences::editorConfigChanged, scintillaEditor,
           &ScintillaEditor::applySettings);
@@ -186,11 +205,8 @@ void TabManager::createTab(const QString& filename)
   scintillaEditor->applySettings();
   editor->addTemplate();
 
-  connect(par->editActionZoomTextIn, &QAction::triggered, editor, &EditorInterface::zoomIn);
-  connect(par->editActionZoomTextOut, &QAction::triggered, editor, &EditorInterface::zoomOut);
-
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::updateActionUndoState);
-  connect(editor, &EditorInterface::contentsChanged, par, &MainWindow::editorContentChanged);
+  connect(editor, &EditorInterface::contentsChanged, parent, &MainWindow::editorContentChanged);
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::setContentRenderState);
   connect(editor, &EditorInterface::modificationChanged, this, &TabManager::onTabModified);
   connect(editor->parameterWidget, &ParameterWidget::modificationChanged,
@@ -223,41 +239,95 @@ void TabManager::createTab(const QString& filename)
   emit tabCountChanged(editorList.size());
 }
 
-size_t TabManager::count() { return tabWidget->count(); }
+size_t TabManager::count()
+{
+  return tabWidget->count();
+}
 
-void TabManager::highlightError(int i) { editor->highlightError(i); }
+void TabManager::highlightError(int i)
+{
+  editor->highlightError(i);
+}
 
-void TabManager::unhighlightLastError() { editor->unhighlightLastError(); }
+void TabManager::unhighlightLastError()
+{
+  editor->unhighlightLastError();
+}
 
-void TabManager::undo() { editor->undo(); }
+void TabManager::undo()
+{
+  editor->undo();
+}
 
-void TabManager::redo() { editor->redo(); }
+void TabManager::redo()
+{
+  editor->redo();
+}
 
-void TabManager::cut() { editor->cut(); }
+void TabManager::cut()
+{
+  editor->cut();
+}
 
-void TabManager::copy() { editor->copy(); }
+void TabManager::copy()
+{
+  editor->copy();
+}
 
-void TabManager::paste() { editor->paste(); }
+void TabManager::paste()
+{
+  editor->paste();
+}
 
-void TabManager::indentSelection() { editor->indentSelection(); }
+void TabManager::indentSelection()
+{
+  editor->indentSelection();
+}
 
-void TabManager::unindentSelection() { editor->unindentSelection(); }
+void TabManager::unindentSelection()
+{
+  editor->unindentSelection();
+}
 
-void TabManager::commentSelection() { editor->commentSelection(); }
+void TabManager::commentSelection()
+{
+  editor->commentSelection();
+}
 
-void TabManager::uncommentSelection() { editor->uncommentSelection(); }
+void TabManager::uncommentSelection()
+{
+  editor->uncommentSelection();
+}
 
-void TabManager::toggleBookmark() { editor->toggleBookmark(); }
+void TabManager::toggleBookmark()
+{
+  editor->toggleBookmark();
+}
 
-void TabManager::nextBookmark() { editor->nextBookmark(); }
+void TabManager::nextBookmark()
+{
+  editor->nextBookmark();
+}
 
-void TabManager::prevBookmark() { editor->prevBookmark(); }
+void TabManager::prevBookmark()
+{
+  editor->prevBookmark();
+}
 
-void TabManager::jumpToNextError() { editor->jumpToNextError(); }
+void TabManager::jumpToNextError()
+{
+  editor->jumpToNextError();
+}
 
-void TabManager::setFocus() { editor->setFocus(); }
+void TabManager::setFocus()
+{
+  editor->setFocus();
+}
 
-void TabManager::updateActionUndoState() { par->editActionUndo->setEnabled(editor->canUndo()); }
+void TabManager::updateActionUndoState()
+{
+  parent->editActionUndo->setEnabled(editor->canUndo());
+}
 
 void TabManager::onHyperlinkIndicatorClicked(int val)
 {
@@ -316,17 +386,27 @@ void TabManager::closeTab()
   applyAction(QObject::sender(), [this](int idx, EditorInterface *) { closeTabRequested(idx); });
 }
 
+void TabManager::closeAllButThisTab()
+{
+  applyAction(QObject::sender(), [this](int idx, EditorInterface *) {
+    int total = count();
+    for (int i = total - 1; i >= 0; i--) {
+      if (i != idx) closeTabRequested(i);
+    }
+  });
+}
+
 void TabManager::showContextMenuEvent(const QPoint& pos)
 {
   auto menu = editor->createStandardContextMenu();
 
   menu->addSeparator();
-  menu->addAction(par->editActionFind);
-  menu->addAction(par->editActionFindNext);
-  menu->addAction(par->editActionFindPrevious);
+  menu->addAction(parent->editActionFind);
+  menu->addAction(parent->editActionFindNext);
+  menu->addAction(parent->editActionFindPrevious);
   menu->addSeparator();
-  menu->addAction(par->editActionInsertTemplate);
-  menu->addAction(par->editActionFoldAll);
+  menu->addAction(parent->editActionInsertTemplate);
+  menu->addAction(parent->editActionFoldAll);
   menu->exec(editor->mapToGlobal(pos));
 
   delete menu;
@@ -363,8 +443,16 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   closeAction->setText(_("Close Tab"));
   connect(closeAction, &QAction::triggered, this, &TabManager::closeTab);
 
+  auto *closeAllButThisAction = new QAction(tabWidget);
+  closeAllButThisAction->setData(idx);
+  closeAllButThisAction->setText(_("Close All But This Tab"));
+  connect(closeAllButThisAction, &QAction::triggered, this, &TabManager::closeAllButThisTab);
+
   // Don't allow to close the last tab.
-  if (tabWidget->count() <= 1) closeAction->setDisabled(true);
+  if (tabWidget->count() <= 1) {
+    closeAction->setDisabled(true);
+    closeAllButThisAction->setDisabled(true);
+  }
 
   menu.addAction(copyFileNameAction);
   menu.addAction(copyFilePathAction);
@@ -372,6 +460,7 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   menu.addAction(openFolderAction);
   menu.addSeparator();
   menu.addAction(closeAction);
+  menu.addAction(closeAllButThisAction);
 
   QPoint globalCursorPos = QCursor::pos();
   menu.exec(globalCursorPos);
@@ -385,15 +474,15 @@ void TabManager::setContentRenderState()  // since last render
 
 void TabManager::stopAnimation()
 {
-  par->animateWidget->pauseAnimation();
-  par->animateWidget->e_tval->setText("");
+  parent->animateWidget->pauseAnimation();
+  parent->animateWidget->e_tval->setText("");
 }
 
 void TabManager::updateFindState()
 {
-  if (editor->findState == TabManager::FIND_REPLACE_VISIBLE) par->showFind(true);
-  else if (editor->findState == TabManager::FIND_VISIBLE) par->showFind(false);
-  else par->hideFind();
+  if (editor->findState == TabManager::FIND_REPLACE_VISIBLE) parent->showFind(true);
+  else if (editor->findState == TabManager::FIND_VISIBLE) parent->showFind(false);
+  else parent->hideFind();
 }
 
 void TabManager::onTabModified(EditorInterface *edt)
@@ -423,7 +512,7 @@ void TabManager::openTabFile(const QString& filename)
   if (cmd.isEmpty()) {
     editor->filepath = fileinfo.absoluteFilePath();
     editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
-    par->updateRecentFiles(filename);
+    parent->updateRecentFiles(filename);
   } else {
     editor->filepath = "";
     editor->setPlainText(cmd.arg(filename));
@@ -432,7 +521,7 @@ void TabManager::openTabFile(const QString& filename)
 
   auto [fname, fpath] = getEditorTabNameWithModifier(editor);
   setEditorTabName(fname, fpath, editor);
-  par->setWindowTitle(fname);
+  parent->setWindowTitle(fname);
 
   emit editorContentReloaded(editor);
 }
@@ -478,21 +567,24 @@ bool TabManager::refreshDocument()
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      LOG("Failed to open file %1$s: %2$s", editor->filepath.toLocal8Bit().constData(),
-          file.errorString().toLocal8Bit().constData());
+      LOG("Failed to open file %1$s: %2$s", editor->filepath.toStdString(),
+          file.errorString().toStdString());
     } else {
       QTextStream reader(&file);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       reader.setCodec("UTF-8");
 #endif
       auto text = reader.readAll();
-      LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
+      LOG("Loaded design '%1$s'.", editor->filepath.toStdString());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState();  // since last render
       }
       file_opened = true;
     }
+  }
+  if (file_opened) {
+    parent->fileChangedOnDisk();
   }
   return file_opened;
 }
@@ -501,7 +593,7 @@ bool TabManager::maybeSave(int x)
 {
   auto *edt = (EditorInterface *)tabWidget->widget(x);
   if (edt->isContentModified() || edt->parameterWidget->isModified()) {
-    QMessageBox box(par);
+    QMessageBox box(parent);
     box.setText(_("The document has been modified."));
     box.setInformativeText(_("Do you want to save your changes?"));
     box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
@@ -533,7 +625,7 @@ bool TabManager::shouldClose()
   foreach (EditorInterface *edt, editorList) {
     if (!(edt->isContentModified() || edt->parameterWidget->isModified())) continue;
 
-    QMessageBox box(par);
+    QMessageBox box(parent);
     box.setText(_("Some tabs have unsaved changes."));
     box.setInformativeText(_("Do you want to save all your changes?"));
     box.setStandardButtons(QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
@@ -565,7 +657,8 @@ void TabManager::saveError(const QIODevice& file, const std::string& msg, const 
 
   const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
   const QString dialogFormat(dialogFormatStr.c_str());
-  QMessageBox::warning(par, par->windowTitle(), dialogFormat.arg(filepath).arg(file.errorString()));
+  QMessageBox::warning(parent, parent->windowTitle(),
+                       dialogFormat.arg(filepath).arg(file.errorString()));
 }
 
 /*!
@@ -576,7 +669,7 @@ void TabManager::saveError(const QIODevice& file, const std::string& msg, const 
 bool TabManager::save(EditorInterface *edt)
 {
   assert(edt != nullptr);
-
+  auto guard = parent->scopedSetCurrentOutput();
   if (edt->filepath.isEmpty()) {
     return saveAs(edt);
   } else {
@@ -586,14 +679,14 @@ bool TabManager::save(EditorInterface *edt)
 
 bool TabManager::save(EditorInterface *edt, const QString& path)
 {
-  par->setCurrentOutput();
-
   // If available (>= Qt 5.1), use QSaveFile to ensure the file is not
   // destroyed if the device is full. Unfortunately this is not working
   // as advertised (at least in Qt 5.3) as it does not detect the device
   // full properly and happily commits a 0 byte file.
   // Checking the QTextStream status flag after flush() seems to catch
   // this condition.
+  // FIXME jeff hayes - i have recently seen a better way to handle this, when i have found that note
+  // again i will revist this
   QSaveFile file(path);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
@@ -613,11 +706,11 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     file.cancelWriting();
   }
   if (saveOk) {
-    LOG("Saved design '%1$s'.", path.toLocal8Bit().constData());
+    LOG("Saved design '%1$s'.", path.toStdString());
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);
-    par->updateRecentFiles(path);
+    parent->updateRecentFiles(path);
     edt->filepath = path;
   } else {
     saveError(file, _("Error saving design"), path);
@@ -630,10 +723,13 @@ bool TabManager::saveAs(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+  auto filename =
+    QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
   if (filename.isEmpty()) {
     return false;
   }
+
+  auto guard = parent->scopedSetCurrentOutput();
 
   if (QFileInfo(filename).suffix().isEmpty()) {
     filename.append(".scad");
@@ -644,7 +740,7 @@ bool TabManager::saveAs(EditorInterface *edt)
     if (info.exists()) {
       const auto text =
         QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
+      if (QMessageBox::warning(parent, parent->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
                                QMessageBox::No) != QMessageBox::Yes) {
         return false;
       }
@@ -660,27 +756,70 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
   if (saveOk) {
     auto [fname, fpath] = getEditorTabNameWithModifier(edt);
     setEditorTabName(fname, fpath, edt);
-    par->setWindowTitle(fname);
+    parent->setWindowTitle(fname);
   }
   return saveOk;
 }
 
+/*
+ If the editor content has not yet been saved it will be saved
+ to Untitled.scad in the application root directory.
+ Otherwise append  "_copy" to the base file name.
+ The name of the editor tab should NOT be changed
+ */
 bool TabManager::saveACopy(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename =
-    QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
-  if (filename.isEmpty()) {
+  const QString path = edt->filepath;
+
+  QDir dir(_("Untitled.scad"));
+
+  if (!path.isEmpty()) {
+    QFileInfo info(path);
+    QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
+    dir.setPath(filecopy);
+  }
+
+  QFileDialog saveCopyDialog;
+  saveCopyDialog.setAcceptMode(QFileDialog::AcceptSave);  // Set the dialog to "Save" mode.
+  saveCopyDialog.setWindowTitle("Save A Copy");
+  saveCopyDialog.setNameFilter("OpenSCAD Designs (*.scad)");
+  saveCopyDialog.setDefaultSuffix("scad");
+  saveCopyDialog.setViewMode(QFileDialog::List);
+  saveCopyDialog.setDirectory(dir);
+
+  if (saveCopyDialog.exec() != QDialog::Accepted) return false;
+
+  auto guard = parent->scopedSetCurrentOutput();
+
+  QStringList selectedFiles = saveCopyDialog.selectedFiles();
+  if (selectedFiles.isEmpty()) return false;
+
+  QString savefile = selectedFiles.first();
+
+  if (savefile.isEmpty()) return false;
+
+  QSaveFile file(savefile);
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+    saveError(file, _("Failed to open file for writing"), path);
     return false;
   }
+  QTextStream writer(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  writer.setCodec("UTF-8");
+#endif
+  writer << edt->toPlainText();
+  writer.flush();
 
-  if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+  bool saveOk = writer.status() == QTextStream::Ok;
+  if (!saveOk) file.cancelWriting();
+  else {
+    saveOk = file.commit();
+    if (!saveOk) saveError(file, _("Error saving design"), savefile);
+    else LOG("Saved design '%1$s'.", savefile.toLocal8Bit().constData());
   }
-
-  return save(edt, filename);
+  return saveOk;
 }
 
 bool TabManager::saveAll()
@@ -693,4 +832,18 @@ bool TabManager::saveAll()
     }
   }
   return true;
+}
+
+void TabManager::zoomIn()
+{
+  if (editor) {
+    editor->zoomIn();
+  }
+}
+
+void TabManager::zoomOut()
+{
+  if (editor) {
+    editor->zoomOut();
+  }
 }

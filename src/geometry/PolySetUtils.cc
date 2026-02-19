@@ -1,21 +1,21 @@
 #include "geometry/PolySetUtils.h"
 
+#include <boost/range/adaptor/reversed.hpp>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <cstddef>
 #include <sstream>
+#include <string>
 #include <vector>
 
-#include <boost/range/adaptor/reversed.hpp>
-
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
-#include "geometry/GeometryUtils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif
@@ -69,6 +69,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   auto result = std::make_unique<PolySet>(3, polyset.convexValue());
   result->setConvexity(polyset.getConvexity());
   result->setTriangular(true);
+  result->setManifold(polyset.isManifold());
   // ideally this should not require a copy...
   if (polyset.isTriangular()) {
     result->vertices = polyset.vertices;

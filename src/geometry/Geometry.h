@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cassert>
-#include <utility>
 #include <cstddef>
-#include <string>
 #include <list>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "geometry/linalg.h"
 
@@ -73,8 +73,11 @@ public:
   virtual ~GeometryVisitor() = default;
 };
 
-#define VISITABLE_GEOMETRY() \
-  void accept(GeometryVisitor& visitor) const override { visitor.visit(*this); }
+#define VISITABLE_GEOMETRY()                           \
+  void accept(GeometryVisitor& visitor) const override \
+  {                                                    \
+    visitor.visit(*this);                              \
+  }
 
 class GeometryList : public Geometry
 {

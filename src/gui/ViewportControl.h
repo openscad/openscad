@@ -1,11 +1,13 @@
 #pragma once
 
+#include <QColor>
+#include <QResizeEvent>
+#include <QStandardItemModel>
+#include <QWidget>
+#include <mutex>
+
 #include "gui/qtgettext.h"
 #include "ui_ViewportControl.h"
-#include <QResizeEvent>
-#include <QWidget>
-#include <QStandardItemModel>
-#include <mutex>
 
 class MainWindow;
 class QGLView;
@@ -38,7 +40,6 @@ protected:
   bool focusNextPrevChild(bool next) override;
 
 private:
-  MainWindow *mainWindow;
   QGLView *qglview;
   std::mutex inputMutex;
   std::mutex resizeMutex;

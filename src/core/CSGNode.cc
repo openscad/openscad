@@ -25,19 +25,20 @@
  */
 
 #include "core/CSGNode.h"
-#include "geometry/PolySet.h"
-#include "geometry/linalg.h"
 
+#include <boost/range/iterator_range.hpp>
 #include <cassert>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <stack>
 #include <tuple>
-
-#include <boost/range/iterator_range.hpp>
 #include <utility>
+
+#include "core/enums.h"
+#include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 
 /*!
    \class CSGNode
@@ -157,9 +158,15 @@ void CSGOperation::initBoundingBox()
   }
 }
 
-bool CSGLeaf::isEmptySet() const { return polyset == nullptr || polyset->isEmpty(); }
+bool CSGLeaf::isEmptySet() const
+{
+  return polyset == nullptr || polyset->isEmpty();
+}
 
-std::string CSGLeaf::dump() const { return this->label; }
+std::string CSGLeaf::dump() const
+{
+  return this->label;
+}
 
 // Recursive traversal can cause stack overflow with very large loops of child nodes,
 // so tree is traverse iteratively, managing our own stack.

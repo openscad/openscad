@@ -10,8 +10,7 @@
 # - .png and .txt files from testname-output/*
 #
 # The result is a single html report file with images data-uri encoded
-# into the file. It can be uploaded as a single static file to a web server
-# or the 'test_upload.py' script can be used.
+# into the file.
 
 
 # Design philosophy
@@ -21,7 +20,6 @@
 # 3. save the wikified data to disk
 # 4. generate html, including base64 encoding of images
 # 5. save html file
-# 6. upload html to public site and share with others
 
 # todo
 #
@@ -402,38 +400,6 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
 # --- End Templating ---
 
-# --- Web Upload ---
-
-def postify(data):
-    return urlencode(data).encode()
-
-def create_page():
-    data = {
-        'action': 'create',
-        'type': 'html'
-    }
-    try:
-        response = urlopen('http://www.dinkypage.com', data=postify(data))
-    except:
-        return None
-    return response.geturl()
-
-def upload_html(page_url, title, html):
-    data = {
-        'mode': 'editor',
-        'title': title,
-        'html': html,
-        'ajax': '1'
-    }
-    try:
-        response = urlopen(page_url, data=postify(data))
-    except (URLError) as e:
-        print('Upload error: ' + str(e))
-        return False
-    return 'success' in response.read().decode()
-
-# --- End Web Upload ---
-
 debug_test_pp = False
 #debug_test_pp = True
 debugfile = None
@@ -475,16 +441,6 @@ def main():
         print('warning: could not find --builddir, trying to use current dir:', builddir)
     debug('build dir set to ' +  builddir)
 
-    upload = False
-    if '--upload' in sys.argv:
-        upload = True
-        debug('will upload test report')
-
-    # Workaround for old cmake's not being able to pass parameters
-    # to CTEST_CUSTOM_POST_TEST
-    if bool(os.getenv("OPENSCAD_UPLOAD_TESTS")):
-        upload = True
-
     # --- End Command Line Parsing ---
 
     sysinfo, sysid = read_sysinfo(os.path.join(builddir, 'sysinfo.txt'))
@@ -503,25 +459,15 @@ def main():
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
-    print("report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,''))
-
-    failed_tests = [test for test in tests if not test.passed]
-    if upload and failed_tests:
-        build = os.getenv("TRAVIS_BUILD_NUMBER")
-        if build: filename = 'travis-' + build + '_report.html'
-        else: filename = html_basename
-        os.system('scp "%s" "%s:%s"' %
-                  (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
-        share_url = 'http://files.openscad.org/tests/' + filename;
-        print('html report uploaded:')
-        print(share_url)
-
-#        page_url = create_page()
-#        if upload_html(page_url, title='OpenSCAD test results', html=html):
-#            share_url = page_url.partition('?')[0]
-#            print('html report uploaded at', share_url)
-#        else:
-#            print('could not upload html report')
+    if os.environ.get("CI"):
+        # relative path because this ultimately this file will end up inside a zip archive
+        report_path = html_filename.replace(os.getcwd() + os.path.sep, "")
+        print("report saved:\n", report_path)
+    else:
+        report_path = os.path.abspath(html_filename)
+        report_uri = pathlib.Path(report_path).as_uri()
+        report_link = f"\033]8;;{report_uri}\033\\{report_path}\033]8;;\033\\"
+        print("report saved:\n", report_link)
 
     debug('test_pretty_print complete')
 

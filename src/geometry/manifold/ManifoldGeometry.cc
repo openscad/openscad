@@ -1,26 +1,30 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/ManifoldGeometry.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include <map>
-#include <set>
-#include <functional>
-#include <exception>
-#include <sstream>
-#include <utility>
-#include <cstdint>
+
 #include <manifold/cross_section.h>
 #include <manifold/manifold.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <utility>
+
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "geometry/manifold/manifoldutils.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
-#include <cstddef>
-#include <string>
-#include <memory>
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif
@@ -35,7 +39,9 @@ Result vector_convert(V const& v)
 
 }  // namespace
 
-ManifoldGeometry::ManifoldGeometry() : manifold_(manifold::Manifold()) {}
+ManifoldGeometry::ManifoldGeometry() : manifold_(manifold::Manifold())
+{
+}
 
 ManifoldGeometry::ManifoldGeometry(manifold::Manifold mani, const std::set<uint32_t>& originalIDs,
                                    const std::map<uint32_t, Color4f>& originalIDToColor,
@@ -52,13 +58,25 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
   return std::make_unique<ManifoldGeometry>(*this);
 }
 
-const manifold::Manifold& ManifoldGeometry::getManifold() const { return manifold_; }
+const manifold::Manifold& ManifoldGeometry::getManifold() const
+{
+  return manifold_;
+}
 
-bool ManifoldGeometry::isEmpty() const { return getManifold().IsEmpty(); }
+bool ManifoldGeometry::isEmpty() const
+{
+  return getManifold().IsEmpty();
+}
 
-size_t ManifoldGeometry::numFacets() const { return getManifold().NumTri(); }
+size_t ManifoldGeometry::numFacets() const
+{
+  return getManifold().NumTri();
+}
 
-size_t ManifoldGeometry::numVertices() const { return getManifold().NumVert(); }
+size_t ManifoldGeometry::numVertices() const
+{
+  return getManifold().NumVert();
+}
 
 bool ManifoldGeometry::isManifold() const
 {
@@ -70,12 +88,22 @@ bool ManifoldGeometry::isValid() const
   return manifold_.Status() == manifold::Manifold::Error::NoError;
 }
 
-void ManifoldGeometry::clear() { manifold_ = manifold::Manifold(); }
+void ManifoldGeometry::clear()
+{
+  manifold_ = manifold::Manifold();
+}
 
+// Note: We promise to only call memsize if we've already evaluated the object.
+// However, there is no way of querying this on the Manifold object itself.
 size_t ManifoldGeometry::memsize() const
 {
-  // We don't introspect on the manifold here, as this would force it to leaf node (ie. would render it).
-  return 0;
+  // Estimated memory usage per vertex:
+  // - Position: 24 bytes
+  // - Halfedges (approx 6 per vert): 6 * 16 = 96 bytes
+  // - Normals (vert + 2*face): 24 + 48 = 72 bytes
+  // - Mesh Relation (2*face): 32 bytes
+  // Total ~ 224 bytes + vector overhead + properties
+  return getManifold().NumVert() * 250;
 }
 
 std::string ManifoldGeometry::dump() const
@@ -106,6 +134,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   ps->vertices.reserve(mesh.NumVert());
   ps->indices.reserve(mesh.NumTri());
   ps->setConvexity(convexity);
+  ps->setManifold(true);
 
   // first 3 channels are xyz coordinate
   for (size_t i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
@@ -303,9 +332,19 @@ ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) cons
 
 ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const
 {
+#if defined(USE_MANIFOLD_MINKOWSKI)
+  auto result = getManifold().MinkowskiSum(other.getManifold());
+  std::set<uint32_t> originalIDs;
+  auto id = result.OriginalID();
+  if (id >= 0) {
+    originalIDs.insert(id);
+  }
+  return {result, originalIDs};
+#else
   std::shared_ptr<ManifoldGeometry> geom = minkowskiOp(*this, other);
   if (geom) return *geom;
   else return {};
+#endif
 }
 
 Polygon2d ManifoldGeometry::slice() const

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <QDialog>
 #include <QColor>
+#include <QDialog>
+#include <memory>
 
-#include "gui/qtgettext.h"  // IWYU pragma: keep
-#include "ui_ExportSvgDialog.h"
 #include "gui/InitConfigurator.h"
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "io/export.h"
+#include "ui_ExportSvgDialog.h"
 
 class ExportSvgDialog : public QDialog, public Ui::ExportSvgDialog, public InitConfigurator
 {
@@ -33,6 +33,8 @@ private slots:
   void on_toolButtonStrokeColorReset_clicked();
   void on_checkBoxEnableStroke_toggled(bool checked);
   void on_toolButtonStrokeWidthReset_clicked();
+  void on_pushButtonOk_clicked();
+  void on_pushButtonCancel_clicked();
 
 private:
   void updateFillColor(const QColor& color);

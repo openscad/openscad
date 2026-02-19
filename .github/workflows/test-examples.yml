@@ -10,22 +10,24 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        experimental: [true, false]
+        experimental: [false]
     runs-on: ubuntu-latest
     name: Test examples - ${{ matrix.experimental && 'experimental' || 'non-experimental' }}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh
-    - uses: actions/setup-python@v5
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh qt6
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: Build and test
       run: ./scripts/github-ci.sh ${{ matrix.experimental && 'experimental' || ''}} enable_python build test_examples test
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: ${{ always() }}
       with:
         name: Test Result Report (Test examples ${{ matrix.experimental && 'experimental' || 'non-experimental' }})

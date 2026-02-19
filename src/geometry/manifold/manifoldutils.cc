@@ -1,30 +1,30 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/manifoldutils.h"
 
-#include <cstddef>
-#include <optional>
-#include <vector>
-#include <cassert>
-#include <map>
-#include <set>
-#include <exception>
-#include <utility>
-#include <cstdint>
-#include <memory>
-
 #include <manifold/polygon.h>
+
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <map>
+#include <memory>
+#include <optional>
+#include <set>
+#include <utility>
+#include <vector>
 #ifdef ENABLE_CGAL
-#include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/convex_hull_3.h>
 #endif
 
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
 #include "geometry/linalg.h"
 #include "geometry/manifold/ManifoldGeometry.h"
-#include "geometry/PolySetBuilder.h"
 #include "utils/printutils.h"
-#include "geometry/PolySetUtils.h"
-#include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif

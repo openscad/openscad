@@ -51,7 +51,7 @@
 
 namespace fs = std::filesystem;
 
-#define YYMAXDEPTH 20000
+#define YYMAXDEPTH 200000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
 #ifdef DEBUG
 static Location debug_location(const std::string& info, const struct YYLTYPE& loc);

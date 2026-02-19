@@ -1,20 +1,22 @@
 #include "gui/ViewportControl.h"
+
 #include <QBoxLayout>
+#include <QDoubleSpinBox>
 #include <QGridLayout>
 #include <QLayoutItem>
 #include <QObject>
+#include <QPalette>
 #include <QResizeEvent>
 #include <QString>
 #include <QWidget>
-#include <iostream>
-#include <filesystem>
 #include <cfloat>
-#include <QDoubleSpinBox>
+#include <filesystem>
+#include <iostream>
 
-#include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/QGLView.h"
 #include "openscad_gui.h"
+#include "utils/printutils.h"
 
 ViewportControl::ViewportControl(QWidget *parent) : QWidget(parent)
 {
@@ -48,7 +50,6 @@ void ViewportControl::initGUI()
 
 void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
-  this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
 }
 

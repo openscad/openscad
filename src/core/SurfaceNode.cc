@@ -26,37 +26,36 @@
 
 #include "core/SurfaceNode.h"
 
-#include "geometry/PolySet.h"
-#include "geometry/PolySetBuilder.h"
-#include "core/Builtins.h"
-#include "core/Children.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/node.h"
-#include "core/Parameters.h"
-#include "utils/printutils.h"
-#include "io/fileutils.h"
-#include "handle_dep.h"
-#include "lodepng/lodepng.h"
-
 #include <algorithm>
-#include <cstring>
-#include <new>
-#include <string>
-#include <utility>
-#include <memory>
-#include <cstdint>
-#include <cstddef>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <unordered_map>
-
-#include <boost/functional/hash.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
+#include <boost/functional/hash.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <fstream>
+#include <memory>
+#include <new>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "core/module.h"
+#include "core/node.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "handle_dep.h"
+#include "io/fileutils.h"
+#include "lodepng/lodepng.h"
+#include "utils/printutils.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 #include <filesystem>
@@ -156,7 +155,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 img_data_t SurfaceNode::read_dat(std::string filename) const
 {
   img_data_t data;
-  std::ifstream stream(filename.c_str());
+  std::ifstream stream(fs::u8path(filename));
 
   if (!stream.good()) {
     LOG(message_group::Warning, "Can't open DAT file '%1$s'.", filename);

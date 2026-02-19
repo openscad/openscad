@@ -25,12 +25,12 @@
  */
 #pragma once
 
-#include "core/Settings.h"
-#include "gui/input/InputDriver.h"
-
+#include <QtGamepad/QGamepad>
 #include <cstddef>
 #include <string>
-#include <QtGamepad/QGamepad>
+
+#include "core/Settings.h"
+#include "gui/input/InputDriver.h"
 
 class QGamepadInputDriver : public InputDriver
 {

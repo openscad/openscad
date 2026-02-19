@@ -2,21 +2,22 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "core/CurveDiscretizer.h"
 #include "core/RotateExtrudeNode.h"
-#include "geometry/GeometryUtils.h"
 #include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/linalg.h"
-#include "geometry/PolySet.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
@@ -91,18 +92,17 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   }
 
   if (max_x > 0 && min_x < 0) {
-    LOG(
-      message_group::Error,
-      "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)",
-      min_x, max_x);
+    LOG(message_group::Error,
+        "Children of rotate_extrude() may not lie across the Y axis (Range of X coords for all children "
+        "[%1$.2f : %2$.2f])",
+        min_x, max_x);
     return nullptr;
   }
 
   // # of sections. For closed rotations, # vertices is thus fragments*outline_size. For open
   // rotations # vertices is (fragments+1)*outline_size.
-  const auto num_sections = (unsigned int)std::ceil(fmax(
-    Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360,
-    1));
+  const int num_sections = node.discretizer.getCircularSegmentCount(max_x - min_x, node.angle)
+                             .value_or(std::max(1, static_cast<int>(std::fabs(node.angle) / 360 * 3)));
   const bool closed = node.angle == 360;
   // # of rings of vertices
   const size_t num_rings = num_sections + (closed ? 0 : 1);

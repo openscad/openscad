@@ -1,2 +1,3 @@
-a = 1;   // UTF-8 NBSP (no-break space)
-echo(a);
+a = 1;   // UTF-8 NO-BREAK SPACE
+b﻿=﻿2; // UTF-8 ZERO-WIDTH NO-BREAK SPACE / BYTE ORDER MARK
+echo(a, b);

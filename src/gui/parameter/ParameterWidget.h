@@ -26,18 +26,18 @@
 #pragma once
 
 #include <QString>
-#include <QWidget>
 #include <QTimer>
+#include <QWidget>
 #include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "gui/qtgettext.h"  // IWYU pragma: keep
-#include "ui_ParameterWidget.h"
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
 #include "gui/parameter/ParameterVirtualWidget.h"
+#include "gui/qtgettext.h"  // IWYU pragma: keep
+#include "ui_ParameterWidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
@@ -69,15 +69,19 @@ public slots:
 protected slots:
   void autoPreview(bool immediate = false);
   void emitParametersChanged();
-  void onSetChanged(int index);
+  void on_comboBoxPreset_activated(int index);
   void onSetNameChanged();
-  void onSetAdd();
-  void onSetDelete();
+  void on_addButton_clicked();
+  void on_deleteButton_clicked();
+  void onCollapseAll();
+  void onExpandAll();
   void parameterModified(bool immediate);
   void loadSet(size_t index);
   void createSet(const QString& name);
   void updateSetEditability();
   void rebuildWidgets();
+  void on_checkBoxAutoPreview_toggled(bool);
+  void on_comboBoxDetails_currentIndexChanged(int);
 
 signals:
   // emitted when the effective values of the parameters have changed,

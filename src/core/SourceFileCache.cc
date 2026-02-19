@@ -1,16 +1,18 @@
 #include "core/SourceFileCache.h"
-#include "core/StatCache.h"
-#include "core/SourceFile.h"
-#include "utils/printutils.h"
-#include "openscad.h"
-#include <ctime>
-#include <boost/format.hpp>
 
+#include <sys/stat.h>
+
+#include <algorithm>
+#include <boost/format.hpp>
 #include <cstdio>
+#include <ctime>
 #include <fstream>
 #include <string>
-#include <sys/stat.h>
-#include <algorithm>
+
+#include "core/SourceFile.h"
+#include "core/StatCache.h"
+#include "openscad.h"
+#include "utils/printutils.h"
 
 /*!
    FIXME: Implement an LRU scheme to avoid having an ever-growing source file cache
@@ -123,7 +125,10 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
   return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }
 
-void SourceFileCache::clear() { this->entries.clear(); }
+void SourceFileCache::clear()
+{
+  this->entries.clear();
+}
 
 SourceFile *SourceFileCache::lookup(const std::string& filename)
 {

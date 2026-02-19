@@ -26,37 +26,34 @@
 
 #include "core/RotateExtrudeNode.h"
 
+#include <algorithm>
+#include <cmath>
+#include <ios>
+#include <memory>
+#include <sstream>
+#include <utility>
+
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "utils/printutils.h"
-#include "io/fileutils.h"
+#include "core/module.h"
 #include "handle_dep.h"
-#include <ios>
-#include <utility>
-#include <memory>
-#include <cmath>
-#include <sstream>
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;  // bring 'operator+=()' into scope
+#include "io/fileutils.h"
+#include "utils/printutils.h"
 
 namespace {
 
 std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst,
                                                      Arguments arguments, const Children& children)
 {
-  auto node = std::make_shared<RotateExtrudeNode>(inst);
-
   const Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"angle", "start"}, {"convexity", "a"});
 
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
+  auto node = std::make_shared<RotateExtrudeNode>(inst, CurveDiscretizer(parameters, inst->location()));
 
-  node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+  node->convexity = std::max(2, static_cast<int>(parameters["convexity"].toDouble()));
+
   // If an angle is specified, use it, defaulting to starting at zero.
   // If no angle is specified, use 360 and default to starting at 180.
   // Regardless, if a start angle is specified, use it.
@@ -69,13 +66,11 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
     node->start = 180;
   }
   bool hasStart = parameters["start"].getFiniteDouble(node->start);
-  if (!hasAngle && !hasStart && (int)node->fn % 2 != 0) {
+  if (!hasAngle && !hasStart && node->discretizer.isFnSpecifiedAndOdd()) {
     LOG(message_group::Deprecated,
         "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  "
         "Set start=180 to explicitly start on the -X axis.");
   }
-
-  if (node->convexity <= 0) node->convexity = 2;
 
   children.instantiate(node);
 
@@ -97,16 +92,7 @@ std::string RotateExtrudeNode::toString() const
          << this->start
          << ", "
             "convexity = "
-         << this->convexity
-         << ", "
-            "$fn = "
-         << this->fn
-         << ", "
-            "$fa = "
-         << this->fa
-         << ", "
-            "$fs = "
-         << this->fs << ")";
+         << this->convexity << ", " << discretizer << ")";
 
   return stream.str();
 }

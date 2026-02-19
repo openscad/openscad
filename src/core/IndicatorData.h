@@ -2,7 +2,6 @@
 
 #include <string>
 #include <utility>
-#include <utility>
 
 struct IndicatorData {
   IndicatorData(int firstLine, int firstCol, int lastLine, int lastCol, std::string path)

@@ -27,20 +27,23 @@
 #include "core/ContextFrame.h"
 
 #include "core/AST.h"
-#include "core/callables.h"
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
+#include "core/callables.h"
 
 #ifdef DEBUG
 #include <boost/format.hpp>
+#include <cassert>
 #include <sstream>
 #endif
-#include <utility>
+#include <boost/format.hpp>
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
-
-ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session) {}
+ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session)
+{
+}
 
 boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
 {
@@ -149,7 +152,10 @@ bool ContextFrame::is_config_variable(const std::string& name)
   return name[0] == '$' && name != "$children";
 }
 
-const std::string& ContextFrame::documentRoot() const { return evaluation_session->documentRoot(); }
+const std::string& ContextFrame::documentRoot() const
+{
+  return evaluation_session->documentRoot();
+}
 
 #ifdef DEBUG
 std::string ContextFrame::dumpFrame() const

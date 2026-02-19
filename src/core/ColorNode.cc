@@ -26,21 +26,21 @@
 
 #include "core/ColorNode.h"
 
-#include <utility>
-#include <memory>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/assign/std/vector.hpp>
 #include <cctype>
 #include <cstddef>
+#include <memory>
 #include <string>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/std/vector.hpp>
-#include <boost/assign/list_of.hpp>
+#include <utility>
 
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
+#include "core/ColorUtil.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "core/ColorUtil.h"
+#include "core/module.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 
@@ -71,7 +71,9 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
     } else {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
           "Unable to parse color \"%1$s\"", colorname);
-      LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
+      LOG(message_group::HtmlLink,
+          "For a list of valid color names, see the <a href=\"open-window://colorlist\"><b>Color "
+          "List</b></a> window.");
     }
   }
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
@@ -91,7 +93,10 @@ std::string ColorNode::toString() const
              this->color.a(), "])");
 }
 
-std::string ColorNode::name() const { return "color"; }
+std::string ColorNode::name() const
+{
+  return "color";
+}
 
 void register_builtin_color()
 {

@@ -4,6 +4,7 @@
 #include "utils/printutils.h"
 #include "utils/degree_trig.h"
 
+#include <cmath>
 #include <cassert>
 #include <memory>
 #include <vector>
@@ -81,7 +82,10 @@ void Camera::zoom(int zoom, bool relative)
   }
 }
 
-void Camera::setProjection(ProjectionType type) { this->projection = type; }
+void Camera::setProjection(ProjectionType type)
+{
+  this->projection = type;
+}
 
 void Camera::resetView()
 {
@@ -151,9 +155,15 @@ void Camera::updateView(const std::shared_ptr<const FileContext>& context, bool 
   }
 }
 
-Eigen::Vector3d Camera::getVpt() const { return -object_trans; }
+Eigen::Vector3d Camera::getVpt() const
+{
+  return -object_trans;
+}
 
-void Camera::setVpt(double x, double y, double z) { object_trans << -x, -y, -z; }
+void Camera::setVpt(double x, double y, double z)
+{
+  object_trans << -x, -y, -z;
+}
 
 static double wrap(double angle)
 {
@@ -165,15 +175,30 @@ Eigen::Vector3d Camera::getVpr() const
   return {wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z())};
 }
 
-void Camera::setVpr(double x, double y, double z) { object_rot << wrap(90 - x), wrap(-y), wrap(-z); }
+void Camera::setVpr(double x, double y, double z)
+{
+  object_rot << wrap(90 - x), wrap(-y), wrap(-z);
+}
 
-void Camera::setVpd(double d) { viewer_distance = d; }
+void Camera::setVpd(double d)
+{
+  viewer_distance = d;
+}
 
-double Camera::zoomValue() const { return viewer_distance; }
+double Camera::zoomValue() const
+{
+  return viewer_distance;
+}
 
-void Camera::setVpf(double f) { fov = f; }
+void Camera::setVpf(double f)
+{
+  fov = f;
+}
 
-double Camera::fovValue() const { return fov; }
+double Camera::fovValue() const
+{
+  return fov;
+}
 
 std::string Camera::statusText() const
 {

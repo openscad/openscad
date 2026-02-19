@@ -1,6 +1,11 @@
-#include <QTest>
-#include <QStringList>
 #include "TestModuleCache.h"
+
+#include <QString>
+#include <QStringList>
+#include <QTest>
+#include <memory>
+
+#include "core/node.h"
 #include "platform/PlatformUtils.h"
 
 void touchFile(const QString& filename)
@@ -61,7 +66,7 @@ void TestModuleCache::testMCAD()
   window->tabManager->open(filename);   // Open use-mcad.scad
   window->actionReloadRenderPreview();  // F5
 
-  auto node = window->instantiateRootFromSource(window->rootFile);
+  auto node = window->instantiateRootFromSource(window->rootFile.get());
   QVERIFY2(node->verbose_name().empty(), "Root node name must be empty");
   QVERIFY2(node->getChildren().size() != 0, "There must have at least a node");
   QCOMPARE(QString::fromStdString(node->getChildren()[0]->verbose_name()),

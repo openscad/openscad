@@ -24,9 +24,8 @@
  */
 #include "libsvg/util.h"
 
-#include <ostream>
 #include <boost/spirit/include/qi.hpp>
-
+#include <ostream>
 #include <string>
 #include <vector>
 

@@ -4,41 +4,31 @@
 #include "core/RoofNode.h"
 
 #include <algorithm>
-#include <utility>
 #include <memory>
+#include <set>
 #include <sstream>
+#include <utility>
 
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"
-#include "core/Parameters.h"
 #include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "core/module.h"
+#include "utils/printutils.h"
 
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments,
                                                   const Children& children)
 {
-  auto node = std::make_shared<RoofNode>(inst);
-
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"method"}, {"convexity"});
 
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
-
-  node->fa = std::max(node->fa, 0.01);
-  node->fs = std::max(node->fs, 0.01);
-  if (node->fn > 0) {
-    node->fa = 360.0 / node->fn;
-    node->fs = 0.0;
-  }
+  auto node = std::make_shared<RoofNode>(inst, CurveDiscretizer(parameters, inst->location()));
 
   if (parameters["method"].isUndefined()) {
     node->method = "voronoi";
   } else {
     node->method = parameters["method"].toString();
-    // method can only be one of...
-    if (node->method != "voronoi" && node->method != "straight") {
+    if (!RoofNode::knownMethods.count(node->method)) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
           "Unknown roof method '" + node->method + "'. Using 'voronoi'.");
       node->method = "voronoi";
@@ -59,12 +49,13 @@ std::string RoofNode::toString() const
 {
   std::stringstream stream;
 
-  stream << "roof(method = \"" << this->method << "\"" << ", $fa = " << this->fa
-         << ", $fs = " << this->fs << ", $fn = " << this->fn << ", convexity = " << this->convexity
-         << ")";
+  stream << "roof(method = \"" << this->method << "\"" << ", " << discretizer
+         << ", convexity = " << this->convexity << ")";
 
   return stream.str();
 }
+
+std::set<std::string> RoofNode::knownMethods = {"voronoi", "straight"};
 
 void register_builtin_roof()
 {

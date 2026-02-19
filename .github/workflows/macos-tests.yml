@@ -17,7 +17,7 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        os: [macos-13, macos-latest]
+        os: [macos-15-intel, macos-latest]
         qt: [qt5, qt6]
         exclude:
           # macos-latest runs on arm64, which has a broken SW renderer
@@ -27,9 +27,9 @@ jobs:
           - qt: qt5
     runs-on:  ${{ matrix.os }}
     name: ${{ matrix.os }} ${{ matrix.qt }}
-    # If it's not done in 60 minutes, something is wrong.
+    # If it's not done in 90 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
     - name: Set Qt version
       run: |
@@ -37,7 +37,7 @@ jobs:
         qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
         esac
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         submodules: 'recursive'
     - name: Setup (detached) tmate ssh session if enabled
@@ -72,7 +72,7 @@ jobs:
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: ${{ always() }}
       with:
         name: Test Result Report (MacOS ${{ matrix.qt }})

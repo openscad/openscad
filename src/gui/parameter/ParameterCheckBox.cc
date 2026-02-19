@@ -1,5 +1,8 @@
-#include <QWidget>
 #include "gui/parameter/ParameterCheckBox.h"
+
+#include <QWidget>
+
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter,
                                      DescriptionStyle descriptionStyle)
@@ -24,4 +27,7 @@ void ParameterCheckBox::onChanged()
   emit changed(true);
 }
 
-void ParameterCheckBox::setValue() { checkBox->setChecked(parameter->value); }
+void ParameterCheckBox::setValue()
+{
+  checkBox->setChecked(parameter->value);
+}

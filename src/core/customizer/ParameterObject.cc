@@ -1,22 +1,21 @@
 #include "core/customizer/ParameterObject.h"
 
+#include <boost/algorithm/string.hpp>
+#include <cstddef>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
+
 #include "core/AST.h"
-#include "core/customizer/Annotation.h"
 #include "core/Assignment.h"
 #include "core/Expression.h"
 #include "core/SourceFile.h"
-
+#include "core/customizer/Annotation.h"
 #include "utils/printutils.h"
-
-#include <variant>
-#include <map>
-#include <utility>
-#include <memory>
-#include <cstddef>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <boost/algorithm/string.hpp>
 
 namespace {
 

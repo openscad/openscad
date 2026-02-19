@@ -24,33 +24,31 @@
  *
  */
 
-#include "io/export.h"
-
 #include <algorithm>
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
+#include <lib3mf_implicit.hpp>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
-#include <lib3mf_implicit.hpp>
-
-#include "export_enums.h"
 #include "Feature.h"
 #include "core/ColorUtil.h"
+#include "export_enums.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -84,7 +82,10 @@ uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
   return !(*stream);
 }
 
-void export_3mf_error(std::string msg) { LOG(message_group::Export_Error, std::move(msg)); }
+void export_3mf_error(std::string msg)
+{
+  LOG(message_group::Export_Error, std::move(msg));
+}
 
 int count_mesh_objects(const Lib3MF::PModel& model)
 {

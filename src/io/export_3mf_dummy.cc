@@ -26,8 +26,9 @@
 
 #include <memory>
 #include <ostream>
-#include "io/export.h"
+
 #include "geometry/Geometry.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 void export_3mf(const std::shared_ptr<const class Geometry>&, std::ostream&, const ExportInfo&)

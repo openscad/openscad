@@ -1,7 +1,13 @@
 #include "UXTest.h"
+
+#include <QString>
+
 #include "platform/PlatformUtils.h"
 
-void UXTest::setWindow(MainWindow *window_) { window = window_; }
+void UXTest::setWindow(MainWindow *window_)
+{
+  window = window_;
+}
 
 void UXTest::restoreWindowInitialState()
 {

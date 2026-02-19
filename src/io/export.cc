@@ -44,14 +44,14 @@
 #include <vector>
 
 #ifdef _WIN32
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #endif
 
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
@@ -140,7 +140,10 @@ std::vector<FileFormat> all3D()
   return all3DFormats;
 }
 
-const FileFormatInfo& info(FileFormat fileFormat) { return containers().fileFormatToInfo[fileFormat]; }
+const FileFormatInfo& info(FileFormat fileFormat)
+{
+  return containers().fileFormatToInfo[fileFormat];
+}
 
 bool fromIdentifier(const std::string& identifier, FileFormat& format)
 {
@@ -150,7 +153,10 @@ bool fromIdentifier(const std::string& identifier, FileFormat& format)
   return true;
 }
 
-const std::string& toSuffix(FileFormat format) { return containers().fileFormatToInfo[format].suffix; }
+const std::string& toSuffix(FileFormat format)
+{
+  return containers().fileFormatToInfo[format].suffix;
+}
 
 bool canPreview(FileFormat format)
 {
@@ -266,7 +272,10 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
 
 namespace {
 
-double remove_negative_zero(double x) { return x == -0 ? 0 : x; }
+double remove_negative_zero(double x)
+{
+  return x == -0 ? 0 : x;
+}
 
 Vector3d remove_negative_zero(const Vector3d& pt)
 {

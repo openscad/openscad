@@ -26,11 +26,13 @@
 
 #include "core/Arguments.h"
 
-#include <ostream>
 #include <memory>
+#include <ostream>
+
+#include "core/Assignment.h"
 #include "core/Context.h"
-#include "core/Expression.h"
 #include "core/EvaluationSession.h"
+#include "core/Expression.h"
 
 Arguments::Arguments(const AssignmentList& argument_expressions,
                      const std::shared_ptr<const Context>& context)
@@ -53,7 +55,10 @@ Arguments Arguments::clone() const
   return output;
 }
 
-const std::string& Arguments::documentRoot() const { return evaluation_session->documentRoot(); }
+const std::string& Arguments::documentRoot() const
+{
+  return evaluation_session->documentRoot();
+}
 
 std::ostream& operator<<(std::ostream& stream, const Argument& argument)
 {

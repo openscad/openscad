@@ -1,9 +1,14 @@
-#include <QTest>
-#include <QStringList>
-#include "platform/PlatformUtils.h"
 #include "TestTabManager.h"
 
-void TestTabManager::initTestCase() {}
+#include <QString>
+#include <QStringList>
+#include <QTest>
+
+#include "platform/PlatformUtils.h"
+
+void TestTabManager::initTestCase()
+{
+}
 
 void TestTabManager::checkOpenClose()
 {

@@ -1,9 +1,11 @@
 #pragma once
 
 #include "glview/VertexState.h"
+#include "glview/ShaderUtils.h"
 #include "geometry/linalg.h"
 #include "glview/Renderer.h"
 #include "glview/system-gl.h"
+#include <utility>
 #include <memory>
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -60,13 +62,20 @@ public:
   OpenCSGVBOProduct(OpenCSGVBOProduct&& o) = delete;
   virtual ~OpenCSGVBOProduct() = default;
 
-  [[nodiscard]] std::vector<OpenCSG::Primitive *>& primitives() { return primitives_; }
+  void addPrimitive(std::unique_ptr<OpenCSG::Primitive> p)
+  {
+    primitives_.push_back(p.get());
+    owned_primitives_.push_back(std::move(p));
+  }
+
+  [[nodiscard]] const std::vector<OpenCSG::Primitive *>& primitives() const { return primitives_; }
 
 private:
   // primitives_ is used to create the OpenCSG depth buffer (unlit rendering).
   // states_ is used for color rendering (using GL_EQUAL).
   // Both may use the same underlying VBOs
   std::vector<OpenCSG::Primitive *> primitives_;
+  std::vector<std::unique_ptr<OpenCSG::Primitive>> owned_primitives_;
 };
 
 class OpenCSGRenderer : public VBORenderer

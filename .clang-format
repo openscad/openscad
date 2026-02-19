@@ -35,3 +35,4 @@ BraceWrapping:
   AfterFunction: true
 
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortFunctionsOnASingleLine: InlineOnly

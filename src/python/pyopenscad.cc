@@ -23,12 +23,23 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <Python.h>
-#include <filesystem>
-
 #include "pyopenscad.h"
+
+#include <Python.h>
+
+#include <array>
+#include <filesystem>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+
 #include "core/CsgOpNode.h"
+#include "core/CurveDiscretizer.h"
+#include "core/enums.h"
+#include "core/node.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 
@@ -37,7 +48,10 @@ extern "C" PyObject *PyInit_openscad(void);
 bool python_active;
 bool python_trusted;
 
-void PyObjectDeleter(PyObject *pObject) { Py_XDECREF(pObject); };
+void PyObjectDeleter(PyObject *pObject)
+{
+  Py_XDECREF(pObject);
+};
 
 PyObjectUniquePtr pythonInitDict(nullptr, PyObjectDeleter);
 PyObjectUniquePtr pythonMainModule(nullptr, PyObjectDeleter);
@@ -111,6 +125,12 @@ void python_unlock(void)
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
+  // Verify obj is actually a PyOpenSCADType before casting to avoid segfault
+  if (!PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    *dict = nullptr;
+    return nullptr;
+  }
+
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *)obj)->node;
   if (result.use_count() > 2) {
     result = result->clone();
@@ -140,7 +160,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
     }
     *dict = ((PyOpenSCADObject *)objs)->dict;
   } else if (PyList_Check(objs)) {
-    DECLARE_INSTANCE
+    DECLARE_INSTANCE();
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
 
     int n = PyList_Size(objs);
@@ -250,38 +270,33 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
   return results;  // Error
 }
 
-/*
- * Helper function to extract actual values for fn, fa and fs
+/**
+ * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
+ * @param kwargs *Remove* any control parameter arguments found.
  */
 
-void get_fnas(double& fn, double& fa, double& fs)
+CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs)
 {
-  PyObject *mainModule = PyImport_AddModule("__main__");
-  if (mainModule == nullptr) return;
-  fn = 0;
-  fa = 12;
-  fs = 2;
-
-  if (PyObject_HasAttrString(mainModule, "fn")) {
-    PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"), PyObjectDeleter);
-    if (varFn.get() != nullptr) {
-      fn = PyFloat_AsDouble(varFn.get());
+  PyObject *mainModule = pythonMainModule.get();
+  return CurveDiscretizer([kwargs, mainModule](const char *key) -> std::optional<double> {
+    double result;
+    if (kwargs != nullptr && PyDict_Check(kwargs)) {  // kwargs can be nullptr
+      if (PyObject *value = PyDict_GetItemString(kwargs, key); value != nullptr) {
+        // PyArg_ParseTupleAndKeywords does not allow unspecified keyword args.
+        PyDict_DelItemString(kwargs, key);
+        if (!(python_numberval(value, &result))) return result;  // value can be Integer, Number, ...
+      }
     }
-  }
-
-  if (PyObject_HasAttrString(mainModule, "fa")) {
-    PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"), PyObjectDeleter);
-    if (varFa.get() != nullptr) {
-      fa = PyFloat_AsDouble(varFa.get());
+    if (mainModule != nullptr) {
+      if (PyObject_HasAttrString(mainModule, key)) {
+        PyObjectUniquePtr var(PyObject_GetAttrString(mainModule, key), PyObjectDeleter);
+        if (var.get() != nullptr) {
+          if (!(python_numberval(var.get(), &result))) return result;
+        }
+      }
     }
-  }
-
-  if (PyObject_HasAttrString(mainModule, "fs")) {
-    PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"), PyObjectDeleter);
-    if (varFs.get() != nullptr) {
-      fs = PyFloat_AsDouble(varFs.get());
-    }
-  }
+    return {};
+  });
 }
 
 /*
@@ -324,8 +339,6 @@ void python_catch_error(std::string& errorstr)
 
 void initPython(const std::string& binDir, double time)
 {
-  const auto name = "openscad-python";
-  const auto exe = binDir + "/" + name;
   if (pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -418,8 +431,9 @@ void initPython(const std::string& binDir, double time)
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sepchar << ".";
 
-    PyConfig_SetBytesString(&config, &config.program_name, name);
-    PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
+    if (!binDir.empty()) {
+      PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
+    }
 
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
@@ -447,7 +461,9 @@ void initPython(const std::string& binDir, double time)
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
 }
 
-void finishPython(void) {}
+void finishPython(void)
+{
+}
 
 std::string evaluatePython(const std::string& code, bool dry_run)
 {
@@ -594,7 +610,10 @@ static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL};
 
-extern "C" PyObject *PyInit_openscad(void) { return PyModule_Create(&OpenSCADModule); }
+extern "C" PyObject *PyInit_openscad(void)
+{
+  return PyModule_Create(&OpenSCADModule);
+}
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {

@@ -1,22 +1,55 @@
 #pragma once
 
+#include <functional>
+#include <optional>
 #include <stdexcept>
-#include <utility>
 #include <string>
+#include <utility>
 
+#include "boost/circular_buffer.hpp"
 #include "core/AST.h"
+#include "utils/defer_call.h"
 #include "utils/printutils.h"
 
 class EvaluationException : public std::runtime_error
 {
 public:
   EvaluationException(const std::string& what_arg)
-    : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth)
+    : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth), tail_msgs(OpenSCAD::traceDepth)
   {
+  }
+
+  template <typename... Args>
+  void LOG(const message_group& msgGroup, Args&&...args)
+  {
+    if (traceDepth > 0) {
+      ::LOG(msgGroup, std::forward<Args>(args)...);
+    } else {
+      tail_msgs.push_back(
+        defer_call([](auto&&...args) { return make_message_obj(std::forward<decltype(args)>(args)...); },
+                   msgGroup, std::forward<Args>(args)...));
+    }
+  }
+
+  ~EvaluationException()
+  {
+    int frames_skipped = -(traceDepth + tail_msgs.size());
+    if (frames_skipped > 0) {
+      ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
+                      message_group::Trace));
+    }
+
+    while (!tail_msgs.empty()) {
+      if (auto msg = tail_msgs.front()()) {
+        ::PRINT(*msg);
+      }
+      tail_msgs.pop_front();
+    }
   }
 
 public:
   int traceDepth = 0;
+  boost::circular_buffer<std::function<std::optional<Message>()>> tail_msgs;
 };
 
 class AssertionFailedException : public EvaluationException

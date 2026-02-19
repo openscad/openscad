@@ -26,15 +26,16 @@
 
 #include "gui/OctoPrintApiKeyDialog.h"
 
-#include <QString>
 #include <QCheckBox>
 #include <QColor>
-#include <QDialog>
 #include <QColorDialog>
+#include <QDialog>
 #include <QLineEdit>
-#include <QSvgRenderer>
-#include <QPalette>
+#include <QObject>
 #include <QPainter>
+#include <QPalette>
+#include <QString>
+#include <QSvgRenderer>
 
 #include "OctoPrint.h"
 
@@ -116,9 +117,15 @@ int OctoPrintApiKeyDialog::exec()
   return QDialog::exec();
 }
 
-void OctoPrintApiKeyDialog::on_pushButtonRetry_clicked() { startRequest(); }
+void OctoPrintApiKeyDialog::on_pushButtonRetry_clicked()
+{
+  startRequest();
+}
 
-void OctoPrintApiKeyDialog::on_pushButtonOk_clicked() { accept(); }
+void OctoPrintApiKeyDialog::on_pushButtonOk_clicked()
+{
+  accept();
+}
 
 void OctoPrintApiKeyDialog::on_pushButtonCancel_clicked()
 {

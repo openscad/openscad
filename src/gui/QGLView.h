@@ -1,8 +1,11 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include "core/Selection.h"
 #include "gui/MouseSelector.h"
 
+#include <memory>
+#include <array>
 #include <QImage>
 #include <QMouseEvent>
 #include <QPoint>
@@ -83,7 +86,11 @@ private:
   // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
   // zoom 2-vector.
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  QPointF last_mouse;
+#else
   QPoint last_mouse;
+#endif
   QImage frame;  // Used by grabFrame() and save()
 
   void wheelEvent(QWheelEvent *event) override;
@@ -110,6 +117,7 @@ signals:
   void resized();
   void doRightClick(QPoint screen_coordinate);
   void doLeftClick(QPoint screen_coordinate);
+  void initialized();
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

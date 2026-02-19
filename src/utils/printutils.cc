@@ -1,5 +1,8 @@
 #include "utils/printutils.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/circular_buffer.hpp>
 #include <cassert>
 #include <cstdio>
 #include <exception>
@@ -8,10 +11,6 @@
 #include <list>
 #include <set>
 #include <string>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/circular_buffer.hpp>
 
 #include "utils/exceptions.h"
 
@@ -62,7 +61,10 @@ bool would_have_thrown()
   return would_throw;
 }
 
-void print_messages_push() { print_messages_stack.emplace_back(); }
+void print_messages_push()
+{
+  print_messages_stack.emplace_back();
+}
 
 void print_messages_pop()
 {
@@ -90,8 +92,9 @@ void PRINT(const Message& msgObj)
   PRINT_NOCACHE(msgObj);
 
   // to error log
-  if (outputhandler2 && !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
-                          msgObj.group == message_group::Trace)) {
+  if (outputhandler2 &&
+      !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
+        msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
     outputhandler2(msgObj, outputhandler_data);
   }
 }
@@ -163,7 +166,10 @@ std::string two_digit_exp_format(std::string doublestr)
   return doublestr;
 }
 
-std::string two_digit_exp_format(double x) { return two_digit_exp_format(std::to_string(x)); }
+std::string two_digit_exp_format(double x)
+{
+  return two_digit_exp_format(std::to_string(x));
+}
 
 void resetSuppressedMessages()
 {
@@ -176,6 +182,7 @@ std::string getGroupName(const enum message_group& group)
   switch (group) {
   case message_group::NONE:
   case message_group::Warning:
+  case message_group::HtmlLink:
   case message_group::UI_Warning:     return "WARNING";
   case message_group::Error:
   case message_group::UI_Error:       return "ERROR";
@@ -211,4 +218,7 @@ bool getGroupTextPlain(const enum message_group& group)
   return group == message_group::NONE || group == message_group::Echo;
 }
 
-std::string quoteVar(const std::string& varname) { return '"' + varname + '"'; }
+std::string quoteVar(const std::string& varname)
+{
+  return '"' + varname + '"';
+}

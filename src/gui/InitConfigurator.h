@@ -1,13 +1,13 @@
 #pragma once
 
-#include <QSettings>
-#include <QObject>
-#include <QComboBox>
-#include <QSpinBox>
-#include <QCheckBox>
-#include <QListWidget>
 #include <QButtonGroup>
-#include <cstdint>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QListWidget>
+#include <QObject>
+#include <QSettings>
+#include <QSpinBox>
+#include <optional>
 #include <string>
 
 #include "core/Settings.h"
@@ -53,6 +53,21 @@ protected:
                       const Settings::SettingsEntryEnum<enum_type>& entry);
   /** Update combobox from current settings */
   void updateComboBox(const BlockSignals<QComboBox *>& comboBox, const std::string& value);
+  /** Get enum value from combobox associated with a enum based settings entry */
+  template <typename enum_type>
+  std::optional<enum_type> getComboBoxValue(const BlockSignals<QComboBox *>& comboBox,
+                                            const Settings::SettingsEntryEnum<enum_type>& entry)
+  {
+    if (comboBox->currentIndex() > 0) {
+      const auto key = comboBox->currentData().toString().toStdString();
+      for (const auto& e : entry.items()) {
+        if (key == e.name) {
+          return std::make_optional(e.value);
+        }
+      }
+    }
+    return std::nullopt;
+  }
   /** Init a button group with an enum setting, this needs a custom property on the radio buttons */
   template <typename enum_type>
   void initButtonGroup(const BlockSignals<QButtonGroup *>& buttonGroup,

@@ -26,29 +26,30 @@
 
 #include "gui/UIUtils.h"
 
-#include <filesystem>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-#include <exception>
+#include <QColor>
+#include <QDesktopServices>
 #include <QDir>
-#include <QList>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QFileInfoList>
-#include <QUrl>
-#include <QFileDialog>
-#include <QDesktopServices>
-#include <QRegularExpression>
-#include <QJsonObject>
 #include <QJsonDocument>
-
-#include "version.h"
-#include "platform/PlatformUtils.h"
-#include "gui/QSettingsCached.h"
-
+#include <QJsonObject>
+#include <QList>
+#include <QRegularExpression>
+#include <QString>
+#include <QStringList>
+#include <QUrl>
+#include <QWidget>
+#include <algorithm>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <string>
+#include <utility>
+
+#include "gui/QSettingsCached.h"
+#include "platform/PlatformUtils.h"
+#include "version.h"
 
 namespace {
 
@@ -119,10 +120,8 @@ void enumerateExamples(const fs::path& dir)
     auto fileInfo =
       QFileInfo{QDir{QString::fromStdString(entry.path().generic_string())}, "example-dir.json"};
     QJsonObject obj;
-    if (fileInfo.isReadable()) {
-      QFile file;
-      file.setFileName(fileInfo.filePath());
-      file.open(QIODevice::ReadOnly);
+    QFile file(fileInfo.filePath());
+    if (file.open(QIODevice::ReadOnly)) {
       obj = QJsonDocument::fromJson(file.readAll()).object();
     }
     readExamplesDir(obj, entry.path());
@@ -205,7 +204,10 @@ QStringList UIUtils::recentFiles()
   return files;
 }
 
-const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories() { return readExamples(); }
+const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories()
+{
+  return readExamples();
+}
 
 QFileInfoList UIUtils::exampleFiles(const QString& category)
 {
@@ -219,13 +221,19 @@ QFileInfoList UIUtils::exampleFiles(const QString& category)
   return examples;
 }
 
-void UIUtils::openURL(const QString& url) { QDesktopServices::openUrl(QUrl(url)); }
+void UIUtils::openURL(const QString& url)
+{
+  QDesktopServices::openUrl(QUrl(url));
+}
 
-void UIUtils::openHomepageURL() { QDesktopServices::openUrl(QUrl("https://www.openscad.org/")); }
+void UIUtils::openHomepageURL()
+{
+  QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
+}
 
 static void openVersionedURL(const QString& url)
 {
-  QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
+  QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.data())));
 }
 
 void UIUtils::openUserManualURL()

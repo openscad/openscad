@@ -26,16 +26,17 @@
 
 #include "core/CsgOpNode.h"
 
-#include "core/Builtins.h"
-#include "core/Children.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/Parameters.h"
-
-#include <utility>
+#include <cassert>
 #include <memory>
 #include <string>
-#include <cassert>
+#include <utility>
+
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "core/enums.h"
+#include "core/module.h"
 
 static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments,
                                                    const Children& children)
@@ -58,7 +59,10 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
-std::string CsgOpNode::toString() const { return this->name() + "()"; }
+std::string CsgOpNode::toString() const
+{
+  return this->name() + "()";
+}
 
 std::string CsgOpNode::name() const
 {

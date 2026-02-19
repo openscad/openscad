@@ -25,10 +25,12 @@
  */
 
 #include "core/Assignment.h"
-#include "core/customizer/Annotation.h"
-#include "core/Expression.h"
+
 #include <ostream>
 #include <string>
+
+#include "core/Expression.h"
+#include "core/customizer/Annotation.h"
 
 void Assignment::addAnnotations(AnnotationList *annotations)
 {
@@ -37,7 +39,10 @@ void Assignment::addAnnotations(AnnotationList *annotations)
   }
 }
 
-bool Assignment::hasAnnotations() const { return !annotations.empty(); }
+bool Assignment::hasAnnotations() const
+{
+  return !annotations.empty();
+}
 
 const Annotation *Assignment::annotation(const std::string& name) const
 {

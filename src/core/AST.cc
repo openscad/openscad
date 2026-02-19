@@ -1,9 +1,11 @@
 #include "core/AST.h"
+
 #include <filesystem>
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
+
 #include "io/fileutils.h"
 
 const Location Location::NONE(0, 0, 0, 0, std::make_shared<fs::path>(fs::path{}));
@@ -15,9 +17,15 @@ bool operator==(Location const& lhs, Location const& rhs)
          lhs.filePath() == rhs.filePath();
 }
 
-bool operator!=(Location const& lhs, Location const& rhs) { return !(lhs == rhs); }
+bool operator!=(Location const& lhs, Location const& rhs)
+{
+  return !(lhs == rhs);
+}
 
-bool Location::isNone() const { return ((*this) == Location::NONE); }
+bool Location::isNone() const
+{
+  return ((*this) == Location::NONE);
+}
 
 std::string Location::toRelativeString(const std::string& docPath) const
 {

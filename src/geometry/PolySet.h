@@ -1,16 +1,16 @@
 #pragma once
 
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/GeometryUtils.h"
-#include "geometry/Polygon2d.h"
-#include "utils/boost-utils.h"
-
+#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <cstddef>
 #include <string>
 #include <vector>
+
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "utils/boost-utils.h"
 
 class PolySetBuilder;
 
@@ -44,6 +44,9 @@ public:
   bool isConvex() const;
   boost::tribool convexValue() const { return convex_; }
 
+  bool isManifold() const { return is_manifold_; }
+  void setManifold(bool manifold) { is_manifold_ = manifold; }
+
   bool isTriangular() const { return is_triangular_; }
   void setTriangular(bool triangular) { is_triangular_ = triangular; }
 
@@ -54,4 +57,10 @@ private:
   unsigned int dim_;
   mutable boost::tribool convex_;
   mutable BoundingBox bbox_;
+
+  // Sometimes it's useful to know whether a PolySet was created from a source guaranteed to be manifold
+  // (e.g. ManifoldGeometry), as that can make conversion and repair more convenient.
+  // "Manifold" is defined as an ε-valid mesh, see
+  // https://github.com/elalish/manifold/wiki/Manifold-Library#definition-of-%CE%B5-valid
+  bool is_manifold_ = false;  // false means "unknown"
 };

@@ -1,25 +1,26 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #ifdef ENABLE_MANIFOLD
 
-#include <iterator>
+#include <CGAL/Surface_mesh/Surface_mesh.h>
+#include <CGAL/convex_hull_3.h>
+
 #include <cassert>
-#include <list>
 #include <exception>
+#include <iterator>
+#include <list>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include <CGAL/convex_hull_3.h>
-#include <CGAL/Surface_mesh/Surface_mesh.h>
-
-#include "geometry/cgal/cgal.h"
+#include "core/enums.h"
 #include "geometry/Geometry.h"
-#include "geometry/cgal/cgalutils.h"
 #include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "geometry/manifold/manifoldutils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #include "utils/parallel.h"
+#include "utils/printutils.h"
 
 namespace ManifoldUtils {
 
@@ -101,8 +102,16 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
           } else {
             // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
             if (!mesh->is_valid()) throw 0;
-            CGAL_Nef_polyhedron3 decomposed_nef;
-            CGALUtils::convertSurfaceMeshToNef(*mesh, decomposed_nef);
+            CGAL::Timer convert_timer;
+            convert_timer.start();
+            CGAL_Nef_polyhedron3 decomposed_nef = CGALUtils::convertSurfaceMeshToNef(*mesh);
+            if (!decomposed_nef.is_valid()) {
+              LOG(message_group::Warning, "Minkowski: Nef polyhedron converted from mesh is invalid!");
+              throw 0;
+            }
+            convert_timer.stop();
+            PRINTDB("Minkowski: Nef conversion took %.2f s", convert_timer.time());
+
             CGAL::Timer t;
             t.start();
             CGAL::convex_decomposition_3(decomposed_nef);

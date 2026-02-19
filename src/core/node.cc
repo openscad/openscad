@@ -25,23 +25,30 @@
  */
 
 #include "core/node.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <deque>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "core/AST.h"
 #include "core/ModuleInstantiation.h"
 #include "core/progress.h"
 
-#include <deque>
-#include <memory>
-#include <cstddef>
-#include <functional>
-#include <iostream>
-#include <algorithm>
-#include <string>
-
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), idx(idx_counter++) {}
+AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), idx(idx_counter++)
+{
+}
 
-std::string AbstractNode::toString() const { return this->name() + "()"; }
+std::string AbstractNode::toString() const
+{
+  return this->name() + "()";
+}
 
 std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(
   int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const
@@ -118,15 +125,30 @@ void AbstractNode::findNodesWithSameMod(const std::shared_ptr<const AbstractNode
   }
 }
 
-std::string GroupNode::name() const { return "group"; }
+std::string GroupNode::name() const
+{
+  return "group";
+}
 
-std::string GroupNode::verbose_name() const { return this->_name; }
+std::string GroupNode::verbose_name() const
+{
+  return this->_name;
+}
 
-std::string ListNode::name() const { return "list"; }
+std::string ListNode::name() const
+{
+  return "list";
+}
 
-std::string RootNode::name() const { return "root"; }
+std::string RootNode::name() const
+{
+  return "root";
+}
 
-std::string AbstractIntersectionNode::toString() const { return this->name() + "()"; }
+std::string AbstractIntersectionNode::toString() const
+{
+  return this->name() + "()";
+}
 
 std::string AbstractIntersectionNode::name() const
 {
@@ -142,7 +164,10 @@ void AbstractNode::progress_prepare()
   this->progress_mark = ++progress_report_count;
 }
 
-void AbstractNode::progress_report() const { progress_update(shared_from_this(), this->progress_mark); }
+void AbstractNode::progress_report() const
+{
+  progress_update(shared_from_this(), this->progress_mark);
+}
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
 {

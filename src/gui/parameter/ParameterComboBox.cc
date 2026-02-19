@@ -1,7 +1,10 @@
 #include "gui/parameter/ParameterComboBox.h"
+
 #include <QString>
 #include <QWidget>
+
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter,
                                      DescriptionStyle descriptionStyle)
@@ -29,4 +32,7 @@ void ParameterComboBox::onChanged(int index)
   }
 }
 
-void ParameterComboBox::setValue() { comboBox->setCurrentIndex(parameter->valueIndex); }
+void ParameterComboBox::setValue()
+{
+  comboBox->setCurrentIndex(parameter->valueIndex);
+}

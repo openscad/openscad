@@ -1,17 +1,19 @@
 #include "geometry/ClipperUtils.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "clipper2/clipper.h"
-#include "utils/printutils.h"
+
+#include <clipper2/clipper.engine.h>
 
 #include <algorithm>
-#include <clipper2/clipper.engine.h>
-#include <cmath>
 #include <cassert>
-#include <utility>
-#include <memory>
+#include <cmath>
 #include <cstddef>
+#include <memory>
+#include <utility>
 #include <vector>
+
+#include "clipper2/clipper.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
 namespace ClipperUtils {
 
@@ -120,7 +122,10 @@ int scaleBitsFromBounds(const BoundingBox& bounds, int total_bits)
   return (actual_bits - 1) - exp;
 }
 
-int scaleBitsFromPrecision(int precision) { return std::ilogb(std::pow(10, precision)) + 1; }
+int scaleBitsFromPrecision(int precision)
+{
+  return std::ilogb(std::pow(10, precision)) + 1;
+}
 
 Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
 {

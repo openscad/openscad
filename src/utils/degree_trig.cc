@@ -25,10 +25,9 @@
  */
 #include "utils/degree_trig.h"
 
+#include <Eigen/Core>
 #include <cmath>
 #include <limits>
-
-#include <Eigen/Core>
 
 #include "geometry/linalg.h"
 
@@ -36,9 +35,15 @@
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
 
-static inline double rad2deg(double x) { return x * M_RAD2DEG; }
+static inline double rad2deg(double x)
+{
+  return x * M_RAD2DEG;
+}
 
-static inline double deg2rad(double x) { return x * M_DEG2RAD; }
+static inline double deg2rad(double x)
+{
+  return x * M_DEG2RAD;
+}
 
 // this limit assumes 26+26=52 bits mantissa
 // comment/undefine it to disable domain check

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "gui/qtgettext.h"
 #include <QComboBox>
 #include <QWidget>
 #include <string>
+
 #include "core/Settings.h"
-#include "ui_AxisConfigWidget.h"
 #include "gui/InitConfigurator.h"
+#include "gui/qtgettext.h"
+#include "ui_AxisConfigWidget.h"
 
 class AxisConfigWidget : public QWidget, public Ui::Axis, public InitConfigurator
 {
@@ -20,8 +21,9 @@ public:
 
 public slots:
   // Input Driver
-  void on_AxisTrim();
-  void on_AxisTrimReset();
+  void on_pushButtonAxisTrim_clicked();
+  void on_pushButtonAxisTrimReset_clicked();
+  void on_pushButtonUpdate_clicked();
   void on_comboBoxTranslationX_activated(int val);
   void on_comboBoxTranslationY_activated(int val);
   void on_comboBoxTranslationZ_activated(int val);

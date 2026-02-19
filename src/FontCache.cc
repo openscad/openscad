@@ -26,24 +26,26 @@
 
 #include "FontCache.h"
 
+#include <fontconfig/fontconfig.h>
+#include <ft2build.h>
+#include <hb.h>
+
+#include <boost/algorithm/string.hpp>
 #include <cassert>
-#include <cstdlib>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-#include <hb.h>
-#include <fontconfig/fontconfig.h>
-#include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_TYPES_H
 #include FT_TRUETYPE_IDS_H
 
+#include "core/AST.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
@@ -74,7 +76,10 @@ std::string get_harfbuzz_version()
   return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
-std::string get_freetype_version() { return FontCache::instance()->get_freetype_version(); }
+std::string get_freetype_version()
+{
+  return FontCache::instance()->get_freetype_version();
+}
 
 FontInfo::FontInfo(std::string family, std::string style, std::string file, uint32_t hash)
   : family(std::move(family)), style(std::move(style)), file(std::move(file)), hash(hash)
@@ -92,13 +97,25 @@ bool FontInfo::operator<(const FontInfo& rhs) const
   return file < rhs.file;
 }
 
-const std::string& FontInfo::get_family() const { return family; }
+const std::string& FontInfo::get_family() const
+{
+  return family;
+}
 
-const std::string& FontInfo::get_style() const { return style; }
+const std::string& FontInfo::get_style() const
+{
+  return style;
+}
 
-const std::string& FontInfo::get_file() const { return file; }
+const std::string& FontInfo::get_file() const
+{
+  return file;
+}
 
-const uint32_t FontInfo::get_hash() const { return hash; }
+const uint32_t FontInfo::get_hash() const
+{
+  return hash;
+}
 
 FontCache *FontCache::self = nullptr;
 FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
@@ -110,7 +127,10 @@ const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
  * handler is registered, the cache build is just called synchronously in the
  * current thread by this handler.
  */
-void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *) { initializer->run(); }
+void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
+{
+  initializer->run();
+}
 
 FontCache::FontCache()
 {
@@ -221,7 +241,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 void FontCache::register_font_file(const std::string& path)
 {
   if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG("Can't register font '%1$s'", path);
+    LOG(message_group::Warning, Location::NONE, "", "Can't register font '%1$s'", path);
   }
 }
 
@@ -231,7 +251,7 @@ void FontCache::add_font_dir(const std::string& path)
     return;
   }
   if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG("Can't register font directory '%1$s'", path);
+    LOG(message_group::Warning, Location::NONE, "", "Can't register font directory '%1$s'", path);
   }
 }
 
@@ -302,9 +322,15 @@ FontInfoList *FontCache::list_fonts() const
   return list;
 }
 
-bool FontCache::is_init_ok() const { return this->init_ok; }
+bool FontCache::is_init_ok() const
+{
+  return this->init_ok;
+}
 
-void FontCache::clear() { this->cache.clear(); }
+void FontCache::clear()
+{
+  this->cache.clear();
+}
 
 void FontCache::dump_cache(const std::string& info)
 {

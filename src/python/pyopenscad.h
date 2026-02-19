@@ -1,18 +1,23 @@
 #include <Python.h>
+
 #include <memory>
-#include "python_public.h"
-#include "geometry/Polygon2d.h"
-#include "core/node.h"
-#include "core/function.h"
+#include <string>
+
 #include "core/ScopeContext.h"
 #include "core/UserModule.h"
+#include "core/function.h"
+#include "core/node.h"
+#include "geometry/Polygon2d.h"
+#include "python_public.h"
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-#define DECLARE_INSTANCE       \
+class CurveDiscretizer;
+
+#define DECLARE_INSTANCE()     \
   std::string instance_name;   \
   AssignmentList inst_asslist; \
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
+  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE)
 
 typedef struct {
   PyObject_HEAD std::shared_ptr<AbstractNode> node;
@@ -37,7 +42,7 @@ extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
 int python_numberval(PyObject *number, double *result);
-void get_fnas(double& fn, double& fa, double& fs);
+CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs);
 PyObject *python_str(PyObject *self);
 
 extern PyNumberMethods PyOpenSCADNumbers;

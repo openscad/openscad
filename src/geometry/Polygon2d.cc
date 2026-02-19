@@ -1,10 +1,10 @@
 #include "geometry/Polygon2d.h"
 
-#include <sstream>
-#include <utility>
 #include <cstddef>
-#include <string>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
 
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
@@ -12,14 +12,20 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
 #include "geometry/PolySet.h"
+#include "geometry/cgal/cgalutils.h"
 #include "glview/RenderSettings.h"
 
-Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) { addOutline(std::move(outline)); }
+Polygon2d::Polygon2d(Outline2d outline) : sanitized(true)
+{
+  addOutline(std::move(outline));
+}
 
-std::unique_ptr<Geometry> Polygon2d::copy() const { return std::make_unique<Polygon2d>(*this); }
+std::unique_ptr<Geometry> Polygon2d::copy() const
+{
+  return std::make_unique<Polygon2d>(*this);
+}
 
 BoundingBox Outline2d::getBoundingBox() const
 {
@@ -77,7 +83,10 @@ std::string Polygon2d::dump() const
   return out.str();
 }
 
-bool Polygon2d::isEmpty() const { return this->theoutlines.empty(); }
+bool Polygon2d::isEmpty() const
+{
+  return this->theoutlines.empty();
+}
 
 void Polygon2d::transform(const Transform2d& mat)
 {

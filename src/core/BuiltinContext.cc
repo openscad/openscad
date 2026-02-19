@@ -5,11 +5,14 @@
 #include "core/AST.h"
 #include "core/Builtins.h"
 #include "core/Expression.h"
+#include "core/callables.h"
 #include "core/function.h"
 #include "core/module.h"
 #include "utils/printutils.h"
 
-BuiltinContext::BuiltinContext(EvaluationSession *session) : Context(session) {}
+BuiltinContext::BuiltinContext(EvaluationSession *session) : Context(session)
+{
+}
 
 void BuiltinContext::init()
 {

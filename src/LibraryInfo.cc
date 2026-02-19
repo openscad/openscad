@@ -1,25 +1,29 @@
 #include "LibraryInfo.h"
 
+#include <clipper2/clipper.version.h>
+#include <glib.h>
+
+#include <Eigen/Core>
 #include <cstdlib>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include <clipper2/clipper.version.h>
-#include <Eigen/Core>
-#include <glib.h>
-
 #include "io/lib3mf_utils.h"
 
 #ifndef OPENSCAD_NOGUI
-#include <QtGlobal>
 #include <Qsci/qsciglobal.h>
+
+#include <QtGlobal>
+
 #include "gui/input/InputDriverManager.h"
 #endif
 
 #ifdef ENABLE_CGAL
 #include <CGAL/version.h>
+
 #include <boost/algorithm/string.hpp>
+
 #include "geometry/cgal/cgal.h"
 #if defined(__GNUG__)
 #define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100)
@@ -60,10 +64,10 @@
 #define MANIFOLD_VERSION_STRING "<not enabled>"
 #endif
 
-#include "platform/PlatformUtils.h"
-#include "version.h"
 #include "Feature.h"
 #include "FontCache.h"
+#include "platform/PlatformUtils.h"
+#include "version.h"
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;

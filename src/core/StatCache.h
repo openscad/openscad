@@ -26,8 +26,9 @@
 
 #pragma once
 
-#include <string>
 #include <sys/stat.h>
+
+#include <string>
 
 namespace StatCache {
 

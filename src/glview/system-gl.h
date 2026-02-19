@@ -21,6 +21,7 @@
 #endif
 
 #include <string>
+#include "core/AST.h"
 #include "utils/printutils.h"
 
 namespace {
@@ -116,7 +117,9 @@ namespace {
 #define GLint int
 #define GLuint unsigned int
 #define GLdouble unsigned int
-inline void glColor4fv(float *c) {}
+inline void glColor4fv(float *c)
+{
+}
 
 #endif  // NULLGL
 

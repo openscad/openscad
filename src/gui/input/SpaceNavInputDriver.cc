@@ -30,6 +30,7 @@
  */
 
 #include "gui/input/SpaceNavInputDriver.h"
+#include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "utils/printutils.h"
 
@@ -180,9 +181,14 @@ bool SpaceNavInputDriver::open()
   return true;
 }
 
-void SpaceNavInputDriver::close() {}
+void SpaceNavInputDriver::close()
+{
+}
 
-void SpaceNavInputDriver::setDominantAxisOnly(bool var) { this->dominantAxisOnly = var; }
+void SpaceNavInputDriver::setDominantAxisOnly(bool var)
+{
+  this->dominantAxisOnly = var;
+}
 
 const std::string& SpaceNavInputDriver::get_name() const
 {
