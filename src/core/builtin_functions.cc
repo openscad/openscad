@@ -1113,7 +1113,7 @@ Value builtin_now(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
   const auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-    std::chrono::steady_clock::now().time_since_epoch())
+                        std::chrono::steady_clock::now().time_since_epoch())
                         .count();
   return Value(static_cast<double>(now_us));
 }
