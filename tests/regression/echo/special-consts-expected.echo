@@ -42,4 +42,5 @@ ECHO: "-- comparing nan --"
 ECHO: "nan != nan"
 ECHO: "-- 3d objects --"
 ECHO: "-- for loops --"
+WARNING: Unable to convert [undef:...:undef] to a range in file special-consts.scad, line 102
 WARNING: Bad range parameter in for statement: too many elements (4294967295) in file special-consts.scad, line 106
