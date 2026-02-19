@@ -923,7 +923,7 @@ PyObject *python_show_core(PyObject *obj)
     return NULL;
   }
   python_result_node = child;
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1103,7 +1103,7 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate)
     }
     return pyth_outlines;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2109,7 +2109,7 @@ PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstma
   std::shared_ptr<AbstractNode> dstnode = PyOpenSCADObjectToNode(obj, &child_dict);
   if (dstnode == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Invalid align object");
-    return Py_None;
+    Py_RETURN_NONE;
   }
   DECLARE_INSTANCE();
   auto multmatnode = std::make_shared<TransformNode>(instance, "align");
