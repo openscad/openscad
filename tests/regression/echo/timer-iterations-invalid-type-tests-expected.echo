@@ -1,3 +1,0 @@
-ERROR: timer_stop() iterations must be a number; got string ("hello") in file timer-iterations-invalid-type-tests.scad, line 2
-TRACE: called by 'timer_stop' in file timer-iterations-invalid-type-tests.scad, line 2
-TRACE: assignment to "u" in file timer-iterations-invalid-type-tests.scad, line 2

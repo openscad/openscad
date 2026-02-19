@@ -1,0 +1,3 @@
+WARNING: now() number of parameters does not match: expected 0, found 1 in file now-tests.scad, line 5
+WARNING: now() number of parameters does not match: expected 0, found 1 in file now-tests.scad, line 6
+ECHO: "monotonic_non_decreasing", true

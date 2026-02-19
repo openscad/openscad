@@ -1,3 +1,0 @@
-ERROR: timer_elapsed() iterations must be a number; got bool (true) in file timer-elapsed-iterations-invalid-type-tests.scad, line 2
-TRACE: called by 'timer_elapsed' in file timer-elapsed-iterations-invalid-type-tests.scad, line 2
-TRACE: assignment to "u" in file timer-elapsed-iterations-invalid-type-tests.scad, line 2

@@ -1031,7 +1031,6 @@ set(CORE_SOURCES
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
   src/core/SurfaceNode.cc
-  src/core/TimerRegistry.cc
   src/core/TextNode.cc
   src/core/FunctionArgs.cc
   src/core/TransformNode.cc

@@ -29,15 +29,13 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
-#include <vector>
-#include <optional>
 
 #include "core/AST.h"
 #include "core/ContextFrame.h"
-#include "core/TimerRegistry.h"
+#include "core/Value.h"
+#include "core/callables.h"
 #include "core/function.h"
 #include "core/module.h"
-#include "core/Value.h"
 #include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
@@ -46,12 +44,6 @@ size_t EvaluationSession::push_frame(ContextFrame *frame)
   stack.push_back(frame);
   return index;
 }
-
-EvaluationSession::EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot))
-{
-}
-
-EvaluationSession::~EvaluationSession() = default;
 
 void EvaluationSession::replace_frame(size_t index, ContextFrame *frame)
 {

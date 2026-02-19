@@ -381,15 +381,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
-  ${TEST_SCAD_DIR}/misc/timer-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-run-options-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-run-options-invalid-order-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-iterations-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-iterations-invalid-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-iterations-invalid-type-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-elapsed-iterations-invalid-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-elapsed-iterations-invalid-type-tests.scad
-  ${TEST_SCAD_DIR}/misc/timer-stop-invalid-order-tests.scad
+  ${TEST_SCAD_DIR}/misc/now-tests.scad
 )
 
 list(APPEND ASTDUMP_FILES ${MISC_FILES}

@@ -1,3 +1,0 @@
-ECHO: run run-a i=3
-ECHO: sum run-b i=2
-ECHO: argc 1
