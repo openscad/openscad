@@ -43,7 +43,6 @@
 #include <QImage>
 #include <QOpenGLWidget>
 #include <QWidget>
-#include <QGestureEvent>
 #include <QPinchGesture>
 #include <QNativeGestureEvent>
 #include <iostream>
@@ -464,6 +463,9 @@ bool QGLView::event(QEvent *event)
 {
   if (event->type() == QEvent::NativeGesture) {
     auto *gestureEvent = static_cast<QNativeGestureEvent *>(event);
+    if (gestureEvent->gestureType() == Qt::RotateNativeGesture) {
+      rotate(0, 0, -gestureEvent->value(), true);
+    }
     if (gestureEvent->gestureType() == Qt::ZoomNativeGesture) {
       const QPointF pos = mapFromGlobal(gestureEvent->globalPosition());
 
