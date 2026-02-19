@@ -1,3 +1,0 @@
-ERROR: timer_stop() positional argument 3 is not allowed after named argument 'output' at argument 2 in file timer-stop-invalid-order-tests.scad, line 2
-TRACE: called by 'timer_stop' in file timer-stop-invalid-order-tests.scad, line 2
-TRACE: assignment to "zb" in file timer-stop-invalid-order-tests.scad, line 2

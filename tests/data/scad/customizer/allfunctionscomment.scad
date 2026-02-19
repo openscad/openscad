@@ -64,18 +64,4 @@ w = dxf_dim();//parameter
 //description
 x = dxf_cross();
 //description
-ta = timer_new();//parameter
-//description
-tb = timer_start(ta);//parameter
-//description
-tc = timer_clear(ta);//parameter
-//description
-td = timer_start(ta);//parameter
-//description
-te = timer_stop(ta);//parameter
-//description
-tf = timer_delete(ta);//parameter
-//description
-tg = timer_new("", "CPU");//parameter
-//description
-th = timer_delete(tg);//parameter
+ta = now();//parameter
