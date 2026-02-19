@@ -137,6 +137,7 @@ set(TEST_DATA_DIR       "${CCSD}/data")
 set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_PYTHONSCAD_DIR "${CCSD}/data/pythonscad")
 set(TEST_PYTHONSCAD_ECHO_DIR "${CCSD}/data/pythonscad-echo")
+set(TEST_PYTHONSCAD_LASER_DIR "${CCSD}/data/pythonscad-laser")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
 # Test runner Python scripts
@@ -261,6 +262,7 @@ file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
 file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
 file(GLOB PYTHONSCAD_FILES    ${TEST_PYTHONSCAD_DIR}/*.py)
 file(GLOB PYTHONSCAD_ECHO_FILES    ${TEST_PYTHONSCAD_ECHO_DIR}/*.py)
+file(GLOB PYTHONSCAD_LASER_FILES    ${TEST_PYTHONSCAD_LASER_DIR}/*.py)
 # Exclude add_parameter_pure.py as it has a separate test with feature flag
 list(REMOVE_ITEM PYTHONSCAD_ECHO_FILES "${TEST_PYTHONSCAD_ECHO_DIR}/add_parameter_pure.py")
 # Exclude libfive tests if libfive is not enabled
@@ -1328,6 +1330,7 @@ add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EX
 add_cmdline_test(throwntogethertest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_SKIN_FILES} ARGS --preview=throwntogether --enable=skin --trust-python)
 add_cmdline_test(pythonscad          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${PYTHONSCAD_FILES} ARGS --render --trust-python)
 add_cmdline_test(pythonscadecho      EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${PYTHONSCAD_ECHO_FILES} ARGS --trust-python)
+add_cmdline_test(pythonscadlaser     EXPERIMENTAL OPENSCAD SUFFIX svg FILES ${PYTHONSCAD_LASER_FILES}            ARGS --trust-python)
 add_cmdline_test(pythonscadecho_pure EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_PYTHONSCAD_ECHO_DIR}/add_parameter_pure.py ARGS --enable=add-parameter-pure-function --trust-python)
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle --trust-python)
 

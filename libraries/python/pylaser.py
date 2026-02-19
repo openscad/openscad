@@ -57,16 +57,23 @@ class LaserCutter:
 
     def add_faces(self, facelist):
         self.faces = self.faces + facelist
+    def create_conn_type1(self, l):
+        res = []
+        n=int(l/20)
+        if n < 2:
+            n=2
+        for i in range(n):
+            res = res + [[i/n,-1, 0], [(i+0.5)/n,-1, 0], [(i+0.5)/n, 1, 0], [(i+1)/n,1, 0]]
+        return res
 
     def link(self):
 
         conn_plain = [[0,0, 0],[1,0, 0]]
 
         # [x realtive, y is absolute, x absolute
-        conn_type1 = [ [0.0,-1, 0], [0.25,-1, 0], [0.25,1, 0], [0.5,1, 0], [0.5,-1, 0], [0.75,-1, 0], [0.75, 1, 0], [1,1, 0]]
-        conn_type2 = [ [0.0,-1, 0], [0.4,-1, 0], [0.4,1, 0], [0.6,1, 0], [0.6,-1, 0], [1,-1, 0] ]
-        conn_type2_ = [[0.4,-1, 0],[0.6 , -1, 0] ,[0.6,1, 0],[0.4,1, 0]]
-        conn_type3  = [[0,-1, 0],[1, -1,0],[1,1,0],[0,1,0]]
+        conn_type2 = [ [0.0,-1, 0], [0.4,-1, 0], [0.4,1, 0], [0.6,1, 0], [0.6,-1, 0], [1,-1, 0] ] # face-edge male
+        conn_type2_ = [[0.4,-1, 0],[0.6 , -1, 0] ,[0.6,1, 0],[0.4,1, 0]] # face-edge female
+        conn_type3  = [[0,-1, 0],[1, -1,0],[1,1,0],[0,1,0]] # edge-edge
 
         late_cuts = []
         total_cuts = []
@@ -75,18 +82,30 @@ class LaserCutter:
         lut = {}
         vertices = []
         edge_inv = {}
-
-        # make sure all faces are polygons
-        for f in self.faces:
-            for pol in f:
-                points = []
-                paths = []
-                for pts in pol.mesh():
-                    s=len(points)
-                    n=len(pts)
-                    points = points + pts
-                    paths.append(list(range(s, s+n)))
-                pol.value  = polygon(points=points, paths = paths)
+        # make sure all faces are polygons, normalize input TODO combine transformations
+        for i, f in enumerate(self.faces):
+            # f are multmatrix - polygon
+            mat = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+            iter = f
+            while True:
+                try:
+                    newmat=iter.matrix
+                except:
+                    break
+                mat = multmatrix(mat, newmat)
+                iter, = iter.children()
+            points = []
+            paths = []
+            for pts in iter.mesh():
+                s=len(points)
+                n=len(pts)
+                points = points + pts
+                paths.append(list(range(s, s+n)))
+            newface = polygon(points=points, paths = paths).multmatrix(mat)
+            d = self.faces[i].dict()
+            for key in list(d.keys()):
+                newface.setattr(key, d[key])
+            self.faces[i]=newface
 
 
         # faces, outlines, segments, other
@@ -95,40 +114,40 @@ class LaserCutter:
             late_cuts.append(False) # dummy void
             total_cuts.append([])
             mat = f.matrix
-            pol, = f.children()
-
             #pt inventur
-            ipaths=[]
-            if len(pol.paths) == 0:
-                pol.paths=[list(range(len(pol.points)))]
-            for path in pol.paths:
+            for pol in f:
 
-                ipath = []
+                ipaths=[]
+                if len(pol.paths) == 0:
+                    pol.paths=[list(range(len(pol.points)))]
+                for path in pol.paths:
+    
+                    ipath = []
+    
+                    for ind in path:
+                        pt = pol.points[ind]
+                        pt3 = multmatrix(pt + [0] , mat)
+                        # check if pt3 is very similar to an exising one
+                        for x, v in enumerate(vertices):
+                            if abs(v[0] - pt3[0]) < 1e-3 and abs(v[1] - pt3[1] ) < 1e-3 and  abs(v[2] - pt3[2]) < 1e-3:
+                                pt3=v
+                                lut[tuple(pt3)]=x
+                                break
+                        pt3t = tuple(pt3)
+                        # Create LUT from vertices
+                        if not pt3t in lut:
+                            ind=len(vertices)
+                            lut[pt3t]=ind
+                            vertices.append(pt3)
+                        ipath.append(lut[pt3t])
 
-                for ind in path:
-                    pt = pol.points[ind]
-                    pt3 = multmatrix(pt + [0] , mat)
-                    # check if pt3 is very similar to an exising one
-                    for x, v in enumerate(vertices):
-                        if abs(v[0] - pt3[0]) < 1e-3 and abs(v[1] - pt3[1] ) < 1e-3 and  abs(v[2] - pt3[2]) < 1e-3:
-                            pt3=v
-                            lut[tuple(pt3)]=x
-                            break
-                    pt3t = tuple(pt3)
-                    # Create LUT from vertices
-                    if not pt3t in lut:
-                        ind=len(vertices)
-                        lut[pt3t]=ind
-                        vertices.append(pt3)
-                    ipath.append(lut[pt3t])
-
-                    # Create Eedge inventory
-                ipaths.append(ipath)
-                n=len(ipath)
-                for i in range(n):
-                    edge=[ipath[i],ipath[(i+1)%n]]
-                    edge_inv[tuple(edge)]=1
-            ifaces.append(ipaths)
+                        # Create Eedge inventory
+                    ipaths.append(ipath)
+                    n=len(ipath)
+                    for i in range(n):
+                        edge=[ipath[i],ipath[(i+1)%n]]
+                        edge_inv[tuple(edge)]=1
+                ifaces.append(ipaths)
 
         # Process faces and edges now
 
@@ -151,12 +170,13 @@ class LaserCutter:
                     for k in range(n): # all edges
                         conn=conn_plain
                         partedge=[curface[(k+1)%n],curface[k]]
+                        pt1=multmatrix(pol.points[path[k]] + [0], mat)
+                        pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat)
                         if tuple(partedge) in edge_inv:
-                            conn = conn_type1
+                            l=norm(translate(pt1, scale(pt2,-1)))
+                            conn = self.create_conn_type1(l)
     
                         if conn == conn_plain:
-                            pt1=multmatrix(pol.points[path[k]] + [0], mat)
-                            pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
     
                             # go through all faces and check if they are inside
                             for l, oface in enumerate(self.faces):
@@ -165,21 +185,21 @@ class LaserCutter:
                                 # pos auf oface
                                 pt1x=divmatrix(pt1, oface.matrix)
                                 pt2x=divmatrix(pt2, oface.matrix)
-                                oshape,  = oface.children()
-                                valid=True
-                                if abs(pt1x[2]) > 1e-3:
-                                    valid = False
-                                if abs(pt2x[2]) > 1e-3:
-                                    valid = False
-                                if not oface.inside(pt1x):
-                                    valid = False
-                                if not oface.inside(pt2x):
-                                    valid = False
-    
-                                if valid == True:
-                                    conn = conn_type2
-                                    cutout = self.jigging(pt1x, pt2x, conn_type2_)
-                                    late_cuts[l] = union(late_cuts[l], polygon(cutout))
+                                for oshape in oface:
+                                    oshape = oshape.offset(delta=0.1) # oversize to make sure, that edges are inside
+                                    valid=True
+                                    if abs(pt1x[2]) > 1e-3:
+                                        valid = False
+                                    if abs(pt2x[2]) > 1e-3:
+                                        valid = False
+                                    if not oshape.inside(pt1x):
+                                        valid = False
+                                    if not oshape.inside(pt2x):
+                                        valid = False
+                                    if valid == True:
+                                        conn = conn_type2
+                                        cutout = self.jigging(pt1x, pt2x, conn_type2_)
+                                        late_cuts[l] = union(late_cuts[l], polygon(cutout))
 
                         beg = pol.points[path[k]]
                         end = pol.points[path[(k+1)%n]]
@@ -190,27 +210,38 @@ class LaserCutter:
                     for k, oface in enumerate(self.faces):
                         if k == i:
                             continue
-                        oshape,  = oface.children()
+                        for oshape in oface:
+                            oshape = oshape.offset(delta=-0.1) # make sure, that cuts on edges are ignored
+                            for l in range(n):
     
-                        for l in range(n):
+                                # i/j 1st outline , pol, n
+                                # oshape ist anderes
+                                pt1=multmatrix(pol.points[path[l]] + [0], mat) # 3d pos of edge on original shape
+                                pt2=multmatrix(pol.points[path[(l+1)%n]] + [0], mat)
+                                pt1x=divmatrix(pt1, oface.matrix)
+                                pt2x=divmatrix(pt2, oface.matrix)
+                                # TODO pruefen ob das mitten durch geht und nicht nur am rand entlang
     
-                            pt1=multmatrix(pol.points[path[l]] + [0], mat)
-                            pt2=multmatrix(pol.points[path[(l+1)%n]] + [0], mat) # TODO hier out of index
-                            pt1x=divmatrix(pt1, oface.matrix)
-                            pt2x=divmatrix(pt2, oface.matrix)
-    
-                            fact=None
-                            if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
-                                # calculate exact cut
-                                fact=pt1x[2]/(pt1x[2]-pt2x[2])
+                                fact=None
+                                if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
+                                    # calculate exact cut
+                                    fact=pt1x[2]/(pt1x[2]-pt2x[2])
         
-                            if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
-                                fact= pt1x[2]/(pt1x[2]-pt2x[2])
-                            if fact is not None:
-                                ptcut=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
-                                total_cuts[k].append(ptcut)
-                            if len(total_cuts[k])%3 == 2:
-                                total_cuts[k].append(i) # 2->3, info about other plate
+                                if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
+                                    fact= pt1x[2]/(pt1x[2]-pt2x[2])
+                                if fact is not None: # TODO activate
+                                    ptcutx=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
+                                    total_cuts[k].append(ptcutx)
+                                if len(total_cuts[k])%3 == 2:
+                                    pt1x = total_cuts[k][-1]
+                                    pt2x = total_cuts[k][-2]
+                                    midpt=[ (pt1x[i]+pt2x[i])/2.0 for i in range(2) ]
+                                    #total_cuts[k].append(i) # 2->3, info about other plate
+                                    if oshape.inside(midpt):
+                                        total_cuts[k].append(i) # 2->3, info about other plate
+                                    else:
+                                        #total_cuts[k].append(i) # 2->3, info about other plate
+                                        total_cuts[k]= total_cuts[k][:-2]
 
 
 
@@ -349,7 +380,7 @@ class LaserCutter:
  
         
 
-    def finalize_auto(self, puzzles):
+    def finalize_auto(self, puzzles ,maxheight=None, maxwidth=None,dist=1):
         done=True
         while done == True:
             n=len(puzzles)
@@ -463,16 +494,15 @@ class LaserCutter:
         puzzles = []
         for piece in self.faces:
             for puzzle in piece:
-                puzzle = puzzle.offset(kerf)
+                puzzle = puzzle.offset(delta=kerf)
                 puzzle.bbox = self.calc_bbox(puzzle)
-                print("size %f %f\n"%(puzzle.bbox[2]-puzzle.bbox[0], puzzle.bbox[3]-puzzle.bbox[1]))
                 puzzles.append(puzzle)
 
         # combine all of them by abuting width/length
         if recipe != None:
             return self.finalize_sub(puzzles, recipe, dist)
 
-        return self.finalize_auto(puzzles)
+        return self.finalize_auto(puzzles, dist=dist,maxwidth=maxwidth, maxheight=maxheight)
 
 
     def alter_face(self, dir, alterfunc):

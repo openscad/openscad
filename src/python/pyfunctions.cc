@@ -1615,7 +1615,7 @@ PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int
   case 0: return PyFloat_FromDouble(vec31.dot(vec32)); break;
   case 1: return python_fromvector(vec31.cross(vec32)); break;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1911,12 +1911,12 @@ PyObject *python_show_core(PyObject *obj)
     return NULL;
   }
   if (child == void_node) {
-    return Py_None;
+    Py_RETURN_NONE;
   }
 
   if (child == full_node) {
     PyErr_SetString(PyExc_TypeError, "Cannot display infinite space");
-    return Py_True;
+    Py_RETURN_TRUE;
   }
 
   PyObject *key, *value;
@@ -2099,7 +2099,7 @@ PyObject *python_export_core(PyObject *obj, char *file)
     }
     exportFileByName(export3mfPartInfos[0].geom, file, exportInfo);
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_export(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2130,10 +2130,10 @@ PyObject *python_find_face_core(PyObject *obj, PyObject *vec_p)
   Vector3d vec;
   double dummy;
   PyObject *child_dict;
-  if (python_vectorval(vec_p, 3, 3, &vec[0], &vec[1], &vec[2], &dummy)) return Py_None;
+  if (python_vectorval(vec_p, 3, 3, &vec[0], &vec[1], &vec[2], &dummy)) Py_RETURN_NONE;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
 
-  if (child == nullptr) return Py_None;
+  if (child == nullptr) Py_RETURN_NONE;
 
   Tree tree(child, "");
   GeometryEvaluator geomevaluator(tree);
@@ -2182,13 +2182,13 @@ PyObject *python_sitonto_core(PyObject *pyobj, PyObject *vecx_p, PyObject *vecy_
 {
   Vector4d vecx, vecy, vecz;
   Vector3d cut;
-  if (python_vectorval(vecx_p, 3, 3, &vecx[0], &vecx[1], &vecx[2], &vecx[3])) return Py_None;
-  if (python_vectorval(vecy_p, 3, 3, &vecy[0], &vecy[1], &vecy[2], &vecy[3])) return Py_None;
-  if (python_vectorval(vecz_p, 3, 3, &vecz[0], &vecz[1], &vecz[2], &vecz[3])) return Py_None;
+  if (python_vectorval(vecx_p, 3, 3, &vecx[0], &vecx[1], &vecx[2], &vecx[3])) Py_RETURN_NONE;
+  if (python_vectorval(vecy_p, 3, 3, &vecy[0], &vecy[1], &vecy[2], &vecy[3])) Py_RETURN_NONE;
+  if (python_vectorval(vecz_p, 3, 3, &vecz[0], &vecz[1], &vecz[2], &vecz[3])) Py_RETURN_NONE;
 
   if (cut_face_face_face(vecx.head<3>() * vecx[3], vecx.head<3>(), vecy.head<3>() * vecy[3],
                          vecy.head<3>(), vecz.head<3>() * vecz[3], vecz.head<3>(), cut))
-    return Py_None;
+    Py_RETURN_NONE;
   DECLARE_INSTANCE();
   auto node = std::make_shared<TransformNode>(instance, "sitontonode");
   std::shared_ptr<AbstractNode> child;
@@ -2261,7 +2261,7 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
     if (polygon != nullptr) {
       if (v != nullptr) {
         polygon->points = python_to2dvarpointlist(v);
-        return Py_None;
+        Py_RETURN_NONE;
       }
 
       result = python_from2dvarpointlist(polygon->points);
@@ -2278,7 +2278,7 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
     if (polygon != nullptr) {
       if (v != nullptr) {
         polygon->paths = python_to2dintlist(v);
-        return Py_None;
+        Py_RETURN_NONE;
       }
 
       result = python_from2dint(polygon->paths);
@@ -2322,7 +2322,7 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
   if (node != nullptr) {
-    result = python__getsetitem_hier(node, keystr, nullptr, 2);
+    result = python__getsetitem_hier(node, keystr, nullptr, 0);
     if (result != nullptr) return result;
   }
 
@@ -2501,7 +2501,7 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate, bool color)
     }
     return pyth_outlines;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2548,7 +2548,7 @@ PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
     auto geom = polygonnode->createGeometry();
     const Polygon2d poly2 = dynamic_cast<const Polygon2d&>(*geom);
     Vector2d vec2(vec3[0], vec3[1]);
-    return poly2.point_inside(vec2) ? Py_True : Py_False;
+    if(poly2.point_inside(vec2)) Py_RETURN_TRUE ; else Py_RETURN_FALSE;
   }
 
   const std::shared_ptr<const PolyhedronNode> polyhedronnode =
@@ -2556,7 +2556,7 @@ PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
   if (polyhedronnode != nullptr) {
     auto geom = polyhedronnode->createGeometry();
     const PolySet ps = dynamic_cast<const PolySet&>(*geom);
-    return ps.point_inside(vec3) ? Py_True : Py_False;
+    if(ps.point_inside(vec3)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
   }
 
   Tree tree(node, "");
@@ -2565,12 +2565,12 @@ PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
   std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (auto poly2 = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     Vector2d vec2(vec3[0], vec3[1]);
-    return poly2->point_inside(vec2) ? Py_True : Py_False;
+    if(poly2->point_inside(vec2)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
   }
   if (ps != nullptr) {
-    return ps->point_inside(vec3) ? Py_True : Py_False;
+    if(ps->point_inside(vec3)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_inside(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2611,7 +2611,7 @@ PyObject *python_bbox_core(PyObject *obj)
   if (position == Py_None || size == Py_None) {
     if (position != Py_None) Py_DECREF(position);
     if (size != Py_None) Py_DECREF(size);
-    return Py_None;
+    Py_RETURN_NONE;
   }
 
   // Create cube with the size, not centered (starts at origin [0,0,0])
@@ -2668,7 +2668,7 @@ PyObject *python_size_core(PyObject *obj)
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
   if (child == NULL) {
-    return Py_None;
+    Py_RETURN_NONE;
   }
   Tree tree(child, "");
   GeometryEvaluator geomevaluator(tree);
@@ -2690,7 +2690,7 @@ PyObject *python_size_core(PyObject *obj)
     Py_INCREF(size_list);
     return size_list;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_position_core(PyObject *obj)
@@ -2698,7 +2698,7 @@ PyObject *python_position_core(PyObject *obj)
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
   if (child == NULL) {
-    return Py_None;
+    Py_RETURN_NONE;
   }
   Tree tree(child, "");
   GeometryEvaluator geomevaluator(tree);
@@ -2716,7 +2716,7 @@ PyObject *python_position_core(PyObject *obj)
     Py_INCREF(position_list);
     return position_list;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_size(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2822,7 +2822,7 @@ PyObject *python_separate_core(PyObject *obj)
     }
     return objects;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_separate(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2860,7 +2860,7 @@ PyObject *python_edges_core(PyObject *obj)
   GeometryEvaluator geomevaluator(tree);
   std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
   const std::shared_ptr<const Polygon2d> poly = std::dynamic_pointer_cast<const Polygon2d>(geom);
-  if (poly == nullptr) return Py_None;
+  if (poly == nullptr) Py_RETURN_NONE;
   int edgenum = 0;
   Vector3d zdir(0, 0, 0);
   Transform3d trans = poly->getTransform3d();
@@ -3063,7 +3063,7 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
     }
     return pyth_faces;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_faces(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -5167,7 +5167,7 @@ PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstma
   std::shared_ptr<AbstractNode> dstnode = PyOpenSCADObjectToNode(obj, &child_dict);
   if (dstnode == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Invalid align object");
-    return Py_None;
+    Py_RETURN_NONE;
   }
   DECLARE_INSTANCE();
   auto multmatnode = std::make_shared<TransformNode>(instance, "align");
@@ -5325,7 +5325,7 @@ PyObject *python_oo_clone(PyObject *self, PyObject *args, PyObject *kwargs)
       PyDict_SetItem(((PyOpenSCADObject *)self)->dict, key, value);
     }
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_oo_hasattr(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -5340,7 +5340,7 @@ PyObject *python_oo_hasattr(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   PyObject* pykeyword = PyUnicode_FromString(keyword);
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
-  return  PyDict_Contains(dict, pykeyword)? Py_True:Py_False;
+  if(PyDict_Contains(dict, pykeyword)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
 }
 
 
@@ -5375,7 +5375,7 @@ PyObject *python_oo_setattr(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject* pykeyword = PyUnicode_FromString(keyword);
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
   PyDict_SetItem(dict, pykeyword, setvalue);
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -5396,7 +5396,7 @@ PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing nimport(filename)");
     return NULL;
   }
-  if (c_url == nullptr) return Py_None;
+  if (c_url == nullptr) Py_RETURN_NONE;
 
   std::string url = c_url;
   std::string filename, path, importcode;
@@ -5420,7 +5420,7 @@ PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   PyRun_SimpleString(importcode.c_str());
-  return Py_None;
+  Py_RETURN_NONE;
 }
 #endif
 
@@ -5710,7 +5710,7 @@ PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs,
     Py_INCREF(value_effective);
     return value_effective;
   }
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyObject *python_scad(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -5726,7 +5726,7 @@ PyObject *python_scad(PyObject *self, PyObject *args, PyObject *kwargs)
   SourceFile *parsed_file = NULL;
   if (!parse(parsed_file, code, "python", "python", false)) {
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
-    return Py_None;
+    Py_RETURN_NONE;
   }
   parsed_file->handleDependencies(true);
 
@@ -5761,7 +5761,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
   SourceFile *source;
   if (!parse(source, stream.str(), scriptpath, scriptpath, false)) {
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
-    return Py_None;
+    Py_RETURN_NONE;
   }
   if (mode == 0) source->scope->moduleInstantiations.clear();
   source->handleDependencies(true);
@@ -5910,7 +5910,7 @@ PyObject *python_add_menuitem(PyObject *self, PyObject *args, PyObject *kwargs, 
     return NULL;
   }
   add_menuitem_trampoline(menuname, itemname, callback);
-  return Py_None;
+  Py_RETURN_NONE;
 }
 #endif
 
@@ -5922,7 +5922,7 @@ PyObject *python_model(PyObject *self, PyObject *args, PyObject *kwargs, int mod
     PyErr_SetString(PyExc_TypeError, "Error during parsing model");
     return NULL;
   }
-  if (genlang_result_node == nullptr) return Py_None;
+  if (genlang_result_node == nullptr) Py_RETURN_NONE;
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, genlang_result_node);
 }
 
@@ -6174,7 +6174,7 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
   meth->ml_meth = next_trampoline;
   meth->ml_flags = METH_VARARGS | METH_KEYWORDS;
   meth->ml_doc = memberdoc;
-  if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
+  if (type_add_method(&PyOpenSCADType, meth) < 0) Py_RETURN_NONE;
 
   Py_INCREF(memberfunc);  // needed because pythons garbage collector eats it when not used.
   if (curind < python_member_names.size()) {
@@ -6184,7 +6184,7 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
     python_member_callables.push_back(memberfunc);
   }
 
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyMethodDef PyOpenSCADFunctions[] = {
