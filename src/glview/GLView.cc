@@ -43,16 +43,10 @@ GLView::GLView()
 void GLView::setupShader()
 {
   if (main_shader) return;
-  main_shader = std::make_unique<ShaderUtils::Shader>(
-    "Main.vert",
-    "Main.frag",
-    ShaderUtils::ShaderType::MAIN_RENDERING
-  );
-  post_shader = std::make_unique<ShaderUtils::Shader>(
-  "Post.vert",
-  "Post.frag",
-  ShaderUtils::ShaderType::POST_RENDERING
-);
+  main_shader = std::make_unique<ShaderUtils::Shader>("Main.vert", "Main.frag",
+                                                      ShaderUtils::ShaderType::MAIN_RENDERING);
+  post_shader = std::make_unique<ShaderUtils::Shader>("Post.vert", "Post.frag",
+                                                      ShaderUtils::ShaderType::POST_RENDERING);
 }
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
@@ -121,7 +115,7 @@ void GLView::resizeGL(int w, int h)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
     // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
     glDrawBuffers(3, attachments);
     glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
   } else {
@@ -177,15 +171,12 @@ unsigned int quadVAO = 0;
 unsigned int quadVBO;
 void renderQuad()
 {
-  if (quadVAO == 0)
-  {
+  if (quadVAO == 0) {
     float quadVertices[] = {
       // positions        // texture Coords
-      -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-       1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-       1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-  };
+      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    };
     // setup plane VAO
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
@@ -193,9 +184,9 @@ void renderQuad()
     glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
   }
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -257,7 +248,7 @@ void GLView::paintGL()
   glColor3d(1.0, 0.0, 0.0);
 
   main_shader->use();
-  main_shader->set1i("show_edges", showedges?1:0);
+  main_shader->set1i("show_edges", showedges ? 1 : 0);
   main_shader->unuse();
 
   if (this->renderer) {
@@ -279,7 +270,6 @@ void GLView::paintGL()
   }
   glDisable(GL_LIGHTING);
 
-
   // render the textures from gBuffer
   glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -294,7 +284,7 @@ void GLView::paintGL()
   post_shader->set1i("gPosition", 0);
   post_shader->set1i("gNormal", 1);
   post_shader->set1i("gAlbedo", 2);
-  post_shader->set1i("ssao", showssao?1:0);
+  post_shader->set1i("ssao", showssao ? 1 : 0);
   renderQuad();
   post_shader->unuse();
   glActiveTexture(GL_TEXTURE0);

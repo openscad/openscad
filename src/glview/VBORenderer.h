@@ -40,8 +40,7 @@ public:
 
   void add_shader_pointers(
     VBOBuilder& vbo_builder,
-    const ShaderUtils::Shader
-      *shader);  // This could stay protected, were it not for VertexStateManager
+    const ShaderUtils::Shader *shader);  // This could stay protected, were it not for VertexStateManager
 
 protected:
   void add_shader_data(VBOBuilder& vbo_builder);

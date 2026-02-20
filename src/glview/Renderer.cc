@@ -16,7 +16,6 @@
 
 #ifndef NULLGL
 
-
 Renderer::Renderer()
 {
   PRINTD("Renderer() start");

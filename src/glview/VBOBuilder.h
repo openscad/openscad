@@ -344,8 +344,8 @@ public:
                                                  size_t draw_offset, size_t element_offset) const
   {
     return std::make_shared<VertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset,
-                                       vertex_state_container_.verticesVBO(),
-                                       vertex_state_container_.elementsVBO());
+                                         vertex_state_container_.verticesVBO(),
+                                         vertex_state_container_.elementsVBO());
   }
 
   void allocateBuffers(size_t num_vertices);

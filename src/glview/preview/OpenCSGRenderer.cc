@@ -67,9 +67,9 @@ private:
 // Primitive for drawing using OpenCSG
 // Makes a copy of the given VertexState enabling just unlit/uncolored vertex
 // rendering
-std::unique_ptr<OpenCSGVBOPrim> createVBOPrimitive(
-  const std::shared_ptr<VertexState>& vertex_state, const OpenCSG::Operation operation,
-  const unsigned int convexity)
+std::unique_ptr<OpenCSGVBOPrim> createVBOPrimitive(const std::shared_ptr<VertexState>& vertex_state,
+                                                   const OpenCSG::Operation operation,
+                                                   const unsigned int convexity)
 {
   std::unique_ptr<VertexState> opencsg_vs = std::make_unique<VertexState>(
     vertex_state->drawMode(), vertex_state->drawSize(), vertex_state->drawType(),
@@ -148,8 +148,7 @@ void OpenCSGRenderer::draw(const ShaderUtils::Shader *shader) const
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool highlight_mode,
-                                           bool background_mode,
-                                           const ShaderUtils::Shader *shader)
+                                           bool background_mode, const ShaderUtils::Shader *shader)
 {
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = true;

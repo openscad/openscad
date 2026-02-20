@@ -30,9 +30,8 @@ public:
 
 private:
   void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false,
-                         const ShaderUtils::Shader *shader = nullptr,
-                         bool highlight_mode = false, bool background_mode = false,
-                         bool fberror = false) const;
+                         const ShaderUtils::Shader *shader = nullptr, bool highlight_mode = false,
+                         bool background_mode = false, bool fberror = false) const;
 
   void createCSGProducts(const CSGProducts& products, VertexStateContainer& container,
                          VBOBuilder& vbo_builder, bool highlight_mode, bool background_mode,

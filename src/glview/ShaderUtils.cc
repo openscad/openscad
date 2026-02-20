@@ -44,7 +44,8 @@ Shader::Shader(const std::string& vs_str, const std::string& fs_str, const Shade
     char logbuffer[1000];
     glGetShaderInfoLog(vertex_shader, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
-    fprintf(stderr, __FILE__ " %s: OpenGL vertex shader Error:\n%.*s\n\n", vs_str.c_str(), loglen, logbuffer);
+    fprintf(stderr, __FILE__ " %s: OpenGL vertex shader Error:\n%.*s\n\n", vs_str.c_str(), loglen,
+            logbuffer);
     return;
   }
 
@@ -57,7 +58,8 @@ Shader::Shader(const std::string& vs_str, const std::string& fs_str, const Shade
     char logbuffer[1000];
     glGetShaderInfoLog(fragment_shader, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
-    fprintf(stderr, __FILE__ " %s: OpenGL fragment shader Error:\n%.*s\n\n", fs_str.c_str(), loglen, logbuffer);
+    fprintf(stderr, __FILE__ " %s: OpenGL fragment shader Error:\n%.*s\n\n", fs_str.c_str(), loglen,
+            logbuffer);
     return;
   }
 
@@ -106,24 +108,21 @@ Shader::~Shader()
 void Shader::use() const
 {
   glUseProgram(shader_program);
-  if (type == ShaderType::MAIN_RENDERING)
-    glEnableVertexAttribArray(attributes("barycentric"));
+  if (type == ShaderType::MAIN_RENDERING) glEnableVertexAttribArray(attributes("barycentric"));
 }
 
 void Shader::unuse() const
 {
-  if (type == ShaderType::MAIN_RENDERING)
-    glDisableVertexAttribArray(attributes("barycentric"));
+  if (type == ShaderType::MAIN_RENDERING) glDisableVertexAttribArray(attributes("barycentric"));
   glUseProgram(0);
 }
 
 void Shader::draw(const std::shared_ptr<VertexState>& vertex_state) const
 {
   if (type == ShaderType::SELECT_RENDERING) {
-    set3f("frag_idcolor",
-    ((vertex_state->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-    ((vertex_state->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-    ((vertex_state->csgObjectIndex() >> 16) & 0xff) / 255.0f);
+    set3f("frag_idcolor", ((vertex_state->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+          ((vertex_state->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+          ((vertex_state->csgObjectIndex() >> 16) & 0xff) / 255.0f);
   }
   const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
   if (!shader_vs || type == ShaderType::MAIN_RENDERING) {

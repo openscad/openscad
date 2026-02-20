@@ -40,7 +40,6 @@
 #include <memory>
 #include <cstddef>
 
-
 VBORenderer::VBORenderer() : Renderer()
 {
 }

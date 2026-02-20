@@ -45,11 +45,8 @@ void MouseSelector::initShader()
   // Attributes:
   // frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float
   // values
-  shader = std::make_unique<ShaderUtils::Shader>(
-    "MouseSelector.vert",
-    "MouseSelector.frag",
-    ShaderUtils::ShaderType::SELECT_RENDERING
-  );
+  shader = std::make_unique<ShaderUtils::Shader>("MouseSelector.vert", "MouseSelector.frag",
+                                                 ShaderUtils::ShaderType::SELECT_RENDERING);
 }
 
 /**
