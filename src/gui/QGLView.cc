@@ -320,6 +320,80 @@ void QGLView::normalizeAngle(GLdouble& angle)
   while (angle > 360) angle -= 360;
 }
 
+void QGLView::applyMouseActions(float *selectedMouseActions, double dx, double dy,
+                                std::optional<QPointF> pos, bool fromScroll)
+{
+  // Rotation angles from mouse movement or scroll
+  // First 6 elements to selectedMouseActions are interpreted as a row-major 3x2 matrix, which is
+  // right-multiplied by (dx, dy)^T to produce the rotation angle increments.
+  double rx = selectedMouseActions[0] * dx + selectedMouseActions[1] * dy;
+  double ry = selectedMouseActions[2] * dx + selectedMouseActions[3] * dy;
+  double rz = selectedMouseActions[4] * dx + selectedMouseActions[5] * dy;
+  if (!(rx == 0.0 && ry == 0.0 && rz == 0.0)) {
+    rotate(rx, ry, rz, true);
+    normalizeAngle(cam.object_rot.x());
+    normalizeAngle(cam.object_rot.y());
+    normalizeAngle(cam.object_rot.z());
+  }
+
+  // Panning from mouse movement or scroll
+  // Elements 6..12 of selectedMouseActions are interpreted as another row-major 3x2 matrix, which is
+  // right-multiplied by (dx, dy)^T, and then scaled by the zoom, to produce the translation
+  // increments.
+  double mx = selectedMouseActions[6 + 0] * (dx / QWidget::width()) +
+              selectedMouseActions[6 + 1] * (dy / QWidget::height());
+  double my = selectedMouseActions[6 + 2] * (dx / QWidget::width()) +
+              selectedMouseActions[6 + 3] * (dy / QWidget::height());
+  double mz = selectedMouseActions[6 + 4] * (dx / QWidget::width()) +
+              selectedMouseActions[6 + 5] * (dy / QWidget::height());
+  if (!(mx == 0.0 && my == 0.0 && mz == 0.0)) {
+    mx *= 3.0 * cam.zoomValue();
+    my *= 3.0 * cam.zoomValue();
+    mz *= 3.0 * cam.zoomValue();
+    translate(mx, my, mz, true);
+  }
+
+  // Zoom from mouse movement or scroll
+  // Elements 12, 13 of selectedMouseActions are interpreted as a 2-dimensional vector. The inner
+  // product of this is taken with (dx, dy)^T to produce the zoom increment.
+  double dZoom = selectedMouseActions[12] * dx + selectedMouseActions[13] * dy;
+  if (dZoom != 0.0) {
+    dZoom *= 12.0;
+    if (fromScroll) dZoom *= -1;
+    if (pos.has_value()) {
+      zoomCursor(pos->x(), pos->y(), dZoom, true);
+    } else {
+      zoom(dZoom, true);
+    }
+  }
+
+  // FOV Zoom from mouse movement or scroll
+  // Final 2 elements of selectedMouseActions are interpreted as a 2-dimensional vector. The inner
+  // product of this is taken with (dx, dy)^T to produce the FOV zoom increment.
+  double fovZoom = selectedMouseActions[14] * dx + selectedMouseActions[15] * dy;
+  if (fovZoom != 0.0) {
+    fovZoom *= 12.0;
+    if (fromScroll) fovZoom *= -1;
+    zoomFov(fovZoom, true);
+  }
+}
+
+int QGLView::getModifierIndex()
+{
+  int modifierIndex = 0;
+  if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+    modifierIndex = 1;
+  }
+  if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
+    if (modifierIndex == 1) {
+      modifierIndex = 3;  // Ctrl + Shift
+    } else {
+      modifierIndex = 2;
+    }
+  }
+  return modifierIndex;
+}
+
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -356,60 +430,13 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
         buttonIndex = 2;
       }
     }
-    int modifierIndex = 0;
-    if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
-      modifierIndex = 1;
-    }
-    if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
-      if (modifierIndex == 1) {
-        modifierIndex = 3;  // Ctrl + Shift
-      } else {
-        modifierIndex = 2;
-      }
-    }
 
     if (buttonIndex != -1 && !multipleButtonsPressed) {
+      int modifierIndex = this->getModifierIndex();
       float *selectedMouseActions =
-        &this->mouseActions[MouseConfig::ACTION_DIMENSION * (buttonIndex + modifierIndex * 3)];
-
-      // Rotation angles from mouse movement
-      // First 6 elements to selectedMouseActions are interpreted as a row-major 3x2 matrix, which is
-      // right-multiplied by (dx, dy)^T to produce the rotation angle increments.
-      double rx = selectedMouseActions[0] * dx + selectedMouseActions[1] * dy;
-      double ry = selectedMouseActions[2] * dx + selectedMouseActions[3] * dy;
-      double rz = selectedMouseActions[4] * dx + selectedMouseActions[5] * dy;
-      if (!(rx == 0.0 && ry == 0.0 && rz == 0.0)) {
-        rotate(rx, ry, rz, true);
-        normalizeAngle(cam.object_rot.x());
-        normalizeAngle(cam.object_rot.y());
-        normalizeAngle(cam.object_rot.z());
-      }
-
-      // Panning from mouse movement
-      // Elements 6..12 of selectedMouseActions are interpreted as another row-major 3x2 matrix, which is
-      // right-multiplied by (dx, dy)^T, and then scaled by the zoom, to produce the translation
-      // increments.
-      double mx = selectedMouseActions[6 + 0] * (dx / QWidget::width()) +
-                  selectedMouseActions[6 + 1] * (dy / QWidget::height());
-      double my = selectedMouseActions[6 + 2] * (dx / QWidget::width()) +
-                  selectedMouseActions[6 + 3] * (dy / QWidget::height());
-      double mz = selectedMouseActions[6 + 4] * (dx / QWidget::width()) +
-                  selectedMouseActions[6 + 5] * (dy / QWidget::height());
-      if (!(mx == 0.0 && my == 0.0 && mz == 0.0)) {
-        mx *= 3.0 * cam.zoomValue();
-        my *= 3.0 * cam.zoomValue();
-        mz *= 3.0 * cam.zoomValue();
-      }
-      translate(mx, my, mz, true);
-
-      // Zoom from mouse movement
-      // Final 2 elements of selectedMouseActions are interpreted as a 2-dimensional vector. The inner
-      // product of this is taken with (dx, dy)^T to produce the zoom increment.
-      double dZoom = selectedMouseActions[12] * dx + selectedMouseActions[13] * dy;
-      if (dZoom != 0.0) {
-        dZoom *= 12.0;
-        zoom(dZoom, true);
-      }
+        &this->mouseActions[MouseConfig::ACTION_DIMENSION *
+                            (MouseConfig::NUM_MODIFIER_STATES * buttonIndex + modifierIndex)];
+      this->applyMouseActions(selectedMouseActions, dx, dy, std::nullopt, false);
     }
   }
   last_mouse = this_mouse;
@@ -449,13 +476,27 @@ bool QGLView::save(const char *filename) const
 void QGLView::wheelEvent(QWheelEvent *event)
 {
   const auto pos = Q_WHEEL_EVENT_POSITION(event);
-  const int v = event->angleDelta().y();
-  if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
-    zoomFov(v, true);
-  } else if (this->mouseCentricZoom) {
-    zoomCursor(pos.x(), pos.y(), v, true);
+
+  // Per Qt docs, "prefer pixelDelta() on platforms where it's available"
+  // https://doc.qt.io/qt-6/qwheelevent.html#angleDelta
+  // From empirical testing on Wayland, Qt angle delta for touchpad events is 12 times the pixel delta.
+  double dx = event->pixelDelta().x();
+  double dy = event->pixelDelta().y();
+  if (dx == 0 && dy == 0) {
+    dx = event->angleDelta().x() / 12.0;
+    dy = event->angleDelta().y() / 12.0;
+  }
+
+  // Scroll mouseActions table is after all button tables.
+  const int scroll_index = MouseConfig::NUM_BUTTONS * MouseConfig::NUM_MODIFIER_STATES;
+  const int modifier_index = this->getModifierIndex();
+  float *selectedMouseActions =
+    &this->mouseActions[MouseConfig::ACTION_DIMENSION * (scroll_index + modifier_index)];
+
+  if (this->mouseCentricZoom) {
+    applyMouseActions(selectedMouseActions, dx, dy, pos, true);
   } else {
-    zoom(v, true);
+    applyMouseActions(selectedMouseActions, dx, dy, std::nullopt, true);
   }
 }
 
@@ -477,7 +518,8 @@ bool QGLView::event(QEvent *event)
         // item should have its scale adjusted like this: item.scale = item.scale * (1 + event.value)
 
         // tan(FOV / 2) is inversely proportional to apparent scale
-        const double fov = 2 * atan_degrees(tan_degrees(this->cam.fovValue() / 2) / (1 + gestureEvent->value()));
+        const double fov =
+          2 * atan_degrees(tan_degrees(this->cam.fovValue() / 2) / (1 + gestureEvent->value()));
         zoomFov(fov, false);
       } else {
         // Apparent scale is inversely proportional to viewer_distance

@@ -340,6 +340,18 @@ void MainWindow::setAllMouseViewActions()
   this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK,
                                  MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
                                    Settings::Settings::inputMouseCtrlShiftRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SCROLL,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseScroll.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_SCROLL,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseShiftScroll.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SCROLL,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlScroll.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_SCROLL,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlShiftScroll.value())));
 }
 
 void MainWindow::onNavigationOpenContextMenu()

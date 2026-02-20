@@ -496,6 +496,10 @@ public:
   static SettingsEntryInt inputMouseCtrlShiftLeftClick;
   static SettingsEntryInt inputMouseCtrlShiftMiddleClick;
   static SettingsEntryInt inputMouseCtrlShiftRightClick;
+  static SettingsEntryInt inputMouseScroll;
+  static SettingsEntryInt inputMouseShiftScroll;
+  static SettingsEntryInt inputMouseCtrlScroll;
+  static SettingsEntryInt inputMouseCtrlShiftScroll;
   static SettingsEntryDouble axisTrim0;
   static SettingsEntryDouble axisTrim1;
   static SettingsEntryDouble axisTrim2;
