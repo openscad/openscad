@@ -399,6 +399,7 @@ public slots:
   void on_viewActionThrownTogether_triggered();
   void updateViewModeAfterGLInit();
   void on_viewActionShowEdges_toggled(bool checked);
+  void on_viewActionShowSSAO_toggled(bool checked);
   void on_viewActionShowAxes_toggled(bool checked);
   void on_viewActionShowScaleProportional_toggled(bool checked);
   void on_viewActionShowCrosshairs_toggled(bool checked);

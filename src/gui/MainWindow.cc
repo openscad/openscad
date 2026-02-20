@@ -510,6 +510,9 @@ void MainWindow::loadViewSettings()
   if (settings.value("view/showEdges").toBool()) {
     viewActionShowEdges->setChecked(true);
   }
+  if (settings.value("view/showSSAO").toBool()) {
+    viewActionShowSSAO->setChecked(true);
+  }
   if (settings.value("view/showAxes", true).toBool()) {
     viewActionShowAxes->setChecked(true);
   }
@@ -2633,6 +2636,14 @@ void MainWindow::on_viewActionShowEdges_toggled(bool checked)
   QSettingsCached settings;
   settings.setValue("view/showEdges", checked);
   this->qglview->setShowEdges(checked);
+  this->qglview->update();
+}
+
+void MainWindow::on_viewActionShowSSAO_toggled(bool checked)
+{
+  QSettingsCached settings;
+  settings.setValue("view/showSSAO", checked);
+  this->qglview->setShowSSAO(checked);
   this->qglview->update();
 }
 

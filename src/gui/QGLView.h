@@ -26,6 +26,7 @@ class QGLView : public QOpenGLWidget, public GLView
 {
   Q_OBJECT
   Q_PROPERTY(bool showEdges READ showEdges WRITE setShowEdges);
+  Q_PROPERTY(bool showSSAO READ showSSAO WRITE setShowSSAO);
   Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
   Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
   Q_PROPERTY(bool orthoMode READ orthoMode WRITE setOrthoMode);
