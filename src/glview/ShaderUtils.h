@@ -11,6 +11,7 @@ namespace ShaderUtils {
 enum class ShaderType {
   NONE,
   MAIN_RENDERING,
+  POST_RENDERING,
   SELECT_RENDERING,
 };
 
@@ -29,6 +30,7 @@ public:
   void draw(const std::shared_ptr<VertexState> &vertex_state) const;
   GLint attributes(const std::string& name) const;
   void set3f(const std::string& name, GLfloat v0, GLfloat v1, GLfloat v2) const;
+  void set3fv(const std::string& name, int count, GLfloat *v) const;
   void set1i(const std::string& name, GLint v0) const;
 
   const ShaderType type;
