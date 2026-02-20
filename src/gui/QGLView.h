@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -105,6 +106,10 @@ private:
 
   void paintGL() override;
   void normalizeAngle(GLdouble& angle);
+
+  int getModifierIndex();
+  void applyMouseActions(float *selectedMouseActions, double dx, double dy, std::optional<QPointF> pos,
+                         bool fromScroll);
 
 #ifdef ENABLE_OPENCSG
   void display_opencsg_warning() override;
