@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <boost/format.hpp>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <ctime>
@@ -53,6 +54,7 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 #include "version.h"
+
 // hash double
 #include "geometry/linalg.h"
 
@@ -1105,6 +1107,17 @@ Value builtin_import(Arguments arguments, const Location& loc)
   return import_json(file, session, loc);
 }
 
+Value builtin_now(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("now", arguments, loc, 0)) {
+    return Value::undefined.clone();
+  }
+  const auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                        std::chrono::steady_clock::now().time_since_epoch())
+                        .count();
+  return Value(static_cast<double>(now_us));
+}
+
 void register_builtin_functions()
 {
   Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1284,6 +1297,11 @@ void register_builtin_functions()
   Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
                  {
                    "parent_module(number) -> string",
+                 });
+
+  Builtins::init("now", new BuiltinFunction(&builtin_now),
+                 {
+                   "now() -> number",
                  });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),

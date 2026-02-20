@@ -913,7 +913,6 @@ if(USE_CCACHE)
   endif()
 endif()
 
-
 #
 # Platform specific settings
 #
@@ -1032,6 +1031,7 @@ set(CORE_SOURCES
   src/core/StatCache.cc
   src/core/SurfaceNode.cc
   src/core/TextNode.cc
+  src/core/FunctionArgs.cc
   src/core/TransformNode.cc
   src/core/Tree.cc
   src/core/UndefType.cc
