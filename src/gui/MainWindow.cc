@@ -294,10 +294,9 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   setupInput();
 
-  restoreWindowState();
-
   this->hideFind();
   show();
+  restoreWindowState();  // Restore needs to happen after show()
   openRemainingFiles(filenames);
 }
 
