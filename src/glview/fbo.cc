@@ -139,7 +139,7 @@ void FBO::unbind()
   this->old_fbo_id_ = 0;
 }
 
-void FBO::destroy()
+FBO::~FBO()
 {
   this->unbind();
   if (this->depthbuf_id_ != 0) {

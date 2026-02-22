@@ -14,6 +14,7 @@
 #include <memory>
 #include <cmath>
 #include <cstdio>
+#include <random>
 #include <string>
 
 #ifdef ENABLE_OPENCSG
@@ -24,6 +25,7 @@ GLView::GLView()
 {
   aspectratio = 1;
   showedges = false;
+  showssao = false;
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
@@ -38,41 +40,13 @@ GLView::GLView()
 #endif
 }
 
-GLView::~GLView()
-{
-  teardownShader();
-}
-
 void GLView::setupShader()
 {
-  if (edge_shader) return;
-
-  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("ViewEdges.vert"),
-                                                    ShaderUtils::loadShaderSource("ViewEdges.frag"));
-
-  edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
-    .resource = resource,
-    .type = ShaderUtils::ShaderType::EDGE_RENDERING,
-    .uniforms = {},
-    .attributes =
-      {
-        {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
-      },
-  });
-}
-
-void GLView::teardownShader()
-{
-  if (edge_shader == nullptr) return;  // if OpenGL context was not initialized
-  if (edge_shader->resource.shader_program) {
-    glDeleteProgram(edge_shader->resource.shader_program);
-  }
-  if (edge_shader->resource.vertex_shader) {
-    glDeleteShader(edge_shader->resource.vertex_shader);
-  }
-  if (edge_shader->resource.fragment_shader) {
-    glDeleteShader(edge_shader->resource.fragment_shader);
-  }
+  if (main_shader) return;
+  main_shader = std::make_unique<ShaderUtils::Shader>("Main.vert", "Main.frag",
+                                                      ShaderUtils::ShaderType::MAIN_RENDERING);
+  post_shader = std::make_unique<ShaderUtils::Shader>("Post.vert", "Post.frag",
+                                                      ShaderUtils::ShaderType::POST_RENDERING);
 }
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
@@ -114,6 +88,45 @@ void GLView::resizeGL(int w, int h)
 
   // FIXME: Only run once, not every time the window is resized
   setupShader();
+
+  if (!fbo) {
+    GLint oldFBO;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFBO);
+    this->fbo = createFBO(w, h);
+    this->fbo->bind();
+    // position color buffer
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+    // normal color buffer
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+    // color + specular color buffer
+    glGenTextures(1, &gAlbedo);
+    glBindTexture(GL_TEXTURE_2D, gAlbedo);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
+    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+    unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+    glDrawBuffers(3, attachments);
+    glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
+  } else {
+    this->fbo->resize(w, h);
+  }
+  glBindTexture(GL_TEXTURE_2D, gPosition);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
+  glBindTexture(GL_TEXTURE_2D, gNormal);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
+  glBindTexture(GL_TEXTURE_2D, gAlbedo);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
 void GLView::setCamera(const Camera& cam)
@@ -154,8 +167,38 @@ void GLView::setupCamera()
   glGetDoublev(GL_PROJECTION_MATRIX, this->projection);
 }
 
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+  if (quadVAO == 0) {
+    float quadVertices[] = {
+      // positions        // texture Coords
+      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+    // setup plane VAO
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+  }
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
+}
+
 void GLView::paintGL()
 {
+  GLint oldFBO;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFBO);
+  this->fbo->bind();
+
   glDisable(GL_LIGHTING);
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto bgstopcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_STOP_COLOR);
@@ -204,13 +247,17 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  main_shader->use();
+  main_shader->set1i("show_edges", showedges ? 1 : 0);
+  main_shader->unuse();
+
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->prepare(edge_shader.get());
-    this->renderer->draw(showedges, edge_shader.get());
+    this->renderer->prepare(main_shader.get());
+    this->renderer->draw(main_shader.get());
   }
   Vector3d eyedir(this->modelview[2], this->modelview[6], this->modelview[10]);
   glColor3f(1, 0, 0);
@@ -222,6 +269,27 @@ void GLView::paintGL()
     showObject(obj, eyedir);
   }
   glDisable(GL_LIGHTING);
+
+  // render the textures from gBuffer
+  glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glDisable(GL_DEPTH_TEST);
+  post_shader->use();
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, gPosition);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, gNormal);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, gAlbedo);
+  post_shader->set1i("gPosition", 0);
+  post_shader->set1i("gNormal", 1);
+  post_shader->set1i("gAlbedo", 2);
+  post_shader->set1i("ssao", showssao ? 1 : 0);
+  renderQuad();
+  post_shader->unuse();
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_DEPTH_TEST);
+
   if (showaxes) GLView::showSmallaxes(axescolor);
 
   // Workaround for inconsistent QT behavior related to handling custom OpenGL widgets that
@@ -244,18 +312,6 @@ void GLView::paintGL()
 }
 
 #ifdef ENABLE_OPENCSG
-
-void glCompileCheck(GLuint shader)
-{
-  GLint status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-  if (status == GL_FALSE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Shader Program Compile Error:\n%s", logbuffer);
-  }
-}
 
 void GLView::enable_opencsg_shaders()
 {

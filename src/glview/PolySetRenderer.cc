@@ -111,10 +111,10 @@ void PolySetRenderer::setColorScheme(const ColorScheme& cs)
   colormap_[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
 }
 
-void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderinfo)
+void PolySetRenderer::createPolySetStates(const ShaderUtils::Shader *shader)
 {
   VertexStateContainer& vertex_state_container = polyset_vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
 
   vbo_builder.addSurfaceData();  // position, normal, color
   vbo_builder.addShaderData();
@@ -130,7 +130,7 @@ void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderi
     Color4f color;
     if (!polyset->colors.empty()) color = polyset->colors[0];
     getShaderColor(ColorMode::MATERIAL, color, color);
-    add_shader_pointers(vbo_builder, shaderinfo);
+    add_shader_pointers(vbo_builder, shader);
 
     vbo_builder.writeSurface();
     vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, enable_barycentric, false);
@@ -148,7 +148,7 @@ void PolySetRenderer::createPolygonStates()
 void PolySetRenderer::createPolygonSurfaceStates()
 {
   VertexStateContainer& vertex_state_container = polygon_vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
   vbo_builder.addSurfaceData();
 
   size_t num_vertices = 0;
@@ -177,7 +177,7 @@ void PolySetRenderer::createPolygonSurfaceStates()
 void PolySetRenderer::createPolygonEdgeStates()
 {
   VertexStateContainer& vertex_state_container = polygon_vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
 
   vbo_builder.addEdgeData();
 
@@ -214,50 +214,36 @@ void PolySetRenderer::createPolygonEdgeStates()
   vbo_builder.createInterleavedVBOs();
 }
 
-void PolySetRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
+void PolySetRenderer::prepare(const ShaderUtils::Shader *shader)
 {
   if (polyset_vertex_state_containers_.empty() && polygon_vertex_state_containers_.empty()) {
     if (!this->polysets_.empty() && !this->polygons_.empty()) {
       LOG(message_group::Error, "PolySetRenderer::prepare() called with both polysets and polygons");
     } else if (!this->polysets_.empty()) {
-      createPolySetStates(shaderinfo);
+      createPolySetStates(shader);
     } else if (!this->polygons_.empty()) {
       createPolygonStates();
     }
   }
 }
 
-void PolySetRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
+void PolySetRenderer::draw(const ShaderUtils::Shader *shader) const
 {
-  drawPolySets(showedges, shaderinfo);
+  drawPolySets(shader);
   drawPolygons();
 }
 
-void PolySetRenderer::drawPolySets(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
+void PolySetRenderer::drawPolySets(const ShaderUtils::Shader *shader) const
 {
-  // Only use shader if select rendering or showedges
-  const bool enable_shader =
-    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
-  if (enable_shader) {
-    GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
-    GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
-    VBOUtils::shader_attribs_enable(*shaderinfo);
-  }
+  shader->use();
 
   for (const auto& container : polyset_vertex_state_containers_) {
     for (const auto& vertex_state : container.states()) {
-      const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || (shader_vs && showedges)) {
-        vertex_state->draw();
-      }
+      shader->draw(vertex_state);
     }
   }
 
-  if (enable_shader) {
-    VBOUtils::shader_attribs_disable(*shaderinfo);
-    glUseProgram(0);
-  }
+  shader->unuse();
 }
 
 void PolySetRenderer::drawPolygons() const
