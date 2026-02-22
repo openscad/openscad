@@ -348,7 +348,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
   std::vector<bool> allMarks;
   std::vector<IndexedFace> faces;
   bool mark;
-  BOOST_FOREACH(boost::tie(faces, mark), boost::combine(polygons, polymarks)) {
+  BOOST_FOREACH (boost::tie(faces, mark), boost::combine(polygons, polymarks)) {
 #if 0   // For debugging
     std::cerr << "---\n";
     for (const auto& poly : faces) {
@@ -430,7 +430,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
     polyset->vertices.emplace_back(v.cast<double>());
   }
   IndexedTriangle tri;
-  BOOST_FOREACH(boost::tie(tri, mark), boost::combine(allTriangles, allMarks)) {
+  BOOST_FOREACH (boost::tie(tri, mark), boost::combine(allTriangles, allMarks)) {
     polyset->indices.push_back({tri[0], tri[1], tri[2]});
     polyset->color_indices.push_back(mark ? faceFrontColorIndex : faceBackColorIndex);
   }
