@@ -28,6 +28,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: 'recursive'
+          # Build from the release tag when uploading to a release (avoids -dirty in filenames)
+          ref: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release || github.ref }}
 
       - name: Configure git (disable line-ending conversion for accurate dirty check)
         shell: bash
@@ -40,6 +42,16 @@ jobs:
         run: |
           git fetch --unshallow --tags || git fetch --tags
           git describe --tags --always --dirty
+
+      - name: Set version for release build (avoid -dirty in package filenames)
+        if: github.event.release.tag_name != '' || github.event.inputs.upload_to_release != ''
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}"
+          # Strip leading 'v' for CMake (e.g. v0.6.0 -> 0.6.0)
+          OPENSCAD_VERSION="${TAG#v}"
+          echo "OPENSCAD_VERSION=$OPENSCAD_VERSION" >> $GITHUB_ENV
+          echo "Using release version for package name: $OPENSCAD_VERSION"
 
       - name: Setup (detached) tmate session if enabled
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
@@ -83,6 +95,11 @@ jobs:
       - name: Build PythonSCAD
         run: |
           mkdir build && cd build
+          # Use explicit version for release builds so package filenames never get -dirty
+          EXTRA_CMAKE=""
+          if [ -n "${OPENSCAD_VERSION:-}" ]; then
+            EXTRA_CMAKE="-DOPENSCAD_VERSION=$OPENSCAD_VERSION"
+          fi
           cmake .. -G"Ninja" \
             -DCMAKE_BUILD_TYPE=Release \
             -DEXPERIMENTAL=ON \
@@ -91,7 +108,8 @@ jobs:
             -DENABLE_PYTHON=ON \
             -DENABLE_LIBFIVE=ON \
             -DENABLE_TESTS=OFF \
-            -DPACKAGE_ARCH=windows-x86-64
+            -DPACKAGE_ARCH=windows-x86-64 \
+            $EXTRA_CMAKE
           cmake --build . -j4
 
       - name: Install to staging directory
