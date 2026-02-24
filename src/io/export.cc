@@ -203,6 +203,8 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::SVG) {
     exportInfo.optionsSvg = ExportSvgOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::GCODE) {
+    exportInfo.optionsGcode = ExportGcodeOptions::withOptions(cmdLineOptions);
   }
 
   return exportInfo;

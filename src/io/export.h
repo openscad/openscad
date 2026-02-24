@@ -294,6 +294,23 @@ struct ExportGcodeOptions {
   int lasermode;
   std::string initCode;
   std::string exitCode;
+  static std::shared_ptr<const ExportGcodeOptions> withOptions(const CmdLineExportOptions& cmdLineOptions)
+  {
+    return std::make_shared<const ExportGcodeOptions>(ExportGcodeOptions{
+      .feedrate = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
+                                  Settings::SettingsExportGcode::exportGcodeFeedRate),
+      .laserpower = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
+                                       Settings::SettingsExportGcode::exportGcodeLaserPower),
+      .lasermode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
+                                    Settings::SettingsExportGcode::exportGcodeLaserMode),
+      .initCode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
+                                         Settings::SettingsExportGcode::exportGcodeInitCode),
+      .exitCode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
+                                         Settings::SettingsExportGcode::exportGcodeExitCode),
+    });
+    return nullptr;
+  }
+
 };
 
 struct ExportInfo {

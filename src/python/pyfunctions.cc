@@ -2081,9 +2081,10 @@ PyObject *python_export_core(PyObject *obj, char *file)
   Export3mfOptions options3mf;
   options3mf.decimalPrecision = 6;
   options3mf.color = "#f9d72c";
-  ExportInfo exportInfo = {.format = exportFileFormat,
-                           .sourceFilePath = file,
-                           .options3mf = std::make_shared<Export3mfOptions>(options3mf)};
+  Camera camera;
+  camera.viewall = true;
+  camera.autocenter = true;
+  ExportInfo exportInfo = createExportInfo(exportFileFormat,fileformat::info(exportFileFormat), file, &camera, {});
 
   if (exportFileFormat == FileFormat::_3MF) {
     std::ofstream fstream(file, std::ios::out | std::ios::trunc | std::ios::binary);
