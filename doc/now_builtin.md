@@ -6,6 +6,8 @@ Author: _Adrian Hawryluk_ (a.k.a. [Ma-XX-oN](https://github.com/Ma-XX-oN))
 - [What It Measures](#what-it-measures)
 - [Quick Start](#quick-start)
 - [Evaluation Phases and now()](#evaluation-phases-and-now)
+  - [Scopes](#scopes)
+  - [Evaluation Phases](#evaluation-phases)
 - [Common Patterns](#common-patterns)
 - [Common Mistakes](#common-mistakes)
 
@@ -29,7 +31,8 @@ module argument expression — elapsed time across module instantiations
 (see [Evaluation Phases and now()](#evaluation-phases-and-now)).  It does
 _not_ profile script parsing, which happens before evaluation begins,
 nor the backend render pass (CSG evaluation, mesh generation), which
-happens after.
+happens after.  For the render pass timing, consult the console log as it
+already outputs that.
 
 ## Quick Start
 
@@ -42,11 +45,23 @@ echo(str("elapsed: ", elapsed_us, " μs"));
 
 ## Evaluation Phases and now()
 
+> ⚠️**WARNING:**
+>
+> This is for use as a diagnostic tool.  It should be fairly stable withing a
+> single expression evaluation, but beyond that, the evaluation order is subject
+> to change without notice.  
+
 Understanding OpenSCAD's two-phase evaluation model is essential for using
 `now()` correctly.
 
-Inside any scope (file-level or module body), OpenSCAD processes statements
-in two passes:
+### Scopes
+
+A scope is either the top-level or child of a scope (e.g. module, if body,
+module parameters).
+
+### Evaluation Phases
+
+Inside any scope, OpenSCAD processes statements in two passes:
 
 1. **Phase 1 — Assignments:**  All assignments (`x = ...;`) are evaluated
    in source order.  Function calls in expressions — including `now()` —
@@ -54,6 +69,36 @@ in two passes:
 2. **Phase 2 — Module instantiations:**  All module calls (`cube(...)`,
    `for (...)`, `echo(...)`, etc.) are executed in source order, _after_
    all assignments have completed.
+
+  > 📝**EXAMPLE:**
+  >
+  > ```openscad
+  > // scope 1
+  > union() {
+  >     // scope 2
+  >     if (test_value /* scope 2, evaluated in phase 2 */) {
+  >         // scope 3
+  >     }
+  > }
+  > module foo() {
+  >     // scope 4
+  >     assert(/* scope 4, evaluated in phase 2 */ truth);
+  >     echo(/* scope 4, evaluated in phase 2 */ value);
+  >     bar(/* scope 4, evaluated in phase 2 */ value);
+  >
+  >     a =
+  >       assert(/* scope 4, evaluated in phase 1 */ truth)
+  >       echo(/* scope 4, evaluated in phase 1 */ value) 1;
+  > }
+  > module bar(p) {
+  >   // scope 7
+  > }
+  >
+  > // still scope 1
+  > {
+  >     // not a separate scope, still part of scope 1
+  > }
+  > ```
 
 This means consecutive assignments calling `now()` run back-to-back in
 Phase 1, so subtracting them gives a precise measurement of the
@@ -132,14 +177,16 @@ Module arguments are evaluated at module-instantiation time (Phase 2), so
 `now()` inside an `echo` captures the time after preceding modules run:
 
 ```openscad
+a_module();
 start = now();
 some_module();
 echo(str("elapsed to this point: ", now() - start, " μs"));
 ```
 
-Note: this measures wall-clock time from the end of the assignment phase
-through `some_module()`'s instantiation — it includes any Phase 1→Phase 2
-transition overhead.
+That measures wall-clock time from the end of the assignment phase through
+`some_module()`'s instantiation — it includes any Phase 1→Phase 2 overhead as
+well as any module invocations prior to `some_module()` if they exist (in this
+case `a_module()`)
 
 ## Common Mistakes
 
@@ -155,11 +202,28 @@ transition overhead.
   elapsed = now() - start;             // assignment — Phase 1 (!)
   ```
 
-  You _can_ place the second `now()` inside an `echo` (also Phase 2),
-  which runs after the loop, but the measurement includes Phase 1→Phase 2
-  overhead and any earlier module instantiations.  For precise
-  expression-only timing, use a recursive function instead (see Common
-  Patterns).
+  You _can_ place the second `now()` inside a non-expression `echo` (also Phase
+  2), which runs after the loop, but the measurement includes Phase 1→Phase 2
+  overhead and any earlier module instantiations.  For precise expression-only
+  timing, use a recursive function instead (see [Common
+  Patterns](#common-patterns)).
+
+  You can mitigate both of those by creating a scope for the purpose...
+
+  ```openscad
+  union() {    // isolate stuff to be benchmarked
+      start = now();
+      some_module();
+      echo(now() - start);
+  }
+  ```
+
+  > ℹ️**NOTE:**
+  >
+  > Although unions can have significant rendering costs, they have no more
+  > evaluation cost than any other block. Also, unioning a single child is
+  > basically free, and most contexts union their children anyway so you were
+  > going to pay any union cost eventually.
 
 - **Expecting render times from assignments** — Module instantiation
   (Phase 2) builds the CSG tree but does not perform the final render
