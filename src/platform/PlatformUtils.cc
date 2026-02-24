@@ -20,7 +20,7 @@ extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
 namespace {
-bool path_initialized = false;
+bool path_initialized = true;
 std::string applicationpath;
 std::string resourcespath;
 }  // namespace
