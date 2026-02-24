@@ -100,6 +100,7 @@
 #include "Feature.h"
 #include <iostream>
 #include <filesystem>
+#include <ffi.h>
 
 extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename,
                   const std::string& mainFile, int debug);
@@ -109,7 +110,6 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
 extern std::unordered_map<std::string, Color4f> webcolors;
-
 PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
@@ -6007,119 +6007,50 @@ std::vector<PyObject *> python_member_callables;
 std::vector<std::string> python_member_names;
 int python_member_callind;
 
-PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs, int callind)
 {
   int n = PyTuple_Size(args);
   PyObject *newargs = PyTuple_New(n + 1);
   PyTuple_SetItem(newargs, 0, self);
   for (int i = 0; i < n; i++) PyTuple_SetItem(newargs, i + 1, PyTuple_GetItem(args, i));
+  return PyObject_Call(python_member_callables[callind], newargs, kwargs);
+}
+static ffi_cif trampoline_cif;
+static ffi_type *trampoline_arg_types[3];
+static bool trampoline_cif_ready = false;
 
-  return PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
+static void trampoline_closure_handler(ffi_cif *cif, void *ret,
+                                        void **args, void *user_data)
+{
+  int callind = (int)(intptr_t)user_data;  // index zit ingebakken in user_data
+  PyObject *self   = *(PyObject **)args[0];
+  PyObject *pargs  = *(PyObject **)args[1];
+  PyObject *kwargs = *(PyObject **)args[2];
+  *(PyObject **)ret = python_member_trampoline(self, pargs, kwargs, callind);
 }
+static PyCFunction create_dynamic_trampoline(int index)
+{
+    if (!trampoline_cif_ready) {
+        trampoline_arg_types[0] = &ffi_type_pointer;
+        trampoline_arg_types[1] = &ffi_type_pointer;
+        trampoline_arg_types[2] = &ffi_type_pointer;
+        ffi_prep_cif(&trampoline_cif, FFI_DEFAULT_ABI, 3,
+                     &ffi_type_pointer, trampoline_arg_types);
+        trampoline_cif_ready = true;
+    }
 
-#define PYTHON_MAX_USERMEMBERS 20
+    void *code_ptr = nullptr;
+    ffi_closure *closure = (ffi_closure *)ffi_closure_alloc(sizeof(ffi_closure), &code_ptr);
+    if (!closure) return nullptr;
 
-PyObject *python_member_trampoline_0(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 0;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_1(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 1;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_2(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 2;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_3(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 3;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_4(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 4;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_5(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 5;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_6(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 6;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_7(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 7;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_8(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 8;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_9(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 9;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_10(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 10;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_11(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 11;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_12(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 12;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_13(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 13;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_14(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 14;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_15(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 15;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_16(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 16;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 17;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 18;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 19;
-  return python_member_trampoline(self, args, kwargs);
-}
+    ffi_prep_closure_loc(closure, &trampoline_cif,
+                         trampoline_closure_handler,
+                         (void *)(intptr_t)index,  // index ingebakken als user_data
+                         code_ptr);
 
+    // closure nooit vrijgeven (zelfde als de bestaande malloc die "never freed" is)
+    return (PyCFunction)code_ptr;
+}
 PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"membername", "memberfunc", "docstring", NULL};
@@ -6139,36 +6070,12 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
     memberdoc = "Added by member function";
   }
 
-  if (curind >= PYTHON_MAX_USERMEMBERS) {
-    PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
+
+PyCFunction next_trampoline = create_dynamic_trampoline(curind);
+if (!next_trampoline) {
+    PyErr_SetString(PyExc_RuntimeError, "Failed to allocate trampoline closure");
     return NULL;
-  }
-
-  PyCFunction next_trampoline;
-  switch (curind) {
-  case 0:  next_trampoline = (PyCFunction)python_member_trampoline_0; break;
-  case 1:  next_trampoline = (PyCFunction)python_member_trampoline_1; break;
-  case 2:  next_trampoline = (PyCFunction)python_member_trampoline_2; break;
-  case 3:  next_trampoline = (PyCFunction)python_member_trampoline_3; break;
-  case 4:  next_trampoline = (PyCFunction)python_member_trampoline_4; break;
-  case 5:  next_trampoline = (PyCFunction)python_member_trampoline_5; break;
-  case 6:  next_trampoline = (PyCFunction)python_member_trampoline_6; break;
-  case 7:  next_trampoline = (PyCFunction)python_member_trampoline_7; break;
-  case 8:  next_trampoline = (PyCFunction)python_member_trampoline_8; break;
-  case 9:  next_trampoline = (PyCFunction)python_member_trampoline_9; break;
-  case 10: next_trampoline = (PyCFunction)python_member_trampoline_10; break;
-  case 11: next_trampoline = (PyCFunction)python_member_trampoline_11; break;
-  case 12: next_trampoline = (PyCFunction)python_member_trampoline_12; break;
-  case 13: next_trampoline = (PyCFunction)python_member_trampoline_13; break;
-  case 14: next_trampoline = (PyCFunction)python_member_trampoline_14; break;
-  case 15: next_trampoline = (PyCFunction)python_member_trampoline_15; break;
-  case 16: next_trampoline = (PyCFunction)python_member_trampoline_16; break;
-  case 17: next_trampoline = (PyCFunction)python_member_trampoline_17; break;
-  case 18: next_trampoline = (PyCFunction)python_member_trampoline_18; break;
-  case 19: next_trampoline = (PyCFunction)python_member_trampoline_19; break;
-  default: next_trampoline = nullptr;
-  }
-
+}
   PyMethodDef *meth = (PyMethodDef *)malloc(sizeof(PyMethodDef));  // never freed
   meth->ml_name = strdup(membername);
   meth->ml_meth = next_trampoline;
