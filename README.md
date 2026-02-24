@@ -55,25 +55,31 @@ frame is where you'll see the 3D rendering of your model.
 
 Let's make a tree! Type the following code into the left frame:
 
-    cylinder(h = 30, r = 8);
+```scad
+cylinder(h = 30, r = 8);
+```
 
 Then render the 3D model by hitting F5. Now you can see a cylinder for
 the trunk in our tree. Now let's add the bushy/leafy part of the tree
 represented by a sphere. To do so, we will union a cylinder and a
 sphere.
 
-    union() {
-      cylinder(h = 30, r = 8);
-      sphere(20);
-    }
+```scad
+union() {
+    cylinder(h = 30, r = 8);
+    sphere(20);
+}
+```
 
 But, it's not quite right! The bushy/leafy are around the base of the
 tree. We need to move the sphere up the z-axis.
 
-    union() {
-      cylinder(h = 30, r = 8);
-      translate([0, 0, 40]) sphere(20);
-    }
+```scad
+union() {
+    cylinder(h = 30, r = 8);
+    translate([0, 0, 40]) sphere(20);
+}
+```
 
 And that's it! You made your first 3D model! There are other primitive
 shapes that you can combine with other set operations (union,
