@@ -4379,18 +4379,16 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
     node->newsize[2] = z;
   }
 
-  /* TODO what is that ?
-     const auto& autosize = parameters["auto"];
-     node->autosize << false, false, false;
-     if (autosize.type() == Value::Type::VECTOR) {
-     const auto& va = autosize.toVector();
-     if (va.size() >= 1) node->autosize[0] = va[0].toBool();
-     if (va.size() >= 2) node->autosize[1] = va[1].toBool();
-     if (va.size() >= 3) node->autosize[2] = va[2].toBool();
-     } else if (autosize.type() == Value::Type::BOOL) {
-     node->autosize << autosize.toBool(), autosize.toBool(), autosize.toBool();
-     }
-   */
+  if (autosize != NULL) {
+    double x, y, z;
+    if (python_vectorval(newsize, 3, 3, &x, &y, &z)) {
+      PyErr_SetString(PyExc_TypeError, "Invalid autosize dimensions");
+      return NULL;
+    }
+    node->autosize[0] = x;
+    node->autosize[1] = y;
+    node->autosize[2] = z;
+  }
 
   node->children.push_back(child);
   node->convexity = convexity;
