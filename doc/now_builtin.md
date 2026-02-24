@@ -181,12 +181,13 @@ a_module();
 start = now();
 some_module();
 echo(str("elapsed to this point: ", now() - start, " μs"));
+other = calculation();
 ```
 
 That measures wall-clock time from the end of the assignment phase through
 `some_module()`'s instantiation — it includes any Phase 1→Phase 2 overhead as
-well as any module invocations prior to `some_module()` if they exist (in this
-case `a_module()`)
+well as any other calculations after the initial start and module invocations
+prior to `some_module()` if they exist (in this case `a_module()`)
 
 ## Common Mistakes
 
