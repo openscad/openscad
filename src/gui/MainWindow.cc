@@ -1057,10 +1057,18 @@ void MainWindow::compileCSG()
     this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
       this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     LOG("Compile and preview finished.");
-    renderStatistic.printRenderingTime();
+    renderStatistic.printRenderingTime();  // Removed: printRenderingTime()
     this->processEvents();
   } catch (const HardWarningException&) {
     exceptionCleanup();
+  }
+}
+
+void MainWindow::onFrameRendered()
+{
+  if (this->isWaitingForFirstFrame) {
+    this->renderStatistic.printRenderingTime();
+    this->isWaitingForFirstFrame = false;
   }
 }
 
@@ -1780,6 +1788,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
   this->afterCompileSlot = afterCompileSlot;
   this->procevents = procevents;
   this->isPreview = preview;
+  this->isWaitingForFirstFrame = preview;
 }
 
 void MainWindow::on_designActionPreview_triggered()
@@ -3616,6 +3625,7 @@ void MainWindow::setup3DView()
   connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
   connect(this->qglview, &QGLView::initialized, this, &MainWindow::updateViewModeAfterGLInit);
+  connect(this->qglview, &QGLView::frameRendered, this, &MainWindow::onFrameRendered);
 }
 
 /**
