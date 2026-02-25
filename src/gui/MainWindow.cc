@@ -1605,7 +1605,7 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
   snprintf(setting_key, sizeof(setting_key) - 1, "python_hash/%s", file.c_str());
   act_hash = SHA256HashString(content);
 
-  if (file == this->untrusted_edit_document_name) return false;
+  if (!file.empty() && file == this->untrusted_edit_document_name) return false;
 
   if (file == this->trusted_edit_document_name) {
     settings.setValue(setting_key, act_hash.c_str());
@@ -2340,9 +2340,15 @@ void MainWindow::showLanguageMenu()
   }
 #ifdef ENABLE_PYTHON
   else if (selected == pythonAction) {
-    activeEditor->setLanguageManually(LANG_PYTHON);
-    onLanguageActiveChanged(LANG_PYTHON);
-    tabManager->updateTabIcon(activeEditor);
+    auto fnameba = activeEditor->filepath.toUtf8();
+    const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba.constData();
+    auto document = activeEditor->toPlainText();
+    auto fulltext = std::string(document.toUtf8().constData());
+    if (trust_python_file(std::string(fname), fulltext)) {
+      activeEditor->setLanguageManually(LANG_PYTHON);
+      onLanguageActiveChanged(LANG_PYTHON);
+      tabManager->updateTabIcon(activeEditor);
+    }
   }
 #endif
   else if (selected == autoDetectAction) {
