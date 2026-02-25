@@ -19,7 +19,7 @@ These limitations cause OpenSCAD programs to be written in the most convoluted w
 The argument is Python will introduce a massive security hole into the sharing culture. So the proposed solution is to put the Python capability behind an option, which I have done. Additionally PythonSCAD asks you, if you trust to a new Python Script and it will saves this decsion for you in an SHA256 hash. Now I hope it's just a matter of time until things are merged.
 
 **Update Feb 2025:**
-Finally openscad core devs started to merge huge code chunks of PythonSCAD into openscad. So effectively core functionality of PytonSCAD is available in OpenSCAD. This is very exciting as it means the python functionality in OpenSCAD will be available to a way bigger audience.
+Finally openscad core devs started to merge huge code chunks of PythonSCAD into openscad. So effectively core functionality of PythonSCAD is available in OpenSCAD. This is very exciting as it means the python functionality in OpenSCAD will be available to a way bigger audience.
 Finally PythonSCAD will be still available to provide those features, which OpenSCAD will never merge.
 
 A nice tutorial walking you through some exercises can be found [here](tutorial/getting_started.md)
