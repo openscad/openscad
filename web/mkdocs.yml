@@ -54,6 +54,7 @@ nav:
   - Examples: examples.md
   - Cheat-Sheet: cheatsheet.md
   - Resources: resources.md
+  - Jupyter Setup: jupyter.md
   - Contact: contact.md
 
 markdown_extensions:

@@ -133,7 +133,7 @@ closer to a descriptive language. Both have their pro's and con's.
 ## Installing
 
 Pre-built binaries are available at
-<https://www.pythonscad.org/downloads.php>.
+<https://www.pythonscad.org/downloads>.
 
 You could also [build PythonSCAD from
 source](#building-pythonscad-from-source).
