@@ -513,6 +513,19 @@ FreetypeRenderer::FontMetrics::FontMetrics(const FreetypeRenderer::Params& param
   family_name = face->face_->family_name;
   style_name = face->face_->style_name;
 
+  underline_thickness =
+    FT_MulFix(face->face_->underline_thickness, size_metrics->y_scale) / scale * params.size;
+  // FreeType defines underline position as the vertical center of the underline.
+  // That's inconvenient for our user, who probably wants to call square()
+  // to generate the underline and would need to translate it down to
+  // center it.  Rather than making our user do that, *we* define the
+  // underline position as being the position of the bottom of the underline,
+  // so that translate([0,position,0]) square(length, thickness) will do
+  // the right thing.
+  underline_position =
+    FT_MulFix(face->face_->underline_position, size_metrics->y_scale) / scale * params.size -
+    underline_thickness / 2;
+
   ok = true;
 }
 
