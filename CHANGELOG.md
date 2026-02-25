@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.15.1](https://github.com/pythonscad/pythonscad/compare/v0.15.0...v0.15.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* auto parameter was not evaluated in resize ([#466](https://github.com/pythonscad/pythonscad/issues/466)) ([aa1f48a](https://github.com/pythonscad/pythonscad/commit/aa1f48a6cad6551039fc95d9c331d760a73bcf17))
+* laser tests ([59b0fc7](https://github.com/pythonscad/pythonscad/commit/59b0fc75cd99022279133883466e0ee24251a002))
+* prevent segfault when returning Py_None, Py_True and Py_False ([0518066](https://github.com/pythonscad/pythonscad/commit/0518066434f99f75becbcdeed9b9dc5cc916b1a0))
+* **windows:** pass release version to CMake to avoid -dirty in package filenames ([#455](https://github.com/pythonscad/pythonscad/issues/455)) ([27d4e67](https://github.com/pythonscad/pythonscad/commit/27d4e6762c8051fa8ba7ea47ed3298fb50970fe6))
+
 ## [0.15.0](https://github.com/pythonscad/pythonscad/compare/v0.14.2...v0.15.0) (2026-02-16)
 
 
