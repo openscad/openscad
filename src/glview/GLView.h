@@ -29,15 +29,14 @@
 #include "glview/system-gl.h"
 #include "core/Selection.h"
 #include "glview/Renderer.h"
+#include "glview/fbo.h"
 
 class GLView
 {
 public:
   GLView();
-  virtual ~GLView();
 
   void setupShader();
-  void teardownShader();
 
   void setRenderer(std::shared_ptr<Renderer> r);
   [[nodiscard]] Renderer *getRenderer() const { return this->renderer.get(); }
@@ -59,6 +58,8 @@ public:
   void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
   [[nodiscard]] bool showEdges() const { return this->showedges; }
   void setShowEdges(bool enabled) { this->showedges = enabled; }
+  [[nodiscard]] bool showSSAO() const { return this->showssao; }
+  void setShowSSAO(bool enabled) { this->showssao = enabled; }
   [[nodiscard]] bool showCrosshairs() const { return this->showcrosshairs; }
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
@@ -66,7 +67,8 @@ public:
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
   virtual float getDPI() { return 1.0f; }
 
-  std::unique_ptr<ShaderUtils::ShaderInfo> edge_shader;
+  std::unique_ptr<ShaderUtils::Shader> main_shader;
+  std::unique_ptr<ShaderUtils::Shader> post_shader;
   std::shared_ptr<Renderer> renderer;
   const ColorScheme *colorscheme;
   Camera cam;
@@ -74,6 +76,7 @@ public:
   double aspectratio;
   bool showaxes;
   bool showedges;
+  bool showssao;
   bool showcrosshairs;
   bool showscale;
   GLdouble modelview[16];
@@ -96,4 +99,11 @@ private:
   void showSmallaxes(const Color4f& col);
   void showScalemarkers(const Color4f& col);
   void decodeMarkerValue(double i, double l, int size_div_sm);
+
+  unsigned int gBuffer;
+  unsigned int gPosition, gNormal, gAlbedo;
+  unsigned int rboDepth, rboStencil;
+  unsigned int ssaoFBO, ssaoBlurFBO;
+  unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
+  std::unique_ptr<FBO> fbo;
 };

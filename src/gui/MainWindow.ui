@@ -189,6 +189,7 @@
          <addaction name="viewActionShowAxes"/>
          <addaction name="viewActionShowScaleProportional"/>
          <addaction name="viewActionShowEdges"/>
+         <addaction name="viewActionShowSSAO"/>
         </widget>
        </item>
       </layout>
@@ -341,6 +342,7 @@
     <addaction name="viewActionThrownTogether"/>
     <addaction name="separator"/>
     <addaction name="viewActionShowEdges"/>
+    <addaction name="viewActionShowSSAO"/>
     <addaction name="viewActionShowAxes"/>
     <addaction name="viewActionShowScaleProportional"/>
     <addaction name="viewActionShowCrosshairs"/>
@@ -1142,6 +1144,20 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="viewActionShowSSAO">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-show-edges"/>
+   </property>
+   <property name="text">
+    <string>Show SSAO</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+1</string>
    </property>
   </action>
   <action name="viewActionShowAxes">

@@ -26,6 +26,8 @@
 
 #include "glview/preview/ThrownTogetherRenderer.h"
 
+#include "OpenCSGRenderer.h"
+
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -86,13 +88,13 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root
 {
 }
 
-void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
+void ThrownTogetherRenderer::prepare(const ShaderUtils::Shader *shader)
 {
   PRINTD("Thrown prepare");
   if (vertex_state_containers_.empty()) {
     VertexStateContainer& vertex_state_container = vertex_state_containers_.emplace_back();
 
-    VBOBuilder vbo_builder(std::make_unique<TTRVertexStateFactory>(), vertex_state_container);
+    VBOBuilder vbo_builder(vertex_state_container);
     vbo_builder.addSurfaceData();
     vbo_builder.addShaderData();  // Always enable barycentric coordinates
 
@@ -105,65 +107,37 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 
     if (this->root_products_)
       createCSGProducts(*this->root_products_, vertex_state_container, vbo_builder, false, false,
-                        shaderinfo);
+                        shader);
     if (this->background_products_)
       createCSGProducts(*this->background_products_, vertex_state_container, vbo_builder, false, true,
-                        shaderinfo);
+                        shader);
     if (this->highlight_products_)
       createCSGProducts(*this->highlight_products_, vertex_state_container, vbo_builder, true, false,
-                        shaderinfo);
+                        shader);
 
     vbo_builder.createInterleavedVBOs();
   }
 }
 
-void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
+void ThrownTogetherRenderer::draw(const ShaderUtils::Shader *shader) const
 {
-  // Only use shader if select rendering or showedges
-  const bool enable_shader =
-    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
-  if (enable_shader) {
-    GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
-    GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
-    VBOUtils::shader_attribs_enable(*shaderinfo);
-  }
+  shader->use();
 
   GL_TRACE0("glDepthFunc(GL_LEQUAL)");
   GL_CHECKD(glDepthFunc(GL_LEQUAL));
   for (const auto& container : vertex_state_containers_) {
     for (const auto& vertex_state : container.states()) {
-      // Specify ID color if we're using select rendering
-      if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
-        if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_state)) {
-          GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                   shaderinfo->uniforms.at("frag_idcolor") %
-                     (((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                     (((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                     (((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
-                                ((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                ((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                ((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-        }
-      }
-      const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || (shader_vs && showedges)) {
-        vertex_state->draw();
-      }
+      shader->draw(vertex_state);
     }
   }
 
-  if (enable_shader) {
-    VBOUtils::shader_attribs_disable(*shaderinfo);
-    glUseProgram(0);
-  }
+  shader->unuse();
 }
 
 void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, VBOBuilder& vbo_builder,
                                                const CSGChainObject& csgobj, bool highlight_mode,
                                                bool background_mode, OpenSCADOperator type,
-                                               const ShaderUtils::ShaderInfo *shaderinfo)
+                                               const ShaderUtils::Shader *shader)
 {
   if (!csgobj.leaf->polyset ||
       this->geom_visit_mark_[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) {
@@ -181,17 +155,17 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_shader_pointers(vbo_builder, shaderinfo);
+    add_shader_pointers(vbo_builder, shader);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+    if (const auto ttr_vs = std::dynamic_pointer_cast<VertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
   } else {  // root mode
     ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_shader_pointers(vbo_builder, shaderinfo);
+    add_shader_pointers(vbo_builder, shader);
 
     auto cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {
@@ -208,7 +182,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
     vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
-    if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+    if (auto ttr_vs = std::dynamic_pointer_cast<VertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
@@ -217,7 +191,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_shader_pointers(vbo_builder, shaderinfo);
+    add_shader_pointers(vbo_builder, shader);
 
     cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {
@@ -227,7 +201,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     container.states().emplace_back(std::move(cull));
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+    if (auto ttr_vs = std::dynamic_pointer_cast<VertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
@@ -241,7 +215,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
 void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products,
                                                VertexStateContainer& container, VBOBuilder& vbo_builder,
                                                bool highlight_mode, bool background_mode,
-                                               const ShaderUtils::ShaderInfo *shaderinfo)
+                                               const ShaderUtils::Shader *shader)
 {
   PRINTD("Thrown renderCSGProducts");
   this->geom_visit_mark_.clear();
@@ -249,11 +223,11 @@ void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products,
   for (const auto& product : products.products) {
     for (const auto& csgobj : product.intersections) {
       createChainObject(container, vbo_builder, csgobj, highlight_mode, background_mode,
-                        OpenSCADOperator::INTERSECTION, shaderinfo);
+                        OpenSCADOperator::INTERSECTION, shader);
     }
     for (const auto& csgobj : product.subtractions) {
       createChainObject(container, vbo_builder, csgobj, highlight_mode, background_mode,
-                        OpenSCADOperator::DIFFERENCE, shaderinfo);
+                        OpenSCADOperator::DIFFERENCE, shader);
     }
   }
 }

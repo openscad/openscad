@@ -35,8 +35,8 @@ public:
   Renderer();
   virtual ~Renderer() = default;
 
-  virtual void prepare(const ShaderUtils::ShaderInfo *shaderinfo) = 0;
-  virtual void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const = 0;
+  virtual void prepare(const ShaderUtils::Shader *shader) = 0;
+  virtual void draw(const ShaderUtils::Shader *shader) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
   enum class ColorMode {
@@ -70,5 +70,4 @@ public:
 protected:
   std::map<ColorMode, Color4f> colormap_;
   const ColorScheme *colorscheme_{nullptr};
-  void setupShader();
 };

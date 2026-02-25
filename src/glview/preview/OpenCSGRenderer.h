@@ -18,42 +18,6 @@
 #include <string>
 #include <vector>
 
-class OpenCSGVertexState : public VertexState
-{
-public:
-  OpenCSGVertexState(size_t csg_object_index = 0) : csg_object_index_(csg_object_index) {}
-  OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type, size_t draw_offset,
-                     size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
-                     size_t csg_object_index = 0)
-    : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo,
-                  elements_vbo),
-      csg_object_index_(csg_object_index)
-  {
-  }
-
-  [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
-  void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
-
-private:
-  size_t csg_object_index_;
-};
-
-class OpenCSGVertexStateFactory : public VertexStateFactory
-{
-public:
-  OpenCSGVertexStateFactory() = default;
-
-  [[nodiscard]] std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size,
-                                                               GLenum draw_type, size_t draw_offset,
-                                                               size_t element_offset,
-                                                               GLuint vertices_vbo,
-                                                               GLuint elements_vbo) const override
-  {
-    return std::make_shared<OpenCSGVertexState>(draw_mode, draw_size, draw_type, draw_offset,
-                                                element_offset, vertices_vbo, elements_vbo);
-  }
-};
-
 class OpenCSGVBOProduct : public VertexStateContainer
 {
 public:
@@ -85,14 +49,14 @@ public:
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override = default;
-  void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(const ShaderUtils::Shader *shader) override;
+  void draw(const ShaderUtils::Shader *shader) const override;
 
   BoundingBox getBoundingBox() const override;
 
 private:
   void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
-                            const ShaderUtils::ShaderInfo *shaderinfo);
+                            const ShaderUtils::Shader *shader);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;
