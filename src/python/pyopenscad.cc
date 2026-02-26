@@ -1254,6 +1254,7 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
   if (PyType_Ready(&PyOpenSCADType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADItemRefType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADObjectIterType) < 0) return nullptr;
+  if (PyType_Ready(&PyOpenSCADBoundMemberType) < 0) return NULL;
 
   m = PyInit_openscad();
   if (m == nullptr) return nullptr;

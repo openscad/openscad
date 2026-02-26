@@ -20,12 +20,19 @@ typedef struct {
   /* Type-specific fields go here. */
 } PyOpenSCADObject;
 
+struct PyOpenSCADBoundMemberObject {
+  PyObject_HEAD
+  PyObject *scad_self;
+  int index;
+};
+
 void PyObjectDeleter(PyObject *pObject);
 using PyObjectUniquePtr = std::unique_ptr<PyObject, decltype(&PyObjectDeleter)>;
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void);
 
 extern PyTypeObject PyOpenSCADType;
+extern PyTypeObject PyOpenSCADBoundMemberType;
 extern PyObject *python_result_obj;
 extern std::vector<SelectedObject> python_result_handle;
 extern void python_catch_error(std::string& errorstr);
@@ -36,6 +43,8 @@ extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 extern std::vector<std::shared_ptr<AbstractNode>> nodes_hold;
 extern std::shared_ptr<AbstractNode> void_node, full_node;
+extern std::vector<PyObject *> python_member_callables;
+extern std::vector<std::string> python_member_names;
 bool trust_python_file(const std::string& file, const std::string& content);
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<AbstractNode>& node);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict);

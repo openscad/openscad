@@ -2307,18 +2307,31 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
 PyObject *python__getitem__(PyObject *obj, PyObject *key)
 {
   PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
-  if (self->dict == nullptr) {
-    return nullptr;
-  }
-  // object dict
-  PyObject *result = PyDict_GetItem(self->dict, key);
-  if (result != NULL) {
-    Py_INCREF(result);
-    return result;
+  PyObject *result;
+  if (self->dict != nullptr) {
+    // object dict
+    result = PyDict_GetItem(self->dict, key);
+    if (result != NULL) {
+      Py_INCREF(result);
+      return result;
+    }
   }
   PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
   if (keyname == nullptr) return nullptr;
   std::string keystr = PyBytes_AS_STRING(keyname);
+
+  // member function lookup
+
+  auto it = std::find(python_member_names.begin(), python_member_names.end(), keystr.c_str());
+  if (it != python_member_names.end()) {
+    int idx = (int)(it - python_member_names.begin());
+    PyOpenSCADBoundMemberObject *bm = PyObject_New(PyOpenSCADBoundMemberObject, &PyOpenSCADBoundMemberType);
+    if (!bm) return NULL;
+    Py_INCREF(self);
+    bm->scad_self = obj;
+    bm->index = idx;
+    return (PyObject *)bm;
+  }
 
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
@@ -6066,120 +6079,43 @@ int type_add_method(PyTypeObject *type, PyMethodDef *meth)  // from typeobject.c
 
 std::vector<PyObject *> python_member_callables;
 std::vector<std::string> python_member_names;
-int python_member_callind;
 
-PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs, int callind)
 {
   int n = PyTuple_Size(args);
   PyObject *newargs = PyTuple_New(n + 1);
   PyTuple_SetItem(newargs, 0, self);
   for (int i = 0; i < n; i++) PyTuple_SetItem(newargs, i + 1, PyTuple_GetItem(args, i));
-
-  return PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
+  return PyObject_Call(python_member_callables[callind], newargs, kwargs);
 }
 
-#define PYTHON_MAX_USERMEMBERS 20
+// --- PyOpenSCADBoundMember: een callable object dat self + index inbakt ---
 
-PyObject *python_member_trampoline_0(PyObject *self, PyObject *args, PyObject *kwargs)
+
+static PyObject *PyOpenSCADBoundMemberCall(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  python_member_callind = 0;
-  return python_member_trampoline(self, args, kwargs);
+  PyOpenSCADBoundMemberObject *bm = (PyOpenSCADBoundMemberObject *)self;
+  return python_member_trampoline(bm->scad_self, args, kwargs, bm->index);
 }
-PyObject *python_member_trampoline_1(PyObject *self, PyObject *args, PyObject *kwargs)
+
+static void PyOpenSCADBoundMemberDealloc(PyObject *self)
 {
-  python_member_callind = 1;
-  return python_member_trampoline(self, args, kwargs);
+  PyOpenSCADBoundMemberObject *bm = (PyOpenSCADBoundMemberObject *)self;
+  Py_XDECREF(bm->scad_self);
+  Py_TYPE(self)->tp_free(self);
 }
-PyObject *python_member_trampoline_2(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 2;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_3(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 3;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_4(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 4;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_5(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 5;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_6(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 6;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_7(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 7;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_8(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 8;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_9(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 9;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_10(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 10;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_11(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 11;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_12(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 12;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_13(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 13;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_14(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 14;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_15(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 15;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_16(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 16;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 17;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 18;
-  return python_member_trampoline(self, args, kwargs);
-}
-PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  python_member_callind = 19;
-  return python_member_trampoline(self, args, kwargs);
-}
+
+PyTypeObject PyOpenSCADBoundMemberType = {
+  PyVarObject_HEAD_INIT(NULL, 0)
+  "PyOpenSADBoundMember",               // tp_name
+  sizeof(PyOpenSCADBoundMemberObject),   // tp_basicsize
+  0,                           // tp_itemsize
+  PyOpenSCADBoundMemberDealloc,         // tp_dealloc
+  0, 0, 0, 0, 0, 0, 0, 0, 0,
+  PyOpenSCADBoundMemberCall,            // tp_call
+  0, 0, 0, 0,
+  Py_TPFLAGS_DEFAULT,          // tp_flags
+};
 
 PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -6188,58 +6124,17 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *memberfunc = nullptr;
   char *memberdoc = nullptr;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|s", kwlist, &membername, &memberfunc)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|s", kwlist, &membername, &memberfunc, &memberdoc)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing member");
     return NULL;
   }
   std::string member_name = membername;
-  int curind = std::find(python_member_names.begin(), python_member_names.end(), member_name) -
-               python_member_names.begin();
-
-  if (memberdoc == nullptr) {
-    memberdoc = "Added by member function";
-  }
-
-  if (curind >= PYTHON_MAX_USERMEMBERS) {
-    PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
-    return NULL;
-  }
-
-  PyCFunction next_trampoline;
-  switch (curind) {
-  case 0:  next_trampoline = (PyCFunction)python_member_trampoline_0; break;
-  case 1:  next_trampoline = (PyCFunction)python_member_trampoline_1; break;
-  case 2:  next_trampoline = (PyCFunction)python_member_trampoline_2; break;
-  case 3:  next_trampoline = (PyCFunction)python_member_trampoline_3; break;
-  case 4:  next_trampoline = (PyCFunction)python_member_trampoline_4; break;
-  case 5:  next_trampoline = (PyCFunction)python_member_trampoline_5; break;
-  case 6:  next_trampoline = (PyCFunction)python_member_trampoline_6; break;
-  case 7:  next_trampoline = (PyCFunction)python_member_trampoline_7; break;
-  case 8:  next_trampoline = (PyCFunction)python_member_trampoline_8; break;
-  case 9:  next_trampoline = (PyCFunction)python_member_trampoline_9; break;
-  case 10: next_trampoline = (PyCFunction)python_member_trampoline_10; break;
-  case 11: next_trampoline = (PyCFunction)python_member_trampoline_11; break;
-  case 12: next_trampoline = (PyCFunction)python_member_trampoline_12; break;
-  case 13: next_trampoline = (PyCFunction)python_member_trampoline_13; break;
-  case 14: next_trampoline = (PyCFunction)python_member_trampoline_14; break;
-  case 15: next_trampoline = (PyCFunction)python_member_trampoline_15; break;
-  case 16: next_trampoline = (PyCFunction)python_member_trampoline_16; break;
-  case 17: next_trampoline = (PyCFunction)python_member_trampoline_17; break;
-  case 18: next_trampoline = (PyCFunction)python_member_trampoline_18; break;
-  case 19: next_trampoline = (PyCFunction)python_member_trampoline_19; break;
-  default: next_trampoline = nullptr;
-  }
-
-  PyMethodDef *meth = (PyMethodDef *)malloc(sizeof(PyMethodDef));  // never freed
-  meth->ml_name = strdup(membername);
-  meth->ml_meth = next_trampoline;
-  meth->ml_flags = METH_VARARGS | METH_KEYWORDS;
-  meth->ml_doc = memberdoc;
-  if (type_add_method(&PyOpenSCADType, meth) < 0) Py_RETURN_NONE;
+  auto it = std::find(python_member_names.begin(), python_member_names.end(), member_name);
 
   Py_INCREF(memberfunc);  // needed because pythons garbage collector eats it when not used.
-  if (curind < python_member_names.size()) {
-    python_member_callables[curind] = memberfunc;
+  if (it != python_member_names.end()) {
+    int idx = (int)(it - python_member_names.begin());
+    python_member_callables[idx] = memberfunc;
   } else {
     python_member_names.push_back(member_name);
     python_member_callables.push_back(memberfunc);
