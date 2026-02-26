@@ -1,22 +1,23 @@
 #include "gui/Animate.h"
 
-#include <string>
 #include <QAction>
 #include <QBoxLayout>
+#include <QFormLayout>
 #include <QIcon>
 #include <QList>
+#include <QPalette>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QWidget>
-#include <iostream>
 #include <filesystem>
-#include <QFormLayout>
+#include <iostream>
+#include <string>
 
-#include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/UIUtils.h"
 #include "openscad_gui.h"
+#include "utils/printutils.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -45,11 +46,6 @@ void Animate::initGUI()
 
   animateTimer = new QTimer(this);
   connect(animateTimer, &QTimer::timeout, this, &Animate::incrementTVal);
-
-  connect(this->e_tval, &QLineEdit::textChanged, this, &Animate::updatedAnimTval);
-  connect(this->e_fps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
-  connect(this->e_fsteps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
-  connect(this->e_dump, &QCheckBox::toggled, this, &Animate::updatedAnimDump);
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)
@@ -70,7 +66,7 @@ void Animate::connectAction(QAction *action, QPushButton *button)
   this->actionList.append(action);
 }
 
-void Animate::updatedAnimTval()
+void Animate::on_e_tval_textChanged(const QString&)
 {
   double t = this->e_tval->text().toDouble(&this->tOK);
   // Clamp t to 0-1
@@ -84,6 +80,16 @@ void Animate::updatedAnimTval()
   emit mainWindow->actionRenderPreview();
 
   updatePauseButtonIcon();
+}
+
+void Animate::on_e_fps_textChanged(const QString&)
+{
+  updatedAnimFpsAndAnimSteps();
+}
+
+void Animate::on_e_fsteps_textChanged(const QString&)
+{
+  updatedAnimFpsAndAnimSteps();
 }
 
 void Animate::updatedAnimFpsAndAnimSteps()
@@ -126,7 +132,7 @@ void Animate::updatedAnimFpsAndAnimSteps()
   updatePauseButtonIcon();
 }
 
-void Animate::updatedAnimDump(bool checked)
+void Animate::on_e_dump_toggled(bool checked)
 {
   if (!checked) this->animDumping = false;
 

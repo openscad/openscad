@@ -1,10 +1,10 @@
 #include "gui/parameter/GroupWidget.h"
 
+#include <QLineEdit>
 #include <QObject>
 #include <QSizePolicy>
 #include <QString>
 #include <QWidget>
-#include <QLineEdit>
 
 GroupWidget::GroupWidget(const QString& title, QWidget *parent) : QWidget(parent)
 {

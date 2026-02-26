@@ -1,9 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
-#include <algorithm>
+
 #include "utils/hash.h"  // IWYU pragma: keep
 
 /*!

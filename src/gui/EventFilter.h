@@ -1,9 +1,10 @@
 #pragma once
 
-#include <QObject>
 #include <QFileOpenEvent>
-#include "gui/OpenSCADApp.h"
+#include <QObject>
+
 #include "gui/LaunchingScreen.h"
+#include "gui/OpenSCADApp.h"
 
 class SCADEventFilter : public QObject
 {

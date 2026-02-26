@@ -639,6 +639,10 @@ list(APPEND PREVIEW_DIFFERENT_EXPECTATIONS
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
   # ${TEST_SCAD_DIR}/bugs2D/issue2220.scad
 )
+if(EXAMPLES_DIR)
+  list(APPEND PREVIEW_DIFFERENT_EXPECTATIONS
+    ${EXAMPLES_DIR}/Old/example009.scad) # Really this only differs on throwntogether, but then we'd need to make THROWNTOGETHER_DIFFERENT_EXPECTATIONS just for this one thing.
+endif(EXAMPLES_DIR)
 
 list(APPEND RENDER_COMMON_FILES ${ALL_RENDER_FILES})
 list(REMOVE_ITEM RENDER_COMMON_FILES
@@ -859,6 +863,7 @@ add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FIL
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
 
+# Note: we're missing coverage for ${PREVIEW_DIFFERENT_EXPECTATIONS} files for throwntogether
 add_cmdline_test(throwntogether-cgal  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=cgal)
 add_cmdline_test(throwntogether-manifold  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=manifold)
 

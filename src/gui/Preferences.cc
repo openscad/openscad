@@ -26,53 +26,55 @@
 
 #include "gui/Preferences.h"
 
-#include <unordered_map>
-#include <vector>
+#include <QActionGroup>
+#include <QDialog>
+#include <QFileDialog>
 #include <QFont>
 #include <QFontComboBox>
-#include <QMainWindow>
-#include <QObject>
-#include <QDialog>
-#include <QSizePolicy>
-#include <QSpacerItem>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-#include <tuple>
-#include <cassert>
-#include <list>
-#include <QMenu>
-#include <QActionGroup>
-#include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QFileDialog>
-#include <QRegularExpression>
-#include <QRegularExpressionValidator>
-#include <QStatusBar>
-#include <QSettings>
-#include <QTextDocument>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QObject>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSettings>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QStatusBar>
+#include <QString>
+#include <QStringList>
+#include <QTextDocument>
+#include <QWidget>
 #include <boost/algorithm/string.hpp>
+#include <cassert>
+#include <list>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+#include "Feature.h"
 #include "OctoPrintApiKeyDialog.h"
+#include "core/Settings.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
-#include "Feature.h"
-#include "core/Settings.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
+#include <string>
+
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
+#include "gui/EditorColorMap.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/OctoPrint.h"
+#include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
-#include "gui/OctoPrint.h"
-#include "gui/IgnoreWheelWhenNotFocused.h"
-#include "gui/PrintService.h"
-
-#include <string>
 
 static const char *featurePropertyName = "FeatureProperty";
 
@@ -102,9 +104,17 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   QStringList renderColorSchemes;
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
-  syntaxHighlight->clear();
-  colorSchemeChooser->clear();
-  colorSchemeChooser->addItems(renderColorSchemes);
+  {
+    const BlockSignals<QComboBox *> blocker(syntaxHighlight);
+    syntaxHighlight->clear();
+    syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+  }
+
+  {
+    const BlockSignals<QListWidget *> blocker(colorSchemeChooser);
+    colorSchemeChooser->clear();
+    colorSchemeChooser->addItems(renderColorSchemes);
+  }
   init();
   AxisConfig->init();
   setupFeaturesPage();
@@ -1477,18 +1487,6 @@ void Preferences::apply_win() const
 {
   emit requestRedraw();
   emit openCSGSettingsChanged();
-}
-
-bool Preferences::hasHighlightingColorScheme() const
-{
-  return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
-}
-
-void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
-{
-  auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
-  combobox->clear();
-  combobox->addItems(colorSchemes);
 }
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)

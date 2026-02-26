@@ -25,14 +25,9 @@
  */
 
 #include "openscad_gui.h"
-#include <QtCore/qstringliteral.h>
-#include <memory>
-#include <filesystem>
-#include <string>
-#include <vector>
 
-#include <QtGlobal>
-#include <Qt>
+#include <QtCore/qstringliteral.h>
+
 #include <QDialog>
 #include <QDir>
 #include <QFileInfo>
@@ -41,14 +36,21 @@
 #include <QIcon>
 #include <QObject>
 #include <QPalette>
-#include <QStyleHints>
 #include <QStringList>
+#include <QStyleHints>
+#include <Qt>
 #include <QtConcurrentRun>
+#include <QtGlobal>
+#include <array>
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "Feature.h"
-#include "core/parsersettings.h"
-#include "core/Settings.h"
 #include "FontCache.h"
+#include "core/Settings.h"
+#include "core/parsersettings.h"
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
 #include "gui/input/InputDriverManager.h"
@@ -71,8 +73,8 @@
 #include "gui/LaunchingScreen.h"
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
-#include "gui/QSettingsCached.h"
 #include "gui/Preferences.h"
+#include "gui/QSettingsCached.h"
 #include "openscad.h"
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"

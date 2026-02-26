@@ -68,9 +68,10 @@
 #include <ostream>
 
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 
 /*!
     Saves the current Polygon2d as DXF to the given absolute filename.

@@ -26,15 +26,16 @@
 
 #include "gui/OctoPrintApiKeyDialog.h"
 
-#include <QString>
 #include <QCheckBox>
 #include <QColor>
-#include <QDialog>
 #include <QColorDialog>
+#include <QDialog>
 #include <QLineEdit>
-#include <QSvgRenderer>
-#include <QPalette>
+#include <QObject>
 #include <QPainter>
+#include <QPalette>
+#include <QString>
+#include <QSvgRenderer>
 
 #include "OctoPrint.h"
 

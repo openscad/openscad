@@ -1,8 +1,10 @@
 #include "core/Selection.h"
+
 #include <Eigen/Dense>
-#include <sstream>
 #include <iomanip>
 #include <limits>
+#include <sstream>
+#include <string>
 
 std::string SelectionTypeToString(SelectionType type)
 {

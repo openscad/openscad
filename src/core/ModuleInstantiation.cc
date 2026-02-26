@@ -1,14 +1,15 @@
 #include "core/ModuleInstantiation.h"
 
-#include <ostream>
-#include <memory>
 #include <cstddef>
+#include <memory>
+#include <ostream>
 #include <string>
 
-#include "utils/compiler_specific.h"
 #include "core/Context.h"
 #include "core/Expression.h"
+#include "core/callables.h"
 #include "core/module.h"
+#include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 

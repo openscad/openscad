@@ -26,14 +26,15 @@
 
 #include "core/Context.h"
 
-#include <utility>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/AST.h"
 #include "core/EvaluationSession.h"
+#include "core/callables.h"
 #include "core/function.h"
 #include "utils/printutils.h"
 

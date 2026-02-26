@@ -1,21 +1,20 @@
 
 #include "gui/InitConfigurator.h"
 
-#include <QListWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QRadioButton>
+#include <QSettings>
 #include <QSpinBox>
 #include <QString>
-#include <QSettings>
-#include <QLineEdit>
-#include <QGroupBox>
+#include <string>
 
 #include "core/Settings.h"
 #include "gui/SettingsWriter.h"
-
-#include <string>
 
 void InitConfigurator::writeSettings()
 {

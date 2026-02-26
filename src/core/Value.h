@@ -1,21 +1,21 @@
 #pragma once
 
-#include <iterator>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <cstddef>
-#include <ostream>
+#include <iterator>
 #include <memory>
+#include <ostream>
+#include <string>
 #include <type_traits>
+#include <unordered_map>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include "core/FunctionType.h"
 #include "core/RangeType.h"
-#include "core/str_utf8_wrapper.h"
 #include "core/UndefType.h"
+#include "core/str_utf8_wrapper.h"
 
 class tostring_visitor;
 class tostream_visitor;

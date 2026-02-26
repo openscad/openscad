@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-
 #include <CGAL/Surface_mesh/Surface_mesh.h>
 
-#include "geometry/Geometry.h"
+#include <memory>
+
 #include "core/enums.h"
+#include "geometry/Geometry.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "manifold/manifold.h"
 

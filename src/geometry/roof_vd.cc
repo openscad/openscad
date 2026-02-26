@@ -3,22 +3,23 @@
 
 #include "geometry/roof_vd.h"
 
-#include <ostream>
-#include <cstdint>
-#include <memory>
+#include <algorithm>
+#include <boost/polygon/voronoi.hpp>
 #include <cmath>
 #include <cstddef>
-#include <algorithm>
+#include <cstdint>
 #include <map>
-#include <boost/polygon/voronoi.hpp>
+#include <memory>
+#include <ostream>
 #include <vector>
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetBuilder.h"
 
-#include "geometry/GeometryUtils.h"
-#include "geometry/ClipperUtils.h"
+#include "core/CurveDiscretizer.h"
 #include "core/RoofNode.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception(     \

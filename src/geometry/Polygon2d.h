@@ -1,13 +1,14 @@
 #pragma once
 
-#include <utility>
-#include <memory>
 #include <cstddef>
+#include <memory>
+#include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
+
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
-#include <numeric>
 
 /*!
    A single contour.

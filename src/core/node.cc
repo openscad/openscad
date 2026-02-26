@@ -25,17 +25,19 @@
  */
 
 #include "core/node.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <deque>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "core/AST.h"
 #include "core/ModuleInstantiation.h"
 #include "core/progress.h"
-
-#include <deque>
-#include <memory>
-#include <cstddef>
-#include <functional>
-#include <iostream>
-#include <algorithm>
-#include <string>
 
 size_t AbstractNode::idx_counter;
 

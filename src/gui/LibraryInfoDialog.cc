@@ -4,13 +4,18 @@
 #include <QString>
 #include <QStringRef>
 #include <QTextEdit>
+
 #include "LibraryInfo.h"
 
 LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)
 {
   setupUi(this);
-  connect(this->okButton, &QPushButton::clicked, this, &LibraryInfoDialog::accept);
   updateLibraryInfo(rendererInfo);
+}
+
+void LibraryInfoDialog::on_okButton_clicked()
+{
+  accept();
 }
 
 void LibraryInfoDialog::updateLibraryInfo(const QString& rendererInfo)

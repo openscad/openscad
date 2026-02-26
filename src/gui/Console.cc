@@ -29,34 +29,36 @@
 #include <QBrush>
 #include <QColor>
 #include <QContextMenuEvent>
-#include <QFocusEvent>
-#include <QPlainTextEdit>
-#include <QStringLiteral>
-#include <QTextCharFormat>
-#include <QWidget>
-#include <QWheelEvent>
-#include <QMenu>
-#include <QFileInfo>
 #include <QFileDialog>
-#include <QTextStream>
+#include <QFileInfo>
+#include <QFocusEvent>
+#include <QMenu>
+#include <QPlainTextEdit>
 #include <QRegularExpression>
 #include <QString>
+#include <QStringLiteral>
+#include <QTextCharFormat>
+#include <QTextStream>
+#include <QWheelEvent>
+#include <QWidget>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
+
 #include "gui/MainWindow.h"
-#include "utils/printutils.h"
 #include "gui/Preferences.h"
 #include "gui/UIUtils.h"
+#include "utils/printutils.h"
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
   setupUi(this);
-  connect(this->actionClear, &QAction::triggered, this, &Console::actionClearConsole_triggered);
-  connect(this->actionSaveAs, &QAction::triggered, this, &Console::actionSaveAs_triggered);
   connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
   this->appendCursor = this->textCursor();
   this->setUndoRedoEnabled(false);
   this->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
+
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this, &Console::setConsoleFont);
 }
 
 void Console::focusInEvent(QFocusEvent * /*event*/)
@@ -168,14 +170,19 @@ void Console::update()
   this->setMaximumBlockCount(GlobalPreferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
 }
 
-void Console::actionClearConsole_triggered()
+void Console::on_actionClear_triggered()
+{
+  clear();
+}
+
+void Console::clear()
 {
   this->msgBuffer.clear();
   this->document()->clear();
   this->appendCursor = this->textCursor();
 }
 
-void Console::actionSaveAs_triggered()
+void Console::on_actionSaveAs_triggered()
 {
   const auto& text = this->document()->toPlainText();
   const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));

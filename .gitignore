@@ -2,6 +2,7 @@
 .cache/
 .vs/
 .vscode/
+*.code-workspace
 .idea/
 .clangd/
 /*.scad

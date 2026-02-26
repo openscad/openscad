@@ -37,10 +37,10 @@
 
 #include "core/AST.h"
 #include "core/Builtins.h"
-#include "core/function.h"
-#include "core/Parameters.h"
 #include "core/CurveDiscretizer.h"
+#include "core/Parameters.h"
 #include "core/Value.h"
+#include "core/function.h"
 #include "handle_dep.h"
 #include "io/DxfData.h"
 #include "io/fileutils.h"

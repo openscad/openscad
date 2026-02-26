@@ -27,32 +27,32 @@
 #include "core/ImportNode.h"
 
 #include "geometry/Geometry.h"
-#include "io/import.h"
-
 #include "geometry/PolySet.h"
+#include "io/import.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"
 #endif
-#include "geometry/Polygon2d.h"
+#include <sys/types.h>
+
+#include <boost/algorithm/string.hpp>
+#include <cmath>
+#include <filesystem>
+#include <ios>
+#include <memory>
+#include <sstream>
+#include <utility>
+
+#include "Feature.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
+#include "core/module.h"
+#include "geometry/Polygon2d.h"
+#include "handle_dep.h"
 #include "io/DxfData.h"
 #include "io/fileutils.h"
 #include "utils/printutils.h"
-#include "Feature.h"
-#include "handle_dep.h"
-
-#include <cmath>
-#include <ios>
-#include <utility>
-#include <memory>
-#include <sys/types.h>
-#include <sstream>
-#include <boost/algorithm/string.hpp>
-#include <filesystem>
 namespace fs = std::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;  // bring 'operator+=()' into scope

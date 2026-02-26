@@ -1,7 +1,10 @@
+#include <cmath>
+#include <cstddef>
+#include <list>
+#include <vector>
+
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
-#include <list>
-#include <cstddef>
 // #include "geometry/cgal/cgal.h"
 // #include "libtess2/Source/tess.h"
 

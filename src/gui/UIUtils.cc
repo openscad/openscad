@@ -26,29 +26,30 @@
 
 #include "gui/UIUtils.h"
 
-#include <filesystem>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-#include <exception>
+#include <QColor>
+#include <QDesktopServices>
 #include <QDir>
-#include <QList>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QFileInfoList>
-#include <QUrl>
-#include <QFileDialog>
-#include <QDesktopServices>
-#include <QRegularExpression>
-#include <QJsonObject>
 #include <QJsonDocument>
-
-#include "version.h"
-#include "platform/PlatformUtils.h"
-#include "gui/QSettingsCached.h"
-
+#include <QJsonObject>
+#include <QList>
+#include <QRegularExpression>
+#include <QString>
+#include <QStringList>
+#include <QUrl>
+#include <QWidget>
+#include <algorithm>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <string>
+#include <utility>
+
+#include "gui/QSettingsCached.h"
+#include "platform/PlatformUtils.h"
+#include "version.h"
 
 namespace {
 

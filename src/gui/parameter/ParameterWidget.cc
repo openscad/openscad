@@ -25,35 +25,35 @@
  */
 #include "gui/parameter/ParameterWidget.h"
 
-#include <QLayoutItem>
-#include <QString>
-#include <stdexcept>
-#include <cassert>
-#include <map>
-#include <set>
-#include <memory>
-#include <QWidget>
-#include <QMenu>
 #include <QAction>
-#include <QToolButton>
-
-#include "gui/parameter/GroupWidget.h"
-#include "gui/parameter/ParameterSpinBox.h"
-#include "gui/parameter/ParameterComboBox.h"
-#include "gui/parameter/ParameterSlider.h"
-#include "gui/parameter/ParameterCheckBox.h"
-#include "gui/parameter/ParameterText.h"
-#include "gui/parameter/ParameterVector.h"
-#include "gui/Preferences.h"
-
-#include <filesystem>
-
 #include <QInputDialog>
+#include <QLayoutItem>
+#include <QMenu>
 #include <QMessageBox>
+#include <QString>
+#include <QToolButton>
+#include <QWidget>
+#include <cassert>
 #include <cstddef>
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "core/customizer/ParameterObject.h"
+#include "gui/Preferences.h"
+#include "gui/parameter/GroupWidget.h"
+#include "gui/parameter/ParameterCheckBox.h"
+#include "gui/parameter/ParameterComboBox.h"
+#include "gui/parameter/ParameterSlider.h"
+#include "gui/parameter/ParameterSpinBox.h"
+#include "gui/parameter/ParameterText.h"
+#include "gui/parameter/ParameterVector.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -64,14 +64,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   autoPreviewTimer.setSingleShot(true);
 
   connect(&autoPreviewTimer, &QTimer::timeout, this, &ParameterWidget::emitParametersChanged);
-  connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() { this->autoPreview(true); });
-  connect(comboBoxDetails, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &ParameterWidget::rebuildWidgets);
-  connect(comboBoxPreset, QOverload<int>::of(&QComboBox::activated), this,
-          &ParameterWidget::onSetChanged);
   // connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
-  connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
-  connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
 
   auto *customizer_menu = new QMenu(this);
   parameterMenuButton->setMenu(customizer_menu);
@@ -204,7 +197,17 @@ void ParameterWidget::autoPreview(bool immediate)
   }
 }
 
-void ParameterWidget::onSetChanged(int index)
+void ParameterWidget::on_checkBoxAutoPreview_toggled(bool)
+{
+  autoPreview(true);
+}
+
+void ParameterWidget::on_comboBoxDetails_currentIndexChanged(int)
+{
+  rebuildWidgets();
+}
+
+void ParameterWidget::on_comboBoxPreset_activated(int index)
 {
   loadSet(index);
   autoPreview(true);
@@ -218,7 +221,7 @@ void ParameterWidget::onSetNameChanged()
   setModified();
 }
 
-void ParameterWidget::onSetAdd()
+void ParameterWidget::on_addButton_clicked()
 {
   bool ok = true;
   QString result =
@@ -231,7 +234,7 @@ void ParameterWidget::onSetAdd()
   setModified();
 }
 
-void ParameterWidget::onSetDelete()
+void ParameterWidget::on_deleteButton_clicked()
 {
   int index = comboBoxPreset->currentIndex();
   assert(index > 0);

@@ -1,8 +1,11 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include "core/Selection.h"
 #include "gui/MouseSelector.h"
 
+#include <memory>
+#include <array>
 #include <QImage>
 #include <QMouseEvent>
 #include <QPoint>
@@ -114,6 +117,7 @@ signals:
   void resized();
   void doRightClick(QPoint screen_coordinate);
   void doLeftClick(QPoint screen_coordinate);
+  void initialized();
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

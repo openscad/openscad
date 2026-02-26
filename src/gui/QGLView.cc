@@ -25,8 +25,11 @@
  */
 
 #include "gui/QGLView.h"
+#include <cmath>
+#include <memory>
 #include <QtCore/qpoint.h>
 
+#include "core/Selection.h"
 #include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"
@@ -130,6 +133,8 @@ void QGLView::initializeGL()
   GLView::initializeGL();
 
   this->selector = std::make_unique<MouseSelector>(this);
+
+  emit initialized();
 }
 
 std::string QGLView::getRendererInfo() const

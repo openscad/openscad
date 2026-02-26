@@ -25,10 +25,10 @@
 #include "libsvg/polygon.h"
 
 #include <boost/tokenizer.hpp>
-
-#include "libsvg/util.h"
-
 #include <string>
+
+#include "libsvg/shape.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "glview/Camera.h"
+#include "glview/ShaderUtils.h"
 #include "geometry/linalg.h"
 #include "glview/ColorMap.h"
 #include "glview/system-gl.h"

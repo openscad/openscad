@@ -1,10 +1,10 @@
 #include "geometry/Polygon2d.h"
 
-#include <sstream>
-#include <utility>
 #include <cstddef>
-#include <string>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
 
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
@@ -12,9 +12,9 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
 #include "geometry/PolySet.h"
+#include "geometry/cgal/cgalutils.h"
 #include "glview/RenderSettings.h"
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true)

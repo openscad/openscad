@@ -1,8 +1,8 @@
 #include "gui/Dock.h"
 
 #include <QDockWidget>
+#include <QRegularExpression>
 #include <QWidget>
-#include "gui/QSettingsCached.h"
 
 namespace {
 
@@ -56,6 +56,10 @@ void Dock::updateTitle()
 void Dock::setName(const QString& name_)
 {
   name = name_;
+  // On Linux and Qt6.10 this is not needed, but older Qt versions
+  // show the & mnemonic marker in the dock title. Allow keeping
+  // single & characters not directly followed by a letter.
+  name.replace(QRegularExpression("&([a-zA-Z])"), "\\1");
   updateTitle();
 }
 

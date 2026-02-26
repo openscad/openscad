@@ -1,26 +1,30 @@
 #include "core/CSGTreeEvaluator.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "core/State.h"
+
+#include <boost/range/adaptor/reversed.hpp>
+#include <cassert>
+#include <cstddef>
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+
+#include "core/BaseVisitable.h"
+#include "core/CSGNode.h"
+#include "core/CgalAdvNode.h"
+#include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
 #include "core/ModuleInstantiation.h"
-#include "core/CSGNode.h"
-#include "core/TransformNode.h"
-#include "core/ColorNode.h"
 #include "core/RenderNode.h"
-#include "core/CgalAdvNode.h"
-#include "utils/printutils.h"
+#include "core/State.h"
+#include "core/TransformNode.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
-
-#include <memory>
-#include <string>
-#include <map>
-#include <list>
-#include <cassert>
-#include <cstddef>
-#include <boost/range/adaptor/reversed.hpp>
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
 /*!
    \class CSGTreeEvaluator

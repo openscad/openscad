@@ -1,7 +1,8 @@
 #pragma once
 
-#include "gui/parameter/ParameterVirtualWidget.h"
 #include <QWidget>
+
+#include "gui/parameter/ParameterVirtualWidget.h"
 #include "ui_ParameterCheckBox.h"
 
 class ParameterCheckBox : public ParameterVirtualWidget, Ui::ParameterCheckBox

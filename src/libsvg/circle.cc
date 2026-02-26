@@ -23,10 +23,12 @@
  * THE SOFTWARE.
  */
 #include "libsvg/circle.h"
-#include "libsvg/util.h"
 
 #include <sstream>
 #include <string>
+
+#include "libsvg/shape.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

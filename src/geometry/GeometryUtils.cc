@@ -1,32 +1,32 @@
 #include "geometry/GeometryUtils.h"
 
 #include <algorithm>
-#include <cassert>
-#include <unordered_map>
-#include <list>
-#include <utility>
 #include <boost/functional/hash.hpp>
-#include <cstddef>
+#include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <list>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/Reindexer.h"
 #include "geometry/linalg.h"
+#include "glview/RenderSettings.h"
 #include "libtess2/Include/tesselator.h"
 #include "utils/printutils.h"
-#include "geometry/Reindexer.h"
-#include "glview/RenderSettings.h"
-#include "geometry/PolySet.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif
 
 #ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/manifoldutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
 
 static void *stdAlloc(void *userData, unsigned int size)

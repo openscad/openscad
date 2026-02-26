@@ -1,7 +1,7 @@
 #include "RubberBandManager.h"
 
-#include "MainWindow.h"
 #include "Dock.h"
+#include "MainWindow.h"
 
 RubberBandManager::RubberBandManager(MainWindow *w) : rubberBand(QRubberBand::Rectangle)
 {

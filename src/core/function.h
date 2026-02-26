@@ -1,15 +1,16 @@
 #pragma once
 
-#include "core/AST.h"
-#include "core/Assignment.h"
-#include "Feature.h"
-#include "core/Value.h"
-
-#include <ostream>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <variant>
+
+#include "Feature.h"
+#include "core/AST.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
+#include "core/Value.h"
 
 class Arguments;
 class FunctionCall;
