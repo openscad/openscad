@@ -39,3 +39,10 @@ enum class Export3mfMaterialType : std::uint8_t {
   color,
   basematerial,
 };
+
+enum class DxfVersion : std::uint8_t {
+  Legacy,  // Original OpenSCAD behaviour: LWPOLYLINE for all (DEFAULT)
+  R10,     // AC1006 - POLYLINE/VERTEX/SEQEND, no handles, spec-correct
+  R12,     // AC1009 - POLYLINE/VERTEX/SEQEND with handles, spec-correct
+  R14,     // AC1014 - LWPOLYLINE, full object model, spec-correct
+};
