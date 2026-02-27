@@ -141,6 +141,7 @@ set(TEST_PYTHON_DIR     "${CCSD}/data/python")
 set(STLEXPORTSANITYTEST_PY   "${CCSD}/stlexportsanitytest.py")
 set(EXPORT_IMPORT_PNGTEST_PY "${CCSD}/export_import_pngtest.py")
 set(EXPORT_PNGTEST_PY        "${CCSD}/export_pngtest.py")
+set(EXPORT_DXF_EZDXF_TEST_PY "${CCSD}/export_dxf_ezdxf_test.py")
 set(SHOULDFAIL_PY            "${CCSD}/shouldfail.py")
 set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 
