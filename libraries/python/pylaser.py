@@ -516,4 +516,3 @@ class LaserCutter:
             del self.faces[ind]
             return
         self.faces[ind]=newshape.multmatrix(self.faces[ind].matrix)
-

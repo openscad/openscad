@@ -123,8 +123,6 @@
        </layout>
       </item>
 
-
-
      </layout>
     </widget>
    </item>
@@ -179,4 +177,4 @@
    <slot>reject()</slot>
   </connection>
  </connections>
-</ui> 
+</ui>

@@ -20,10 +20,10 @@ public:
 
   double getLaserSpeed() const;
   double getLaserPower() const;
-  int getLaserMode()  const;
-  QString getInitCode()  const;
-  QString getExitCode()  const;
-  ExportGcodeOptions getOptions() ;
+  int getLaserMode() const;
+  QString getInitCode() const;
+  QString getExitCode() const;
+  ExportGcodeOptions getOptions();
 
 private slots:
   void on_valueLaserSpeed_textChanged(const QString&);
@@ -39,5 +39,4 @@ private:
   int laserMode;
   QString initCode;
   QString exitCode;
-
 };

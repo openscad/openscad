@@ -492,10 +492,13 @@ SettingsEntryString SettingsExportSvg::exportSvgStrokeColor(SECTION_EXPORT_SVG, 
 SettingsEntryDouble SettingsExportSvg::exportSvgStrokeWidth(SECTION_EXPORT_SVG, "stroke-width", 0, 0.01,
                                                             999, 0.35);
 
-SettingsEntryDouble SettingsExportGcode::exportGcodeFeedRate(SECTION_EXPORT_GCODE, "feed rate", 0, 0.01, 2000, 1000);
-SettingsEntryDouble SettingsExportGcode::exportGcodeLaserPower(SECTION_EXPORT_GCODE, "laser power", 0, 0.01, 2000, 1000);
-SettingsEntryInt SettingsExportGcode::exportGcodeLaserMode(SECTION_EXPORT_GCODE, "laser mode", 0,1,0);
-SettingsEntryBool SettingsExportGcode::exportGcodeAlwaysShowDialog(SECTION_EXPORT_GCODE, "always-show-dialog", true);
+SettingsEntryDouble SettingsExportGcode::exportGcodeFeedRate(SECTION_EXPORT_GCODE, "feed rate", 0, 0.01,
+                                                             2000, 1000);
+SettingsEntryDouble SettingsExportGcode::exportGcodeLaserPower(SECTION_EXPORT_GCODE, "laser power", 0,
+                                                               0.01, 2000, 1000);
+SettingsEntryInt SettingsExportGcode::exportGcodeLaserMode(SECTION_EXPORT_GCODE, "laser mode", 0, 1, 0);
+SettingsEntryBool SettingsExportGcode::exportGcodeAlwaysShowDialog(SECTION_EXPORT_GCODE,
+                                                                   "always-show-dialog", true);
 SettingsEntryString SettingsExportGcode::exportGcodeInitCode("gcode", "initCode", "G90");
 SettingsEntryString SettingsExportGcode::exportGcodeExitCode("gcode", "exitCode", "");
 

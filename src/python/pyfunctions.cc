@@ -104,8 +104,6 @@
 extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename,
                   const std::string& mainFile, int debug);
 
-// using namespace boost::assign; // bring 'operator+=()' into scope
-
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
 extern std::unordered_map<std::string, Color4f> webcolors;
@@ -2395,7 +2393,8 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
     const auto color = OpenSCAD::parse_color(colorname);
     if (color) {
       node->color = *color;
-      node->color.setAlpha(alpha);
+      if (1.0 != alpha)
+	node->color.setAlpha(alpha);
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
       return NULL;
@@ -6143,6 +6142,69 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
   Py_RETURN_NONE;
 }
 
+// global accessible version of the machine config settings that are
+// used by export_gcode for colormapping power and feed.
+extern boost::property_tree::ptree _machineconfig_settings_;
+
+// convert a python dictionary directly to a property tree
+boost::property_tree::ptree pyToPtree(PyObject* obj)
+{
+  boost::property_tree::ptree pt;
+
+  if (PyDict_Check(obj)) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+
+    while (PyDict_Next(obj, &pos, &key, &value)) {
+      std::string keyStr = PyUnicode_AsUTF8(key);
+      pt.add_child(keyStr, pyToPtree(value));
+    }
+  } else if (PyList_Check(obj)) {
+    Py_ssize_t size = PyList_Size(obj);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+      PyObject* item = PyList_GetItem(obj, i); // borrowed reference
+      pt.push_back(std::make_pair("", pyToPtree(item)));
+     }
+  } else if (PyBool_Check(obj)) {
+    // important: Check Bool BEFORE Long.
+    bool value = (obj == Py_True);
+    pt.put("", value);
+  } else if (PyLong_Check(obj)) {
+    pt.put("", PyLong_AsLongLong(obj));
+  } else if (PyFloat_Check(obj)) {
+    pt.put("", PyFloat_AsDouble(obj));
+  } else if (PyUnicode_Check(obj)) {
+    pt.put("", PyUnicode_AsUTF8(obj));
+  } else if (obj == Py_None) {
+    // property_tree does not support a true 'null', so set it to an
+    // empty node.
+    pt.put("", "");
+  }
+
+  return pt;
+}
+
+PyObject *python_machineconfig(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
+{
+  char *kwlist[] = {"config",NULL};
+  PyObject *config;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,&config)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing machineconfig");
+    return NULL;
+  }
+
+  if (!PyDict_Check(config)){
+    PyErr_SetString(PyExc_TypeError, "Config must be a dictionary");
+    return NULL;
+  }
+
+  // parse the python dictionary directly into a property tree
+  _machineconfig_settings_ = pyToPtree(config);
+
+  Py_RETURN_NONE;
+}
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction)python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction)python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -6266,6 +6328,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"norm", (PyCFunction)python_norm, METH_VARARGS | METH_KEYWORDS, "Calculate vector size."},
   {"dot", (PyCFunction)python_dot, METH_VARARGS | METH_KEYWORDS, "Calculate dot product."},
   {"cross", (PyCFunction)python_cross, METH_VARARGS | METH_KEYWORDS, "Calculate cross product."},
+  {"machineconfig", (PyCFunction)python_machineconfig, METH_VARARGS | METH_KEYWORDS,"set Machineconfig"},
   {NULL, NULL, 0, NULL}};
 
 #define OO_METHOD_ENTRY(name, desc) \

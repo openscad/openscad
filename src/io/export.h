@@ -290,27 +290,28 @@ struct ExportSvgOptions {
 
 struct ExportGcodeOptions {
   double feedrate;
-  double laserpower;  
+  double laserpower;
   int lasermode;
   std::string initCode;
   std::string exitCode;
-  static std::shared_ptr<const ExportGcodeOptions> withOptions(const CmdLineExportOptions& cmdLineOptions)
+
+  static std::shared_ptr<const ExportGcodeOptions> withOptions(
+    const CmdLineExportOptions& cmdLineOptions)
   {
     return std::make_shared<const ExportGcodeOptions>(ExportGcodeOptions{
       .feedrate = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
-                                  Settings::SettingsExportGcode::exportGcodeFeedRate),
+                                      Settings::SettingsExportGcode::exportGcodeFeedRate),
       .laserpower = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
-                                       Settings::SettingsExportGcode::exportGcodeLaserPower),
+                                        Settings::SettingsExportGcode::exportGcodeLaserPower),
       .lasermode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
-                                    Settings::SettingsExportGcode::exportGcodeLaserMode),
+                                       Settings::SettingsExportGcode::exportGcodeLaserMode),
       .initCode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
-                                         Settings::SettingsExportGcode::exportGcodeInitCode),
+                                      Settings::SettingsExportGcode::exportGcodeInitCode),
       .exitCode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_GCODE,
-                                         Settings::SettingsExportGcode::exportGcodeExitCode),
+                                      Settings::SettingsExportGcode::exportGcodeExitCode),
     });
     return nullptr;
   }
-
 };
 
 struct ExportInfo {
@@ -366,7 +367,7 @@ void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
 void export_gcode(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
-                const ExportInfo& exportInfo);
+                  const ExportInfo& exportInfo);
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
