@@ -11,3 +11,13 @@ print((a | b).size)   # [15.0, 15.0, 15.0]
 print((a - b).size)   # [10.0, 10.0, 10.0]
 print((a & b).size)   # [5.0, 5.0, 5.0]
 print(c.size)         # [6.0, 6.0, 20.0]
+
+# 2D objects
+s = square([10, 20])
+t = square([10, 20]).translate([5, 5])
+u = circle(10)
+
+print(s.size)         # [10.0, 20.0]
+print(t.size)         # [10.0, 20.0]
+print((s | t).size)   # [15.0, 25.0]
+print(u.size)         # [20.0, 20.0]

@@ -96,6 +96,14 @@ show(obj)                       # Render the object
 export(obj,"output.3mf")        # Exporting to a file
 ```
 
+## 📐 Object Properties
+
+```python
+obj.size                        # Bounding box dimensions [w, h, d] (3D) or [w, h] (2D)
+obj.position                    # Bounding box min corner [x, y, z] (3D) or [x, y] (2D)
+obj.bbox                        # Bounding box as a solid (cube for 3D, square for 2D)
+```
+
 ## 🐍 Python-Specific Gadgets
 
 ```python

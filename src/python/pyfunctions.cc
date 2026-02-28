@@ -2082,7 +2082,8 @@ PyObject *python_export_core(PyObject *obj, char *file)
   Camera camera;
   camera.viewall = true;
   camera.autocenter = true;
-  ExportInfo exportInfo = createExportInfo(exportFileFormat,fileformat::info(exportFileFormat), file, &camera, {});
+  ExportInfo exportInfo =
+    createExportInfo(exportFileFormat, fileformat::info(exportFileFormat), file, &camera, {});
 
   if (exportFileFormat == FileFormat::_3MF) {
     std::ofstream fstream(file, std::ios::out | std::ios::trunc | std::ios::binary);
@@ -2323,7 +2324,8 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   auto it = std::find(python_member_names.begin(), python_member_names.end(), keystr.c_str());
   if (it != python_member_names.end()) {
     int idx = (int)(it - python_member_names.begin());
-    PyOpenSCADBoundMemberObject *bm = PyObject_New(PyOpenSCADBoundMemberObject, &PyOpenSCADBoundMemberType);
+    PyOpenSCADBoundMemberObject *bm =
+      PyObject_New(PyOpenSCADBoundMemberObject, &PyOpenSCADBoundMemberType);
     if (!bm) return NULL;
     Py_INCREF(self);
     bm->scad_self = obj;
@@ -2393,8 +2395,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
     const auto color = OpenSCAD::parse_color(colorname);
     if (color) {
       node->color = *color;
-      if (1.0 != alpha)
-	node->color.setAlpha(alpha);
+      if (1.0 != alpha) node->color.setAlpha(alpha);
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
       return NULL;
@@ -2561,7 +2562,8 @@ PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
     auto geom = polygonnode->createGeometry();
     const Polygon2d poly2 = dynamic_cast<const Polygon2d&>(*geom);
     Vector2d vec2(vec3[0], vec3[1]);
-    if(poly2.point_inside(vec2)) Py_RETURN_TRUE ; else Py_RETURN_FALSE;
+    if (poly2.point_inside(vec2)) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
   }
 
   const std::shared_ptr<const PolyhedronNode> polyhedronnode =
@@ -2569,7 +2571,8 @@ PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
   if (polyhedronnode != nullptr) {
     auto geom = polyhedronnode->createGeometry();
     const PolySet ps = dynamic_cast<const PolySet&>(*geom);
-    if(ps.point_inside(vec3)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    if (ps.point_inside(vec3)) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
   }
 
   Tree tree(node, "");
@@ -2578,10 +2581,12 @@ PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
   std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (auto poly2 = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     Vector2d vec2(vec3[0], vec3[1]);
-    if(poly2->point_inside(vec2)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    if (poly2->point_inside(vec2)) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
   }
   if (ps != nullptr) {
-    if(ps->point_inside(vec3)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+    if (ps->point_inside(vec3)) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
   }
   Py_RETURN_NONE;
 }
@@ -2627,30 +2632,32 @@ PyObject *python_bbox_core(PyObject *obj)
     Py_RETURN_NONE;
   }
 
-  // Create cube with the size, not centered (starts at origin [0,0,0])
-  PyObject *cube_args = PyTuple_New(0);
-  PyObject *cube_kwargs = PyDict_New();
-  PyDict_SetItemString(cube_kwargs, "size", size);
-  PyDict_SetItemString(cube_kwargs, "center", Py_False);
+  // Create bounding shape: square for 2D, cube for 3D
+  PyObject *bbox_args = PyTuple_New(0);
+  PyObject *bbox_kwargs = PyDict_New();
+  bool is_2d = PyList_Check(size) && PyList_Size(size) == 2;
+  PyDict_SetItemString(bbox_kwargs, is_2d ? "dim" : "size", size);
+  PyDict_SetItemString(bbox_kwargs, "center", Py_False);
 
-  PyObject *cube = python_cube(NULL, cube_args, cube_kwargs);
-  if (cube == NULL) {
+  PyObject *bbox_shape =
+    is_2d ? python_square(NULL, bbox_args, bbox_kwargs) : python_cube(NULL, bbox_args, bbox_kwargs);
+  if (bbox_shape == NULL) {
     Py_DECREF(position);
     Py_DECREF(size);
-    Py_DECREF(cube_args);
-    Py_DECREF(cube_kwargs);
+    Py_DECREF(bbox_args);
+    Py_DECREF(bbox_kwargs);
     return NULL;
   }
 
-  // Translate cube to the object's position
-  PyObject *bbox_box = python_translate_core(cube, position);
+  // Translate shape to the object's position
+  PyObject *bbox_box = python_translate_core(bbox_shape, position);
 
   // Clean up
   Py_DECREF(position);
   Py_DECREF(size);
-  Py_DECREF(cube_args);
-  Py_DECREF(cube_kwargs);
-  Py_DECREF(cube);
+  Py_DECREF(bbox_args);
+  Py_DECREF(bbox_kwargs);
+  Py_DECREF(bbox_shape);
 
   return bbox_box;
 }
@@ -2686,8 +2693,20 @@ PyObject *python_size_core(PyObject *obj)
   Tree tree(child, "");
   GeometryEvaluator geomevaluator(tree);
   std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
 
+  // Handle 2D geometry (Polygon2d)
+  if (auto poly2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    BoundingBox bbox = poly2d->getBoundingBox();
+    Vector3d bmin = bbox.min();
+    Vector3d bmax = bbox.max();
+    PyObject *size_list = PyList_New(2);
+    PyList_SetItem(size_list, 0, PyFloat_FromDouble(bmax[0] - bmin[0]));
+    PyList_SetItem(size_list, 1, PyFloat_FromDouble(bmax[1] - bmin[1]));
+    Py_INCREF(size_list);
+    return size_list;
+  }
+
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (ps != nullptr && ps->vertices.size() > 0) {
     Vector3d pmin = ps->vertices[0];
     Vector3d pmax = pmin;
@@ -2716,8 +2735,19 @@ PyObject *python_position_core(PyObject *obj)
   Tree tree(child, "");
   GeometryEvaluator geomevaluator(tree);
   std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
 
+  // Handle 2D geometry (Polygon2d)
+  if (auto poly2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    BoundingBox bbox = poly2d->getBoundingBox();
+    Vector3d bmin = bbox.min();
+    PyObject *position_list = PyList_New(2);
+    PyList_SetItem(position_list, 0, PyFloat_FromDouble(bmin[0]));
+    PyList_SetItem(position_list, 1, PyFloat_FromDouble(bmin[1]));
+    Py_INCREF(position_list);
+    return position_list;
+  }
+
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (ps != nullptr && ps->vertices.size() > 0) {
     Vector3d pmin = ps->vertices[0];
     for (const auto& pt : ps->vertices) {
@@ -5349,11 +5379,11 @@ PyObject *python_oo_hasattr(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during hasattr");
     return NULL;
   }
-  PyObject* pykeyword = PyUnicode_FromString(keyword);
+  PyObject *pykeyword = PyUnicode_FromString(keyword);
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
-  if(PyDict_Contains(dict, pykeyword)) Py_RETURN_TRUE; else Py_RETURN_FALSE;
+  if (PyDict_Contains(dict, pykeyword)) Py_RETURN_TRUE;
+  else Py_RETURN_FALSE;
 }
-
 
 PyObject *python_oo_getattr(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -5365,7 +5395,7 @@ PyObject *python_oo_getattr(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during getattr");
     return NULL;
   }
-  PyObject* pykeyword = PyUnicode_FromString(keyword);
+  PyObject *pykeyword = PyUnicode_FromString(keyword);
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
   PyObject *prop = PyDict_GetItem(dict, pykeyword);
   Py_INCREF(prop);
@@ -5383,7 +5413,7 @@ PyObject *python_oo_setattr(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during setattr");
     return NULL;
   }
-  PyObject* pykeyword = PyUnicode_FromString(keyword);
+  PyObject *pykeyword = PyUnicode_FromString(keyword);
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(self, &dict);
   PyDict_SetItem(dict, pykeyword, setvalue);
   Py_RETURN_NONE;
@@ -5957,59 +5987,51 @@ PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo__repr_mimebundle_(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  PyObject* include = NULL;
-  PyObject* exclude = NULL;
+  PyObject *include = NULL;
+  PyObject *exclude = NULL;
 
-  char* kwlist[] = {"include", "exclude", NULL};
+  char *kwlist[] = {"include", "exclude", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(
-            args, kwargs,
-            "|OO",
-            kwlist,
-            &include,
-            &exclude))
-  {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist, &include, &exclude)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing _repr_mimebundle_");
     return nullptr;
-  }	
-
+  }
 
   // fallback text
-  PyObject* text = PyUnicode_FromString("<PythonSCAD shape>");
+  PyObject *text = PyUnicode_FromString("<PythonSCAD shape>");
 
   // jetzt dein Python viewer aufrufen
-  PyObject* viewer_module = PyImport_ImportModule("libraries.python.jupyterdisplay");
-  if(!viewer_module) {
+  PyObject *viewer_module = PyImport_ImportModule("libraries.python.jupyterdisplay");
+  if (!viewer_module) {
     PyErr_SetString(PyExc_TypeError, "jupyterdisplay module not found");
     return nullptr;
   }
 
-  PyObject* func = PyObject_GetAttrString(viewer_module, "build_widget");
-  if(!func) {
+  PyObject *func = PyObject_GetAttrString(viewer_module, "build_widget");
+  if (!func) {
     Py_DECREF(viewer_module);
     PyErr_SetString(PyExc_TypeError, "build_widget method not found");
-    return nullptr;	  
+    return nullptr;
   }
 
-  PyObject* widget = PyObject_CallFunctionObjArgs(func, self, NULL);
+  PyObject *widget = PyObject_CallFunctionObjArgs(func, self, NULL);
   Py_DECREF(func);
   Py_DECREF(viewer_module);
 
-  if(!widget) {
+  if (!widget) {
     PyErr_SetString(PyExc_TypeError, "error during execution of build_widget");
-    return nullptr;	  
+    return nullptr;
   }
 
-      // jetzt den Formatter des Widgets verwenden
-  PyObject* method = PyObject_GetAttrString(widget, "_repr_mimebundle_");
-  if (!method)
-  {
+  // jetzt den Formatter des Widgets verwenden
+  PyObject *method = PyObject_GetAttrString(widget, "_repr_mimebundle_");
+  if (!method) {
     Py_DECREF(widget);
     PyErr_SetString(PyExc_TypeError, "error during execution of repr");
     return nullptr;
   }
 
-  PyObject* bundle = PyObject_Call(method, args, kwargs);
+  PyObject *bundle = PyObject_Call(method, args, kwargs);
 
   Py_DECREF(method);
   Py_DECREF(widget);
@@ -6090,7 +6112,6 @@ PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwa
 
 // --- PyOpenSCADBoundMember: een callable object dat self + index inbakt ---
 
-
 static PyObject *PyOpenSCADBoundMemberCall(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   PyOpenSCADBoundMemberObject *bm = (PyOpenSCADBoundMemberObject *)self;
@@ -6105,15 +6126,25 @@ static void PyOpenSCADBoundMemberDealloc(PyObject *self)
 }
 
 PyTypeObject PyOpenSCADBoundMemberType = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  "PyOpenSADBoundMember",               // tp_name
-  sizeof(PyOpenSCADBoundMemberObject),   // tp_basicsize
-  0,                           // tp_itemsize
-  PyOpenSCADBoundMemberDealloc,         // tp_dealloc
-  0, 0, 0, 0, 0, 0, 0, 0, 0,
-  PyOpenSCADBoundMemberCall,            // tp_call
-  0, 0, 0, 0,
-  Py_TPFLAGS_DEFAULT,          // tp_flags
+  PyVarObject_HEAD_INIT(NULL, 0) "PyOpenSADBoundMember",  // tp_name
+  sizeof(PyOpenSCADBoundMemberObject),                    // tp_basicsize
+  0,                                                      // tp_itemsize
+  PyOpenSCADBoundMemberDealloc,                           // tp_dealloc
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  PyOpenSCADBoundMemberCall,  // tp_call
+  0,
+  0,
+  0,
+  0,
+  Py_TPFLAGS_DEFAULT,  // tp_flags
 };
 
 PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -6147,7 +6178,7 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
 extern boost::property_tree::ptree _machineconfig_settings_;
 
 // convert a python dictionary directly to a property tree
-boost::property_tree::ptree pyToPtree(PyObject* obj)
+boost::property_tree::ptree pyToPtree(PyObject *obj)
 {
   boost::property_tree::ptree pt;
 
@@ -6162,9 +6193,9 @@ boost::property_tree::ptree pyToPtree(PyObject* obj)
   } else if (PyList_Check(obj)) {
     Py_ssize_t size = PyList_Size(obj);
     for (Py_ssize_t i = 0; i < size; ++i) {
-      PyObject* item = PyList_GetItem(obj, i); // borrowed reference
+      PyObject *item = PyList_GetItem(obj, i);  // borrowed reference
       pt.push_back(std::make_pair("", pyToPtree(item)));
-     }
+    }
   } else if (PyBool_Check(obj)) {
     // important: Check Bool BEFORE Long.
     bool value = (obj == Py_True);
@@ -6186,15 +6217,15 @@ boost::property_tree::ptree pyToPtree(PyObject* obj)
 
 PyObject *python_machineconfig(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
 {
-  char *kwlist[] = {"config",NULL};
+  char *kwlist[] = {"config", NULL};
   PyObject *config;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,&config)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &config)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing machineconfig");
     return NULL;
   }
 
-  if (!PyDict_Check(config)){
+  if (!PyDict_Check(config)) {
     PyErr_SetString(PyExc_TypeError, "Config must be a dictionary");
     return NULL;
   }
@@ -6328,7 +6359,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"norm", (PyCFunction)python_norm, METH_VARARGS | METH_KEYWORDS, "Calculate vector size."},
   {"dot", (PyCFunction)python_dot, METH_VARARGS | METH_KEYWORDS, "Calculate dot product."},
   {"cross", (PyCFunction)python_cross, METH_VARARGS | METH_KEYWORDS, "Calculate cross product."},
-  {"machineconfig", (PyCFunction)python_machineconfig, METH_VARARGS | METH_KEYWORDS,"set Machineconfig"},
+  {"machineconfig", (PyCFunction)python_machineconfig, METH_VARARGS | METH_KEYWORDS,
+   "set Machineconfig"},
   {NULL, NULL, 0, NULL}};
 
 #define OO_METHOD_ENTRY(name, desc) \
@@ -6365,27 +6397,29 @@ PyMethodDef PyOpenSCADMethods[] = {
                           OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
                             OO_METHOD_ENTRY(faces, "Create Faces list")
                               OO_METHOD_ENTRY(children, "Return Tupple from solid children")
-                                OO_METHOD_ENTRY(edges, "Create Edges list")
-                                  OO_METHOD_ENTRY(oversample, "Oversample Object") OO_METHOD_ENTRY(
-                                    debug, "Debug Object Faces")
-                                    OO_METHOD_ENTRY(repair, "Make solid watertight") OO_METHOD_ENTRY(
-                                      fillet, "Fillet Object") OO_METHOD_ENTRY(align,
-                                                                               "Align Object to another")
+                                OO_METHOD_ENTRY(edges, "Create Edges list") OO_METHOD_ENTRY(
+                                  oversample, "Oversample Object") OO_METHOD_ENTRY(debug,
+                                                                                   "Debug Object Faces")
+                                  OO_METHOD_ENTRY(repair, "Make solid watertight") OO_METHOD_ENTRY(
+                                    fillet, "Fillet Object") OO_METHOD_ENTRY(align,
+                                                                             "Align Object to another")
 
-                                      OO_METHOD_ENTRY(highlight, "Highlight Object")
-                                        OO_METHOD_ENTRY(background, "Background Object") OO_METHOD_ENTRY(
-                                          only, "Only Object") OO_METHOD_ENTRY(show, "Show Object")
-                                          OO_METHOD_ENTRY(projection, "Projection Object")
-                                            OO_METHOD_ENTRY(pull, "Pull Obejct apart")
-                                              OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
-                                                OO_METHOD_ENTRY(render, "Render Object")
-                                                  OO_METHOD_ENTRY(clone, "Clone Object") 
-                                                  OO_METHOD_ENTRY(hasattr, "Check if an attribute exists") 
-                                                  OO_METHOD_ENTRY(setattr, "Sets an attribute on a solid") 
-                                                  OO_METHOD_ENTRY(getattr, "Gets an attribute from a solid") 
-                                                  OO_METHOD_ENTRY(_repr_mimebundle_, "Jupyter display hook") 
-						  OO_METHOD_ENTRY(
-                                                    dict, "return all dictionary"){NULL, NULL, 0, NULL}};
+                                    OO_METHOD_ENTRY(highlight, "Highlight Object")
+                                      OO_METHOD_ENTRY(background, "Background Object") OO_METHOD_ENTRY(
+                                        only, "Only Object") OO_METHOD_ENTRY(show, "Show Object")
+                                        OO_METHOD_ENTRY(projection, "Projection Object")
+                                          OO_METHOD_ENTRY(pull, "Pull Obejct apart") OO_METHOD_ENTRY(
+                                            wrap, "Wrap Object around Cylinder")
+                                            OO_METHOD_ENTRY(render, "Render Object")
+                                              OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
+                                                hasattr, "Check if an attribute exists")
+                                                OO_METHOD_ENTRY(setattr, "Sets an attribute on a solid")
+                                                  OO_METHOD_ENTRY(getattr,
+                                                                  "Gets an attribute from a solid")
+                                                    OO_METHOD_ENTRY(_repr_mimebundle_,
+                                                                    "Jupyter display hook")
+                                                      OO_METHOD_ENTRY(dict, "return all dictionary"){
+                                                        NULL, NULL, 0, NULL}};
 
 PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,        // binaryfunc nb_add
