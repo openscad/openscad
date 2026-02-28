@@ -97,40 +97,40 @@
 // Table order follows the canonical AutoCAD R14 sequence:
 //   VPORT, LTYPE, LAYER, STYLE, VIEW, UCS, APPID, DIMSTYLE, BLOCK_RECORD
 //
-static constexpr int H_VPORT_TABLE_R14    = 0x1;   // VPORT table (must be first)
-static constexpr int H_VPORT_ACTIVE_R14   = 0x2;   // *ACTIVE viewport entry
-static constexpr int H_LTYPE_TABLE_R14    = 0x3;
-static constexpr int H_LTYPE_BYBLOCK_R14  = 0x4;   // ByBlock linetype entry
-static constexpr int H_LTYPE_BYLAYER_R14  = 0x5;   // ByLayer linetype entry
-static constexpr int H_LTYPE_CONT_R14     = 0x6;   // Continuous linetype entry
-static constexpr int H_LAYER_TABLE_R14    = 0x7;
-static constexpr int H_LAYER_0_R14        = 0x8;
-static constexpr int H_STYLE_TABLE_R14    = 0x9;
-static constexpr int H_STYLE_STD_R14      = 0xA;   // "Standard" text style entry
-static constexpr int H_VIEW_TABLE_R14     = 0xB;   // VIEW table (empty)
-static constexpr int H_UCS_TABLE_R14      = 0xC;   // UCS table (empty)
-static constexpr int H_APPID_TABLE_R14    = 0xD;
-static constexpr int H_APPID_ACAD_R14     = 0xE;   // ACAD application ID entry
-static constexpr int H_DIMSTYLE_TABLE_R14 = 0xF;   // DIMSTYLE table
-static constexpr int H_DIMSTYLE_STD_R14   = 0x10;  // "Standard" dim style entry
+static constexpr int H_VPORT_TABLE_R14 = 0x1;   // VPORT table (must be first)
+static constexpr int H_VPORT_ACTIVE_R14 = 0x2;  // *ACTIVE viewport entry
+static constexpr int H_LTYPE_TABLE_R14 = 0x3;
+static constexpr int H_LTYPE_BYBLOCK_R14 = 0x4;  // ByBlock linetype entry
+static constexpr int H_LTYPE_BYLAYER_R14 = 0x5;  // ByLayer linetype entry
+static constexpr int H_LTYPE_CONT_R14 = 0x6;     // Continuous linetype entry
+static constexpr int H_LAYER_TABLE_R14 = 0x7;
+static constexpr int H_LAYER_0_R14 = 0x8;
+static constexpr int H_STYLE_TABLE_R14 = 0x9;
+static constexpr int H_STYLE_STD_R14 = 0xA;   // "Standard" text style entry
+static constexpr int H_VIEW_TABLE_R14 = 0xB;  // VIEW table (empty)
+static constexpr int H_UCS_TABLE_R14 = 0xC;   // UCS table (empty)
+static constexpr int H_APPID_TABLE_R14 = 0xD;
+static constexpr int H_APPID_ACAD_R14 = 0xE;      // ACAD application ID entry
+static constexpr int H_DIMSTYLE_TABLE_R14 = 0xF;  // DIMSTYLE table
+static constexpr int H_DIMSTYLE_STD_R14 = 0x10;   // "Standard" dim style entry
 static constexpr int H_BLOCKREC_TABLE_R14 = 0x11;
 static constexpr int H_BLOCKREC_MODEL_R14 = 0x12;
 static constexpr int H_BLOCKREC_PAPER_R14 = 0x13;
-static constexpr int H_BLOCK_MODEL_R14    = 0x14;
-static constexpr int H_ENDBLK_MODEL_R14   = 0x15;
-static constexpr int H_BLOCK_PAPER_R14    = 0x16;
-static constexpr int H_ENDBLK_PAPER_R14   = 0x17;
-static constexpr int H_DICT_ROOT_R14      = 0x18;
-static constexpr int H_DICT_GROUP_R14     = 0x19;
-static constexpr int H_ENT_START_R14      = 0x1A;  // entity handles start here
+static constexpr int H_BLOCK_MODEL_R14 = 0x14;
+static constexpr int H_ENDBLK_MODEL_R14 = 0x15;
+static constexpr int H_BLOCK_PAPER_R14 = 0x16;
+static constexpr int H_ENDBLK_PAPER_R14 = 0x17;
+static constexpr int H_DICT_ROOT_R14 = 0x18;
+static constexpr int H_DICT_GROUP_R14 = 0x19;
+static constexpr int H_ENT_START_R14 = 0x1A;  // entity handles start here
 
 // R12 handle assignments: simpler layout, no object model
-static constexpr int H_LTYPE_TABLE_R12  = 0x1;
-static constexpr int H_LTYPE_CONT_R12   = 0x2;
-static constexpr int H_LAYER_TABLE_R12  = 0x3;
-static constexpr int H_LAYER_0_R12      = 0x4;
-static constexpr int H_STYLE_TABLE_R12  = 0x5;
-static constexpr int H_ENT_START_R12    = 0x6;  // entity handles start here
+static constexpr int H_LTYPE_TABLE_R12 = 0x1;
+static constexpr int H_LTYPE_CONT_R12 = 0x2;
+static constexpr int H_LAYER_TABLE_R12 = 0x3;
+static constexpr int H_LAYER_0_R12 = 0x4;
+static constexpr int H_STYLE_TABLE_R12 = 0x5;
+static constexpr int H_ENT_START_R12 = 0x6;  // entity handles start here
 
 // Emit group 5 (handle) as uppercase hex
 static void emit_handle(std::ostream& o, int handle)
@@ -158,11 +158,11 @@ static void emit_hexval(std::ostream& o, int handle)
 // Note: $LINMIN/$LINMAX are the original typos (should be $LIMMIN/$LIMMAX)
 // and are preserved here intentionally so that Legacy mode is identical to
 // the output that existing users rely on.
-static void export_dxf_header_Legacy(std::ostream& output, double xMin, double yMin,
-                                      double xMax, double yMax)
+static void export_dxf_header_Legacy(std::ostream& output, double xMin, double yMin, double xMax,
+                                     double yMax)
 {
   output << "999\n"
-         << "DXF from OpenSCAD\n"            // original comment (no version tag)
+         << "DXF from OpenSCAD\n"  // original comment (no version tag)
 
          << "  0\nSECTION\n"
          << "  2\nHEADER\n"
@@ -176,20 +176,28 @@ static void export_dxf_header_Legacy(std::ostream& output, double xMin, double y
          << " 30\n0.0\n"
 
          << "  9\n$EXTMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$EXTMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
-         << "  9\n$LINMIN\n"                 // original typo Ã¢â‚¬â€ preserved
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << "  9\n$LINMIN\n"  // original typo Ã¢â‚¬â€ preserved
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
-         << "  9\n$LINMAX\n"                 // original typo Ã¢â‚¬â€ preserved
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << "  9\n$LINMAX\n"  // original typo Ã¢â‚¬â€ preserved
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  0\nENDSEC\n";
 
@@ -235,8 +243,8 @@ static void export_dxf_header_Legacy(std::ostream& output, double xMin, double y
          << "  0\nENDSEC\n";
 }
 
-static void export_dxf_header_R10(std::ostream& output, double xMin, double yMin,
-                                   double xMax, double yMax)
+static void export_dxf_header_R10(std::ostream& output, double xMin, double yMin, double xMax,
+                                  double yMax)
 {
   output << "999\n"
          << "DXF from OpenSCAD (R10)\n"
@@ -253,20 +261,28 @@ static void export_dxf_header_R10(std::ostream& output, double xMin, double yMin
          << " 30\n0.0\n"
 
          << "  9\n$EXTMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$EXTMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  9\n$LIMMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$LIMMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  0\nENDSEC\n";
 
@@ -312,8 +328,8 @@ static void export_dxf_header_R10(std::ostream& output, double xMin, double yMin
          << "  0\nENDSEC\n";
 }
 
-static void export_dxf_header_R12(std::ostream& output, double xMin, double yMin,
-                                   double xMax, double yMax, int handseed)
+static void export_dxf_header_R12(std::ostream& output, double xMin, double yMin, double xMax,
+                                  double yMax, int handseed)
 {
   output << "999\n"
          << "DXF from OpenSCAD (R12)\n"
@@ -333,20 +349,28 @@ static void export_dxf_header_R12(std::ostream& output, double xMin, double yMin
          << " 30\n0.0\n"
 
          << "  9\n$EXTMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$EXTMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  9\n$LIMMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$LIMMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  9\n$HANDLING\n"
          << " 70\n1\n"
@@ -404,9 +428,8 @@ static void export_dxf_header_R12(std::ostream& output, double xMin, double yMin
          << "  0\nENDSEC\n";
 }
 
-static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin,
-                                   double xMax, double yMax, int handseed,
-                                   int insunits, int lunits)
+static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin, double xMax,
+                                  double yMax, int handseed, int insunits, int lunits)
 {
   output << "999\n"
          << "DXF from OpenSCAD (R14)\n"
@@ -429,22 +452,30 @@ static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin
          << " 30\n0.0\n"
 
          << "  9\n$EXTMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
          << " 30\n0.0\n"
 
          << "  9\n$EXTMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
          << " 30\n0.0\n"
 
          << "  9\n$LIMMIN\n"
-         << " 10\n" << xMin << "\n"
-         << " 20\n" << yMin << "\n"
+         << " 10\n"
+         << xMin << "\n"
+         << " 20\n"
+         << yMin << "\n"
 
          << "  9\n$LIMMAX\n"
-         << " 10\n" << xMax << "\n"
-         << " 20\n" << yMax << "\n"
+         << " 10\n"
+         << xMax << "\n"
+         << " 20\n"
+         << yMax << "\n"
 
          << "  9\n$HANDSEED\n"
          << "  5\n";
@@ -453,9 +484,11 @@ static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin
   output << "  9\n$MEASUREMENT\n"
          << " 70\n1\n"
          << "  9\n$INSUNITS\n"
-         << " 70\n" << insunits << "\n"
+         << " 70\n"
+         << insunits << "\n"
          << "  9\n$LUNITS\n"
-         << " 70\n" << lunits << "\n";
+         << " 70\n"
+         << lunits << "\n";
 
   output << "  0\nENDSEC\n";
 
@@ -496,8 +529,11 @@ static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin
          << " 11\n1.0\n"
          << " 21\n1.0\n"
          // view centre point (midpoint of extents)
-         << " 12\n" << (xMin + xMax) / 2.0 << "\n"
-         << " 22\n" << (yMin + yMax) / 2.0 << "\n"
+         << " 12\n"
+         << (xMin + xMax) / 2.0 << "\n"
+         << " 22\n"
+         << (yMin + yMax) / 2.0
+         << "\n"
          // snap base, snap spacing, grid spacing
          << " 13\n0.0\n"
          << " 23\n0.0\n"
@@ -514,8 +550,11 @@ static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin
          << " 27\n0.0\n"
          << " 37\n0.0\n"
          // view height = full Y extent, aspect ratio = X/Y
-         << " 40\n" << (yMax - yMin) << "\n"
-         << " 41\n" << (xMax - xMin) / (yMax - yMin) << "\n"
+         << " 40\n"
+         << (yMax - yMin) << "\n"
+         << " 41\n"
+         << (xMax - xMin) / (yMax - yMin)
+         << "\n"
          // lens length, front/back clipping
          << " 42\n50.0\n"
          << " 43\n0.0\n"
@@ -592,8 +631,8 @@ static void export_dxf_header_R14(std::ostream& output, double xMin, double yMin
          << " 70\n0\n"
          << " 62\n7\n"
          << "  6\nCONTINUOUS\n"
-         << "370\n-3\n"   // lineweight: -3 = ByLayer default
-         << "390\n0\n"    // plot style handle (0 = default/none)
+         << "370\n-3\n"  // lineweight: -3 = ByLayer default
+         << "390\n0\n"   // plot style handle (0 = default/none)
          << "  0\nENDTAB\n";
 
   // STYLE table — "Standard" text style entry required
@@ -832,12 +871,8 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
     // output, including the $LINMIN/$LINMAX typos and plain comment string.
     export_dxf_header_Legacy(output, xMin, yMin, xMax, yMax);
     break;
-  case DxfVersion::R10:
-    export_dxf_header_R10(output, xMin, yMin, xMax, yMax);
-    break;
-  case DxfVersion::R12:
-    export_dxf_header_R12(output, xMin, yMin, xMax, yMax, handseed_r12);
-    break;
+  case DxfVersion::R10: export_dxf_header_R10(output, xMin, yMin, xMax, yMax); break;
+  case DxfVersion::R12: export_dxf_header_R12(output, xMin, yMin, xMax, yMax, handseed_r12); break;
   case DxfVersion::R14:
     export_dxf_header_R14(output, xMin, yMin, xMax, yMax, handseed_r14, 4, 2);
     //                                                                    ^  ^
@@ -851,8 +886,9 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
   output << "  0\nSECTION\n"
          << "  2\nENTITIES\n";
 
-  int ent_handle = (version == DxfVersion::R14) ? H_ENT_START_R14 :
-                   (version == DxfVersion::R12) ? H_ENT_START_R12 : 0;
+  int ent_handle = (version == DxfVersion::R14)   ? H_ENT_START_R14
+                   : (version == DxfVersion::R12) ? H_ENT_START_R12
+                                                  : 0;
 
   for (const auto& o : poly.outlines()) {
     const int n = static_cast<int>(o.vertices.size());
@@ -879,8 +915,10 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
       if (version == DxfVersion::Legacy || version == DxfVersion::R14) {
         output << "100\nAcDbPoint\n";
       }
-      output << " 10\n" << p[0] << "\n"
-             << " 20\n" << p[1] << "\n";
+      output << " 10\n"
+             << p[0] << "\n"
+             << " 20\n"
+             << p[1] << "\n";
 
     } else if (n == 2) {
       // -----------------------------------------------------------
@@ -905,10 +943,14 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
       if (version == DxfVersion::Legacy || version == DxfVersion::R14) {
         output << "100\nAcDbLine\n";
       }
-      output << " 10\n" << p1[0] << "\n"
-             << " 20\n" << p1[1] << "\n"
-             << " 11\n" << p2[0] << "\n"
-             << " 21\n" << p2[1] << "\n";
+      output << " 10\n"
+             << p1[0] << "\n"
+             << " 20\n"
+             << p1[1] << "\n"
+             << " 11\n"
+             << p2[0] << "\n"
+             << " 21\n"
+             << p2[1] << "\n";
 
     } else {
       // -----------------------------------------------------------
@@ -932,14 +974,17 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
                  << " 62\n256\n";
         }
         output << "100\nAcDbPolyline\n";
-        output << " 90\n" << n << "\n"
+        output << " 90\n"
+               << n << "\n"
                << " 70\n1\n";  // closed polyline flag
         if (version == DxfVersion::R14) {
           output << " 43\n0\n";  // constant width = 0
         }
         for (const auto& p : o.vertices) {
-          output << " 10\n" << p[0] << "\n"
-                 << " 20\n" << p[1] << "\n";
+          output << " 10\n"
+                 << p[0] << "\n"
+                 << " 20\n"
+                 << p[1] << "\n";
         }
 
       } else {
@@ -958,8 +1003,10 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
             emit_handle(output, ent_handle++);
           }
           output << "  8\n0\n"
-                 << " 10\n" << p[0] << "\n"
-                 << " 20\n" << p[1] << "\n";
+                 << " 10\n"
+                 << p[0] << "\n"
+                 << " 20\n"
+                 << p[1] << "\n";
         }
 
         output << "  0\nSEQEND\n";
@@ -995,8 +1042,7 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output, DxfVersion v
 //   - PolySet:      Not supported (3D mesh, would need projection)
 // =====================================================================
 
-void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
-                DxfVersion version)
+void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, DxfVersion version)
 {
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
