@@ -37,28 +37,33 @@ try:
 
     if result.returncode != 0:
         print(f"ERROR: OpenSCAD failed (exit {result.returncode})", file=sys.stderr)
-        write_result("DXF audit FAILED.")
+        write_result(f"ERROR: OpenSCAD failed (exit {result.returncode})\nDXF audit FAILED.")
         sys.exit(1)
 
     if not os.path.exists(dxffile) or os.path.getsize(dxffile) == 0:
         print("ERROR: OpenSCAD produced empty or missing DXF", file=sys.stderr)
-        write_result("DXF audit FAILED.")
+        write_result("ERROR: OpenSCAD produced empty or missing DXF\nDXF audit FAILED.")
         sys.exit(1)
 
     try:
         from ezdxf import recover
     except ImportError:
         print("ERROR: ezdxf not installed. Run: pip install ezdxf", file=sys.stderr)
-        write_result("DXF audit FAILED.")
+        write_result("ERROR: ezdxf not installed. Run: pip install ezdxf\nDXF audit FAILED.")
         sys.exit(1)
 
-    doc, auditor = recover.readfile(dxffile)
+    try:
+        doc, auditor = recover.readfile(dxffile)
+    except Exception as e:
+        print(f"ERROR: ezdxf could not parse DXF file: {e}", file=sys.stderr)
+        write_result(f"ERROR: ezdxf could not parse DXF file: {e}\nDXF audit FAILED.")
+        sys.exit(1)
 
     if auditor.has_errors:
         print("DXF audit FAILED:", file=sys.stderr)
         for err in auditor.errors:
             print(f"  {err}", file=sys.stderr)
-        write_result("DXF audit FAILED.")
+        write_result("ERROR: ezdxf auditor errors exists\nDXF audit FAILED.")
         sys.exit(1)
 
     write_result("DXF audit passed.")
@@ -66,5 +71,5 @@ try:
 
 except Exception as e:
     print(f"ERROR: unexpected exception: {e}", file=sys.stderr)
-    write_result("DXF audit FAILED.")
+    write_result(f"ERROR: unexpected exception: {e}\nDXF audit FAILED.")
     sys.exit(1)
