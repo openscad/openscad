@@ -770,7 +770,7 @@ if(EXAMPLES_DIR)
     preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
     render-csg-cgal render-monotone 
     preview-off render-off dump-examples)
-  set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf render-dxf-R14)
+  set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf render-dxf/R14/)
 endif(EXAMPLES_DIR)
 
 # If ctest is run with no configuration specified, then force "Default"
@@ -1046,7 +1046,7 @@ add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX p
 endif()
 
 add_cmdline_test(render-dxf  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_DXF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force)
-add_cmdline_test(render-dxf-R14  SCRIPT ${EXPORT_DXF_EZDXF_TEST_PY} SUFFIX dxf FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_DXF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force -O export-dxf/version=R14)
+add_cmdline_test(render-dxf/R14/  SCRIPT ${EXPORT_DXF_EZDXF_TEST_PY} SUFFIX txt FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_DXF_FILES} EXPECTEDDIR render-dxf/R14/ ARGS ${OPENSCAD_EXE_ARG} --render=force -O export-dxf/version=R14)
 add_cmdline_test(render-svg  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_SVG_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force)
 
 # SVG Export
