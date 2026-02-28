@@ -57,13 +57,11 @@
 #include "core/Tree.h"
 #include "core/enums.h"
 #include "core/node.h"
-#include "core/primitives.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "handle_dep.h"
 #include "io/fileutils.h"
-#include "python/pyopenscad.h"
 #include "utils/degree_trig.h"
 
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
