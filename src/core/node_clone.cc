@@ -40,7 +40,6 @@
 #include "core/RoofNode.h"
 #include "core/RenderNode.h"
 #include "core/SkinNode.h"
-#include "core/ConcatNode.h"
 #include "core/SurfaceNode.h"
 #include "core/SheetNode.h"
 #include "core/TextNode.h"
@@ -87,7 +86,7 @@ NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
           NodeCloneFunc(OversampleNode) NodeCloneFunc(FilletNode) NodeCloneFunc(RotateExtrudeNode)
             NodeCloneFunc(LinearExtrudeNode) NodeCloneFunc(PathExtrudeNode) NodeCloneFunc(CsgOpNode)
               NodeCloneFunc(CgalAdvNode) NodeCloneFunc(RenderNode) NodeCloneFunc(SkinNode)
-                NodeCloneFunc(ConcatNode) NodeCloneFunc(SurfaceNode) NodeCloneFunc(SheetNode)
+                NodeCloneFunc(SurfaceNode) NodeCloneFunc(SheetNode)
                   NodeCloneFunc(TextNode) NodeCloneFunc(OffsetNode) NodeCloneFunc(ProjectionNode)
                     NodeCloneFunc(GroupNode) NodeCloneFunc(ImportNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
@@ -104,7 +103,7 @@ NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
           NodeCloneUse(OversampleNode) NodeCloneUse(FilletNode) NodeCloneUse(RotateExtrudeNode)
             NodeCloneUse(LinearExtrudeNode) NodeCloneUse(PathExtrudeNode) NodeCloneUse(CsgOpNode)
               NodeCloneUse(CgalAdvNode) NodeCloneUse(RenderNode) NodeCloneUse(SkinNode)
-                NodeCloneUse(ConcatNode) NodeCloneUse(SurfaceNode) NodeCloneUse(SheetNode)
+                NodeCloneUse(SurfaceNode) NodeCloneUse(SheetNode)
                   NodeCloneUse(TextNode) NodeCloneUse(OffsetNode) NodeCloneUse(ProjectionNode)
                     NodeCloneUse(GroupNode) NodeCloneUse(ImportNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)

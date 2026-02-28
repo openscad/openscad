@@ -53,7 +53,7 @@ std::shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(std::shared_ptr<CSGNode
 static bool isUnion(const std::shared_ptr<CSGNode>& node)
 {
   std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
-  return op && op->getType() == OpenSCADOperator::UNION;
+  return op && (op->getType() == OpenSCADOperator::UNION ||op->getType() == OpenSCADOperator::CONCAT ) ;
 }
 
 static bool hasRightNonLeaf(const std::shared_ptr<CSGNode>& node)
@@ -155,13 +155,13 @@ std::shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const std::share
   if (op) {
     if (!op->right()) {
       this->nodecount--;
-      if (op->getType() == OpenSCADOperator::UNION || op->getType() == OpenSCADOperator::DIFFERENCE)
+      if (op->getType() == OpenSCADOperator::UNION || op->getType() == OpenSCADOperator::DIFFERENCE ||op->getType() == OpenSCADOperator::CONCAT  )
         return op->left();
       else return op->right();
     }
     if (!op->left()) {
       this->nodecount--;
-      if (op->getType() == OpenSCADOperator::UNION) return op->right();
+      if (op->getType() == OpenSCADOperator::UNION ||op->getType() == OpenSCADOperator::CONCAT  ) return op->right();
       else return op->left();
     }
   }
@@ -173,6 +173,7 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
   std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   if (!op) return false;
   if (op->getType() == OpenSCADOperator::UNION) return false;
+  if (op->getType() == OpenSCADOperator::CONCAT) return false;
 
   // Part A: The 'x . (y . z)' expressions
 
@@ -183,7 +184,7 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
     std::shared_ptr<CSGNode> z = rightop->right();
 
     // 1.  x - (y + z) -> (x - y) - z
-    if (op->getType() == OpenSCADOperator::DIFFERENCE && rightop->getType() == OpenSCADOperator::UNION) {
+    if (op->getType() == OpenSCADOperator::DIFFERENCE && (rightop->getType() == OpenSCADOperator::UNION ||rightop->getType() == OpenSCADOperator::CONCAT ) ) {
       node =
         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE,
                                     CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y), z);
@@ -191,7 +192,7 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
     }
     // 2.  x * (y + z) -> (x * y) + (x * z)
     else if (op->getType() == OpenSCADOperator::INTERSECTION &&
-             rightop->getType() == OpenSCADOperator::UNION) {
+             (rightop->getType() == OpenSCADOperator::UNION ||rightop->getType() == OpenSCADOperator::CONCAT )) {
       node = CSGOperation::createCSGNode(
         OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y),
         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z));
@@ -247,7 +248,7 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
       return true;
     }
     // 8. (x + y) - z  -> (x - z) + (y - z)
-    else if (leftop->getType() == OpenSCADOperator::UNION &&
+    else if ((leftop->getType() == OpenSCADOperator::UNION ||leftop->getType() == OpenSCADOperator::CONCAT )  &&
              op->getType() == OpenSCADOperator::DIFFERENCE) {
       node = CSGOperation::createCSGNode(
         OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, z),
@@ -255,7 +256,7 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
       return true;
     }
     // 9. (x + y) * z  -> (x * z) + (y * z)
-    else if (leftop->getType() == OpenSCADOperator::UNION &&
+    else if ((leftop->getType() == OpenSCADOperator::UNION ||leftop->getType() == OpenSCADOperator::CONCAT ) &&
              op->getType() == OpenSCADOperator::INTERSECTION) {
       node = CSGOperation::createCSGNode(
         OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z),

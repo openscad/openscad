@@ -161,6 +161,7 @@ void CSGOperation::initBoundingBox()
   case OpenSCADOperator::UNION:        this->bbox = leftbox.merged(rightbox); break;
   case OpenSCADOperator::INTERSECTION: this->bbox = leftbox.intersection(rightbox); break;
   case OpenSCADOperator::DIFFERENCE:   this->bbox = leftbox; break;
+  case OpenSCADOperator::CONCAT:        this->bbox = leftbox.merged(rightbox); break;
   default:                             assert(false);
   }
 }

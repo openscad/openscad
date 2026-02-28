@@ -22,7 +22,6 @@
 #include "core/RoofNode.h"
 #include "core/RotateExtrudeNode.h"
 #include "core/SkinNode.h"
-#include "core/ConcatNode.h"
 #include "core/PathExtrudeNode.h"
 #include "core/PullNode.h"
 #include "core/DebugNode.h"
@@ -1441,6 +1440,13 @@ std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> resul
   return createFilletInt(psr, corner_selected, r, fn, 30.0);
 }
 
+double concat_round(double x)
+{
+  if (x > 0) return ((int)(x * 1000 + 0.5)) / 1000.0;
+  if (x < 0) return -((int)(-x * 1000 + 0.5)) / 1000.0;
+  return 0;
+}
+
 /*!
    Applies the operator to all child nodes of the given node.
 
@@ -1474,6 +1480,31 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
     return ResultObject::constResult(applyMinkowski(actualchildren));
+    break;
+  }
+  case OpenSCADOperator::CONCAT: {
+    for (const auto& item : children) {
+      const auto ps = std::dynamic_pointer_cast<const PolySet>(item.second);
+      if (ps != nullptr) {
+        PolySetBuilder builder;
+        for (size_t i = 0; i < ps->indices.size(); i++) {
+          const auto& face = ps->indices[i];
+          builder.beginPolygon(face.size());
+          for (int ind : face) {
+            Vector3d pt = ps->vertices[ind];
+            pt[0] = concat_round(pt[0]);
+            pt[1] = concat_round(pt[1]);
+            pt[2] = concat_round(pt[2]);
+            builder.addVertex(pt);
+          }
+          if (ps->color_indices.size() > i) builder.endPolygon(ps->colors[ps->color_indices[i]]);
+          else builder.endPolygon();
+        }
+	auto geom_u = builder.build();
+        std::shared_ptr<const Geometry> geom_s(geom_u.release());
+        return ResultObject::mutableResult(geom_s);
+      }	
+    }
     break;
   }
   case OpenSCADOperator::UNION: {
@@ -1822,6 +1853,17 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
 
   if (children.empty()) {
     return nullptr;
+  }
+  if (op == OpenSCADOperator::CONCAT) {
+    Polygon2d poly_result;	  
+    for(std::shared_ptr<const Polygon2d> &child : children) {	  
+      auto outl= child->outlines();
+      for (size_t i = 0; i < outl.size(); i++) {
+        const auto& o = outl[i];
+        poly_result.addOutline(o);
+      }
+    }	  
+    return std::make_unique<Polygon2d>(poly_result);
   }
 
   if (children.size() == 1 && op != OpenSCADOperator::OFFSET) {
@@ -2553,49 +2595,6 @@ Response GeometryEvaluator::visit(State& state, const SkinNode& node)
   output: 3D PolySet
  */
 
-double concat_round(double x)
-{
-  if (x > 0) return ((int)(x * 1000 + 0.5)) / 1000.0;
-  if (x < 0) return -((int)(-x * 1000 + 0.5)) / 1000.0;
-  return 0;
-}
-Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
-{
-  if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
-  if (state.isPostfix()) {
-    std::shared_ptr<const Geometry> geom;
-    if (!isSmartCached(node)) {
-      Geometry::Geometries children = collectChildren3D(node);
-      PolySetBuilder builder(0, 0, 3, true);
-      for (const auto& child : children) {
-        const auto ps = std::dynamic_pointer_cast<const PolySet>(child.second);
-        if (ps == nullptr) {
-          LOG(message_group::Error, "Concat only works for PolySet Data");
-          continue;
-        }
-        for (size_t i = 0; i < ps->indices.size(); i++) {
-          const auto& face = ps->indices[i];
-          builder.beginPolygon(face.size());
-          for (int ind : face) {
-            Vector3d pt = ps->vertices[ind];
-            pt[0] = concat_round(pt[0]);
-            pt[1] = concat_round(pt[1]);
-            pt[2] = concat_round(pt[2]);
-            builder.addVertex(pt);
-          }
-          if (ps->color_indices.size() > i) builder.endPolygon(ps->colors[ps->color_indices[i]]);
-          else builder.endPolygon();
-        }
-      }
-      geom = builder.build();
-    } else {
-      geom = smartCacheGet(node, false);
-    }
-    addToParent(state, node, geom);
-    node.progress_report();
-  }
-  return Response::ContinueTraversal;
-}
 
 /*!
    input: List of 2D objects

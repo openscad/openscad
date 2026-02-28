@@ -113,7 +113,6 @@ def main():
               "src/core/ImportNode.cc",
               "src/core/PullNode.cc",
               "src/core/TextNode.cc",
-              "src/core/ConcatNode.cc",
               "src/core/SheetNode.cc",
               "src/core/LinearExtrudeNode.cc",
               "src/core/RotateExtrudeNode.cc",

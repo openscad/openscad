@@ -89,6 +89,7 @@ std::string CsgOpNode::name() const
   case OpenSCADOperator::UNION:        return "union"; break;
   case OpenSCADOperator::DIFFERENCE:   return "difference"; break;
   case OpenSCADOperator::INTERSECTION: return "intersection"; break;
+  case OpenSCADOperator::CONCAT:       return "concatenate"; break;
   default:                             assert(false);
   }
   return "internal_error";
