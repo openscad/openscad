@@ -71,6 +71,12 @@ bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
 
+static PythonRuntimeVars pythonRuntimeVars;
+
+void setPythonRuntimeVars(const PythonRuntimeVars& vars) {
+  pythonRuntimeVars = vars;
+}
+
 std::vector<std::shared_ptr<AbstractNode>> nodes_hold;  // make sure, that these nodes are not yet freed
 std::shared_ptr<AbstractNode> void_node, full_node;
 
@@ -861,7 +867,9 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
     }
   }
   std::ostringstream stream;
-  stream << "t=" << time << "\nphi=" << 2 * G_PI * time << "\n" << commandline_commands << "\n";
+  stream << "t=" << time << "\nphi=" << 2 * G_PI * time
+         << "\npreview=" << (pythonRuntimeVars.preview ? "True" : "False")
+         << "\n" << commandline_commands << "\n";
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
   customizer_parameters_finished = customizer_parameters;
   customizer_parameters.clear();

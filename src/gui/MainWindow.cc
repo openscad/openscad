@@ -320,6 +320,7 @@ void MainWindow::addMenuItemCB(QString callback)
   if (content.size() == 0) return;
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
+  setPythonRuntimeVars({.preview = this->isPreview});
   initPython(binDir, "", 0.0);
   evaluatePython(content);
   evaluatePython(cbstr);
@@ -2026,6 +2027,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   } else if (editor->language == LANG_PYTHON) {
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
+    setPythonRuntimeVars({.preview = this->isPreview});
     initPython(venv, fnameba.constData(), this->animateWidget->getAnimTval());
     this->activeEditor->resetHighlighting();
     this->activeEditor->parameterWidget->setEnabled(false);

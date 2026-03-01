@@ -44,3 +44,8 @@ int pythonCreateVenv(const std::string& path);
 int pythonRunModule(const std::string& appPath, const std::string& module,
                     const std::vector<std::string>& args);
 std::string venvBinDirFromSettings();
+struct PythonRuntimeVars {
+  bool preview = false;
+  // toekomstige variabelen hier toevoegen
+};
+void setPythonRuntimeVars(const PythonRuntimeVars& vars);
