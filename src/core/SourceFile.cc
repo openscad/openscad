@@ -198,6 +198,19 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   return node;
 }
 
+std::shared_ptr<const FileContext> SourceFile::instantiateVariablesOnly(
+  const std::shared_ptr<const Context>& context) const
+{
+  try {
+    ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
+    return *file_context;
+  } catch (HardWarningException& e) {
+    throw;
+  } catch (EvaluationException& e) {
+    return nullptr;
+  }
+}
+
 // please preferably use getFilename
 // if you compare filenames (which is the origin of this method),
 // please call getFilename first and use this method only as a fallback

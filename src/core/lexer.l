@@ -332,6 +332,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "||"                    return OR;
 "<<"                    return LSH;
 ">>"                    return RSH;
+"@"                     return TOK_AT;
 
 .                       { return yytext[0]; }
 

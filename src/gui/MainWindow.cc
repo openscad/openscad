@@ -1670,9 +1670,15 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 
   editor->resetHighlighting();
   if (sourceFile) {
+    auto session =
+      std::make_unique<EvaluationSession>(PlatformUtils::resourcePath("libraries").string());
+    auto builtin_context_handle = Context::create<BuiltinContext>(session.get());
+    auto file_context_handle = sourceFile->instantiateVariablesOnly(*builtin_context_handle);
+
+    std::shared_ptr<const Context> file_context_ptr = file_context_handle;
     // add parameters as annotation in AST
     CommentParser::collectParameters(fulltext, sourceFile);
-    editor->parameterWidget->setParameters(sourceFile, fulltext);
+    editor->parameterWidget->setParameters(sourceFile, fulltext, file_context_ptr, std::move(session));
     editor->parameterWidget->applyParameters(sourceFile);
     editor->parameterWidget->setEnabled(true);
     editor->setIndicator(sourceFile->indicatorData);

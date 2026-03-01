@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -25,6 +26,7 @@ public:
   [[nodiscard]] virtual bool isLiteral() const;
   [[nodiscard]] virtual Value evaluate(const std::shared_ptr<const Context>& context) const = 0;
   Value checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const;
+  virtual void collectDependencies(std::set<std::string>& deps) const {}
 };
 
 class UnaryOp : public Expression
@@ -35,6 +37,7 @@ public:
   UnaryOp(Op op, Expression *expr, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   [[nodiscard]] const char *opString() const;
@@ -70,6 +73,7 @@ public:
   BinaryOp(Expression *left, Op op, Expression *right, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   [[nodiscard]] const char *opString() const;
@@ -86,6 +90,7 @@ public:
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   std::shared_ptr<Expression> cond;
@@ -99,6 +104,7 @@ public:
   ArrayLookup(Expression *array, Expression *index, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   std::shared_ptr<Expression> array;
@@ -137,6 +143,7 @@ public:
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   [[nodiscard]] bool isLiteral() const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   std::shared_ptr<Expression> begin;
@@ -153,6 +160,7 @@ public:
   void print(std::ostream& stream, const std::string& indent) const override;
   void emplace_back(Expression *expr);
   bool isLiteral() const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   std::vector<std::shared_ptr<Expression>> children;
@@ -166,6 +174,7 @@ public:
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   [[nodiscard]] const std::string& get_name() const { return name; }
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   std::string name;
@@ -177,6 +186,7 @@ public:
   MemberLookup(Expression *expr, std::string member, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void collectDependencies(std::set<std::string>& deps) const override;
 
 private:
   std::shared_ptr<Expression> expr;
@@ -333,4 +343,16 @@ public:
 private:
   AssignmentList arguments;
   std::shared_ptr<Expression> expr;
+};
+
+class ObjectExpression : public Expression
+{
+public:
+  ObjectExpression(AssignmentList members, const Location& loc);
+  [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
+  void print(std::ostream& stream, const std::string& indent) const override;
+  const AssignmentList& getMembers() const { return members; }
+
+private:
+  AssignmentList members;
 };
