@@ -82,7 +82,10 @@ std::string PlatformUtils::userConfigPath()
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
-unsigned long PlatformUtils::stackLimit() { return STACK_LIMIT_DEFAULT; }
+unsigned long PlatformUtils::stackLimit()
+{
+  return STACK_LIMIT_DEFAULT;
+}
 
 // NOLINTNEXTLINE(modernize-use-using)
 typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
