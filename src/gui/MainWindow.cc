@@ -441,17 +441,6 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
   }
 }
 
-/**
- * Update window settings that get overwritten by the restoreState()
- * Qt call. So the values are loaded before the call and restored here
- * regardless of the (potential outdated) serialized state.
- */
-void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible)
-{
-  viewActionHideEditorToolBar->setChecked(!isEditorToolbarVisible);
-  viewActionHide3DViewToolBar->setChecked(!isViewToolbarVisible);
-}
-
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
 {
 }
@@ -3908,7 +3897,10 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, colorListDock);
     tabifyDockWidget(colorListDock, animateDock);
+    parameterDock->hide();
+    viewportControlDock->hide();
     consoleDock->show();
+    consoleDock->raise();
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
@@ -3929,7 +3921,6 @@ void MainWindow::restoreWindowState()
 #endif  // ifdef Q_OS_WIN
   }
 
-  updateWindowSettings(isEditorToolbarVisible, is3DViewToolbarVisible);
 }
 
 void MainWindow::openRemainingFiles(const QStringList& filenames)
