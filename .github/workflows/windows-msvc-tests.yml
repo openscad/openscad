@@ -190,7 +190,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-          vcpkgGitCommitId: '74e6536215718009aae747d86d84b78376bf9e09'
+          vcpkgGitCommitId: '62159a45e18f3a9ac0548628dcaf74fcb60c6ff9'
           vcpkgJsonGlob: '**/vcpkg.json'
           runVcpkgInstall: false
         env:
