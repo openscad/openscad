@@ -288,6 +288,17 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
     return nullptr;
   }
 
+  // 100 is the wrong value for resolution.  It should be 72.  100 yields a 100:72 scaling factor
+  // because the input size is in points and the output coordinates are in 1/resolution inches.
+  // OpenSCAD doesn't care about inches and points, but this means that the glyphs generated
+  // are about 1.39x as large as they should be, relative to the font size specified.
+  // This is described in issue #4304.
+  //
+  // We don't just change it to 72, because this 100:72 scaling factor has been present
+  // for many years and any model using text() depends on it.  We could fix it here and do
+  // something tricky above, but that has subtle compatibility effects.  Instead, we
+  // introduced a new "em" parameter that lets the user specify the em size of the font,
+  // and we set the size based on that to cancel out the error that we introduce here.
   FT_Error error = FT_Set_Char_Size(face->face_, 0, scale, 100, 100);
   if (error) {
     LOG(message_group::Warning, loc, documentPath, "Can't set font size for font %1$s", font);
@@ -303,6 +314,7 @@ FreetypeRenderer::Params::Params(Parameters& parameters)
   // the expected type.
 
   (void)parameters.valid("size", Value::Type::NUMBER);
+  (void)parameters.valid("em", Value::Type::NUMBER);
   (void)parameters.valid("text", Value::Type::STRING);
   (void)parameters.valid("spacing", Value::Type::NUMBER);
   (void)parameters.valid("font", Value::Type::STRING);
@@ -312,7 +324,28 @@ FreetypeRenderer::Params::Params(Parameters& parameters)
   (void)parameters.valid("halign", Value::Type::STRING);
   (void)parameters.valid("valign", Value::Type::STRING);
 
-  size = parameters.get("size", 10.0);
+  // There is a bug (#4304):  FreetypeRenderer::Params::get_font_face()
+  // will inappropriately apply a scaling factor of 100/72, so
+  // that a specified size of 72 would yield an em-size of 100.
+  // This went undetected for years because the error introduced
+  // was approximately the same as the typical ratio between the
+  // em size and the height of capital letters, and so "size"
+  // was explained as the height of capital letters.
+  // We can't possibly redefine "size" correctly, because there are years of inertia
+  // behind the bug.  Instead, we define a new parameter "em" that sets the em size correctly.
+  // We do not fix the bug down where it actually occurs, because that has subtle
+  // compatibility effects.  Instead, we just correct for it here.
+  const Value& emParam = parameters.get("em");
+  if (emParam.isDefined()) {
+    if (parameters.get("size").isDefined()) {
+      LOG(message_group::Warning, loc, documentPath, "%1$s: \"size\" ignored when \"em\" is set",
+          parameters.get_caller());
+    }
+    size = emParam.toDouble() * 72.0 / 100.0;
+  } else {
+    size = parameters.get("size", 10.0);
+  }
+
   set_text(parameters.get("text", ""));
   spacing = parameters.get("spacing", 1.0);
   set_font(parameters.get("font", ""));
