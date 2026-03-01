@@ -183,6 +183,30 @@ def compare_default(resultfilename):
         return False
     return True
 
+def get_json(filename):
+    import json
+    try:
+        f = open(filename)
+        return json.load(f)
+    except err:
+        # do not fail silently
+        return "could not read " + "\n" + filename + "\n" + repr(err)
+
+def compare_json(resultfilename):
+    print('json comparison: ', file=sys.stderr)
+    print(' expected json file: ', expectedfilename, file=sys.stderr)
+    print(' actual json file: ', resultfilename, file=sys.stderr)
+    expected_data = get_json(expectedfilename)
+    actual_data = get_json(resultfilename)
+    if expected_data != actual_data:
+        import json
+        import difflib
+        expected_lines = json.dumps(expected_data, indent=1).splitlines(keepends=True)
+        actual_lines = json.dumps(actual_data, indent=1).splitlines(keepends=True)
+        sys.stderr.writelines(difflib.unified_diff(expected_lines, actual_lines, fromfile=expectedfilename, tofile=resultfilename))
+        return False
+    return True
+
 def compare_png(resultfilename):
     if options.comparator == 'image_compare':
       compare_method = 'image_compare'

@@ -1,0 +1,229 @@
+{
+  "parameters": [
+    {
+      "caption": "combo box for number",
+      "group": "Parameters",
+      "initial": 2.0,
+      "name": "Numbers",
+      "options": [
+        {
+          "name": "0",
+          "value": 0.0
+        },
+        {
+          "name": "1",
+          "value": 1.0
+        },
+        {
+          "name": "2",
+          "value": 2.0
+        },
+        {
+          "name": "3",
+          "value": 3.0
+        }
+      ],
+      "type": "number"
+    },
+    {
+      "caption": "combo box for string",
+      "group": "Parameters",
+      "initial": "foo",
+      "name": "Strings",
+      "options": [
+        {
+          "name": "foo",
+          "value": "foo"
+        },
+        {
+          "name": "bar",
+          "value": "bar"
+        },
+        {
+          "name": "baz",
+          "value": "baz"
+        }
+      ],
+      "type": "string"
+    },
+    {
+      "caption": "labeled combo box for numbers",
+      "group": "Parameters",
+      "initial": 10.0,
+      "name": "Labeled_values",
+      "options": [
+        {
+          "name": "S",
+          "value": 10.0
+        },
+        {
+          "name": "M",
+          "value": 20.0
+        },
+        {
+          "name": "L",
+          "value": 30.0
+        }
+      ],
+      "type": "number"
+    },
+    {
+      "caption": "labeled combo box for string",
+      "group": "Parameters",
+      "initial": "S",
+      "name": "Labeled_value",
+      "options": [
+        {
+          "name": "Small",
+          "value": "S"
+        },
+        {
+          "name": "Medium",
+          "value": "M"
+        },
+        {
+          "name": "Large",
+          "value": "L"
+        }
+      ],
+      "type": "string"
+    },
+    {
+      "caption": "slider widget for number with max. value",
+      "group": "Parameters",
+      "initial": 34.0,
+      "max": 50.0,
+      "min": 0.0,
+      "name": "sliderWithMax",
+      "step": 1.0,
+      "type": "number"
+    },
+    {
+      "caption": "slider widget for number in range",
+      "group": "Parameters",
+      "initial": 34.0,
+      "max": 100.0,
+      "min": 10.0,
+      "name": "sliderWithRange",
+      "step": 1.0,
+      "type": "number"
+    },
+    {
+      "caption": "step slider for number",
+      "group": "Parameters",
+      "initial": 2.0,
+      "max": 100.0,
+      "min": 0.0,
+      "name": "stepSlider",
+      "step": 5.0,
+      "type": "number"
+    },
+    {
+      "caption": "slider widget for number in range",
+      "group": "Parameters",
+      "initial": 0.0,
+      "max": 10.0,
+      "min": -10.0,
+      "name": "sliderCentered",
+      "step": 0.1,
+      "type": "number"
+    },
+    {
+      "caption": "description",
+      "group": "Parameters",
+      "initial": true,
+      "name": "Variable",
+      "type": "boolean"
+    },
+    {
+      "caption": "spinbox with step size 1",
+      "group": "Parameters",
+      "initial": 5.0,
+      "name": "Spinbox",
+      "step": 1.0,
+      "type": "number"
+    },
+    {
+      "caption": "spinbox with step size 0.5",
+      "group": "Parameters",
+      "initial": 5.5,
+      "name": "SpinboxWithStep",
+      "step": 0.5,
+      "type": "number"
+    },
+    {
+      "caption": "Text box for string",
+      "group": "Parameters",
+      "initial": "hello",
+      "name": "String",
+      "type": "string"
+    },
+    {
+      "caption": "Text box for string with length 8",
+      "group": "Parameters",
+      "initial": "length",
+      "maxLength": 8,
+      "name": "StringWithLength",
+      "type": "string"
+    },
+    {
+      "caption": "Spin box box for vector with less than or equal to 4 elements",
+      "group": "Parameters",
+      "initial": [
+        12.0,
+        34.0
+      ],
+      "name": "Vector2",
+      "type": "number"
+    },
+    {
+      "group": "Parameters",
+      "initial": [
+        12.0,
+        34.0,
+        45.0
+      ],
+      "name": "Vector3",
+      "type": "number"
+    },
+    {
+      "group": "Parameters",
+      "initial": [
+        12.0,
+        34.0,
+        45.0,
+        23.0
+      ],
+      "name": "Vector4",
+      "type": "number"
+    },
+    {
+      "group": "Parameters",
+      "initial": [
+        12.0,
+        34.0,
+        46.0
+      ],
+      "max": 50.0,
+      "min": 1.0,
+      "name": "VectorRange3",
+      "step": 2.0,
+      "type": "number"
+    },
+    {
+      "group": "Parameters",
+      "initial": [
+        12.0,
+        34.0,
+        45.0,
+        23.0
+      ],
+      "max": 50.0,
+      "min": 1.0,
+      "name": "VectorRange4",
+      "step": 1.0,
+      "type": "number"
+    }
+  ],
+  "title": "issue6597"
+}
