@@ -212,7 +212,20 @@ if (-not (Test-Command git)) {
     exit 1
 }
 
-Write-Information "✓ Prerequisites check passed"
+# Find native Windows CMake (not MSYS2's cmake which reports hostSystemName != Windows)
+$cmakeExe = $null
+foreach ($c in (Get-Command cmake -All -ErrorAction SilentlyContinue)) {
+    if ($c.Source -notmatch 'msys64|msys2|cygwin') {
+        $cmakeExe = $c.Source
+        break
+    }
+}
+if (-not $cmakeExe) {
+    Write-Error "Native Windows CMake not found. MSYS2's cmake is not compatible with CMake presets on Windows."
+    Write-Error "Install CMake from https://cmake.org or via winget: winget install Kitware.CMake"
+    exit 1
+}
+Write-Information "✓ Prerequisites check passed (using cmake: $cmakeExe)"
 Write-Output ""
 
 # Initialize submodules
@@ -226,22 +239,23 @@ Write-Information "✓ Submodules initialized"
 Write-Output ""
 
 # Setup Visual Studio environment
+# Note: vcvars64.bat is NOT sourced here because it can interfere with
+# environment variables needed later (VCPKG_ROOT, Qt paths, etc.).
+# CMake with the "Visual Studio 17 2022" generator finds MSVC automatically
+# via vswhere, so vcvars is not needed for the build.
 Write-Information "Setting up Visual Studio environment..."
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 if (Test-Path $vswhere) {
     $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
     if ($vsPath) {
-        $vcvarsPath = "$vsPath\VC\Auxiliary\Build\vcvars64.bat"
-        if (Test-Path $vcvarsPath) {
-            Write-Information "Found Visual Studio at: $vsPath"
-            # Import VS environment variables using full path to Windows cmd.exe
-            & $env:ComSpec /c """$vcvarsPath"" && set" | ForEach-Object {
-                if ($_ -match "^([^=]+)=(.*)$") {
-                    [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
-                }
-            }
-        }
+        Write-Information "Found Visual Studio at: $vsPath"
+    } else {
+        Write-Error "Visual Studio with C++ tools not found."
+        exit 1
     }
+} else {
+    Write-Error "vswhere.exe not found. Please install Visual Studio."
+    exit 1
 }
 Write-Information "✓ Visual Studio environment configured"
 Write-Output ""
@@ -346,7 +360,9 @@ Write-Information "Checking MSYS2..."
 $msys2Path = "C:\msys64\usr\bin"
 $mingw64Path = "C:\msys64\mingw64\bin"
 if (Test-Path $msys2Path) {
-    $env:PATH = "$msys2Path;$mingw64Path;$env:PATH"
+    # Append MSYS2 to PATH (not prepend) so system tools like cmake take priority.
+    # MSYS2 provides flex, bison, ghostscript which aren't available elsewhere.
+    $env:PATH = "$env:PATH;$msys2Path;$mingw64Path"
 
     Write-Information "  Installing/updating flex, bison, and ghostscript via pacman..."
     & C:\msys64\usr\bin\pacman.exe -S --noconfirm --needed flex bison mingw-w64-x86_64-ghostscript
@@ -439,48 +455,33 @@ Write-Output ""
 if (-not $SkipVcpkg) {
     Write-Information "Setting up vcpkg..."
 
-    $vcpkgDir = "$SourceDir\vcpkg"
+    # Use system vcpkg (C:\vcpkg) or VCPKG_ROOT if set, fall back to repo-local
+    $vcpkgDir = $null
+    if ($env:VCPKG_ROOT -and (Test-Path "$env:VCPKG_ROOT\vcpkg.exe")) {
+        $vcpkgDir = $env:VCPKG_ROOT
+        Write-Information "  Using VCPKG_ROOT: $vcpkgDir"
+    } elseif (Test-Path "C:\vcpkg\vcpkg.exe") {
+        $vcpkgDir = "C:\vcpkg"
+        Write-Information "  Using system vcpkg: $vcpkgDir"
+    } elseif (Get-Command vcpkg -ErrorAction SilentlyContinue) {
+        $vcpkgDir = Split-Path (Get-Command vcpkg).Source
+        Write-Information "  Using vcpkg from PATH: $vcpkgDir"
+    } else {
+        Write-Error "vcpkg not found. Install vcpkg system-wide (e.g. git clone https://github.com/microsoft/vcpkg C:\vcpkg && C:\vcpkg\bootstrap-vcpkg.bat) or set VCPKG_ROOT."
+        exit 1
+    }
+
     $vcpkgExe = "$vcpkgDir\vcpkg.exe"
-
-    # Clone vcpkg if it doesn't exist
-    if (-not (Test-Path $vcpkgDir)) {
-        Write-Information "  Cloning vcpkg from GitHub..."
-        git clone https://github.com/Microsoft/vcpkg.git $vcpkgDir
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to clone vcpkg repository"
-            exit 1
-        }
-
-        # Checkout specific commit used in CI (optional but ensures consistency)
-        Push-Location $vcpkgDir
-        try {
-            git checkout 74e6536215718009aae747d86d84b78376bf9e09
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "Failed to checkout vcpkg commit"
-                exit 1
-            }
-        } finally {
-            Pop-Location
-        }
-    }
-
-    # Bootstrap vcpkg if not already done
-    if (-not (Test-Path $vcpkgExe)) {
-        Write-Information "  Bootstrapping vcpkg..."
-        Push-Location $vcpkgDir
-        try {
-            .\bootstrap-vcpkg.bat -disableMetrics
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "vcpkg bootstrap failed"
-                exit 1
-            }
-        } finally {
-            Pop-Location
-        }
-    }
 
     Write-Information "  Installing vcpkg dependencies from vcpkg.json..."
     $env:VCPKG_ROOT = $vcpkgDir
+
+    # Temporarily remove MSYS2 from PATH to prevent sh.exe from mangling
+    # Windows paths (C: -> C;) during vcpkg's internal CMake invocations
+    $savedPath = $env:PATH
+    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch 'msys64' }) -join ';'
+    $env:MSYS_NO_PATHCONV = "1"
+    $env:MSYS2_ARG_CONV_EXCL = "*"
     
     # Set concurrency for parallel builds (use all available processors)
     if (-not $env:VCPKG_CONCURRENCY) {
@@ -500,15 +501,24 @@ if (-not $SkipVcpkg) {
         Pop-Location
     }
 
+    # Restore MSYS2 on PATH (needed for flex/bison during CMake configure)
+    $env:PATH = $savedPath
+
     Write-Information "✓ vcpkg dependencies installed"
     Write-Output ""
 
     # Install Python dependencies using vcpkg Python
+    # In manifest mode, vcpkg installs packages into vcpkg_installed/ in the working directory
     Write-Information "Installing Python dependencies..."
-    $vcpkgPython = "$vcpkgDir\packages\python3_x64-windows\tools\python3\python.exe"
+    $vcpkgPython = "$SourceDir\vcpkg_installed\x64-windows\tools\python3\python.exe"
 
     if (-not (Test-Path $vcpkgPython)) {
-        Write-Error "vcpkg Python not found at $vcpkgPython"
+        # Fallback: check classic mode location
+        $vcpkgPython = "$vcpkgDir\packages\python3_x64-windows\tools\python3\python.exe"
+    }
+
+    if (-not (Test-Path $vcpkgPython)) {
+        Write-Error "vcpkg Python not found. Searched:`n  $SourceDir\vcpkg_installed\x64-windows\tools\python3\python.exe`n  $vcpkgDir\packages\python3_x64-windows\tools\python3\python.exe"
         Write-Information "       Make sure 'python3' is in vcpkg.json dependencies"
         exit 1
     }
@@ -550,13 +560,42 @@ if ($CleanBuild -and (Test-Path $BuildDir)) {
 if (-not $SkipBuild) {
     Write-Information "Configuring CMake..."
 
+    # Ensure VCPKG_ROOT is set (required by CMake preset toolchainFile)
+    if (-not $env:VCPKG_ROOT) {
+        if (Test-Path "C:\vcpkg\vcpkg.exe") {
+            $env:VCPKG_ROOT = "C:\vcpkg"
+        } elseif (Get-Command vcpkg -ErrorAction SilentlyContinue) {
+            $env:VCPKG_ROOT = Split-Path (Get-Command vcpkg).Source
+        } else {
+            Write-Error "VCPKG_ROOT is not set and vcpkg was not found. Cannot configure CMake preset."
+            exit 1
+        }
+        Write-Information "  VCPKG_ROOT set to: $env:VCPKG_ROOT"
+    }
+
     if (-not (Test-Path $BuildDir)) {
         New-Item -ItemType Directory -Path $BuildDir -Force | Out-Null
     }
 
+    # Locate flex and bison executables (from MSYS2) for explicit CMake variable passing
+    $flexExe = (Get-Command flex -ErrorAction SilentlyContinue).Source
+    $bisonExe = (Get-Command bison -ErrorAction SilentlyContinue).Source
+    if (-not $flexExe) { $flexExe = "C:\msys64\usr\bin\flex.exe" }
+    if (-not $bisonExe) { $bisonExe = "C:\msys64\usr\bin\bison.exe" }
+    Write-Information "  Using flex: $flexExe"
+    Write-Information "  Using bison: $bisonExe"
+
+    # Remove MSYS2 from PATH during cmake configure to prevent sh.exe from
+    # mangling Windows paths (C: -> C;) in vcpkg's internal CMake invocations
+    $savedConfigPath = $env:PATH
+    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch 'msys64|msys2|cygwin' }) -join ';'
+    $env:MSYS_NO_PATHCONV = "1"
+    $env:MSYS2_ARG_CONV_EXCL = "*"
+
     # First configuration: disable tests since Python isn't available yet
     Write-Information "  Initial configuration (tests disabled)..."
-    cmake --preset windows-msvc-release -DENABLE_TESTS=OFF
+    & $cmakeExe --preset windows-msvc-release -DENABLE_TESTS=OFF `
+        -DFLEX_EXECUTABLE="$flexExe" -DBISON_EXECUTABLE="$bisonExe"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "CMake configuration failed"
         exit 1
@@ -586,9 +625,9 @@ if (-not $SkipBuild) {
             
             # Reconfigure to enable tests and pick up Python
             Write-Information "  Reconfiguring with tests enabled and vcpkg Python..."
-            Write-Information "  Running: cmake --preset windows-msvc-release -DENABLE_TESTS=ON -DPython3_ROOT_DIR=$vcpkgPythonTools -DPython3_EXECUTABLE=$pythonExe"
-            cmake --preset windows-msvc-release `
+            & $cmakeExe --preset windows-msvc-release `
                 -DENABLE_TESTS=ON `
+                -DFLEX_EXECUTABLE="$flexExe" -DBISON_EXECUTABLE="$bisonExe" `
                 -DPython3_ROOT_DIR="$vcpkgPythonTools" `
                 -DPython3_EXECUTABLE="$pythonExe"
             if ($LASTEXITCODE -ne 0) {
@@ -617,8 +656,11 @@ if (-not $SkipBuild) {
     Write-Information "✓ CMake configuration complete"
     Write-Output ""
 
+    # Restore full PATH (MSYS2 back) for the build step
+    $env:PATH = $savedConfigPath
+
     Write-Information "Building OpenSCAD..."
-    cmake --build --preset windows-msvc-release --verbose
+    & $cmakeExe --build --preset windows-msvc-release --verbose
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Build failed"
         exit 1
