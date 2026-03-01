@@ -19,7 +19,8 @@ using Eigen::Vector4f;
 #ifdef _MSC_VER
 #include <Eigen/StdVector>  // https://eigen.tuxfamily.org/dox/group__TopicStlContainers.html
 #if !EIGEN_HAS_CXX11_CONTAINERS
-#pragma message("warning: Eigen has detected no support for CXX11 containers and has redefined std::vector")
+#pragma message( \
+  "warning: Eigen has detected no support for CXX11 containers and has redefined std::vector")
 #endif
 using VectorOfVector2d = std::vector<Vector2d, Eigen::aligned_allocator<Vector2d>>;
 #else
