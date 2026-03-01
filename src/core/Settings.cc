@@ -489,6 +489,18 @@ SettingsEntryString SettingsExportSvg::exportSvgStrokeColor(SECTION_EXPORT_SVG, 
 SettingsEntryDouble SettingsExportSvg::exportSvgStrokeWidth(SECTION_EXPORT_SVG, "stroke-width", 0, 0.01,
                                                             999, 0.35);
 
+SettingsEntryBool SettingsExportDxf::exportDxfAlwaysShowDialog(SECTION_EXPORT_DXF, "always-show-dialog",
+                                                               true);
+SettingsEntryEnum<DxfVersion> SettingsExportDxf::exportDxfVersion(
+  SECTION_EXPORT_DXF, "version",
+  {
+    {DxfVersion::Legacy, "legacy", _("Legacy (original OpenSCAD behaviour)")},
+    {DxfVersion::R10, "R10", _("R10 (AC1006, maximum compatibility)")},
+    {DxfVersion::R12, "R12", _("R12 (AC1009, handles)")},
+    {DxfVersion::R14, "R14", _("R14 (AC1014, full object model)")},
+  },
+  DxfVersion::Legacy);
+
 SettingsEntryEnum<ColorListFilterType> SettingsColorList::colorListFilterType(
   SECTION_COLOR_LIST, "filter-type",
   {

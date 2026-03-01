@@ -318,6 +318,8 @@ void Preferences::update()
     Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
   this->checkBoxAlwaysShowExport3mfDialog->setChecked(
     Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExportDXFDialog->setChecked(
+    Settings::SettingsExportDxf::exportDxfAlwaysShowDialog.value());
   this->checkBoxAlwaysShowPrintServiceDialog->setChecked(
     Settings::Settings::printServiceAlwaysShowDialog.value());
 }
@@ -1234,6 +1236,12 @@ void Preferences::on_checkBoxAlwaysShowExportPdfDialog_toggled(bool state)
 void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
 {
   Settings::SettingsExport3mf::export3mfAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowExportDXFDialog_toggled(bool state)
+{
+  Settings::SettingsExportDxf::exportDxfAlwaysShowDialog.setValue(state);
   writeSettings();
 }
 
