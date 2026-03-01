@@ -466,12 +466,12 @@ bool GeometryUtils::tessellatePolygon(const Polygon& polygon, Polygons& triangle
   return err;
 }
 
-int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFace>>& polygons)
+int GeometryUtils::findUnconnectedEdges(const std::vector<MarkedIndexedFaces>& polygons)
 {
   EdgeDict edges;
   for (const auto& faces : polygons) {
-    for (const auto& face : faces) {
-      edges.add(face);
+    for (const auto& f : faces.faces) {
+      edges.add(f);
     }
   }
 #if 1  // for debugging
@@ -483,11 +483,11 @@ int GeometryUtils::findUnconnectedEdges(const std::vector<std::vector<IndexedFac
   return edges.size();
 }
 
-int GeometryUtils::findUnconnectedEdges(const std::vector<IndexedTriangle>& triangles)
+int GeometryUtils::findUnconnectedEdges(const std::vector<MarkedIndexedTriangle>& triangles)
 {
   EdgeDict edges;
   for (const auto& t : triangles) {
-    edges.add(t);
+    edges.add(t.tri);
   }
 #if 1  // for debugging
   if (!edges.empty()) {

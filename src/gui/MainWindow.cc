@@ -107,7 +107,9 @@
 #include "geometry/GeometryEvaluator.h"
 #include "glview/PolySetRenderer.h"
 #include "glview/RenderSettings.h"
+#if not defined(USE_POLYSET_FOR_CGAL)
 #include "glview/cgal/CGALRenderer.h"
+#endif
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
@@ -1953,6 +1955,9 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
+#if defined(USE_POLYSET_FOR_CGAL)
+    this->geomRenderer = std::make_shared<PolySetRenderer>(this->rootGeom);
+#else
     // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
     // know that all geometries are convertible to PolySet.
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
@@ -1962,6 +1967,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     } else {
       this->geomRenderer = std::make_shared<CGALRenderer>(this->rootGeom);
     }
+#endif
 
     // Go to CGAL view mode
     viewModeRender();
