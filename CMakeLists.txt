@@ -43,6 +43,7 @@ option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's"
 option(USE_MANIFOLD_MINKOWSKI "Use Manifold's Minkowski instead of CGAL's" OFF)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
+option(USE_POLYSET_FOR_CGAL "Force CGAL backend to use PolySetRenderer instead of CGALRenderer." OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(USE_QT6 "Build the GUI with Qt6" ON)
@@ -1224,6 +1225,9 @@ if(ENABLE_MANIFOLD)
   if (USE_MANIFOLD_MINKOWSKI)
     target_compile_definitions(OpenSCADLibInternal PUBLIC USE_MANIFOLD_MINKOWSKI)
   endif()
+  if (USE_POLYSET_FOR_CGAL)
+    target_compile_definitions(OpenSCADLibInternal PUBLIC USE_POLYSET_FOR_CGAL)
+  endif()
 endif()
 
 #
@@ -1251,13 +1255,16 @@ else()
     src/glview/GLView.cc
     src/glview/hershey.cc
     src/glview/OffscreenView.cc
-    src/glview/cgal/CGALRenderer.cc
     src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
     ${GLEW_SOURCES})
+  if(NOT USE_POLYSET_FOR_CGAL)
+    list(APPEND OFFSCREEN_SOURCES
+      src/glview/cgal/CGALRenderer.cc)
+  endif()
 endif()
 
 

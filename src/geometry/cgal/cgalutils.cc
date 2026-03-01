@@ -25,6 +25,8 @@
 #include "geometry/Reindexer.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/linalg.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
@@ -296,7 +298,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
 
   // 1. Build Indexed PolyMesh
   Reindexer<Vector3f> allVertices;
-  std::vector<std::vector<IndexedFace>> polygons;
+  std::vector<MarkedIndexedFaces> polygons;
 
   typename Nef::Halffacet_const_iterator hfaceti;
   CGAL_forall_halffacets(hfaceti, N)
@@ -306,7 +308,9 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
     polygons.emplace_back();
-    auto& faces = polygons.back();
+    auto& back = polygons.back();
+    back.mark = hfaceti->mark();
+    auto& faces = back.faces;
     // the 0-mark-volume is the 'empty' volume of space. skip it.
     if (!hfaceti->incident_volume()->mark()) {
       typename Nef::Halffacet_cycle_const_iterator cyclei;
@@ -337,7 +341,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
   }
   // 3. Triangulate each face
   const auto& verts = allVertices.getArray();
-  std::vector<IndexedTriangle> allTriangles;
+  std::vector<MarkedIndexedTriangle> allTriangles;
   for (const auto& faces : polygons) {
 #if 0   // For debugging
     std::cerr << "---\n";
@@ -380,13 +384,13 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
     // K::Vector_3 normal(CGAL::to_double(nvec.x()), CGAL::to_double(nvec.y()),
     // CGAL::to_double(nvec.z()));
     std::vector<IndexedTriangle> triangles;
-    auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
+    auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces.faces, triangles, nullptr);
     if (!err) {
       for (const auto& t : triangles) {
         assert(t[0] >= 0 && t[0] < static_cast<int>(allVertices.size()));
         assert(t[1] >= 0 && t[1] < static_cast<int>(allVertices.size()));
         assert(t[2] >= 0 && t[2] < static_cast<int>(allVertices.size()));
-        allTriangles.push_back(t);
+        allTriangles.push_back({t, faces.mark});
       }
     }
   }
@@ -403,13 +407,21 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
   }
 
   auto polyset = PolySet::createEmpty();
+  polyset->colors.reserve(2);
+  auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+  polyset->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR));
+  polyset->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_BACK_COLOR));
+
   polyset->vertices.reserve(verts.size());
   for (const auto& v : verts) {
     polyset->vertices.emplace_back(v.cast<double>());
   }
   polyset->indices.reserve(allTriangles.size());
+  polyset->color_indices.reserve(allTriangles.size());
   for (const auto& tri : allTriangles) {
-    polyset->indices.push_back({tri[0], tri[1], tri[2]});
+    const auto& t = tri.tri;
+    polyset->indices.push_back({t[0], t[1], t[2]});
+    polyset->color_indices.push_back(tri.mark ? 0 : 1);
   }
   polyset->setTriangular(true);
 
