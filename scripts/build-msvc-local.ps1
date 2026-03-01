@@ -364,13 +364,13 @@ if (Test-Path $msys2Path) {
     # MSYS2 provides flex, bison, ghostscript which aren't available elsewhere.
     $env:PATH = "$env:PATH;$msys2Path;$mingw64Path"
 
-    Write-Information "  Installing/updating flex, bison, and ghostscript via pacman..."
-    & C:\msys64\usr\bin\pacman.exe -S --noconfirm --needed flex bison mingw-w64-x86_64-ghostscript
+    Write-Information "  Installing/updating flex, bison, gettext, and ghostscript via pacman..."
+    & C:\msys64\usr\bin\pacman.exe -S --noconfirm --needed flex bison gettext mingw-w64-x86_64-ghostscript
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to install MSYS2 packages via pacman"
         exit 1
     }
-    Write-Information "✓ MSYS2 configured (flex, bison, and ghostscript available)"
+    Write-Information "✓ MSYS2 configured (flex, bison, gettext, and ghostscript available)"
 } else {
     Write-Warning " MSYS2 not found at $msys2Path"
     Write-Information "         You may need to install flex, bison, and ghostscript manually"
@@ -577,13 +577,17 @@ if (-not $SkipBuild) {
         New-Item -ItemType Directory -Path $BuildDir -Force | Out-Null
     }
 
-    # Locate flex and bison executables (from MSYS2) for explicit CMake variable passing
+    # Locate flex, bison, and bash executables (from MSYS2) for explicit CMake variable passing
+    # These must be resolved before MSYS2 is stripped from PATH
     $flexExe = (Get-Command flex -ErrorAction SilentlyContinue).Source
     $bisonExe = (Get-Command bison -ErrorAction SilentlyContinue).Source
+    $bashExe = (Get-Command bash -ErrorAction SilentlyContinue).Source
     if (-not $flexExe) { $flexExe = "C:\msys64\usr\bin\flex.exe" }
     if (-not $bisonExe) { $bisonExe = "C:\msys64\usr\bin\bison.exe" }
+    if (-not $bashExe) { $bashExe = "C:\msys64\usr\bin\bash.exe" }
     Write-Information "  Using flex: $flexExe"
     Write-Information "  Using bison: $bisonExe"
+    Write-Information "  Using bash: $bashExe"
 
     # Remove MSYS2 from PATH during cmake configure to prevent sh.exe from
     # mangling Windows paths (C: -> C;) in vcpkg's internal CMake invocations
@@ -595,7 +599,8 @@ if (-not $SkipBuild) {
     # First configuration: disable tests since Python isn't available yet
     Write-Information "  Initial configuration (tests disabled)..."
     & $cmakeExe --preset windows-msvc-release -DENABLE_TESTS=OFF `
-        -DFLEX_EXECUTABLE="$flexExe" -DBISON_EXECUTABLE="$bisonExe"
+        -DFLEX_EXECUTABLE="$flexExe" -DBISON_EXECUTABLE="$bisonExe" `
+        -DSHELL_EXE="$bashExe"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "CMake configuration failed"
         exit 1
@@ -628,6 +633,7 @@ if (-not $SkipBuild) {
             & $cmakeExe --preset windows-msvc-release `
                 -DENABLE_TESTS=ON `
                 -DFLEX_EXECUTABLE="$flexExe" -DBISON_EXECUTABLE="$bisonExe" `
+                -DSHELL_EXE="$bashExe" `
                 -DPython3_ROOT_DIR="$vcpkgPythonTools" `
                 -DPython3_EXECUTABLE="$pythonExe"
             if ($LASTEXITCODE -ne 0) {

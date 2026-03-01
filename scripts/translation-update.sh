@@ -118,11 +118,11 @@ GETTEXT_PATH=""
 
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
-CURDIR="`python3 -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR'), '$TOPDIR'))"`"
 
 cd "$TOPDIR" || exit 1
 
 if [ -z ${1+x} ]; then
+  CURDIR="`python3 -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR'), '$TOPDIR'))"`"
   echo "Generating POTFILES..."
   BUILDDIR=$(
 	find "$CURDIR" -name ui_MainWindow.h \
