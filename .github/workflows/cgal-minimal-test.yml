@@ -92,7 +92,6 @@ jobs:
           key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-${{ hashFiles('vcpkg-configuration.json', '.git/modules/vcpkg/HEAD') }}
           restore-keys: |
             vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-
-            vcpkg-${{ runner.os }}-
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
