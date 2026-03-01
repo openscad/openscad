@@ -182,6 +182,11 @@ jobs:
           restore-keys: |
             vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-
 
+      - name: Read vcpkg baseline from vcpkg.json
+        id: vcpkg-baseline
+        run: echo "commit-id=$(jq -r '.["builtin-baseline"]' vcpkg.json)" >> "$GITHUB_OUTPUT"
+        shell: bash
+
       - name: Create vcpkg binary cache directory
         run: mkdir -p ${{ github.workspace }}/vcpkg-cache
         shell: bash
@@ -190,7 +195,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-          vcpkgGitCommitId: '62159a45e18f3a9ac0548628dcaf74fcb60c6ff9'
+          vcpkgGitCommitId: '${{ steps.vcpkg-baseline.outputs.commit-id }}'
           vcpkgJsonGlob: '**/vcpkg.json'
           runVcpkgInstall: false
         env:
