@@ -31,6 +31,17 @@ struct IndexedPolyMesh {
   std::vector<std::vector<IndexedFace>> polygons;
 };
 
+// Marked geometry for Nef3 to PolySet color support
+struct MarkedIndexedFaces {
+  std::vector<IndexedFace> faces;
+  bool mark;
+};
+
+struct MarkedIndexedTriangle {
+  IndexedTriangle tri;
+  bool mark;
+};
+
 namespace GeometryUtils {
 
 bool tessellatePolygon(const Polygon& polygon, Polygons& triangles, const Vector3f *normal = nullptr);
@@ -39,8 +50,8 @@ bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
                                 std::vector<IndexedTriangle>& triangles,
                                 const Vector3f *normal = nullptr);
 
-int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>>& polygons);
-int findUnconnectedEdges(const std::vector<IndexedTriangle>& triangles);
+int findUnconnectedEdges(const std::vector<MarkedIndexedFaces>& polygons);
+int findUnconnectedEdges(const std::vector<MarkedIndexedTriangle>& triangles);
 
 Transform3d getResizeTransform(const BoundingBox& bbox, const Vector3d& newsize,
                                const Eigen::Matrix<bool, 3, 1>& autosize);
