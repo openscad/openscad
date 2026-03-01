@@ -231,7 +231,6 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible);
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
