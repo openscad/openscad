@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "openscad",
   "version-string": "1.0.0",
-  "builtin-baseline": "74e6536215718009aae747d86d84b78376bf9e09",
+  "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9",
   "dependencies": [
     "boost-regex",
     "boost-program-options",
