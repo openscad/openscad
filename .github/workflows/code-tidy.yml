@@ -80,7 +80,7 @@ jobs:
         cp OpenSCAD_clang-tidy.summary ${BASE_DIR}/${{ github.sha }}.summary
 
     - name: Upload clang-tidy Results
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: clang-tidy Results
         path: |

@@ -48,7 +48,7 @@ jobs:
       # Finally coverage reports what code paths got executed.
       run: ./scripts/github-ci.sh test test_examples test coverage
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }} ${{ matrix.qt }})
@@ -56,7 +56,7 @@ jobs:
           b/Testing/Temporary/*_report.html
           b/Testing/Temporary/LastTest.log
     - name: Upload Code Coverage Report
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: Code Coverage Report (${{ matrix.os }} ${{ matrix.qt }})
         path: c/coverage*.html
