@@ -169,26 +169,9 @@ jobs:
           version: '24.2.3'
           build-type: 'release-msvc'
 
-      - name: Restore vcpkg binary cache
-        id: vcpkg-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ${{ github.workspace }}/vcpkg
-            ~/.cache/vcpkg
-            ~/AppData/Local/vcpkg
-            ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-${{ hashFiles('vcpkg-configuration.json', '.git/modules/vcpkg/HEAD') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-
-
       - name: Read vcpkg baseline from vcpkg.json
         id: vcpkg-baseline
         run: echo "commit-id=$(jq -r '.["builtin-baseline"]' vcpkg.json)" >> "$GITHUB_OUTPUT"
-        shell: bash
-
-      - name: Create vcpkg binary cache directory
-        run: mkdir -p ${{ github.workspace }}/vcpkg-cache
         shell: bash
 
       - name: Setup vcpkg
@@ -198,102 +181,31 @@ jobs:
           vcpkgGitCommitId: '${{ steps.vcpkg-baseline.outputs.commit-id }}'
           vcpkgJsonGlob: '**/vcpkg.json'
           runVcpkgInstall: false
-        env:
-          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
 
-      - name: Install vcpkg dependencies
-        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
-        shell: cmd
-        run: |
-          echo ==============================================================
-          echo Installing dependencies from vcpkg.json
-          echo ==============================================================
-          echo Start time: %TIME%
-          echo.
-          echo Manifest file contents:
-          type vcpkg.json
-          echo.
-          "${{ github.workspace }}\vcpkg\vcpkg.exe" install --triplet x64-windows
-          echo.
-          echo End time: %TIME%
-          echo.
-          echo Installed packages:
-          "${{ github.workspace }}\vcpkg\vcpkg.exe" list
-          echo ==============================================================
-        env:
-          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
-
-      - name: Cleanup vcpkg to reduce cache size
-        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          echo "Cleaning up vcpkg directories to reduce cache size..."
-          CLEANED=0
-          if [ -d "${{ github.workspace }}/vcpkg/buildtrees" ]; then
-            echo "  Removing buildtrees..."
-            rm -rf "${{ github.workspace }}/vcpkg/buildtrees"
-            CLEANED=1
-          else
-            echo "  buildtrees: [does not exist, skipping]"
-          fi
-          if [ -d "${{ github.workspace }}/vcpkg/downloads" ]; then
-            echo "  Removing downloads..."
-            rm -rf "${{ github.workspace }}/vcpkg/downloads"
-            CLEANED=1
-          else
-            echo "  downloads: [does not exist, skipping]"
-          fi
-          if [ -d "${{ github.workspace }}/vcpkg/packages" ]; then
-            echo "  Removing packages..."
-            rm -rf "${{ github.workspace }}/vcpkg/packages"
-            CLEANED=1
-          else
-            echo "  packages: [does not exist, skipping]"
-          fi
-          if [ -d "${{ github.workspace }}/vcpkg-cache/packages" ]; then
-            echo "  Removing cached packages directory copy..."
-            rm -rf "${{ github.workspace }}/vcpkg-cache/packages"
-            CLEANED=1
-          fi
-          if [ $CLEANED -eq 1 ]; then
-            echo "Cleanup complete - directories removed"
-          else
-            echo "Cleanup complete - no directories to remove"
-          fi
-
-      - name: Save vcpkg binary cache
-        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+      - name: Restore vcpkg installed cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
-          # Caches vcpkg tool + installed packages, plus vcpkg-cache as a binary cache fallback.
-          # CMake is configured with VCPKG_INSTALLED_DIR pointing to vcpkg/installed/ so it
-          # reuses packages directly from the cache without rebuilding.
           path: |
-            ${{ github.workspace }}/vcpkg
-            ~/.cache/vcpkg
-            ~/AppData/Local/vcpkg
-            ${{ github.workspace }}/vcpkg-cache
-          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
+            ${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed
+          key: vcpkg-installed-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-${{ hashFiles('vcpkg-configuration.json', '.git/modules/vcpkg/HEAD') }}
+          restore-keys: |
+            vcpkg-installed-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-
 
       - name: Configure CMake (initial - tests disabled)
         shell: bash
         run: |
-          cmake --preset windows-msvc-release \
-            -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg/installed" \
-            -DENABLE_TESTS=OFF
-        env:
-          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+          cmake --preset windows-msvc-release -DENABLE_TESTS=OFF
 
       - name: Reconfigure CMake with vcpkg Python for tests
         shell: bash
         run: |
-          vcpkg_python_dir="${{ github.workspace }}/vcpkg/installed/x64-windows/tools/python3"
+          vcpkg_python_dir="${{ github.workspace }}/build/windows-msvc-release/vcpkg_installed/x64-windows/tools/python3"
           if [ -f "$vcpkg_python_dir/python.exe" ]; then
             echo "Found vcpkg Python at: $vcpkg_python_dir/python.exe"
             python_version=$("$vcpkg_python_dir/python.exe" --version)
             echo "vcpkg Python version: $python_version"
             cmake --preset windows-msvc-release \
-              -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg/installed" \
               -DENABLE_TESTS=ON \
               -DPython3_ROOT_DIR="$vcpkg_python_dir" \
               -DPython3_EXECUTABLE="$vcpkg_python_dir/python.exe"
@@ -301,30 +213,39 @@ jobs:
             echo "ERROR: vcpkg Python not found at $vcpkg_python_dir/python.exe"
             exit 1
           fi
-        env:
-          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+
+      - name: Cleanup vcpkg build artifacts before caching
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          echo "Cleaning up vcpkg build artifacts to reduce cache size..."
+          for dir in buildtrees downloads packages; do
+            if [ -d "${{ github.workspace }}/vcpkg/$dir" ]; then
+              echo "  Removing vcpkg/$dir..."
+              rm -rf "${{ github.workspace }}/vcpkg/$dir"
+            fi
+          done
+          echo "Cleanup complete"
+
+      - name: Save vcpkg installed cache
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
 
       - name: Debug - vcpkg installed state before build
         shell: bash
         run: |
-          echo "=== VCPKG_INSTALLED_DIR contents ==="
-          vcpkg_installed="${{ github.workspace }}/vcpkg/installed/x64-windows"
+          echo "=== vcpkg_installed contents (build dir) ==="
+          vcpkg_installed="${{ github.workspace }}/build/windows-msvc-release/vcpkg_installed/x64-windows"
           if [ -d "$vcpkg_installed/bin" ]; then
-            echo "DLL count in vcpkg/installed/x64-windows/bin: $(ls "$vcpkg_installed/bin"/*.dll 2>/dev/null | wc -l)"
+            echo "DLL count: $(ls "$vcpkg_installed/bin"/*.dll 2>/dev/null | wc -l)"
             echo "Sample DLLs:"
             ls "$vcpkg_installed/bin"/*.dll 2>/dev/null | head -20
           else
             echo "WARNING: $vcpkg_installed/bin does NOT exist"
-          fi
-          echo ""
-          echo "=== Default vcpkg_installed (build dir) ==="
-          default_installed="${{ github.workspace }}/build/windows-msvc-release/vcpkg_installed/x64-windows"
-          if [ -d "$default_installed/bin" ]; then
-            echo "DLL count in build/.../vcpkg_installed/x64-windows/bin: $(ls "$default_installed/bin"/*.dll 2>/dev/null | wc -l)"
-            echo "Sample DLLs:"
-            ls "$default_installed/bin"/*.dll 2>/dev/null | head -20
-          else
-            echo "WARNING: $default_installed/bin does NOT exist"
           fi
           echo ""
           echo "=== Searching for mpfr*.dll anywhere under workspace ==="
@@ -334,8 +255,6 @@ jobs:
         uses: lukka/run-cmake@v10
         with:
           buildPreset: 'windows-msvc-release'
-        env:
-          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
 
       - name: Debug - post-build DLL and dependency state
         if: always()
@@ -359,7 +278,7 @@ jobs:
           release_dir="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/Release"
           qt_bin_dir="${{ env.QT_ROOT_DIR }}/bin"
           qt_lib_dir="${{ env.QT_ROOT_DIR }}/lib"
-          vcpkg_bin_dir="${{ github.workspace }}/vcpkg/installed/x64-windows/bin"
+          vcpkg_bin_dir="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/bin"
 
           mkdir -p "$release_dir"
 
