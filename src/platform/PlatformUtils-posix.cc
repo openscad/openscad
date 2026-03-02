@@ -133,13 +133,13 @@ unsigned long PlatformUtils::stackLimit()
       return STACK_LIMIT_DEFAULT;
     }
     if (limit.rlim_cur > STACK_BUFFER_SIZE) {
-      return limit.rlim_cur - STACK_BUFFER_SIZE;
+      return static_cast<unsigned long>(limit.rlim_cur - STACK_BUFFER_SIZE);
     }
     if (limit.rlim_max == RLIM_INFINITY) {
       return STACK_LIMIT_DEFAULT;
     }
     if (limit.rlim_max > STACK_BUFFER_SIZE) {
-      return limit.rlim_max - STACK_BUFFER_SIZE;
+      return static_cast<unsigned long>(limit.rlim_max - STACK_BUFFER_SIZE);
     }
   }
 #endif  // __EMSCRIPTEN__

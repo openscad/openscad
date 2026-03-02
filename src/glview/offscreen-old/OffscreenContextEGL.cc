@@ -37,7 +37,6 @@
 #include <cassert>
 #include <sstream>
 #include <string>
-#include <sys/utsname.h>  // for uname
 
 #include "glview/OffscreenContext.h"
 

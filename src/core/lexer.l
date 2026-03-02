@@ -42,6 +42,10 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#ifdef _MSC_VER
+#include <io.h>
+#define isatty _isatty
+#endif
 std::string stringcontents;
 int lexerget_lineno(void);
 extern const char *parser_input_buffer;
@@ -85,7 +89,7 @@ extern YYLTYPE parserlloc;
             (loc).last_line++; \
             (loc).last_column = 1; \
         } \
-    } 
+    }
 
 #define YY_USER_ACTION parserlloc.last_column += yyleng;
 
@@ -195,7 +199,8 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }
-[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
+[\n]                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
+[\r]                    ;
 
 \/\/                    { BEGIN(cond_lcomment); }
 <cond_lcomment>{
@@ -390,7 +395,7 @@ void includefile(const Location& loc)
   }
 
   loc_stack.push_back(parserlloc);
-  LOCATION_INIT(parserlloc);  
+  LOCATION_INIT(parserlloc);
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
   filename.clear();

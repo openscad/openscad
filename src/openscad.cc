@@ -489,10 +489,16 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       // distinguish from CGAL
 
       constexpr bool allownef = true;
+      LOG(message_group::NONE, "DEBUG: Calling evaluateGeometry");
       root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
+      LOG(message_group::NONE, "DEBUG: evaluateGeometry completed, result is %1$s",
+          root_geom ? "valid" : "null");
       if (!root_geom) root_geom = std::make_shared<PolySet>(3);
+      LOG(message_group::NONE, "DEBUG: root_geom dimension: %1$d", root_geom->getDimension());
       if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC && root_geom->getDimension() == 3) {
+        LOG(message_group::NONE, "DEBUG: Converting to backend-specific geometry");
         if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(root_geom)) {
+          LOG(message_group::NONE, "DEBUG: Converting GeometryList");
           auto flatlist = geomlist->flatten();
           for (auto& child : flatlist) {
             if (child.second->getDimension() == 3) {
@@ -501,6 +507,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           }
           root_geom = std::make_shared<GeometryList>(flatlist);
         } else {
+          LOG(message_group::NONE, "DEBUG: Converting single geometry");
           root_geom = GeometryUtils::getBackendSpecificGeometry(root_geom);
           assert(root_geom != nullptr);
         }
@@ -512,23 +519,33 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
+    LOG(message_group::NONE, "DEBUG: Calling checkAndExport (dim=%1$d)", dim);
     if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
     }
+    LOG(message_group::NONE, "DEBUG: checkAndExport completed");
 
     if (export_format == FileFormat::PNG) {
+      LOG(message_group::NONE, "DEBUG: Starting PNG export");
       bool success = true;
       bool const wrote = with_output(
         cmd.is_stdout, filename_str,
         [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
           if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
               cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+            LOG(message_group::NONE, "DEBUG: Calling export_png with geometry");
             success = export_png(root_geom, cmd.viewOptions, camera, stream);
+            LOG(message_group::NONE, "DEBUG: export_png completed, success=%1$s",
+                success ? "true" : "false");
           } else {
+            LOG(message_group::NONE, "DEBUG: Calling export_png with glview");
             success = export_png(*glview, stream);
+            LOG(message_group::NONE, "DEBUG: export_png (glview) completed, success=%1$s",
+                success ? "true" : "false");
           }
         },
         std::ios::out | std::ios::binary);
+      LOG(message_group::NONE, "DEBUG: PNG export finished, wrote=%1$s", wrote ? "true" : "false");
       if (!success || !wrote) {
         return 1;
       }

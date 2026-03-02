@@ -1,0 +1,384 @@
+name: CGAL Minimal Test
+
+# This workflow creates a minimal CGAL test to debug crashes that occur
+# on GitHub Actions but not on local Windows 11 VMs.
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Enable tmate debugging session'
+        required: false
+        default: false
+
+jobs:
+  cgal-test:
+    name: CGAL Minimal Test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          submodules: false  # We only need vcpkg config
+
+      - name: System Information
+        shell: powershell
+        run: |
+          Write-Output "=== Windows Version ==="
+          (Get-CimInstance Win32_OperatingSystem).Caption
+          (Get-CimInstance Win32_OperatingSystem).Version
+          (Get-CimInstance Win32_OperatingSystem).BuildNumber
+          Write-Output "=== CPU Info ==="
+          $cpu = Get-CimInstance Win32_Processor
+          $cpu.Name
+          $cpu.Caption
+          $cpu.Manufacturer
+          $cpu.NumberOfCores
+          $cpu.NumberOfLogicalProcessors
+          Write-Output "=== CPU Features (from registry) ==="
+          Get-ItemProperty "HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor\0" | Select-Object ProcessorNameString, Identifier, VendorIdentifier
+          Write-Output "=== Memory ==="
+          $mem = Get-CimInstance Win32_ComputerSystem
+          "$([math]::Round($mem.TotalPhysicalMemory/1GB, 2)) GB"
+          Write-Output "=== Runner Environment ==="
+          Write-Output "RUNNER_OS: $env:RUNNER_OS"
+          Write-Output "RUNNER_ARCH: $env:RUNNER_ARCH"
+          Write-Output "ImageOS: $env:ImageOS"
+          Write-Output "ImageVersion: $env:ImageVersion"
+
+      - name: Setup Visual Studio Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Show MSVC Version
+        shell: cmd
+        run: cl.exe 2>&1 | head -3
+
+      - name: Enable Crash Dumps
+        shell: powershell
+        run: |
+          $dumpFolder = "${{ github.workspace }}\CrashDumps"
+          New-Item -ItemType Directory -Force -Path $dumpFolder
+          $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+          if (-not (Test-Path $regPath)) {
+            New-Item -Path $regPath -Force
+          }
+          Set-ItemProperty -Path $regPath -Name "DumpFolder" -Value $dumpFolder -Type ExpandString
+          Set-ItemProperty -Path $regPath -Name "DumpType" -Value 2 -Type DWord
+          Set-ItemProperty -Path $regPath -Name "DumpCount" -Value 10 -Type DWord
+          Write-Output "Crash dumps will be saved to: $dumpFolder"
+
+      - name: Debug - Setup tmate session
+        if: ${{ inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
+        with:
+          limit-access-to-actor: true
+          detached: true
+
+      - name: Restore vcpkg cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg
+            ~/.cache/vcpkg
+            ~/AppData/Local/vcpkg
+            ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-${{ hashFiles('vcpkg-configuration.json', '.git/modules/vcpkg/HEAD') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-
+
+      - name: Read vcpkg baseline from vcpkg.json
+        id: vcpkg-baseline
+        run: echo "commit-id=$(jq -r '.["builtin-baseline"]' vcpkg.json)" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: '${{ steps.vcpkg-baseline.outputs.commit-id }}'
+          vcpkgJsonGlob: '**/vcpkg.json'
+          runVcpkgInstall: false
+        env:
+          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+
+      - name: Create vcpkg-cache directory
+        run: mkdir -p ${{ github.workspace }}/vcpkg-cache
+        shell: bash
+
+      - name: Install dependencies from vcpkg.json manifest
+        shell: cmd
+        run: |
+          echo Installing dependencies from vcpkg.json manifest...
+          .\vcpkg\vcpkg.exe install --triplet x64-windows
+        env:
+          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+
+      - name: Create minimal CGAL test program
+        shell: bash
+        run: |
+          mkdir -p cgal-test
+          cat > cgal-test/CMakeLists.txt << 'EOF'
+          cmake_minimum_required(VERSION 3.16)
+          project(CGALMinimalTest)
+
+          set(CMAKE_CXX_STANDARD 17)
+          set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+          # Find CGAL
+          find_package(CGAL REQUIRED COMPONENTS Core)
+
+          # Show CGAL info
+          message(STATUS "CGAL version: ${CGAL_VERSION}")
+          message(STATUS "CGAL found at: ${CGAL_DIR}")
+
+          # Check CGAL compile options
+          if(TARGET CGAL::CGAL)
+            get_target_property(cgal_opts CGAL INTERFACE_COMPILE_OPTIONS)
+            message(STATUS "CGAL INTERFACE_COMPILE_OPTIONS: ${cgal_opts}")
+          endif()
+
+          add_executable(cgal_test main.cpp)
+          target_link_libraries(cgal_test PRIVATE CGAL::CGAL CGAL::CGAL_Core)
+
+          # Add /fp:precise to match OpenSCAD's fix
+          if(MSVC)
+            target_compile_options(cgal_test PRIVATE /fp:precise)
+            message(STATUS "Using /fp:precise for MSVC")
+          endif()
+
+          # Show actual compile flags
+          message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+          message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+          EOF
+
+          cat > cgal-test/main.cpp << 'EOF'
+          // Minimal CGAL test to reproduce crashes seen on GitHub Actions
+          // but not on local Windows 11 VMs
+
+          #include <iostream>
+          #include <vector>
+          #include <cmath>
+
+          // CGAL headers - similar to what OpenSCAD uses
+          #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+          #include <CGAL/Nef_polyhedron_3.h>
+          #include <CGAL/Polyhedron_3.h>
+          #include <CGAL/convex_hull_3.h>
+          #include <CGAL/minkowski_sum_3.h>
+          #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
+
+          typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+          typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
+          typedef CGAL::Nef_polyhedron_3<Kernel> Nef_polyhedron;
+          typedef Kernel::Point_3 Point_3;
+
+          // Create a simple tetrahedron (simplest 3D solid)
+          Polyhedron create_tetrahedron(double size) {
+              std::vector<Point_3> points;
+              points.push_back(Point_3(0, 0, 0));
+              points.push_back(Point_3(size, 0, 0));
+              points.push_back(Point_3(size/2, size*std::sqrt(3)/2, 0));
+              points.push_back(Point_3(size/2, size*std::sqrt(3)/6, size*std::sqrt(2.0/3.0)));
+
+              Polyhedron P;
+              CGAL::convex_hull_3(points.begin(), points.end(), P);
+              return P;
+          }
+
+          // Create a cube
+          Polyhedron create_cube(double size) {
+              std::vector<Point_3> points;
+              for (int x = 0; x <= 1; ++x)
+                  for (int y = 0; y <= 1; ++y)
+                      for (int z = 0; z <= 1; ++z)
+                          points.push_back(Point_3(x*size, y*size, z*size));
+
+              Polyhedron P;
+              CGAL::convex_hull_3(points.begin(), points.end(), P);
+              return P;
+          }
+
+          int main() {
+              std::cout << "=== CGAL Minimal Test ===" << std::endl;
+              std::cout << "Testing basic CGAL operations that fail on GitHub Actions..." << std::endl;
+              std::cout << std::endl;
+
+              try {
+                  // Test 1: Create simple polyhedra
+                  std::cout << "Test 1: Creating tetrahedron..." << std::flush;
+                  Polyhedron tet = create_tetrahedron(1.0);
+                  std::cout << " OK (vertices: " << tet.size_of_vertices()
+                            << ", facets: " << tet.size_of_facets() << ")" << std::endl;
+
+                  std::cout << "Test 2: Creating cube..." << std::flush;
+                  Polyhedron cube = create_cube(1.0);
+                  std::cout << " OK (vertices: " << cube.size_of_vertices()
+                            << ", facets: " << cube.size_of_facets() << ")" << std::endl;
+
+                  // Test 3: Convert to Nef polyhedron (this is where issues often occur)
+                  std::cout << "Test 3: Converting to Nef polyhedron..." << std::flush;
+                  Nef_polyhedron nef_tet(tet);
+                  std::cout << " OK" << std::endl;
+
+                  std::cout << "Test 4: Converting cube to Nef..." << std::flush;
+                  Nef_polyhedron nef_cube(cube);
+                  std::cout << " OK" << std::endl;
+
+                  // Test 5: Boolean operations (often trigger FP issues)
+                  std::cout << "Test 5: Boolean union..." << std::flush;
+                  Nef_polyhedron result = nef_tet + nef_cube;
+                  std::cout << " OK" << std::endl;
+
+                  std::cout << "Test 6: Boolean intersection..." << std::flush;
+                  result = nef_tet * nef_cube;
+                  std::cout << " OK" << std::endl;
+
+                  std::cout << "Test 7: Boolean difference..." << std::flush;
+                  result = nef_cube - nef_tet;
+                  std::cout << " OK" << std::endl;
+
+                  // Test 8: Multiple operations (stress test)
+                  std::cout << "Test 8: Multiple unions (like for-nested-tests)..." << std::flush;
+                  Nef_polyhedron combined;
+                  bool first = true;
+                  for (int i = 0; i < 5; ++i) {
+                      for (int j = 0; j < 5; ++j) {
+                          Polyhedron p = create_tetrahedron(0.5);
+                          // Note: We can't easily translate, but this tests repeated operations
+                          Nef_polyhedron n(p);
+                          if (first) {
+                              combined = n;
+                              first = false;
+                          } else {
+                              combined = combined + n;
+                          }
+                      }
+                  }
+                  std::cout << " OK" << std::endl;
+
+                  std::cout << std::endl;
+                  std::cout << "=== All tests passed! ===" << std::endl;
+                  return 0;
+
+              } catch (const std::exception& e) {
+                  std::cerr << std::endl;
+                  std::cerr << "EXCEPTION: " << e.what() << std::endl;
+                  return 1;
+              } catch (...) {
+                  std::cerr << std::endl;
+                  std::cerr << "UNKNOWN EXCEPTION" << std::endl;
+                  return 2;
+              }
+          }
+          EOF
+
+          echo "Created minimal CGAL test program"
+
+      - name: Configure minimal CGAL test
+        shell: cmd
+        run: |
+          cd cgal-test
+          cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg_installed" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build minimal CGAL test
+        shell: cmd
+        run: |
+          cd cgal-test
+          cmake --build build --config Release --verbose
+
+      - name: Run minimal CGAL test
+        shell: cmd
+        run: |
+          cd cgal-test\build\Release
+          cgal_test.exe
+
+      - name: Build minimal OpenSCAD with debug logging
+        shell: cmd
+        run: |
+          mkdir openscad-test-build
+          cd openscad-test-build
+          cmake -B . -S .. -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg_installed" -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF -DENABLE_CGAL=ON
+          cmake --build . --config Release --target openscad --verbose
+        continue-on-error: true
+
+      - name: Create test OpenSCAD files
+        shell: bash
+        run: |
+          mkdir -p scad-tests
+
+          # Create for-nested-tests.scad (simplified version)
+          cat > scad-tests/for-nested-simple.scad << 'EOF'
+          // Simplified version of for-nested-tests
+          for(x=[0:1], y=[0:0.5:1], z=[0,2]) {
+            translate(10*[x,y,z]) sphere(r=3);
+          }
+          EOF
+
+          # Create exact copy of for-nested-tests.scad
+          cat > scad-tests/for-nested-tests.scad << 'EOF'
+          for(x=[0:3], y=[0:0.5:1], z=[0,2,3]) {
+            translate(10*[x,y,z]) sphere(r=3);
+          }
+          EOF
+
+          # Create a very simple test
+          cat > scad-tests/simple-sphere.scad << 'EOF'
+          sphere(5);
+          EOF
+
+          echo "Created test files"
+
+      - name: Test 1 - Simple sphere
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo Running simple sphere test...
+          openscad-test-build\Release\openscad.exe scad-tests\simple-sphere.scad -o scad-tests\simple-sphere.stl --render
+          echo Exit code: %ERRORLEVEL%
+
+      - name: Test 2 - Simplified for-nested test
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo Running simplified for-nested test...
+          openscad-test-build\Release\openscad.exe scad-tests\for-nested-simple.scad -o scad-tests\for-nested-simple.stl --render
+          echo Exit code: %ERRORLEVEL%
+
+      - name: Test 3 - Full for-nested test
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo Running full for-nested test...
+          openscad-test-build\Release\openscad.exe scad-tests\for-nested-tests.scad -o scad-tests\for-nested-tests.stl --render
+          echo Exit code: %ERRORLEVEL%
+
+      - name: Upload test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openscad-test-outputs
+          path: scad-tests/
+          if-no-files-found: ignore
+
+      - name: Upload crash dumps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cgal-test-crash-dumps
+          path: ${{ github.workspace }}/CrashDumps/
+          if-no-files-found: ignore
+
+      - name: Upload test binary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cgal-test-binary
+          path: cgal-test/build/Release/cgal_test.exe
+          if-no-files-found: warn
