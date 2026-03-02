@@ -304,12 +304,51 @@ jobs:
         env:
           VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
 
+      - name: Debug - vcpkg installed state before build
+        shell: bash
+        run: |
+          echo "=== VCPKG_INSTALLED_DIR contents ==="
+          vcpkg_installed="${{ github.workspace }}/vcpkg/installed/x64-windows"
+          if [ -d "$vcpkg_installed/bin" ]; then
+            echo "DLL count in vcpkg/installed/x64-windows/bin: $(ls "$vcpkg_installed/bin"/*.dll 2>/dev/null | wc -l)"
+            echo "Sample DLLs:"
+            ls "$vcpkg_installed/bin"/*.dll 2>/dev/null | head -20
+          else
+            echo "WARNING: $vcpkg_installed/bin does NOT exist"
+          fi
+          echo ""
+          echo "=== Default vcpkg_installed (build dir) ==="
+          default_installed="${{ github.workspace }}/build/windows-msvc-release/vcpkg_installed/x64-windows"
+          if [ -d "$default_installed/bin" ]; then
+            echo "DLL count in build/.../vcpkg_installed/x64-windows/bin: $(ls "$default_installed/bin"/*.dll 2>/dev/null | wc -l)"
+            echo "Sample DLLs:"
+            ls "$default_installed/bin"/*.dll 2>/dev/null | head -20
+          else
+            echo "WARNING: $default_installed/bin does NOT exist"
+          fi
+          echo ""
+          echo "=== Searching for mpfr*.dll anywhere under workspace ==="
+          find "${{ github.workspace }}" -name "mpfr*.dll" -type f 2>/dev/null || echo "No mpfr DLL found"
+
       - name: Build with CMake
         uses: lukka/run-cmake@v10
         with:
           buildPreset: 'windows-msvc-release'
         env:
           VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+
+      - name: Debug - post-build DLL and dependency state
+        if: always()
+        shell: cmd
+        run: |
+          echo === DLLs in Release directory ===
+          dir /B "${{ github.workspace }}\build\windows-msvc-release\Release\*.dll" 2>nul | find /c ".dll"
+          echo.
+          echo === OpenSCADUnitTests.exe dependencies ===
+          dumpbin /dependents "${{ github.workspace }}\build\windows-msvc-release\Release\OpenSCADUnitTests.exe" 2>nul || echo "OpenSCADUnitTests.exe not found or dumpbin failed"
+          echo.
+          echo === Searching for mpfr*.dll under workspace ===
+          dir /S /B "${{ github.workspace }}\mpfr*.dll" 2>nul || echo "No mpfr DLL found"
 
       - name: Copy Qt and dependency DLLs next to executables
         shell: bash
