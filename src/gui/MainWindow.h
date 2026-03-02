@@ -115,7 +115,8 @@ public:
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
-  QLabel *versionLabel;
+  QLabel *versionLabel{nullptr};
+  QLabel *languageLabel{nullptr};
 
   Measurement::Measurement meas;
 
@@ -236,6 +237,8 @@ private:
   void show_examples();
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
+  void updateLanguageLabel();
+  void showLanguageMenu();
   void activateDock(Dock *);
   Dock *findVisibleDockToActivate(int offset) const;
   Dock *getNextDockFromSender(QObject *sender);
@@ -380,6 +383,12 @@ public:
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
   std::unordered_map<FileFormat, QAction *> exportMap;
+  void onLanguageActiveChanged(int language)
+  {
+    currentLanguage = language;
+    updateLanguageLabel();
+  }
+  int currentLanguage;
 
 public slots:
   void actionReloadRenderPreview();

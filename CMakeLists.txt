@@ -1011,6 +1011,7 @@ set(CORE_SOURCES
   src/core/Expression.cc
   src/core/FreetypeRenderer.cc
   src/core/FunctionType.cc
+  src/genlang/genlang.cc
   src/core/GroupModule.cc
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc

@@ -24,6 +24,9 @@
     <file>icons/chokusen-dark/svg/chokusen-export-svg.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-export-wrl.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-file.svg</file>
+    <file>icons/chokusen-dark/svg/chokusen-filetype-autodetect.svg</file>
+    <file>icons/chokusen-dark/svg/chokusen-filetype-python.svg</file>
+    <file>icons/chokusen-dark/svg/chokusen-filetype-scad.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-folder.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-indent.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-loading.svg</file>
