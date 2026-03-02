@@ -265,13 +265,9 @@ jobs:
         if: steps.vcpkg-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          # NOTE: This caches both vcpkg/installed AND vcpkg-cache, which is redundant.
-          # Binary cache (vcpkg-cache) contains pre-built packages that can restore vcpkg/installed.
-          # This double-caching increases cache size significantly.
-          #
-          # TODO: Consider switching to one of these strategies:
-          # 1. Cache only vcpkg-cache + vcpkg tools (smaller, relies on binary cache restore)
-          # 2. Cache only vcpkg/installed (no binary cache, simpler but larger)
+          # Caches vcpkg tool + installed packages, plus vcpkg-cache as a binary cache fallback.
+          # CMake is configured with VCPKG_INSTALLED_DIR pointing to vcpkg/installed/ so it
+          # reuses packages directly from the cache without rebuilding.
           path: |
             ${{ github.workspace }}/vcpkg
             ~/.cache/vcpkg
@@ -282,19 +278,22 @@ jobs:
       - name: Configure CMake (initial - tests disabled)
         shell: bash
         run: |
-          cmake --preset windows-msvc-release -DENABLE_TESTS=OFF
+          cmake --preset windows-msvc-release \
+            -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg/installed" \
+            -DENABLE_TESTS=OFF
         env:
           VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
 
       - name: Reconfigure CMake with vcpkg Python for tests
         shell: bash
         run: |
-          vcpkg_python_dir="${{ github.workspace }}/build/windows-msvc-release/vcpkg_installed/x64-windows/tools/python3"
+          vcpkg_python_dir="${{ github.workspace }}/vcpkg/installed/x64-windows/tools/python3"
           if [ -f "$vcpkg_python_dir/python.exe" ]; then
             echo "Found vcpkg Python at: $vcpkg_python_dir/python.exe"
             python_version=$("$vcpkg_python_dir/python.exe" --version)
             echo "vcpkg Python version: $python_version"
             cmake --preset windows-msvc-release \
+              -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg/installed" \
               -DENABLE_TESTS=ON \
               -DPython3_ROOT_DIR="$vcpkg_python_dir" \
               -DPython3_EXECUTABLE="$vcpkg_python_dir/python.exe"
@@ -321,7 +320,7 @@ jobs:
           release_dir="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/Release"
           qt_bin_dir="${{ env.QT_ROOT_DIR }}/bin"
           qt_lib_dir="${{ env.QT_ROOT_DIR }}/lib"
-          vcpkg_bin_dir="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/bin"
+          vcpkg_bin_dir="${{ github.workspace }}/vcpkg/installed/x64-windows/bin"
 
           mkdir -p "$release_dir"
 
