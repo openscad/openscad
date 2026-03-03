@@ -16,6 +16,9 @@ jobs:
     permissions:
       actions: write
       contents: read
+    env:
+      GALLIUM_DRIVER: llvmpipe
+      LIBGL_ALWAYS_SOFTWARE: '1'
     strategy:
       fail-fast: false
       matrix:
