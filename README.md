@@ -54,11 +54,20 @@ design approach you might want to try
 PythonSCAD is a direct fork of OpenSCAD and thus includes all
 functionality from OpenSCAD and it is closely kept in sync with it's
 upstream project.
+```scad
+cylinder(h = 30, r = 8);
+```
 
 This section should help you decide whether OpenSCAD or PythonSCAD is
 better suited for your needs.
 
 ## Intentional language limitations of OpenSCAD
+```scad
+union() {
+    cylinder(h = 30, r = 8);
+    sphere(20);
+}
+```
 
 OpenSCAD has some intentional limitations:
 
@@ -66,6 +75,12 @@ OpenSCAD has some intentional limitations:
 - file i/o is limited (you can include other OpenSCAD scripts or
   import graphics files for example)
 - the number of iterations is limited
+```scad
+union() {
+    cylinder(h = 30, r = 8);
+    translate([0, 0, 40]) sphere(20);
+}
+```
 
 The intention is to prevent scripts to do bad things like reading
 arbitrary data from the filesystem, overwriting user files, leaking
