@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/pythonscad/pythonscad/compare/v0.15.1...v0.16.0) (2026-02-28)
+
+
+### Features
+
+* **python:** add .size, .position, and .bbox properties for 2D objects ([#474](https://github.com/pythonscad/pythonscad/issues/474)) ([68ecbde](https://github.com/pythonscad/pythonscad/commit/68ecbdefae61abd113ca1be48567d811131bf7f7))
+
 ## [0.15.1](https://github.com/pythonscad/pythonscad/compare/v0.15.0...v0.15.1) (2026-02-25)
 
 
