@@ -735,21 +735,24 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
 
 void register_builtin_primitives()
 {
-  Builtins::init("cube", new BuiltinModule(builtin_cube),
+  static BuiltinModule mod_cube(builtin_cube);	
+  Builtins::init("cube", &mod_cube,
                  {
                    "cube(size)",
                    "cube([width, depth, height])",
                    "cube([width, depth, height], center = true)",
                  });
 
-  Builtins::init("sphere", new BuiltinModule(builtin_sphere),
+  static BuiltinModule mod_sphere(builtin_sphere);	
+  Builtins::init("sphere", &mod_sphere, 
                  {
                    "sphere(radius)",
                    "sphere(r = radius)",
                    "sphere(d = diameter)",
                  });
 
-  Builtins::init("cylinder", new BuiltinModule(builtin_cylinder),
+  static BuiltinModule mod_cylinder(builtin_cylinder);	
+  Builtins::init("cylinder", &mod_cylinder,
                  {
                    "cylinder(h, r1, r2)",
                    "cylinder(h = height, r = radius, center = true)",
@@ -758,25 +761,29 @@ void register_builtin_primitives()
                    "cylinder(h = height, d1 = bottom, d2 = top, center = true)",
                  });
 
-  Builtins::init("polyhedron", new BuiltinModule(builtin_polyhedron),
+  static BuiltinModule mod_polyhedron(builtin_polyhedron);	
+  Builtins::init("polyhedron", &mod_polyhedron,
                  {
                    "polyhedron(points, faces, convexity)",
                  });
 
-  Builtins::init("square", new BuiltinModule(builtin_square),
+  static BuiltinModule mod_square(builtin_square);	
+  Builtins::init("square", &mod_square,
                  {
                    "square(size, center = true)",
                    "square([width,height], center = true)",
                  });
 
-  Builtins::init("circle", new BuiltinModule(builtin_circle),
+  static BuiltinModule mod_circle(builtin_circle);	
+  Builtins::init("circle", &mod_circle, 
                  {
                    "circle(radius)",
                    "circle(r = radius)",
                    "circle(d = diameter)",
                  });
 
-  Builtins::init("polygon", new BuiltinModule(builtin_polygon),
+  static BuiltinModule mod_polygon(builtin_polygon);	
+  Builtins::init("polygon", &mod_polygon,
                  {
                    "polygon([points])",
                    "polygon([points], [paths])",

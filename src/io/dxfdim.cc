@@ -250,12 +250,14 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 
 void initialize_builtin_dxf_dim()
 {
-  Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim),
+  static BuiltinFunction func_dxf_dim(builtin_dxf_dim);	
+  Builtins::init("dxf_dim", &func_dxf_dim,
                  {
                    "dxf_dim()",
                  });
 
-  Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross),
+  static BuiltinFunction func_dxf_cross(builtin_dxf_cross);	
+  Builtins::init("dxf_cross", &func_dxf_cross,
                  {
                    "dxf_cross()",
                  });

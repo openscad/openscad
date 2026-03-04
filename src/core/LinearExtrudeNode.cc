@@ -150,7 +150,8 @@ std::string LinearExtrudeNode::toString() const
 
 void register_builtin_linear_extrude()
 {
-  Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
+  static BuiltinModule mod_linear_extrude(builtin_linear_extrude);	
+  Builtins::init("linear_extrude", &mod_linear_extrude,
                  {
                    "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, "
                    "[slices, segments, v])",

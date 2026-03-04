@@ -91,7 +91,8 @@ std::string OffsetNode::toString() const
 
 void register_builtin_offset()
 {
-  Builtins::init("offset", new BuiltinModule(builtin_offset),
+  static BuiltinModule mod_offset(builtin_offset);
+  Builtins::init("offset", &mod_offset,
                  {
                    "offset(r = number)",
                    "offset(delta = number)",

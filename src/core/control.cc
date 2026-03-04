@@ -215,7 +215,8 @@ static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst,
 
 void register_builtin_control()
 {
-  Builtins::init("children", new BuiltinModule(builtin_children),
+  static BuiltinModule mod_children(builtin_children);	
+  Builtins::init("children", &mod_children,
                  {
                    "children()",
                    "children(number)",
@@ -224,37 +225,43 @@ void register_builtin_control()
                    "children([vector])",
                  });
 
-  Builtins::init("echo", new BuiltinModule(builtin_echo),
+  static BuiltinModule mod_echo(builtin_echo);	
+  Builtins::init("echo",  &mod_echo,
                  {
                    "echo(arg, ...)",
                  });
 
-  Builtins::init("assert", new BuiltinModule(builtin_assert),
+  static BuiltinModule mod_assert(builtin_assert);	
+  Builtins::init("assert",  &mod_assert,
                  {
                    "assert(boolean)",
                    "assert(boolean, string)",
                  });
 
-  Builtins::init("for", new BuiltinModule(builtin_for),
+  static BuiltinModule mod_for(builtin_for);	
+  Builtins::init("for", &mod_for,
                  {
                    "for(iter = [start : increment : end])",
                    "for(iter = [start : end])",
                    "for(iter = [vector])",
                  });
 
-  Builtins::init("let", new BuiltinModule(builtin_let),
+  static BuiltinModule mod_let(builtin_let);	
+  Builtins::init("let", &mod_let,
                  {
                    "let(arg, ...) expression",
                  });
 
-  Builtins::init("intersection_for", new BuiltinModule(builtin_intersection_for),
+  static BuiltinModule mod_intersection_for(builtin_intersection_for);	
+  Builtins::init("intersection_for", &mod_intersection_for,
                  {
                    "intersection_for(iter = [start : increment : end])",
                    "intersection_for(iter = [start : end])",
                    "intersection_for(iter = [vector])",
                  });
 
-  Builtins::init("if", new BuiltinModule(builtin_if),
+  static BuiltinModule mod_if(builtin_if);	
+  Builtins::init("if",  &mod_if,
                  {
                    "if(boolean)",
                  });

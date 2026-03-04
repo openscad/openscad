@@ -99,7 +99,8 @@ std::string RotateExtrudeNode::toString() const
 
 void register_builtin_rotate_extrude()
 {
-  Builtins::init("rotate_extrude", new BuiltinModule(builtin_rotate_extrude),
+  static BuiltinModule mod_rotate_extrude(builtin_rotate_extrude);	
+  Builtins::init("rotate_extrude", &mod_rotate_extrude,
                  {
                    "rotate_extrude(angle = 360, convexity = 2)",
                  });

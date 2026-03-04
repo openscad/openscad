@@ -59,6 +59,7 @@ std::set<std::string> RoofNode::knownMethods = {"voronoi", "straight"};
 
 void register_builtin_roof()
 {
-  Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof),
+  static BuiltinModule mod_roof(builtin_hull,&Feature::ExperimentalRoot);	
+  Builtins::init("roof", &mod_roof,
                  {"roof(method = \"voronoi\")"});
 }
