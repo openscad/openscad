@@ -491,10 +491,12 @@ PyObject *python_fromopenscad(const Value& val)
 {
   switch (val.type()) {
   case Value::Type::UNDEFINED: Py_RETURN_NONE;
-  case Value::Type::BOOL:      if(val.toBool()) Py_RETURN_TRUE; else Py_RETURN_FALSE;
-  case Value::Type::NUMBER:    return PyFloat_FromDouble(val.toDouble());
-  case Value::Type::STRING:    return PyUnicode_FromString(val.toString().c_str());
-  case Value::Type::VECTOR:    {
+  case Value::Type::BOOL:
+    if (val.toBool()) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
+  case Value::Type::NUMBER: return PyFloat_FromDouble(val.toDouble());
+  case Value::Type::STRING: return PyUnicode_FromString(val.toString().c_str());
+  case Value::Type::VECTOR: {
     const VectorType& vec = val.toVector();
     PyObject *result = PyList_New(vec.size());
     for (size_t j = 0; j < vec.size(); j++) PyList_SetItem(result, j, python_fromopenscad(vec[j]));
@@ -1013,7 +1015,7 @@ PyObject *PyOpenSCADItemRef_get_value(PyOpenSCADItemRef *self, void *closure)
 
   std::shared_ptr<AbstractNode> parnode =
     PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self->parent), &dummydict);
-  if (self->index < 0 || self->index >= parnode->children.size()) {
+  if (self->index >= parnode->children.size()) {
     PyErr_SetString(PyExc_IndexError, "child index out of range");
     return NULL;
   }
@@ -1025,7 +1027,7 @@ int PyOpenSCADItemRef_set_value(PyOpenSCADItemRef *self, PyObject *value, void *
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> parnode =
     PyOpenSCADObjectToNode(reinterpret_cast<PyObject *>(self->parent), &dummydict);
-  if (self->index < 0 || self->index >= parnode->children.size()) {
+  if (self->index >= parnode->children.size()) {
     PyErr_SetString(PyExc_IndexError, "child index out of range");
     return -1;
   }

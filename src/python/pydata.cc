@@ -107,15 +107,20 @@ void PyDataObjectToFunction(PyObject *obj, std::string& functionpath, std::strin
 PyObject *PyDataObjectFromValue(PyTypeObject *type, double value)
 {
   PyDataObject *res;
-  double *ptr = (double *)malloc(sizeof(value));  // TODO memory leak
+  double *ptr = static_cast<double *>(malloc(sizeof(value)));
+  if (ptr == nullptr) {
+    PyErr_NoMemory();
+    return nullptr;
+  }
   *ptr = value;
   res = (PyDataObject *)type->tp_alloc(type, 0);
   if (res != NULL) {
     res->data_type = DATA_TYPE_MARKEDVALUE;
-    res->data = (void *)ptr;
+    res->data = static_cast<void *>(ptr);
     Py_XINCREF(res);
     return (PyObject *)res;
   }
+  free(ptr);
   Py_RETURN_NONE;
 }
 

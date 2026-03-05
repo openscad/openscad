@@ -40,6 +40,7 @@
 #include "PolySetBuilder.h"
 
 #include <cmath>
+#include <cstring>
 #include <sstream>
 
 #include "libfive/render/brep/dc/dc_mesher.hpp"
@@ -119,13 +120,13 @@ unsigned int hash_value(const CutFace& r)
 {
   double x = r.a + 10 * r.b + 100 * r.c + 1000 * r.d;
   unsigned int i;
-  i = *((int *)&x);
+  std::memcpy(&i, &x, sizeof(i));
   return i;
 }
 
 std::vector<CutFace> calculateEdgeFaces(const std::vector<Vector3d>& pointList,
                                         const std::vector<IndexedFace>& polygons,
-                                        std::vector<intList>& pointToFaceInds,
+                                        const std::vector<intList>& pointToFaceInds,
                                         std::vector<CutFace>& normfaces)
 {
   std::vector<CutFace> edgeFaces;
@@ -207,14 +208,15 @@ struct ProgramState {
 
 std::vector<ProgramState> programStack;
 
-int generateProgram(intList& table, std::vector<CutProgram>& program, std::vector<CutFace>& edgeFaces,
-                    const std::vector<IndexedFace>& faces, intList& validFaces)
+int generateProgram(const intList& table, std::vector<CutProgram>& program,
+                    const std::vector<CutFace>& edgeFaces, const std::vector<IndexedFace>& faces,
+                    const intList& validFaces)
 {
   std::vector<int> posFaces, negFaces;
   int i, j, v;
   CutProgram cp;
   // find out , which row has most equal balance between + and -
-  int rate, ratebest = -1, edgebest = -1;
+  int ratebest = -1, edgebest = -1;
   int edgeFaceLen = edgeFaces.size();
   int validFacesLen = validFaces.size();
   int facesLen = faces.size();
@@ -228,7 +230,7 @@ int generateProgram(intList& table, std::vector<CutProgram>& program, std::vecto
       if (v == 1) poscount++;
       if (v == -1) negcount++;
     }
-    rate = poscount < negcount ? poscount : negcount;
+    int rate = poscount < negcount ? poscount : negcount;
     if (rate > ratebest) {
       ratebest = rate;
       edgebest = i;
@@ -244,14 +246,14 @@ int generateProgram(intList& table, std::vector<CutProgram>& program, std::vecto
   cp.d = edgeFaces[edgebest].d;
 
   // split into positive and negative branch
-  for (int i = 0; i < validFaces.size(); i++) {
-    switch (table[edgebest * facesLen + validFaces[i]]) {
-    case 1: posFaces.push_back(validFaces[i]); break;
+  for (size_t fi = 0; fi < validFaces.size(); fi++) {
+    switch (table[edgebest * facesLen + validFaces[fi]]) {
+    case 1: posFaces.push_back(validFaces[fi]); break;
     case 0:
-      posFaces.push_back(validFaces[i]);
-      negFaces.push_back(validFaces[i]);
+      posFaces.push_back(validFaces[fi]);
+      negFaces.push_back(validFaces[fi]);
       break;
-    case -1: negFaces.push_back(validFaces[i]); break;
+    case -1: negFaces.push_back(validFaces[fi]); break;
     }
   }
 
@@ -310,8 +312,8 @@ int generateProgram(intList& table, std::vector<CutProgram>& program, std::vecto
   return startind;
 }
 
-int generateProgramFlat(intList& table, std::vector<CutProgram>& program,
-                        std::vector<CutFace>& edgeFaces, const std::vector<IndexedFace>& faces,
+int generateProgramFlat(const intList& table, std::vector<CutProgram>& program,
+                        const std::vector<CutFace>& edgeFaces, const std::vector<IndexedFace>& faces,
                         std::vector<ProgramState>& stack)
 {
   printf("flat\n");
@@ -329,14 +331,13 @@ int generateProgramFlat(intList& table, std::vector<CutProgram>& program,
   return 0;
 }
 
-double evaluateProgram(std::vector<CutProgram>& program, int ind, std::vector<CutFace>& normFaces,
+double evaluateProgram(std::vector<CutProgram>& program, int ind, const std::vector<CutFace>& normFaces,
                        double x, double y, double z)
 {
-  double e;
   int nextind;
   while (1) {
-    CutProgram& prg = program[ind];
-    e = prg.a * x + prg.b * y + prg.c * z + prg.d;
+    const CutProgram& prg = program[ind];
+    double e = prg.a * x + prg.b * y + prg.c * z + prg.d;
     if (e >= 0) nextind = prg.posbranch;
     else nextind = prg.negbranch;
     if (nextind < 0) {
@@ -426,7 +427,7 @@ PyObject *ifrep(const std::shared_ptr<const PolySet>& ps)
   std::vector<int> table;                     // x(0) dimenstion faces y(1) dimenions edgefas
   for (int i = 0; i < edgeFaces.size(); i++)  // create table
   {
-    CutFace& ef = edgeFaces[i];
+    const CutFace& ef = edgeFaces[i];
     for (int j = 0; j < ps->indices.size(); j++) {
       const IndexedFace& poly = ps->indices[j];
       int poscount = 0, negcount = 0;
@@ -449,8 +450,8 @@ PyObject *ifrep(const std::shared_ptr<const PolySet>& ps)
   state.resultind = 0x80000000;
   programStack.push_back(state);  // initially all the work
   std::vector<CutProgram> program;
-  int startind = generateProgramFlat(table, program, edgeFaces, ps->indices,
-                                     programStack);  // create recursive program
+  generateProgramFlat(table, program, edgeFaces, ps->indices,
+                      programStack);  // create recursive program
   for (int i = 0; i < program.size(); i++) {
     printf("%d\t%.3f\t%.3f\t%.3f\t%.3f\tP:%d\tN:%d\n", i, program[i].a, program[i].b, program[i].c,
            program[i].d, program[i].posbranch, program[i].negbranch);

@@ -69,14 +69,14 @@ protected:
 class FrepNode : public LeafNode
 {
 public:
-  FrepNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  explicit FrepNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "sdf"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 #ifdef ENABLE_PYTHON
-  PyObject *expression;
+  PyObject *expression = nullptr;
 #endif
-  double x1, y1, z1;
-  double x2, y2, z2;
-  double res;
+  double x1 = 0, y1 = 0, z1 = 0;
+  double x2 = 0, y2 = 0, z2 = 0;
+  double res = 0;
 };
