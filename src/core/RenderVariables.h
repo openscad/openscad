@@ -1,3 +1,4 @@
+#pragma once
 #include "glview/Camera.h"
 class BuiltinContext;
 template <typename T>

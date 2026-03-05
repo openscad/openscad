@@ -233,7 +233,6 @@ int curl_download(const std::string& url, const std::string& path)
 }
 #endif  // ifdef ENABLE_PYTHON
 
-
 // Global application state
 unsigned int GuiLocker::guiLocked = 0;
 
@@ -322,7 +321,7 @@ void MainWindow::addMenuItemCB(QString callback)
   if (content.size() == 0) return;
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-  initPython(binDir, "", 0.0);
+  initPython(binDir, "", nullptr);
   evaluatePython(content);
   evaluatePython(cbstr);
   finishPython();
@@ -397,7 +396,7 @@ void MainWindow::customSetup(void)
   connect(this->addmenu_mapper, SIGNAL(mapped(QString)), this, SLOT(addMenuItemCB(QString)));
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-  initPython(binDir, "", 0.0);
+  initPython(binDir, "", nullptr);
   evaluatePython(content);
   addmenuitem_this = this;
   evaluatePython("setup()");
@@ -2017,7 +2016,14 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   } else if (editor->language == LANG_PYTHON) {
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-    initPython(venv, fnameba.constData(), this->animateWidget->getAnimTval());
+
+    const RenderVariables r = {
+      .preview = this->isPreview,
+      .time = this->animateWidget->getAnimTval(),
+      .camera = qglview->cam,
+    };
+
+    initPython(venv, fnameba.constData(), &r);
     this->activeEditor->resetHighlighting();
     this->activeEditor->parameterWidget->setEnabled(false);
     do {
@@ -4144,7 +4150,6 @@ void MainWindow::setupConsole()
   this->console->setConsoleFont(
     GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
     GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
-
 
   const QString version =
     QString("<b>PythonSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber)));

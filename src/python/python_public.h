@@ -7,6 +7,7 @@
 #include "core/function.h"
 #include "geometry/Polygon2d.h"
 #include <core/Selection.h>
+#include <core/RenderVariables.h>
 
 extern bool python_active;
 extern bool python_trusted;
@@ -16,7 +17,7 @@ extern AssignmentList customizer_parameters_finished;
 void python_export_obj_att(std::ostream& output);
 std::string python_version(void);
 
-void initPython(const std::string& binDir, const std::string& scriptpath, double time);
+void initPython(const std::string& binDir, const std::string& scriptpath, const RenderVariables *r);
 std::string evaluatePython(const std::string& code, bool dry_run = false);
 void finishPython();
 void python_lock(void);
