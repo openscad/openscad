@@ -138,6 +138,7 @@ set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_PYTHONSCAD_DIR "${CCSD}/data/pythonscad")
 set(TEST_PYTHONSCAD_ECHO_DIR "${CCSD}/data/pythonscad-echo")
 set(TEST_PYTHONSCAD_LASER_DIR "${CCSD}/data/pythonscad-laser")
+set(TEST_PYTHONSCAD_3D_EXPORT_DIR "${CCSD}/data/pythonscad-3d-export")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
 # Test runner Python scripts
@@ -263,6 +264,8 @@ file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
 file(GLOB PYTHONSCAD_FILES    ${TEST_PYTHONSCAD_DIR}/*.py)
 file(GLOB PYTHONSCAD_ECHO_FILES    ${TEST_PYTHONSCAD_ECHO_DIR}/*.py)
 file(GLOB PYTHONSCAD_LASER_FILES    ${TEST_PYTHONSCAD_LASER_DIR}/*.py)
+file(GLOB PYTHONSCAD_3D_EXPORT_FILES ${TEST_PYTHONSCAD_3D_EXPORT_DIR}/*.py)
+file(GLOB SCAD_3D_EXPORT_FILES      ${TEST_SCAD_DIR}/3d-export/*.scad)
 # Exclude add_parameter_pure.py as it has a separate test with feature flag
 list(REMOVE_ITEM PYTHONSCAD_ECHO_FILES "${TEST_PYTHONSCAD_ECHO_DIR}/add_parameter_pure.py")
 # Exclude libfive tests if libfive is not enabled
@@ -1332,6 +1335,18 @@ add_cmdline_test(pythonscadecho      EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${P
 add_cmdline_test(pythonscadlaser     EXPERIMENTAL OPENSCAD SUFFIX svg FILES ${PYTHONSCAD_LASER_FILES}            ARGS --trust-python)
 add_cmdline_test(pythonscadecho_pure EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_PYTHONSCAD_ECHO_DIR}/add_parameter_pure.py ARGS --enable=add-parameter-pure-function --trust-python)
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle --trust-python)
+
+#
+# 3D export tests (compare exported 3MF files)
+#
+# OpenSCAD DSL → 3MF export
+if (ENABLE_LIB3MF_TESTS)
+  add_cmdline_test(export-3d-scad OPENSCAD SUFFIX 3mf FILES ${SCAD_3D_EXPORT_FILES} ARGS --enable=predictible-output --render --trust-python)
+endif()
+# PythonSCAD → 3MF export
+if (ENABLE_LIB3MF_TESTS)
+  add_cmdline_test(export-3d-pythonscad EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${PYTHONSCAD_3D_EXPORT_FILES} ARGS --enable=predictible-output --render --trust-python)
+endif()
 
 #
 # --enable=discretization-by-error tests

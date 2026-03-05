@@ -266,9 +266,12 @@ def post_process_3mf(filename):
     xml_content = re.sub(r'(<metadata[^>]*?)\s+preserve\s*=\s*"[^"]*"([^>]*>)', r'\1\2', xml_content)
     # lib3mf v1 does not allow setting the alpha channel of base material display colors
     xml_content = re.sub(r'(<base name="[^"]*" displaycolor="[^"]*).."', r'\1FF"', xml_content)
-    # lib3mf v2 has an additional <model> attribute compared to v1
-    sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"'
-    xml_content = xml_content.replace(sc, '')
+    # Different lib3mf versions add extra xmlns attributes to <model>;
+    # strip all non-core namespace declarations for consistent comparison.
+    xml_content = re.sub(r' xmlns:sc="[^"]*"', '', xml_content)
+    xml_content = re.sub(r' xmlns:t="[^"]*"', '', xml_content)
+    xml_content = re.sub(r' xmlns:v="[^"]*"', '', xml_content)
+    xml_content = re.sub(r' xmlns:i="[^"]*"', '', xml_content)
     # add tag end whitespace for lib3mf 2.0 output files
     xml_content = re.sub('\"/>', '\" />', xml_content)
     with open(filename, 'wb') as xml_file:
