@@ -57,7 +57,8 @@ std::string RenderNode::toString() const
 
 void register_builtin_render()
 {
-  Builtins::init("render", new BuiltinModule(builtin_render),
+  static BuiltinModule mod_render(builtin_render);
+  Builtins::init("render", &mod_render,
                  {
                    "render(convexity = 1)",
                  });

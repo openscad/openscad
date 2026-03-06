@@ -1107,232 +1107,276 @@ Value builtin_import(Arguments arguments, const Location& loc)
 
 void register_builtin_functions()
 {
-  Builtins::init("abs", new BuiltinFunction(&builtin_abs),
+  static BuiltinFunction func_abs(builtin_abs);	
+  Builtins::init("abs", &func_abs,
                  {
                    "abs(number) -> number",
                  });
 
-  Builtins::init("sign", new BuiltinFunction(&builtin_sign),
+  static BuiltinFunction func_sign(builtin_sign);	
+  Builtins::init("sign", &func_sign, 
                  {
                    "sign(number) -> -1, 0 or 1",
                  });
 
-  Builtins::init("rands", new BuiltinFunction(&builtin_rands),
+  static BuiltinFunction func_rands(builtin_rands);	
+  Builtins::init("rands", &func_rands,
                  {
                    "rands(min, max, num_results) -> vector",
                    "rands(min, max, num_results, seed) -> vector",
                  });
 
-  Builtins::init("min", new BuiltinFunction(&builtin_min),
+  static BuiltinFunction func_min(builtin_min);	
+  Builtins::init("min", &func_min, 
                  {
                    "min(number, number, ...) -> number",
                    "min(vector) -> number",
                  });
 
-  Builtins::init("max", new BuiltinFunction(&builtin_max),
+  static BuiltinFunction func_max(builtin_max);	
+  Builtins::init("max", &func_max,
                  {
                    "max(number, number, ...) -> number",
                    "max(vector) -> number",
                  });
 
-  Builtins::init("sin", new BuiltinFunction(&builtin_sin),
+  static BuiltinFunction func_sin(builtin_sin);	
+  Builtins::init("sin", &func_sin,
                  {
                    "sin(degrees) -> number",
                  });
 
-  Builtins::init("cos", new BuiltinFunction(&builtin_cos),
+  static BuiltinFunction func_cos(builtin_cos);	
+  Builtins::init("cos", &func_cos, 
                  {
                    "cos(degrees) -> number",
                  });
 
-  Builtins::init("asin", new BuiltinFunction(&builtin_asin),
+  static BuiltinFunction func_asin(builtin_asin);	
+  Builtins::init("asin", &func_asin, 
                  {
                    "asin(number) -> degrees",
                  });
 
-  Builtins::init("acos", new BuiltinFunction(&builtin_acos),
+  static BuiltinFunction func_acos(builtin_acos);	
+  Builtins::init("acos", &func_acos, 
                  {
                    "acos(number) -> degrees",
                  });
 
-  Builtins::init("tan", new BuiltinFunction(&builtin_tan),
+  static BuiltinFunction func_tan(builtin_tan);	
+  Builtins::init("tan",  &func_tan, 
                  {
                    "tan(degrees) -> number",
                  });
 
-  Builtins::init("atan", new BuiltinFunction(&builtin_atan),
+  static BuiltinFunction func_atan(builtin_atan);	
+  Builtins::init("atan", &func_atan,
                  {
                    "atan(number) -> degrees",
                  });
 
-  Builtins::init("atan2", new BuiltinFunction(&builtin_atan2),
+  static BuiltinFunction func_atan2(builtin_atan2);	
+  Builtins::init("atan2", &func_atan2,
                  {
                    "atan2(number, number) -> degrees",
                  });
 
-  Builtins::init("round", new BuiltinFunction(&builtin_round),
+  static BuiltinFunction func_round(builtin_round);	
+  Builtins::init("round", &func_round,
                  {
                    "round(number) -> number",
                  });
 
-  Builtins::init("ceil", new BuiltinFunction(&builtin_ceil),
+  static BuiltinFunction func_ceil(builtin_ceil);	
+  Builtins::init("ceil", &func_ceil,
                  {
                    "ceil(number) -> number",
                  });
 
-  Builtins::init("floor", new BuiltinFunction(&builtin_floor),
+  static BuiltinFunction func_floor(builtin_floor);	
+  Builtins::init("floor", &func_floor,
                  {
                    "floor(number) -> number",
                  });
 
-  Builtins::init("pow", new BuiltinFunction(&builtin_pow),
+  static BuiltinFunction func_pow(builtin_pow);	
+  Builtins::init("pow", &func_pow, 
                  {
                    "pow(base, exponent) -> number",
                  });
 
-  Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt),
+  static BuiltinFunction func_sqrt(builtin_sqrt);	
+  Builtins::init("sqrt", &func_sqrt, 
                  {
                    "sqrt(number) -> number",
                  });
 
-  Builtins::init("exp", new BuiltinFunction(&builtin_exp),
+  static BuiltinFunction func_exp(builtin_exp);	
+  Builtins::init("exp", &func_exp,
                  {
                    "exp(number) -> number",
                  });
 
-  Builtins::init("len", new BuiltinFunction(&builtin_length),
+  static BuiltinFunction func_length(builtin_length);	
+  Builtins::init("len", &func_length,
                  {
                    "len(string) -> number",
                    "len(vector) -> number",
                  });
 
-  Builtins::init("log", new BuiltinFunction(&builtin_log),
+  static BuiltinFunction func_log(builtin_log);	
+  Builtins::init("log", &func_log, 
                  {
                    "log(number) -> number",
                  });
 
-  Builtins::init("ln", new BuiltinFunction(&builtin_ln),
+  static BuiltinFunction func_ln(builtin_ln);	
+  Builtins::init("ln", &func_ln,
                  {
                    "ln(number) -> number",
                  });
 
-  Builtins::init("str", new BuiltinFunction(&builtin_str),
+  static BuiltinFunction func_str(builtin_str);	
+  Builtins::init("str", &func_str, 
                  {
                    "str(number or string, ...) -> string",
                  });
 
-  Builtins::init("chr", new BuiltinFunction(&builtin_chr),
+  static BuiltinFunction func_chr(builtin_chr);	
+  Builtins::init("chr", &func_chr,
                  {
                    "chr(number) -> string",
                    "chr(vector) -> string",
                    "chr(range) -> string",
                  });
 
+  static BuiltinFunction func_textmetrics(builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions);
   Builtins::init(
-    "textmetrics", new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
+    "textmetrics",&func_textmetrics,
     {
       "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
     });
 
+  static BuiltinFunction func_fontmetrics(builtin_fontmetrics,&Feature::ExperimentalTextMetricsFunctions);
   Builtins::init("fontmetrics",
-                 new BuiltinFunction(&builtin_fontmetrics, &Feature::ExperimentalTextMetricsFunctions),
+                 &func_fontmetrics,
                  {
                    "fontmetrics(size, font) -> object",
                  });
 
-  Builtins::init("ord", new BuiltinFunction(&builtin_ord),
+  static BuiltinFunction func_ord(builtin_ord);	
+  Builtins::init("ord", &func_ord,
                  {
                    "ord(string) -> number",
                  });
 
-  Builtins::init("concat", new BuiltinFunction(&builtin_concat),
+  static BuiltinFunction func_concat(builtin_concat);	
+  Builtins::init("concat", &func_concat,
                  {
                    "concat(number or string or vector, ...) -> vector",
                  });
 
-  Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
+  static BuiltinFunction func_lookup(builtin_lookup);	
+  Builtins::init("lookup", &func_lookup,
                  {
                    "lookup(key, <key,value> vector) -> value",
                  });
 
+  static BuiltinFunction func_search(builtin_search);	
   Builtins::init(
-    "search", new BuiltinFunction(&builtin_search),
+    "search", &func_search,
     {
       "search(string , string or vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
     });
 
-  Builtins::init("version", new BuiltinFunction(&builtin_version),
+  static BuiltinFunction func_version(builtin_version);	
+  Builtins::init("version", &func_version, 
                  {
                    "version() -> vector",
                  });
 
-  Builtins::init("version_num", new BuiltinFunction(&builtin_version_num),
+  static BuiltinFunction func_version_num(builtin_version_num);	
+  Builtins::init("version_num",  &func_version_num, 
                  {
                    "version_num() -> number",
                  });
 
-  Builtins::init("norm", new BuiltinFunction(&builtin_norm),
+  static BuiltinFunction func_norm(builtin_norm);	
+  Builtins::init("norm", &func_norm, 
                  {
                    "norm(vector) -> number",
                  });
 
-  Builtins::init("cross", new BuiltinFunction(&builtin_cross),
+  static BuiltinFunction func_cross(builtin_cross);	
+  Builtins::init("cross", &func_cross, 
                  {
                    "cross(vector, vector) -> vector",
                  });
 
-  Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
+  static BuiltinFunction func_parent_module(builtin_parent_module);	
+  Builtins::init("parent_module", &func_parent_module, 
                  {
                    "parent_module(number) -> string",
                  });
 
-  Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
+  static BuiltinFunction func_is_undef(builtin_is_undef);	
+  Builtins::init("is_undef", &func_is_undef, 
                  {
                    "is_undef(arg) -> boolean",
                  });
 
-  Builtins::init("is_list", new BuiltinFunction(&builtin_is_list),
+  static BuiltinFunction func_is_list(builtin_is_list);	
+  Builtins::init("is_list", &func_is_list, 
                  {
                    "is_list(arg) -> boolean",
                  });
 
-  Builtins::init("is_num", new BuiltinFunction(&builtin_is_num),
+  static BuiltinFunction func_is_num(builtin_is_num);	
+  Builtins::init("is_num", &func_is_num, 
                  {
                    "is_num(arg) -> boolean",
                  });
 
-  Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool),
+  static BuiltinFunction func_is_bool(builtin_is_bool);	
+  Builtins::init("is_bool", &func_is_bool, 
                  {
                    "is_bool(arg) -> boolean",
                  });
 
-  Builtins::init("is_string", new BuiltinFunction(&builtin_is_string),
+  static BuiltinFunction func_is_string(builtin_is_string);	
+  Builtins::init("is_string", &func_is_string, 
                  {
                    "is_string(arg) -> boolean",
                  });
 
-  Builtins::init("is_function", new BuiltinFunction(&builtin_is_function),
+  static BuiltinFunction func_is_function(builtin_is_function);	
+  Builtins::init("is_function", &func_is_function, 
                  {
                    "is_function(arg) -> boolean",
                  });
 
+  static BuiltinFunction func_is_object(builtin_is_object, &Feature::ExperimentalTextMetricsFunctions);	
   Builtins::init("is_object",
-                 new BuiltinFunction(&builtin_is_object, &Feature::ExperimentalTextMetricsFunctions),
+                 &func_is_object,
                  {
                    "is_object(arg) -> boolean",
                  });
 
-  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  static BuiltinFunction func_object(builtin_object, &Feature::ExperimentalObjectFunction);	
+  Builtins::init("object", &func_object,
                  {
                    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
                  });
 
-  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  static BuiltinFunction func_has_key(builtin_has_key, &Feature::ExperimentalObjectFunction);	
+  Builtins::init("has_key", &func_has_key,
                  {
                    "has_key(object, key) -> boolean",
                  });
 
-  Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
+  static BuiltinFunction func_import(builtin_import, &Feature::ExperimentalImportFunction);	
+  Builtins::init("import", &func_import,
                  {
                    "import(file) -> object",
                  });

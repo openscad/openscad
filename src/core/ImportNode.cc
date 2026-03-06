@@ -276,7 +276,8 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-  Builtins::init("import", new BuiltinModule(builtin_import),
+  static BuiltinModule mod_import(builtin_import);	
+  Builtins::init("import", &mod_import,
                  {
                    "import(string, [number, [number]])",
                  });

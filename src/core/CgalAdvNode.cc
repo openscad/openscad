@@ -134,22 +134,26 @@ std::string CgalAdvNode::toString() const
 
 void register_builtin_cgaladv()
 {
-  Builtins::init("minkowski", new BuiltinModule(builtin_minkowski),
+  static BuiltinModule mod_minkowski(builtin_minkowski);	
+  Builtins::init("minkowski", &mod_minkowski,
                  {
                    "minkowski(convexity = number)",
                  });
 
-  Builtins::init("hull", new BuiltinModule(builtin_hull),
+  static BuiltinModule mod_hull(builtin_hull);	
+  Builtins::init("hull", &mod_hull,
                  {
                    "hull()",
                  });
 
-  Builtins::init("fill", new BuiltinModule(builtin_fill),
+  static BuiltinModule mod_fill(builtin_fill);	
+  Builtins::init("fill", &mod_fill, 
                  {
                    "fill()",
                  });
 
-  Builtins::init("resize", new BuiltinModule(builtin_resize),
+  static BuiltinModule mod_resize(builtin_resize);	
+  Builtins::init("resize", &mod_resize,
                  {
                    "resize([x, y, z])",
                    "resize([x, y, z], boolean)",

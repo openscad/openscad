@@ -61,7 +61,8 @@ std::string ProjectionNode::toString() const
 
 void register_builtin_projection()
 {
-  Builtins::init("projection", new BuiltinModule(builtin_projection),
+  static BuiltinModule mod_projection(builtin_projection);	
+  Builtins::init("projection", &mod_projection, 
                  {
                    "projection(cut = false)",
                  });

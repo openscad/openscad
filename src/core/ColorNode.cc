@@ -100,7 +100,8 @@ std::string ColorNode::name() const
 
 void register_builtin_color()
 {
-  Builtins::init("color", new BuiltinModule(builtin_color),
+  static BuiltinModule mod(builtin_color);
+  Builtins::init("color", &mod,
                  {
                    "color(c = [r, g, b, a])",
                    "color(c = [r, g, b], alpha = 1.0)",

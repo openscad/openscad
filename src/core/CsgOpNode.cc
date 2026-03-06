@@ -77,17 +77,20 @@ std::string CsgOpNode::name() const
 
 void register_builtin_csgops()
 {
-  Builtins::init("union", new BuiltinModule(builtin_union),
+  static BuiltinModule mod_union(builtin_union);	
+  Builtins::init("union", &mod_union,
                  {
                    "union()",
                  });
 
-  Builtins::init("difference", new BuiltinModule(builtin_difference),
+  static BuiltinModule mod_difference(builtin_difference);	
+  Builtins::init("difference", &mod_difference,
                  {
                    "difference()",
                  });
 
-  Builtins::init("intersection", new BuiltinModule(builtin_intersection),
+  static BuiltinModule mod_intersection(builtin_intersection);	
+  Builtins::init("intersection", &mod_intersection,
                  {
                    "intersection()",
                  });

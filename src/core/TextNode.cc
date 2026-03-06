@@ -69,8 +69,9 @@ std::string TextNode::toString() const
 
 void register_builtin_text()
 {
+  static BuiltinModule mod_text(builtin_text);	
   Builtins::init(
-    "text", new BuiltinModule(builtin_text),
+    "text", &mod_text,
     {
       R"(text(text = "", size = 10, font = "", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", spacing = 1 [, $fn]))",
     });

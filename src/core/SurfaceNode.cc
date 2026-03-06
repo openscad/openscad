@@ -314,7 +314,8 @@ std::string SurfaceNode::toString() const
 
 void register_builtin_surface()
 {
-  Builtins::init("surface", new BuiltinModule(builtin_surface),
+  static BuiltinModule mod_surface(builtin_surface);
+  Builtins::init("surface", &mod_surface,
                  {
                    "surface(string, center = false, invert = false, number)",
                  });
