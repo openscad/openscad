@@ -73,3 +73,52 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     output << "\n";
   }
 }
+/**
+ * Export the geometry as an OpenSCAD polyhedron statement.
+ * This allows users to export computed geometry back into SCAD code.
+ */
+void export_scad_polyhedron(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+{
+    // Convert the geometry to a PolySet to access vertices and face indices
+    auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+    
+    // Ensure the output is sorted if the experimental predictable output feature is enabled
+    if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+        ps = createSortedPolySet(*ps);
+    }
+
+    const auto& v = ps->vertices;
+    const size_t numverts = v.size();
+
+    // Step 1: Start the OpenSCAD polyhedron function call and points array
+    output << "polyhedron(\n  points = [\n";
+
+    // Step 2: Write all vertex coordinates in [x, y, z] format
+    for (size_t i = 0; i < numverts; ++i) {
+        output << "    [" << v[i][0] << ", " << v[i][1] << ", " << v[i][2] << "]";
+        // Append a comma for all elements except the last one
+        if (i < numverts - 1) output << ",";
+        output << "\n";
+    }
+
+    // Step 3: Close the points array and open the faces array
+    output << "  ],\n  faces = [\n";
+
+    // Step 4: Write all face indices in [a, b, c, ...] format
+    for (size_t i = 0; i < ps->indices.size(); ++i) {
+        const size_t nverts = ps->indices[i].size();
+        output << "    [";
+        for (size_t n = 0; n < nverts; ++n) {
+            output << ps->indices[i][n];
+            // Format indices with a comma separator
+            if (n < nverts - 1) output << ", ";
+        }
+        output << "]";
+        // Append a comma for all elements except the last one
+        if (i < ps->indices.size() - 1) output << ",";
+        output << "\n";
+    }
+
+    // Step 5: Close the faces array and the polyhedron function
+    output << "  ]\n);\n";
+}

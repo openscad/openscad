@@ -72,7 +72,6 @@ void add_item(Containers& containers, const FileFormatInfo& info)
   containers.identifierToInfo[info.identifier] = info;
   containers.fileFormatToInfo[info.format] = info;
 }
-
 Containers& containers()
 {
   static std::unique_ptr<Containers> containers = []() {
@@ -97,6 +96,7 @@ Containers& containers()
     add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
     add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
+    add_item(*containers, {FileFormat::SCAD, "scad", "scad", "OpenSCAD Polyhedron (*.scad)"});
 
     // Alias
     containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
@@ -169,7 +169,7 @@ bool is3D(FileFormat format)
   return format == FileFormat::ASCII_STL || format == FileFormat::BINARY_STL ||
          format == FileFormat::OBJ || format == FileFormat::OFF || format == FileFormat::WRL ||
          format == FileFormat::AMF || format == FileFormat::_3MF || format == FileFormat::NEFDBG ||
-         format == FileFormat::NEF3 || format == FileFormat::POV;
+         format == FileFormat::NEF3 || format == FileFormat::POV || format == FileFormat::SCAD; //  SCAD add here  
 }
 
 bool is2D(FileFormat format)
@@ -209,6 +209,8 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
                        const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
+  case FileFormat::SCAD:       export_scad_polyhedron(root_geom, output); break; 
+  case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
   case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
   case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
   case FileFormat::OBJ:        export_obj(root_geom, output); break;

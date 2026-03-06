@@ -44,6 +44,7 @@ enum class FileFormat {
   PNG,
   PDF,
   POV,
+  SCAD,
   PARAM
 };
 
@@ -367,3 +368,4 @@ bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);
+void export_scad_polyhedron(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
