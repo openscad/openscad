@@ -113,7 +113,7 @@ get_debian_deps()
   libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
   libtbb-dev libxi-dev libxml2-dev libxmu-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
-  python3-setuptools python3-venv ragel xvfb
+  python3-setuptools python3-venv ragel xvfb ezdxf
  apt-get -y install catch2 || echo "catch2 pkg deprecated on Debian, so if you're seeing this, it's probably been removed from the repo"
  apt-get -y install libcatch2-dev || echo "libcatch2-dev package not found on ubuntu or older Debian, so ignoring."
  if [ "$USE_QT6" = "1" ]; then
