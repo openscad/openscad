@@ -58,7 +58,7 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(parent->editActionZoomTextIn, &QAction::triggered, this, &TabManager::zoomIn);
   connect(parent->editActionZoomTextOut, &QAction::triggered, this, &TabManager::zoomOut);
 
-  createTab(filename);
+  createTab(filename.isEmpty() ? QString("Untitled.py") : filename);
 
   // Disable the closing button for the first tabbar
   setTabsCloseButtonVisibility(0, false);
@@ -797,10 +797,11 @@ bool TabManager::saveAs(EditorInterface *edt)
 #ifdef ENABLE_PYTHON
   QString selectedFilter;
   QString pythonFilter = _("PythonSCAD Designs (*.py)");
-  auto filename = QFileDialog::getSaveFileName(parent, _("Save File"), dir, QString("%1").arg(pythonFilter),
-                                               &selectedFilter);
+  auto filename = QFileDialog::getSaveFileName(parent, _("Save File"), dir,
+                                               QString("%1").arg(pythonFilter), &selectedFilter);
 #else
-  auto filename = QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+  auto filename =
+    QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
 #endif
   if (filename.isEmpty()) {
     return false;
