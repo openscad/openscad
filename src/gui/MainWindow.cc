@@ -2061,6 +2061,12 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     auto error = evaluatePython(fulltext_py, false);  // add assignments TODO check
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     finishPython();
+
+    if (renderVarsSet != nullptr) {
+      qglview->cam = renderVarsSet->camera;
+      viewportControlWidget->cameraChanged();
+      renderVarsSet = nullptr;
+    }
     sourceFile = parse(sourceFile, "", fname, fname, false) ? sourceFile : nullptr;
 
   } else  // python not enabled

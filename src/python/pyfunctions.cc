@@ -41,6 +41,7 @@
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
 #include "genlang/genlang.h"
+#include <core/RenderVariables.h>
 
 #include <python/pydata.h>
 #ifdef ENABLE_LIBFIVE
@@ -6089,6 +6090,33 @@ PyObject *python_machineconfig(PyObject *self, PyObject *args, PyObject *kwargs,
   Py_RETURN_NONE;
 }
 
+std::shared_ptr<RenderVariables> renderVarsSet = nullptr;
+
+PyObject *python_rendervars(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
+{
+  char *kwlist[] = {"vpd", "vpf", "vpr", "vpt", NULL};
+  double x, y, z;
+  double vpd = NAN;
+  double vpf = NAN;
+  PyObject *vpr = nullptr;
+  PyObject *vpt = nullptr;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddOO", kwlist, &vpd, &vpf, &vpr, &vpt)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing machineconfig");
+    return NULL;
+  }
+  renderVarsSet = std::make_shared<RenderVariables>();
+
+  if (!isnan(vpd)) renderVarsSet->camera.viewer_distance = vpd;
+  if (!isnan(vpf)) renderVarsSet->camera.fov = vpf;
+  if (vpt != nullptr && !python_vectorval(vpt, 3, 3, &x, &y, &z))
+    renderVarsSet->camera.object_trans = Vector3d(x, y, z);
+  if (vpr != nullptr && !python_vectorval(vpr, 3, 3, &x, &y, &z))
+    renderVarsSet->camera.object_rot = Vector3d(x, y, z);
+
+  Py_RETURN_NONE;
+}
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction)python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction)python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -6212,6 +6240,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"cross", (PyCFunction)python_cross, METH_VARARGS | METH_KEYWORDS, "Calculate cross product."},
   {"machineconfig", (PyCFunction)python_machineconfig, METH_VARARGS | METH_KEYWORDS,
    "set Machineconfig"},
+  {"rendervars", (PyCFunction)python_rendervars, METH_VARARGS | METH_KEYWORDS, "Set Rendervars"},
   {NULL, NULL, 0, NULL}};
 
 #define OO_METHOD_ENTRY(name, desc) \
