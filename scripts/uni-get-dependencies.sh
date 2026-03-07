@@ -6,6 +6,8 @@
 # this assumes you have sudo installed and running, or are running as root.
 #
 
+set -eu
+
 get_fedora_deps()
 {
  dnf -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
@@ -157,6 +159,58 @@ unknown()
  echo "in README.md using your system's package manager."
 }
 
+
+detect_and_install()
+{
+  if [ -e /etc/issue ]; then
+    if [ "`grep -i ubuntu /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i KDE.neon /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep ID=.solus /etc/os-release`" ]; then
+      get_solus_deps
+    elif [ "`grep -i debian /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i raspbian /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i linux.mint /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i suse /etc/issue`" ]; then
+      get_opensuse_deps
+    elif [ "`grep -i fedora /etc/issue`" ]; then
+      get_fedora_deps
+    elif [ "`grep -i red.hat /etc/issue`" ]; then
+      get_fedora_deps
+    elif [ "`grep -i mageia /etc/issue`" ]; then
+      get_mageia_deps
+    elif [ "`grep -i qomo /etc/issue`" ]; then
+      get_qomo_deps
+    elif test -r /etc/arch-release ; then
+      get_arch_deps
+    elif [ "`command -v rpm`" ]; then
+      if [ "`rpm -qa | grep altlinux`" ]; then
+      get_altlinux_deps
+      fi
+    elif [ -e /etc/os-release -o -e /usr/lib/os-release ]; then
+      test -e /etc/os-release && os_release="/etc/os-release" || os_release="/usr/lib/os-release"
+      . "${os_release}"
+      if [ "${ID:-linux}" = "debian" ] || [ "${ID_LIKE#*debian*}" != "${ID_LIKE}" ]; then
+        get_debian_deps
+      fi
+    else
+      unknown
+    fi
+  elif [ "`uname | grep -i freebsd `" ]; then
+    get_freebsd_deps
+  elif [ "`uname | grep -i netbsd`" ]; then
+    get_netbsd_deps
+  else
+    unknown
+  fi
+}
+
+# Main
+
 # Usage: $0 [qt6]
 # Qt5 is default
 if [ "`echo $* | grep qt6`" ]; then
@@ -165,48 +219,4 @@ else
   USE_QT6=0
 fi
 
-if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i KDE.neon /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep ID=.solus /etc/os-release`" ]; then
-  get_solus_deps
- elif [ "`grep -i debian /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i raspbian /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i linux.mint /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i suse /etc/issue`" ]; then
-  get_opensuse_deps
- elif [ "`grep -i fedora /etc/issue`" ]; then
-  get_fedora_deps
- elif [ "`grep -i red.hat /etc/issue`" ]; then
-  get_fedora_deps
- elif [ "`grep -i mageia /etc/issue`" ]; then
-  get_mageia_deps
- elif [ "`grep -i qomo /etc/issue`" ]; then
-  get_qomo_deps
- elif test -r /etc/arch-release ; then
-   get_arch_deps
- elif [ "`command -v rpm`" ]; then
-  if [ "`rpm -qa | grep altlinux`" ]; then
-   get_altlinux_deps
-  fi
- elif [ -e /etc/os-release -o -e /usr/lib/os-release ]; then
-  test -e /etc/os-release && os_release="/etc/os-release" || os_release="/usr/lib/os-release"
-  . "${os_release}"
-  if [ "${ID:-linux}" = "debian" ] || [ "${ID_LIKE#*debian*}" != "${ID_LIKE}" ]; then
-   get_debian_deps
-  fi
- else
-  unknown
- fi
-elif [ "`uname | grep -i freebsd `" ]; then
- get_freebsd_deps
-elif [ "`uname | grep -i netbsd`" ]; then
- get_netbsd_deps
-else
- unknown
-fi
+detect_and_install
