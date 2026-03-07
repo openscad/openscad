@@ -39,8 +39,6 @@
 #include "geometry/PolySet.h"
 #include "geometry/linalg.h"
 #include "glview/Camera.h"
-#include "glview/ColorMap.h"
-#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 
 #define QUOTE(x__) #x__
