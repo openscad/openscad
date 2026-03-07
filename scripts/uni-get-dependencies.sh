@@ -160,15 +160,40 @@ unknown()
 }
 
 
+# OS detection
+#
+# Order of checks:
+#   1. /etc/os-release - the modern systemd standard
+#   2. /etc/issue      - legacy fallback
+#   3. uname           - for BSD systems
+
 detect_and_install()
 {
-  if [ -e /etc/issue ]; then
+  # Try sourcing os-release first (modern standardized check)
+  if   [ -e /etc/os-release ];     then . /etc/os-release
+  elif [ -e /usr/lib/os-release ]; then . /usr/lib/os-release
+  fi
+
+  DISTRO_IDS="${ID_LIKE:-} ${ID:-}"
+
+  if [ -n "${DISTRO_IDS:-}" ]; then
+    # Check for full keyword matches, helps cover cases where ID_LIKE isn't set (eg fedora) or ID is too specific (eg opensuse-tumbleweed)
+    is_like() { echo "$DISTRO_IDS" | grep -qw "$1"; }
+
+    if   is_like debian;   then get_debian_deps
+    elif is_like fedora;   then get_fedora_deps
+    elif is_like opensuse; then get_opensuse_deps
+    elif is_like arch;     then get_arch_deps
+    elif is_like solus;    then get_solus_deps
+    elif is_like mageia;   then get_mageia_deps
+    else unknown # bail out as most distros with os-release don't have /etc/issue and should be added here
+    fi
+
+  elif [ -e /etc/issue ]; then
     if [ "`grep -i ubuntu /etc/issue`" ]; then
       get_debian_deps
     elif [ "`grep -i KDE.neon /etc/issue`" ]; then
       get_debian_deps
-    elif [ "`grep ID=.solus /etc/os-release`" ]; then
-      get_solus_deps
     elif [ "`grep -i debian /etc/issue`" ]; then
       get_debian_deps
     elif [ "`grep -i raspbian /etc/issue`" ]; then
@@ -190,12 +215,6 @@ detect_and_install()
     elif [ "`command -v rpm`" ]; then
       if [ "`rpm -qa | grep altlinux`" ]; then
       get_altlinux_deps
-      fi
-    elif [ -e /etc/os-release -o -e /usr/lib/os-release ]; then
-      test -e /etc/os-release && os_release="/etc/os-release" || os_release="/usr/lib/os-release"
-      . "${os_release}"
-      if [ "${ID:-linux}" = "debian" ] || [ "${ID_LIKE#*debian*}" != "${ID_LIKE}" ]; then
-        get_debian_deps
       fi
     else
       unknown
