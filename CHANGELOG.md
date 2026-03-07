@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.17.0](https://github.com/pythonscad/pythonscad/compare/v0.16.0...v0.17.0) (2026-03-06)
+
+
+### Features
+
+* **setrender:** allow python code to set vieweing perspective ([#488](https://github.com/pythonscad/pythonscad/issues/488)) ([de1bde4](https://github.com/pythonscad/pythonscad/commit/de1bde4a0b6219e36703f8263c841dffad0a995d))
+
+
+### Bug Fixes
+
+* open New Window with Untitled.py tab instead of Untitled.scad ([#489](https://github.com/pythonscad/pythonscad/issues/489)) ([de36a27](https://github.com/pythonscad/pythonscad/commit/de36a27bfe09d2a1a5a4f341f1a96b32456a4090))
+* resolve cppcheck findings in src/python/ ([#483](https://github.com/pythonscad/pythonscad/issues/483)) ([abc74b1](https://github.com/pythonscad/pythonscad/commit/abc74b12b30a1d69201cbc853e8316c0a28acead))
+
 ## [0.16.0](https://github.com/pythonscad/pythonscad/compare/v0.15.1...v0.16.0) (2026-02-28)
 
 
