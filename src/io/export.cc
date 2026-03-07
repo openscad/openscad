@@ -34,6 +34,7 @@
 #endif
 
 #include "geometry/Geometry.h"
+#include "geometry/PolySetGeometry.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/linalg.h"
@@ -41,7 +42,7 @@
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
-
+ 
 #define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
 
@@ -255,27 +256,34 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 
 void export_scad_polyhedron(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output)
 {
-	auto ps = root_geom->getPolySet();
-	if (!ps) return;
-	auto sortedPs = createSortedPolySet(*ps);
+    // Geometry k
+    auto ps = root_geom->getPolySet(); 
+    
+    // Agar getPolySet() directly
+    if (!ps) {
+        LOG(message_group::Error, "Could not extract PolySet for SCAD export.");
+        return;
+    }
 
-	output << "// Exported from OpenSCAD\n";
-	output << "polyhedron(\n";
-	output << "  points = [\n";
-	for (const auto& v : sortedPs->vertices) {
-		output << "    [" << v[0] << ", " << v[1] << ", " << v[2] << "],\n";
-	}
-	output << "  ],\n";
-	output << "  faces = [\n";
-	for (const auto& f : sortedPs->indices) {
-		output << "    [";
-		for (size_t i = 0; i < f.size(); ++i) {
-			output << f[i] << (i == f.size() - 1 ? "" : ", ");
-		}
-		output << "],\n";
-	}
-	output << "  ]\n";
-	output << ");\n";
+    auto sortedPs = createSortedPolySet(*ps);
+
+    output << "// Exported from OpenSCAD\n";
+    output << "polyhedron(\n";
+    output << "  points = [\n";
+    for (const auto& v : sortedPs->vertices) {
+        output << "    [" << v[0] << ", " << v[1] << ", " << v[2] << "],\n";
+    }
+    output << "  ],\n";
+    output << "  faces = [\n";
+    for (const auto& f : sortedPs->indices) {
+        output << "    [";
+        for (size_t i = 0; i < f.size(); ++i) {
+            output << f[i] << (i == f.size() - 1 ? "" : ", ");
+        }
+        output << "],\n";
+    }
+    output << "  ]\n";
+    output << ");\n";
 }
 
 // --- Export Infrastructure ---
