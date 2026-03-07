@@ -231,8 +231,9 @@ void register_builtin_control()
 
   Builtins::init("assert", new BuiltinModule(builtin_assert),
                  {
-                   "assert(boolean)",
-                   "assert(boolean, string)",
+                   "assert(condition)",
+                   "assert(condition, message)",
+                   "assert(condition, message, abort = true)",
                  });
 
   Builtins::init("for", new BuiltinModule(builtin_for),
