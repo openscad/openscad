@@ -35,7 +35,6 @@
 #endif
 
 #include "geometry/Geometry.h"
-#include "geometry/PolySetGeometry.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/linalg.h"
