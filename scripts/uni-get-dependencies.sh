@@ -55,7 +55,7 @@ get_netbsd_deps()
 get_opensuse_deps()
 {
  zypper install mpfr-devel gmp-devel boost-devel \
-  glew-devel cmake git bison flex catch2-devel cgal-devel curl \
+  glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
@@ -63,24 +63,20 @@ get_opensuse_deps()
   libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
- zypper install libeigen3-devel
- if [ $? -ne 0 ]; then
-  zypper install libeigen3
- fi
- zypper install ImageMagick
- if [ $? -ne 0 ]; then
-  zypper install imagemagick
- fi
- zypper install opencsg-devel
- if [ $? -ne 0 ]; then
-  pver=`cat /etc/os-release | grep -i pretty_name | sed s/PRETTY_NAME=//g`
-  pver=`echo $pver | sed s/\"//g | sed s/\ /_/g `
-  echo attempting to add graphics repository for opencsg...
-  set +x
-  zypper ar -f http://download.opensuse.org/repositories/graphics/$pver graphics
+ zypper install libeigen3-devel || zypper install libeigen3
+
+ zypper install ImageMagick || zypper install imagemagick
+
+ zypper install catch2-devel || zypper install Catch2-devel
+
+ install_opencsg_and_repo() {
+  pver=$(grep -i pretty_name /etc/os-release | sed 's/PRETTY_NAME=//g; s/"//g; s/ /_/g')
+  echo "attempting to add graphics repository for opencsg..."
+  zypper ar -f "http://download.opensuse.org/repositories/graphics/${pver}" graphics
   zypper install opencsg-devel
-  set -x
- fi
+ }
+
+ zypper install opencsg-devel || install_opencsg_and_repo
 }
 
 get_mageia_deps()
