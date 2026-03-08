@@ -22,6 +22,12 @@
 #include <cassert>
 #include <exception>
 
+#if defined(Q_OS_LINUX) && defined(ENABLE_DBUS)
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusVariant>
+#endif
+
 #include "glview/RenderSettings.h"
 
 OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
@@ -29,9 +35,6 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
 #endif
-
-  // Remember platform default style so we can restore it for light/native theme
-  platformStyleName = style()->objectName();
 
   // Note: It may be tempting to add more initialization code here, but keep in mind that this is run as
   // part of QApplication initialization, so it's usually better to that in the main gui() function after
@@ -106,19 +109,40 @@ void OpenSCADApp::setRenderBackend3D(RenderBackend3D backend)
 
 static bool isSystemDarkTheme()
 {
+#if defined(Q_OS_LINUX) && defined(ENABLE_DBUS)
+  // On Linux, neither Qt's colorScheme() API (Qt 6.5+) nor the palette
+  // heuristic are reliable: GNOME's Qt platform plugin can read the
+  // gtk-theme name (e.g. "Adwaita-dark") instead of the actual dark-style
+  // preference, returning "dark" even when the desktop is set to light.
+  //
+  // The XDG Desktop Portal is the authoritative source — it reflects
+  // GNOME's "Dark Style" toggle and works on KDE Plasma too.
+  // Return value: 0 = no preference (light), 1 = prefer dark, 2 = prefer light.
+  QDBusMessage msg =
+    QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop",
+                                   "org.freedesktop.portal.Settings", "Read");
+  msg << "org.freedesktop.appearance" << "color-scheme";
+  QDBusMessage reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, 250);
+  if (reply.type() == QDBusMessage::ReplyMessage && !reply.arguments().isEmpty()) {
+    const QVariant outer = reply.arguments().first();
+    const QVariant inner = outer.value<QDBusVariant>().variant();
+    const uint value = inner.value<QDBusVariant>().variant().toUInt();
+    return value == 1;
+  }
+#endif
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+  // On non-Linux (Windows, macOS), Qt's colorScheme() API works correctly.
   const auto scheme = QGuiApplication::styleHints()->colorScheme();
   if (scheme == Qt::ColorScheme::Dark) return true;
   if (scheme == Qt::ColorScheme::Light) return false;
-  // Unknown: fall back to light
   return false;
 #else
-  // Qt5: no colorScheme() API. Use palette heuristic from the application's
-  // current palette (reflects platform theme on Linux; on Windows/macOS may
-  // often be light). Fallback to light if unclear.
-  const QPalette &pal = scadApp->palette();
-  const auto &text = pal.color(QPalette::WindowText);
-  const auto &window = pal.color(QPalette::Window);
+  // Fallback: palette-based heuristic (works on Windows and macOS where
+  // the platform theme correctly reflects the system setting).
+  const QPalette& pal = scadApp->palette();
+  const auto& text = pal.color(QPalette::WindowText);
+  const auto& window = pal.color(QPalette::Window);
   return text.lightness() > window.lightness();
 #endif
 }
@@ -132,33 +156,47 @@ void OpenSCADApp::setGuiTheme(const QString& preference)
     return isSystemDarkTheme();
   }();
 
+  QStyle *fusion = QStyleFactory::create("Fusion");
+
+  // Use Fusion style for all themes.  On Linux, platform theme plugins
+  // poison even Fusion's standardPalette() with system colors, so we must
+  // always set explicit palette colors.  On Windows/macOS the native style
+  // offers little benefit when we override the palette anyway.
+  if (fusion) scadApp->setStyle(fusion);
+
   if (useDark) {
-    QStyle *fusion = QStyleFactory::create("Fusion");
-    if (fusion) scadApp->setStyle(fusion);
-    QPalette darkPalette;
-    darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
-    darkPalette.setColor(QPalette::WindowText, Qt::white);
-    darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
-    darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-    darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
-    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-    darkPalette.setColor(QPalette::Text, Qt::white);
-    darkPalette.setColor(QPalette::Button, QColor(53, 53, 53));
-    darkPalette.setColor(QPalette::ButtonText, Qt::white);
-    darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::HighlightedText, Qt::black);
-    scadApp->setPalette(darkPalette);
+    themePalette = QPalette();
+    themePalette.setColor(QPalette::Window, QColor(53, 53, 53));
+    themePalette.setColor(QPalette::WindowText, Qt::white);
+    themePalette.setColor(QPalette::Base, QColor(25, 25, 25));
+    themePalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
+    themePalette.setColor(QPalette::ToolTipBase, Qt::white);
+    themePalette.setColor(QPalette::ToolTipText, Qt::white);
+    themePalette.setColor(QPalette::Text, Qt::white);
+    themePalette.setColor(QPalette::Button, QColor(53, 53, 53));
+    themePalette.setColor(QPalette::ButtonText, Qt::white);
+    themePalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    themePalette.setColor(QPalette::HighlightedText, Qt::black);
   } else {
-    // Use platform default style for a native look (Windows, macOS, Linux DE)
-    QStyle *native = QStyleFactory::create(scadApp->platformStyleName);
-    if (!native) native = QStyleFactory::create("Fusion");
-    if (native) scadApp->setStyle(native);
-    scadApp->setPalette(scadApp->style()->standardPalette());
+    themePalette = QPalette();
+    themePalette.setColor(QPalette::Window, QColor(239, 239, 239));
+    themePalette.setColor(QPalette::WindowText, Qt::black);
+    themePalette.setColor(QPalette::Base, Qt::white);
+    themePalette.setColor(QPalette::AlternateBase, QColor(239, 239, 239));
+    themePalette.setColor(QPalette::ToolTipBase, QColor(255, 255, 220));
+    themePalette.setColor(QPalette::ToolTipText, Qt::black);
+    themePalette.setColor(QPalette::Text, Qt::black);
+    themePalette.setColor(QPalette::Button, QColor(239, 239, 239));
+    themePalette.setColor(QPalette::ButtonText, Qt::black);
+    themePalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    themePalette.setColor(QPalette::HighlightedText, Qt::white);
+    themePalette.setColor(QPalette::Link, QColor(42, 130, 218));
+    themePalette.setColor(QPalette::LinkVisited, QColor(100, 74, 155));
   }
+  scadApp->setPalette(themePalette);
 
   QIcon::setThemeName(useDark ? "chokusen-dark" : "chokusen");
 
-  // Re-apply application font (stylesheet is replaced when changing style/palette)
   const auto family = GlobalPreferences::inst()->getValue("advanced/applicationFontFamily").toString();
   const auto size = GlobalPreferences::inst()->getValue("advanced/applicationFontSize").toUInt();
   setApplicationFont(family, size);
@@ -166,9 +204,11 @@ void OpenSCADApp::setGuiTheme(const QString& preference)
 
 void OpenSCADApp::setApplicationFont(const QString& family, uint size)
 {
-  // Trigger style sheet refresh to update the application font
-  // (hopefully) everywhere. Also remove ugly frames in the QStatusBar
-  // when using additional widgets
+  // A global stylesheet with the * selector is the only reliable way to
+  // force font updates on all existing widgets (dock title bars, status
+  // bar, etc.).  However, setStyleSheet() triggers Qt platform-theme
+  // plugins to re-apply the system palette — so we re-apply our explicit
+  // theme palette immediately afterwards.
   const auto stylesheet = QString(R"(
     * {
         font-family: '%1';
@@ -179,6 +219,7 @@ void OpenSCADApp::setApplicationFont(const QString& family, uint size)
     }
   )");
   scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
+  scadApp->setPalette(themePalette);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

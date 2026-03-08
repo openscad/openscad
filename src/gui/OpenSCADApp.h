@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QEvent>
 #include <QObject>
+#include <QPalette>
 #include <QString>
 
 #include "glview/RenderSettings.h"
@@ -37,7 +38,7 @@ public:
 
 private:
   QProgressDialog *fontCacheDialog{nullptr};
-  QString platformStyleName;
+  QPalette themePalette;
 };
 
 #define scadApp (static_cast<OpenSCADApp *>(QCoreApplication::instance()))
