@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythonscad"
+dynamic = ["version"]
+description = "Python interface to OpenSCAD — script-based 3D modeling with Python as a native language"
+readme = "README.md"
+license = "GPL-2.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "Guenther Sohler", email = "guenther.sohler@gmail.com" },
+]
+keywords = ["3d", "modeling", "cad", "openscad", "3d-printing", "csg", "python"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics :: 3D Modeling",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://pythonscad.org"
+Documentation = "https://pythonscad.org/tutorial/site/index.html"
+Repository = "https://github.com/pythonscad/pythonscad"
+Issues = "https://github.com/pythonscad/pythonscad/issues"
+Changelog = "https://github.com/pythonscad/pythonscad/blob/master/CHANGELOG.md"

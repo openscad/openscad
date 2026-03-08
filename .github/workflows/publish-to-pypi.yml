@@ -1,0 +1,65 @@
+# Builds a source distribution (sdist) and publishes it to PyPI.
+# Triggered when a GitHub Release is fully published (not prerelease).
+#
+# Prerequisites (one-time setup):
+#   1. Create the "pythonscad" project on PyPI (https://pypi.org)
+#   2. Configure "trusted publishing" for this repository under:
+#      PyPI project settings -> Publishing -> Add a new publisher
+#      - Owner: pythonscad
+#      - Repository: pythonscad
+#      - Workflow name: publish-to-pypi.yml
+#      - Environment name: pypi
+name: Publish to PyPI
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Fetch tags for version detection
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build frontend
+        run: pip install build
+
+      - name: Build sdist
+        run: python -m build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  publish:
+    name: Publish to PyPI
+    needs: build-sdist
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
