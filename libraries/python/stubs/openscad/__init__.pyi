@@ -1303,6 +1303,25 @@ def render(obj: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
     ...
 
 
+def rendervars(
+    vpd: Optional[float] = None,
+    vpf: Optional[float] = None,
+    vpr: Optional[Vector3] = None,
+    vpt: Optional[Vector3] = None,
+) -> None:
+    """Set camera/viewport parameters from Python code.
+
+    All parameters are optional. Only the ones provided will be updated;
+    the rest keep their current values.
+
+    Args:
+        vpd: Viewer distance (camera distance from the object).
+        vpf: Field of view angle in degrees.
+        vpr: Viewport rotation as [x, y, z] in degrees.
+        vpt: Viewport translation as [x, y, z] (the point the camera looks at).
+    """
+    ...
+
 def osimport(
     file: str,
     layer: str,

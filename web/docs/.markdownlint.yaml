@@ -1,0 +1,12 @@
+# Relaxed rules for documentation pages that use inline HTML,
+# mixed code block styles, and other patterns the default rules flag.
+MD013:
+  line_length: 200
+  code_block_line_length: 200
+MD012: false
+MD019: false
+MD022: false
+MD031: false
+MD033: false
+MD046: false
+MD060: false

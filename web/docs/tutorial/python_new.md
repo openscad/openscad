@@ -348,6 +348,33 @@ width = add_parameter("width", 10,
     group="Dimensions")
 ```
 
+## rendervars
+
+With `rendervars` you can control the camera / viewport settings directly from
+your Python script. This is useful for setting up specific viewing angles when
+sharing scripts or creating presentations of your models.
+
+```py
+from openscad import *
+
+c = cube(10, center=True)
+c.show()
+
+rendervars(vpd=150, vpr=[55, 0, 25], vpt=[0, 0, 5])
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `vpd` | float | Viewer distance – how far the camera is from the object |
+| `vpf` | float | Field of view angle in degrees |
+| `vpr` | [x, y, z] | Viewport rotation in degrees |
+| `vpt` | [x, y, z] | Viewport translation – the point the camera looks at |
+
+All parameters are optional. Only the parameters you provide
+will be changed; the rest keep their current values.
+
 ## concat
 
 Concat concatenates the triangles and vertices of serveral objects without actually

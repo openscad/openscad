@@ -94,6 +94,7 @@ offset(shape, delta)            # Offset shape by delta
 ```python
 show(obj)                       # Render the object
 export(obj,"output.3mf")        # Exporting to a file
+rendervars(vpd=150)             # Set the camera/viewport from code
 ```
 
 ## 📐 Object Properties
