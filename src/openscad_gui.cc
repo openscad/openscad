@@ -36,6 +36,7 @@
 #include <QIcon>
 #include <QObject>
 #include <QPalette>
+#include <QSurfaceFormat>
 #include <QStringList>
 #include <QStyleHints>
 #include <Qt>
@@ -110,6 +111,25 @@ bool isDarkMode()
 #endif  // QT_VERSION
 }
 
+void configureOpenGLContext()
+{
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
+  // OpenSCAD still relies on legacy OpenGL compatibility features and GLSL 1.20
+  // shaders, so a GLES context is not currently usable. On Wayland/EGL setups Qt
+  // can otherwise pick OpenGL ES by default.
+  if (qEnvironmentVariableIsEmpty("QT_OPENGL")) {
+    QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+  }
+
+  auto format = QSurfaceFormat::defaultFormat();
+  format.setRenderableType(QSurfaceFormat::OpenGL);
+  format.setProfile(QSurfaceFormat::CompatibilityProfile);
+  if (format.depthBufferSize() < 24) format.setDepthBufferSize(24);
+  if (format.stencilBufferSize() < 8) format.setStencilBufferSize(8);
+  QSurfaceFormat::setDefaultFormat(format);
+#endif
+}
+
 }  // namespace
 
 namespace {
@@ -178,6 +198,7 @@ void registerDefaultIcon(const QString&)
 int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
         char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
+  configureOpenGLContext();
   OpenSCADApp app(argc, argv);
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
