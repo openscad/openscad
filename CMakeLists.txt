@@ -663,6 +663,7 @@ if(ENABLE_PYTHON)
       # available on all target machines.
       if(PORTABLE_BINARY)
         set(MARCH_SUPPORTED OFF CACHE BOOL "Disable -march=native for portable builds" FORCE)
+        set(ENABLE_DEBUG OFF CACHE BOOL "Disable debug symbols for portable builds" FORCE)
       endif()
       # Note: add_subdirectory(libfive) is deferred to after Python3 is found,
       # so we can define PYTHON_SITE_PACKAGES_DIR using modern sysconfig

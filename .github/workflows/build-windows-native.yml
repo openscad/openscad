@@ -107,6 +107,7 @@ jobs:
             -DUSE_QT6=ON \
             -DENABLE_PYTHON=ON \
             -DENABLE_LIBFIVE=ON \
+            -DPORTABLE_BINARY=ON \
             -DENABLE_TESTS=OFF \
             -DPACKAGE_ARCH=windows-x86-64 \
             $EXTRA_CMAKE

@@ -72,6 +72,7 @@ jobs:
             -DENABLE_PYTHON=ON \
             -DENABLE_TBB=OFF \
             -DENABLE_LIBFIVE=ON \
+            -DPORTABLE_BINARY=ON \
             -DENABLE_GAMEPAD=OFF \
             -DUSE_BUILTIN_CLIPPER2=OFF \
             -DUSE_BUILTIN_MANIFOLD=ON
@@ -204,6 +205,7 @@ jobs:
             -DENABLE_PYTHON=ON \
             -DENABLE_TBB=OFF \
             -DENABLE_LIBFIVE=ON \
+            -DPORTABLE_BINARY=ON \
             -DENABLE_GAMEPAD=OFF \
             -DUSE_BUILTIN_CLIPPER2=OFF \
             -DUSE_BUILTIN_MANIFOLD=ON
