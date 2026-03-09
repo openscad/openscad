@@ -379,8 +379,13 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    int drag_x = qRound(event->position().x()) - mouseDraggedPoint.x();
+    int drag_y = mouseDraggedPoint.y() - qRound(event->position().y());
+#else
     int drag_x = event->x() - mouseDraggedPoint.x();
     int drag_y = mouseDraggedPoint.y() - event->y();
+#endif
 
     if (mouseDraggedSel == nullptr) {
       mouseDraggedSel = findObject(mouseDraggedPoint.x(), mouseDraggedPoint.y());

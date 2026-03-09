@@ -7,15 +7,23 @@
 ExportSvgDialog::ExportSvgDialog()
 {
   setupUi(this);
-  this->checkBoxEnableFill->setChecked (Settings::SettingsExportSvg::exportSvgFill.value());
+  this->checkBoxEnableFill->setChecked(Settings::SettingsExportSvg::exportSvgFill.value());
   this->checkBoxEnableStroke->setChecked(Settings::SettingsExportSvg::exportSvgStroke.value());
   QColor color;
 
   auto colorName = Settings::SettingsExportSvg::exportSvgFillColor.value();
-  fillColor.setNamedColor(colorName.c_str());  
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+  fillColor = QColor::fromString(colorName.c_str());
+#else
+  fillColor.setNamedColor(colorName.c_str());
+#endif
 
   colorName = Settings::SettingsExportSvg::exportSvgStrokeColor.value();
-  strokeColor.setNamedColor(colorName.c_str());  
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+  strokeColor = QColor::fromString(colorName.c_str());
+#else
+  strokeColor.setNamedColor(colorName.c_str());
+#endif
   doubleSpinBoxStrokeWidth->setValue(Settings::SettingsExportSvg::exportSvgStrokeWidth.value());
   updateFillColor(fillColor);
   updateStrokeColor(strokeColor);
@@ -29,8 +37,7 @@ int ExportSvgDialog::exec()
   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
     showDialog = true;
   }
-   return showDialog ? QDialog::exec() : QDialog::Accepted;
-	
+  return showDialog ? QDialog::exec() : QDialog::Accepted;
 }
 
 QColor ExportSvgDialog::getFillColor() const
