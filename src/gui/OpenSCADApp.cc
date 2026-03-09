@@ -11,7 +11,9 @@
 #include "geometry/cgal/CGALCache.h"
 #endif
 #include <QApplication>
+#include <QDialog>
 #include <QEvent>
+#include <QMessageBox>
 #include <QObject>
 #include <QProgressDialog>
 #include <QString>
@@ -46,12 +48,32 @@ OpenSCADApp::~OpenSCADApp()
   delete this->fontCacheDialog;
 }
 
-#include <QMessageBox>
-
 bool OpenSCADApp::notify(QObject *object, QEvent *event)
 {
   QString msg;
   try {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // Qt5 + Fusion style: QMessageBox::resizeEvent() calls updateSize() which
+    // calls resize() when sizeHint() differs from the current size.  With
+    // word-wrapped text the hint depends on the current width, so sizeHint()
+    // can alternate between two values causing visible flicker.  Break the
+    // cycle by suppressing the re-entrant resize event.
+    if (event->type() == QEvent::Resize) {
+      if (auto *dialog = qobject_cast<QDialog *>(object)) {
+        static QDialog *resizingDialog = nullptr;
+        if (resizingDialog == dialog) {
+          return true;
+        }
+        resizingDialog = dialog;
+        struct Guard {
+          QDialog **p;
+          ~Guard() { *p = nullptr; }
+        };
+        Guard guard{&resizingDialog};
+        return QApplication::notify(object, event);
+      }
+    }
+#endif
     return QApplication::notify(object, event);
   } catch (const std::exception& e) {
     msg = e.what();
