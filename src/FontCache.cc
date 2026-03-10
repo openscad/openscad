@@ -143,6 +143,7 @@ FontCache::FontCache()
   const fs::path fontdir(PlatformUtils::resourcePath("fonts"));
   if (fs::is_regular_file(fontdir / "fonts.conf")) {
     auto abspath = fontdir.empty() ? fs::current_path() : fs::absolute(fontdir);
+//std::cout << "resource font dir " << abspath << "\n";
     PlatformUtils::setenv("FONTCONFIG_PATH", (abspath.generic_string()).c_str(), 0);
   }
 
@@ -153,8 +154,13 @@ FontCache::FontCache()
         "Can't initialize fontconfig library, text() objects will not be rendered");
     return;
   }
+// #if FC_MAJOR >= 2 && FC_MINOR >= 17
+//  FcConfigPreferAppFont(this->config, FcTrue);
+// #endif
+//std::cout << "Loaded system fonts\n";
 
   // Add the built-in fonts & config
+//std::cout << "Built-in font dir:\n";
   fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
   if (fs::is_directory(builtinfontpath)) {
 #ifndef __EMSCRIPTEN__
@@ -165,6 +171,20 @@ FontCache::FontCache()
     add_font_dir(builtinfontpath.generic_string());
   }
 
+  FcConfigParseAndLoadFromMemory(this->config,
+    (FcChar8 *)"<fontconfig>"
+    "<match target='scan'>"
+        "<test name='file' compare='contains'>"
+            "<string>fonts/Liberation-2.00.1</string>"
+        "</test>"
+        "<edit name='order'>"
+            "<int>-1</int>"
+        "</edit>"
+    "</match>"
+    "</fontconfig>",
+    FcTrue);
+
+//std::cout << "$HOME:\n";
   const char *home = getenv("HOME");
 
   // Add Linux font folders, the system folders are expected to be
@@ -173,6 +193,7 @@ FontCache::FontCache()
     add_font_dir(std::string(home) + "/.fonts");
   }
 
+//std::cout << "$OPENSCAD_FONT_PATH:\n";
   const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
   if (env_font_path != nullptr) {
     std::string paths(env_font_path);
@@ -188,6 +209,7 @@ FontCache::FontCache()
       }
     }
   }
+  fflush(stdout);
 
   FontCacheInitializer initializer(this->config);
   cb_handler(&initializer, cb_userdata);
@@ -240,6 +262,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 
 void FontCache::register_font_file(const std::string& path)
 {
+//std::cout << "    file: " << path << "\n";
   if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
     LOG(message_group::Warning, Location::NONE, "", "Can't register font '%1$s'", path);
   }
@@ -250,6 +273,7 @@ void FontCache::add_font_dir(const std::string& path)
   if (!fs::is_directory(path)) {
     return;
   }
+//std::cout << "    dir: " << path << "\n";
   if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
     LOG(message_group::Warning, Location::NONE, "", "Can't register font directory '%1$s'", path);
   }
@@ -416,7 +440,13 @@ FontFacePtr FontCache::find_face_fontconfig(const std::string& font) const
   FcConfigSubstitute(this->config, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
 
+#if 1
   FcPattern *match = FcFontMatch(this->config, pattern, &result);
+#else
+  FcFontSet *fspat = FcFontSort(this->config, pattern, FcTrue, NULL, &result);
+  FcPattern *match = FcFontRenderPrepare(this->config, pattern, fspat->fonts[0]);
+  FcFontSetDestroy(fspat);
+#endif
 
   FcChar8 *file_value;
   if (FcPatternGetString(match, FC_FILE, 0, &file_value) != FcResultMatch) {

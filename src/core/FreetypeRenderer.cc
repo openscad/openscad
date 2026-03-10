@@ -47,6 +47,9 @@
 #include "utils/printutils.h"
 
 #include FT_OUTLINE_H
+#include FT_TRUETYPE_IDS_H
+#include FT_SFNT_NAMES_H
+
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define SCRIPT_UNTAG(tag) \
   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
@@ -512,8 +515,90 @@ FreetypeRenderer::FontMetrics::FontMetrics(const FreetypeRenderer::Params& param
   interline = FT_MulFix(face->face_->height, size_metrics->y_scale) / scale * params.size;
   family_name = face->face_->family_name;
   style_name = face->face_->style_name;
+  version = getFontVersion(face->face_);
 
   ok = true;
+}
+
+// Freetype docs are not crystal clear about the encoding used for SFNT names.  The following version
+// support is based on observed behavior, for the platform and encoding values observed.  It is
+// conservative: it accepts only ASCII characters, and if the string appears to contain any non-ASCII
+// characters then it is rejected.
+std::string FreetypeRenderer::FontMetrics::getASCII(FT_Byte *string, int len)
+{
+  for (int j = 0; j < len; j += 2) {
+    // Accept only ASCII.
+    if (!isascii(string[j]) || !isprint(string[j])) {
+      return "";
+    }
+  }
+  return std::string((char *)string, len);
+}
+
+std::string FreetypeRenderer::FontMetrics::getUTF16BE(FT_Byte *string, int len)
+{
+  if (len % 2 != 0) {
+    return "";
+  }
+
+  std::string s = "";
+
+  for (int j = 0; j < len; j += 2) {
+    // Accept only ASCII.
+    if (string[j] != 0) {
+      return "";
+    }
+    char c = string[j + 1];
+    if (!isascii(c) || !isprint(c)) {
+      return "";
+    }
+    s += c;
+  }
+  return s;
+}
+
+// Returns a version string for the specified face, or "".
+std::string FreetypeRenderer::FontMetrics::getFontVersion(FT_Face face_)
+{
+  unsigned int n = FT_Get_Sfnt_Name_Count(face_);
+  // Note that error yields n==0, which falls through the loop to the "not found" handling.
+  for (unsigned int i = 0; i < n; i++) {
+    FT_SfntName sfnt;
+    auto error = FT_Get_Sfnt_Name(face_, i, &sfnt);
+    if (error != 0) {
+      // Maybe we should report this.
+      continue;
+    }
+    if (sfnt.name_id != TT_NAME_ID_VERSION_STRING) {
+      continue;
+    }
+    auto pid = sfnt.platform_id;
+    auto eid = sfnt.encoding_id;
+    std::string s = "";
+    // You really want to switch on the combination, so that you can have multiple combinations get
+    // the same handling.  One way to do that would be to arithmetically combine the platform and
+    // encoding IDs, and switch on the result.
+    if ((pid == TT_PLATFORM_APPLE_UNICODE && eid == TT_APPLE_ID_UNICODE_2_0) ||
+        (pid == TT_PLATFORM_MICROSOFT && eid == TT_MS_ID_UNICODE_CS)) {
+      // UCS-2 / UTF-16?
+      s = getUTF16BE(sfnt.string, sfnt.string_len);
+    } else if (pid == TT_PLATFORM_MACINTOSH && eid == TT_MAC_ID_ROMAN) {
+      // ASCII / UTF-8?
+      s = getASCII(sfnt.string, sfnt.string_len);
+    }
+    if (s != "") {
+      return s;
+    }
+    // Dump anything we didn't like to stdout.
+    printf("Unknown version string encoding:\n");
+    printf("platform %u encoding %u\n", sfnt.platform_id, sfnt.encoding_id);
+    for (int j = 0; j < sfnt.string_len; j++) {
+      printf(" %2.2x", (unsigned char)sfnt.string[j]);
+    }
+    printf("\n");
+    fflush(stdout);
+  }
+  return "";
 }
 
 FreetypeRenderer::TextMetrics::TextMetrics(const FreetypeRenderer::Params& params)
