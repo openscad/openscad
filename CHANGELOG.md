@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.18.0](https://github.com/pythonscad/pythonscad/compare/v0.17.0...v0.18.0) (2026-03-09)
+
+
+### Features
+
+* prepare project for PyPI publishing ([#493](https://github.com/pythonscad/pythonscad/issues/493)) ([3cb54e0](https://github.com/pythonscad/pythonscad/commit/3cb54e06f2508cab7969107ae6fb08c21acac92e))
+
+
+### Bug Fixes
+
+* **build:** add PORTABLE_BINARY=ON to Windows and macOS release builds ([#500](https://github.com/pythonscad/pythonscad/issues/500)) ([a4a2acc](https://github.com/pythonscad/pythonscad/commit/a4a2acc6f9d16bacf65a16ecd3ed4606bfa738fc)), closes [#497](https://github.com/pythonscad/pythonscad/issues/497)
+* **gui:** prevent dialog flickering on Qt5 caused by resize oscillation ([#499](https://github.com/pythonscad/pythonscad/issues/499)) ([5186eaf](https://github.com/pythonscad/pythonscad/commit/5186eaf8b03a1e0af892a18172783f035fca2af5))
+* resolve Qt6 deprecation warnings in GUI code ([#479](https://github.com/pythonscad/pythonscad/issues/479)) ([a651b48](https://github.com/pythonscad/pythonscad/commit/a651b488b4a4656862ff87af2c08f3ad799a2bad))
+* use Fusion style with explicit palettes for reliable cross-platform theming ([#490](https://github.com/pythonscad/pythonscad/issues/490)) ([5e6858b](https://github.com/pythonscad/pythonscad/commit/5e6858ba7828fafcbf9876a0e198bd595da63d1f))
+
+
+### Documentation
+
+* add rendervars() documentation ([#496](https://github.com/pythonscad/pythonscad/issues/496)) ([f26a430](https://github.com/pythonscad/pythonscad/commit/f26a430a2430b815d08ffe4271e29bd3d9b7742d))
+
 ## [0.17.0](https://github.com/pythonscad/pythonscad/compare/v0.16.0...v0.17.0) (2026-03-06)
 
 
