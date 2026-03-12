@@ -105,7 +105,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
+             <iconset>
               <normaloff>:/icons/close.png</normaloff>:/icons/close.png</iconset>
             </property>
             <property name="iconSize">
@@ -131,7 +131,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
+             <iconset>
               <normaloff>:/icons/information-icons-error.png</normaloff>:/icons/information-icons-error.png</iconset>
             </property>
             <property name="iconSize">
@@ -206,7 +206,7 @@
      <x>0</x>
      <y>0</y>
      <width>1354</width>
-     <height>37</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1060,7 +1060,7 @@
     <string>&amp;Share Design</string>
    </property>
   </action>
- <action name="designLoadShareDesign">
+  <action name="designLoadShareDesign">
    <property name="text">
     <string>&amp;Load shared Design</string>
    </property>
@@ -1139,16 +1139,25 @@
    </property>
   </action>
   <action name="fileActionExportFoldable">
+   <property name="icon">
+    <iconset theme="chokusen-export-ps"/>
+   </property>
    <property name="text">
     <string>Export as &amp;Foldable PS...</string>
    </property>
   </action>
   <action name="fileActionExportSTP">
+   <property name="icon">
+    <iconset theme="chokusen-export-stp"/>
+   </property>
    <property name="text">
     <string>Export as &amp;Step...</string>
    </property>
   </action>
   <action name="fileActionExportGCode">
+   <property name="icon">
+    <iconset theme="chokusen-export-gc"/>
+   </property>
    <property name="text">
     <string>Export as &amp;GCode...</string>
    </property>

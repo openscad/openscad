@@ -16,6 +16,9 @@ font = "Open Sans:style=Regular";
 export_font = "Open Sans:style=Bold";
 
 icons = [
+    ["export-gc"],
+    ["export-ps"],
+    ["export-stp"],
     ["export-stl"],
     ["export-obj"],
     ["export-off"],
@@ -84,6 +87,9 @@ icons = [
 ];
 
 icon(selected_icon) {
+    export("GC");
+    export("PS");
+    export("STP");
     export("STL");
     export("OBJ");
     export("OFF");

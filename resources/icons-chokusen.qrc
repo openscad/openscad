@@ -15,12 +15,15 @@
     <file>icons/chokusen/svg/chokusen-export-amf.svg</file>
     <file>icons/chokusen/svg/chokusen-export-csg.svg</file>
     <file>icons/chokusen/svg/chokusen-export-dxf.svg</file>
+    <file>icons/chokusen/svg/chokusen-export-gc.svg</file>
     <file>icons/chokusen/svg/chokusen-export-obj.svg</file>
     <file>icons/chokusen/svg/chokusen-export-off.svg</file>
     <file>icons/chokusen/svg/chokusen-export-pdf.svg</file>
     <file>icons/chokusen/svg/chokusen-export-png.svg</file>
     <file>icons/chokusen/svg/chokusen-export-pov.svg</file>
+    <file>icons/chokusen/svg/chokusen-export-ps.svg</file>
     <file>icons/chokusen/svg/chokusen-export-stl.svg</file>
+    <file>icons/chokusen/svg/chokusen-export-stp.svg</file>
     <file>icons/chokusen/svg/chokusen-export-svg.svg</file>
     <file>icons/chokusen/svg/chokusen-export-wrl.svg</file>
     <file>icons/chokusen/svg/chokusen-file.svg</file>
