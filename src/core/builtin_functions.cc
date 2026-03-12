@@ -1109,13 +1109,30 @@ Value builtin_import(Arguments arguments, const Location& loc)
 
 Value builtin_now(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("now", arguments, loc, 0)) {
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"unit"});
+  parameters.set_caller("now");
+  if (!parameters.valid("unit", Value::Type::STRING)) {
     return Value::undefined.clone();
   }
+
   const auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
                         std::chrono::steady_clock::now().time_since_epoch())
                         .count();
-  return Value(static_cast<double>(now_us));
+  const std::string unit = parameters.get("unit", "u");
+  if (unit == "u") {
+    return Value(static_cast<double>(now_us));
+  }
+  if (unit == "m") {
+    return Value(static_cast<double>(now_us) / 1000.0);
+  }
+  if (unit == "s") {
+    return Value(static_cast<double>(now_us) / 1000000.0);
+  }
+
+  LOG(message_group::Warning, loc, parameters.documentRoot(),
+      "now(..., unit=%1$s) unsupported unit: expected \"s\", \"m\", or \"u\"",
+      parameters.get("unit").toEchoStringNoThrow());
+  return Value::undefined.clone();
 }
 
 void register_builtin_functions()
@@ -1301,7 +1318,7 @@ void register_builtin_functions()
 
   Builtins::init("now", new BuiltinFunction(&builtin_now),
                  {
-                   "now() -> number",
+                   "now(unit=\"u\") -> number",
                  });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),

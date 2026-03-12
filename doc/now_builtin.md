@@ -14,14 +14,16 @@ Author: _Adrian Hawryluk_ (a.k.a. [Ma-XX-oN](https://github.com/Ma-XX-oN))
 ## Signature
 
 ```text
-now() -> number
+now(unit="u") -> number
 ```
 
-Returns the current monotonic wall-clock reading in microseconds.  The
+Returns the current monotonic wall-clock reading in the requested unit.  The
 value is meaningful only when subtracted from another `now()` call within
 the same process — absolute values are not stable across runs.
 
-`now()` takes no arguments.
+The optional `unit` argument accepts `"u"` for microseconds (default),
+`"m"` for milliseconds, and `"s"` for seconds.  It may be supplied
+positionally (`now("m")`) or by name (`now(unit="m")`).
 
 ## What It Measures
 
@@ -42,6 +44,9 @@ result = expensive_computation();
 elapsed_us = now() - start;
 echo(str("elapsed: ", elapsed_us, " μs"));
 ```
+
+Use `now("m")` or `now("s")` when you want milliseconds or seconds
+without dividing manually.
 
 ## Evaluation Phases and now()
 
