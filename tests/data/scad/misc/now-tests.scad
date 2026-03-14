@@ -1,0 +1,12 @@
+m0 = now();
+m1 = now();
+u0 = now("u");
+u1 = now(unit="u");
+ms0 = now("m");
+s0 = now("s");
+bad_pos = now("CPU");
+bad_named = now(type="monotonic");
+bad_type = now(1);
+echo("monotonic_non_decreasing", m1 >= m0);
+echo("default_matches_u_scale", abs(m0 / u0 - 1) < 0.1 && abs(m1 / u1 - 1) < 0.1);
+echo("unit_scale_ratios", u0 / ms0 > 100 && u0 / ms0 < 10000 && ms0 / s0 > 100 && ms0 / s0 < 10000);
