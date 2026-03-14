@@ -184,6 +184,7 @@ std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
   auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits, nullptr);
   auto result = toPolygon2d(*sanitize(paths), scale_bits);
   result->stamp_color(poly);
+  for (const auto& p : poly.polylines()) result->addPolyline(p);
   return result;
 }
 
@@ -262,6 +263,8 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
       if (polygons[inputs_old]->outlines().size() > 1) break;
       if (polygons[inputs_old + input_width] == nullptr) break;
       if (polygons[inputs_old + input_width]->outlines().size() > 1) break;
+      if (polygons[inputs_old]->outlines().size() == 0) break;
+      if (polygons[inputs_old + input_width]->outlines().size() == 0) break;
       if (polygons[inputs_old]->outlines()[0].color !=
           polygons[inputs_old + input_width]->outlines()[0].color)
         break;
@@ -336,6 +339,12 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
   }
   union_result = union_sanitized;
   union_result.setSanitized(true);
+  for (const auto& poly : polygons) {
+    if (poly == nullptr) continue;
+    for (const auto& pl : poly->polylines()) {
+      union_result.addPolyline(pl);
+    }
+  }
   return union_result;
 }
 
@@ -464,6 +473,14 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
     outlines_work = outlines_new;
   }
   result.setSanitized(true);
+  for (const auto& poly : polygons) {
+    if (poly == nullptr) continue;
+    for (const auto& pl : poly->polylines()) {
+      result.addPolyline(pl);
+    }
+    break;  // only from 1st argument
+  }
+
   return std::make_unique<Polygon2d>(result);
 }
 

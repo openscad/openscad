@@ -104,7 +104,7 @@ std::string Polygon2d::dump() const
 
 bool Polygon2d::isEmpty() const
 {
-  return this->theoutlines.empty();
+  return this->theoutlines.empty() && this->thepolylines.empty();
 }
 
 void Polygon2d::transform(const Transform2d& mat)
@@ -254,6 +254,20 @@ const Polygon2d::Outlines2d& Polygon2d::transformedOutlines() const
     const_cast<Polygon2d *>(this)->trans3dState = Transform3dState::CACHED;
   }
   return trans3dOutlines;
+}
+
+const Polygon2d::Outlines2d& Polygon2d::transformedPolylines() const
+{
+  if (trans3dState == Transform3dState::NONE) return thepolylines;
+  if (trans3dState != Transform3dState::CACHED) {
+    // Need to remove const from the cache object.  It maintains proper const semantics to the public API
+    // though.
+    Polygon2d::Outlines2d& cache = const_cast<Polygon2d::Outlines2d&>(trans3dPolylines);
+    cache = thepolylines;
+    applyTrans3dToOutlines(cache);
+    const_cast<Polygon2d *>(this)->trans3dState = Transform3dState::CACHED;
+  }
+  return trans3dPolylines;
 }
 
 // This flattens the 3D transform into the 2D transform that it would have been
@@ -449,12 +463,12 @@ bool Polygon2d::point_inside(const Vector2d& pt) const
     for (int i = 0; i < n; i++) {
       Vector2d p1 = o.vertices[i];
       Vector2d p2 = o.vertices[(i + 1) % n];
-      if (fabs(p1[1] - p2[1]) > 1e-9) { // not horizotal
-        if (pt[1] <= p1[1] && pt[1] > p2[1]) { // p2 ... pt .. p1
+      if (fabs(p1[1] - p2[1]) > 1e-9) {         // not horizotal
+        if (pt[1] <= p1[1] && pt[1] > p2[1]) {  // p2 ... pt .. p1
           double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
           if (x > pt[0]) cuts++;
         }
-        if (pt[1] < p2[1] && pt[1] >= p1[1]) { // p1 .. pt .. p2
+        if (pt[1] < p2[1] && pt[1] >= p1[1]) {  // p1 .. pt .. p2
           double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
           if (x > pt[0]) cuts++;
         }
