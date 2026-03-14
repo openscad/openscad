@@ -47,6 +47,11 @@ public:
     if (trans3dState != Transform3dState::NONE) mergeTrans3d();
     this->theoutlines.push_back(outline);
   }
+  void addPolyline(const Outline2d& polyline)
+  {
+    if (trans3dState != Transform3dState::NONE) mergeTrans3d();
+    this->thepolylines.push_back(polyline);
+  }
   void reverse(void);
   [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d = false) const;
   [[nodiscard]] double area() const;
@@ -60,8 +65,14 @@ public:
   {
     return trans3dState == Transform3dState::NONE ? theoutlines : transformedOutlines();
   }
+  const Outlines2d& polylines() const
+  {
+    return trans3dState == Transform3dState::NONE ? thepolylines : transformedPolylines();
+  }
   const Outlines2d& untransformedOutlines() const { return theoutlines; }
+  const Outlines2d& untransformedPolylines() const { return thepolylines; }
   const Outlines2d& transformedOutlines() const;
+  const Outlines2d& transformedPolylines() const;
   using Geometry::transform;
 
   void transform(const Transform2d& mat);
@@ -91,10 +102,12 @@ public:
 
 private:
   Outlines2d theoutlines;
+  Outlines2d thepolylines;
   bool sanitized{false};
   Transform3dState trans3dState{Transform3dState::NONE};
   Transform3d trans3d;
   Outlines2d trans3dOutlines;
+  Outlines2d trans3dPolylines;
   void mergeTrans3d();
   void applyTrans3dToOutlines(Polygon2d::Outlines2d& outlines) const;
 };

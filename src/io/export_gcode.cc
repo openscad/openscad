@@ -184,6 +184,20 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
     }
     output_gcode_pars(output, -1, NAN, NAN, NAN, 0);
   }
+  for (const auto& o : poly.polylines()) {
+    const Eigen::Vector2d& p0 = o.vertices[0];
+    const double laserpower = color_to_parm(pt, o.color, 0, *options);
+    const double feedrate = color_to_parm(pt, o.color, 1, *options);
+
+    output_gcode_pars(output, 0, p0.x(), p0.y(), NAN, NAN);
+    output_gcode_pars(output, -1, NAN, NAN, NAN, laserpower);
+    int n = o.vertices.size();
+    for (unsigned int idx = 1; idx < n; ++idx) {
+      const Eigen::Vector2d& p = o.vertices[idx];
+      output_gcode_pars(output, 1, p.x(), p.y(), feedrate, laserpower);
+    }
+    output_gcode_pars(output, -1, NAN, NAN, NAN, 0);
+  }
 }
 
 static void append_gcode(boost::property_tree::ptree pt, const std::shared_ptr<const Geometry>& geom,
