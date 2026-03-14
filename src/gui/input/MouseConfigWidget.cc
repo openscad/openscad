@@ -77,6 +77,10 @@ void MouseConfigWidget::init()
   actionToComboBox.insert({MouseConfig::CTRL_SHIFT_LEFT_CLICK, comboBoxCtrlShiftLeftClick});
   actionToComboBox.insert({MouseConfig::CTRL_SHIFT_MIDDLE_CLICK, comboBoxCtrlShiftMiddleClick});
   actionToComboBox.insert({MouseConfig::CTRL_SHIFT_RIGHT_CLICK, comboBoxCtrlShiftRightClick});
+  actionToComboBox.insert({MouseConfig::SCROLL, comboBoxScroll});
+  actionToComboBox.insert({MouseConfig::SHIFT_SCROLL, comboBoxShiftScroll});
+  actionToComboBox.insert({MouseConfig::CTRL_SCROLL, comboBoxCtrlScroll});
+  actionToComboBox.insert({MouseConfig::CTRL_SHIFT_SCROLL, comboBoxCtrlShiftScroll});
   actionToSetting.clear();
   actionToSetting.insert({MouseConfig::LEFT_CLICK, &Settings::Settings::inputMouseLeftClick});
   actionToSetting.insert({MouseConfig::MIDDLE_CLICK, &Settings::Settings::inputMouseMiddleClick});
@@ -96,6 +100,11 @@ void MouseConfigWidget::init()
     {MouseConfig::CTRL_SHIFT_MIDDLE_CLICK, &Settings::Settings::inputMouseCtrlShiftMiddleClick});
   actionToSetting.insert(
     {MouseConfig::CTRL_SHIFT_RIGHT_CLICK, &Settings::Settings::inputMouseCtrlShiftRightClick});
+  actionToSetting.insert({MouseConfig::SCROLL, &Settings::Settings::inputMouseScroll});
+  actionToSetting.insert({MouseConfig::SHIFT_SCROLL, &Settings::Settings::inputMouseShiftScroll});
+  actionToSetting.insert({MouseConfig::CTRL_SCROLL, &Settings::Settings::inputMouseCtrlScroll});
+  actionToSetting.insert(
+    {MouseConfig::CTRL_SHIFT_SCROLL, &Settings::Settings::inputMouseCtrlShiftScroll});
 
   for (int i = 0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
     auto mouseAction = static_cast<MouseConfig::MouseAction>(i);
@@ -228,6 +237,30 @@ void MouseConfigWidget::on_comboBoxCtrlShiftMiddleClick_activated(int val)
 void MouseConfigWidget::on_comboBoxCtrlShiftRightClick_activated(int val)
 {
   applyComboBox(comboBoxCtrlShiftRightClick, val, Settings::Settings::inputMouseCtrlShiftRightClick);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxScroll_activated(int val)
+{
+  applyComboBox(comboBoxScroll, val, Settings::Settings::inputMouseScroll);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxShiftScroll_activated(int val)
+{
+  applyComboBox(comboBoxShiftScroll, val, Settings::Settings::inputMouseShiftScroll);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxCtrlScroll_activated(int val)
+{
+  applyComboBox(comboBoxCtrlScroll, val, Settings::Settings::inputMouseCtrlScroll);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxCtrlShiftScroll_activated(int val)
+{
+  applyComboBox(comboBoxCtrlShiftScroll, val, Settings::Settings::inputMouseCtrlShiftScroll);
   emit updateMouseActions();
 }
 
