@@ -142,6 +142,8 @@ ColorList::ColorList(QWidget *parent) : QWidget(parent), ui(new Ui_ColorListWidg
 ColorList::~ColorList()
 {
   delete ui;
+  for (const auto &item : itemList)
+    delete item;
 }
 
 void ColorList::updateSort()

@@ -43,7 +43,8 @@ std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arg
 
 void register_builtin_group()
 {
-  Builtins::init("group", new BuiltinModule(builtin_group),
+  static BuiltinModule mod(builtin_group);
+  Builtins::init("group", &mod,
                  {
                    "group",
                  });

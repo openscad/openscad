@@ -285,27 +285,32 @@ std::string TransformNode::verbose_name() const
 
 void register_builtin_transform()
 {
-  Builtins::init("scale", new BuiltinModule(builtin_scale),
+  static BuiltinModule mod_scale(builtin_scale);	
+  Builtins::init("scale", &mod_scale,
                  {
                    "scale([x, y, z])",
                  });
 
-  Builtins::init("rotate", new BuiltinModule(builtin_rotate),
+  static BuiltinModule mod_rotate(builtin_rotate);	
+  Builtins::init("rotate", &mod_rotate,
                  {
                    "rotate([x, y, z])",
                  });
 
-  Builtins::init("mirror", new BuiltinModule(builtin_mirror),
+  static BuiltinModule mod_mirror(builtin_mirror);	
+  Builtins::init("mirror", &mod_mirror,
                  {
                    "mirror([x, y, z])",
                  });
 
-  Builtins::init("translate", new BuiltinModule(builtin_translate),
+  static BuiltinModule mod_translate(builtin_translate);	
+  Builtins::init("translate", &mod_translate,
                  {
                    "translate([x, y, z])",
                  });
 
-  Builtins::init("multmatrix", new BuiltinModule(builtin_multmatrix),
+  static BuiltinModule mod_multmatrix(builtin_multmatrix);	
+  Builtins::init("multmatrix", &mod_multmatrix,
                  {
                    "multmatrix(matrix_4_by_4)",
                  });
