@@ -1,3 +1,6 @@
+#include "platform/PlatformUtils.h"
+
+#include <algorithm>
 #include <filesystem>
 #include <ios>
 #include <map>

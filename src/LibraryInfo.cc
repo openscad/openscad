@@ -71,7 +71,7 @@
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
-extern const std::string get_cairo_version();
+extern std::string get_cairo_version();
 extern const char *LODEPNG_VERSION_STRING;
 
 std::string LibraryInfo::info()
