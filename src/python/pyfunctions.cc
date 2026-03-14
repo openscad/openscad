@@ -952,6 +952,30 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
+PyObject *python_polyline(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE();
+  auto node = std::make_shared<PolylineNode>(instance, CreateCurveDiscretizer(kwargs));
+
+  char *kwlist[] = {"points", NULL};
+  PyObject *pypoints = NULL;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type, &pypoints)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing polyline(points,paths)");
+    return NULL;
+  }
+
+  std::vector<Vector3d> points = python_to2dvarpointlist(pypoints);
+  if (points.size() == 0) {
+    return NULL;
+  }
+
+  node->points = points;
+
+  python_retrieve_pyname(node);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
 PyObject *python_spline(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
@@ -6122,6 +6146,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"square", (PyCFunction)python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
   {"circle", (PyCFunction)python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
   {"polygon", (PyCFunction)python_polygon, METH_VARARGS | METH_KEYWORDS, "Create Polygon."},
+  {"polyline", (PyCFunction)python_polyline, METH_VARARGS | METH_KEYWORDS, "Create a Polyline."},
   {"spline", (PyCFunction)python_spline, METH_VARARGS | METH_KEYWORDS, "Create Spline."},
   {"text", (PyCFunction)python_text, METH_VARARGS | METH_KEYWORDS, "Create Text."},
   {"textmetrics", (PyCFunction)python_textmetrics, METH_VARARGS | METH_KEYWORDS, "Get textmetrics."},

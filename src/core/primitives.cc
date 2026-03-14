@@ -814,7 +814,7 @@ VectorOfVector2d PolygonNode::createGeometry_sub(const std::vector<Vector3d>& po
       if (ang_en - ang_st > M_PI) ang_en -= 2 * M_PI;
       if (ang_st - ang_en > M_PI) ang_st -= 2 * M_PI;
 
-      int segs = this->discretizer.getCircularSegmentCount(r, ang_en - ang_st).value_or(3);
+      int segs = this->discretizer.getCircularSegmentCountAlt(r, ang_en - ang_st).value_or(3);
       for (int j = 0; j < segs; j++) {
         double ang = ang_st + (ang_en - ang_st) * (j + 1) / (segs + 1);
         result.push_back(Vector2d(cent[0] + r * cos(ang), cent[1] + r * sin(ang)));
@@ -848,6 +848,35 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
     p->setConvexity(convexity);
   }
   p->setColor(*OpenSCAD::parse_color("#f9d72c"));
+  return p;
+}
+
+std::string PolylineNode::toString() const
+{
+  std::ostringstream stream;
+  stream << "polyline(points = [";
+  bool firstPoint = true;
+  for (const auto& point : this->points) {
+    if (firstPoint) {
+      firstPoint = false;
+    } else {
+      stream << ", ";
+    }
+    stream << "[" << point[0] << ", " << point[1];
+    if (point[2] != 0) stream << ", " << point[2];
+    stream << "]";
+  }
+  stream << "])";
+  return stream.str();
+}
+
+std::unique_ptr<const Geometry> PolylineNode::createGeometry() const
+{
+  auto p = std::make_unique<Polygon2d>();
+  Outline2d outline;
+  std::vector<size_t> path;
+  for (const auto& pt : points) outline.vertices.push_back(pt.head<2>());
+  p->addPolyline(outline);
   return p;
 }
 

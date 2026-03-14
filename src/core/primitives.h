@@ -199,6 +199,21 @@ public:
   CurveDiscretizer discretizer;
 };
 
+class PolylineNode : public LeafNode
+{
+public:
+  PolylineNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
+  {
+  }
+  std::string toString() const override;
+  std::string name() const override { return "polyline"; }
+  std::unique_ptr<const Geometry> createGeometry() const override;
+
+  std::vector<Vector3d> points;
+  CurveDiscretizer discretizer;
+};
+
 class SplineNode : public LeafNode
 {
 public:
