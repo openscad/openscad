@@ -2463,6 +2463,24 @@ void MainWindow::rightClick(QPoint position)
       if (step->name() == "root") {
         continue;
       }
+      const bool hasSourceRef = step->modinst && !step->modinst->location().isNone();
+      if (!hasSourceRef) {
+        // Show an entry so the backtrace stays complete; no jump/highlight (no "id", no hover)
+        std::string name;
+        if (step->modinst) {
+          const std::string vname = step->verbose_name();
+          const int first_position = (vname.find("module") == std::string::npos) ? 0 : 7;
+          name = vname.empty() ? step->modinst->name() : vname.substr(first_position);
+        } else {
+          const std::string vname = step->verbose_name();
+          const int first_position = (vname.find("module") == std::string::npos) ? 0 : 7;
+          name = vname.empty() ? "?" : vname.substr(first_position);
+        }
+        ss.str("");
+        ss << name << " (no source reference)";
+        tracemenu.addAction(QString::fromStdString(ss.str()));
+        continue;
+      }
       auto location = step->modinst->location();
       ss.str("");
 
@@ -2549,7 +2567,10 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
   // starts at 1 because we will process this one after later
   for (size_t i = 1; i < stack.size() - 1; i++) {
     const auto& node = stack[i];
-
+    if (!node->modinst || node->modinst->location().isNone()) {
+      level++;
+      continue;
+    }
     auto& location = node->modinst->location();
     if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
       level++;
@@ -2565,6 +2586,9 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
   }
 
   auto& node = stack[0];
+  if (!node->modinst || node->modinst->location().isNone()) {
+    return;
+  }
   auto location = node->modinst->location();
   auto line = location.firstLine();
   auto column = location.firstColumn();
@@ -2586,6 +2610,9 @@ void MainWindow::setSelection(int index)
   const std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
 
   if (!selected_node) return;
+  if (!selected_node->modinst || selected_node->modinst->location().isNone()) {
+    return;
+  }
 
   currentlySelectedObject = index;
 

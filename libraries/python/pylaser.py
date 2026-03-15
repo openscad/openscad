@@ -82,6 +82,7 @@ class LaserCutter:
         lut = {}
         vertices = []
         edge_inv = {}
+        orgfaces = self.faces[:]
         # make sure all faces are polygons, normalize input TODO combine transformations
         for i, f in enumerate(self.faces):
             # f are multmatrix - polygon
@@ -121,9 +122,9 @@ class LaserCutter:
                 if len(pol.paths) == 0:
                     pol.paths=[list(range(len(pol.points)))]
                 for path in pol.paths:
-    
+
                     ipath = []
-    
+
                     for ind in path:
                         pt = pol.points[ind]
                         pt3 = multmatrix(pt + [0] , mat)
@@ -162,11 +163,11 @@ class LaserCutter:
                 for j, path in enumerate(pol.paths):
                     newpts=[]
                     curface=ifaces[i][j]
-    
+
                     n=len(curface)
-    
+
                     stripes = [] # pattern on each side
-    
+
                     for k in range(n): # all edges
                         conn=conn_plain
                         partedge=[curface[(k+1)%n],curface[k]]
@@ -175,9 +176,9 @@ class LaserCutter:
                         if tuple(partedge) in edge_inv:
                             l=norm(translate(pt1, scale(pt2,-1)))
                             conn = self.create_conn_type1(l)
-    
+
                         if conn == conn_plain:
-    
+
                             # go through all faces and check if they are inside
                             for l, oface in enumerate(self.faces):
                                 if l == i:
@@ -207,13 +208,13 @@ class LaserCutter:
                         stripes.append(stripe)
 
 
-                    for k, oface in enumerate(self.faces):
+                    for k, oface in enumerate(orgfaces): #need to use unmodified version
                         if k == i:
                             continue
                         for oshape in oface:
                             oshape = oshape.offset(delta=-0.1) # make sure, that cuts on edges are ignored
                             for l in range(n):
-    
+
                                 # i/j 1st outline , pol, n
                                 # oshape ist anderes
                                 pt1=multmatrix(pol.points[path[l]] + [0], mat) # 3d pos of edge on original shape
@@ -221,15 +222,15 @@ class LaserCutter:
                                 pt1x=divmatrix(pt1, oface.matrix)
                                 pt2x=divmatrix(pt2, oface.matrix)
                                 # TODO pruefen ob das mitten durch geht und nicht nur am rand entlang
-    
+
                                 fact=None
                                 if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
                                     # calculate exact cut
                                     fact=pt1x[2]/(pt1x[2]-pt2x[2])
-        
+
                                 if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
                                     fact= pt1x[2]/(pt1x[2]-pt2x[2])
-                                if fact is not None: # TODO activate
+                                if fact is not None:
                                     ptcutx=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
                                     total_cuts[k].append(ptcutx)
                                 if len(total_cuts[k])%3 == 2:
@@ -249,7 +250,7 @@ class LaserCutter:
                     # Now concatenate all strips with extrapolation
                     for k, stripe in enumerate(stripes):
                         nextstr = stripes[(k+1)%n]
-    
+
                         # middle part of edge
                         newpts = newpts + stripe[1:-1] # skip 1st and last
                         #calculate joint point
@@ -266,7 +267,7 @@ class LaserCutter:
                         s=(x43*y31-x31*y43)/(x43*y21-x21*y43)
                         pt = [p1[0]+ s*x21, p1[1] + s*y21]
                         newpts.append(pt)
-    
+
                     s=len(newpolpoints)
                     n=len(newpts)
                     newpolpoints = newpolpoints + newpts
@@ -377,8 +378,8 @@ class LaserCutter:
         return [xmin, ymin, xmax, ymax]
 
 
- 
-        
+
+
 
     def finalize_auto(self, puzzles ,maxheight=None, maxwidth=None,dist=1):
         done=True
@@ -456,7 +457,7 @@ class LaserCutter:
         for piece in pieces[1:]:
             comb |= piece + [ ref_x - piece.bbox[0], ref_y - piece.bbox[1]+dist]
             ref_y = ref_y + piece.bbox[3]-piece.bbox[1]+dist
-            
+
         comb.bbox = self.calc_bbox(comb)
         return comb
 
@@ -470,7 +471,7 @@ class LaserCutter:
         for piece in pieces[1:]:
             comb |= piece + [ ref_x - piece.bbox[0]+dist, ref_y - piece.bbox[1]]
             ref_x = ref_x + piece.bbox[2]-piece.bbox[0]+dist
-            
+
         comb.bbox = self.calc_bbox(comb)
         return comb
 
@@ -510,8 +511,8 @@ class LaserCutter:
             m=self.faces[i].matrix
             return m[0][3]*dir[0]+m[1][3]*dir[1]+m[2][3]*dir[2]
         ind=max(list(range(len(self.faces))), key=maxfunc)
-        shape,=self.faces[ind].children()    
-        newshape=alterfunc(shape)       
+        shape,=self.faces[ind].children()
+        newshape=alterfunc(shape)
         if newshape == False:
             del self.faces[ind]
             return
