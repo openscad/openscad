@@ -107,13 +107,14 @@ void GLView::setColorScheme(const std::string& cs)
 
 void GLView::resizeGL(int w, int h)
 {
+  if (h == 0) h = 1; // my logic
   cam.pixel_width = w;
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
-  aspectratio = 1.0 * w / h;
+  aspectratio = static_cast<double>(w) / h;
 
-  // FIXME: Only run once, not every time the window is resized
   setupShader();
+  setupCamera(); 
 }
 
 void GLView::setCamera(const Camera& cam)
@@ -128,15 +129,19 @@ void GLView::setupCamera()
   auto dist = cam.zoomValue();
   switch (this->cam.projection) {
   case Camera::ProjectionType::PERSPECTIVE: {
-    gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+    // #6705 fix: Stabilize clipping planes to prevent perspective loss
+    double zNear = std::max(0.1, 0.01 * dist); 
+    double zFar = std::max(100.0, 1000.0 * dist);
+    gluPerspective(cam.fov, aspectratio, zNear, zFar);
     break;
   }
-  default:
   case Camera::ProjectionType::ORTHOGONAL: {
     auto height = dist * tan_degrees(cam.fov / 2);
     glOrtho(-height * aspectratio, height * aspectratio, -height, height, -100 * dist, +100 * dist);
     break;
   }
+  default:
+    break;
   }
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
