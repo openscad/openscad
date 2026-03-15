@@ -121,6 +121,11 @@ void Polygon2d::transform(const Transform2d& mat)
       v = mat * v;
     }
   }
+  for (auto& o : this->thepolylines) {
+    for (auto& v : o.vertices) {
+      v = mat * v;
+    }
+  }
 }
 
 void Polygon2d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize)
