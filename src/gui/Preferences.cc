@@ -804,9 +804,17 @@ void Preferences::on_comboBoxGuiTheme_activated(int index)
 
 void Preferences::on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont& font)
 {
+  // The global * stylesheet in setApplicationFont() applies font-family to
+  // all widgets including this QFontComboBox.  That can re-trigger this slot
+  // with a wrong match (e.g. "Ubuntu" prefix-matched back to "Ubuntu Mono").
+  // Block signals during the update to prevent the re-entrant cascade, then
+  // restore the correct selection afterwards.
   QSettingsCached settings;
   settings.setValue("advanced/applicationFontFamily", font.family());
+  fontComboBoxApplicationFontFamily->blockSignals(true);
   fireApplicationFontChanged();
+  fontComboBoxApplicationFontFamily->setCurrentFont(font);
+  fontComboBoxApplicationFontFamily->blockSignals(false);
 }
 
 void Preferences::on_comboBoxApplicationFontSize_currentIndexChanged(int index)
@@ -1575,10 +1583,7 @@ void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 void Preferences::updateGUIFontFamily(QFontComboBox *ffSelector, const QString& setting)
 {
   const auto fontfamily = getValue(setting).toString();
-  const auto fidx = ffSelector->findText(fontfamily, Qt::MatchContains);
-  if (fidx >= 0) {
-    BlockSignals<QFontComboBox *>(ffSelector)->setCurrentIndex(fidx);
-  }
+  BlockSignals<QFontComboBox *>(ffSelector)->setCurrentFont(QFont(fontfamily));
 }
 
 void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString& setting)
