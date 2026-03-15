@@ -32,7 +32,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         submodules: 'recursive'
 
@@ -51,7 +51,7 @@ jobs:
 
     - name: Set up QEMU for ARM64
       if: matrix.arch == 'aarch64'
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: arm64
 
@@ -131,7 +131,7 @@ jobs:
         echo "asc_path=${APPIMAGE_FILE}.asc" >> $GITHUB_OUTPUT
 
     - name: Upload AppImage as artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: pythonscad-qt${{ matrix.qt_version }}-${{ matrix.arch }}-appimage
         path: ${{ steps.appimage.outputs.filepath }}

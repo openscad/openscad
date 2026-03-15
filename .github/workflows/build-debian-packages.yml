@@ -27,7 +27,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate and prepare matrix
         id: set-matrix
@@ -94,7 +94,7 @@ jobs:
           git config --global --add safe.directory '*'
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
           fetch-depth: 0
@@ -114,7 +114,7 @@ jobs:
 
       - name: Set up QEMU for ARM64
         if: matrix.arch == 'arm64'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: arm64
 
@@ -282,7 +282,7 @@ jobs:
 
       - name: Upload build log as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-log-${{ matrix.distro }}-${{ matrix.arch }}
           path: /tmp/debs/*.log.txt
@@ -305,7 +305,7 @@ jobs:
 
     steps:
       - name: Checkout main repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download packages from GitHub Release
         run: |

@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Wait for build workflows
         id: wait
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const BUILD_WORKFLOWS = [
@@ -256,7 +256,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const releaseId = ${{ needs.wait-for-builds.outputs.release_id }};
@@ -280,7 +280,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update release with failure status
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const releaseId = ${{ needs.wait-for-builds.outputs.release_id }};
