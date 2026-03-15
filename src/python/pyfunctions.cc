@@ -33,9 +33,10 @@
 #include <string>
 
 #include "core/CgalAdvNode.h"
+#include "core/primitives.h"
+#include "core/CsgOpNode.h"
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
-#include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
 #include "core/FreetypeRenderer.h"
 #include "core/LinearExtrudeNode.h"
@@ -50,7 +51,7 @@
 #include "core/Tree.h"
 #include "core/enums.h"
 #include "core/node.h"
-#include "core/primitives.h"
+#include "genlang/genlang.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
