@@ -154,17 +154,33 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
 {
   auto options = exportInfo.optionsGcode;
 
+  double feedAddX = 0, feedAddY = 0;
+
+  try {
+    feedAddX = pt.get<double>("default.property.feedAddX");
+  } catch (const boost::property_tree::ptree_error& e) {
+  }
+
+  try {
+    feedAddY = pt.get<double>("default.property.feedAddY");
+  } catch (const boost::property_tree::ptree_error& e) {
+  }
+  printf("%g %g\n", feedAddX, feedAddY);
+
   for (const auto& o : poly.outlines()) {
-    const Eigen::Vector2d& p0 = o.vertices[0];
+    Eigen::Vector2d pold = o.vertices[0];
     const double laserpower = color_to_parm(pt, o.color, 0, *options);
     const double feedrate = color_to_parm(pt, o.color, 1, *options);
 
-    output_gcode_pars(output, 0, p0.x(), p0.y(), NAN, NAN);
+    output_gcode_pars(output, 0, pold.x(), pold.y(), NAN, NAN);
     output_gcode_pars(output, -1, NAN, NAN, NAN, laserpower);
     int n = o.vertices.size();
     for (unsigned int idx = 1; idx <= n; ++idx) {
       const Eigen::Vector2d& p = o.vertices[idx % n];
-      output_gcode_pars(output, 1, p.x(), p.y(), feedrate, laserpower);
+      Vector2d midpt = (p + pold) / 2.0;
+      double feed_eff = feedrate + feedAddX * midpt[0] + feedAddY * midpt[1];
+      output_gcode_pars(output, 1, p.x(), p.y(), feed_eff, laserpower);
+      pold = p;
     }
     output_gcode_pars(output, -1, NAN, NAN, NAN, 0);
   }

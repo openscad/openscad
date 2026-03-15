@@ -25,7 +25,7 @@ jobs:
 
       - name: Checkout code
         if: ${{ steps.release.outputs.release_created }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Tag created
         if: ${{ steps.release.outputs.release_created }}

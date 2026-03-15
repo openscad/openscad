@@ -145,7 +145,7 @@ jobs:
           ls -lh pythonscad-x86_64-app.tar
 
       - name: Upload x86_64 artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: pythonscad-x86_64-app
           path: pythonscad-x86_64-app.tar
@@ -278,7 +278,7 @@ jobs:
           ls -lh pythonscad-arm64-app.tar
 
       - name: Upload arm64 artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: pythonscad-arm64-app
           path: pythonscad-arm64-app.tar
@@ -300,13 +300,13 @@ jobs:
           git describe --tags --always --dirty
 
       - name: Download x86_64 artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: pythonscad-x86_64-app
           path: /tmp/x86_64-archive
 
       - name: Download arm64 artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: pythonscad-arm64-app
           path: /tmp/arm64-archive
@@ -1196,7 +1196,7 @@ jobs:
 
       - name: Upload DMG package
         if: always() && steps.artifacts.outputs.dmg_path != ''
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifacts.outputs.dmg_name }}
           path: ${{ steps.artifacts.outputs.dmg_path }}
@@ -1204,7 +1204,7 @@ jobs:
 
       - name: Upload pre-DMG app bundle for debugging
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: pre-dmg-app-bundle-debug
           path: /tmp/out/pre-dmg-app-bundle.tar.gz
