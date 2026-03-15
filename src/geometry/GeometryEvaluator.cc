@@ -150,7 +150,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
+    return ResultObject::constResult(applyHull(children));
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
@@ -271,11 +271,10 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
   return ClipperUtils::apply(newchildren, Clipper2Lib::ClipType::Union);
 }
 
-std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
+std::shared_ptr<const Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
 {
   Geometry::Geometries children = collectChildren3D(node);
 
-  auto P = PolySet::createEmpty();
   return applyHull(children);
 }
 

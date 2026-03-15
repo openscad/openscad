@@ -28,6 +28,20 @@ Location getLocation(const std::shared_ptr<const AbstractNode>& node)
 std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children,
                                                           OpenSCADOperator op)
 {
+  if (op == OpenSCADOperator::HULL) {
+    std::vector<manifold::Manifold> manifolds;
+    for (const auto& item : children) {
+      if (!item.second) continue;
+      auto chN = createManifoldFromGeometry(item.second);
+      if (chN && !chN->isEmpty()) {
+        manifolds.push_back(chN->getManifold());
+      }
+      if (item.first) item.first->progress_report();
+    }
+    if (manifolds.empty()) return nullptr;
+    return std::make_shared<ManifoldGeometry>(manifold::Manifold::Hull(manifolds));
+  }
+
   std::shared_ptr<ManifoldGeometry> geom;
 
   bool foundFirst = false;
