@@ -10,6 +10,7 @@
 #include "core/node.h"
 #include "core/progress.h"
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/manifold/manifoldutils.h"
 #include "utils/printutils.h"
@@ -29,17 +30,37 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
                                                           OpenSCADOperator op)
 {
   if (op == OpenSCADOperator::HULL) {
-    std::vector<manifold::Manifold> manifolds;
+    std::vector<manifold::vec3> pts;
     for (const auto& item : children) {
       if (!item.second) continue;
-      auto chN = createManifoldFromGeometry(item.second);
-      if (chN && !chN->isEmpty()) {
-        manifolds.push_back(chN->getManifold());
+      auto& chgeom = item.second;
+      if (const auto *mani = dynamic_cast<const ManifoldGeometry *>(chgeom.get())) {
+        pts.reserve(pts.size() + mani->numVertices());
+        mani->foreachVertexUntilTrue([&](auto& p) {
+          pts.push_back(p);
+          return false;
+        });
+      } else if (const auto *ps = dynamic_cast<const PolySet *>(chgeom.get())) {
+        pts.reserve(pts.size() + ps->indices.size() * 3);
+        for (const auto& p : ps->indices) {
+          for (const auto& ind : p) {
+            auto& v = ps->vertices[ind];
+            pts.push_back({v[0], v[1], v[2]});
+          }
+        }
+      } else {
+        auto chN = createManifoldFromGeometry(chgeom);
+        if (chN && !chN->isEmpty()) {
+          chN->foreachVertexUntilTrue([&](auto& p) {
+            pts.push_back(p);
+            return false;
+          });
+        }
       }
       if (item.first) item.first->progress_report();
     }
-    if (manifolds.empty()) return nullptr;
-    return std::make_shared<ManifoldGeometry>(manifold::Manifold::Hull(manifolds));
+    if (pts.empty()) return nullptr;
+    return std::make_shared<ManifoldGeometry>(manifold::Manifold::Hull(pts));
   }
 
   std::shared_ptr<ManifoldGeometry> geom;
