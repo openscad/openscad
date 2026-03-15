@@ -58,6 +58,8 @@ jobs:
           cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_QT6=${{ matrix.qt == 'qt6' && 'ON' || 'OFF' }}
           cmake --build . -j4
           cmake --install . --prefix=.
+      - name: Install Python test dependencies
+        run: pip install ezdxf
       - name: Run Test Suite
         run: |
           cd build
