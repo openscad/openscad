@@ -238,8 +238,6 @@ class LaserCutter:
                                     pt2x = total_cuts[k][-2]
                                     midpt=[ (pt1x[i]+pt2x[i])/2.0 for i in range(2) ]
                                     #total_cuts[k].append(i) # 2->3, info about other plate
-                                    print("testing inside", midpt)
-                                    print(oshape)
                                     if oshape.inside(midpt):
                                         total_cuts[k].append(i) # 2->3, info about other plate
                                     else:
@@ -285,7 +283,6 @@ class LaserCutter:
         # create more late cuts from total cuts
         # finished all faces
         for i, cuts in enumerate(total_cuts):
-            break
             f = self.faces[i]
 
             fn = [f.matrix[0][2], f.matrix[1][2], f.matrix[2][2]]
