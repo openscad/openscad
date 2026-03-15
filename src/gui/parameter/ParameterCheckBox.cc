@@ -13,8 +13,8 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter,
 
   if (descriptionStyle == DescriptionStyle::ShowDetails) {
     // large checkbox, when we have the space
-    checkBox->setStyleSheet(
-      "QCheckBox::indicator { width: 20px; height: 20px; } QCheckBox { spacing: 0px; }");
+    //checkBox->setStyleSheet(
+    //  "QCheckBox::indicator { width: 20px; height: 20px; } QCheckBox { spacing: 0px; }");
   }
 
   connect(checkBox, &QCheckBox::clicked, this, &ParameterCheckBox::onChanged);

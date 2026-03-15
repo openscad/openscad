@@ -112,7 +112,7 @@ void OpenSCADApp::setApplicationFont(const QString& family, uint size)
         border: 0px solid black;
     }
   )");
-  scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
+  //scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

@@ -135,7 +135,7 @@ void Console::setConsoleFont(const QString& fontFamily, uint ptSize)
         font-size: %2pt;
     }
   )");
-  this->setStyleSheet(stylesheet.arg(fontFamily, QString::number(ptSize)));
+  // this->setStyleSheet(stylesheet.arg(fontFamily, QString::number(ptSize)));
 }
 
 void Console::update()
