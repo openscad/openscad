@@ -153,7 +153,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
   return N;
 }
 
-std::shared_ptr<const Geometry> applyHull3D(const Geometry::Geometries& children)
+std::unique_ptr<PolySet> applyHull3D(const Geometry::Geometries& children)
 {
   using Hull_kernel = CGAL::Epick;
   // Collect point cloud

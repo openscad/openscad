@@ -23,15 +23,6 @@
 #include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
-std::shared_ptr<const Geometry> applyHull(const Geometry::Geometries& children)
-{
-#if ENABLE_MANIFOLD
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::HULL);
-  }
-#endif  // ENABLE_MANIFOLD
-  return CGALUtils::applyHull3D(children);
-}
 
 /*!
    children cannot contain nullptr objects
