@@ -196,7 +196,7 @@ jobs:
 
       - name: Upload ZIP package
         if: steps.artifacts.outputs.zip_path != ''
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifacts.outputs.zip_name }}
           path: ${{ steps.artifacts.outputs.zip_path }}
@@ -204,7 +204,7 @@ jobs:
 
       - name: Upload NSIS installer
         if: steps.artifacts.outputs.exe_path != ''
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifacts.outputs.exe_name }}
           path: ${{ steps.artifacts.outputs.exe_path }}
