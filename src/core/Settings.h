@@ -337,6 +337,7 @@ struct LocalAppParameter {
   operator bool() const { return type != LocalAppParameterType::invalid; }
 };
 
+// Forward declarations for stream operators
 std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param);
 std::istream& operator>>(std::istream& stream, LocalAppParameter& param);
 
