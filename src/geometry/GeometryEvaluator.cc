@@ -186,7 +186,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 #endif
 #ifdef ENABLE_CGAL
     return ResultObject::constResult(std::shared_ptr<const Geometry>(
-      CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
+      std::move(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end()))));
 #else
     assert(false && "No boolean backend available");
 #endif
