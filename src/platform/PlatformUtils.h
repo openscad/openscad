@@ -6,7 +6,10 @@
 #include <string>
 namespace fs = std::filesystem;
 
-static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
+#ifndef STACK_SAFETY_MARGIN
+#define STACK_SAFETY_MARGIN (128ul * 1024ul)
+#endif
+static constexpr size_t STACK_BUFFER_SIZE = STACK_SAFETY_MARGIN;
 static constexpr size_t STACK_LIMIT_DEFAULT = size_t{STACKSIZE} - STACK_BUFFER_SIZE;
 
 namespace PlatformUtils {
@@ -94,8 +97,9 @@ int setenv(const char *name, const char *value, int overwrite);
 /**
  * Return system defined stack limit. If the system does not define
  * a specific limit, the platform specific code will select a value.
+ * On Windows, this uses GetCurrentThreadStackLimits() for accurate values.
  *
- * @return maximum stack size in bytes.
+ * @return maximum usable stack size in bytes (total stack minus safety buffer).
  */
 unsigned long stackLimit();
 
