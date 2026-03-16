@@ -42,9 +42,9 @@
 #include <QWidget>
 #include <algorithm>
 #include <cstdlib>
-#include <exception>
 #include <filesystem>
 #include <string>
+#include "utils/printutils.h"
 #include <utility>
 
 #include "gui/QSettingsCached.h"
@@ -314,4 +314,172 @@ QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QC
            255.0 * (transparency * blend.greenF() + (1 - transparency) * input.greenF()),
            255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
   return getBackgroundColorStyleSheet(result);
+}
+
+static bool dumpDockAreaLayoutInfo(QDataStream& stream)
+{
+  uint8_t marker;
+  stream >> marker;
+  if (marker != /*TabMarker*/ 0xfa && marker != /*SequenceMarker*/ 0xfc) return false;
+
+  bool tabbed = marker == /*TabMarker*/ 0xfa;
+  int index = -1;
+  if (tabbed) stream >> index;
+
+  uint8_t orientation;
+  stream >> orientation;
+  auto o = static_cast<Qt::Orientation>(orientation);
+
+  int count;
+  stream >> count;
+  PRINTDB("Dock: (orientation=%1$d, count=%2$d): %3$s",
+          static_cast<int>(o) % count % (tabbed ? "Tabbed" : ""));
+
+  for (int i = 0; i < count; ++i) {
+    uint8_t nextMarker;
+    stream >> nextMarker;
+    switch (nextMarker) {
+    case /*WidgetMarker*/ 0xfb: {
+      QString name;
+      uint8_t flags;
+      stream >> name >> flags;
+      int dummy;
+      stream >> dummy >> dummy >> dummy >> dummy;
+      PRINTDB("  %1$d (Widget): %2$s, (visible=%3$d, floating=%4$d)",
+              i % name.toStdString().c_str() % static_cast<int>(bool(flags & 1)) %
+                static_cast<int>(bool(flags & 2)));
+      break;
+    }
+    case /*SequenceMarker*/ 0xfc: {
+      int dummy;
+      stream >> dummy >> dummy >> dummy >> dummy;
+      PRINTDB("  %1$d (Sequence): ", i);
+      if (!dumpDockAreaLayoutInfo(stream)) return false;
+      break;
+    }
+    default: {
+      PRINTDB("  %1$d (Unknown)", i);
+      return false;
+    }
+    }
+  }
+  return true;
+}
+
+static void dumpDockAreaLayout(QDataStream& stream)
+{
+  int count;
+  stream >> count;
+  for (int i = 0; i < count; ++i) {
+    int pos;
+    stream >> pos;
+    QSize size;
+    stream >> size;
+    PRINTDB("Dock area %1$d: pos=%2$d, size=(%3$d, %4$d)", i % pos % size.width() % size.height());
+
+    if (!dumpDockAreaLayoutInfo(stream)) return;
+  }
+
+  QSize size;
+  stream >> size;
+  PRINTDB("Central widget size: (%1$d, %2$d)", size.width() % size.height());
+  int cornerData[4];
+  for (int i = 0; i < 4; ++i) {
+    stream >> cornerData[i];
+    PRINTDB("Corner %1$d: %2$d", i % static_cast<int>(cornerData[i]));
+  }
+}
+
+static void dumpToolBarAreaLayout(QDataStream& stream, uint8_t marker)
+{
+  int lines;
+  stream >> lines;
+  for (int j = 0; j < lines; ++j) {
+    int pos;
+    stream >> pos;
+    if (pos < 0 || pos >= QInternal::DockCount) return;
+    int count;
+    stream >> count;
+
+    for (int k = 0; k < count; ++k) {
+      QString objectName;
+      stream >> objectName;
+      uint8_t shown;
+      stream >> shown;
+      int opos, osize;
+      stream >> opos;
+      stream >> osize;
+
+      // Qt somehow messed up around Qt 4.3 (and never fixed it) by failing to store the floating flag,
+      // and uses a bit from the geometry instead.
+      auto unpackRect = [](uint geom0, uint geom1, bool& floating) -> QRect {
+        floating = geom0 & 1;
+        if (!floating) return QRect();
+
+        geom0 >>= 1;
+        int x = (int)(geom0 & 0x0000ffff) - 0x7FFF;
+        int y = (int)(geom1 & 0x0000ffff) - 0x7FFF;
+        geom0 >>= 16;
+        geom1 >>= 16;
+        int w = geom0 & 0x0000ffff;
+        int h = geom1 & 0x0000ffff;
+
+        return QRect(x, y, w, h);
+      };
+
+      QRect rect;
+      bool floating = false;
+      uint geom0, geom1;
+      stream >> geom0;
+
+      if (marker == 0xfc /*ToolBarStateMarkerEx*/) {
+        stream >> geom1;
+        rect = unpackRect(geom0, geom1, floating);
+      }
+
+      PRINTDB("Toolbar: %1$s %2$s %3$s Geom: (%4$d, %5$d, %6$d, %7$d)",
+              objectName.toStdString().c_str() % (shown ? "[Shown]" : "[Hidden]") %
+                (floating ? "[Floating]" : "") % rect.x() % rect.y() % rect.width() % rect.height());
+    }
+  }
+}
+
+// Dump QMainWindow::saveState() data for debugging purposes.
+void UIUtils::dumpSaveState(const QByteArray& data)
+{
+  QDataStream stream(data);
+  stream.setByteOrder(QDataStream::BigEndian);
+  stream.setVersion(QDataStream::Qt_6_0);
+
+  // Header
+  quint32 magic, padding;
+  stream >> magic >> padding;
+  if (magic != 0x000000ff) {
+    PRINTD("Header mismatch");
+    return;
+  }
+
+  while (!stream.atEnd()) {
+    uint8_t marker;
+    stream >> marker;
+    switch (marker) {
+    case 0xfd:  // DockWidgetStateMarker
+      dumpDockAreaLayout(stream);
+      break;
+    case 0xf9:  // FloatingDockWidgetTabMarker
+      dumpDockAreaLayoutInfo(stream);
+      break;
+    case 0xfe:  // ToolBarStateMarker
+    case 0xfc:  // ToolBarStateMarkerEx
+    {
+      QRect geometry;
+      stream >> geometry;
+      dumpToolBarAreaLayout(stream, marker);
+    } break;
+    default: {
+      PRINTDB("Unknown marker: %1$d", static_cast<int>(marker));
+      return;
+    }
+    }
+  }
 }
