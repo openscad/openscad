@@ -5196,6 +5196,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     else if (ext == ".3mf") actualtype = ImportType::_3MF;
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
+    else if (ext == ".cdr") actualtype = ImportType::CDR;
     else if (ext == ".stp") actualtype = ImportType::STEP;
     else if (ext == ".step") actualtype = ImportType::STEP;
   }

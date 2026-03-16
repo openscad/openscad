@@ -87,6 +87,7 @@ Containers& containers()
     add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
     add_item(*containers, {FileFormat::DXF, "dxf", "dxf", "DXF"});
     add_item(*containers, {FileFormat::SVG, "svg", "svg", "SVG"});
+    add_item(*containers, {FileFormat::CDR, "cdr", "cdr", "CDR"});
     add_item(*containers, {FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
     add_item(*containers, {FileFormat::NEF3, "nef3", "nef3", "nef3"});
     add_item(*containers, {FileFormat::CSG, "csg", "csg", "CSG"});
@@ -177,7 +178,8 @@ bool is3D(FileFormat format)
 
 bool is2D(FileFormat format)
 {
-  return format == FileFormat::DXF || format == FileFormat::SVG || format == FileFormat::PDF || format == FileFormat::GCODE;
+  return format == FileFormat::DXF || format == FileFormat::SVG || format == FileFormat::PDF ||
+         format == FileFormat::GCODE || format == FileFormat::CDR;
 }
 
 }  // namespace fileformat
@@ -226,11 +228,11 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
     infos.push_back(info);
     export_3mf(infos, output, exportInfo);
   } break;
-  case FileFormat::DXF:  export_dxf(root_geom, output); break;
-  case FileFormat::SVG:  export_svg(root_geom, output, exportInfo); break;
-  case FileFormat::PDF:  export_pdf(root_geom, output, exportInfo); break;
-  case FileFormat::POV:  export_pov(root_geom, output, exportInfo); break;
-  case FileFormat::STEP: export_step(root_geom, output, exportInfo); break;
+  case FileFormat::DXF:   export_dxf(root_geom, output); break;
+  case FileFormat::SVG:   export_svg(root_geom, output, exportInfo); break;
+  case FileFormat::PDF:   export_pdf(root_geom, output, exportInfo); break;
+  case FileFormat::POV:   export_pov(root_geom, output, exportInfo); break;
+  case FileFormat::STEP:  export_step(root_geom, output, exportInfo); break;
   case FileFormat::GCODE: export_gcode(root_geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;

@@ -25,6 +25,8 @@
         "libboost-regex-dev",
         "libboost-system-dev",
         "libcairo2-dev",
+        "libcdr-dev",
+        "librevenge-dev",
         "libcgal-dev",
         "libdouble-conversion-dev",
         "libeigen3-dev",

@@ -17,6 +17,7 @@ enum class ImportType {
   STEP,
   OFF,
   SVG,
+  CDR,
   DXF,
   NEF3,
   OBJ,

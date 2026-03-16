@@ -93,6 +93,9 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".3mf") actualtype = ImportType::_3MF;
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
+#ifdef ENABLE_CDR
+    else if (ext == ".cdr") actualtype = ImportType::CDR;
+#endif
     else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
@@ -227,6 +230,12 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   case ImportType::SVG: {
     g =
       import_svg(this->discretizer, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    break;
+  }
+#endif
+#ifdef ENABLE_CDR
+  case ImportType::CDR: {
+    g = import_cdr(this->discretizer, this->filename, loc);
     break;
   }
 #endif
