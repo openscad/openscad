@@ -876,6 +876,7 @@ std::unique_ptr<const Geometry> PolylineNode::createGeometry() const
   Outline2d outline;
   std::vector<size_t> path;
   for (const auto& pt : points) outline.vertices.push_back(pt.head<2>());
+  outline.color = *OpenSCAD::parse_color("#ff0000ff");
   p->addPolyline(outline);
   return p;
 }

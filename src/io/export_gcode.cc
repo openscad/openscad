@@ -44,13 +44,8 @@ void find_colormap_from_value(const boost::property_tree::ptree& pt, const Expor
                               const unsigned int color, std::string& label, int& power, int& feed)
 {
   // set the default return value for not found pass through.
-  power = feed = -1;
-
-  if (pt.empty()) {
-    power = options.laserpower;
-    feed = options.feedrate;
-    return;
-  }
+  power = options.laserpower;
+  feed = options.feedrate;
 
   BOOST_FOREACH (const boost::property_tree::ptree::value_type& v, pt) {
     try {

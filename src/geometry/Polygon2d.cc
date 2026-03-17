@@ -312,14 +312,8 @@ void Polygon2d::setColor(const Color4f& c)
 {
   for (auto& o : theoutlines) o.color = c;
   for (auto& o : trans3dOutlines) o.color = c;
-}
-
-void Polygon2d::setColorUndef(const Color4f& c)
-{
-  for (auto& o : theoutlines)
-    if (o.color.r() < 0) o.color = c;
-  for (auto& o : trans3dOutlines)
-    if (o.color.r() < 0) o.color = c;
+  for (auto& o : thepolylines) o.color = c;
+  for (auto& o : trans3dPolylines) o.color = c;
 }
 
 Vector2d pt_round(const Vector2d& pt)
