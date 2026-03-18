@@ -8,6 +8,7 @@
 #include <array>
 #include <QImage>
 #include <QMouseEvent>
+#include <QNativeGestureEvent>
 #include <QPoint>
 #include <QWheelEvent>
 #include <QWidget>
@@ -93,6 +94,7 @@ private:
 #endif
   QImage frame;  // Used by grabFrame() and save()
 
+  bool event(QEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;

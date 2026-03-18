@@ -459,10 +459,47 @@ bool QGLView::save(const char *filename) const
   return this->frame.save(filename, "PNG");
 }
 
+bool QGLView::event(QEvent *event)
+{
+  if (event->type() == QEvent::NativeGesture) {
+    auto *nge = static_cast<QNativeGestureEvent *>(event);
+    if (nge->gestureType() == Qt::ZoomNativeGesture) {
+      const double zoomFactor = nge->value();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+      const auto pos = nge->position();
+#else
+      const auto pos = nge->pos();
+#endif
+      if (this->mouseCentricZoom) {
+        zoomCursor(pos.x(), pos.y(), zoomFactor * 1200);
+      } else {
+        zoom(zoomFactor * 1200, true);
+      }
+      return true;
+    }
+  }
+  return QOpenGLWidget::event(event);
+}
+
 void QGLView::wheelEvent(QWheelEvent *event)
 {
   const auto pos = Q_WHEEL_EVENT_POSITION(event);
   const int v = event->angleDelta().y();
+
+  // Trackpad two-finger scrolling reports scroll phases;
+  // traditional mouse scroll wheel reports NoScrollPhase.
+  if (event->phase() != Qt::NoScrollPhase) {
+    // Trackpad scroll -> pan
+    const auto pd = event->pixelDelta();
+    if (!pd.isNull()) {
+      double mx = -pd.x() / (double)QWidget::width() * 1.0 * cam.zoomValue();
+      double mz = -pd.y() / (double)QWidget::height() * 1.0 * cam.zoomValue();
+      translate(mx, 0, mz, true);
+    }
+    return;
+  }
+
+  // Mouse wheel -> zoom (original behavior)
   if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
     zoomFov(v);
   } else if (this->mouseCentricZoom) {
