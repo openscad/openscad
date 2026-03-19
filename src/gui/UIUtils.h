@@ -90,6 +90,8 @@ QString getBackgroundColorStyleSheet(const QColor& color);
 QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend,
                                           float transparency = 0.2);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void dumpSaveState(const QByteArray& data);
+#endif
 
 }  // namespace UIUtils

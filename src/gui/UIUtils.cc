@@ -316,6 +316,7 @@ QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QC
   return getBackgroundColorStyleSheet(result);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static bool dumpDockAreaLayoutInfo(QDataStream& stream)
 {
   uint8_t marker;
@@ -483,3 +484,4 @@ void UIUtils::dumpSaveState(const QByteArray& data)
     }
   }
 }
+#endif  // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
