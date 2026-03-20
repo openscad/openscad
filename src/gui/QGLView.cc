@@ -44,7 +44,6 @@
 #include <QOpenGLWidget>
 #include <QSurfaceFormat>
 #include <QWidget>
-#include <QPinchGesture>
 #include <QNativeGestureEvent>
 #include <iostream>
 #include <QApplication>
@@ -109,7 +108,6 @@ void QGLView::init()
   this->statusLabel = nullptr;
 
   setMouseTracking(true);
-  grabGesture(Qt::PinchGesture);
 }
 
 void QGLView::resetView()
