@@ -331,8 +331,10 @@
     <addaction name="designActionMeasureDist"/>
     <addaction name="designActionMeasureAngle"/>
     <addaction name="designActionFindHandle"/>
+    <!-- Share design server (pythonscad.org) is unavailable; restore when fixed.
     <addaction name="designShareDesign"/>
     <addaction name="designLoadShareDesign"/>
+    -->
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
