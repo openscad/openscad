@@ -139,7 +139,6 @@ result = subprocess.call(export_cmd, env=fontenv)
 if result != 0:
     failquit("OpenSCAD failed with return code " + str(result))
 
-convert_cmd = gs_cmd + ["-sOutputFile=" + pngfile, exportfile]
 gs_input, temp_input = ensure_codepage_safe_path(exportfile, "." + args.format, needs_existing_file=True)
 gs_output, temp_output = ensure_codepage_safe_path(
     pngfile, os.path.splitext(pngfile)[1] or ".png", needs_existing_file=False
