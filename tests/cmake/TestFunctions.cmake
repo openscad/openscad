@@ -492,11 +492,12 @@ function(add_cmdline_test TESTCMD_BASENAME)
       message(DEBUG "${DBG_COMMAND_STR}")
       # Do not pass a quoted empty TESTCMD_SCRIPT — that becomes "" on the argv and breaks OpenSCAD.
       if(TESTCMD_SCRIPT)
+        # TESTCMD_EXE may be a list (e.g. ${Python3_EXECUTABLE} -Xutf8=1 for .py SCRIPT); do not quote — that merges into one argv.
         add_test(NAME ${TEST_FULLNAME}
           COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
           "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
           -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-          "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
+          ${TESTCMD_EXE} "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
           ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
         )
       else()
