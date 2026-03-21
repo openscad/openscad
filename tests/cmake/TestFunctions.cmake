@@ -483,13 +483,14 @@ function(add_cmdline_test TESTCMD_BASENAME)
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
-      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ") LABELS" ${CONFVAL}
+      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ")"
     )
 
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
       message(DEBUG "${DBG_COMMAND_STR}")
+      message(DEBUG "set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})")
       # Do not pass a quoted empty TESTCMD_SCRIPT — that becomes "" on the argv and breaks OpenSCAD.
       if(TESTCMD_SCRIPT)
         # TESTCMD_EXE may be a list (e.g. ${Python3_EXECUTABLE} -Xutf8=1 for .py SCRIPT); do not quote — that merges into one argv.
@@ -514,6 +515,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
     else()
       message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
+      message(DEBUG "set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL}) (skipped: experimental)")
     endif()
   endforeach()
 endfunction()
