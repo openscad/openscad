@@ -319,6 +319,18 @@ void TabManager::jumpToNextError()
   editor->jumpToNextError();
 }
 
+void TabManager::moveLineUp()
+{
+  auto *scintillaEditor = dynamic_cast<ScintillaEditor *>(editor);
+  if (scintillaEditor) scintillaEditor->qsci->moveSelectedLinesUp();
+}
+
+void TabManager::moveLineDown()
+{
+  auto *scintillaEditor = dynamic_cast<ScintillaEditor *>(editor);
+  if (scintillaEditor) scintillaEditor->qsci->moveSelectedLinesDown();
+}
+
 void TabManager::setFocus()
 {
   editor->setFocus();
