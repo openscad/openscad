@@ -13,13 +13,14 @@ endfunction()
 
 #
 # Tags the given tests as belonging to the given CONFIG.
-# This sets both the legacy CONFIGURATIONS property (for non-multi-config generators)
-# and the LABELS property (for use with ctest -L <CONFIG>).
+# Registers test group membership via LABELS (use ctest -L <group> to select tests).
+# CONFIGURATIONS is not set: on multi-config generators -C is the build configuration
+# (Release/Debug); test groups are always selected with -L.
 #
 # Usage example: set_test_config(Heavy dump_testname preview_testname2)
 #
-# Users should run tests with: ctest -L <CONFIG> (e.g., ctest -L Default, ctest -L Examples)
-# On MSVC and other multi-config generators: ctest -C Release -L Default
+# Users should run tests with: ctest -L <group> (e.g., ctest -L Default, ctest -L Examples).
+# On multi-config generators (MSVC, Xcode) also pass build config: ctest -C Release -L Default
 #
 function(set_test_config CONFIG)
   cmake_parse_arguments(TESTCFG "" "" "FILES;PREFIXES" ${ARGN})
@@ -477,38 +478,25 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # endif()
 
     string(JOIN " " DBG_COMMAND_STR
-      "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
+      "add_test(" ${TEST_FULLNAME}
       COMMAND ${Python3_EXECUTABLE} -Xutf8=1
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
-      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ")"
+      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ") LABELS" ${CONFVAL}
     )
 
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
       message(DEBUG "${DBG_COMMAND_STR}")
-      # For multi-config generators (Visual Studio, Xcode), don't specify CONFIGURATIONS
-      # as it conflicts with build configurations (Debug, Release, etc.)
-      get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-      if(IS_MULTI_CONFIG)
-        add_test(NAME ${TEST_FULLNAME}
-          COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
-          "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
-          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-          "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
-          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-        )
-      else()
-        add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-          COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
-          "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
-          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-          "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
-          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-        )
-      endif()
+      add_test(NAME ${TEST_FULLNAME}
+        COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
+        "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
+        -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+        "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
+        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+      )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
       # Set LABELS property to enable filtering with ctest -L
       set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
@@ -555,14 +543,7 @@ function(add_failing_test TESTCMD_BASENAME)
       set(FILENAME_OPTION -f ${FILE_BASENAME})
     endif()
 
-    # For multi-config generators (Visual Studio, Xcode), don't specify CONFIGURATIONS
-    # as it conflicts with build configurations (Debug, Release, etc.)
-    get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-    if(IS_MULTI_CONFIG)
-      add_test(NAME ${TEST_FULLNAME} COMMAND "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
-    else()
-      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
-    endif()
+    add_test(NAME ${TEST_FULLNAME} COMMAND "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
     set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     # Set LABELS property to enable filtering with ctest -L
     set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
