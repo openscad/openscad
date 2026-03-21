@@ -80,7 +80,7 @@ else()
       set(COMPARATOR "--comparator=old")
     endif()
 
-    execute_process(COMMAND ${IMAGE_COMPARE_EXE} --version OUTPUT_VARIABLE IM_OUT)
+    execute_process(COMMAND "${IMAGE_COMPARE_EXE}" --version OUTPUT_VARIABLE IM_OUT)
     if (${IM_OUT} MATCHES "OpenMP")
       # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
       message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")

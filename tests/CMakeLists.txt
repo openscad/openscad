@@ -217,12 +217,12 @@ configure_file(${TEST_PYTHON_DIR}/gen_svg_viewbox_tests-template.py
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 add_custom_target(issue2342 ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
+  COMMAND "${Python3_EXECUTABLE}" ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
+  COMMAND "${Python3_EXECUTABLE}" ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -1321,8 +1321,8 @@ add_cmdline_test(dump-discretization-by-error EXPERIMENTAL OPENSCAD FILES ${EXPE
 function(add_output_file_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "FILE;FORMAT" "" ${ARGN})
 
-  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" CONFIGURATIONS Default COMMAND ${OPENSCAD_BINPATH} ${TESTCMD_FILE} -o ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
-  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" CONFIGURATIONS Default COMMAND "${OPENSCAD_BINPATH}" "${TESTCMD_FILE}" -o "${TESTCMD_BASENAME}.${TESTCMD_FORMAT}")
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" CONFIGURATIONS Default COMMAND "${CMAKE_COMMAND}" -E cat "${TESTCMD_BASENAME}.${TESTCMD_FORMAT}")
   set_tests_properties("${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" PROPERTIES DEPENDS "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run")
 endfunction()
 
