@@ -19,6 +19,15 @@ import sys, os, re, subprocess, argparse, shutil, tempfile, locale
 if os.name == "nt":
     import ctypes
 
+
+def failquit(*args):
+    if len(args) != 0:
+        print(args)
+    print("export_pngtest args:", str(sys.argv))
+    print("exiting export_pngtest.py with failure")
+    sys.exit(1)
+
+
 # Find gs executable (Ghostscript) - use shutil.which to find it in PATH
 gs_executable = shutil.which("gs")
 if gs_executable is None:
@@ -34,7 +43,10 @@ if gs_executable is None:
             break
 
 if gs_executable is None:
-    gs_executable = "gs"  # Fall back to "gs" and let it fail with a clear error
+    failquit(
+        "Ghostscript not found. Install Ghostscript and ensure 'gs' is on PATH, "
+        "or install to a known location (see common_locations in export_pngtest.py)."
+    )
 
 gs_cmd = [
     gs_executable,
@@ -76,14 +88,6 @@ def ensure_codepage_safe_path(path, suffix, *, needs_existing_file):
         if needs_existing_file:
             shutil.copy2(path, safe_path)
         return safe_path, safe_path
-
-
-def failquit(*args):
-    if len(args) != 0:
-        print(args)
-    print("export_import_pngtest args:", str(sys.argv))
-    print("exiting export_import_pngtest.py with failure")
-    sys.exit(1)
 
 
 def createImport(inputfile, scadfile):
