@@ -2,7 +2,7 @@
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 # Explicitly use new include policy to avoid globally shadowing included modules
 # https://cmake.org/cmake/help/latest/policy/CMP0017.html
 cmake_policy(SET CMP0017 NEW)
@@ -61,8 +61,8 @@ else() # !PROJECT_IS_TOP_LEVEL
     set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
   elseif (WIN32 OR MXECROSS)
     if(MSVC)
-      # MSVC uses multi-config generators, executable is in Release/Debug subdirectory
-      set(OPENSCAD_BINPATH "${CBD}/Release/openscad.exe")
+      # Multi-config: path follows active configuration (Debug/Release/...)
+      set(OPENSCAD_BINPATH "$<TARGET_FILE:OpenSCADExe>")
     else()
       # MinGW/MSYS2 uses console version (.com)
       set(OPENSCAD_BINPATH "${CBD}/openscad.com")
