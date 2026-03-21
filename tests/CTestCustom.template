@@ -81,7 +81,7 @@ endif()
 #
 
 # MSVC multi-config: binary lives under ${CMAKE_BINARY_DIR}/<Config>/; CTest sets CTEST_CONFIGURATION_TYPE.
-if(@MSVC@)
+if(@OPENSCAD_CTESTCUSTOM_IS_MSVC@)
   if(NOT DEFINED CTEST_CONFIGURATION_TYPE)
     set(CTEST_CONFIGURATION_TYPE Release)
   endif()
