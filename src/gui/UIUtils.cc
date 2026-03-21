@@ -484,4 +484,9 @@ void UIUtils::dumpSaveState(const QByteArray& data)
     }
   }
 }
+#else
+// Dummy implementation for Qt5
+void UIUtils::dumpSaveState(const QByteArray&)
+{
+}
 #endif  // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
