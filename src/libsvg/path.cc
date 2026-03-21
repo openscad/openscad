@@ -224,6 +224,7 @@ std::vector<std::string> split(std::string str, char c)
 }
 void path::set_attrs(attr_map_t& attrs, void *context)
 {
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   std::string commands = "-zmlcqahvstZMLCQAHVST";
 
   shape::set_attrs(attrs, context);
@@ -509,7 +510,7 @@ void path::set_attrs(attr_map_t& attrs, void *context)
 
   if (!path_closed && !path_list.empty()) {
     path_t path = path_list.back();
-    if (is_open_path(path)) {
+    if (is_open_path(path) && fValues->stroke) {
       path_list.pop_back();
       offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
     }

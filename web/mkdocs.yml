@@ -51,6 +51,7 @@ nav:
       - Python Specialities: tutorial/python_specialities.md
       - OpenSCAD together with Python: tutorial/python_together.md
       - New Functions in pythonscad: tutorial/python_new.md
+      - New File types in pythonscad: tutorial/python_newformats.md
   - Examples: examples.md
   - Cheat-Sheet: cheatsheet.md
   - Resources: resources.md

@@ -36,13 +36,12 @@
 #include "geometry/linalg.h"
 #include "io/export.h"
 
-static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
+static void append_svg_sub(std::vector<Outline2d>  outlines, std::ostream& output, const ExportInfo& exportInfo, bool closed)
 {
   // sort outlines by color
-  std::vector<Outline2d> out_work = poly.outlines();
-  while (out_work.size() > 0) {
+  while (outlines.size() > 0) {
     std::vector<Outline2d> out_remain;
-    Color4f col = out_work[0].color;
+    Color4f col = outlines[0].color;
 
     const ExportSvgOptions *options;
     const ExportSvgOptions defaultSvgOptions;
@@ -56,7 +55,7 @@ static void append_svg(const Polygon2d& poly, std::ostream& output, const Export
     const std::string fill = options->fill ? options->fillColor : "none";
     const double strokeWidth = options->strokeWidth;
     output << "<path d=\"\n";
-    for (const auto& o : out_work) {
+    for (const auto& o : outlines) {
       if (o.vertices.empty()) {
         continue;
       }
@@ -74,7 +73,8 @@ static void append_svg(const Polygon2d& poly, std::ostream& output, const Export
           output << "\n";
         }
       }
-      output << " z\n";
+      if(closed) output << " z\n";
+      else output << "n";
     }
     std::string color_str;
     if (col.r() < 0) {
@@ -93,8 +93,14 @@ static void append_svg(const Polygon2d& poly, std::ostream& output, const Export
     if(options-> stroke) output << " stroke=\"" << options->strokeColor << "\" stroke-width=\"" << strokeWidth << "\"";
     output << " fill=\"" << color_str << "\"";
     output << "/>\n";
-    out_work = out_remain;
+    outlines = out_remain;
   }
+}
+
+static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
+{
+  append_svg_sub(poly.outlines(), output, exportInfo, true);
+  append_svg_sub(poly.polylines(), output, exportInfo, false);
 }
 
 static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,

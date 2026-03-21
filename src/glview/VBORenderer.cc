@@ -124,10 +124,10 @@ size_t VBORenderer::calcNumEdgeVertices(const Polygon2d& polygon) const
 {
   size_t buffer_size = 0;
   // Render only outlines
-  for (const Outline2d& o : polygon.outlines()) {
+  for (const Outline2d& o : polygon.untransformedOutlines()) {
     buffer_size += o.vertices.size();
   }
-  for (const Outline2d& o : polygon.polylines()) {
+  for (const Outline2d& o : polygon.untransformedPolylines()) {
     buffer_size += o.vertices.size();
   }
   return buffer_size;

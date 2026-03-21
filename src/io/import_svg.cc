@@ -85,12 +85,12 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::string& filename,
                                       const boost::optional<std::string>& id,
                                       const boost::optional<std::string>& layer, const double dpi,
-                                      const bool center, const Location& loc)
+                                      const bool center, const Location& loc, bool stroke)
 {
   try {
     fnContext scadContext(
       [&discretizer](double r, double angle) { return discretizer.getCircularSegmentCount(r, angle); },
-      discretizer.getPathSegmentCount());
+      discretizer.getPathSegmentCount(), stroke);
     if (id) {
       scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
         bool layer_match = true;
@@ -211,7 +211,9 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
             outline.vertices.emplace_back(x, y);
             outline.positive = true;
           }
-          poly.addOutline(outline);
+          if (outline.vertices[0] == outline.vertices[outline.vertices.size() - 1])
+            poly.addOutline(outline);
+          else poly.addPolyline(outline);
         }
         if (!poly.isEmpty()) polygons.push_back(std::make_shared<const Polygon2d>(poly));
       }

@@ -5163,9 +5163,10 @@ PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs)
 PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
 {
   DECLARE_INSTANCE();
-  char *kwlist[] = {"file",   "layer", "convexity", "origin", "scale", "width", "height",
-                    "center", "dpi",   "id",        "fn",     "fa",    "fs",    NULL};
+  char *kwlist[] = {"file", "layer", "convexity", "origin", "scale", "width", "height", "center",
+                    "dpi",  "id",    "stroke",    "fn",     "fa",    "fs",    NULL};
   double fn = NAN, fa = NAN, fs = NAN;
+  PyObject *stroke = nullptr;
 
   std::string filename;
   const char *v = NULL, *layer = NULL, *id = NULL;
@@ -5173,9 +5174,9 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   int convexity = 2;
   double scale = 1.0, width = 1, height = 1, dpi = 1.0;
   PyObject *origin = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|siO!dddOdsddd", kwlist, &v, &layer, &convexity,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|siO!dddOdsOddd", kwlist, &v, &layer, &convexity,
                                    &PyList_Type, &origin, &scale, &width, &height, &center, &dpi, &id,
-                                   &fn, &fa, &fs
+                                   &stroke, &fn, &fa, &fs
 
                                    )) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
@@ -5217,6 +5218,9 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
 
   node->center = 0;
   if (center == Py_True) node->center = 1;
+
+  node->stroke = true;
+  if (stroke == Py_False) node->stroke = false;
 
   node->scale = scale;
   if (node->scale <= 0) node->scale = 1;

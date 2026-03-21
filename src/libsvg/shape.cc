@@ -302,7 +302,7 @@ void shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry,
   double rmax = fmax(rx, ry);
   unsigned long fn = fValues->getCircularSegmentCount(rmax, 360.0).value_or(3);
   if (fn < 40) fn = 40;  // Use the old value as a minimum
-  for (unsigned long idx = 1; idx <= fn; ++idx) {
+  for (unsigned long idx = 0; idx <= fn; ++idx) {
     const double a = idx * 360.0 / fn;
     const double xx = rx * sin_degrees(a) + x;
     const double yy = ry * cos_degrees(a) + y;

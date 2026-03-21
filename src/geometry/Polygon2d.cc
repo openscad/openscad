@@ -57,10 +57,16 @@ size_t Polygon2d::memsize() const
 {
   size_t mem = 0;
   for (const auto& o : this->theoutlines) {
-    mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Outline2d);
+    mem += o.vertices.size() * sizeof(Vector3d) + sizeof(Outline2d);
   }
   for (const auto& o : this->trans3dOutlines) {
-    mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Outline2d);
+    mem += o.vertices.size() * sizeof(Vector3d) + sizeof(Outline2d);
+  }
+  for (const auto& o : this->thepolylines) {
+    mem += o.vertices.size() * sizeof(Vector3d) + sizeof(Outline2d);
+  }
+  for (const auto& o : this->trans3dPolylines) {
+    mem += o.vertices.size() * sizeof(Vector3d) + sizeof(Outline2d);
   }
   mem += sizeof(Polygon2d);
   return mem;
@@ -72,6 +78,9 @@ BoundingBox Polygon2d::getBoundingBox() const
   for (const auto& o : this->outlines()) {
     bbox.extend(o.getBoundingBox());
   }
+  for (const auto& o : this->polylines()) {
+    bbox.extend(o.getBoundingBox());
+  }
   return bbox;
 }
 
@@ -79,6 +88,13 @@ std::string Polygon2d::dump() const
 {
   std::ostringstream out;
   for (const auto& o : this->theoutlines) {
+    out << "contour:\n";
+    for (const auto& v : o.vertices) {
+      out << "  " << v.transpose();
+    }
+    out << "\n";
+  }
+  for (const auto& o : this->thepolylines) {
     out << "contour:\n";
     for (const auto& v : o.vertices) {
       out << "  " << v.transpose();
@@ -214,7 +230,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate(bool in3d) const
 void Polygon2d::transform3d(const Transform3d& mat)
 {
   // Check whether it can be a 2d transform, and avoid the 3d overhead
-  if (trans3dState == Transform3dState::NONE && mat(2, 0) == 0 && mat(2, 1) == 0 && mat(2, 2) == 1 &&
+  if (trans3dState == Transform3dState::NONE && mat(2, 0) == 0 && mat(2, 1) == 0 && mat(2, 2) > 0 &&
       mat(2, 3) == 0 && mat(0, 2) == 0 && mat(1, 2) == 0 && mat(3, 2) == 0) {
     Transform2d t;
     t.matrix() << mat(0, 0), mat(0, 1), mat(0, 3), mat(1, 0), mat(1, 1), mat(1, 3), mat(3, 0), mat(3, 1),
@@ -306,6 +322,8 @@ void Polygon2d::reverse(void)
 {
   for (auto& o : theoutlines) std::reverse(o.vertices.begin(), o.vertices.end());
   for (auto& o : trans3dOutlines) std::reverse(o.vertices.begin(), o.vertices.end());
+  for (auto& o : thepolylines) std::reverse(o.vertices.begin(), o.vertices.end());
+  for (auto& o : trans3dPolylines) std::reverse(o.vertices.begin(), o.vertices.end());
 }
 
 void Polygon2d::setColor(const Color4f& c)
@@ -344,8 +362,6 @@ Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
   }
   return result;
 }
-
-extern int debug_cnt, debug_num;
 
 double outline_area(const Outline2d o)
 {

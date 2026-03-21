@@ -241,6 +241,20 @@ s.show()
 ```
 <img src="../img/spline-expected.png" alt="Spline" width="200"/>
 
+## polyline
+
+Polyline is a set of vertices which are connected with a line in between. It's not neccessarily closed.
+It can carry color but has not area and it's ignored in CSG operations. Its very useful to define cut lines in laser cutting.
+
+
+```py
+from openscad import *
+
+for i in range(10):
+    polyline([[0,i], [20,i]]).show()
+
+```
+
 ## skin
 
 Thanks to scrameta, pythonscad got wonderful skin.

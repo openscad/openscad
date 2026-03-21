@@ -37,6 +37,10 @@
       <div>Create a 2D polygon with given points</div>
       <div><code>polygon([[0,0], [10,0], [5,10]]).show()</code></div>
 
+      <div class="func"><code>polyline(points)</code></div>
+      <div>Create a 2D polyline with given points</div>
+      <div><code>polyline([[0,0], [10,0], [5,10]]).show()</code></div>
+
       <div class="func"><code>spline(points)</code></div>
       <div>Create a 2D polygon with given points</div>
       <div><code>spline([[0,0], [10,0], [5,10]],fn=20).show()</code></div>

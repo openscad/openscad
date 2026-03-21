@@ -160,36 +160,46 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
     feedAddY = pt.get<double>("default.property.feedAddY");
   } catch (const boost::property_tree::ptree_error& e) {
   }
-  printf("%g %g\n", feedAddX, feedAddY);
 
-  for (const auto& o : poly.outlines()) {
-    Eigen::Vector2d pold = o.vertices[0];
+  struct PoweredOutline {
+    Outline2d o;
+    double laserpower;
+    double feedrate;
+  };
+
+  std::vector<PoweredOutline> outlines;
+
+  for (const auto& o : poly.outlines()) {  // Add outlines
     const double laserpower = color_to_parm(pt, o.color, 0, *options);
     const double feedrate = color_to_parm(pt, o.color, 1, *options);
+    PoweredOutline po = {o, laserpower, feedrate};
+    po.o.vertices.push_back(po.o.vertices[0]);  // close Polygon
+    outlines.push_back(po);
+  }
+
+  for (const auto& o : poly.polylines()) {  // Add polylines
+    const double laserpower = color_to_parm(pt, o.color, 0, *options);
+    const double feedrate = color_to_parm(pt, o.color, 1, *options);
+    PoweredOutline po = {o, laserpower, feedrate};
+    outlines.push_back(po);
+  }
+
+  // sort by laserpower
+  std::sort(outlines.begin(), outlines.end(), [](const PoweredOutline& a, const PoweredOutline& b) {
+    return a.laserpower < b.laserpower;
+  });
+
+  for (const auto& po : outlines) {
+    Eigen::Vector2d pold = po.o.vertices[0];
 
     output_gcode_pars(output, 0, pold.x(), pold.y(), NAN, NAN);
-    output_gcode_pars(output, -1, NAN, NAN, NAN, laserpower);
-    int n = o.vertices.size();
-    for (unsigned int idx = 1; idx <= n; ++idx) {
-      const Eigen::Vector2d& p = o.vertices[idx % n];
+    output_gcode_pars(output, -1, NAN, NAN, NAN, po.laserpower);
+    for (unsigned int idx = 1; idx < po.o.vertices.size(); ++idx) {
+      const Eigen::Vector2d& p = po.o.vertices[idx];
       Vector2d midpt = (p + pold) / 2.0;
-      double feed_eff = feedrate + feedAddX * midpt[0] + feedAddY * midpt[1];
-      output_gcode_pars(output, 1, p.x(), p.y(), feed_eff, laserpower);
+      double feed_eff = po.feedrate + feedAddX * midpt[0] + feedAddY * midpt[1];
+      output_gcode_pars(output, 1, p.x(), p.y(), feed_eff, po.laserpower);
       pold = p;
-    }
-    output_gcode_pars(output, -1, NAN, NAN, NAN, 0);
-  }
-  for (const auto& o : poly.polylines()) {
-    const Eigen::Vector2d& p0 = o.vertices[0];
-    const double laserpower = color_to_parm(pt, o.color, 0, *options);
-    const double feedrate = color_to_parm(pt, o.color, 1, *options);
-
-    output_gcode_pars(output, 0, p0.x(), p0.y(), NAN, NAN);
-    output_gcode_pars(output, -1, NAN, NAN, NAN, laserpower);
-    int n = o.vertices.size();
-    for (unsigned int idx = 1; idx < n; ++idx) {
-      const Eigen::Vector2d& p = o.vertices[idx];
-      output_gcode_pars(output, 1, p.x(), p.y(), feedrate, laserpower);
     }
     output_gcode_pars(output, -1, NAN, NAN, NAN, 0);
   }

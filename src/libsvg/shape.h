@@ -46,8 +46,10 @@ class shape;
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
   fnContext(std::function<std::optional<int>(double, double)> getCircularSegmentCount_fn,
-            int pathSegmentCount)
-    : getCircularSegmentCount(getCircularSegmentCount_fn), pathSegmentCount(pathSegmentCount)
+            int pathSegmentCount, bool stroke)
+    : getCircularSegmentCount(getCircularSegmentCount_fn),
+      pathSegmentCount(pathSegmentCount),
+      stroke(stroke)
   {
   }
   bool match(bool val)
@@ -60,6 +62,7 @@ struct fnContext {
   std::function<bool(const libsvg::shape *)> selector;
   std::function<std::optional<int>(double, double)> getCircularSegmentCount;
   const int pathSegmentCount;
+  bool stroke;
 
 private:
   std::atomic<int> matches{0};

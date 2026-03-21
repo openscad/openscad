@@ -1322,6 +1322,35 @@ def rendervars(
     """
     ...
 
+def machineconfig(
+    config: None
+) -> None:
+    """Specify extended parameters to be used for gcode Export
+
+    Args:
+        config: Python Dict tree with settings
+
+    machineconfig({
+        "default":{
+            "property":{
+                "initCode":"G90", # Potential init code
+                "exitCode":"",    # Potential exit code
+                "feedAddX":-1,    # reduce feedrate away from laser tube
+                "feedAddY":-1,    # same
+            }
+        },
+        "stroke":{ # create mapping blue color to laserpower/laserfeed
+            "property":{
+                "color":0x0000ffff,
+                "feed":1000,
+                "power":50
+            }
+        }
+    })
+
+    """
+    ...
+
 def osimport(
     file: str,
     layer: str,
@@ -1333,9 +1362,16 @@ def osimport(
     filename: str,
     center: bool,
     dpi: float,
+    stroke: bool
     id: int,
 ) -> PyOpenSCAD:
-    """Imports Object from disc"""
+    """Imports Object from disc
+    Args:
+        stroke: defaults to true which turnes open SVG pathes to polygons. if set to false,
+                SVG pathes are converted to polylines instead.
+
+
+    """
     ...
 
 def osuse(path: str) -> PyOpenSCAD:
