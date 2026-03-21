@@ -806,9 +806,6 @@ if(EXAMPLES_DIR)
   set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
 endif(EXAMPLES_DIR)
 
-# If ctest is run with no configuration specified, then force "Default"
-set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceConfig.cmake")
-
 #############
 # Add tests #
 #############
