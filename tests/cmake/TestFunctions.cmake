@@ -509,7 +509,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
           ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
         )
       endif()
-      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
       # Set LABELS property to enable filtering with ctest -L
       set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
     else()
