@@ -15,7 +15,7 @@
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
 
-import sys, os, re, subprocess, argparse, shutil, tempfile, locale
+import sys, os, re, subprocess, argparse, shutil, tempfile, locale, glob
 if os.name == "nt":
     import ctypes
 
@@ -28,24 +28,45 @@ def failquit(*args):
     sys.exit(1)
 
 
-# Find gs executable (Ghostscript) - use shutil.which to find it in PATH
-gs_executable = shutil.which("gs")
-if gs_executable is None:
-    # Fallback to common locations if not in PATH
-    common_locations = [
-        "C:\\msys64\\mingw64\\bin\\gs.exe",
-        "C:\\Program Files\\gs\\gs10.06.0\\bin\\gswin64c.exe",
-        "C:\\Program Files (x86)\\gs\\gs10.06.0\\bin\\gswin32c.exe",
-    ]
-    for location in common_locations:
-        if os.path.exists(location):
-            gs_executable = location
-            break
+def find_ghostscript_executable():
+    """Resolve the Ghostscript CLI. On Windows, prefer gswin64c/gswin32c over 'gs'."""
+    if os.name == "nt":
+        for name in ("gswin64c", "gswin32c", "gs"):
+            p = shutil.which(name)
+            if p:
+                return p
+        candidates = []
+        for prog_files in (
+            os.environ.get("ProgramFiles", r"C:\Program Files"),
+            os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+        ):
+            for pattern in (
+                os.path.join(prog_files, "gs", "gs*", "bin", "gswin64c.exe"),
+                os.path.join(prog_files, "gs", "gs*", "bin", "gswin32c.exe"),
+            ):
+                candidates.extend(glob.glob(pattern))
+        if candidates:
+            return max(candidates, key=os.path.getmtime)
+        for location in (
+            r"C:\msys64\mingw64\bin\gs.exe",
+            r"C:\Program Files\gs\gs10.06.0\bin\gswin64c.exe",
+            r"C:\Program Files (x86)\gs\gs10.06.0\bin\gswin32c.exe",
+        ):
+            if os.path.exists(location):
+                return location
+    else:
+        p = shutil.which("gs")
+        if p:
+            return p
+    return None
+
+
+gs_executable = find_ghostscript_executable()
 
 if gs_executable is None:
     failquit(
-        "Ghostscript not found. Install Ghostscript and ensure 'gs' is on PATH, "
-        "or install to a known location (see common_locations in export_pngtest.py)."
+        "Ghostscript not found. On Windows install Ghostscript (gswin64c.exe / gswin32c.exe), "
+        "or put 'gs' on PATH. On Unix, install Ghostscript and ensure 'gs' is on PATH."
     )
 
 gs_cmd = [
