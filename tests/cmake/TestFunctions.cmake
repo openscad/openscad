@@ -490,13 +490,24 @@ function(add_cmdline_test TESTCMD_BASENAME)
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
       message(DEBUG "${DBG_COMMAND_STR}")
-      add_test(NAME ${TEST_FULLNAME}
-        COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
-        "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
-        -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-        "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-      )
+      # Do not pass a quoted empty TESTCMD_SCRIPT — that becomes "" on the argv and breaks OpenSCAD.
+      if(TESTCMD_SCRIPT)
+        add_test(NAME ${TEST_FULLNAME}
+          COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
+          "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      else()
+        add_test(NAME ${TEST_FULLNAME}
+          COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
+          "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          "${TESTCMD_EXE}" "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      endif()
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
       # Set LABELS property to enable filtering with ctest -L
       set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
