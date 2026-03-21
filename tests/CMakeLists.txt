@@ -165,7 +165,9 @@ if(WIN32)
 
   if(MSVC)
     # MSVC builds: Add vcpkg Python directory to PATH to ensure the correct python DLL is loaded
-    list(APPEND CTEST_ENVIRONMENT "PATH=${Python3_DIR};${ORIGINAL_PATH}")
+    set(_WIN_TEST_PATH "${Python3_DIR};${ORIGINAL_PATH}")
+    string(REPLACE ";" "\\;" _WIN_TEST_PATH "${_WIN_TEST_PATH}")
+    list(APPEND CTEST_ENVIRONMENT "PATH=${_WIN_TEST_PATH}")
     message(STATUS "Adding Python directory to test PATH: ${Python3_DIR}")
   else()
     # MinGW/MSYS2 builds: Put MSYS2 bin directory FIRST to ensure MinGW DLLs are found
@@ -181,7 +183,9 @@ if(WIN32)
       # Fallback to MINGW64 if no MSYS2 environment is detected
       set(MSYS2_BIN "C:/msys64/mingw64/bin")
     endif()
-    list(APPEND CTEST_ENVIRONMENT "PATH=${MSYS2_BIN};${ORIGINAL_PATH}")
+    set(_WIN_TEST_PATH "${MSYS2_BIN};${ORIGINAL_PATH}")
+    string(REPLACE ";" "\\;" _WIN_TEST_PATH "${_WIN_TEST_PATH}")
+    list(APPEND CTEST_ENVIRONMENT "PATH=${_WIN_TEST_PATH}")
     message(STATUS "Adding MSYS2 bin directory to test PATH: ${MSYS2_BIN}")
   endif()
 endif()
