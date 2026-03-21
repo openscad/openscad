@@ -92,7 +92,7 @@ endif()
 message("running '${_openscad_exe_for_sysinfo} --info' to generate sysinfo.txt")
 execute_process(COMMAND "${_openscad_exe_for_sysinfo}" --info OUTPUT_FILE sysinfo.txt)
 
-set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@Python3_EXECUTABLE@ \"@CMAKE_CURRENT_SOURCE_DIR@/test_pretty_print.py\" --builddir=@CMAKE_BINARY_DIR@")
+set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@Python3_EXECUTABLE@ \"@CMAKE_CURRENT_SOURCE_DIR@/test_pretty_print.py\" --builddir=@CMAKE_BINARY_DIR@ @UPLOADARG@")
 
 if ( ${debug_openscad_template} )
   foreach(post_test ${CTEST_CUSTOM_POST_TEST} )
