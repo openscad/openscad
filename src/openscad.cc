@@ -604,10 +604,18 @@ int cmdline(const CommandLine& cmd)
     }
   }
 
+  RenderVariables render_variables = {
+    .preview = fileformat::canPreview(export_format)
+                 ? (cmd.viewOptions.renderer == RenderType::OPENCSG ||
+                    cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
+                 : false,
+    .camera = cmd.camera,
+  };
+
   std::string text_py = text;
   if (python_active) {
     if (cmd.animate.frames == 0) {
-      initPython("", cmd.filename, nullptr);
+      initPython("", cmd.filename, &render_variables);
       auto error = evaluatePython(commandline_commands);
       error += evaluatePython(text_py);
       finishPython();
@@ -645,13 +653,6 @@ int cmdline(const CommandLine& cmd)
 
   root_file->handleDependencies();
 
-  RenderVariables render_variables = {
-    .preview = fileformat::canPreview(export_format)
-                 ? (cmd.viewOptions.renderer == RenderType::OPENCSG ||
-                    cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
-                 : false,
-    .camera = cmd.camera,
-  };
 
   if (cmd.animate.frames == 0) {
     render_variables.time = 0;
