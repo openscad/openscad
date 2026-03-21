@@ -72,6 +72,7 @@ private:
   bool steps_ok;
 
   int initMinWidth;
+  int initButtonsMinWidth;
 
   QIcon iconRun;
   QIcon iconPause;

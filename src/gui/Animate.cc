@@ -24,12 +24,18 @@ Animate::Animate(QWidget *parent) : QWidget(parent)
   setupUi(this);
   initGUI();
 
-  const auto width = groupBoxParameter->minimumSizeHint().width();
   const auto margins = layout()->contentsMargins();
   const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
   const auto parameterMargins = groupBoxParameter->layout()->contentsMargins();
-  initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() +
+  const auto buttonsMargins = groupBoxButtons->layout()->contentsMargins();
+
+  const auto paramWidth = groupBoxParameter->minimumSizeHint().width();
+  initMinWidth = paramWidth + margins.left() + margins.right() + scrollMargins.left() +
                  scrollMargins.right() + parameterMargins.left() + parameterMargins.right();
+
+  const auto buttonsWidth = groupBoxButtons->minimumSizeHint().width();
+  initButtonsMinWidth = buttonsWidth + margins.left() + margins.right() + scrollMargins.left() +
+                        scrollMargins.right() + buttonsMargins.left() + buttonsMargins.right();
 }
 
 void Animate::initGUI()
@@ -264,15 +270,33 @@ void Animate::resizeEvent(QResizeEvent *event)
   auto layoutButtons = dynamic_cast<QBoxLayout *>(groupBoxButtons->layout());
 
   if (layoutParameters && layoutButtons) {
+    const int currentWidth = event->size().width();
+
+    // Use a small hysteresis band (20px) to prevent jitter when the window
+    // is dragged near a transition threshold.
+    const int hysteresis = 20;
+
     if (layoutParameters->direction() == QBoxLayout::LeftToRight) {
-      if (event->size().width() < initMinWidth) {
+      if (currentWidth < initMinWidth) {
         layoutParameters->setDirection(QBoxLayout::TopToBottom);
+        scrollAreaWidgetContents->layout()->invalidate();
+      }
+    } else {
+      if (currentWidth > initMinWidth + hysteresis) {
+        layoutParameters->setDirection(QBoxLayout::LeftToRight);
+        scrollAreaWidgetContents->layout()->invalidate();
+      }
+    }
+
+    // The button row contains only fixed-size icon buttons and can stay
+    // horizontal at a narrower width than the parameter row.
+    if (layoutButtons->direction() == QBoxLayout::LeftToRight) {
+      if (currentWidth < initButtonsMinWidth) {
         layoutButtons->setDirection(QBoxLayout::TopToBottom);
         scrollAreaWidgetContents->layout()->invalidate();
       }
     } else {
-      if (event->size().width() > initMinWidth) {
-        layoutParameters->setDirection(QBoxLayout::LeftToRight);
+      if (currentWidth > initButtonsMinWidth + hysteresis) {
         layoutButtons->setDirection(QBoxLayout::LeftToRight);
         scrollAreaWidgetContents->layout()->invalidate();
       }
