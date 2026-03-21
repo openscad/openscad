@@ -3557,22 +3557,8 @@ void MainWindow::setupEditor(const QStringList& filenames)
   QObject::connect(editorDock, &Dock::visibilityChanged, this,
                    &MainWindow::onEditorDockVisibilityChanged);
 
-  // -----------------------------------------------------------------------
-  // FIX #6667: Editor keyboard shortcuts broken when editor is undocked.
-  //
-  // Root cause: these QActions are owned by MainWindow and their shortcut
-  // context defaults to Qt::WindowShortcut, which means Qt only fires them
-  // when the *main* window has focus.  When the editor dock is floating it
-  // becomes its own top-level window, so the main window no longer has
-  // focus and every shortcut below silently stops working.
-  //
-  // Fix: change the context to Qt::WidgetWithChildrenShortcut and register
-  // each action on editorDock.  Qt then fires the shortcut whenever the
-  // dock itself *or any widget inside it* (ScintillaEditor, tab bar, …)
-  // has focus — whether the dock is attached or floating.
-  //
-  // Signals/slots, naming, data-flow and all other behaviour are unchanged.
-  // -----------------------------------------------------------------------
+  // Arrange that these shortcuts are handled even when the editor is
+  // undocked and it, not the main window, has focus.
   const QList<QAction *> editorScopedActions = {
     this->editActionFind,
     this->editActionFindAndReplace,
@@ -3597,9 +3583,6 @@ void MainWindow::setupEditor(const QStringList& filenames)
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     editorDock->addAction(action);
   }
-  // -----------------------------------------------------------------------
-  // END FIX #6667
-  // -----------------------------------------------------------------------
 }
 
 /**
