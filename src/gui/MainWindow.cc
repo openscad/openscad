@@ -70,6 +70,10 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QByteArray>
+#include <QDataStream>
+#include <QDebug>
+#include <QString>
 #include <algorithm>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/version.hpp>
@@ -3228,17 +3232,23 @@ void MainWindow::closeEvent(QCloseEvent *event)
   if (tabManager->shouldClose()) {
     isClosing = true;
     progress_report_fin();
-    // Disable invokeMethod calls for consoleOutput during shutdown,
-    // otherwise will segfault if echos are in progress.
-    hideCurrentOutput();
+
+    // Log to stdout from now on
+    clearCurrentOutput();
 
     QSettingsCached settings;
     settings.setValue("window/geometry", saveGeometry());
-    settings.setValue("window/state", saveState());
+    auto windowState = saveState();
+    UIUtils::dumpSaveState(windowState);
+    settings.setValue("window/state", windowState);
     if (this->tempFile) {
       delete this->tempFile;
       this->tempFile = nullptr;
     }
+
+    // Disable invokeMethod calls for consoleOutput during shutdown,
+    // otherwise will segfault if echos are in progress.
+    hideCurrentOutput();
     event->accept();
   } else {
     event->ignore();
@@ -3898,6 +3908,10 @@ void MainWindow::restoreWindowState()
 
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  // Log to stdout
+  clearCurrentOutput();
+  UIUtils::dumpSaveState(windowState);
+  setCurrentOutput();
   restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
   // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
