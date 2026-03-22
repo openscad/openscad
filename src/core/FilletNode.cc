@@ -69,29 +69,6 @@ std::shared_ptr<const PolySet> childToPolySet(std::shared_ptr<AbstractNode> chil
   return PolySetUtils::getGeometryAsPolySet(geom);
 }
 
-int point_in_polyhedron(const PolySet& ps, const Vector3d& pt)
-{
-  // polygons are clockwise
-  int cuts = 0;
-  Vector3d vc(1, 0, 0);
-  Vector3d res;
-  for (size_t i = 0; i < ps.indices.size(); i++) {
-    const IndexedFace& f = ps.indices[i];
-    Vector3d va = ps.vertices[f[1]] - ps.vertices[f[0]];
-    Vector3d vb = ps.vertices[f[2]] - ps.vertices[f[0]];
-    if (linsystem(va, vb, vc, pt - ps.vertices[f[0]], res, nullptr)) continue;
-    if (res[2] < 0) continue;
-    if (res[0] >= -1e-6 && res[1] > -1e-6 && res[0] + res[1] < 1 + 1e-6) {
-      if (res[0] > 0 && res[1] > 0 && res[0] + res[1] < 1) cuts += 2;
-      if (fabs(res[0]) < 1e-6) cuts++;
-      if (fabs(res[1]) < 1e-6) cuts++;
-      if (fabs(res[0] + res[1] - 1) < 1e-6) cuts++;
-    }
-  }
-  cuts /= 2;
-  return cuts & 1;
-}
-
 // Credit: inphase Ryan Colyer
 Vector3d Bezier(double t, Vector3d a, Vector3d b, Vector3d c)
 {
@@ -761,7 +738,7 @@ std::unique_ptr<const Geometry> FilletNode::createGeometry() const
     if (sel != nullptr) {
       auto sel_tess = PolySetUtils::tessellate_faces(*sel);
       for (size_t i = 0; i < ps->vertices.size(); i++) {
-        corner_selected.push_back(point_in_polyhedron(*sel_tess, ps->vertices[i]));
+        corner_selected.push_back(sel_tess->point_inside(ps->vertices[i]));
       }
     }
 
