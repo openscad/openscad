@@ -775,7 +775,7 @@ std::string PolygonNode::toString() const
     }
     stream << "]";
   }
-  stream << ", convexity = " << this->convexity << ")";
+  stream << ", convexity = " << this->convexity << ", " << discretizer << ")";
   return stream.str();
 }
 

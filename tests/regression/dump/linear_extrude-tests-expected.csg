@@ -16,7 +16,7 @@ multmatrix([[1, 0, 0, 19], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 }
 multmatrix([[1, 0, 0, 31.5], [0, 1, 0, 2.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	linear_extrude(height = 10, twist = -45, $fn = 0, $fa = 12, $fs = 2) {
-		polygon(points = [[-5, -2.5], [5, -2.5], [0, 2.5]], paths = undef, convexity = 1);
+		polygon(points = [[-5, -2.5], [5, -2.5], [0, 2.5]], paths = undef, convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 	}
 }
 multmatrix([[1, 0, 0, -19], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -91,4 +91,3 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, -25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		square(size = [10, 10], center = true);
 	}
 }
-

@@ -14,7 +14,7 @@ group() {
 	multmatrix([[1, 0, 0, -60], [0, 1, 0, 120], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			group() {
-				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 			}
 		}
 	}
@@ -52,7 +52,7 @@ group() {
 		group() {
 			offset(r = 5, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -91,7 +91,7 @@ group() {
 		group() {
 			offset(r = 5, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -130,7 +130,7 @@ group() {
 		group() {
 			offset(r = -1, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -169,7 +169,7 @@ group() {
 		group() {
 			offset(delta = 5, chamfer = false, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -208,7 +208,7 @@ group() {
 		group() {
 			offset(delta = -1, chamfer = false, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -247,7 +247,7 @@ group() {
 		group() {
 			offset(delta = 5, chamfer = true, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -286,7 +286,7 @@ group() {
 		group() {
 			offset(delta = -1, chamfer = true, $fn = 0, $fa = 12, $fs = 2) {
 				group() {
-					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+					polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1, $fn = 5, $fa = 0, $fs = 0);
 				}
 			}
 		}
@@ -307,4 +307,3 @@ offset(r = 1, $fn = 0, $fa = 12, $fs = 2);
 offset(r = 1, $fn = 0, $fa = 12, $fs = 2) {
 	square(size = [0, 0], center = false);
 }
-
