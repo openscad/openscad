@@ -259,16 +259,27 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
     }
 
     int input_width = 1;
-    while (inputs_old + input_width < n) {
-      if (polygons[inputs_old]->outlines().size() > 1) break;
-      if (polygons[inputs_old + input_width] == nullptr) break;
-      if (polygons[inputs_old + input_width]->outlines().size() > 1) break;
-      if (polygons[inputs_old]->outlines().size() == 0) break;
-      if (polygons[inputs_old + input_width]->outlines().size() == 0) break;
-      if (polygons[inputs_old]->outlines()[0].color !=
-          polygons[inputs_old + input_width]->outlines()[0].color)
-        break;
-      input_width++;
+    bool valid = true;
+    const Color4f *colorptr = nullptr;
+    for (const auto& out : polygons[inputs_old]->outlines()) {
+      if (colorptr == nullptr) colorptr = &(out.color);
+      else {
+        if (out.color != *colorptr) valid = false;
+      }
+    }
+    if (valid && colorptr != nullptr) {
+      while (inputs_old + input_width < n) {
+        if (polygons[inputs_old + input_width] == nullptr) break;
+        if (polygons[inputs_old + input_width]->outlines().size() == 0) break;
+        for (const auto& o : polygons[inputs_old + input_width]->outlines()) {
+          if (o.color != *colorptr) {
+            valid = false;
+            break;
+          }
+        }
+        if (!valid) break;
+        input_width++;
+      }
     }
     auto cur_outlines = polygons[inputs_old]->outlines();
     while (cur_outlines.size() > 0) {
@@ -279,7 +290,9 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
       if (input_width > 1) {
         std::vector<Clipper2Lib::Paths64> union_operands;
         for (int i = 0; i < input_width; i++) {
-          auto polypath = fromPolygon2d(*polygons[inputs_old + i], scale_bits, &curcol);
+          Polygon2d inp = *polygons[inputs_old + i];
+          auto polypath = fromPolygon2d(inp, scale_bits, &curcol);
+          if (!inp.isSanitized()) polypath = Clipper2Lib::PolyTreeToPaths64(*sanitize(polypath));
           union_operands.push_back(polypath);
         }
         std::unique_ptr<Polygon2d> union_result =
