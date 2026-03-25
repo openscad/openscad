@@ -2004,10 +2004,13 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   resetSuppressedMessages();
 
   auto document = editor->toPlainText();
-  auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
+  const QByteArray documentUtf8 = document.toUtf8();
+  auto fulltext = std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size())) +
+                  "\n\x03\n" + commandline_commands;
   auto fnameba = editor->filepath.toLocal8Bit();
 
-  auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
+  // Use this editor's text, not lastCompiledDoc (only updated in parseTopLevelDocument()).
+  auto fulltext_py = std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size()));
   const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
   SourceFile *sourceFile;
 #ifdef ENABLE_PYTHON
