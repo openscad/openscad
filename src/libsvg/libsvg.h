@@ -34,6 +34,8 @@
 
 namespace libsvg {
 
+std::vector<std::string> split(std::string str, char c);
+
 class SvgException : public std::exception
 {
 public:

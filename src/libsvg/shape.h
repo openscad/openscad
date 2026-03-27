@@ -86,7 +86,6 @@ protected:
   double x{0};
   double y{0};
   path_list_t path_list;
-  std::string fill;
   std::string transform;
   std::string stroke_width;
   std::string stroke_linecap;
@@ -107,6 +106,8 @@ protected:
 public:
   shape() = default;
   virtual ~shape() = default;
+  std::string fill;
+  std::string stroke;
 
   [[nodiscard]] virtual shape *get_parent() const { return parent; }
   virtual void set_parent(shape *s) { parent = s; }

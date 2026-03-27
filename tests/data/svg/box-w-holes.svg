@@ -3,8 +3,8 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 255 266" style="enable-background:new 0 0 255 266;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;}
-	.st1{fill:none;stroke:#020202;stroke-miterlimit:10;}
+	.st0{fill:#804000;}
+	.st1{fill:#004080;stroke:#020202;stroke-miterlimit:10;}
 </style>
 <circle class="st0" cx="58.4" cy="56.7" r="0"/>
 <path class="st1" d="M56.7,56.7v141.7h141.7V56.7H56.7z M85,184.2c-7.8,0-14.2-6.3-14.2-14.2c0-7.8,6.3-14.2,14.2-14.2
@@ -13,4 +13,3 @@
 	c7.8,0,14.2,6.3,14.2,14.2C184.2,177.9,177.9,184.2,170.1,184.2z M170.1,99.2c-7.8,0-14.2-6.3-14.2-14.2c0-7.8,6.3-14.2,14.2-14.2
 	c7.8,0,14.2,6.3,14.2,14.2C184.2,92.9,177.9,99.2,170.1,99.2z"/>
 </svg>
-

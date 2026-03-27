@@ -165,6 +165,7 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
     Outline2d o;
     double laserpower;
     double feedrate;
+    double area;
   };
 
   std::vector<PoweredOutline> outlines;
@@ -172,7 +173,7 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
   for (const auto& o : poly.outlines()) {  // Add outlines
     const double laserpower = color_to_parm(pt, o.color, 0, *options);
     const double feedrate = color_to_parm(pt, o.color, 1, *options);
-    PoweredOutline po = {o, laserpower, feedrate};
+    PoweredOutline po = {o, laserpower, feedrate, abs(outline_area(o))};
     po.o.vertices.push_back(po.o.vertices[0]);  // close Polygon
     outlines.push_back(po);
   }
@@ -180,12 +181,15 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
   for (const auto& o : poly.polylines()) {  // Add polylines
     const double laserpower = color_to_parm(pt, o.color, 0, *options);
     const double feedrate = color_to_parm(pt, o.color, 1, *options);
-    PoweredOutline po = {o, laserpower, feedrate};
+    PoweredOutline po = {o, laserpower, feedrate, 0};
     outlines.push_back(po);
   }
 
   // sort by laserpower
   std::sort(outlines.begin(), outlines.end(), [](const PoweredOutline& a, const PoweredOutline& b) {
+    if (a.laserpower == b.laserpower) {
+      return a.area < b.area;
+    }
     return a.laserpower < b.laserpower;
   });
 
