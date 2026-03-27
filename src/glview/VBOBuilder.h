@@ -258,8 +258,8 @@ private:
 class VBOBuilder
 {
 public:
-  VBOBuilder(std::unique_ptr<VertexStateFactory> factory, VertexStateContainer& vertex_state_container)
-    : factory_(std::move(factory)), vertex_state_container_(vertex_state_container)
+  VBOBuilder(VertexStateContainer& vertex_state_container)
+    : vertex_state_container_(vertex_state_container)
   {
   }
 
@@ -343,9 +343,9 @@ public:
   std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
                                                  size_t draw_offset, size_t element_offset) const
   {
-    return factory_->createVertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset,
-                                       vertex_state_container_.verticesVBO(),
-                                       vertex_state_container_.elementsVBO());
+    return std::make_shared<VertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset,
+                                         vertex_state_container_.verticesVBO(),
+                                         vertex_state_container_.elementsVBO());
   }
 
   void allocateBuffers(size_t num_vertices);
@@ -384,7 +384,6 @@ public:
 private:
   inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
 
-  std::unique_ptr<VertexStateFactory> factory_;
   VertexStateContainer& vertex_state_container_;
   size_t write_index_{0};
   size_t surface_index_{0};

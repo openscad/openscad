@@ -111,9 +111,6 @@
 #include "geometry/GeometryEvaluator.h"
 #include "glview/PolySetRenderer.h"
 #include "glview/RenderSettings.h"
-#if not defined(USE_POLYSET_FOR_CGAL)
-#include "glview/cgal/CGALRenderer.h"
-#endif
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
@@ -505,6 +502,9 @@ void MainWindow::loadViewSettings()
 
   if (settings.value("view/showEdges").toBool()) {
     viewActionShowEdges->setChecked(true);
+  }
+  if (settings.value("view/showSSAO").toBool()) {
+    viewActionShowSSAO->setChecked(true);
   }
   if (settings.value("view/showAxes", true).toBool()) {
     viewActionShowAxes->setChecked(true);
@@ -1947,19 +1947,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
-#if defined(USE_POLYSET_FOR_CGAL)
     this->geomRenderer = std::make_shared<PolySetRenderer>(this->rootGeom);
-#else
-    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
-    // know that all geometries are convertible to PolySet.
-    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
-        std::dynamic_pointer_cast<const PolySet>(this->rootGeom) ||
-        std::dynamic_pointer_cast<const Polygon2d>(this->rootGeom)) {
-      this->geomRenderer = std::make_shared<PolySetRenderer>(this->rootGeom);
-    } else {
-      this->geomRenderer = std::make_shared<CGALRenderer>(this->rootGeom);
-    }
-#endif
 
     // Go to CGAL view mode
     viewModeRender();
@@ -2668,6 +2656,14 @@ void MainWindow::on_viewActionShowEdges_toggled(bool checked)
   QSettingsCached settings;
   settings.setValue("view/showEdges", checked);
   this->qglview->setShowEdges(checked);
+  this->qglview->update();
+}
+
+void MainWindow::on_viewActionShowSSAO_toggled(bool checked)
+{
+  QSettingsCached settings;
+  settings.setValue("view/showSSAO", checked);
+  this->qglview->setShowSSAO(checked);
   this->qglview->update();
 }
 

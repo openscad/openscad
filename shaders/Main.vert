@@ -6,13 +6,17 @@ attribute vec3 barycentric; // barycentric form of vertex coord
 varying vec3 vBC;           // varying barycentric coords
 varying float shading;      // Will be multiplied by color in fragment shader
 varying vec4 color;         // per-vertex colors
+varying vec3 normal;
+varying vec4 position;
 
 void main(void) {
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
   vBC = barycentric;
-  vec3 normal, lightDir;
+  vec3 lightDir;
   normal = normalize(gl_NormalMatrix * gl_Normal);
+  normal = normal.z < 0 ? -normal : normal;
   lightDir = normalize(vec3(gl_LightSource[0].position));
   shading = 0.2 + abs(dot(normal, lightDir));
   color = gl_Color;
+  position = gl_ModelViewMatrix * gl_Vertex;
 }
