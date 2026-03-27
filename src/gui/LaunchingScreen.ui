@@ -36,6 +36,7 @@
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QPushButton" name="pushButtonNew">
+           <!--
            <property name="styleSheet">
             <string notr="true">QPushButton {
     margin: 0;
@@ -54,6 +55,7 @@ QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
 }</string>
            </property>
+           -->
            <property name="text">
             <string>New</string>
            </property>
@@ -67,6 +69,7 @@ QPushButton:pressed {
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonOpen">
+           <!--
            <property name="styleSheet">
             <string notr="true">QPushButton {
     margin: 0;
@@ -85,6 +88,7 @@ QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
 }</string>
            </property>
+           -->
            <property name="text">
             <string>Open</string>
            </property>
@@ -95,6 +99,7 @@ QPushButton:pressed {
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonHelp">
+           <!--
            <property name="styleSheet">
             <string notr="true">QPushButton {
     margin: 0;
@@ -113,6 +118,7 @@ QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
 }</string>
            </property>
+           -->
            <property name="text">
             <string>Help</string>
            </property>
@@ -144,6 +150,7 @@ QPushButton:pressed {
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <!--
        <property name="styleSheet">
         <string notr="true">QPushButton {
     margin: 0;
@@ -162,6 +169,7 @@ QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
 }</string>
        </property>
+       -->
        <property name="text">
         <string>Open Recent</string>
        </property>
@@ -213,6 +221,7 @@ QPushButton:pressed {
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <!--
        <property name="styleSheet">
         <string notr="true">QPushButton {
     margin: 0;
@@ -231,6 +240,7 @@ QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
 }</string>
        </property>
+       -->
        <property name="text">
         <string>Open Example</string>
        </property>

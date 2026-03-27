@@ -37,7 +37,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   setupUi(this);
 
   this->setStyleSheet(
-    "QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
+    "QDialog {background-image:url(':/icons/background.png')}");
 
   this->versionNumberLabel->setText("OpenSCAD " +
                                     QString::fromStdString(std::string(openscad_displayversionnumber)));
