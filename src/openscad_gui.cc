@@ -102,6 +102,7 @@ bool isDarkMode()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
   const auto scheme = QGuiApplication::styleHints()->colorScheme();
+printf("colorScheme: %d\n", scheme); fflush(stdout);
   return scheme == Qt::ColorScheme::Dark;
 #else
   const QPalette defaultPalette;
@@ -135,6 +136,11 @@ void configureOpenGLContext()
 void setGlobalTheme()
 {
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
+
+  const QPalette defaultPalette;
+  const auto& text = defaultPalette.color(QPalette::WindowText);
+  const auto& window = defaultPalette.color(QPalette::Window);
+  printf("text %d window %d\n", text.lightness(), window.lightness()); fflush(stdout);
 }
 
 namespace {
