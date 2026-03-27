@@ -249,6 +249,7 @@
      <property name="title">
       <string>Python</string>
      </property>
+     <addaction name="fileActionPythonTrustCurrent"/>
      <addaction name="fileActionPythonRevoke"/>
      <addaction name="separator"/>
      <addaction name="fileActionPythonSelectVenv"/>
@@ -1386,6 +1387,14 @@
    </property>
    <property name="text">
     <string>Export as &amp;DXF...</string>
+   </property>
+  </action>
+  <action name="fileActionPythonTrustCurrent">
+   <property name="text">
+    <string>Trust Current Document...</string>
+   </property>
+   <property name="toolTip">
+    <string>Mark the active saved Python document as trusted (same as choosing Yes in the trust prompt)</string>
    </property>
   </action>
   <action name="fileActionPythonRevoke">

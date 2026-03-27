@@ -98,6 +98,7 @@ public:
   std::string trusted_edit_document_name;
   std::string untrusted_edit_document_name;
   bool trust_python_file(const std::string& file, const std::string& content);
+  void clearPythonUntrustStateForPath(const std::string& path);
 #endif
   Tree tree;
   EditorInterface *activeEditor = nullptr;
@@ -277,6 +278,7 @@ private slots:
   void on_fileActionSave_triggered();
   void on_fileActionSaveAs_triggered();
   void on_fileActionPythonRevoke_triggered();
+  void on_fileActionPythonTrustCurrent_triggered();
   void on_fileActionPythonCreateVenv_triggered();
   void on_fileActionPythonSelectVenv_triggered();
   void on_fileActionSaveACopy_triggered();

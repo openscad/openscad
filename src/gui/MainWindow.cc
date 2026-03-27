@@ -199,6 +199,87 @@ std::string SHA256HashString(std::string aString)
   return digest_base64;
 }
 
+namespace {
+
+QString pythonTrustSettingKeyNew(const std::string& pathUtf8)
+{
+  const QByteArray pathUtf8Bytes(pathUtf8.data(), static_cast<int>(pathUtf8.size()));
+  return QStringLiteral("python_hash/%1").arg(QString::fromUtf8(pathUtf8Bytes.toPercentEncoding()));
+}
+
+// Legacy (pre percent-encoded key): "python_hash/<local8-bit path>" (trust file id from toLocal8Bit()).
+QString pythonTrustSettingKeyLegacyLocal(const std::string& pathUtf8)
+{
+  const QString qpath =
+    QString::fromUtf8(QByteArray(pathUtf8.data(), static_cast<int>(pathUtf8.size())));
+  return QStringLiteral("python_hash/") + QString::fromLocal8Bit(qpath.toLocal8Bit());
+}
+
+// Legacy: key suffix was local 8-bit bytes from snprintf, but some builds passed char[] into
+// setValue(QString) via QString(const char*), which decodes as UTF-8 (not fromLocal8Bit).
+QString pythonTrustSettingKeyLegacyCharCtorUtf8(const std::string& pathUtf8)
+{
+  const QString qpath =
+    QString::fromUtf8(QByteArray(pathUtf8.data(), static_cast<int>(pathUtf8.size())));
+  return QStringLiteral("python_hash/") + QString::fromUtf8(qpath.toLocal8Bit());
+}
+
+// Legacy: "python_hash/<raw UTF-8 path>" (brief use of toStdString()/snprintf before UTF-8 key change).
+QString pythonTrustSettingKeyLegacyRawUtf8(const std::string& pathUtf8)
+{
+  return QStringLiteral("python_hash/") +
+         QString::fromUtf8(QByteArray(pathUtf8.data(), static_cast<int>(pathUtf8.size())));
+}
+
+QString readPythonTrustHash(QSettingsCached& settings, const std::string& pathUtf8)
+{
+  const QString kNew = pythonTrustSettingKeyNew(pathUtf8);
+  if (settings.contains(kNew)) {
+    return settings.value(kNew).toString();
+  }
+  const QString kLegLoc = pythonTrustSettingKeyLegacyLocal(pathUtf8);
+  if (settings.contains(kLegLoc)) {
+    const QString v = settings.value(kLegLoc).toString();
+    settings.setValue(kNew, v);
+    settings.remove(kLegLoc);
+    return v;
+  }
+  const QString kLegCharUtf8 = pythonTrustSettingKeyLegacyCharCtorUtf8(pathUtf8);
+  if (kLegCharUtf8 != kNew && kLegCharUtf8 != kLegLoc && settings.contains(kLegCharUtf8)) {
+    const QString v = settings.value(kLegCharUtf8).toString();
+    settings.setValue(kNew, v);
+    settings.remove(kLegCharUtf8);
+    return v;
+  }
+  const QString kLegRaw = pythonTrustSettingKeyLegacyRawUtf8(pathUtf8);
+  if (kLegRaw != kNew && kLegRaw != kLegLoc && kLegRaw != kLegCharUtf8 && settings.contains(kLegRaw)) {
+    const QString v = settings.value(kLegRaw).toString();
+    settings.setValue(kNew, v);
+    settings.remove(kLegRaw);
+    return v;
+  }
+  return {};
+}
+
+void writePythonTrustHash(QSettingsCached& settings, const std::string& pathUtf8,
+                          const std::string& hash)
+{
+  const QString kNew = pythonTrustSettingKeyNew(pathUtf8);
+  const QString v = QString::fromStdString(hash);
+  settings.setValue(kNew, v);
+  settings.remove(pythonTrustSettingKeyLegacyLocal(pathUtf8));
+  const QString kLegCharUtf8 = pythonTrustSettingKeyLegacyCharCtorUtf8(pathUtf8);
+  if (kLegCharUtf8 != kNew && kLegCharUtf8 != pythonTrustSettingKeyLegacyLocal(pathUtf8)) {
+    settings.remove(kLegCharUtf8);
+  }
+  const QString kLegRaw = pythonTrustSettingKeyLegacyRawUtf8(pathUtf8);
+  if (kLegRaw != kNew) {
+    settings.remove(kLegRaw);
+  }
+}
+
+}  // namespace
+
 static size_t curl_download_write(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   QFile *fh = (QFile *)stream;
@@ -1550,10 +1631,36 @@ void MainWindow::on_fileActionPythonRevoke_triggered()
 #ifdef ENABLE_PYTHON
   python_trusted = false;
   this->trusted_edit_document_name = "";
+  this->untrusted_edit_document_name = "";
 #endif
   settings.remove("python_hash");
   QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked",
                            QMessageBox::Ok);
+}
+
+void MainWindow::on_fileActionPythonTrustCurrent_triggered()
+{
+#ifdef ENABLE_PYTHON
+  if (activeEditor->language != LANG_PYTHON) {
+    QMessageBox::information(this, _("Python"), _("The active document is not a Python file."));
+    return;
+  }
+  if (activeEditor->filepath.isEmpty()) {
+    QMessageBox::information(
+      this, _("Python"),
+      _("Untitled buffers are already trusted. Save to a file if you need a persistent trust entry."));
+    return;
+  }
+  const QByteArray docUtf8 = activeEditor->toPlainText().toUtf8();
+  const std::string content(docUtf8.constData(), static_cast<size_t>(docUtf8.size()));
+  QSettingsCached settings;
+  const QByteArray pathUtf8 = activeEditor->filepath.toUtf8();
+  const std::string fpath(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size()));
+  clearPythonUntrustStateForPath(fpath);
+  writePythonTrustHash(settings, fpath, SHA256HashString(content));
+  trusted_edit_document_name = fpath;
+  QMessageBox::information(this, _("Python"), _("This document is now trusted for Python execution."));
+#endif
 }
 
 void MainWindow::on_fileActionPythonCreateVenv_triggered()
@@ -1937,7 +2044,6 @@ bool MainWindow::fileChangedOnDisk()
 bool MainWindow::trust_python_file(const std::string& file, const std::string& content)
 {
   QSettingsCached settings;
-  char setting_key[256];
   if (python_trusted) return true;
   if (Settings::SettingsPython::globalTrustPython.value() == true) return true;
 
@@ -1947,13 +2053,12 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
   }
 
   std::string act_hash, ref_hash;
-  snprintf(setting_key, sizeof(setting_key) - 1, "python_hash/%s", file.c_str());
   act_hash = SHA256HashString(content);
 
   if (file == this->untrusted_edit_document_name) return false;
 
   if (file == this->trusted_edit_document_name) {
-    settings.setValue(setting_key, act_hash.c_str());
+    writePythonTrustHash(settings, file, act_hash);
     return true;
   }
 
@@ -1968,9 +2073,7 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
     }
   */
 
-  if (settings.contains(setting_key)) {
-    ref_hash = settings.value(setting_key).toString().toStdString();
-  }
+  ref_hash = readPythonTrustHash(settings, file).toStdString();
 
   if (act_hash == ref_hash) {
     this->trusted_edit_document_name = file;
@@ -1987,7 +2090,7 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
   }
   if (ret == QMessageBox::Yes) {
     this->trusted_edit_document_name = file;
-    settings.setValue(setting_key, act_hash.c_str());
+    writePythonTrustHash(settings, file, act_hash);
     return true;
   }
 
@@ -1996,6 +2099,13 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
     return false;
   }
   return false;
+}
+
+void MainWindow::clearPythonUntrustStateForPath(const std::string& path)
+{
+  if (path == untrusted_edit_document_name) {
+    untrusted_edit_document_name.clear();
+  }
 }
 #endif  // ifdef ENABLE_PYTHON
 
@@ -2007,15 +2117,20 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   const QByteArray documentUtf8 = document.toUtf8();
   auto fulltext = std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size())) +
                   "\n\x03\n" + commandline_commands;
-  auto fnameba = editor->filepath.toLocal8Bit();
+  const QByteArray pathUtf8 = editor->filepath.toUtf8();
+  const QByteArray pathNative = editor->filepath.toLocal8Bit();
+  const std::string trustPathId(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size()));
+  const char *fnameNative = editor->filepath.isEmpty() ? "" : pathNative.constData();
 
   // Use this editor's text, not lastCompiledDoc (only updated in parseTopLevelDocument()).
   auto fulltext_py = std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size()));
-  const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
-  SourceFile *sourceFile;
+  SourceFile *sourceFile = nullptr;
 #ifdef ENABLE_PYTHON
-  if (editor->language == LANG_PYTHON && !trust_python_file(std::string(fname), fulltext_py)) {
-    LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+  if (editor->language == LANG_PYTHON && !trust_python_file(trustPathId, fulltext_py)) {
+    LOG(message_group::Warning, Location::NONE, "", "Python file is not trusted");
+    editor->resetHighlighting();
+    editor->parameterWidget->setEnabled(false);
+    return {};
   } else if (editor->language == LANG_PYTHON) {
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
@@ -2026,9 +2141,9 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       .camera = qglview->cam,
     };
 
-    initPython(venv, fnameba.constData(), &r);
-    this->activeEditor->resetHighlighting();
-    this->activeEditor->parameterWidget->setEnabled(false);
+    initPython(venv, fnameNative, &r);
+    editor->resetHighlighting();
+    editor->parameterWidget->setEnabled(false);
     do {
       if (this->rootFile == nullptr) break;
       int pos = -1, pos1;
@@ -2046,11 +2161,11 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       auto error = evaluatePython(par_text, true);  // run dummy
       this->rootFile->scope->assignments = customizer_parameters;
       CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');  // add annotations
-      this->activeEditor->parameterWidget->setParameters(this->rootFile.get(),
-                                                         "\n");                    // set widgets values
-      this->activeEditor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
-      this->activeEditor->parameterWidget->setEnabled(true);
-      this->activeEditor->setIndicator(this->rootFile->indicatorData);
+      editor->parameterWidget->setParameters(this->rootFile.get(),
+                                             "\n");                    // set widgets values
+      editor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
+      editor->parameterWidget->setEnabled(true);
+      editor->setIndicator(this->rootFile->indicatorData);
     } while (0);
 
     if (this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope->assignments;
@@ -2070,13 +2185,13 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       viewportControlWidget->cameraChanged();
       renderVarsSet = nullptr;
     }
-    sourceFile = parse(sourceFile, "", fname, fname, false) ? sourceFile : nullptr;
+    sourceFile = parse(sourceFile, "", fnameNative, fnameNative, false) ? sourceFile : nullptr;
 
   } else  // python not enabled
 #endif    // ifdef ENABLE_PYTHON
   {
 
-    sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
+    sourceFile = parse(sourceFile, fulltext, fnameNative, fnameNative, false) ? sourceFile : nullptr;
 
     editor->resetHighlighting();
     if (sourceFile) {
