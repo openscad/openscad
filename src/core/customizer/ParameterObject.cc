@@ -439,11 +439,47 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
   return output;
 }
 
-static std::unique_ptr<ParameterObject> createParameter(const std::string& name,
-                                                        const std::string& description,
-                                                        const std::string& group,
-                                                        const Expression *parameterExpr,
-                                                        const Expression *valueExpression)
+std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment,
+                                                                 const Context *context)
+{
+  const Annotation *nativeAnn = assignment->annotation("NativeAttributes");
+  if (nativeAnn) {
+    if (auto *obj = dynamic_cast<const ObjectExpression *>(nativeAnn->getExpr().get())) {
+      return fromObjectExpression(obj, assignment, context);
+    }
+  }
+
+  const Annotation *paramAnn = assignment->annotation("Parameter");
+  if (!paramAnn) return nullptr;
+
+  const Expression *parameterExpr = paramAnn->getExpr().get();
+  std::string description;
+  std::string group = "Parameters";
+
+  const Annotation *descAnn = assignment->annotation("Description");
+  if (descAnn) {
+    if (auto *lit = dynamic_cast<const Literal *>(descAnn->getExpr().get())) {
+      if (lit->isString()) description = lit->toString();
+    }
+  }
+
+  const Annotation *groupAnn = assignment->annotation("Group");
+  if (groupAnn) {
+    if (auto *lit = dynamic_cast<const Literal *>(groupAnn->getExpr().get())) {
+      if (lit->isString()) group = boost::algorithm::trim_copy(lit->toString());
+    }
+    if (group == "Hidden") return nullptr;
+  }
+
+  return ParameterObject::createParameter(assignment->getName(), description, group, parameterExpr,
+                                          assignment->getExpr().get());
+}
+
+std::unique_ptr<ParameterObject> ParameterObject::createParameter(const std::string& name,
+                                                                  const std::string& description,
+                                                                  const std::string& group,
+                                                                  const Expression *parameterExpr,
+                                                                  const Expression *valueExpression)
 {
   if (const auto *lit = dynamic_cast<const Literal *>(valueExpression)) {
     if (lit->isBool()) return std::make_unique<BoolParameter>(name, description, group, lit->toBool());
@@ -488,42 +524,6 @@ static std::unique_ptr<ParameterObject> createParameter(const std::string& name,
   return nullptr;
 }
 
-std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment,
-                                                                 const Context *context)
-{
-  const Annotation *nativeAnn = assignment->annotation("NativeAttributes");
-  if (nativeAnn) {
-    if (auto *obj = dynamic_cast<const ObjectExpression *>(nativeAnn->getExpr().get())) {
-      return fromObjectExpression(obj, assignment, context);
-    }
-  }
-
-  const Annotation *paramAnn = assignment->annotation("Parameter");
-  if (!paramAnn) return nullptr;
-
-  const Expression *parameterExpr = paramAnn->getExpr().get();
-  std::string description;
-  std::string group = "Parameters";
-
-  const Annotation *descAnn = assignment->annotation("Description");
-  if (descAnn) {
-    if (auto *lit = dynamic_cast<const Literal *>(descAnn->getExpr().get())) {
-      if (lit->isString()) description = lit->toString();
-    }
-  }
-
-  const Annotation *groupAnn = assignment->annotation("Group");
-  if (groupAnn) {
-    if (auto *lit = dynamic_cast<const Literal *>(groupAnn->getExpr().get())) {
-      if (lit->isString()) group = boost::algorithm::trim_copy(lit->toString());
-    }
-    if (group == "Hidden") return nullptr;
-  }
-
-  return createParameter(assignment->getName(), description, group, parameterExpr,
-                         assignment->getExpr().get());
-}
-
 std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const ObjectExpression *nativeObj,
                                                                        const Assignment *assignment,
                                                                        const Context *context)
@@ -534,7 +534,6 @@ std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const Obj
   const Expression *rangeExpr = nullptr;
   std::shared_ptr<Expression> lockedExpr;
   std::shared_ptr<Expression> hiddenExpr;
-  // std::shared_ptr<Expression> descExpr;
   std::set<std::string> tempDependencies;
   for (const auto& member : nativeObj->getMembers()) {
     std::string key = member->getName();
@@ -545,7 +544,6 @@ std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const Obj
     } else if (key == "hidden") {
       hiddenExpr = member->getExpr();
     } else {
-      // print no key was found
     }
     if (expr) {
       expr->collectDependencies(tempDependencies);
@@ -565,6 +563,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const Obj
         } else if (key == "range" || key == "min" || key == "max" || key == "step") {
           // TODO: add support for dynamic range expressions
           rangeExpr = expr;
+        } else {
+          PRINT(Message("no such key " + key + " found", message_group::Error, member->location()));
         }
       } catch (...) {  // TODO: handle evaluation errors
                        // if evaluation fails (e.g. variable not found), consume the error
@@ -588,7 +588,9 @@ std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const Obj
   if (param) {
     param->setLocked(isLocked);
     param->setHidden(isHidden);
+
     param->setLockedExpression(lockedExpr);
+    param->setHiddenExpression(hiddenExpr);
 
     param->getDependencies() = std::move(tempDependencies);
   }
