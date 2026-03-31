@@ -25,6 +25,7 @@ class PolySet : public Geometry
 public:
   VISITABLE_GEOMETRY();
   PolygonIndices indices;
+  std::vector<Polygon> polylines;
   std::vector<Vector3d> vertices;
   // Per polygon color, indexing the colors vector below. Can be empty, and -1 means no specific color.
   std::vector<int32_t> color_indices;
@@ -40,7 +41,7 @@ public:
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
   unsigned int getDimension() const override { return dim_; }
-  bool isEmpty() const override { return indices.empty(); }
+  bool isEmpty() const override { return indices.empty() && polylines.empty(); }
   std::unique_ptr<Geometry> copy() const override;
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);

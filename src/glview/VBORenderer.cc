@@ -117,6 +117,9 @@ size_t VBORenderer::calcNumEdgeVertices(const PolySet& polyset) const
   for (const auto& polygon : polyset.indices) {
     buffer_size += polygon.size();
   }
+  for (const auto& polyline : polyset.polylines) {
+    buffer_size += polyline.size();
+  }
   return buffer_size;
 }
 

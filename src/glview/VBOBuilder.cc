@@ -435,7 +435,6 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const C
   if (!vertex_data) {
     return;
   }
-
   const bool mirrored = m.matrix().determinant() < 0;
   size_t triangle_count = 0;
 
@@ -496,6 +495,29 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const C
     createVertexState(GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
   vertex_state_container_.states().emplace_back(std::move(vertex_state));
   addAttributePointers(last_size);
+
+  Color4f color(0.0f, 0.0f, 0.0f, 0.1f);
+  for (size_t i = 0, n = ps.polylines.size(); i < n; i++) {
+    const auto& polyline = ps.polylines[i];
+
+    const auto last_size = verticesOffset();
+    size_t elements_offset = 0;
+    if (useElements()) {
+      elements_offset = elementsOffset();
+      elementsMap().clear();
+    }
+    for (const Vector3d& v : polyline) {
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, v, m);
+      createVertex({p0}, {}, color, 0, 0, polyline.size(), true, false);
+    }
+
+    GLenum elements_type = 0;
+    if (useElements()) elements_type = elementsData()->glType();
+    std::shared_ptr<VertexState> line_loop =
+      createVertexState(GL_LINE_STRIP, polyline.size(), elements_type, writeIndex(), elements_offset);
+    vertex_state_container_.states().emplace_back(std::move(line_loop));
+    addAttributePointers(last_size);
+  }
 }
 
 void VBOBuilder::create_edges(const Polygon2d& polygon, const Transform3d& m, const Color4f& color)

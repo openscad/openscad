@@ -85,6 +85,11 @@ BoundingBox PolySet::getBoundingBox() const
     for (const auto& v : vertices) {
       bbox_.extend(v);
     }
+    for (const auto& polyline : polylines) {
+      for (const auto& v : polyline) {
+        bbox_.extend(v);
+      }
+    }
   }
   return bbox_;
 }
