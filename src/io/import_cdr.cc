@@ -43,16 +43,7 @@
 class CDRReader : public librevenge::RVNGDrawingInterface
 {
 public:
-  CDRReader()
-    : x(0.0)
-    , y(0.0)
-    , x1(0.0)
-    , y1(0.0)
-    , x2(0.0)
-    , y2(0.0)
-    , action()
-  {
-  }
+  CDRReader() : x(0.0), y(0.0), x1(0.0), y1(0.0), x2(0.0), y2(0.0), action() {}
 
   void startDocument(const librevenge::RVNGPropertyList& propList) override {}
   void endDocument() override {}
@@ -111,14 +102,7 @@ public:
 
   double parseCdrFloat(const std::string& s)
   {
-    double value = 0.0;
-    const char *begin = s.data();
-    const char *end = begin + s.size();
-    auto res = std::from_chars(begin, end, value);
-    if (res.ec != std::errc()) {
-      std::cerr << "Warning: failed to parse float from \"" << s << "\"\n";
-      return 0.0;
-    }
+    double value = std::stod(s);
     if (std::strstr(s.c_str(), "in") != nullptr) value = value * 25.4;
     if (std::strstr(s.c_str(), "cm") != nullptr) value = value * 10;
 
