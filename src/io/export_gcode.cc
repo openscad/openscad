@@ -186,12 +186,59 @@ static void append_gcode(boost::property_tree::ptree pt, const Polygon2d& poly, 
   }
 
   // sort by laserpower
-  std::sort(outlines.begin(), outlines.end(), [](const PoweredOutline& a, const PoweredOutline& b) {
+  auto sortfunc = [](const PoweredOutline& a, const PoweredOutline& b) {
     if (a.laserpower == b.laserpower) {
-      return a.area < b.area;
+      return a.area < b.area / 1.3;  // hysteresis
     }
     return a.laserpower < b.laserpower;
-  });
+  };
+
+  std::stable_sort(outlines.begin(), outlines.end(), sortfunc);
+
+  // minimize travelling
+  Vector2d lastpos(0, 0);
+  auto it = outlines.begin();
+  while (it != outlines.end()) {
+    auto range = std::equal_range(it, outlines.end(), *it, sortfunc);
+
+    auto it1 = range.first;  // swap each
+    while (it1 != range.second) {
+      double bestdist = NAN;
+      auto bestiter = it1;
+      bool bestrev = false;
+      double dist;
+      for (auto it2 = it1; it2 != range.second; it2++) {
+        Vector2d beg = (*it2).o.vertices[0];
+        Vector2d end = (*it2).o.vertices.back();
+
+        dist = (beg - lastpos).norm();
+        if (std::isnan(bestdist) || dist < bestdist) {
+          bestdist = dist;
+          bestiter = it2;
+          bestrev = false;
+        }
+
+        dist = (end - lastpos).norm();
+        if (std::isnan(bestdist) || dist < bestdist) {
+          bestdist = dist;
+          bestiter = it2;
+          bestrev = true;
+        }
+      }
+      if (bestrev) {
+        lastpos = (*bestiter).o.vertices[0];
+        std::reverse((*bestiter).o.vertices.begin(), (*bestiter).o.vertices.end());
+        std::iter_swap(it1, bestiter);
+      } else {
+        lastpos = (*bestiter).o.vertices.back();
+        std::iter_swap(it1, bestiter);
+      }
+
+      it1++;
+    }
+
+    it = range.second;
+  }
 
   for (const auto& po : outlines) {
     Eigen::Vector2d pold = po.o.vertices[0];
