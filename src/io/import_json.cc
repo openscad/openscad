@@ -87,7 +87,7 @@ Value import_json(const std::string& filename, EvaluationSession *session, const
       LOG(message_group::Warning, loc, "", "Could not read file '%1$s'", filename);
     }
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %s", filename, e.what());
+    LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %2$s", filename, e.what());
   }
 
   return Value::undefined.clone();
