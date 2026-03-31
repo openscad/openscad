@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.1](https://github.com/pythonscad/pythonscad/compare/v0.19.0...v0.19.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* **cdr:** fix compilation on all platforms ([#529](https://github.com/pythonscad/pythonscad/issues/529)) ([6d41a47](https://github.com/pythonscad/pythonscad/commit/6d41a4701602d3719e043b49135af0f91f491a0a))
+
 ## [0.19.0](https://github.com/pythonscad/pythonscad/compare/v0.18.0...v0.19.0) (2026-03-31)
 
 
