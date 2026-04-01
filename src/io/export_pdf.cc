@@ -339,7 +339,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
 #else  // ENABLE_CAIRO
 
-const std::string get_cairo_version()
+std::string get_cairo_version()
 {
   const std::string cairo_version = "(not enabled)";
   return cairo_version;
