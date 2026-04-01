@@ -52,6 +52,7 @@
 #include <QMimeData>
 #include <QMutexLocker>
 #include <QPoint>
+#include <QPointer>
 #include <QProcess>
 #include <QProgressDialog>
 #include <QScreen>
@@ -3285,11 +3286,14 @@ void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
   // Invoke the method in the main thread in case the output
   // originates in a worker thread.
   auto thisp = static_cast<MainWindow *>(userdata);
+  if (!thisp || thisp->isClosing) return;
   QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(Message, msgObj));
 }
 
 void MainWindow::consoleOutput(const Message& msgObj)
 {
+  if (this->isClosing) return;
+
   this->console->addMessage(msgObj);
   if (msgObj.group == message_group::Warning || msgObj.group == message_group::Deprecated) {
     ++this->compileWarnings;
@@ -3298,9 +3302,12 @@ void MainWindow::consoleOutput(const Message& msgObj)
   }
   // FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
   // Then processEvents should no longer be needed here.
+  QPointer<MainWindow> self(this);
   this->processEvents();
-  if (consoleUpdater && !consoleUpdater->isActive()) {
-    consoleUpdater->start(50);  // Limit console updates to 20 FPS
+  if (!self || self->isClosing) return;
+
+  if (self->consoleUpdater && !self->consoleUpdater->isActive()) {
+    self->consoleUpdater->start(50);  // Limit console updates to 20 FPS
   }
 }
 
