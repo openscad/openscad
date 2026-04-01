@@ -3233,7 +3233,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     isClosing = true;
     progress_report_fin();
 
-    // Log to stdout from now on
+    // Log to stderr from now on
     clearCurrentOutput();
 
     QSettingsCached settings;
