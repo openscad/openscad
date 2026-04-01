@@ -762,6 +762,8 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     compileDone(didcompile | forcedone);
+  } catch (const ProgressCancelException&) {
+    compileEnded();
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
@@ -844,6 +846,8 @@ void MainWindow::compileDone(bool didchange)
 
     this->procevents = false;
     QMetaObject::invokeMethod(this, callslot);
+  } catch (const ProgressCancelException&) {
+    compileEnded();
   } catch (const HardWarningException&) {
     exceptionCleanup();
   }
@@ -853,6 +857,10 @@ void MainWindow::compileEnded()
 {
   clearCurrentOutput();
   GuiLocker::unlock();
+  if (isClosing) {
+    QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+    return;
+  }
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 #ifdef ENABLE_GUI_TESTS
   emit compilationDone(this->rootFile.get());
@@ -3230,7 +3238,7 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-  if (tabManager->shouldClose()) {
+  const auto finalizeClose = [this, event]() {
     isClosing = true;
     progress_report_fin();
 
@@ -3247,10 +3255,27 @@ void MainWindow::closeEvent(QCloseEvent *event)
       this->tempFile = nullptr;
     }
 
-    // Disable invokeMethod calls for consoleOutput during shutdown,
-    // otherwise will segfault if echos are in progress.
+    // Disable invokeMethod calls for consoleOutput during shutdown.
     hideCurrentOutput();
     event->accept();
+  };
+
+  // If close was already requested during compile and compile lock is gone, close without asking again.
+  if (isClosing && !GuiLocker::isLocked()) {
+    finalizeClose();
+    return;
+  }
+
+  if (tabManager->shouldClose()) {
+    // If compile/render is in progress, request cancellation and defer actual close.
+    if (GuiLocker::isLocked()) {
+      isClosing = true;
+      if (this->progresswidget) this->progresswidget->cancel();
+      hideCurrentOutput();
+      event->ignore();
+      return;
+    }
+    finalizeClose();
   } else {
     event->ignore();
   }
@@ -3355,7 +3380,10 @@ void MainWindow::openCSGSettingsChanged()
 
 void MainWindow::processEvents()
 {
-  if (this->procevents) QApplication::processEvents();
+  if (!this->procevents) return;
+
+  QApplication::processEvents();
+  if (isClosing && GuiLocker::isLocked()) throw ProgressCancelException();
 }
 
 QString MainWindow::exportPath(const QString& suffix)
