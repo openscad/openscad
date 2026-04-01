@@ -150,7 +150,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
+    return applyHull3D(children);
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
@@ -206,6 +206,21 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     break;
   }
   }
+}
+
+GeometryEvaluator::ResultObject GeometryEvaluator::applyHull3D(const Geometry::Geometries& children)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    return ResultObject::mutableResult(
+      ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::HULL));
+  }
+#endif  // ENABLE_MANIFOLD
+#if ENABLE_CGAL
+  return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyHull3D(children)));
+#else
+  return ResultObject::mutableResult(PolySet::createEmpty());
+#endif
 }
 
 /*!
@@ -269,14 +284,6 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
 
   // Re-merge geometry in case of nested outlines
   return ClipperUtils::apply(newchildren, Clipper2Lib::ClipType::Union);
-}
-
-std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
-{
-  Geometry::Geometries children = collectChildren3D(node);
-
-  auto P = PolySet::createEmpty();
-  return applyHull(children);
 }
 
 std::unique_ptr<Polygon2d> GeometryEvaluator::applyMinkowski2D(const AbstractNode& node)
