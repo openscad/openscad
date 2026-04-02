@@ -87,7 +87,7 @@ jobs:
           echo "PYTHON_FULL_VERSION=$PYTHON_FULL_VERSION" >> $GITHUB_ENV
 
       - name: Install Mesa
-        uses: ssciwr/setup-mesa-dist-win@v2
+        uses: ssciwr/setup-mesa-dist-win@v3
         with:
           version: '22.1.7'
           build-type: 'release-mingw'
