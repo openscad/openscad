@@ -48,7 +48,7 @@ jobs:
           install: libxml2
           pacboy: ${{ env.PACBOY_PACKAGES }}
       - name: Install Mesa
-        uses: ssciwr/setup-mesa-dist-win@v2
+        uses: ssciwr/setup-mesa-dist-win@v3
         with:
           version: '22.1.7'
           build-type: 'release-mingw'
