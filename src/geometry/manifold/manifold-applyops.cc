@@ -10,6 +10,7 @@
 #include "core/node.h"
 #include "core/progress.h"
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/manifold/manifoldutils.h"
 #include "utils/printutils.h"
@@ -28,6 +29,40 @@ Location getLocation(const std::shared_ptr<const AbstractNode>& node)
 std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children,
                                                           OpenSCADOperator op)
 {
+  if (op == OpenSCADOperator::HULL) {
+    std::vector<manifold::vec3> pts;
+    for (const auto& item : children) {
+      if (!item.second) continue;
+      auto& chgeom = item.second;
+      if (const auto *mani = dynamic_cast<const ManifoldGeometry *>(chgeom.get())) {
+        pts.reserve(pts.size() + mani->numVertices());
+        mani->foreachVertexUntilTrue([&](auto& p) {
+          pts.push_back(p);
+          return false;
+        });
+      } else if (const auto *ps = dynamic_cast<const PolySet *>(chgeom.get())) {
+        pts.reserve(pts.size() + ps->indices.size() * 3);
+        for (const auto& p : ps->indices) {
+          for (const auto& ind : p) {
+            auto& v = ps->vertices[ind];
+            pts.push_back({v[0], v[1], v[2]});
+          }
+        }
+      } else {
+        auto chN = createManifoldFromGeometry(chgeom);
+        if (chN && !chN->isEmpty()) {
+          chN->foreachVertexUntilTrue([&](auto& p) {
+            pts.push_back(p);
+            return false;
+          });
+        }
+      }
+      if (item.first) item.first->progress_report();
+    }
+    if (pts.empty()) return nullptr;
+    return std::make_shared<ManifoldGeometry>(manifold::Manifold::Hull(pts));
+  }
+
   std::shared_ptr<ManifoldGeometry> geom;
 
   bool foundFirst = false;

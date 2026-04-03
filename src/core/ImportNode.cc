@@ -31,8 +31,13 @@
 #include "io/import.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 #include <sys/types.h>
+
+#ifdef ENABLE_MANIFOLD
+#include "glview/RenderSettings.h"
+#endif
 
 #include <boost/algorithm/string.hpp>
 #include <cmath>
@@ -247,7 +252,24 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   }
 #ifdef ENABLE_CGAL
   case ImportType::NEF3: {
-    g = import_nef3(this->filename, loc);
+    auto nef_geom = import_nef3(this->filename, loc);
+#ifdef ENABLE_MANIFOLD
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+      if (!nef_geom->isEmpty()) {
+        if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*nef_geom->p3)) {
+          ps->setConvexity(nef_geom->getConvexity());
+          g = std::move(ps);
+        }
+      }
+      if (!g) {
+        g = PolySet::createEmpty();
+      }
+    } else {
+      g = std::move(nef_geom);
+    }
+#else
+    g = std::move(nef_geom);
+#endif
     break;
   }
 #endif

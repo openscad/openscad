@@ -1,9 +1,10 @@
+#include "platform/PlatformUtils.h"
+
+#include <algorithm>
 #include <filesystem>
 #include <ios>
 #include <map>
-#include <boost/nowide/convert.hpp>
-
-#include "platform/PlatformUtils.h"
+#include <string>
 #include "utils/findversion.h"
 #include "utils/printutils.h"
 #ifndef _WIN32_WINNT

@@ -441,8 +441,8 @@ public slots:
   void on_viewActionBack_triggered();
   void on_viewActionDiagonal_triggered();
   void on_viewActionCenter_triggered();
-  void on_viewActionPerspective_triggered();
-  void on_viewActionOrthogonal_triggered();
+  void on_viewActionPerspective_toggled(bool checked);
+  void on_viewActionOrthogonal_toggled(bool checked);
   void viewTogglePerspective();
   void on_viewActionResetView_triggered();
   void on_viewActionViewAll_triggered();

@@ -26,6 +26,7 @@
 #pragma once
 
 #include <QColor>
+#include <QByteArray>
 #include <QFileInfoList>
 #include <QList>
 #include <QString>
@@ -95,4 +96,6 @@ QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& ble
 QString readFileContents(const QString& filepath, QString& errorstring);
 
 QString getBackupFileName(QWidget *parent);
+
+void dumpSaveState(const QByteArray& data);
 }  // namespace UIUtils

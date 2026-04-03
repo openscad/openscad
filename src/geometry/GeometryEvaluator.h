@@ -217,8 +217,8 @@ private:
   Geometry::Geometries collectChildren3D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyMinkowski2D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyHull2D(const AbstractNode& node);
+  ResultObject applyHull3D(const Geometry::Geometries& children);
   std::unique_ptr<Polygon2d> applyFill2D(const AbstractNode& node);
-  std::unique_ptr<Geometry> applyHull3D(const AbstractNode& node);
   void applyResize3D(CGALNefGeometry& N, const Vector3d& newsize,
                      const Eigen::Matrix<bool, 3, 1>& autosize);
   std::unique_ptr<Barcode1d> applyToChildren1D(const AbstractNode& node, OpenSCADOperator op);

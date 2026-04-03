@@ -625,6 +625,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
   ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
   ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/colored-nodes.scad
 
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5738.scad

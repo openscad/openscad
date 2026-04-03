@@ -60,7 +60,8 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
 
   if (parameters["v"].isDefined()) {
     if (!parameters["v"].getVec3(node->height[0], node->height[1], node->height[2])) {
-      LOG(message_group::Error, "v when specified should be a 3d vector.");
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "v when specified should be a 3d vector");
     }
     height = 1.0;
     node->has_heightvector = true;
@@ -68,7 +69,8 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   const Value& heightValue = parameters[{"height", "h"}];
   if (heightValue.isDefined()) {
     if (!heightValue.getFiniteDouble(height)) {
-      LOG(message_group::Error, "height when specified should be a number.");
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "height when specified should be a number");
       height = 100.0;
     }
     node->height.normalize();

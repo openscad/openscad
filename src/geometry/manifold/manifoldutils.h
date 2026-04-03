@@ -24,6 +24,7 @@ std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manif
 
 std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children,
                                                           OpenSCADOperator op);
+std::shared_ptr<ManifoldGeometry> applyHull(const Geometry::Geometries& children);
 
 Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons);
 

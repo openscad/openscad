@@ -40,6 +40,7 @@ std::unique_ptr<const Geometry> applyUnion3D(const CsgOpNode& node,
                                              Geometry::Geometries::iterator chbegin,
                                              Geometry::Geometries::iterator chend);
 std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& children);
+std::unique_ptr<PolySet> applyHull3D(const Geometry::Geometries& children);
 
 std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut);
 template <typename K>
