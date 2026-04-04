@@ -39,6 +39,9 @@ Dock::~Dock()
   delete dockTitleWidget;
 }
 
+// When moving docked panes around is allowed (reorderMode/reorderWindows), enable a title bar.
+// When not allowed, disable the title bar.  Note that nullptr yields a default toolbar, while
+// docTitleWidget is an empty (and so invisible) widget.
 void Dock::setTitleBarVisibility(bool isVisible)
 {
   setTitleBarWidget(isVisible ? nullptr : dockTitleWidget);
