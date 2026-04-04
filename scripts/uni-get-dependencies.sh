@@ -6,17 +6,9 @@
 # this assumes you have sudo installed and running, or are running as root.
 #
 
-get_fedora_deps_yum()
-{
- yum -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
-  fontconfig-devel freetype-devel \
-  boost-devel mpfr-devel gmp-devel glew-devel catch2-devel CGAL-devel gcc gcc-c++ pkgconfig \
-  opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
-  mesa-dri-drivers double-conversion-devel tbb-devel
-}
+set -eu
 
-get_fedora_deps_dnf()
+get_fedora_deps()
 {
  dnf -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
   fontconfig-devel freetype-devel \
@@ -63,7 +55,7 @@ get_netbsd_deps()
 get_opensuse_deps()
 {
  zypper install mpfr-devel gmp-devel boost-devel \
-  glew-devel cmake git bison flex catch2-devel cgal-devel curl \
+  glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
@@ -71,24 +63,20 @@ get_opensuse_deps()
   libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
- zypper install libeigen3-devel
- if [ $? -ne 0 ]; then
-  zypper install libeigen3
- fi
- zypper install ImageMagick
- if [ $? -ne 0 ]; then
-  zypper install imagemagick
- fi
- zypper install opencsg-devel
- if [ $? -ne 0 ]; then
-  pver=`cat /etc/os-release | grep -i pretty_name | sed s/PRETTY_NAME=//g`
-  pver=`echo $pver | sed s/\"//g | sed s/\ /_/g `
-  echo attempting to add graphics repository for opencsg...
-  set +x
-  zypper ar -f http://download.opensuse.org/repositories/graphics/$pver graphics
+ zypper install libeigen3-devel || zypper install libeigen3
+
+ zypper install ImageMagick || zypper install imagemagick
+
+ zypper install catch2-devel || zypper install Catch2-devel
+
+ install_opencsg_and_repo() {
+  pver=$(grep -i pretty_name /etc/os-release | sed 's/PRETTY_NAME=//g; s/"//g; s/ /_/g')
+  echo "attempting to add graphics repository for opencsg..."
+  zypper ar -f "http://download.opensuse.org/repositories/graphics/${pver}" graphics
   zypper install opencsg-devel
-  set -x
- fi
+ }
+
+ zypper install opencsg-devel || install_opencsg_and_repo
 }
 
 get_mageia_deps()
@@ -167,6 +155,77 @@ unknown()
  echo "in README.md using your system's package manager."
 }
 
+
+# OS detection
+#
+# Order of checks:
+#   1. /etc/os-release - the modern systemd standard
+#   2. /etc/issue      - legacy fallback
+#   3. uname           - for BSD systems
+
+detect_and_install()
+{
+  # Try sourcing os-release first (modern standardized check)
+  if   [ -e /etc/os-release ];     then . /etc/os-release
+  elif [ -e /usr/lib/os-release ]; then . /usr/lib/os-release
+  fi
+
+  DISTRO_IDS="${ID_LIKE:-} ${ID:-}"
+
+  if [ -n "${DISTRO_IDS:-}" ]; then
+    # Check for full keyword matches, helps cover cases where ID_LIKE isn't set (eg fedora) or ID is too specific (eg opensuse-tumbleweed)
+    is_like() { echo "$DISTRO_IDS" | grep -qw "$1"; }
+
+    if   is_like debian;   then get_debian_deps
+    elif is_like fedora;   then get_fedora_deps
+    elif is_like opensuse; then get_opensuse_deps
+    elif is_like arch;     then get_arch_deps
+    elif is_like solus;    then get_solus_deps
+    elif is_like mageia;   then get_mageia_deps
+    else unknown # bail out as most distros with os-release don't have /etc/issue and should be added here
+    fi
+
+  elif [ -e /etc/issue ]; then
+    if [ "`grep -i ubuntu /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i KDE.neon /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i debian /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i raspbian /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i linux.mint /etc/issue`" ]; then
+      get_debian_deps
+    elif [ "`grep -i suse /etc/issue`" ]; then
+      get_opensuse_deps
+    elif [ "`grep -i fedora /etc/issue`" ]; then
+      get_fedora_deps
+    elif [ "`grep -i red.hat /etc/issue`" ]; then
+      get_fedora_deps
+    elif [ "`grep -i mageia /etc/issue`" ]; then
+      get_mageia_deps
+    elif [ "`grep -i qomo /etc/issue`" ]; then
+      get_qomo_deps
+    elif test -r /etc/arch-release ; then
+      get_arch_deps
+    elif [ "`command -v rpm`" ]; then
+      if [ "`rpm -qa | grep altlinux`" ]; then
+      get_altlinux_deps
+      fi
+    else
+      unknown
+    fi
+  elif [ "`uname | grep -i freebsd `" ]; then
+    get_freebsd_deps
+  elif [ "`uname | grep -i netbsd`" ]; then
+    get_netbsd_deps
+  else
+    unknown
+  fi
+}
+
+# Main
+
 # Usage: $0 [qt6]
 # Qt5 is default
 if [ "`echo $* | grep qt6`" ]; then
@@ -175,58 +234,4 @@ else
   USE_QT6=0
 fi
 
-if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i KDE.neon /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep ID=.solus /etc/os-release`" ]; then
-  get_solus_deps
- elif [ "`grep -i debian /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i raspbian /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i linux.mint /etc/issue`" ]; then
-  get_debian_deps
- elif [ "`grep -i suse /etc/issue`" ]; then
-  get_opensuse_deps
- elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
-  get_fedora_deps_dnf
- elif [ "`grep -i fedora.release.[3-9][0-9] /etc/issue`" ]; then
-  get_fedora_deps_dnf
- elif [ "`grep -i fedora.release.2[0-1] /etc/issue`" ]; then
-  get_fedora_deps_yum
- elif [ "`grep -i fedora /etc/issue`" ]; then
-  get_fedora_deps_yum
- elif [ "`grep -i red.hat /etc/issue`" ]; then
-  get_fedora_deps
- elif [ "`grep -i mageia /etc/issue`" ]; then
-  get_mageia_deps
- elif [ "`grep -i qomo /etc/issue`" ]; then
-  get_qomo_deps
- elif test -r /etc/arch-release ; then
-   get_arch_deps
- elif [ -e /etc/fedora-release ]; then
-  if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
-    get_fedora_deps_dnf
-  fi
- elif [ "`command -v rpm`" ]; then
-  if [ "`rpm -qa | grep altlinux`" ]; then
-   get_altlinux_deps
-  fi
- elif [ -e /etc/os-release -o -e /usr/lib/os-release ]; then
-  test -e /etc/os-release && os_release="/etc/os-release" || os_release="/usr/lib/os-release"
-  . "${os_release}"
-  if [ "${ID:-linux}" = "debian" ] || [ "${ID_LIKE#*debian*}" != "${ID_LIKE}" ]; then
-   get_debian_deps
-  fi
- else
-  unknown
- fi
-elif [ "`uname | grep -i freebsd `" ]; then
- get_freebsd_deps
-elif [ "`uname | grep -i netbsd`" ]; then
- get_netbsd_deps
-else
- unknown
-fi
+detect_and_install
