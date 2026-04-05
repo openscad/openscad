@@ -51,7 +51,32 @@ nav:
       - Python Specialities: tutorial/python_specialities.md
       - OpenSCAD together with Python: tutorial/python_together.md
       - New Functions in pythonscad: tutorial/python_new.md
-      - New File types in pythonscad: tutorial/python_newformats.md
+      # - New File types in pythonscad: tutorial/python_newformats.md
+  - Reference:
+      - 3D Primitives: reference/primitives3d.md
+      - 2D Primitives: reference/primitives2d.md
+      - 1D Primitives: reference/primitives1d.md
+      - Transformations: reference/transformations.md
+      - Boolean Operations: reference/booleans.md
+      - Extrusions: reference/extrusions.md
+      - Operators: reference/operators.md
+      - Object Properties: reference/properties.md
+      - Object Model: reference/object_model.md
+      - Display and Export: reference/display.md
+      - I/O and Integration: reference/io.md
+      - Math Functions: reference/math.md
+      - Special Variables: reference/variables.md
+      - Customizer: reference/customizer.md
+      - Surface: reference/surface.md
+      - Sheet: reference/sheet.md
+      - F-Rep / libfive: reference/frep.md
+      - Pull: reference/pull.md
+      - Wrap: reference/wrap.md
+      - Align and Handles: reference/align.md
+      - Roof: reference/roof.md
+      - Fillet: reference/fillet.md
+      - Mesh Operations: reference/repair.md
+      - GUI and Utility: reference/gui.md
   - Examples: examples.md
   - Cheat-Sheet: cheatsheet.md
   - Resources: resources.md
