@@ -257,6 +257,7 @@
     </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
+    <addaction name="fileActionWelcome"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
     <addaction name="fileActionReload"/>
@@ -277,6 +278,7 @@
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
+    <addaction name="fileActionCloseWindow"/>
     <addaction name="fileActionQuit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
@@ -407,6 +409,11 @@
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
+  <action name="fileActionWelcome">
+   <property name="text">
+    <string>Welcome...</string>
+   </property>
+  </action>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
@@ -797,6 +804,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="fileActionCloseWindow">
+   <property name="text">
+    <string>Close &amp;Window</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F4</string>
    </property>
   </action>
   <action name="fileActionQuit">

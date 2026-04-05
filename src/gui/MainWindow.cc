@@ -28,17 +28,16 @@
 #endif
 #include "gui/MainWindow.h"
 
-#include <sys/stat.h>
 #include "gui/CSGWorker.h"
 #include "gui/LoadShareDesignDialog.h"
 #include "gui/ShareDesignDialog.h"
 #include <QToolTip>
 #include <curl/curl.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include "gui/ExportGcodeDialog.h"
 #include "genlang/genlang.h"
 #include <QApplication>
+#include <QByteArray>
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDialog>
@@ -46,6 +45,7 @@
 #include <QDropEvent>
 #include <QElapsedTimer>
 #include <QEvent>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
@@ -136,6 +136,7 @@
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/ImportUtils.h"
+#include "gui/LaunchingScreen.h"
 #include "gui/LibraryInfoDialog.h"
 #include "gui/Measurement.h"
 #include "gui/OpenSCADApp.h"
@@ -510,11 +511,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupStatusBar();
   setupViewportControl();
   setupAnimate();
-  // Must be initialized before setupEditor(), because creating a tab triggers
-  // tabSwitched -> onLanguageActiveChanged -> updateLanguageLabel() which
-  // dereferences these pointers.
-  this->versionLabel = nullptr;
-  this->languageLabel = nullptr;
 
   setupEditor(filenames);
   setupCustomizer();
@@ -1495,6 +1491,70 @@ void MainWindow::on_fileActionOpenWindow_triggered()
   }
 }
 
+void MainWindow::on_fileActionWelcome_triggered()
+{
+  LaunchingScreen launcher(this);
+  if (launcher.exec() != QDialog::Accepted) {
+    return;
+  }
+
+  if (launcher.isForceShowEditor()) {
+    QSettingsCached settings;
+    settings.setValue("view/hideEditor", false);
+  }
+
+  const QStringList files = launcher.selectedFiles();
+  for (const auto& file : files) {
+    if (!file.isEmpty()) {
+      tabManager->open(file);
+    }
+  }
+}
+
+void MainWindow::quitApplication()
+{
+  if (Settings::Settings::sessionManagementEnabled.value()) {
+    const QString sessionPath = TabManager::getSessionFilePath();
+    QString error;
+    while (!TabManager::saveGlobalSession(sessionPath, &error, false)) {
+      QMessageBox box(this);
+      box.setIcon(QMessageBox::Warning);
+      box.setWindowTitle(_("Session Save"));
+      box.setText(_("Could not save the session."));
+      box.setInformativeText(QString(_("%1\n\n%2")).arg(sessionPath, error));
+      auto *retryButton = box.addButton(QString(_("Try Again")), QMessageBox::AcceptRole);
+      auto *ignoreButton =
+        box.addButton(QString(_("Quit Without Saving")), QMessageBox::DestructiveRole);
+      box.addButton(QString(_("Keep Open")), QMessageBox::RejectRole);
+      box.setDefaultButton(retryButton);
+      box.exec();
+      if (box.clickedButton() == retryButton) {
+        continue;
+      }
+      if (box.clickedButton() == ignoreButton) {
+        TabManager::setSkipSessionSave(true);
+        break;
+      }
+      return;
+    }
+  } else {
+    for (auto *win : scadApp->windowManager.getWindows()) {
+      if (!win->tabManager->shouldClose()) {
+        return;
+      }
+    }
+  }
+  for (auto *win : scadApp->windowManager.getWindows()) {
+    win->isSessionQuitting = true;
+  }
+  scadApp->quit();
+}
+
+void MainWindow::markSessionQuitting()
+{
+  isSessionQuitting = true;
+}
+
 void MainWindow::actionOpenRecent()
 {
   auto guard = scopedSetCurrentOutput();
@@ -1949,6 +2009,9 @@ void MainWindow::findBufferChanged()
 
 bool MainWindow::event(QEvent *event)
 {
+  if (event->type() == QEvent::WindowActivate) {
+    scadApp->windowManager.setLastActive(this);
+  }
   if (event->type() == InputEvent::eventType) {
     auto *inputEvent = dynamic_cast<InputEvent *>(event);
     if (inputEvent) {
@@ -2022,20 +2085,27 @@ void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
    Returns true if the current document is a file on disk and that file has new content.
    Returns false if a file on disk has disappeared or if we haven't yet saved.
  */
+std::string MainWindow::autoReloadIdentityForPath(const QString& filepath)
+{
+  if (filepath.isEmpty()) return {};
+  const QFileInfo fi(filepath);
+  if (!fi.exists() || !fi.isFile()) return {};
+  const qint64 mtime = fi.lastModified().toSecsSinceEpoch();
+  const qint64 size = fi.size();
+  const QString identity = QString::number(static_cast<qulonglong>(mtime), 16) + "." +
+                           QString::number(static_cast<qulonglong>(size), 16);
+  return identity.toStdString();
+}
+
 bool MainWindow::fileChangedOnDisk()
 {
-  if (!activeEditor->filepath.isEmpty()) {
-    struct stat st;
-    memset(&st, 0, sizeof(struct stat));
-    const bool valid = (stat(activeEditor->filepath.toLocal8Bit(), &st) == 0);
-    // If file isn't there, just return and use current editor text
-    if (!valid) return false;
-
-    auto newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
-    if (newid != activeEditor->autoReloadId) {
-      activeEditor->autoReloadId = newid;
-      return true;
-    }
+  if (activeEditor->filepath.isEmpty()) return false;
+  const std::string newid = autoReloadIdentityForPath(activeEditor->filepath);
+  // If file isn't there, just return and use current editor text
+  if (newid.empty()) return false;
+  if (newid != activeEditor->autoReloadId) {
+    activeEditor->autoReloadId = newid;
+    return true;
   }
   return false;
 }
@@ -2113,14 +2183,16 @@ void MainWindow::clearPythonUntrustStateForPath(const std::string& path)
 }
 #endif  // ifdef ENABLE_PYTHON
 
-std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
+std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor,
+                                                      bool pythonDryRunFullScript)
 {
   resetSuppressedMessages();
 
   auto document = editor->toPlainText();
   const QByteArray documentUtf8 = document.toUtf8();
-  auto fulltext = std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size())) +
-                  "\n\x03\n" + commandline_commands;
+  std::string fulltext(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size()));
+  fulltext += "\n\x03\n";
+  fulltext += commandline_commands;
   const QByteArray pathUtf8 = editor->filepath.toUtf8();
   const QByteArray pathNative = editor->filepath.toLocal8Bit();
   const std::string trustPathId(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size()));
@@ -2148,31 +2220,68 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     initPython(venv, fnameNative, &r);
     editor->resetHighlighting();
     editor->parameterWidget->setEnabled(false);
-    do {
-      if (this->rootFile == nullptr) break;
+    if (this->rootFile != nullptr) {
       int pos = -1, pos1;
       while (1) {
         pos1 = fulltext_py.find("add_parameter", pos + 1);
         if (pos1 == -1) break;
         pos = pos1;
       }
-      if (pos == -1) break;  // no parameter statements included
-      pos = fulltext_py.find("\n", pos);
-      if (pos == -1) break;  // no parameter statements included
-      std::string par_text = fulltext_py.substr(0, pos);
-      //
-      // add parameters as annotation in AST
-      auto error = evaluatePython(par_text, true);  // run dummy
-      this->rootFile->scope->assignments = customizer_parameters;
-      CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');  // add annotations
-      editor->parameterWidget->setParameters(this->rootFile.get(),
-                                             "\n");                    // set widgets values
-      editor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
-      editor->parameterWidget->setEnabled(true);
-      editor->setIndicator(this->rootFile->indicatorData);
-    } while (0);
+      if (pos != -1) {
+        pos = fulltext_py.find("\n", pos);
+        if (pos != -1) {
+          std::string par_text = fulltext_py.substr(0, pos);
+          //
+          // add parameters as annotation in AST
+          auto error = evaluatePython(par_text, true);  // run dummy
+          if (!customizer_parameters.empty()) {
+            this->rootFile->scope->assignments = customizer_parameters;
+            CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');  // add annotations
+            editor->parameterWidget->setParameters(this->rootFile.get(),
+                                                   "\n");                    // set widgets values
+            editor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
+            editor->setIndicator(this->rootFile->indicatorData);
+          }
+          editor->parameterWidget->setEnabled(true);
+        }
+      }
+    } else {
+      // No prior rootFile (e.g. session restore): parse to get parameters for customizer
+      int pos = -1, pos1;
+      while (1) {
+        pos1 = fulltext_py.find("add_parameter", pos + 1);
+        if (pos1 == -1) break;
+        pos = pos1;
+      }
+      if (pos != -1) {
+        pos = fulltext_py.find("\n", pos);
+        if (pos != -1) {
+          std::string par_text = fulltext_py.substr(0, pos);
+          auto error = evaluatePython(par_text, true);  // run dummy
+          if (!customizer_parameters.empty()) {
+            SourceFile *paramRoot = nullptr;
+            const bool paramParseOk = parse(paramRoot, "", fnameNative, fnameNative, false);
+            if (paramParseOk && paramRoot != nullptr) {
+              paramRoot->scope->assignments = customizer_parameters;
+              CommentParser::collectParameters(fulltext_py, paramRoot, '#');
+              const QByteArray documentUtf8 = document.toUtf8();
+              editor->parameterWidget->setParameters(
+                paramRoot,
+                std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size())));
+              editor->parameterWidget->applyParameters(paramRoot);
+              sourceFile = paramRoot;
+            } else {
+              delete paramRoot;
+            }
+          }
+          editor->parameterWidget->setEnabled(true);
+        }
+      }
+    }
 
-    if (this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope->assignments;
+    customizer_parameters_finished =
+      (this->rootFile != nullptr ? this->rootFile->scope->assignments
+                                 : (sourceFile ? sourceFile->scope->assignments : AssignmentList()));
     customizer_parameters.clear();
     if (venv.empty()) {
       LOG("Running %1$s without venv.", python_version());
@@ -2180,7 +2289,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
       LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
-    auto error = evaluatePython(fulltext_py, false);  // add assignments TODO check
+    auto error = evaluatePython(fulltext_py, pythonDryRunFullScript);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     finishPython();
 
@@ -2189,7 +2298,10 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       viewportControlWidget->cameraChanged();
       renderVarsSet = nullptr;
     }
-    sourceFile = parse(sourceFile, "", fnameNative, fnameNative, false) ? sourceFile : nullptr;
+    if (sourceFile == nullptr) {
+      // Match non-Python path below: parse() can leave sourceFile non-null on failure.
+      sourceFile = parse(sourceFile, "", fnameNative, fnameNative, false) ? sourceFile : nullptr;
+    }
 
   } else  // python not enabled
 #endif    // ifdef ENABLE_PYTHON
@@ -2212,15 +2324,23 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   return std::shared_ptr<SourceFile>(sourceFile);
 }
 
-void MainWindow::parseTopLevelDocument()
+void MainWindow::parseTopLevelDocument(bool pythonDryRunFullScript)
 {
   resetSuppressedMessages();
 
-  this->lastCompiledDoc = activeEditor->toPlainText();
+  const bool skipRootUpdate =
+    pythonDryRunFullScript && activeEditor && activeEditor->language == LANG_PYTHON;
+
+  if (!skipRootUpdate) {
+    this->lastCompiledDoc = activeEditor->toPlainText();
+  }
 
   activeEditor->resetHighlighting();
-  this->rootFile = parseDocument(activeEditor);
-  this->parsedFile = this->rootFile;
+  auto newRoot = parseDocument(activeEditor, pythonDryRunFullScript);
+  if (!skipRootUpdate) {
+    this->rootFile = newRoot;
+    this->parsedFile = newRoot;
+  }
 }
 
 void MainWindow::checkAutoReload()
@@ -2245,7 +2365,8 @@ bool MainWindow::checkEditorModified()
 {
   if (activeEditor->isContentModified()) {
     auto ret = QMessageBox::warning(this, _("Application"),
-                                    _("The document has been modified.\n"
+                                    _("The file has changed on disk, but this tab has unsaved edits.\n"
+                                      "Reloading will discard your changes.\n\n"
                                       "Do you really want to reload the file?"),
                                     QMessageBox::Yes | QMessageBox::No);
     if (ret != QMessageBox::Yes) {
@@ -2804,6 +2925,13 @@ void MainWindow::setLastFocus(QWidget *widget)
 void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 {
   auto sb = this->statusBar();
+
+  // Temporarily remove the language label so we can re-add it last,
+  // ensuring it stays as the rightmost permanent widget.
+  if (languageLabel != nullptr) {
+    sb->removeWidget(languageLabel);
+  }
+
   if (progressWidget == nullptr) {
     if (this->progresswidget != nullptr) {
       sb->removeWidget(this->progresswidget);
@@ -2823,6 +2951,12 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
     }
     sb->addPermanentWidget(progressWidget);
   }
+
+  // Re-add language label so it's always rightmost.
+  if (languageLabel != nullptr) {
+    sb->addPermanentWidget(languageLabel);
+    languageLabel->show();
+  }
 }
 
 void MainWindow::updateLanguageLabel()
@@ -2834,6 +2968,16 @@ void MainWindow::updateLanguageLabel()
     languageLabel->setCursor(Qt::PointingHandCursor);
     languageLabel->installEventFilter(this);
     languageLabel->setToolTip(_("Click to change language"));
+    languageLabel->setStyleSheet(
+      "QLabel {"
+      "  border: 1px solid palette(mid);"
+      "  border-radius: 3px;"
+      "  padding: 1px 6px;"
+      "}"
+      "QLabel:hover {"
+      "  background-color: palette(midlight);"
+      "  border-color: palette(dark);"
+      "}");
     sb->addPermanentWidget(this->languageLabel);
   }
 
@@ -2846,7 +2990,7 @@ void MainWindow::updateLanguageLabel()
   default:          languageText = "Unknown"; break;
   }
 
-  languageLabel->setText(languageText);
+  languageLabel->setText(languageText + " \u25BE");
 }
 
 void MainWindow::showLanguageMenu()
@@ -3514,7 +3658,21 @@ void MainWindow::editorContentChanged()
 
     // removes the live selection feedbacks in both the 3d view and editor.
     clearAllSelectionIndicators();
+
+    // debounced refresh of customizer parameters so they show without F5
+    parameterRefreshTimer->start();
   }
+}
+
+void MainWindow::refreshParametersFromEditor()
+{
+  if (isClosing || isBeingDestroyed) return;
+  if (GuiLocker::isLocked()) {
+    if (parameterRefreshTimer) parameterRefreshTimer->start();
+    return;
+  }
+  if (!activeEditor) return;
+  parseTopLevelDocument(true);
 }
 
 void MainWindow::on_viewActionTop_triggered()
@@ -3875,10 +4033,18 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
+  // Opening/reloading sets editor text which arms parameterRefreshTimer; that debounced
+  // parseTopLevelDocument() would call parseDocument() again (e.g. second Python trust dialog).
+  if (parameterRefreshTimer) {
+    parameterRefreshTimer->stop();
+  }
   try {
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
-    parseDocument(reloadedEditor);
+    parseDocument(reloadedEditor, true);
+    if (reloadedEditor == activeEditor) {
+      lastCompiledDoc = activeEditor->toPlainText();
+    }
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
@@ -3915,6 +4081,12 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   // If there is no renderedEditor we request for a new preview if the
   // auto-reload is enabled.
   if (renderedEditor == nullptr && designActionAutoReload->isChecked() && !MainWindow::isEmpty()) {
+    // Do not prime autoReloadId here for dirty on-disk tabs: session restore already syncs ids for
+    // all file-backed tabs, and priming only the *active* tab used to make the first auto-reload
+    // compile behave differently from switching to another dirty tab first (empty id → reload path).
+    if (!(newEditor->isContentModified() && !newEditor->filepath.isEmpty())) {
+      fileChangedOnDisk();  // prime autoReloadId to avoid a false-positive auto-reload on first tick
+    }
     actionRenderPreview();
   }
 }
@@ -3982,9 +4154,8 @@ void MainWindow::handleFileDrop(const QUrl& url)
 {
   if (url.scheme() != "file") return;
   const auto fileName = url.toLocalFile();
-  const auto fileInfo = QFileInfo{fileName};
-  const auto suffix = fileInfo.suffix().toLower();
-  const auto cmd = Importer::knownFileExtensions[suffix];
+  const auto suffix = Importer::effectiveSuffixForOpen(fileName);
+  const auto cmd = Importer::knownFileExtensions.value(suffix);
   if (cmd.isEmpty()) {
     tabManager->open(fileName);
   } else {
@@ -4042,30 +4213,66 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-  if (tabManager->shouldClose()) {
-    isClosing = true;
-    progress_report_fin();
+  isClosing = true;
 
-    // Log to stdout from now on
-    clearCurrentOutput();
-
-    QSettingsCached settings;
-    settings.setValue("window/geometry", saveGeometry());
-    auto windowState = saveState();
-    UIUtils::dumpSaveState(windowState);
-    settings.setValue("window/state", windowState);
-    if (this->tempFile) {
-      delete this->tempFile;
-      this->tempFile = nullptr;
+  if (!isSessionQuitting) {
+    if (scadApp->windowManager.getWindows().size() == 1) {
+      isClosing = false;
+      event->ignore();
+      quitApplication();
+      return;
     }
-
-    // Disable invokeMethod calls for consoleOutput during shutdown,
-    // otherwise will segfault if echos are in progress.
-    hideCurrentOutput();
-    event->accept();
-  } else {
-    event->ignore();
+    if (!tabManager->shouldClose()) {
+      isClosing = false;
+      event->ignore();
+      return;
+    }
   }
+
+  progress_report_fin();
+  MainWindow *outputSurvivor = nullptr;
+  {
+    const auto& wins = scadApp->windowManager.getWindows();
+    MainWindow *otherWindow = nullptr;
+    for (MainWindow *w : wins) {
+      if (w != this) {
+        otherWindow = w;
+        break;
+      }
+    }
+    if (!isSessionQuitting && otherWindow != nullptr) {
+      MainWindow *outTarget = scadApp->windowManager.getLastActive();
+      if (outTarget == nullptr || outTarget == this) {
+        outTarget = otherWindow;
+      }
+      outputSurvivor = outTarget;
+      outTarget->setCurrentOutput();
+    } else {
+      hideCurrentOutput();
+    }
+  }
+
+  if (!outputSurvivor) {
+    // Log to stdout from now on (no remaining GUI console owns the handler)
+    clearCurrentOutput();
+  }
+
+  QSettingsCached settings;
+  settings.setValue("window/geometry", saveGeometry());
+  auto windowState = saveState();
+  UIUtils::dumpSaveState(windowState);
+  settings.setValue("window/state", windowState);
+  if (this->tempFile) {
+    delete this->tempFile;
+    this->tempFile = nullptr;
+  }
+
+  // Disable invokeMethod calls for consoleOutput during shutdown,
+  // otherwise will segfault if echos are in progress.
+  if (!outputSurvivor) {
+    hideCurrentOutput();
+  }
+  event->accept();
 }
 
 void MainWindow::on_editActionPreferences_triggered()
@@ -4216,6 +4423,8 @@ void MainWindow::setupWindow()
 {
   installEventFilter(this);
   setupUi(this);
+  this->fileActionWelcome->setText(QString(_("Welcome...")));
+  this->fileActionCloseWindow->setText(QString(_("Close &Window")));
   this->setAttribute(Qt::WA_DeleteOnClose);
   scadApp->windowManager.add(this);
   setAcceptDrops(true);
@@ -4248,6 +4457,11 @@ void MainWindow::setupCoreSubsystems()
   consoleUpdater->setSingleShot(true);
   connect(consoleUpdater, &QTimer::timeout, this->console, &Console::update);
   this->consoleUpdater->start(0);  // Show initial messages immediately
+
+  parameterRefreshTimer = new QTimer(this);
+  parameterRefreshTimer->setSingleShot(true);
+  parameterRefreshTimer->setInterval(1000);
+  connect(parameterRefreshTimer, &QTimer::timeout, this, &MainWindow::refreshParametersFromEditor);
 
   progressThrottle->start();
 }
@@ -4297,8 +4511,11 @@ void MainWindow::setupPreferences()
  */
 void MainWindow::setupStatusBar()
 {
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
-  updateStatusBar(nullptr);
+  // Must be initialized before setupEditor(), because creating a tab triggers
+  // tabSwitched -> onLanguageActiveChanged -> updateLanguageLabel() which
+  // dereferences these pointers.
+  this->versionLabel = nullptr;
+  this->languageLabel = nullptr;
 }
 
 /**
@@ -4582,7 +4799,9 @@ void MainWindow::setupMenusAndActions()
 #endif
 
 
-  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
+  connect(this->fileActionCloseWindow, &QAction::triggered, this, &MainWindow::close);
+  connect(this->fileActionQuit, &QAction::triggered, this, &MainWindow::quitApplication,
+          Qt::QueuedConnection);
 
 #ifdef ENABLE_PYTHON
 #else
@@ -4792,6 +5011,24 @@ void MainWindow::restoreWindowState()
 void MainWindow::openRemainingFiles(const QStringList& filenames)
 {
   for (int i = 1; i < filenames.size(); ++i) tabManager->createTab(filenames[i]);
+  if (filenames.size() == 1 && filenames[0].startsWith(QStringLiteral(":session:"))) {
+    int windowIndex = 0;
+    const QString token = filenames[0];
+    if (token != QStringLiteral(":session:")) {
+      QString trimmed = token;
+      if (trimmed.endsWith(QStringLiteral(":"))) trimmed.chop(1);
+      const QString indexStr = trimmed.mid(QStringLiteral(":session:").size());
+      bool ok = false;
+      const int parsedIndex = indexStr.toInt(&ok);
+      if (ok) windowIndex = parsedIndex;
+    }
+    tabManager->restoreSession(TabManager::getSessionFilePath(), windowIndex);
+    // Note: do NOT call parseTopLevelDocument() here.
+    // restoreSession() -> tabSwitched() -> onTabManagerEditorChanged() already
+    // triggers actionRenderPreview() which compiles the document and initializes
+    // Python. Calling parseTopLevelDocument() again would re-enter initPython()
+    // after the CSG worker has released the GIL, causing a crash.
+  }
 
   activeEditor->setFocus();
 }

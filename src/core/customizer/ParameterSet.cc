@@ -3,6 +3,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 #include "utils/printutils.h"
@@ -68,4 +69,51 @@ void ParameterSets::writeFile(const std::string& filename) const
   } catch (const boost::property_tree::json_parser_error& e) {
     LOG(message_group::Error, "Cannot write Parameter Set '%1$s': %2$s", filename, e.what());
   }
+}
+
+bool ParameterSets::readFromString(const std::string& json)
+{
+  boost::property_tree::ptree root;
+  std::istringstream iss(json);
+  try {
+    boost::property_tree::read_json(iss, root);
+  } catch (const boost::property_tree::json_parser_error& e) {
+    return false;
+  }
+
+  boost::optional<boost::property_tree::ptree&> sets = root.get_child_optional(parameterSetsKey);
+  if (!sets) {
+    return false;
+  }
+
+  clear();
+  for (const auto& entry : *sets) {
+    ParameterSet set;
+    set.setName(entry.first);
+    for (const auto& value : entry.second) {
+      set[value.first] = value.second;
+    }
+    push_back(set);
+  }
+  return true;
+}
+
+void ParameterSets::writeToString(std::string& out) const
+{
+  boost::property_tree::ptree sets;
+  for (const auto& set : *this) {
+    boost::property_tree::ptree setTree;
+    for (const auto& parameter : set) {
+      setTree.push_back(boost::property_tree::ptree::value_type(parameter.first, parameter.second));
+    }
+    sets.push_back(boost::property_tree::ptree::value_type(set.name(), setTree));
+  }
+
+  boost::property_tree::ptree root;
+  root.put<std::string>(fileFormatVersionKey, fileFormatVersionValue);
+  root.push_back(boost::property_tree::ptree::value_type(parameterSetsKey, sets));
+
+  std::ostringstream oss;
+  boost::property_tree::write_json(oss, root);
+  out = oss.str();
 }

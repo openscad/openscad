@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 22:53+0100\n"
+"POT-Creation-Date: 2026-01-13 23:00+0100\n"
 "PO-Revision-Date: 2025-04-10 09:02-0300\n"
 "Last-Translator: Alexandre Folle de Menezes\n"
 "Language-Team: \n"
@@ -3293,6 +3293,22 @@ msgstr ""
 "usados ​​arquivos DXF do Autocad. Além dos caminhos 2D para extrusão, também é "
 "possível ler parâmetros de projeto de arquivos DXF. Além dos arquivos DXF, o "
 "OpenSCAD pode ler e criar modelos 3D nos formatos de arquivo STL e OFF."
+
+#: src/openscad_gui.cc
+msgid ""
+"PythonSCAD is already running but is not responding. The old PythonSCAD "
+"process must be closed to open a new window."
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid "Close PythonSCAD"
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid ""
+"Try again if the running instance may have recovered, or close it to start a "
+"new one."
+msgstr ""
 
 #~ msgid "&Font List"
 #~ msgstr "Lista de &Fontes"

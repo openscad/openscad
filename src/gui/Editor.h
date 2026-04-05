@@ -52,7 +52,14 @@ public:
   virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
   virtual QMenu *createStandardContextMenu() = 0;
   virtual QPoint mapToGlobal(const QPoint&) = 0;
+  virtual void getCursorPosition(int *line, int *col) const
+  {
+    if (line) *line = 0;
+    if (col) *col = 0;
+  }
   virtual void setCursorPosition(int /*line*/, int /*col*/) {}
+  virtual int firstVisibleLine() const { return 0; }
+  virtual void setFirstVisibleLine(int /*line*/) {}
   virtual void setFocus() = 0;
   virtual void onLanguageChanged(int lang) = 0;
   void recomputeLanguageActive(void);

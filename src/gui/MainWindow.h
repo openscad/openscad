@@ -88,6 +88,7 @@ public:
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
+  QTimer *parameterRefreshTimer;
   RenderStatistic renderStatistic;
 
   std::shared_ptr<SourceFile> rootFile;            // Result of parsing
@@ -137,6 +138,7 @@ private:
   std::vector<std::pair<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
+  bool isSessionQuitting = false;
   bool isBeingDestroyed = false;  // Set in destructor to guard eventFilter
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
@@ -166,6 +168,7 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
+  void quitApplication();
   void updateUndockMode(bool undockMode);
   void updateReorderMode(bool reorderMode);
   void setFont(const QString& family, uint size);
@@ -206,13 +209,19 @@ public:
   static void noOutputConsole(const Message&, void *) {}   // /dev/null
   static void noOutputErrorLog(const Message&, void *) {}  // /dev/null
 
+  void markSessionQuitting();
+
+  /// Mtime+size fingerprint for auto-reload (empty if path missing or stat fails).
+  static std::string autoReloadIdentityForPath(const QString& filepath);
+
   bool fileChangedOnDisk();
 
   // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile
   // object if parsing suceeded. Nullptr otherwise.
-  std::shared_ptr<SourceFile> parseDocument(EditorInterface *editor);
+  std::shared_ptr<SourceFile> parseDocument(EditorInterface *editor,
+                                            bool pythonDryRunFullScript = false);
 
-  void parseTopLevelDocument();
+  void parseTopLevelDocument(bool pythonDryRunFullScript = false);
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
@@ -274,6 +283,7 @@ private slots:
   void on_fileActionOpenWindow_triggered();
   void actionOpenRecent();
   void actionOpenExample();
+  void on_fileActionWelcome_triggered();
   void on_fileActionClearRecent_triggered();
   void on_fileActionSave_triggered();
   void on_fileActionSaveAs_triggered();
@@ -447,6 +457,7 @@ public slots:
   void on_viewActionResetView_triggered();
   void on_viewActionViewAll_triggered();
   void editorContentChanged();
+  void refreshParametersFromEditor();
   void leftClick(QPoint coordinate);
   void rightClick(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
@@ -488,9 +499,10 @@ private:
   CSGWorker *csgworker;
   QMutex consolemutex;
   DragResult dragResult;
-  EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
-  time_t includesMTime{0};          // latest include mod time
-  time_t depsMTime{0};              // latest dependency mod time
+  EditorInterface *renderedEditor{
+    nullptr};               // stores pointer to editor which has been most recently rendered
+  time_t includesMTime{0};  // latest include mod time
+  time_t depsMTime{0};      // latest dependency mod time
   std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last
   QString exportPath(
     const QString& suffix);    // look up the last export path and generate one if not found

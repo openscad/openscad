@@ -2349,6 +2349,93 @@
                  </item>
                 </layout>
                </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutSingleInstance">
+                 <item>
+                  <widget class="QLabel" name="labelSingleInstanceOpenMode">
+                   <property name="text">
+                    <string>When launching another instance with files:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxSingleInstanceOpenMode"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerSingleInstance">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSessionManagementEnabled">
+                 <property name="text">
+                  <string>Enable session management (save/restore tabs on quit, requires restart)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxAutosaveSessionEnabled">
+                 <property name="text">
+                  <string>Autosave session in background for crash recovery</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutAutosaveInterval">
+                 <property name="leftMargin">
+                  <number>40</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="labelAutosaveSessionInterval">
+                   <property name="text">
+                    <string>Autosave interval:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="spinBoxAutosaveSessionInterval">
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                   <property name="minimum">
+                    <number>10</number>
+                   </property>
+                   <property name="maximum">
+                    <number>600</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>5</number>
+                   </property>
+                   <property name="value">
+                    <number>60</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerAutosaveInterval">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
               </layout>
              </widget>
             </item>

@@ -26,8 +26,12 @@
 #include "gui/parameter/ParameterWidget.h"
 
 #include <QAction>
+#include <QCoreApplication>
 #include <QInputDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLayoutItem>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
 #include <QString>
@@ -83,7 +87,40 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
           &ParameterWidget::setFontFamilySize);
 }
 
-// Can only be called before the initial setParameters().
+void ParameterWidget::resetForNewDocument()
+{
+  pendingSessionState.clear();
+  invalidJsonFile.clear();
+  source.clear();
+  setModified(false);
+
+  if (comboBoxPreset->isEditable() && comboBoxPreset->lineEdit()) {
+    QObject::disconnect(comboBoxPreset->lineEdit(), &QLineEdit::textEdited, this,
+                        &ParameterWidget::onSetNameChanged);
+  }
+
+  ParameterObjects oldParameters = std::move(this->parameters);
+  widgets.clear();
+  QLayout *layout = this->scrollAreaWidgetContents->layout();
+  while (layout->count() > 0) {
+    QLayoutItem *child = layout->takeAt(0);
+    if (child->widget()) {
+      child->widget()->deleteLater();
+    }
+    delete child;
+  }
+  QCoreApplication::processEvents();
+
+  sets.clear();
+
+  comboBoxPreset->clear();
+  comboBoxPreset->addItem(_("<design default>"));
+  comboBoxPreset->setCurrentIndex(0);
+  updateSetEditability();
+}
+
+// Call after resetForNewDocument() if setParameters() may have run already; otherwise only before the
+// first setParameters() (e.g. new tab from createTab).
 void ParameterWidget::readFile(const QString& scadFile)
 {
   assert(sets.empty());
@@ -167,8 +204,54 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
   // Now it's safe to load new parameters - old widgets have been deleted
   // and oldParameters will be destroyed when this function returns.
   this->parameters = ParameterObjects::fromSourceFile(sourceFile);
+
+  if (!pendingSessionState.isEmpty()) {
+    const QJsonDocument doc = QJsonDocument::fromJson(pendingSessionState);
+    pendingSessionState.clear();
+    if (doc.isObject()) {
+      const QJsonObject root = doc.object();
+      const int currentIndex = root.value(QStringLiteral("currentIndex")).toInt(0);
+      const QString setsJson = root.value(QStringLiteral("setsJson")).toString();
+      const QByteArray setsUtf8 = setsJson.toUtf8();
+      std::string setsStr(reinterpret_cast<const char *>(setsUtf8.constData()),
+                          static_cast<size_t>(setsUtf8.size()));
+      if (!setsStr.empty() && this->sets.readFromString(setsStr)) {
+        comboBoxPreset->clear();
+        comboBoxPreset->addItem(_("<design default>"));
+        for (const auto& set : this->sets) {
+          comboBoxPreset->addItem(QString::fromStdString(set.name()));
+        }
+        const int idx = std::max(0, std::min(currentIndex, comboBoxPreset->count() - 1));
+        comboBoxPreset->setCurrentIndex(idx);
+      }
+    }
+  }
+
   rebuildWidgets();
   loadSet(comboBoxPreset->currentIndex());
+}
+
+QByteArray ParameterWidget::getSessionState()
+{
+  const int idx = comboBoxPreset->currentIndex();
+  if (idx > 0 && static_cast<size_t>(idx) <= sets.size()) {
+    for (const auto& param : parameters) {
+      sets[idx - 1][param->name()] = param->exportValue();
+    }
+  }
+  std::string setsStr;
+  cleanSets();
+  sets.writeToString(setsStr);
+  QJsonObject root;
+  root.insert(QStringLiteral("currentIndex"), idx);
+  root.insert(QStringLiteral("setsJson"),
+              QString::fromUtf8(setsStr.data(), static_cast<int>(setsStr.size())));
+  return QJsonDocument(root).toJson(QJsonDocument::Compact);
+}
+
+void ParameterWidget::setSessionState(const QByteArray& state)
+{
+  pendingSessionState = state;
 }
 
 void ParameterWidget::applyParameters(SourceFile *sourceFile)

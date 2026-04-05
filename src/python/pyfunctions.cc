@@ -1910,6 +1910,10 @@ PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *python_show_core(PyObject *obj)
 {
+  if (pythonDryRun) {
+    Py_INCREF(obj);
+    return obj;
+  }
   python_result_obj = obj;
   PyObject *child_dict = nullptr;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
@@ -2033,6 +2037,9 @@ void python_export_obj_att(std::ostream& output)
 
 PyObject *python_export_core(PyObject *obj, char *file)
 {
+  if (pythonDryRun) {
+    Py_RETURN_NONE;
+  }
   std::string filename;
   if (python_scriptpath.string().size() > 0)
     filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");  // TODO problem hbier

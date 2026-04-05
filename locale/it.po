@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2024.01.06\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 22:53+0100\n"
+"POT-Creation-Date: 2026-01-13 23:00+0100\n"
 "PO-Revision-Date: 2025-08-02 19:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
@@ -3282,6 +3282,22 @@ msgstr ""
 "di file DXF di Autocad. Oltre a poter leggere i profili 2D per estrusione è "
 "anche possibile leggere dai file DXF i parametri di progetto. Oltre ai files "
 "DXF, OpenSCAD può leggere e creare modelli 3D nei formati di file STL e OFF."
+
+#: src/openscad_gui.cc
+msgid ""
+"PythonSCAD is already running but is not responding. The old PythonSCAD "
+"process must be closed to open a new window."
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid "Close PythonSCAD"
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid ""
+"Try again if the running instance may have recovered, or close it to start a "
+"new one."
+msgstr ""
 
 #~ msgid "&Font List"
 #~ msgstr "&Caratteri usati"

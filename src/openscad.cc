@@ -930,6 +930,7 @@ int openscad_main(int argc, char **argv)
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
+    ("open-in", po::value<std::string>(), "when launching another instance: open in 'new-window' or 'active-window'")
     ("hardwarnings", "Stop on the first warning")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(),
@@ -1220,12 +1221,22 @@ int openscad_main(int argc, char **argv)
     if (vm.count("export-format")) {
       LOG("Ignoring --export-format option");
     }
+    std::string open_in_override;
+    if (vm.count("open-in")) {
+      const auto value = vm["open-in"].as<std::string>();
+      if (value == "new-window" || value == "active-window") {
+        open_in_override = value;
+      } else {
+        LOG("Invalid value for --open-in: %1$s", value);
+        return 1;
+      }
+    }
     std::string gui_test = "none";
     if (vm.count("run-all-gui-tests")) {
       gui_test = "all";
     }
     auto reset_window_settings = vm.count("reset-window-settings") > 0;
-    rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings);
+    rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings, open_in_override);
 #endif
   } else {
     LOG("Requested GUI mode but can't open display!\n");

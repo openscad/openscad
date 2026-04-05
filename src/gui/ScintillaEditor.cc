@@ -1577,6 +1577,25 @@ void ScintillaEditor::setCursorPosition(int line, int col)
   qsci->setCursorPosition(line, col);
 }
 
+void ScintillaEditor::getCursorPosition(int *line, int *col) const
+{
+  int currentLine = 0;
+  int currentCol = 0;
+  qsci->getCursorPosition(&currentLine, &currentCol);
+  if (line) *line = currentLine;
+  if (col) *col = currentCol;
+}
+
+int ScintillaEditor::firstVisibleLine() const
+{
+  return qsci->firstVisibleLine();
+}
+
+void ScintillaEditor::setFirstVisibleLine(int line)
+{
+  qsci->setFirstVisibleLine(std::max(line, 0));
+}
+
 void ScintillaEditor::updateSymbolMarginVisibility()
 {
   if (qsci->markerFindNext(

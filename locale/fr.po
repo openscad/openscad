@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 22:53+0100\n"
+"POT-Creation-Date: 2026-01-13 23:00+0100\n"
 "PO-Revision-Date: 2019-09-17 \n"
 "Last-Translator: Pierre ROUZEAU <github.com/PRouzeau>\n"
 "Language-Team: French\n"
@@ -3325,6 +3325,22 @@ msgstr ""
 "2D pour l'extrusion il est aussi possible de lire les paramètres des "
 "fichiers DXF. En sus des fichiers DXF, OpenSCAD peut lire et créer des "
 "modèles 3D aux formats STL et OFF."
+
+#: src/openscad_gui.cc
+msgid ""
+"PythonSCAD is already running but is not responding. The old PythonSCAD "
+"process must be closed to open a new window."
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid "Close PythonSCAD"
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid ""
+"Try again if the running instance may have recovered, or close it to start a "
+"new one."
+msgstr ""
 
 #~ msgid "&Font List"
 #~ msgstr "Liste des &polices"

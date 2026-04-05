@@ -122,6 +122,11 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   updateGUI();
 }
 
+void Preferences::on_comboBoxSingleInstanceOpenMode_activated(int val)
+{
+  applyComboBox(this->comboBoxSingleInstanceOpenMode, val, Settings::Settings::singleInstanceOpenMode);
+}
+
 void Preferences::init()
 {
   // Editor pane
@@ -187,6 +192,10 @@ void Preferences::init()
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
+  this->defaultmap["advanced/singleInstanceOpenMode"] = "active-window";
+  this->defaultmap["advanced/sessionManagementEnabled"] = false;
+  this->defaultmap["advanced/autosaveSessionEnabled"] = true;
+  this->defaultmap["advanced/autosaveSessionIntervalSeconds"] = 60;
   this->defaultmap["view/hideEditor"] = false;
   this->defaultmap["view/hideConsole"] = false;
   this->defaultmap["view/hideErrorLog"] = true;
@@ -275,6 +284,17 @@ void Preferences::init()
   initComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+  initComboBox(this->comboBoxSingleInstanceOpenMode, Settings::Settings::singleInstanceOpenMode);
+
+  this->labelSingleInstanceOpenMode->setText(QString(_("When launching another instance with files:")));
+  this->checkBoxSessionManagementEnabled->setText(
+    QString(_("Enable session management (save/restore tabs on quit, requires restart)")));
+  this->checkBoxAutosaveSessionEnabled->setText(
+    QString(_("Autosave session in background for crash recovery")));
+  this->labelAutosaveSessionInterval->setText(QString(_("Autosave interval:")));
+  this->spinBoxAutosaveSessionInterval->setSuffix(_(" seconds"));
+  initIntSpinBox(this->spinBoxAutosaveSessionInterval,
+                 Settings::Settings::autosaveSessionIntervalSeconds);
 
   initListBox(this->listWidgetLocalAppParams, Settings::Settings::localAppParameterList);
   connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::dataChanged, this,
@@ -743,6 +763,27 @@ void Preferences::on_checkBoxEnableNumberScrollWheel_toggled(bool val)
   writeSettings();
 }
 
+void Preferences::on_checkBoxSessionManagementEnabled_toggled(bool state)
+{
+  Settings::Settings::sessionManagementEnabled.setValue(state);
+  writeSettings();
+  updateSessionManagementWidgets();
+}
+
+void Preferences::on_checkBoxAutosaveSessionEnabled_toggled(bool state)
+{
+  Settings::Settings::autosaveSessionEnabled.setValue(state);
+  writeSettings();
+  const bool sessionEnabled = this->checkBoxSessionManagementEnabled->isChecked();
+  this->spinBoxAutosaveSessionInterval->setEnabled(sessionEnabled && state);
+}
+
+void Preferences::on_spinBoxAutosaveSessionInterval_valueChanged(int val)
+{
+  Settings::Settings::autosaveSessionIntervalSeconds.setValue(val);
+  writeSettings();
+}
+
 void Preferences::on_enableSoundOnRenderCompleteCheckBox_toggled(bool state)
 {
   QSettingsCached settings;
@@ -780,9 +821,9 @@ void Preferences::fireApplicationFontChanged() const
 static QString guiThemeValueFromIndex(int index)
 {
   switch (index) {
-  case 0: return "light";
-  case 1: return "dark";
-  case 2: return "auto";
+  case 0:  return "light";
+  case 1:  return "dark";
+  case 2:  return "auto";
   default: return "auto";
   }
 }
@@ -1323,6 +1364,15 @@ void Preferences::on_checkBoxGlobalTrustPython_toggled(bool state)
   writeSettings();
 }
 
+void Preferences::updateSessionManagementWidgets()
+{
+  const bool enabled = this->checkBoxSessionManagementEnabled->isChecked();
+  this->checkBoxAutosaveSessionEnabled->setEnabled(enabled);
+  this->labelAutosaveSessionInterval->setEnabled(enabled);
+  this->spinBoxAutosaveSessionInterval->setEnabled(enabled &&
+                                                   this->checkBoxAutosaveSessionEnabled->isChecked());
+}
+
 void Preferences::writeSettings()
 {
   Settings::Settings::visit(SettingsWriter());
@@ -1480,6 +1530,15 @@ void Preferences::updateGUI()
     ->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
   updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+  updateComboBox(this->comboBoxSingleInstanceOpenMode, Settings::Settings::singleInstanceOpenMode);
+  initUpdateCheckBox(this->checkBoxSessionManagementEnabled,
+                     Settings::Settings::sessionManagementEnabled);
+  BlockSignals<QCheckBox *>(this->checkBoxAutosaveSessionEnabled)
+    ->setChecked(getValue("advanced/autosaveSessionEnabled").toBool());
+  updateIntSpinBox(this->spinBoxAutosaveSessionInterval,
+                   Settings::Settings::autosaveSessionIntervalSeconds);
+  updateSessionManagementWidgets();
+  // ^ must run after the session management checkbox and autosave checkbox are set
 
   BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)
     ->setChecked(Settings::Settings::summaryCamera.value());

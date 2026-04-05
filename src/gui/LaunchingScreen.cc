@@ -150,7 +150,7 @@ void LaunchingScreen::openUserFile()
 
 void LaunchingScreen::openPython()
 {
-  this->files.append("Untitled.py");
+  this->files.append(QString());
   accept();
 }
 

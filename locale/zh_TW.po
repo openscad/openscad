@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2020.02.17\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-13 22:53+0100\n"
+"POT-Creation-Date: 2026-01-13 23:00+0100\n"
 "PO-Revision-Date: 2020-05-28 14:42+0200\n"
 "Last-Translator: Michael Tsao <cwtsao@sce.pccu.edu.tw>\n"
 "Language-Team: Distance Learning Center at the Chinese Culture University "
@@ -3283,6 +3283,22 @@ msgstr ""
 "出。以Autocad DXF檔案作為2D輪廓的資料交換格式。除了用於擠出的2D路徑外，還可以"
 "從DXF文件中讀取設計參數。除了DXF文件外OpenSCAD還可以讀取和創建STL和OFF文件格"
 "式的3D模型。"
+
+#: src/openscad_gui.cc
+msgid ""
+"PythonSCAD is already running but is not responding. The old PythonSCAD "
+"process must be closed to open a new window."
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid "Close PythonSCAD"
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid ""
+"Try again if the running instance may have recovered, or close it to start a "
+"new one."
+msgstr ""
 
 #~ msgid "&Font List"
 #~ msgstr "字型清單(&F)"

@@ -54,7 +54,10 @@ public:
   QMenu *createStandardContextMenu() override;
   QPoint mapToGlobal(const QPoint&) override;
 
+  void getCursorPosition(int *line, int *col) const override;
   void setCursorPosition(int line, int col) override;
+  int firstVisibleLine() const override;
+  void setFirstVisibleLine(int line) override;
   void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus satuts, int level, int lineFrom,
                                    int colFrom, int lineTo, int colTo) override;
   void clearAllSelectionIndicators() override;

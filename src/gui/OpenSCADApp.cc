@@ -199,6 +199,13 @@ void OpenSCADApp::setGuiTheme(const QString& preference)
     themePalette.setColor(QPalette::ButtonText, Qt::white);
     themePalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
     themePalette.setColor(QPalette::HighlightedText, Qt::black);
+
+    themePalette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(128, 128, 128));
+    themePalette.setColor(QPalette::Disabled, QPalette::Text, QColor(128, 128, 128));
+    themePalette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(128, 128, 128));
+    themePalette.setColor(QPalette::Disabled, QPalette::Base, QColor(40, 40, 40));
+    themePalette.setColor(QPalette::Disabled, QPalette::Button, QColor(45, 45, 45));
+    themePalette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
   } else {
     themePalette = QPalette();
     themePalette.setColor(QPalette::Window, QColor(239, 239, 239));
@@ -214,6 +221,13 @@ void OpenSCADApp::setGuiTheme(const QString& preference)
     themePalette.setColor(QPalette::HighlightedText, Qt::white);
     themePalette.setColor(QPalette::Link, QColor(42, 130, 218));
     themePalette.setColor(QPalette::LinkVisited, QColor(100, 74, 155));
+
+    themePalette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(160, 160, 160));
+    themePalette.setColor(QPalette::Disabled, QPalette::Text, QColor(160, 160, 160));
+    themePalette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(160, 160, 160));
+    themePalette.setColor(QPalette::Disabled, QPalette::Base, QColor(245, 245, 245));
+    themePalette.setColor(QPalette::Disabled, QPalette::Button, QColor(230, 230, 230));
+    themePalette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(190, 190, 190));
   }
   scadApp->setPalette(themePalette);
 

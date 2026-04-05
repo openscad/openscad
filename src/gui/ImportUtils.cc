@@ -1,5 +1,6 @@
 #include "gui/ImportUtils.h"
 
+#include <QFileInfo>
 #include <QString>
 
 QMap<QString, QString> Importer::knownFileExtensions;
@@ -28,6 +29,30 @@ int Importer::init()
 #endif
   knownFileExtensions["csg"] = "";
   return 0;
+}
+
+QString Importer::effectiveSuffixForOpen(const QString& path)
+{
+  const QFileInfo fileinfo(path);
+  QString suffix = fileinfo.suffix().toLower();
+  if (knownFileExtensions.contains(suffix)) {
+    return suffix;
+  }
+  const QString absLower = fileinfo.absoluteFilePath().toLower();
+  QString bestExt;
+  int bestLen = 0;
+  for (auto it = knownFileExtensions.constBegin(); it != knownFileExtensions.constEnd(); ++it) {
+    const QString& ext = it.key();
+    if (ext.isEmpty()) {
+      continue;
+    }
+    const QString tail = QLatin1Char('.') + ext;
+    if (absLower.endsWith(tail) && tail.size() > bestLen) {
+      bestLen = tail.size();
+      bestExt = ext;
+    }
+  }
+  return bestExt;
 }
 
 int forceInit = Importer::init();

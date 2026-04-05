@@ -20,4 +20,6 @@ class ParameterSets : public std::vector<ParameterSet>
 public:
   bool readFile(const std::string& filename);
   void writeFile(const std::string& filename) const;
+  bool readFromString(const std::string& json);
+  void writeToString(std::string& out) const;
 };
