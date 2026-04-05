@@ -98,4 +98,5 @@ QString readFileContents(const QString& filepath, QString& errorstring);
 QString getBackupFileName(QWidget *parent);
 
 void dumpSaveState(const QByteArray& data);
+
 }  // namespace UIUtils
