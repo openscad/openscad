@@ -41,7 +41,7 @@ Dock::~Dock()
 
 void Dock::setTitleBarVisibility(bool isVisible)
 {
-  setTitleBarWidget(isVisible ? dockTitleWidget : nullptr);
+  setTitleBarWidget(isVisible ? nullptr : dockTitleWidget);
 }
 
 void Dock::updateTitle()
