@@ -1612,21 +1612,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyHull3D(const Geometry::G
 #endif
 }
 
-GeometryEvaluator::ResultObject GeometryEvaluator::applyHull3D(const Geometry::Geometries& children)
-{
-#if ENABLE_MANIFOLD
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return ResultObject::mutableResult(
-      ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::HULL));
-  }
-#endif  // ENABLE_MANIFOLD
-#if ENABLE_CGAL
-  return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyHull3D(children)));
-#else
-  return ResultObject::mutableResult(PolySet::createEmpty());
-#endif
-}
-
 /*!
    Apply 2D hull.
 
