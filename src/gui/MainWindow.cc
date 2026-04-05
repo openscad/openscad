@@ -977,7 +977,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
   for (auto& [dock, name] : docks) {
-    dock->setTitleBarVisibility(!reorderMode);
+    dock->setTitleBarVisibility(reorderMode);
   }
 }
 

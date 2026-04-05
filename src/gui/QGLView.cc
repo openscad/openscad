@@ -329,6 +329,11 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
 {
   QOpenGLContext *oldContext = getGLContext();
   this->makeCurrent();
+  auto guard = sg::make_scope_guard([this, oldContext] {
+    this->doneCurrent();
+    setGLContext(oldContext);
+  });
+
   setupCamera();
 
   int viewport[4];
@@ -352,12 +357,10 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
                       .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
       statusLabel->setText(status);
     }
-    setGLContext(oldContext);
     return;
   }
 
   if (z == 1) {
-    setGLContext(oldContext);
     return;  // outside object
   }
 
@@ -370,7 +373,6 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
     update();
     emit cameraChanged();
   }
-  setGLContext(oldContext);
 }
 
 void QGLView::normalizeAngle(GLdouble& angle)
