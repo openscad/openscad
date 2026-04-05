@@ -14,11 +14,6 @@
 
 class CurveDiscretizer;
 
-#define DECLARE_INSTANCE()     \
-  std::string instance_name;   \
-  AssignmentList inst_asslist; \
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE)
-
 typedef struct {
   PyObject_HEAD std::shared_ptr<AbstractNode> node;
   PyObject *dict;

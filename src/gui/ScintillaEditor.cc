@@ -1,6 +1,8 @@
 #include "gui/ScintillaEditor.h"
 
+#include "genlang/genlang.h"
 #include <QColor>
+#include <Qsci/qscilexercpp.h>
 #include <QCursor>
 #include <QEvent>
 #include <QGuiApplication>
@@ -215,6 +217,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 #else
   setLexer(new ScadLexer(this));
 #endif
+  recomputeLanguageActive();
 
   initMargin();
 
@@ -493,7 +496,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     }
 
     newLexer->finalizeLexer();
-    setLexer(newLexer);
+    if (language == LANG_SCAD) {
+      setLexer(newLexer);
+    }
 
     // All other properties must be set after attaching to QSCintilla so
     // the editor gets the change events and updates itself to match
@@ -531,6 +536,10 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setColor(readColor(colors, "keyword-custom9", textColor), ScadLexer2::Custom9);
     newLexer->setColor(readColor(colors, "keyword-custom10", textColor), ScadLexer2::Custom10);
 
+    this->pythonLexer->setFont(font);
+    this->pythonLexer->setColor(textColor);
+    this->pythonLexer->setDefaultPaper(paperColor);
+    this->pythonLexer->setPaper(paperColor);
 #else
     auto *newLexer = new ScadLexer(this);
 
@@ -556,6 +565,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setFont(font);
     newLexer->setColor(textColor);
     newLexer->setPaper(paperColor);
+    this->pythonLexer->setFont(font);
+    this->pythonLexer->setColor(textColor);
+    this->pythonLexer->setPaper(paperColor);
 
     const auto& colors = pt.get_child("colors");
     newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
@@ -572,6 +584,28 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                        QsciLexerCPP::CommentDocKeyword);
 
 #endif  // ENABLE_LEXERTL
+    // colors is guaranteed to have been defined earlier
+    this->pythonLexer->setColor(readColor(colors, "comment", textColor), QsciLexerPython::Comment);
+    this->pythonLexer->setColor(readColor(colors, "number", textColor), QsciLexerPython::Number);
+    this->pythonLexer->setColor(readColor(colors, "string", textColor),
+                                QsciLexerPython::DoubleQuotedString);
+    this->pythonLexer->setColor(readColor(colors, "string", textColor),
+                                QsciLexerPython::SingleQuotedString);
+    this->pythonLexer->setColor(readColor(colors, "keywords", textColor), QsciLexerPython::Keyword);
+    this->pythonLexer->setColor(readColor(colors, "string", textColor),
+                                QsciLexerPython::TripleSingleQuotedString);
+    this->pythonLexer->setColor(readColor(colors, "string", textColor),
+                                QsciLexerPython::TripleDoubleQuotedString);
+    this->pythonLexer->setColor(readColor(colors, "models", textColor), QsciLexerPython::ClassName);
+    this->pythonLexer->setColor(readColor(colors, "functions", textColor),
+                                QsciLexerPython::FunctionMethodName);
+    this->pythonLexer->setColor(readColor(colors, "operator", textColor), QsciLexerPython::Operator);
+    this->pythonLexer->setColor(readColor(colors, "variables", textColor), QsciLexerPython::Identifier);
+    this->pythonLexer->setColor(readColor(colors, "comment", textColor), QsciLexerPython::CommentBlock);
+    this->pythonLexer->setColor(Qt::red, QsciLexerPython::UnclosedString);
+    this->pythonLexer->setColor(readColor(colors, "special-variables", textColor),
+                                QsciLexerPython::HighlightedIdentifier);
+    this->pythonLexer->setColor(readColor(colors, "functions", textColor), QsciLexerPython::Decorator);
 
     // Somehow, the margin font got lost when we deleted the old lexer
     qsci->setMarginsFont(font);
@@ -782,6 +816,7 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
   this->currentFont = QFont(fontName, size);
   this->currentFont.setFixedPitch(true);
   this->lexer->setFont(this->currentFont);
+  this->pythonLexer->setFont(this->currentFont);
   qsci->setMarginsFont(this->currentFont);
   onTextChanged();  // Update margin width
 }
@@ -1476,6 +1511,18 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
       });
     }
   }
+}
+
+void ScintillaEditor::onLanguageChanged(int lang)
+{
+  if (language == LANG_PYTHON) {
+    this->qsci->setLexer(this->pythonLexer);
+  } else {
+    this->qsci->setLexer(this->lexer);
+  }
+  this->qsci->update();
+  // This is needed otherwise the sidebar with line numbers has the wrong size and bg color
+  this->setHighlightScheme(GlobalPreferences::inst()->getValue("editor/syntaxhighlight").toString());
 }
 
 void ScintillaEditor::setCursorPosition(int line, int col)
