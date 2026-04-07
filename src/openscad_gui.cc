@@ -310,7 +310,9 @@ constexpr int kIpcTimeoutMs = 1500;
 QString lockFilePath()
 {
   const QString baseDir = TabManager::getSessionFilePath();
-  return QFileInfo(baseDir).absolutePath() + QStringLiteral("/pythonscad.lock");
+  const QString dir = QFileInfo(baseDir).absolutePath();
+  QDir(dir).mkpath(QStringLiteral("."));
+  return dir + QStringLiteral("/pythonscad.lock");
 }
 
 QString serverNameFromPath(const QString& path)

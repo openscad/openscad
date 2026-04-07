@@ -893,13 +893,13 @@ bool TabManager::shouldClose()
 
 QString TabManager::getSessionFilePath()
 {
-  QSettings s;
-  const QString configFile = s.fileName();
-  if (configFile.isEmpty()) {
-    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) +
-           QStringLiteral("/session.json");
-  }
-  return QFileInfo(configFile).absolutePath() + QStringLiteral("/session.json");
+  // QStandardPaths::AppConfigLocation returns a real filesystem directory on
+  // all platforms.  QSettings::fileName() cannot be used here because on
+  // Windows the default NativeFormat stores settings in the registry, so
+  // fileName() returns a registry path (e.g. "\\HKEY_CURRENT_USER\\Software\\…")
+  // instead of a filesystem path.
+  const QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+  return configDir + QStringLiteral("/session.json");
 }
 
 QString TabManager::getAutosaveFilePath()
