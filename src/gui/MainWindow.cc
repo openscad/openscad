@@ -1522,7 +1522,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
   // their window state. This overrides close to proactively save the window state.
   if (event->type() == QEvent::Close) {
     if (qobject_cast<Dock *>(obj) && !static_cast<QCloseEvent *>(event)->spontaneous()) {
-      saveWindowState();
+      saveWindowStateOnClose();
     }
   }
 
@@ -3236,7 +3236,7 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
   this->libraryInfoDialog->show();
 }
 
-void MainWindow::saveWindowState()
+void MainWindow::saveWindowStateOnClose()
 {
   if (windowStateSaved) return;
   windowStateSaved = true;
@@ -3252,7 +3252,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (tabManager->shouldClose()) {
     isClosing = true;
-    saveWindowState();
+    saveWindowStateOnClose();
     progress_report_fin();
 
     // Log to stdout from now on

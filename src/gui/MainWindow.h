@@ -132,7 +132,7 @@ private:
 
   volatile bool isClosing = false;
   bool windowStateSaved = false;
-  void saveWindowState();
+  void saveWindowStateOnClose();
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
