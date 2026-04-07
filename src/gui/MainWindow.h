@@ -131,6 +131,8 @@ private:
   std::vector<std::pair<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
+  bool windowStateSaved = false;
+  void saveWindowState();
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
