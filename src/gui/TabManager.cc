@@ -40,6 +40,10 @@
 #include <sstream>
 #include <vector>
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS) && !defined(Q_OS_WASM)
+#include <unistd.h>
+#endif
+
 #include "gui/Editor.h"
 #include "gui/ImportUtils.h"
 #include <boost/algorithm/string/predicate.hpp>
@@ -208,7 +212,7 @@ void TabManager::tabSwitched(int x)
     QString editorcmd = "gvim --remote-send '<esc>:sb " + QString::fromStdString(filename) +
                         "<cr>' || (gvim '" + QString::fromStdString(filename) + "' &)";
     //   LOG("1. Opening file '%1$s'",editorcmd.toUtf8().constData());
-    system(editorcmd.toUtf8().constData());
+    (void)system(editorcmd.toUtf8().constData());
     // **MCH*
   }
 
@@ -291,7 +295,7 @@ void TabManager::open(const QString& filename)
       "gvim --remote-tab-silent '" + filename.toUtf8() + "' || gvim '" + filename.toUtf8() + "' &";
     editorcmd += filename.toUtf8();
     //    LOG("2. Opening file '%1$s'",editorcmd.toUtf8().constData());
-    system(editorcmd.toUtf8().constData());
+    (void)system(editorcmd.toUtf8().constData());
   }
   for (auto edt : editorList) {
     if (filename == edt->filepath) {
@@ -891,21 +895,73 @@ bool TabManager::shouldClose()
   }
 }
 
+namespace {
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+QString sessionDirUnderRuntime()
+{
+  const QString runtime = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+  if (runtime.isEmpty()) {
+    return {};
+  }
+  return QDir(runtime).filePath(QStringLiteral("PythonSCAD"));
+}
+#endif
+
+QString sessionDirUnderTempOrHomeFallback()
+{
+  QString base = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+  if (!base.isEmpty()) {
+    QString leaf = QStringLiteral("PythonSCAD");
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS) && !defined(Q_OS_WASM)
+    // Avoid a shared machine-wide directory such as /tmp/PythonSCAD on multi-user hosts.
+    leaf = QStringLiteral("PythonSCAD-%1").arg(static_cast<qulonglong>(getuid()));
+#endif
+    return QDir(base).filePath(leaf);
+  }
+  base = QDir::homePath();
+  if (base.isEmpty()) {
+    return {};
+  }
+  return QDir(base).filePath(QStringLiteral(".local/share/PythonSCAD"));
+}
+
+QString sessionConfigDir()
+{
+  QString dir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+  if (!dir.isEmpty()) {
+    return dir;
+  }
+  dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  if (!dir.isEmpty()) {
+    return dir;
+  }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+  dir = sessionDirUnderRuntime();
+  if (!dir.isEmpty()) {
+    return dir;
+  }
+#endif
+  return sessionDirUnderTempOrHomeFallback();
+}
+
+}  // namespace
+
 QString TabManager::getSessionFilePath()
 {
-  QSettings s;
-  const QString configFile = s.fileName();
-  if (configFile.isEmpty()) {
-    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) +
-           QStringLiteral("/session.json");
-  }
-  return QFileInfo(configFile).absolutePath() + QStringLiteral("/session.json");
+  // QStandardPaths::AppConfigLocation returns a real filesystem directory on
+  // all platforms.  QSettings::fileName() cannot be used here because on
+  // Windows the default NativeFormat stores settings in the registry, so
+  // fileName() returns a registry path (e.g. "\\HKEY_CURRENT_USER\\Software\\…")
+  // instead of a filesystem path.
+  const QString configDir = sessionConfigDir();
+  return QDir(configDir).filePath(QStringLiteral("session.json"));
 }
 
 QString TabManager::getAutosaveFilePath()
 {
   const QString sessionPath = getSessionFilePath();
-  return QFileInfo(sessionPath).absolutePath() + QStringLiteral("/session.autosave.json");
+  return QDir(QFileInfo(sessionPath).absolutePath()).filePath(QStringLiteral("session.autosave.json"));
 }
 
 bool TabManager::hasDirtyTabs()

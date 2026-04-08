@@ -309,8 +309,9 @@ constexpr int kIpcTimeoutMs = 1500;
 
 QString lockFilePath()
 {
-  const QString baseDir = TabManager::getSessionFilePath();
-  return QFileInfo(baseDir).absolutePath() + QStringLiteral("/pythonscad.lock");
+  const QString sessionPath = TabManager::getSessionFilePath();
+  const QString dir = QFileInfo(sessionPath).absolutePath();
+  return QDir(dir).filePath(QStringLiteral("pythonscad.lock"));
 }
 
 QString serverNameFromPath(const QString& path)
@@ -754,6 +755,16 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   const QString openMode = resolveOpenMode(open_in_override);
   const QString cwd = QString::fromStdString(original_path.generic_string());
+
+  const QString lockDir = QFileInfo(TabManager::getSessionFilePath()).absolutePath();
+  if (!QDir().mkpath(lockDir)) {
+    QMessageBox::critical(
+      nullptr, QString(_("PythonSCAD")),
+      QString(_("Could not create the application configuration directory required for session data and "
+                "single-instance locking:\n\n%1"))
+        .arg(lockDir));
+    return 1;
+  }
 
   QLockFile lock(lockFilePath());
   lock.setStaleLockTime(0);
