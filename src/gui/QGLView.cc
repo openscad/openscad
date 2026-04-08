@@ -42,6 +42,7 @@
 
 #include <QImage>
 #include <QOpenGLWidget>
+#include <QSurfaceFormat>
 #include <QWidget>
 #include <iostream>
 #include <QApplication>
@@ -72,8 +73,23 @@
 #include "gui/qt-obsolete.h"
 #include "gui/Measurement.h"
 
+namespace {
+
+QSurfaceFormat compatibleWidgetFormat()
+{
+  auto format = QSurfaceFormat::defaultFormat();
+  format.setRenderableType(QSurfaceFormat::OpenGL);
+  format.setProfile(QSurfaceFormat::CompatibilityProfile);
+  if (format.depthBufferSize() < 24) format.setDepthBufferSize(24);
+  if (format.stencilBufferSize() < 8) format.setStencilBufferSize(8);
+  return format;
+}
+
+}  // namespace
+
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {
+  setFormat(compatibleWidgetFormat());
   init();
 }
 
@@ -267,6 +283,11 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
 {
   QOpenGLContext *oldContext = getGLContext();
   this->makeCurrent();
+  auto guard = sg::make_scope_guard([this, oldContext] {
+    this->doneCurrent();
+    setGLContext(oldContext);
+  });
+
   setupCamera();
 
   int viewport[4];
@@ -290,12 +311,10 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
                       .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
       statusLabel->setText(status);
     }
-    setGLContext(oldContext);
     return;
   }
 
   if (z == 1) {
-    setGLContext(oldContext);
     return;  // outside object
   }
 
@@ -308,7 +327,6 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
     update();
     emit cameraChanged();
   }
-  setGLContext(oldContext);
 }
 
 void QGLView::normalizeAngle(GLdouble& angle)

@@ -1,9 +1,10 @@
+#include "platform/PlatformUtils.h"
+
+#include <algorithm>
 #include <filesystem>
 #include <ios>
 #include <map>
 #include <string>
-
-#include "platform/PlatformUtils.h"
 #include "utils/findversion.h"
 #include "utils/printutils.h"
 #ifndef _WIN32_WINNT

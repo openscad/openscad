@@ -131,6 +131,8 @@ private:
   std::vector<std::pair<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
+  bool windowStateSaved = false;
+  void saveWindowStateOnClose();
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
@@ -231,7 +233,6 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible);
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
@@ -410,8 +411,8 @@ public slots:
   void on_viewActionBack_triggered();
   void on_viewActionDiagonal_triggered();
   void on_viewActionCenter_triggered();
-  void on_viewActionPerspective_triggered();
-  void on_viewActionOrthogonal_triggered();
+  void on_viewActionPerspective_toggled(bool checked);
+  void on_viewActionOrthogonal_toggled(bool checked);
   void viewTogglePerspective();
   void on_viewActionResetView_triggered();
   void on_viewActionViewAll_triggered();
