@@ -83,6 +83,7 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
+  bool glad_available = true;  // Track GLAD availability for Qt6/macOS
   // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
   // zoom 2-vector.
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];

@@ -44,6 +44,7 @@
 #include <QOpenGLWidget>
 #include <QSurfaceFormat>
 #include <QWidget>
+#include <QPainter>
 #include <iostream>
 #include <QApplication>
 #include <QWheelEvent>
@@ -65,6 +66,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#ifdef __APPLE__
+#include <dlfcn.h>
+#endif
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -134,23 +138,105 @@ void QGLView::initializeGL()
   // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
   const auto version = gladLoadGLUserPtr(
     [](void *ctx, const char *name) -> GLADapiproc {
-      return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
+      static int first_call = 1;
+      static void* gl_lib = nullptr;
+
+      if (first_call) {
+        first_call = 0;
+        std::cerr << "GLAD loader called with context: " << ctx << std::endl;
+      }
+
+      auto addr = reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
+
+      // First lookup - show what we got from Qt
+      static int dbg_count = 0;
+      if (dbg_count < 3) {
+        std::cerr << "Qt getProcAddress(\"" << name << "\") = " << (void*)addr << std::endl;
+        dbg_count++;
+      }
+
+#ifdef __APPLE__
+      // On macOS, Qt6 may not expose GL functions via getProcAddress
+      // Try loading directly from the OpenGL framework as fallback
+      if (!gl_lib) {
+        gl_lib = dlopen("/System/Library/Frameworks/OpenGL.framework/OpenGL", RTLD_LAZY);
+        if (gl_lib) {
+          std::cerr << "Successfully opened OpenGL framework" << std::endl;
+        } else {
+          std::cerr << "Failed to open OpenGL framework: " << dlerror() << std::endl;
+        }
+      }
+
+      if (!addr && gl_lib) {
+        void* sym = dlsym(gl_lib, name);
+        if (sym) {
+          addr = reinterpret_cast<QFunctionPointer>(sym);
+          std::cerr << "dlsym(\"" << name << "\") = " << sym << " (success)" << std::endl;
+        }
+      }
+#endif
+      return addr;
     },
     this->context());
-  if (version == 0) {
-    std::cerr << "Unable to init GLAD" << std::endl;
-    return;
+  // On macOS/Qt6, GLAD may fail to initialize but GL context is available via Qt
+  // Try to use GL even if GLAD reports failure, as long as we have a valid context
+  this->glad_available = (version != 0);
+
+  // On macOS/Qt6, GLAD initialization fails but we can still try basic GL operations
+  // through Qt's OpenGL API. We'll skip GLAD initialization entirely in favor of
+  // safer Qt functions, but still allow gl_dump() and basic operations
+  if (!this->glad_available && this->context()) {
+    std::cerr << "GLAD failed but Qt context available - using fallback rendering" << std::endl;
+    // Don't set glad_available=true here; stick with fallback rendering instead
+    // This is safer than trying to use uninitialized function pointers
   }
-  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+
+  std::cerr << "GLAD version result: " << version << std::endl;
+
+  if (version != 0) {
+    std::cerr << "GLAD: Successfully loaded OpenGL " << GLAD_VERSION_MAJOR(version) << "." << GLAD_VERSION_MINOR(version) << std::endl;
+    PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+  } else if (this->glad_available) {
+    std::cerr << "GLAD: Using Qt GL context (macOS/Qt6 workaround)" << std::endl;
+  } else {
+    std::cerr << "Warning: Unable to access OpenGL functions" << std::endl;
+  }
+#else
+  this->glad_available = true;
 #endif  // ifdef USE_GLAD
 
-  PRINTD(gl_dump());
+  // Only try GL operations if GLAD is available
+  if (this->glad_available) {
+    try {
+      PRINTD(gl_dump());
+    } catch (...) {
+      std::cerr << "Warning: GL dump failed" << std::endl;
+    }
 
-  GLView::initializeGL();
+    try {
+      GLView::initializeGL();
+    } catch (...) {
+      std::cerr << "Warning: GLView::initializeGL() failed" << std::endl;
+    }
+  } else {
+    std::cerr << "Skipping GL initialization (GLAD not available)" << std::endl;
+  }
 
-  this->selector = std::make_unique<MouseSelector>(this);
+  std::cerr << "Creating MouseSelector..." << std::endl;
+  try {
+    this->selector = std::make_unique<MouseSelector>(this);
+    std::cerr << "MouseSelector created successfully" << std::endl;
+  } catch (const std::exception& e) {
+    std::cerr << "ERROR: MouseSelector creation failed: " << e.what() << std::endl;
+    return;
+  } catch (...) {
+    std::cerr << "ERROR: MouseSelector creation failed with unknown exception" << std::endl;
+    return;
+  }
 
+  std::cerr << "Emitting initialized signal..." << std::endl;
   emit initialized();
+  std::cerr << "QGLView::initializeGL() COMPLETE!" << std::endl;
 }
 
 std::string QGLView::getRendererInfo() const
@@ -209,13 +295,34 @@ void QGLView::display_opencsg_warning_dialog()
 
 void QGLView::resizeGL(int w, int h)
 {
-  GLView::resizeGL(w, h);
+  // Skip GL operations if GLAD isn't available or context isn't available (Qt6/macOS)
+  if (!this->glad_available || !this->context()) return;
+
+  try {
+    GLView::resizeGL(w, h);
+  } catch (...) {
+    std::cerr << "Warning: GLView::resizeGL() failed" << std::endl;
+  }
   emit resized();
 }
 
 void QGLView::paintGL()
 {
-  GLView::paintGL();
+  if (this->glad_available && this->context()) {
+    try {
+      GLView::paintGL();
+    } catch (...) {
+      std::cerr << "Warning: GLView::paintGL() failed" << std::endl;
+    }
+  } else {
+    // Fallback: render a yellow background using QPainter when GL is unavailable
+    // This at least provides visual feedback that the app is running
+    std::cerr << "Using fallback rendering (no GL available)" << std::endl;
+    QPainter painter(this);
+    painter.fillRect(rect(), QColor(255, 255, 0));  // Yellow background
+    painter.drawText(rect(), Qt::AlignCenter, "OpenGL unavailable");
+    painter.end();
+  }
 
   if (statusLabel) {
     auto status = QString("%1 (%2x%3)")
