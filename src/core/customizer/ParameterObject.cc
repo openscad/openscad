@@ -147,8 +147,8 @@ json NumberParameter::jsonValue() const
   if (maximum.is_initialized()) {
     o["max"] = maximum.get();
     o["min"] = minimum.is_initialized() ? minimum.get() : 0.0;
-    o["step"] = step.is_initialized() ? step.get() : 1.0;
   }
+  o["step"] = step.is_initialized() ? step.get() : 1.0;
   return o;
 }
 
