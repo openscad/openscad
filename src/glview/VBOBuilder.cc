@@ -496,7 +496,7 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const C
   vertex_state_container_.states().emplace_back(std::move(vertex_state));
   addAttributePointers(last_size);
 
-  Color4f color(1.0f, 0.0f, 0.0f, 0.5f);
+  Color4f color(0.0f, 0.0f, 0.0f, 0.1f);
   for (size_t i = 0, n = ps.polylines.size(); i < n; i++) {
     const auto& polyline = ps.polylines[i];
 
