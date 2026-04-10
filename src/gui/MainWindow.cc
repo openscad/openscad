@@ -3959,10 +3959,15 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, colorListDock);
     tabifyDockWidget(colorListDock, animateDock);
+    // Hide all docks on startup - user can enable them via Windows menu
+    editorDock->hide();
     parameterDock->hide();
+    consoleDock->hide();
+    errorLogDock->hide();
+    animateDock->hide();
+    fontListDock->hide();
+    colorListDock->hide();
     viewportControlDock->hide();
-    consoleDock->show();
-    consoleDock->raise();
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
