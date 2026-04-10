@@ -90,6 +90,21 @@ QString initialPathForSaveDialog(const QString& filepath, int language)
   return QDir(dir).filePath(untitledBasenameForLanguage(language));
 }
 
+/** Synthetic path prefix for session-restore window plumbing; not a filesystem path. */
+inline bool isSessionLaunchTokenPath(const QString& path)
+{
+  return path.startsWith(QStringLiteral(":session:"));
+}
+
+/** Path stored in session JSON (never persist internal launch tokens). */
+QString normalizedSessionFilepathForJson(const QString& filepath)
+{
+  if (isSessionLaunchTokenPath(filepath)) {
+    return {};
+  }
+  return filepath;
+}
+
 /** Save / Save As / Save a copy: one primary format (matches editor language) plus All files. */
 struct DesignSaveFilterSet {
   QString primaryLabel;
@@ -162,6 +177,16 @@ bool jsonToVec3(const QJsonValue& value, double *x, double *y, double *z)
   *y = arr[1].toDouble();
   *z = arr[2].toDouble();
   return true;
+}
+
+bool isStandardUntitledFilename(const QString& filepath)
+{
+  const QString fn = QFileInfo(filepath).fileName();
+#ifdef ENABLE_PYTHON
+  return fn == untitledBasenameForLanguage(LANG_PYTHON) || fn == untitledBasenameForLanguage(LANG_SCAD);
+#else
+  return fn == untitledBasenameForLanguage(LANG_SCAD);
+#endif
 }
 
 void initEmptyUntitledTab(EditorInterface *editor)
@@ -251,7 +276,13 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(parent->editActionZoomTextIn, &QAction::triggered, this, &TabManager::zoomIn);
   connect(parent->editActionZoomTextOut, &QAction::triggered, this, &TabManager::zoomOut);
 
-  createTab(filename);
+  // Session restore passes a synthetic path like ":session:0:"; QFileInfo treats it as absolute
+  // and non-existent, which must never be opened as a file or counted as a missing disk path.
+  if (isSessionLaunchTokenPath(filename)) {
+    createTab(QString(), false);
+  } else {
+    createTab(filename);
+  }
 
   // Disable the closing button for the first tabbar
   setTabsCloseButtonVisibility(0, false);
@@ -756,6 +787,9 @@ void TabManager::onTabModified(EditorInterface *edt)
 
 void TabManager::openTabFile(const QString& filename)
 {
+  if (isSessionLaunchTokenPath(filename)) {
+    return;
+  }
   QFileInfo fileinfo(filename);
   const QString absPath = fileinfo.absoluteFilePath();
   const QString suffix = Importer::effectiveSuffixForOpen(filename);
@@ -1130,7 +1164,8 @@ void TabManager::saveSession(const QString& path)
   for (int i = 0; i < tabWidget->count(); ++i) {
     auto *edt = static_cast<EditorInterface *>(tabWidget->widget(i));
     QJsonObject obj;
-    obj.insert(QStringLiteral("filepath"), edt->filepath);
+    const QString sessionPath = normalizedSessionFilepathForJson(edt->filepath);
+    obj.insert(QStringLiteral("filepath"), sessionPath);
     obj.insert(QStringLiteral("content"), edt->toPlainText());
     obj.insert(QStringLiteral("contentModified"), edt->isContentModified());
     obj.insert(QStringLiteral("parameterModified"), edt->parameterWidget->isModified());
@@ -1146,9 +1181,9 @@ void TabManager::saveSession(const QString& path)
     if (!customizerState.isEmpty()) {
       obj.insert(QStringLiteral("customizerState"), QString::fromUtf8(customizerState));
     }
-    if (!edt->filepath.isEmpty()) {
+    if (!sessionPath.isEmpty()) {
       obj.insert(QStringLiteral("diskIdentity"),
-                 QString::fromStdString(MainWindow::autoReloadIdentityForPath(edt->filepath)));
+                 QString::fromStdString(MainWindow::autoReloadIdentityForPath(sessionPath)));
     }
     tabs.append(obj);
   }
@@ -1214,7 +1249,8 @@ bool TabManager::saveGlobalSession(const QString& path, QString *error, bool sho
     for (int i = 0; i < tm->tabWidget->count(); ++i) {
       auto *edt = static_cast<EditorInterface *>(tm->tabWidget->widget(i));
       QJsonObject obj;
-      obj.insert(QStringLiteral("filepath"), edt->filepath);
+      const QString sessionPath = normalizedSessionFilepathForJson(edt->filepath);
+      obj.insert(QStringLiteral("filepath"), sessionPath);
       obj.insert(QStringLiteral("content"), edt->toPlainText());
       obj.insert(QStringLiteral("contentModified"), edt->isContentModified());
       obj.insert(QStringLiteral("parameterModified"), edt->parameterWidget->isModified());
@@ -1230,9 +1266,9 @@ bool TabManager::saveGlobalSession(const QString& path, QString *error, bool sho
       if (!customizerState.isEmpty()) {
         obj.insert(QStringLiteral("customizerState"), QString::fromUtf8(customizerState));
       }
-      if (!edt->filepath.isEmpty()) {
+      if (!sessionPath.isEmpty()) {
         obj.insert(QStringLiteral("diskIdentity"),
-                   QString::fromStdString(MainWindow::autoReloadIdentityForPath(edt->filepath)));
+                   QString::fromStdString(MainWindow::autoReloadIdentityForPath(sessionPath)));
       }
       tabs.append(obj);
     }
@@ -1422,7 +1458,7 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
 
   for (int i = 0; i < tabs.size(); ++i) {
     const QJsonObject obj = tabs[i].toObject();
-    const QString filepath = obj.value(QStringLiteral("filepath")).toString();
+    QString filepath = obj.value(QStringLiteral("filepath")).toString().trimmed();
     QString content = obj.value(QStringLiteral("content")).toString();
     const bool contentModified = obj.value(QStringLiteral("contentModified")).toBool();
     const bool parameterModified = obj.value(QStringLiteral("parameterModified")).toBool();
@@ -1437,7 +1473,12 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
     }
 
     const QFileInfo fileInfo(filepath);
-    if (!filepath.isEmpty() && fileInfo.isAbsolute() && !fileInfo.exists()) {
+    // Never treat default untitled filenames as stale disk paths: the session may record a path
+    // that was never created (e.g. missing file opened by name, or save-dialog default).
+    const bool standardUntitled = isStandardUntitledFilename(filepath);
+    const bool countsAsMissing = !filepath.isEmpty() && !isSessionLaunchTokenPath(filepath) &&
+                                 fileInfo.isAbsolute() && !fileInfo.exists() && !standardUntitled;
+    if (countsAsMissing) {
       if (firstMissingIndex < 0) {
         firstMissingIndex = i;
       }
@@ -1609,7 +1650,7 @@ bool TabManager::sessionHasOnlyEmptyTab(const QString& path)
   if (tabs.size() != 1) return false;
 
   const QJsonObject tab = tabs[0].toObject();
-  const QString filepath = tab.value(QStringLiteral("filepath")).toString();
+  const QString filepath = tab.value(QStringLiteral("filepath")).toString().trimmed();
   const bool contentModified = tab.value(QStringLiteral("contentModified")).toBool();
 
   // Trivial session: one window, one tab, nothing saved to a path, editor not dirty.
