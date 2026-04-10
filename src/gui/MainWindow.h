@@ -163,6 +163,9 @@ private:
   void setupMenusAndActions();
   void restoreWindowState();
   void openRemainingFiles(const QStringList& filenames);
+  /// First CLI path was a missing design file; tab UI deferred until user answers create prompt.
+  QString deferredCliMissingFile;
+  void handleDeferredCliMissingFile();
 
 protected:
   void closeEvent(QCloseEvent *event) override;

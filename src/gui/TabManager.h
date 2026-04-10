@@ -44,10 +44,18 @@ public:
   bool refreshDocument();  // returns false if the file could not be opened
   bool shouldClose();
   bool save(EditorInterface *edt);
+  /// Write \a edt to \a path (used for CLI "create missing file" and internal save).
+  bool save(EditorInterface *edt, const QString& path);
   bool saveAs(EditorInterface *edt);
   bool saveAs(EditorInterface *edt, const QString& filepath);
   bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
+  /// True if \a path is a .scad/.py design path that does not exist on disk yet (CLI / open checks).
+  static bool isMissingDesignDocumentPath(const QString& path);
+  /// Ask whether to create a missing design file; shared by MainWindow (deferred CLI) and openTabFile.
+  static bool confirmCreateMissingDesignFile(QWidget *parent, const QString& absPath);
+  /// Reset buffer and language for a new .scad/.py file at \a absPath (used before first save).
+  void prepareEditorBufferForNewDesignFile(EditorInterface *edt, const QString& absPath);
   size_t count();
   void switchToEditor(EditorInterface *editor);
 
@@ -71,7 +79,7 @@ public:
   // Session file schema version. Increment when the format changes and add a
   // migration step in migrateSession().  Old files without a version field are
   // treated as version 1.
-  static constexpr int SESSION_VERSION = 4;
+  static constexpr int SESSION_VERSION = 5;
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
@@ -98,14 +106,13 @@ private:
   bool maybeSave(int);
   /// Tab title for message boxes (no `&` doubling; see getEditorTabName for QTabWidget labels).
   QString plainEditorTitleForMessages(EditorInterface *edt) const;
-  bool save(EditorInterface *edt, const QString& path);
   void saveError(const QIODevice& file, const std::string& msg, const QString& filepath);
   void applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func);
   void setTabsCloseButtonVisibility(int tabIndice, bool isVisible);
   void setTabSessionData(EditorInterface *edt, const QString& filepath, const QString& content,
                          bool contentModified, bool parameterModified,
                          const QByteArray& customizerState = QByteArray(),
-                         std::optional<int> sessionLanguage = std::nullopt);
+                         std::optional<int> sessionLanguage = std::nullopt, bool diskBacked = false);
   static bool migrateSession(QJsonObject& root, int fromVersion);
 
   enum class SessionFileReadStatus {

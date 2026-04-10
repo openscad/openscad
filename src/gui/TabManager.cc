@@ -189,6 +189,13 @@ bool isStandardUntitledFilename(const QString& filepath)
 #endif
 }
 
+void warnDesignPathIsDirectory(QWidget *dialogParent, const QString& absPath)
+{
+  QMessageBox::warning(dialogParent, _("Application"),
+                       QString(_("Cannot open design file \"%1\": path is a directory."))
+                         .arg(QDir::toNativeSeparators(absPath)));
+}
+
 void initEmptyUntitledTab(EditorInterface *editor)
 {
 #ifdef ENABLE_PYTHON
@@ -254,7 +261,69 @@ bool writeSessionFile(const QJsonObject& root, const QString& path, QString *err
   }
   return true;
 }
+
 }  // namespace
+
+bool TabManager::isMissingDesignDocumentPath(const QString& path)
+{
+  if (path.isEmpty() || isSessionLaunchTokenPath(path)) {
+    return false;
+  }
+  const QFileInfo fi(path);
+  const QString suffix = Importer::effectiveSuffixForOpen(path);
+  if (!Importer::knownFileExtensions.contains(suffix)) {
+    return false;
+  }
+  if (!Importer::knownFileExtensions[suffix].isEmpty()) {
+    return false;
+  }
+  // Permissive: only rule out a plain directory at the path; other non-files (e.g. some symlinks)
+  // fall through to existing open/save behavior.
+  if (fi.exists() && fi.isDir()) {
+    return false;
+  }
+  return !fi.exists() || !fi.isFile();
+}
+
+bool TabManager::confirmCreateMissingDesignFile(QWidget *parent, const QString& absPath)
+{
+  QMessageBox box(parent);
+  box.setIcon(QMessageBox::Question);
+  box.setWindowTitle(_("Application"));
+  box.setText(QString(_("The file \"%1\" does not exist.\n\nDo you want to create it?"))
+                .arg(QDir::toNativeSeparators(absPath)));
+  box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  box.setDefaultButton(QMessageBox::Yes);
+  return box.exec() == QMessageBox::Yes;
+}
+
+void TabManager::prepareEditorBufferForNewDesignFile(EditorInterface *edt, const QString& absPath)
+{
+  const QString suffix = Importer::effectiveSuffixForOpen(absPath);
+#ifdef ENABLE_PYTHON
+  if (suffix == QStringLiteral("py")) {
+    std::string templ = "from openscad import *\n";
+    std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
+    std::stringstream ss(libs);
+    std::string word;
+    while (std::getline(ss, word, '\n')) {
+      if (word.size() == 0) continue;
+      templ += "nimport(\"" + word + "\")\n";
+    }
+    edt->setPlainText(QString::fromStdString(templ));
+    edt->setLanguageManually(LANG_PYTHON);
+    const QByteArray pathUtf8 = QFileInfo(absPath).absoluteFilePath().toUtf8();
+    this->parent->clearPythonUntrustStateForPath(
+      std::string(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size())));
+  } else
+#endif
+  {
+    edt->setPlainText("");
+    edt->setLanguageManually(LANG_SCAD);
+  }
+  edt->setContentModified(false);
+  edt->parameterWidget->setModified(false);
+}
 
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
@@ -506,6 +575,7 @@ void TabManager::createTab(const QString& filename, bool initializeEmptyEditor)
   // Fill the editor with the content of the file
   if (filename.isEmpty()) {
     editor->filepath = "";
+    editor->diskBacked = false;
     if (initializeEmptyEditor) {
       initEmptyUntitledTab(editor);
       refreshDocument();
@@ -795,10 +865,12 @@ void TabManager::openTabFile(const QString& filename)
   const QString suffix = Importer::effectiveSuffixForOpen(filename);
   if (!Importer::knownFileExtensions.contains(suffix)) {
     editor->setPlainText("");
+    editor->diskBacked = false;
     if (!fileinfo.exists() || !fileinfo.isFile()) {
       return;
     }
     editor->filepath = absPath;
+    editor->diskBacked = true;
     editor->resetLanguageDetection();
     editor->parameterWidget->resetForNewDocument();
     editor->parameterWidget->readFile(absPath);
@@ -813,40 +885,80 @@ void TabManager::openTabFile(const QString& filename)
     emit editorContentReloaded(editor);
     return;
   }
-#ifdef ENABLE_PYTHON
-  if (suffix == QStringLiteral("py")) {
-    std::string templ = "from openscad import *\n";
-    std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
-    std::stringstream ss(libs);
-    std::string word;
-    while (std::getline(ss, word, '\n')) {
-      if (word.size() == 0) continue;
-      templ += "nimport(\"" + word + "\")\n";
-    }
-    editor->setPlainText(QString::fromStdString(templ));
-  } else
-#endif
-    editor->setPlainText("");
 
   const auto cmd = Importer::knownFileExtensions[suffix];
-  if (cmd.isEmpty()) {
-    editor->filepath = fileinfo.absoluteFilePath();
-#ifdef ENABLE_PYTHON
-    if (suffix == QStringLiteral("py")) {
-      const QByteArray pathUtf8 = editor->filepath.toUtf8();
-      parent->clearPythonUntrustStateForPath(
-        std::string(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size())));
-    }
-#endif
-    editor->parameterWidget->resetForNewDocument();
-    editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
-    parent->updateRecentFiles(filename);
-  } else {
+  if (!cmd.isEmpty()) {
     editor->filepath.clear();
+    editor->diskBacked = false;
     editor->language = LANG_PYTHON;
     editor->languageManuallySet = true;
     editor->setPlainText(cmd.arg(filename));
+    refreshDocument();
+
+    auto [fname, fpath] = getEditorTabNameWithModifier(editor);
+    setEditorTabName(fname, fpath, editor);
+    parent->setWindowTitle(fname);
+    emit editorContentReloaded(editor);
+    return;
   }
+
+  if (fileinfo.exists() && fileinfo.isDir()) {
+    warnDesignPathIsDirectory(parent, absPath);
+    editor->diskBacked = false;
+    return;
+  }
+
+  const bool missingOnDisk = !fileinfo.exists() || !fileinfo.isFile();
+  if (missingOnDisk) {
+    if (!TabManager::confirmCreateMissingDesignFile(parent, absPath)) {
+      editor->diskBacked = false;
+      return;
+    }
+    prepareEditorBufferForNewDesignFile(editor, absPath);
+  } else {
+#ifdef ENABLE_PYTHON
+    if (suffix == QStringLiteral("py")) {
+      std::string templ = "from openscad import *\n";
+      std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
+      std::stringstream ss(libs);
+      std::string word;
+      while (std::getline(ss, word, '\n')) {
+        if (word.size() == 0) continue;
+        templ += "nimport(\"" + word + "\")\n";
+      }
+      editor->setPlainText(QString::fromStdString(templ));
+    } else
+#endif
+    {
+      editor->setPlainText("");
+    }
+  }
+
+  editor->filepath = absPath;
+#ifdef ENABLE_PYTHON
+  if (suffix == QStringLiteral("py") && !missingOnDisk) {
+    const QByteArray pathUtf8 = editor->filepath.toUtf8();
+    parent->clearPythonUntrustStateForPath(
+      std::string(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size())));
+  }
+#endif
+  editor->parameterWidget->resetForNewDocument();
+  if (!missingOnDisk) {
+    editor->parameterWidget->readFile(absPath);
+  }
+
+  if (missingOnDisk) {
+    if (!save(editor, absPath)) {
+      editor->filepath.clear();
+      editor->diskBacked = false;
+      return;
+    }
+    editor->parameterWidget->readFile(absPath);
+  } else {
+    editor->diskBacked = true;
+    parent->updateRecentFiles(filename);
+  }
+
   refreshDocument();
 
   auto [fname, fpath] = getEditorTabNameWithModifier(editor);
@@ -934,6 +1046,7 @@ bool TabManager::refreshDocument()
         setContentRenderState();  // since last render
         editor->recomputeLanguageActive();
       }
+      editor->diskBacked = true;
       file_opened = true;
     }
   }
@@ -1116,11 +1229,13 @@ bool TabManager::shouldSkipSessionSave()
 
 void TabManager::setTabSessionData(EditorInterface *edt, const QString& filepath, const QString& content,
                                    bool contentModified, bool parameterModified,
-                                   const QByteArray& customizerState, std::optional<int> sessionLanguage)
+                                   const QByteArray& customizerState, std::optional<int> sessionLanguage,
+                                   bool diskBackedValue)
 {
   const QSignalBlocker blockEditor(edt);
   const QSignalBlocker blockParameters(edt->parameterWidget);
   edt->filepath = filepath;
+  edt->diskBacked = diskBackedValue;
   edt->setPlainText(content);
   edt->setContentModified(contentModified);
   edt->parameterWidget->setModified(parameterModified);
@@ -1169,6 +1284,7 @@ void TabManager::saveSession(const QString& path)
     obj.insert(QStringLiteral("content"), edt->toPlainText());
     obj.insert(QStringLiteral("contentModified"), edt->isContentModified());
     obj.insert(QStringLiteral("parameterModified"), edt->parameterWidget->isModified());
+    obj.insert(QStringLiteral("diskBacked"), edt->diskBacked);
     obj.insert(QStringLiteral("language"), edt->language);
     int cursorLine = 0;
     int cursorColumn = 0;
@@ -1254,6 +1370,7 @@ bool TabManager::saveGlobalSession(const QString& path, QString *error, bool sho
       obj.insert(QStringLiteral("content"), edt->toPlainText());
       obj.insert(QStringLiteral("contentModified"), edt->isContentModified());
       obj.insert(QStringLiteral("parameterModified"), edt->parameterWidget->isModified());
+      obj.insert(QStringLiteral("diskBacked"), edt->diskBacked);
       obj.insert(QStringLiteral("language"), edt->language);
       int cursorLine = 0;
       int cursorColumn = 0;
@@ -1337,6 +1454,10 @@ bool TabManager::migrateSession(QJsonObject& root, int fromVersion)
     }
     case 3: {
       // v3 -> v4: optional per-tab diskIdentity (mtime+size at session save).
+      break;
+    }
+    case 4: {
+      // v4 -> v5: optional per-tab diskBacked (loaded from disk or saved at least once).
       break;
     }
     default:
@@ -1473,11 +1594,29 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
     }
 
     const QFileInfo fileInfo(filepath);
-    // Never treat default untitled filenames as stale disk paths: the session may record a path
-    // that was never created (e.g. missing file opened by name, or save-dialog default).
-    const bool standardUntitled = isStandardUntitledFilename(filepath);
+    bool tabDiskBacked = false;
+    if (obj.contains(QStringLiteral("diskBacked"))) {
+      tabDiskBacked = obj.value(QStringLiteral("diskBacked")).toBool();
+    } else {
+      const bool onDiskNow = fileInfo.exists() && fileInfo.isFile();
+      const QString savedDiskId = obj.value(QStringLiteral("diskIdentity")).toString();
+      const bool hadDiskSnapshot = !savedDiskId.isEmpty();
+      if (onDiskNow) {
+        tabDiskBacked = true;
+      } else if (hadDiskSnapshot) {
+        // v4 session: file existed when saved (mtime+size recorded) — treat as disk-backed even if
+        // contentModified was true (unsaved edits) or the file was deleted before restore.
+        tabDiskBacked = true;
+      } else {
+        // Pre-v5 session: infer disk backing for stale-file warning (see diskBacked in Editor).
+        tabDiskBacked = !filepath.isEmpty() && !isSessionLaunchTokenPath(filepath) &&
+                        fileInfo.isAbsolute() && !isStandardUntitledFilename(filepath) &&
+                        !contentModified;
+      }
+    }
+
     const bool countsAsMissing = !filepath.isEmpty() && !isSessionLaunchTokenPath(filepath) &&
-                                 fileInfo.isAbsolute() && !fileInfo.exists() && !standardUntitled;
+                                 fileInfo.isAbsolute() && tabDiskBacked && !fileInfo.exists();
     if (countsAsMissing) {
       if (firstMissingIndex < 0) {
         firstMissingIndex = i;
@@ -1508,7 +1647,7 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
       edt = editor;
     }
     setTabSessionData(edt, filepath, content, contentModified, parameterModified, customizerState,
-                      sessionLanguage);
+                      sessionLanguage, tabDiskBacked);
     if (findState < TabManager::FIND_HIDDEN || findState > TabManager::FIND_REPLACE_VISIBLE) {
       findState = TabManager::FIND_HIDDEN;
     }
@@ -1731,6 +1870,7 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     edt->parameterWidget->setModified(false);
     parent->updateRecentFiles(path);
     edt->filepath = path;
+    edt->diskBacked = true;
     QSettingsCached settings;
     settings.setValue(QStringLiteral("lastOpenDirName"), QFileInfo(path).absolutePath());
   } else {

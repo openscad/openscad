@@ -41,6 +41,7 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDialog>
+#include <QDir>
 #include <QDockWidget>
 #include <QDropEvent>
 #include <QElapsedTimer>
@@ -2100,6 +2101,7 @@ std::string MainWindow::autoReloadIdentityForPath(const QString& filepath)
 bool MainWindow::fileChangedOnDisk()
 {
   if (activeEditor->filepath.isEmpty()) return false;
+  if (!activeEditor->diskBacked) return false;
   const std::string newid = autoReloadIdentityForPath(activeEditor->filepath);
   // If file isn't there, just return and use current editor text
   if (newid.empty()) return false;
@@ -4572,9 +4574,22 @@ void MainWindow::setupErrorLog()
  */
 void MainWindow::setupEditor(const QStringList& filenames)
 {
-  tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
+  QString ctorFirst;
+  if (!filenames.isEmpty()) {
+    const QString& f0 = filenames[0];
+    if (!f0.startsWith(QStringLiteral(":session:")) && TabManager::isMissingDesignDocumentPath(f0)) {
+      deferredCliMissingFile = QFileInfo(f0).absoluteFilePath();
+    } else {
+      ctorFirst = f0;
+    }
+  }
+
+  tabManager = new TabManager(this, ctorFirst);
   activeEditor = tabManager->editor;
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
+  if (!deferredCliMissingFile.isEmpty()) {
+    tabManager->getTabContent()->hide();
+  }
 
   connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
   connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
@@ -5022,8 +5037,42 @@ void MainWindow::restoreWindowState()
 
 }
 
+void MainWindow::handleDeferredCliMissingFile()
+{
+  const QString path = deferredCliMissingFile;
+  deferredCliMissingFile.clear();
+
+  if (!TabManager::confirmCreateMissingDesignFile(this, path)) {
+    tabManager->getTabContent()->show();
+    activeEditor->setFocus();
+    return;
+  }
+
+  tabManager->prepareEditorBufferForNewDesignFile(activeEditor, path);
+
+  if (!tabManager->save(activeEditor, path)) {
+    tabManager->getTabContent()->show();
+    activeEditor->setFocus();
+    return;
+  }
+
+  activeEditor->resetLanguageDetection();
+  onLanguageActiveChanged(activeEditor->language);
+  tabManager->updateTabIcon(activeEditor);
+  const auto [fname, fpath] = tabManager->getEditorTabNameWithModifier(activeEditor);
+  tabManager->setEditorTabName(fname, fpath, activeEditor);
+  tabManager->getTabContent()->show();
+  onTabManagerEditorChanged(activeEditor);
+  onTabManagerEditorContentReloaded(activeEditor);
+  activeEditor->setFocus();
+}
+
 void MainWindow::openRemainingFiles(const QStringList& filenames)
 {
+  if (!deferredCliMissingFile.isEmpty()) {
+    handleDeferredCliMissingFile();
+  }
+
   for (int i = 1; i < filenames.size(); ++i) tabManager->createTab(filenames[i]);
   if (filenames.size() == 1 && filenames[0].startsWith(QStringLiteral(":session:"))) {
     int windowIndex = 0;
