@@ -804,19 +804,17 @@ void MainWindow::updateCompileResult()
       const QFileInfo fileInfo(activeEditor->filepath);
       msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
     }
-    toolButtonCompileResultIcon->setIcon(
-      QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
+    labelCompileResultIcon->setPixmap(QPixmap(QString(":/icons/information-icons-error.png")));
   } else {
     const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.",
                                compileWarnings);
     msg = QString(fmt).arg(compileWarnings);
-    toolButtonCompileResultIcon->setIcon(
-      QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
+    labelCompileResultIcon->setPixmap(QPixmap(QString(":/icons/information-icons-warning.png")));
   }
   const QFontMetrics fm(labelCompileResultMessage->font());
   const int sizeIcon = std::max(12, std::min(32, fm.height()));
   const int sizeClose = std::max(10, std::min(32, fm.height()) - 4);
-  toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
+  labelCompileResultIcon->setFixedSize(QSize(sizeIcon, sizeIcon));
   toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
   msg += _(
