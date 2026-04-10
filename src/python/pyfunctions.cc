@@ -3067,7 +3067,7 @@ PyObject *python_oo_children(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_children_core(obj);
 }
 
-PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
+PyObject *python_oversample_core(PyObject *obj, int n, const char *method)
 {
   PyObject *dummydict;
   PyTypeObject *type = PyOpenSCADObjectType(obj);
@@ -3081,8 +3081,8 @@ PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
   auto node = std::make_shared<OversampleNode>(instance);
   node->children.push_back(child);
   node->n = n;
-  node->round = 0;
-  if (round == Py_True) node->round = 1;
+  if (method != nullptr) node->method = method;
+  else node->method = "static";
 
   return PyOpenSCADObjectFromNode(type, node);
 }
@@ -3090,26 +3090,26 @@ PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
 PyObject *python_oversample(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   int n = 2;
-  char *kwlist[] = {"obj", "n", "round", NULL};
+  char *kwlist[] = {"obj", "n", "method", NULL};
   PyObject *obj = NULL;
-  PyObject *round = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi|O", kwlist, &obj, &n, &round)) {
+  const char *method = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi|s", kwlist, &obj, &n, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_oversample_core(obj, n, round);
+  return python_oversample_core(obj, n, method);
 }
 
 PyObject *python_oo_oversample(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   int n = 2;
-  char *kwlist[] = {"n", "round", NULL};
-  PyObject *round = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|O", kwlist, &n, &round)) {
+  char *kwlist[] = {"n", "method", NULL};
+  const char *method = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|s", kwlist, &n, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_oversample_core(obj, n, round);
+  return python_oversample_core(obj, n, method);
 }
 
 PyObject *python_debug_core(PyObject *obj, PyObject *faces)
