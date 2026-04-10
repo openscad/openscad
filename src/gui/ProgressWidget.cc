@@ -6,12 +6,15 @@
 ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
+  reset();
+}
+
+void ProgressWidget::reset()
+{
   setRange(0, 1000);
   setValue(0);
   this->wascanceled = false;
   this->starttime.start();
-
-  QTimer::singleShot(1000, this, &ProgressWidget::requestShow);
 }
 
 bool ProgressWidget::wasCanceled() const

@@ -115,8 +115,6 @@ public:
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
-  QLabel *versionLabel;
-
   Measurement::Measurement meas;
 
   int compileErrors;
@@ -137,6 +135,12 @@ private:
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                    EditorSelectionIndicatorStatus status);
+
+  QLabel *statusLabel;
+  QLabel *versionLabel;
+  ProgressWidget *progressWidget;
+
+  void updateStatusBar(bool isProgress);
 
   void setupWindow();
   void setupCoreSubsystems();
@@ -166,7 +170,6 @@ private slots:
   void updateReorderMode(bool reorderMode);
   void setFont(const QString& family, uint size);
   void setColorScheme(const QString& cs);
-  void showProgress();
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
@@ -238,7 +241,6 @@ private:
   void writeBackup(QFile *file);
   void show_examples();
   void addKeyboardShortCut(const QList<QAction *>& actions);
-  void updateStatusBar(ProgressWidget *progressWidget);
   void activateDock(Dock *);
   Dock *findVisibleDockToActivate(int offset) const;
   Dock *getNextDockFromSender(QObject *sender);
@@ -453,7 +455,6 @@ private:
   char const *afterCompileSlot;
   bool procevents{false};
   QTemporaryFile *tempFile{nullptr};
-  ProgressWidget *progresswidget{nullptr};
   CGALWorker *cgalworker;
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
