@@ -34,6 +34,21 @@ bool set_enum_value(json& o, const std::string& name, const EnumParameter::EnumI
     return false;
   }
 }
+Value resolveValue(const Expression *expr, const Context *context)
+{
+  if (context) {
+    try {
+      return expr->evaluate(context->get_shared_ptr());
+    } catch (...) {
+    }
+  }
+  if (const auto *lit = dynamic_cast<const Literal *>(expr)) {
+    if (lit->isBool()) return {lit->toBool()};
+    if (lit->isDouble()) return {lit->toDouble()};
+    if (lit->isString()) return {lit->toString()};
+  }
+  return Value::undef("Could not resolve static or dynamic expression");
+}
 
 }  // namespace
 
@@ -531,55 +546,38 @@ std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const Obj
   std::string description, group = "Parameters";
   bool isLocked = false;
   bool isHidden = false;
+  RawAttributes raw;
   const Expression *rangeExpr = nullptr;
   std::shared_ptr<Expression> lockedExpr;
   std::shared_ptr<Expression> hiddenExpr;
   std::set<std::string> tempDependencies;
+
   for (const auto& member : nativeObj->getMembers()) {
     std::string key = member->getName();
     const Expression *expr = member->getExpr().get();
 
-    if (key == "locked") {
-      lockedExpr = member->getExpr();
-    } else if (key == "hidden") {
-      hiddenExpr = member->getExpr();
-    } else {
-    }
+    if (key == "locked") lockedExpr = member->getExpr();
+    else if (key == "hidden") hiddenExpr = member->getExpr();
+    else if (key == "range") rangeExpr = expr;
+
     if (expr) {
       expr->collectDependencies(tempDependencies);
     }
 
-    if (context) {
-      try {
-        Value val = expr->evaluate(context->get_shared_ptr());
-        if (key == "description" || key == "desc") {
-          description = " " + val.toStrUtf8Wrapper().toString();
-        } else if (key == "group") {
-          group = val.toStrUtf8Wrapper().toString();
-        } else if (key == "locked") {
-          isLocked = val.toBool();
-        } else if (key == "hidden") {
-          isHidden = val.toBool();
-        } else if (key == "range" || key == "min" || key == "max" || key == "step") {
-          // TODO: add support for dynamic range expressions
-          rangeExpr = expr;
-        } else {
-          PRINT(Message("no such key " + key + " found", message_group::Error, member->location()));
-        }
-      } catch (...) {  // TODO: handle evaluation errors
-                       // if evaluation fails (e.g. variable not found), consume the error
-                       // and fall back to the static literal parsing.
+    Value val = resolveValue(expr, context);
+    if (val.isDefined()) {
+      if (key == "description" || key == "desc") description = " " + val.toStrUtf8Wrapper().toString();
+      else if (key == "group") group = val.toStrUtf8Wrapper().toString();
+      else if (key == "locked") isLocked = val.toBool();
+      else if (key == "hidden") isHidden = val.toBool();
+      else if (key == "min") raw.minimum = val.toDouble();
+      else if (key == "max") raw.maximum = val.toDouble();
+      else if (key == "step") raw.step = val.toDouble();
+      else if (key == "range") {
+      } else if (key == "slider") raw.sliderEnabled = val.toBool();
+      else {
+        PRINT(Message("no such key " + key + " found", message_group::Error, member->location()));
       }
-    }
-
-    if (description.empty() && key == "description") {
-      if (const auto *lit = dynamic_cast<const Literal *>(expr)) description = " " + lit->toString();
-    } else if (group == "Parameters" && key == "group") {
-      if (const auto *lit = dynamic_cast<const Literal *>(expr)) group = lit->toString();
-    }
-
-    if ((key == "range" || key == "min" || key == "max" || key == "step") && !rangeExpr) {
-      rangeExpr = expr;
     }
   }
 
@@ -591,6 +589,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const Obj
 
     param->setLockedExpression(lockedExpr);
     param->setHiddenExpression(hiddenExpr);
+
+    param->applyTypeAttributes(raw);
 
     param->getDependencies() = std::move(tempDependencies);
   }
@@ -706,4 +706,12 @@ void EnumParameter::updateContext(Context *context) const
   } else {
     context->set_variable(name_, Value(std::get<std::string>(itemValue)));
   }
+}
+
+void NumberParameter::applyTypeAttributes(const RawAttributes& raw)
+{
+  if (raw.sliderEnabled.has_value()) sliderEnabled_ = *raw.sliderEnabled;
+  if (raw.minimum.has_value()) minimum = *raw.minimum;
+  if (raw.maximum.has_value()) maximum = *raw.maximum;
+  if (raw.step.has_value()) step = *raw.step;
 }

@@ -473,7 +473,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
     widget = new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Number) {
     auto *numberParameter = static_cast<NumberParameter *>(parameter);
-    if (numberParameter->minimum && numberParameter->maximum) {
+    if (numberParameter->minimum && numberParameter->maximum && numberParameter->isSliderEnabled()) {
       widget = new ParameterSlider(this, numberParameter, descriptionStyle);
     } else {
       widget = new ParameterSpinBox(this, numberParameter, descriptionStyle);

@@ -9,6 +9,7 @@
 #include <set>
 
 #include "core/customizer/ParameterSet.h"
+#include "core/customizer/ParameterAttributes.h"
 #include "core/Expression.h"
 #include "json/json.hpp"
 using json = nlohmann::json;
@@ -56,6 +57,7 @@ public:
   std::set<std::string>& getDependencies() { return dependencies; }
 
   virtual void updateAttributes(const Context *context);
+  virtual void applyTypeAttributes(const RawAttributes& raw) {}
   void setLockedExpression(std::shared_ptr<Expression> expr) { lockedExpr = expr; }
   void setHiddenExpression(std::shared_ptr<Expression> expr) { hiddenExpr = expr; }
 
@@ -137,12 +139,17 @@ public:
   [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
   void updateContext(Context *context) const override;
+  void applyTypeAttributes(const RawAttributes& raw) override;
+
+  void setSliderEnabled(bool sliderEnabled) { sliderEnabled_ = sliderEnabled; }
+  [[nodiscard]] bool isSliderEnabled() const { return sliderEnabled_; }
 
   double value;
   double defaultValue;
   boost::optional<double> minimum;
   boost::optional<double> maximum;
   boost::optional<double> step;
+  bool sliderEnabled_ = true;
 };
 
 class VectorParameter : public ParameterObject
