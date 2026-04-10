@@ -152,24 +152,9 @@ void GLView::setupCamera()
   }
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-
-  // Manually implement gluLookAt using core GL functions for better GLAD compatibility
-  // This ensures the camera transformation works correctly
-  Vector3d eye(0.0, -dist, 0.0);
-  Vector3d center(0.0, 0.0, 0.0);
-  Vector3d up(0.0, 0.0, 1.0);
-
-  Vector3d f = (center - eye).normalized();
-  Vector3d s = (f.cross(up)).normalized();
-  Vector3d u = s.cross(f);
-
-  GLdouble mat[16] = {
-    s[0], u[0], -f[0], 0,
-    s[1], u[1], -f[1], 0,
-    s[2], u[2], -f[2], 0,
-    -s.dot(eye), -u.dot(eye), f.dot(eye), 1
-  };
-  glMultMatrixd(mat);
+  gluLookAt(0.0, -dist, 0.0,  // eye
+            0.0, 0.0, 0.0,    // center
+            0.0, 0.0, 1.0);   // up
 
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
