@@ -3067,7 +3067,7 @@ PyObject *python_oo_children(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_children_core(obj);
 }
 
-PyObject *python_oversample_core(PyObject *obj, int n, const char *method)
+PyObject *python_oversample_core(PyObject *obj, double n, const char *method)
 {
   PyObject *dummydict;
   PyTypeObject *type = PyOpenSCADObjectType(obj);
@@ -3089,11 +3089,11 @@ PyObject *python_oversample_core(PyObject *obj, int n, const char *method)
 
 PyObject *python_oversample(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  int n = 2;
+  double n = 2;
   char *kwlist[] = {"obj", "n", "method", NULL};
   PyObject *obj = NULL;
   const char *method = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi|s", kwlist, &obj, &n, &method)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|s", kwlist, &obj, &n, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -3102,10 +3102,10 @@ PyObject *python_oversample(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_oversample(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  int n = 2;
+  double n = 2;
   char *kwlist[] = {"n", "method", NULL};
   const char *method = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|s", kwlist, &n, &method)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|s", kwlist, &n, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }

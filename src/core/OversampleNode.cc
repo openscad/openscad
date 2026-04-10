@@ -43,12 +43,34 @@
 #include <src/geometry/GeometryEvaluator.h>
 #include <boost/functional/hash.hpp>
 #include <src/utils/hash.h>
-typedef std::vector<int> intList;
 
-double roundCoord(double c)
+class OverEdgeDb
 {
-  if (c > 0) return (int)(c * 1000 + 0.5) / 1000.0;
-  else return (int)(c * 1000 - 0.5) / 1000.0;
+public:
+  OverEdgeDb(int a, int b)
+  {
+    ind1 = (a < b) ? a : b;
+    ind2 = (a > b) ? a : b;
+  }
+  int ind1, ind2;
+  int operator==(const OverEdgeDb ref)
+  {
+    if (this->ind1 == ref.ind1 && this->ind2 == ref.ind2) return 1;
+    return 0;
+  }
+};
+
+unsigned int hash_value(const OverEdgeDb& r)
+{
+  unsigned int i;
+  i = r.ind1 | (r.ind2 << 16);
+  return i;
+}
+
+int operator==(const OverEdgeDb& t1, const OverEdgeDb& t2)
+{
+  if (t1.ind1 == t2.ind1 && t1.ind2 == t2.ind2) return 1;
+  return 0;
 }
 
 void ov_add_poly(PolySetBuilder& builder, Vector3d p)
@@ -56,9 +78,92 @@ void ov_add_poly(PolySetBuilder& builder, Vector3d p)
   builder.addVertex(builder.vertexIndex(p));
 }
 
-std::unique_ptr<const Geometry> ov_dynamic(const std::shared_ptr<const PolySet>& ps)
+std::unique_ptr<const Geometry> ov_dynamic(const std::shared_ptr<const PolySet>& ps, double limit)
 {
-  return std::make_unique<PolySet>(*ps);
+  // one round: walk all edges and test to sploit them
+  auto ps_work = PolySetUtils::tessellate_faces(*ps);
+
+  bool done = true;
+  while (done) {
+    done = false;
+    PolySet ps_new(3);
+    std::unordered_map<OverEdgeDb, int, boost::hash<OverEdgeDb>> edges;
+    ps_new.vertices = ps_work->vertices;
+
+    // decide which vertices to split
+    for (const auto& tri : ps_work->indices) {
+      int ind_old = tri[2];
+      for (int ind : tri) {
+        double dist = (ps_work->vertices[ind_old] - ps_work->vertices[ind]).norm();
+        printf("%d-%d %g\n", ind_old, ind, dist);
+        if (dist > limit) {
+          OverEdgeDb key(ind, ind_old);
+          if (edges.count(key) == 0) {
+            Vector3d pmid = (ps_work->vertices[ind_old] + ps_work->vertices[ind]) / 2;
+
+            int newind = ps_new.vertices.size();
+            ps_new.vertices.push_back(pmid);
+            printf("New midpt\n");
+            edges[key] = newind;
+            done = true;
+          }
+        }
+        ind_old = ind;
+      }
+      printf("---\n");
+    }
+    for (const auto& tri : ps_work->indices) {
+      int ind_old = tri[2];
+      int tri_mid[3];
+      for (int i = 0; i < 3; i++) {
+        int ind = tri[i];
+        OverEdgeDb key(ind, ind_old);
+        tri_mid[(i + 2) % 3] = (edges.count(key) > 0) ? tri_mid[(i + 2) % 3] = edges[key] : -1;
+        ind_old = ind;
+      }
+      switch (((tri_mid[0] >= 0) ? 1 : 0) | ((tri_mid[1] >= 0) ? 2 : 0) | ((tri_mid[2] >= 0) ? 4 : 0)) {
+      case 0:
+        ps_new.indices.push_back(tri);  // ok
+        break;
+      case 1:
+        ps_new.indices.push_back({tri[0], tri_mid[0], tri[2]});
+        ps_new.indices.push_back({tri[2], tri_mid[0], tri[1]});
+        break;
+      case 2:
+        ps_new.indices.push_back({tri[1], tri_mid[1], tri[0]});
+        ps_new.indices.push_back({tri[0], tri_mid[1], tri[2]});
+        break;
+      case 3:
+        ps_new.indices.push_back({tri[0], tri_mid[0], tri[2]});
+        ps_new.indices.push_back({tri[2], tri_mid[0], tri_mid[1]});
+        ps_new.indices.push_back({tri_mid[1], tri_mid[0], tri[1]});
+        break;
+      case 4:
+        ps_new.indices.push_back({tri[2], tri_mid[2], tri[1]});
+        ps_new.indices.push_back({tri[1], tri_mid[2], tri[0]});
+        break;
+      case 5:
+        ps_new.indices.push_back({tri[2], tri_mid[2], tri[1]});
+        ps_new.indices.push_back({tri[1], tri_mid[2], tri_mid[0]});
+        ps_new.indices.push_back({tri_mid[0], tri_mid[2], tri[0]});
+        break;
+      case 6:
+        ps_new.indices.push_back({tri[1], tri_mid[1], tri[0]});
+        ps_new.indices.push_back({tri[0], tri_mid[1], tri_mid[2]});
+        ps_new.indices.push_back({tri_mid[2], tri_mid[1], tri[2]});
+        break;
+      case 7:
+        ps_new.indices.push_back({tri[0], tri_mid[0], tri_mid[2]});
+        ps_new.indices.push_back({tri[1], tri_mid[1], tri_mid[0]});
+        ps_new.indices.push_back({tri[2], tri_mid[2], tri_mid[1]});
+        ps_new.indices.push_back({tri_mid[0], tri_mid[1], tri_mid[2]});
+        break;
+      }
+    }
+    if (done) *ps_work = ps_new;
+    // build new triangles from split vertices
+  }
+  return std::make_unique<PolySet>(*ps_work);
 }
 
 std::unique_ptr<const Geometry> ov_static(const std::shared_ptr<const PolySet>& ps, int n)
@@ -66,7 +171,7 @@ std::unique_ptr<const Geometry> ov_static(const std::shared_ptr<const PolySet>& 
   // tesselate object
   auto ps_tess = PolySetUtils::tessellate_faces(*ps);
   std::vector<Vector3d> pt_dir;
-  std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
+  std::unordered_map<Vector3d, int, boost::hash<Vector3d>> pointIntMap;
   PolySetBuilder builder_ov(0, 0, 3, true);
   for (size_t i = 0; i < ps_tess->indices.size(); i++) {
     auto& pol = ps_tess->indices[i];
@@ -114,6 +219,6 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
   std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
   std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (ps == nullptr) return std::unique_ptr<PolySet>();
-  if (this->method == "dynamic") return ov_dynamic(ps);
+  if (this->method == "dynamic") return ov_dynamic(ps, this->n);
   return ov_static(ps, this->n);
 }

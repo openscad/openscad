@@ -17,6 +17,6 @@ public:
   }
   std::string name() const override { return "oversample"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  int n;
+  double n;
   std::string method;
 };
