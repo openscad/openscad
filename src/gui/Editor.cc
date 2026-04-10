@@ -4,7 +4,6 @@
 
 #include "gui/Preferences.h"
 #include "gui/QSettingsCached.h"
-#include "genlang/genlang.h"
 
 void EditorInterface::recomputeLanguageActive()
 {

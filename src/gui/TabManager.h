@@ -31,7 +31,7 @@ public:
 
   // returns the name and tooltip of the tab for the given provided editor
   // if there is a path associated with an editor this is the filepath
-  // otherwise Untitled.scad
+  // otherwise Untitled.py or Untitled.scad according to editor language
   std::tuple<QString, QString> getEditorTabName(EditorInterface *edt);
 
   // returns the name and tooltip of the tab for the given provided editor with

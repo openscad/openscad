@@ -2472,7 +2472,14 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 {
   const QFileInfo activeFile(activeEditor->filepath);
   QString activeFileName = activeFile.fileName();
-  if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
+  if (activeFileName.isEmpty()) {
+#ifdef ENABLE_PYTHON
+    activeFileName = (activeEditor->language == LANG_PYTHON) ? QStringLiteral("Untitled.py")
+                                                             : QStringLiteral("Untitled.scad");
+#else
+    activeFileName = QStringLiteral("Untitled.scad");
+#endif
+  }
   // TODO: Replace suffix to match exported file format?
 
   activeFileName = activeFileName +
@@ -3982,8 +3989,15 @@ QString MainWindow::getCurrentFileName() const
   if (activeEditor == nullptr) return {};
 
   const QFileInfo fileInfo(activeEditor->filepath);
-  QString fname = _("Untitled.scad");
-  if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
+  if (!fileInfo.fileName().isEmpty()) {
+    return fileInfo.fileName().replace("&", "&&");
+  }
+#ifdef ENABLE_PYTHON
+  QString fname = (activeEditor->language == LANG_PYTHON) ? QStringLiteral("Untitled.py")
+                                                          : QStringLiteral("Untitled.scad");
+#else
+  QString fname = QStringLiteral("Untitled.scad");
+#endif
   return fname.replace("&", "&&");
 }
 

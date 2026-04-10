@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/IndicatorData.h"
+#include "genlang/language.h"
 #include "gui/parameter/ParameterWidget.h"
 
 enum class EditorSelectionIndicatorStatus { SELECTED, IMPACTED };
@@ -114,6 +115,6 @@ public:
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;
-  int language;
+  int language = LANG_SCAD;
   bool languageManuallySet = false;
 };
