@@ -161,7 +161,7 @@ in a comment on the issue.
 
 Prerequisites:
 
-* Xcode
+* Xcode Command Line Tools or Xcode
 * automake, libtool, cmake, pkg-config, wget, meson, python-packaging (we recommend installing these using Homebrew)
 
 Install Dependencies:
@@ -177,6 +177,12 @@ After building dependencies using one of the following options, follow the instr
     Then run the script to compile all the dependencies:
 
         ./scripts/macosx-build-dependencies.sh
+
+    **Apple Silicon (arm64):** Pass the `-a` flag to build arm64 dependencies:
+
+        ./scripts/macosx-build-dependencies.sh -a
+
+    The `-a` flag requires a native arm64 cmake binary. If you are using MacPorts (which provides an x86_64 cmake running under Rosetta 2), install the universal cmake from https://cmake.org/download/ — the script detects it automatically at `/Applications/CMake.app`.
 
 2. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
@@ -294,6 +300,17 @@ build-node/openscad.js --help
 First, run `cmake -B build -DEXPERIMENTAL=1` to generate a Makefile in the `build` folder.
 
 Then run `cmake --build build`. Finally, on Linux you might run `cmake --install build` as root.
+
+**macOS Apple Silicon with MacPorts:** MacPorts provides an x86_64 cmake (running under Rosetta 2), which causes cmake to find MacPorts x86_64 system libraries instead of arm64 ones. Use the native cmake from `/Applications/CMake.app` and point libxml2 at the SDK:
+
+```bash
+SDK=$(xcrun --sdk macosx --show-sdk-path)
+/Applications/CMake.app/Contents/bin/cmake -B build -DEXPERIMENTAL=1 \
+  -DQT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT=3.18 \
+  -DLIBXML2_LIBRARY="$SDK/usr/lib/libxml2.tbd" \
+  -DLIBXML2_INCLUDE_DIR="$SDK/usr/include/libxml2"
+/Applications/CMake.app/Contents/bin/cmake --build build
+```
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).

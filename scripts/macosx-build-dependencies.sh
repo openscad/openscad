@@ -232,7 +232,7 @@ build_double_conversion()
   tar xzf "double-conversion-$version.tar.gz"
   cd "double-conversion-$version"
   # TODO: CMAKE_POLICY_VERSION_MINIMUM is fixed upstream post-version 3.3.1
-  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.15 -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_POLICY_VERSION_MINIMUM=3.15 -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j$NUMCPU
   make install
 }
@@ -253,13 +253,27 @@ build_qt6()
 
   mkdir build
   cd build
+
+  # Qt6 detects cross-compilation when cmake's host arch != target arch and then
+  # requires QT_HOST_PATH. Use a native arm64 cmake (if found) so Qt6 sees a
+  # matching host/target and builds as a native compile instead.
+  if [[ -n "$NATIVE_CMAKE_DIR" ]]; then
+    PATH="$NATIVE_CMAKE_DIR:$PATH"
+    echo "Qt6: using native cmake at $NATIVE_CMAKE_DIR/cmake ($(file "$NATIVE_CMAKE_DIR/cmake" | grep -oE 'arm64|x86_64' | head -1))"
+  elif [[ " ${ARCHS[*]} " =~ " arm64 " ]]; then
+    echo "ERROR: Cannot build Qt6 for arm64 without a native arm64 cmake."
+    echo "See the installation instructions printed above."
+    exit 1
+  fi
+
   ../configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake tests -nomake examples \
     -submodules qtbase,qt5compat,qtmultimedia,qtsvg -skip qtquick3d,qtquicktimeline,qtdeclarative \
     -no-feature-sql -no-feature-glib \
 		-no-feature-linguist -no-feature-designer -no-feature-pixeltool -no-feature-assistant \
     -no-feature-distancefieldgenerator -no-feature-qtattributionsscanner -no-feature-qtplugininfo \
     -no-feature-qtdiag \
-    -- -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED_REV"
+    -no-feature-ffmpeg \
+    -- -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED_REV" -DQT_FORCE_MIN_CMAKE_VERSION_FOR_BUILDING_QT=3.18 -DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON
   ninja
   ninja install
 }
@@ -388,7 +402,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
-  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  cmake . $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
   if [[ $version =~ 4.* ]]; then
@@ -410,7 +424,7 @@ build_onetbb()
   cd oneTBB-$version
   mkdir build
   cd build  
-  cmake .. -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
+  cmake .. $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
 }
 
@@ -426,7 +440,7 @@ build_opencsg()
   cd OpenCSG-$version
   mkdir build
   cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_EXAMPLE=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" ..
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_EXAMPLE=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" ..
   make install
   install_name_tool -id @rpath/libopencsg.dylib $DEPLOYDIR/lib/libopencsg.dylib
 }
@@ -447,7 +461,7 @@ build_eigen()
   cd eigen-$version
   mkdir build
   cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_Fortran_COMPILER=NOTFOUND -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" ..
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_Fortran_COMPILER=NOTFOUND -DEIGEN_TEST_NOQT=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" ..
   make -j"$NUMCPU" install
 }
 
@@ -548,7 +562,7 @@ build_libzip()
   fi
   tar xzf "libzip-$version.tar.gz"
   cd "libzip-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DENABLE_GNUTLS=OFF -DENABLE_ZSTD=OFF .
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DENABLE_GNUTLS=OFF -DENABLE_ZSTD=OFF -DZLIB_ROOT=$MACOS_SDK/usr .
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
@@ -573,7 +587,11 @@ build_fontconfig()
     cd build-$arch
     # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
     # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2  --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_func_mkostemp=no
+    PKG_CONFIG_LIBDIR=$DEPLOYDIR/lib/pkgconfig \
+    ../configure --prefix=$DEPLOYDIR \
+      CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -I$DEPLOYDIR/include" \
+      LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -L$DEPLOYDIR/lib -Wl,-rpath,$DEPLOYDIR/lib" \
+      --without-libxml2 --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_func_mkostemp=no
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -642,7 +660,7 @@ build_pcre2()
   tar xzf "pcre2-$version.tar.bz2"
   cd "pcre2-$version"
 
-  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
+  cmake . $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
   make install
 }
@@ -692,7 +710,8 @@ build_libgraphite2()
  fi
  tar xzf graphite-$version.tar.gz
   cd graphite-$version
-  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  patch -p1 < $OPENSCADDIR/patches/graphite2-arm64.patch
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }
@@ -779,9 +798,10 @@ build_lib3mf()
  tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
   patch -p1 < $OPENSCADDIR/patches/lib3mf-macos.patch
-  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  cmake $CMAKE_TOOLCHAIN_ARGS -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DZLIB_ROOT=$MACOS_SDK/usr .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
+  install_name_tool -id @rpath/lib3mf.2.dylib $DEPLOYDIR/lib/lib3mf.2.dylib
 }
 
 build_pixman()
@@ -878,7 +898,7 @@ build_clipper2()
 
   mkdir build
   cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DCLIPPER2_UTILS=OFF -DCLIPPER2_EXAMPLES=OFF -DCLIPPER2_TESTS=OFF -DBUILD_SHARED_LIBS=ON ../CPP
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DCLIPPER2_UTILS=OFF -DCLIPPER2_EXAMPLES=OFF -DCLIPPER2_TESTS=OFF -DBUILD_SHARED_LIBS=ON ../CPP
   make -j$NUMCPU
   make install
 }
@@ -895,7 +915,7 @@ build_manifold()
 
   mkdir build
   cd build
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DMANIFOLD_CBIND=OFF -DMANIFOLD_TEST=OFF -DMANIFOLD_PAR=ON ..
+  cmake $CMAKE_TOOLCHAIN_ARGS -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DMANIFOLD_CBIND=OFF -DMANIFOLD_TEST=OFF -DMANIFOLD_PAR=ON ..
   make -j$NUMCPU
   make install
 }
@@ -994,6 +1014,55 @@ ARCHS_COMBINED_REV=$(IFS=\; ; echo "${ARCHS_REV[*]}")
 echo "Building on $LOCAL_ARCH for $ARCHS_COMBINED"
 
 echo "Building for macOS $MAC_OSX_VERSION_MIN or later"
+
+# Export environment variables used by the cmake arm64 toolchain file.
+# When cmake is an x86_64 binary (e.g. from MacPorts running under Rosetta),
+# it auto-discovers MacPorts x86_64 libraries. The toolchain file redirects
+# cmake to search the macOS SDK and DEPLOYDIR first.
+export DEPLOYDIR
+export MACOS_SDK=$(xcrun --sdk macosx --show-sdk-path)
+if [[ " ${ARCHS[*]} " =~ " arm64 " ]]; then
+  CMAKE_TOOLCHAIN_ARGS="-DCMAKE_TOOLCHAIN_FILE=$OPENSCADDIR/scripts/macos-cmake-arm64-toolchain.cmake"
+else
+  CMAKE_TOOLCHAIN_ARGS=""
+fi
+
+# Qt6 detects cross-compilation when cmake's host arch differs from the target arch.
+# MacPorts cmake is x86_64 (Rosetta), so Qt6 sees host=x86_64 vs target=arm64 and
+# requires QT_HOST_PATH. A native arm64 cmake avoids this. Find one if available.
+NATIVE_CMAKE_DIR=""
+if [[ " ${ARCHS[*]} " =~ " arm64 " ]]; then
+  # A universal binary runs natively on arm64 hardware, so treat it as arm64-capable.
+  _is_arm64_cmake() {
+    local info
+    info=$(file "$1" 2>/dev/null)
+    echo "$info" | grep -qE 'universal binary|arm64'
+  }
+  if _is_arm64_cmake "$(command -v cmake)"; then
+    NATIVE_CMAKE_DIR=$(dirname "$(command -v cmake)")
+  else
+    for _candidate in /Applications/CMake.app/Contents/bin /opt/homebrew/bin; do
+      if [[ -x "$_candidate/cmake" ]] && _is_arm64_cmake "$_candidate/cmake"; then
+        NATIVE_CMAKE_DIR="$_candidate"
+        break
+      fi
+    done
+  fi
+  if [[ -z "$NATIVE_CMAKE_DIR" ]]; then
+    echo ""
+    echo "NOTE: No native arm64 cmake found. Qt6 requires a native arm64 cmake binary"
+    echo "to avoid cross-compilation mode (triggered when cmake host arch != target arch)."
+    echo "Install one before building Qt6:"
+    echo "  Option 1: cmake.org universal DMG — https://cmake.org/download/"
+    echo "    sudo \"/Applications/CMake.app/Contents/bin/cmake-gui\" --install"
+    echo "    (or prepend /Applications/CMake.app/Contents/bin to PATH)"
+    echo "  Option 2: Native arm64 Homebrew at /opt/homebrew"
+    echo "    /opt/homebrew/bin/brew install cmake"
+    echo ""
+  else
+    echo "Using native arm64 cmake for Qt6: $NATIVE_CMAKE_DIR/cmake"
+  fi
+fi
 
 if [ ! $NUMCPU ]; then
   NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))

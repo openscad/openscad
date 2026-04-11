@@ -6,6 +6,7 @@ endian = 'little'
 
 [properties]
 needs_exe_wrapper = true
+pkg_config_libdir = '@DEPLOYDIR@/lib/pkgconfig'
 
 [binaries]
 c = 'cc'
