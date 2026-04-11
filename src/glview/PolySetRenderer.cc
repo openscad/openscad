@@ -312,12 +312,14 @@ std::shared_ptr<SelectedObject> PolySetRenderer::findModelObject(const Vector3d&
   double dist_nearest = NAN;
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
+  int ind_nearest;
 
   // This only considers vertices near the line containing near_pt and far_pt, and chooses either the
   // first one it iterates past which is on the near side of `near_pt` (due to clamping of dist_near) or
   // the one with the closest tangent intersection to `near_pt`, if none are on the near side.
   for (const auto& ps : this->polysets_) {
-    for (const auto& pt : ps->vertices) {
+    for (int ind = 0; ind < ps->vertices.size(); ind++) {
+      const auto& pt = ps->vertices[ind];
       double dist_near;
       SelectedObject ruler = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
       const double dist_pt = (ruler.pt[0] - ruler.pt[1]).norm();
@@ -325,13 +327,15 @@ std::shared_ptr<SelectedObject> PolySetRenderer::findModelObject(const Vector3d&
         if (isnan(dist_nearest) || dist_near < dist_nearest) {
           dist_nearest = dist_near;
           pt1_nearest = pt;
+          ind_nearest = ind;
         }
       }
     }
   }
   if (!isnan(dist_nearest)) {
     // We found an acceptable vertex.
-    const SelectedObject obj = {.type = SelectionType::SELECTION_POINT, .pt = {pt1_nearest}};
+    const SelectedObject obj = {
+      .ind = ind_nearest, .type = SelectionType::SELECTION_POINT, .pt = {pt1_nearest}};
     return std::make_shared<SelectedObject>(obj);
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets_) {
@@ -359,8 +363,7 @@ std::shared_ptr<SelectedObject> PolySetRenderer::findModelObject(const Vector3d&
 
   if (!isnan(dist_nearest)) {
     // We found an acceptable line segment.
-    const SelectedObject obj = {.type = SelectionType::SELECTION_LINE,
-                                .pt = {pt1_nearest, pt2_nearest}};
+    const SelectedObject obj = {.type = SelectionType::SELECTION_LINE, .pt = {pt1_nearest, pt2_nearest}};
     return std::make_shared<SelectedObject>(obj);
   }
 
