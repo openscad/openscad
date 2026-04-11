@@ -29,7 +29,9 @@
 #include <QtCore/qstringliteral.h>
 
 #include <QDialog>
+#include <QCoreApplication>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QGuiApplication>
@@ -199,6 +201,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
         char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   configureOpenGLContext();
+#ifdef Q_OS_MACOS
+  CocoaUtils::prepareOpenFileHandler();
+#endif
   OpenSCADApp app(argc, argv);
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
@@ -281,6 +286,31 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
                    &OpenSCADApp::setRenderBackend3D);
 
   set_render_color_scheme(arg_colorscheme, false);
+  auto appendQueuedOpenFiles = [&]() {
+#ifdef Q_OS_MACOS
+    const bool waitingForStartupOpen =
+      inputFiles.empty() || (inputFiles.size() == 1 && inputFiles.front().empty());
+
+    // macOS can deliver the initial QFileOpenEvent while the app is still starting.
+    // Drain it before deciding whether to show the launcher or create an empty window.
+    QStringList queuedOpenFiles;
+    QElapsedTimer timer;
+    timer.start();
+    do {
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+      queuedOpenFiles = app.takeQueuedOpenFiles();
+    } while (waitingForStartupOpen && queuedOpenFiles.isEmpty() && timer.elapsed() < 250);
+
+    if (!queuedOpenFiles.isEmpty() && inputFiles.size() == 1 && inputFiles.front().empty()) {
+      inputFiles.clear();
+    }
+    for (const auto& file : queuedOpenFiles) {
+      inputFiles.push_back(file.toStdString());
+    }
+#endif
+  };
+  appendQueuedOpenFiles();
+
   auto noInputFiles = false;
 
   if (!inputFiles.size()) {
@@ -315,6 +345,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
       return 0;
     }
   }
+
+  appendQueuedOpenFiles();
 
   QStringList inputFilesList;
   for (const auto& infile : inputFiles) {

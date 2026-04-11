@@ -1,8 +1,12 @@
 #include "gui/OpenSCADApp.h"
 
+#include <QMetaObject>
+
+#include "gui/LaunchingScreen.h"
 #include "gui/MainWindow.h"
 #ifdef Q_OS_MACOS
 #include "gui/EventFilter.h"
+#include "platform/CocoaUtils.h"
 #endif
 
 #include "geometry/GeometryCache.h"
@@ -25,6 +29,7 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 {
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
+  CocoaUtils::installOpenFileHandler();
 #endif
 
   // Note: It may be tempting to add more initialization code here, but keep in mind that this is run as
@@ -58,6 +63,40 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
 }
 
 /*!
+   Handles a file-open request from macOS or Qt.
+ */
+void OpenSCADApp::handleOpenFileEvent(const QString& filename)
+{
+  if (filename.isEmpty()) {
+    return;
+  }
+
+#ifdef Q_OS_MACOS
+  if (LaunchingScreen *launcher = LaunchingScreen::getDialog()) {
+    QMetaObject::invokeMethod(launcher, "openFile", Qt::QueuedConnection, Q_ARG(QString, filename));
+    return;
+  }
+#endif
+
+  if (this->windowManager.getWindows().empty()) {
+    this->queueOpenFile(filename);
+    return;
+  }
+
+  this->requestOpenFile(filename);
+}
+
+/*!
+   Queues a file-open request until startup has produced a launcher or window.
+ */
+void OpenSCADApp::queueOpenFile(const QString& filename)
+{
+  if (!filename.isEmpty() && !this->queuedOpenFiles.contains(filename)) {
+    this->queuedOpenFiles.append(filename);
+  }
+}
+
+/*!
    Requests to open a file from an external event, e.g. by double-clicking a filename.
  */
 void OpenSCADApp::requestOpenFile(const QString& filename)
@@ -72,6 +111,13 @@ void OpenSCADApp::requestOpenFile(const QString& filename)
 
   // ..otherwise, create a new one
   new MainWindow(QStringList(filename));
+}
+
+QStringList OpenSCADApp::takeQueuedOpenFiles()
+{
+  const QStringList queued = this->queuedOpenFiles;
+  this->queuedOpenFiles.clear();
+  return queued;
 }
 
 void OpenSCADApp::showFontCacheDialog()
