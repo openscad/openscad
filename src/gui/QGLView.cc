@@ -274,6 +274,7 @@ void QGLView::paintGL()
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
+  mouse_moved = false;
   if (!mouse_drag_active) {
     mouse_drag_moved = false;
   }
@@ -395,6 +396,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   }
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
+  if (dx != 0 || dy != 0) mouse_moved = true;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -518,7 +520,7 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   }
   mouseDraggedSel = nullptr;
 
-  if (!mouse_drag_moved) {
+  if (!mouse_moved) {
     if (event->button() == Qt::RightButton) {
       QPoint point = event->pos();
       emit doRightClick(point);
@@ -529,6 +531,7 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
     }
   }
   mouse_drag_moved = false;
+  mouse_moved = false;
 }
 
 const QImage& QGLView::grabFrame()

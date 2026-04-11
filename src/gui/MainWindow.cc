@@ -2701,6 +2701,9 @@ void MainWindow::rightClick(QPoint position)
     return;
   }
 
+  if (this->csgworker->isStarted()) {  // results are not stable when python is running
+    return;
+  }
   // Select the object at mouse coordinates
   const int index = this->qglview->pickObject(position);
   std::deque<std::shared_ptr<const AbstractNode>> path;
