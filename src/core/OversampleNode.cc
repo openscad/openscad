@@ -43,169 +43,33 @@
 #include <src/geometry/GeometryEvaluator.h>
 #include <boost/functional/hash.hpp>
 #include <src/utils/hash.h>
+typedef std::vector<int> intList;
 
-class OverEdgeDb
+double roundCoord(double c)
 {
-public:
-  OverEdgeDb(int a, int b)
-  {
-    ind1 = (a < b) ? a : b;
-    ind2 = (a > b) ? a : b;
-  }
-  int ind1, ind2;
-  int operator==(const OverEdgeDb ref)
-  {
-    if (this->ind1 == ref.ind1 && this->ind2 == ref.ind2) return 1;
-    return 0;
-  }
-};
-
-unsigned int hash_value(const OverEdgeDb& r)
-{
-  unsigned int i;
-  i = r.ind1 | (r.ind2 << 16);
-  return i;
+  if (c > 0) return (int)(c * 1000 + 0.5) / 1000.0;
+  else return (int)(c * 1000 - 0.5) / 1000.0;
 }
 
-int operator==(const OverEdgeDb& t1, const OverEdgeDb& t2)
+void ov_add_poly_round(PolySetBuilder& builder,
+                       std::unordered_map<Vector3d, Vector3d, boost::hash<Vector3d> >& weldMap,
+                       Vector3d p, const Vector3d& center, double r, int round, int orgpt)
 {
-  if (t1.ind1 == t2.ind1 && t1.ind2 == t2.ind2) return 1;
-  return 0;
-}
+  if (round && !orgpt) {
+    p[0] = roundCoord(p[0]);
+    p[1] = roundCoord(p[1]);
+    p[2] = roundCoord(p[2]);
 
-void ov_add_poly(PolySetBuilder& builder, Vector3d p)
-{
-  builder.addVertex(builder.vertexIndex(p));
-}
-
-std::unique_ptr<const Geometry> ov_dynamic(const std::shared_ptr<const PolySet>& ps, double limit)
-{
-  // one round: walk all edges and test to sploit them
-  auto ps_work = PolySetUtils::tessellate_faces(*ps);
-
-  bool done = true;
-  while (done) {
-    done = false;
-    PolySet ps_new(3);
-    std::unordered_map<OverEdgeDb, int, boost::hash<OverEdgeDb>> edges;
-    ps_new.vertices = ps_work->vertices;
-
-    // decide which vertices to split
-    for (const auto& tri : ps_work->indices) {
-      int ind_old = tri[2];
-      for (int ind : tri) {
-        double dist = (ps_work->vertices[ind_old] - ps_work->vertices[ind]).norm();
-        printf("%d-%d %g\n", ind_old, ind, dist);
-        if (dist > limit) {
-          OverEdgeDb key(ind, ind_old);
-          if (edges.count(key) == 0) {
-            Vector3d pmid = (ps_work->vertices[ind_old] + ps_work->vertices[ind]) / 2;
-
-            int newind = ps_new.vertices.size();
-            ps_new.vertices.push_back(pmid);
-            printf("New midpt\n");
-            edges[key] = newind;
-            done = true;
-          }
-        }
-        ind_old = ind;
-      }
-      printf("---\n");
-    }
-    for (const auto& tri : ps_work->indices) {
-      int ind_old = tri[2];
-      int tri_mid[3];
-      for (int i = 0; i < 3; i++) {
-        int ind = tri[i];
-        OverEdgeDb key(ind, ind_old);
-        tri_mid[(i + 2) % 3] = (edges.count(key) > 0) ? tri_mid[(i + 2) % 3] = edges[key] : -1;
-        ind_old = ind;
-      }
-      switch (((tri_mid[0] >= 0) ? 1 : 0) | ((tri_mid[1] >= 0) ? 2 : 0) | ((tri_mid[2] >= 0) ? 4 : 0)) {
-      case 0:
-        ps_new.indices.push_back(tri);  // ok
-        break;
-      case 1:
-        ps_new.indices.push_back({tri[0], tri_mid[0], tri[2]});
-        ps_new.indices.push_back({tri[2], tri_mid[0], tri[1]});
-        break;
-      case 2:
-        ps_new.indices.push_back({tri[1], tri_mid[1], tri[0]});
-        ps_new.indices.push_back({tri[0], tri_mid[1], tri[2]});
-        break;
-      case 3:
-        ps_new.indices.push_back({tri[0], tri_mid[0], tri[2]});
-        ps_new.indices.push_back({tri[2], tri_mid[0], tri_mid[1]});
-        ps_new.indices.push_back({tri_mid[1], tri_mid[0], tri[1]});
-        break;
-      case 4:
-        ps_new.indices.push_back({tri[2], tri_mid[2], tri[1]});
-        ps_new.indices.push_back({tri[1], tri_mid[2], tri[0]});
-        break;
-      case 5:
-        ps_new.indices.push_back({tri[2], tri_mid[2], tri[1]});
-        ps_new.indices.push_back({tri[1], tri_mid[2], tri_mid[0]});
-        ps_new.indices.push_back({tri_mid[0], tri_mid[2], tri[0]});
-        break;
-      case 6:
-        ps_new.indices.push_back({tri[1], tri_mid[1], tri[0]});
-        ps_new.indices.push_back({tri[0], tri_mid[1], tri_mid[2]});
-        ps_new.indices.push_back({tri_mid[2], tri_mid[1], tri[2]});
-        break;
-      case 7:
-        ps_new.indices.push_back({tri[0], tri_mid[0], tri_mid[2]});
-        ps_new.indices.push_back({tri[1], tri_mid[1], tri_mid[0]});
-        ps_new.indices.push_back({tri[2], tri_mid[2], tri_mid[1]});
-        ps_new.indices.push_back({tri_mid[0], tri_mid[1], tri_mid[2]});
-        break;
-      }
-    }
-    if (done) *ps_work = ps_new;
-    // build new triangles from split vertices
-  }
-  return std::make_unique<PolySet>(*ps_work);
-}
-
-std::unique_ptr<const Geometry> ov_static(const std::shared_ptr<const PolySet>& ps, int n)
-{
-  // tesselate object
-  auto ps_tess = PolySetUtils::tessellate_faces(*ps);
-  std::vector<Vector3d> pt_dir;
-  std::unordered_map<Vector3d, int, boost::hash<Vector3d>> pointIntMap;
-  PolySetBuilder builder_ov(0, 0, 3, true);
-  for (size_t i = 0; i < ps_tess->indices.size(); i++) {
-    auto& pol = ps_tess->indices[i];
-    Vector3d p1 = ps_tess->vertices[pol[0]];
-    Vector3d p2 = ps_tess->vertices[pol[1]];
-    Vector3d p3 = ps_tess->vertices[pol[2]];
-    Vector3d p21 = (p2 - p1) / n;
-    Vector3d p31 = (p3 - p1) / n;
-    Vector3d botlast, botcur, toplast, topcur;
-    double r = 1.0;
-    Vector3d center(0, 0, 0);
-    for (int j = 0; j < n; j++) {
-      botcur = p1 + p31 * j;
-      topcur = p1 + p31 * (j + 1);
-
-      for (int k = 0; k < n - j; k++) {
-        if (k != 0) {
-          toplast = topcur;
-          topcur = topcur + p21;
-          builder_ov.beginPolygon(3);
-          ov_add_poly(builder_ov, botcur);
-          ov_add_poly(builder_ov, topcur);
-          ov_add_poly(builder_ov, toplast);
-        }
-        botlast = botcur;
-        botcur = botlast + p21;
-        builder_ov.beginPolygon(3);
-        ov_add_poly(builder_ov, botlast);
-        ov_add_poly(builder_ov, botcur);
-        ov_add_poly(builder_ov, topcur);
-      }
+    Vector3d diff = p - center;
+    diff.normalize();
+    Vector3d pnew = center + diff * r;
+    if (weldMap.count(p) == 0) {
+      weldMap[p] = pnew;
+    } else {
+      weldMap[p] = (weldMap[p] + pnew) / 2.0;
     }
   }
-  return builder_ov.build();
+  builder.addVertex(builder.vertexIndex(Vector3d(p[0], p[1], p[2])));
 }
 
 std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
@@ -217,8 +81,124 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
   Tree tree(child, "");
   GeometryEvaluator geomevaluator(tree);
   std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
-  if (ps == nullptr) return std::unique_ptr<PolySet>();
-  if (this->method == "dynamic") return ov_dynamic(ps, this->n);
-  return ov_static(ps, this->n);
+  std::shared_ptr<const PolySet> ps = std::dynamic_pointer_cast<const PolySet>(geom);
+  // tesselate object
+  auto ps_tess = PolySetUtils::tessellate_faces(*ps);
+  std::vector<Vector3d> pt_dir;
+  std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
+  std::unordered_map<Vector3d, Vector3d, boost::hash<Vector3d> > weldMap;
+  if (this->round == 1) {
+    // create indexed point list
+    std::vector<Vector3d> pointList;       // list of all the points in the object
+    std::vector<Vector3d> pointListNew;    // list of all the points in the object
+    std::vector<intList> polygons;         // list polygons represented by indexes
+    std::vector<intList> pointToFaceInds;  //  mapping pt_ind -> list of polygon inds which use it
+    std::vector<intList> pointToFacePoss;  //  mapping pt_ind -> list of polygon inds which use it
+    intList emptyList;
+    for (size_t i = 0; i < ps_tess->indices.size(); i++) {
+      auto pol = ps_tess->indices[i];
+      intList polygon;
+      for (size_t j = 0; j < pol.size(); j++) {
+        int ptind = 0;
+        Vector3d pt = ps_tess->vertices[pol[j]];
+        pt[0] = roundCoord(pt[0]);
+        pt[1] = roundCoord(pt[1]);
+        pt[2] = roundCoord(pt[2]);
+        if (!pointIntMap.count(pt)) {
+          pointList.push_back(pt);
+          pointToFaceInds.push_back(emptyList);
+          pointToFacePoss.push_back(emptyList);
+          ptind = pointList.size() - 1;
+          pointIntMap[pt] = ptind;
+        } else ptind = pointIntMap[pt];
+        polygon.push_back(ptind);
+        pointToFaceInds[ptind].push_back(i);
+        pointToFacePoss[ptind].push_back(j);
+      }
+      polygons.push_back(polygon);
+    }
+    // for each vertex, calculate the dir
+    for (size_t i = 0; i < pointList.size(); i++) {
+      Vector3d dir(0, 0, 0);
+      for (size_t j = 0; j < pointToFaceInds[i].size(); j++) {
+        int polind = pointToFaceInds[i][j];
+        int polptind = pointToFacePoss[i][j];
+        int n = polygons[polind].size();
+        Vector3d p0 = pointList[polygons[polind][(polptind + n - 1) % n]];
+        Vector3d p1 = pointList[polygons[polind][polptind]];
+        Vector3d p2 = pointList[polygons[polind][(polptind + 1) % n]];
+        Vector3d d1 = p1 - p0;
+        Vector3d d2 = p1 - p2;
+        Vector3d norm = d2.cross(d1).normalized();
+        double ang = acos(d1.dot(d2) / (d1.norm() * d2.norm()));
+        dir = dir + norm * ang;
+      }
+      dir.normalize();
+      pt_dir.push_back(dir);
+    }
+  }
+  PolySetBuilder builder_ov(0, 0, 3, true);
+  for (size_t i = 0; i < ps_tess->indices.size(); i++) {
+    auto& pol = ps_tess->indices[i];
+    Vector3d p1 = ps_tess->vertices[pol[0]];
+    Vector3d p2 = ps_tess->vertices[pol[1]];
+    Vector3d p3 = ps_tess->vertices[pol[2]];
+    Vector3d p21 = (p2 - p1) / this->n;
+    Vector3d p31 = (p3 - p1) / this->n;
+    Vector3d botlast, botcur, toplast, topcur;
+    double r = 1.0;
+    Vector3d center(0, 0, 0);
+    int round1 = this->round;
+    if (round1) {
+      Vector3d cutmean(0, 0, 0);
+      int results = 0;
+      for (int j = 0; j < 3; j++) {  // for all 3 edges
+        Vector3d dir1 = ps_tess->vertices[pol[(j + 2) % 3]] - ps_tess->vertices[pol[(j + 1) % 3]];
+        Vector3d dir2 = pt_dir[pointIntMap[ps_tess->vertices[pol[(j + 1) % 3]]]];
+        Vector3d cut;
+        if (!cut_face_line(ps_tess->vertices[pol[(j + 1) % 3]], dir1.cross(dir2),
+                           ps_tess->vertices[pol[j]], pt_dir[pointIntMap[ps_tess->vertices[pol[j]]]],
+                           cut, NULL)) {
+          cutmean = cutmean + cut;
+          results++;
+        }
+      }
+      if (results > 0) {
+        center = cutmean * (1.0 / results);
+        r = (center - p1).norm();  // TODO hier faktor overround
+      } else round1 = 0;
+      //
+    }
+    for (int j = 0; j < this->n; j++) {
+      botcur = p1 + p31 * j;
+      topcur = p1 + p31 * (j + 1);
+
+      for (int k = 0; k < this->n - j; k++) {
+        if (k != 0) {
+          toplast = topcur;
+          topcur = topcur + p21;
+          builder_ov.beginPolygon(3);
+          ov_add_poly_round(builder_ov, weldMap, botcur, center, r, round1, 0);
+          ov_add_poly_round(builder_ov, weldMap, topcur, center, r, round1, 0);
+          ov_add_poly_round(builder_ov, weldMap, toplast, center, r, round1, 0);
+        }
+        botlast = botcur;
+        botcur = botlast + p21;
+        builder_ov.beginPolygon(3);
+        ov_add_poly_round(builder_ov, weldMap, botlast, center, r, round1, j == 0 && k == 0);
+        ov_add_poly_round(builder_ov, weldMap, botcur, center, r, round1, j == 0 && k == this->n - 1);
+        ov_add_poly_round(builder_ov, weldMap, topcur, center, r, round1, j == this->n - 1);
+      }
+    }
+  }
+  auto ps_ov = builder_ov.build();
+  for (size_t i = 0; i < ps_ov->indices.size(); i++) {
+    for (size_t j = 0; j < ps_ov->indices[i].size(); j++) {
+      Vector3d pt = ps_ov->vertices[ps_ov->indices[i][j]];
+      if (weldMap.count(pt) > 0) {
+        ps_ov->vertices[ps_ov->indices[i][j]] = weldMap[pt];
+      }
+    }
+  }
+  return ps_ov;
 }
