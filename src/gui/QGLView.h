@@ -80,6 +80,7 @@ public:
 private:
   void init();
 
+  bool mouse_moved = false;
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;

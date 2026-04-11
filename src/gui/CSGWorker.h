@@ -10,6 +10,7 @@ class CSGWorker : public QObject
 
 public:
   CSGWorker(MainWindow *main);
+  bool isStarted() { return started > 0; }
   ~CSGWorker() override;
 
 public slots:
