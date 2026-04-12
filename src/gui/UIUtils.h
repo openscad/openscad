@@ -92,4 +92,6 @@ QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& ble
 
 void dumpSaveState(const QByteArray& data);
 
+void dumpPalette(const QPalette& p);
+
 }  // namespace UIUtils

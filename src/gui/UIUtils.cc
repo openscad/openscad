@@ -490,3 +490,21 @@ void UIUtils::dumpSaveState(const QByteArray&)
 {
 }
 #endif  // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+void UIUtils::dumpPalette(const QPalette& p)
+{
+  for (int ri = 0; ri < QPalette::NColorRoles; ri++) {
+    QPalette::ColorRole r = (QPalette::ColorRole)ri;
+    printf("%2d", r);
+    for (int gi = 0; gi < QPalette::NColorGroups; gi++) {
+      QPalette::ColorGroup g = (QPalette::ColorGroup)gi;
+      if (p.isBrushSet(g, r)) {
+        printf("  %s ", qPrintable(p.color(g, r).name()));
+      } else {
+        printf(" (%s)", qPrintable(p.color(g, r).name()));
+      }
+    }
+    printf("\n");
+  }
+  fflush(stdout);
+}
