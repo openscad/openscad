@@ -31,7 +31,7 @@
 #include <QDialog>
 #include <QCoreApplication>
 #include <QDir>
-#include <QElapsedTimer>
+#include <QEventLoop>
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QGuiApplication>
@@ -39,6 +39,7 @@
 #include <QObject>
 #include <QPalette>
 #include <QSurfaceFormat>
+#include <QTimer>
 #include <QStringList>
 #include <QStyleHints>
 #include <Qt>
@@ -283,30 +284,30 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
                    &OpenSCADApp::setRenderBackend3D);
 
   set_render_color_scheme(arg_colorscheme, false);
-  auto appendQueuedOpenFiles = [&]() {
-#ifdef Q_OS_MACOS
+  auto waitForQueuedStartupOpen = [&]() {
     const bool waitingForStartupOpen =
       inputFiles.empty() || (inputFiles.size() == 1 && inputFiles.front().empty());
 
-    // macOS can deliver the initial QFileOpenEvent while the app is still starting.
-    // Drain it before deciding whether to show the launcher or create an empty window.
-    QStringList queuedOpenFiles;
-    QElapsedTimer timer;
-    timer.start();
-    do {
-      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-      queuedOpenFiles = app.takeQueuedOpenFiles();
-    } while (waitingForStartupOpen && queuedOpenFiles.isEmpty() && timer.elapsed() < 250);
+    if (!waitingForStartupOpen || app.hasQueuedOpenFiles()) {
+      return;
+    }
 
+    QEventLoop loop;
+    QTimer::singleShot(0, &loop, &QEventLoop::quit);
+    QObject::connect(&app, &OpenSCADApp::queuedOpenFilesAvailable, &loop, &QEventLoop::quit);
+    loop.exec();
+  };
+  auto mergeQueuedOpenFiles = [&]() {
+    const QStringList queuedOpenFiles = app.takeQueuedOpenFiles();
     if (!queuedOpenFiles.isEmpty() && inputFiles.size() == 1 && inputFiles.front().empty()) {
       inputFiles.clear();
     }
     for (const auto& file : queuedOpenFiles) {
       inputFiles.push_back(file.toStdString());
     }
-#endif
   };
-  appendQueuedOpenFiles();
+  waitForQueuedStartupOpen();
+  mergeQueuedOpenFiles();
 
   auto noInputFiles = false;
 
@@ -343,7 +344,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     }
   }
 
-  appendQueuedOpenFiles();
+  waitForQueuedStartupOpen();
+  mergeQueuedOpenFiles();
 
   QStringList inputFilesList;
   for (const auto& infile : inputFiles) {

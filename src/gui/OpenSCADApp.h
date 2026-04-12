@@ -20,6 +20,7 @@ public:
   ~OpenSCADApp() override;
 
   bool notify(QObject *object, QEvent *event) override;
+  bool hasQueuedOpenFiles() const;
   void queueOpenFile(const QString& filename);
   void requestOpenFile(const QString& filename);
   QStringList takeQueuedOpenFiles();
@@ -34,6 +35,9 @@ public slots:
   void hideFontCacheDialog();
   void setApplicationFont(const QString& family, uint size);
   void setRenderBackend3D(RenderBackend3D backend);
+
+signals:
+  void queuedOpenFilesAvailable();
 
 public:
   WindowManager windowManager;

@@ -69,12 +69,10 @@ void OpenSCADApp::handleOpenFileEvent(const QString& filename)
     return;
   }
 
-#ifdef Q_OS_MACOS
   if (LaunchingScreen *launcher = LaunchingScreen::getDialog()) {
     QMetaObject::invokeMethod(launcher, "openFile", Qt::QueuedConnection, Q_ARG(QString, filename));
     return;
   }
-#endif
 
   if (this->windowManager.getWindows().empty()) {
     this->queueOpenFile(filename);
@@ -91,6 +89,7 @@ void OpenSCADApp::queueOpenFile(const QString& filename)
 {
   if (!filename.isEmpty() && !this->queuedOpenFiles.contains(filename)) {
     this->queuedOpenFiles.append(filename);
+    emit queuedOpenFilesAvailable();
   }
 }
 
@@ -116,6 +115,11 @@ QStringList OpenSCADApp::takeQueuedOpenFiles()
   const QStringList queued = this->queuedOpenFiles;
   this->queuedOpenFiles.clear();
   return queued;
+}
+
+bool OpenSCADApp::hasQueuedOpenFiles() const
+{
+  return !this->queuedOpenFiles.isEmpty();
 }
 
 void OpenSCADApp::showFontCacheDialog()
