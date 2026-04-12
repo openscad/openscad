@@ -44,9 +44,7 @@ private:
   std::mutex inputMutex;
   std::mutex resizeMutex;
   QString yellowHintBackground();
-  QString redHintBackground();
   QColor warnBlendColor{"yellow"};
-  QColor errorBlendColor{"red"};
 
 signals:
   void openFile(const QString, int);
