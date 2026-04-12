@@ -306,8 +306,11 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
       inputFiles.push_back(file.toStdString());
     }
   };
-  waitForQueuedStartupOpen();
-  mergeQueuedOpenFiles();
+  auto consumeQueuedStartupOpenFiles = [&]() {
+    waitForQueuedStartupOpen();
+    mergeQueuedOpenFiles();
+  };
+  consumeQueuedStartupOpenFiles();
 
   auto noInputFiles = false;
 
@@ -344,8 +347,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     }
   }
 
-  waitForQueuedStartupOpen();
-  mergeQueuedOpenFiles();
+  consumeQueuedStartupOpenFiles();
 
   QStringList inputFilesList;
   for (const auto& infile : inputFiles) {
