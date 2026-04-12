@@ -47,14 +47,6 @@ void ViewportControl::setMainWindow(MainWindow *mainWindow)
   this->qglview = mainWindow->qglview;
 }
 
-QString ViewportControl::yellowHintBackground()
-{
-  QPalette defaultPalette;
-  const auto bgColor = defaultPalette.base().color().toRgb();
-  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, warnBlendColor);
-  return styleSheet;
-}
-
 void ViewportControl::resizeEvent(QResizeEvent *event)
 {
   auto layoutAspectRatio = dynamic_cast<QBoxLayout *>(groupBoxAspectRatio->layout());
@@ -156,26 +148,49 @@ void ViewportControl::updateCamera()
   inputMutex.unlock();
 }
 
+// Given a widget and a color, set the widget's background to be tinted that color, allowing the
+// parent's background to show through.
+void ViewportControl::setBackgroundTint(QWidget *w, QColor color) const
+{
+  // Make the color translucent.
+  color.setAlphaF(tintAlpha);
+
+  // Get the parent's palette (which, note, we haven't mucked with.)
+  QPalette p = palette();
+
+  // I don't find documentation saying which of the various background-like roles a spinbox
+  // uses for its background, and it appears to be somewhat platform-specific, so set them all.
+  //
+  // Note:
+  // QWindow11Style::inputFillBrush uses the Button role for the background *if* the background
+  // role (which defaults to Window) is set.  I think this is a bug.
+  p.setColor(QPalette::Button, color);
+  p.setColor(QPalette::Window, color);
+  p.setColor(QPalette::Base, color);
+
+  w->setPalette(p);
+}
+
 void ViewportControl::updateViewportControlHints()
 {
   // viewport camera field of view
   double fov = doubleSpinBox_fov->value();
   if (fov < 5 || fov > 175) {
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(yellowHintBackground());
+    setBackgroundTint(doubleSpinBox_fov, warnTint);
   } else {
     doubleSpinBox_fov->setToolTip("");
-    doubleSpinBox_fov->setStyleSheet("");
+    doubleSpinBox_fov->setPalette(palette());  // reset to parent's palette
   }
 
   // camera distance
   double d = doubleSpinBox_d->value();
   if (d < 5) {
     doubleSpinBox_d->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_d->setStyleSheet(yellowHintBackground());
+    setBackgroundTint(doubleSpinBox_d, warnTint);
   } else {
     doubleSpinBox_d->setToolTip("");
-    doubleSpinBox_d->setStyleSheet("");
+    doubleSpinBox_d->setPalette(palette());  // reset to parent's palette
   }
 }
 

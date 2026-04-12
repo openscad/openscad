@@ -43,8 +43,10 @@ private:
   QGLView *qglview;
   std::mutex inputMutex;
   std::mutex resizeMutex;
-  QString yellowHintBackground();
-  QColor warnBlendColor{"yellow"};
+  const QColor warnTint{"yellow"};
+  const double tintAlpha{0.2};
+
+  void setBackgroundTint(QWidget *w, QColor color) const;
 
 signals:
   void openFile(const QString, int);

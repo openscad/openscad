@@ -93,11 +93,6 @@ namespace {
 
 // Check if running with light or dark theme. This should really just be used
 // to switch the icon theme globally.
-//
-// For applying a color change, e.g. highlighting the background of an input
-// field, see:
-// UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend)
-
 bool isDarkMode()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
