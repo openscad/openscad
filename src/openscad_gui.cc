@@ -669,6 +669,19 @@ QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::st
   return fileInfo.absoluteFilePath();
 }
 
+void printSingleInstanceIpcHandoffNotice(const QStringList& ipcFiles)
+{
+  if (ipcFiles.isEmpty()) {
+    LOG(
+      _("PythonSCAD is already running. The existing window was brought to the front; this process "
+        "exits."));
+  } else {
+    LOG(
+      _("PythonSCAD is already running. An open request for the requested design file(s) was sent to "
+        "that instance; this process exits."));
+  }
+}
+
 void dialogThreadFunc(FontCacheInitializer *initializer)
 {
   initializer->run();
@@ -782,6 +795,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     const QJsonObject message = buildIpcMessage(action, ipcFiles, openMode, cwd);
 
     if (sendIpcMessage(message)) {
+      printSingleInstanceIpcHandoffNotice(ipcFiles);
       return 0;
     }
 
@@ -806,6 +820,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
       }
       if (clicked == retryBtn) {
         if (sendIpcMessage(message)) {
+          printSingleInstanceIpcHandoffNotice(ipcFiles);
           return 0;
         }
         continue;
@@ -815,6 +830,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
         break;
       }
       if (sendIpcMessage(message)) {
+        printSingleInstanceIpcHandoffNotice(ipcFiles);
         return 0;
       }
     }

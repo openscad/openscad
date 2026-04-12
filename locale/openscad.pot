@@ -3138,3 +3138,15 @@ msgstr ""
 #: src/openscad_gui.cc
 msgid "Try again if the running instance may have recovered, or close it to start a new one."
 msgstr ""
+
+#: src/openscad_gui.cc
+msgid ""
+"PythonSCAD is already running. The existing window was brought to the front; "
+"this process exits."
+msgstr ""
+
+#: src/openscad_gui.cc
+msgid ""
+"PythonSCAD is already running. An open request for the requested design file(s) was sent "
+"to that instance; this process exits."
+msgstr ""
