@@ -6,7 +6,6 @@
 #include "gui/MainWindow.h"
 #ifdef Q_OS_MACOS
 #include "gui/EventFilter.h"
-#include "platform/CocoaUtils.h"
 #endif
 
 #include "geometry/GeometryCache.h"
@@ -29,7 +28,6 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 {
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
-  CocoaUtils::installOpenFileHandler();
 #endif
 
   // Note: It may be tempting to add more initialization code here, but keep in mind that this is run as

@@ -201,9 +201,6 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
         char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   configureOpenGLContext();
-#ifdef Q_OS_MACOS
-  CocoaUtils::prepareOpenFileHandler();
-#endif
   OpenSCADApp app(argc, argv);
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
