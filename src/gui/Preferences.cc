@@ -193,7 +193,7 @@ void Preferences::init()
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
   this->defaultmap["advanced/singleInstanceOpenMode"] = "active-window";
-  this->defaultmap["advanced/sessionManagementEnabled"] = false;
+  this->defaultmap["advanced/sessionManagementEnabled"] = true;
   this->defaultmap["advanced/autosaveSessionEnabled"] = true;
   this->defaultmap["advanced/autosaveSessionIntervalSeconds"] = 60;
   this->defaultmap["view/hideEditor"] = false;

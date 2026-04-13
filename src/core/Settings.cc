@@ -212,7 +212,7 @@ SettingsEntryEnum<std::string> Settings::singleInstanceOpenMode(
   {{"new-window", "new-window", _("Open in new window")},
    {"active-window", "active-window", _("Reuse active window")}},
   "active-window");
-SettingsEntryBool Settings::sessionManagementEnabled("advanced", "sessionManagementEnabled", false);
+SettingsEntryBool Settings::sessionManagementEnabled("advanced", "sessionManagementEnabled", true);
 SettingsEntryBool Settings::autosaveSessionEnabled("advanced", "autosaveSessionEnabled", true);
 SettingsEntryInt Settings::autosaveSessionIntervalSeconds("advanced", "autosaveSessionIntervalSeconds",
                                                           10, 600, 60);
