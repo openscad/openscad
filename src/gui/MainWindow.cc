@@ -1521,8 +1521,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
   // not defined by Qt, so we may end up closing undocked dock widgets before we've had a chance to save
   // their window state. This overrides close to proactively save the window state.
   if (event->type() == QEvent::Close) {
-    if (qobject_cast<Dock *>(obj) && !static_cast<QCloseEvent *>(event)->spontaneous()) {
-      saveWindowStateOnClose();
+    if (auto dock = qobject_cast<Dock *>(obj)) {
+      if (dock->isFloating() && !static_cast<QCloseEvent *>(event)->spontaneous()) {
+        saveWindowStateOnClose();
+      }
     }
   }
 
