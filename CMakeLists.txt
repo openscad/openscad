@@ -1203,6 +1203,15 @@ if(ENABLE_MANIFOLD)
 
   set(MANIFOLD_PYBIND OFF)
   set(MANIFOLD_TEST OFF)
+
+  # Enable GPU compute acceleration if requested.
+  if(ENABLE_METAL_GPU AND APPLE)
+    enable_language(OBJCXX)
+    set(MANIFOLD_GPU ON CACHE BOOL "GPU compute" FORCE)
+    set(MANIFOLD_GPU_METAL ON CACHE BOOL "Metal backend" FORCE)
+    message(STATUS "Manifold GPU compute: Metal")
+  endif()
+
   if(USE_BUILTIN_MANIFOLD)
     if(CMAKE_UNITY_BUILD)
       set(CMAKE_UNITY_BUILD OFF)
