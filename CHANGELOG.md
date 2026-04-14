@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.20.0](https://github.com/pythonscad/pythonscad/compare/v0.19.1...v0.20.0) (2026-04-13)
+
+
+### Features
+
+* **gui:** enable session management by default ([#553](https://github.com/pythonscad/pythonscad/issues/553)) ([097f26c](https://github.com/pythonscad/pythonscad/commit/097f26cb52d3304bad44534dcf449952216c33f4))
+* **gui:** log terminal notice on single-instance IPC handoff ([#552](https://github.com/pythonscad/pythonscad/issues/552)) ([b27aca0](https://github.com/pythonscad/pythonscad/commit/b27aca05e0611a8242ba0201392c5fc2b984fd7f))
+* **gui:** session restore, customizer params without F5, dry-run safety ([#415](https://github.com/pythonscad/pythonscad/issues/415)) ([0078525](https://github.com/pythonscad/pythonscad/commit/0078525cc47653afb0f5f220ade97c4f3107a3b0))
+* **oversample:** add dynamic method ([61a25c7](https://github.com/pythonscad/pythonscad/commit/61a25c71feb0f2f08b01c2ac1b70ec5e3d73d7aa))
+* **oversmaple:** more work ([681be5a](https://github.com/pythonscad/pythonscad/commit/681be5a48f060573ecc8ee0ed191d1af8bb8266b))
+
+
+### Bug Fixes
+
+* **chore:** undo wrong files ([48f8cc7](https://github.com/pythonscad/pythonscad/commit/48f8cc728a435247116bdca7525bb8d458158ee2))
+* **crash:** right Click works better ([7130b80](https://github.com/pythonscad/pythonscad/commit/7130b803bc0d5288145b23ade34d55fdf839409e))
+* **crash:** right Click works better ([e89716b](https://github.com/pythonscad/pythonscad/commit/e89716b78185fac6fcc137dc2d7d24988b1e177b))
+* fix typo / terminlogy in code comments ([74b0cf2](https://github.com/pythonscad/pythonscad/commit/74b0cf2317be5e0fe0582e03f392f59de126e66a))
+* **gui:** align save-as path, filters, and untitled names with editor language ([#541](https://github.com/pythonscad/pythonscad/issues/541)) ([cd2ba3e](https://github.com/pythonscad/pythonscad/commit/cd2ba3e8511de7e74c64b087a9f0d11d179610c9))
+* **gui:** session restore and CLI prompt for missing design files ([#548](https://github.com/pythonscad/pythonscad/issues/548)) ([8477ee3](https://github.com/pythonscad/pythonscad/commit/8477ee3d8825888a8d894d2d96a1046b278e436e))
+* **gui:** skip stale-path session dialog for default Untitled files ([#546](https://github.com/pythonscad/pythonscad/issues/546)) ([b3c27f3](https://github.com/pythonscad/pythonscad/commit/b3c27f3af64cdd6d0783bb5a711b46e31118afc6))
+* **gui:** use QStandardPaths for session/lock file directory on all platforms ([#540](https://github.com/pythonscad/pythonscad/issues/540)) ([c54c9f6](https://github.com/pythonscad/pythonscad/commit/c54c9f6a430d76f4f2fdae56bb0ee42178100f29))
+* **measure:** show correct vertex indexes again ([a8c3e64](https://github.com/pythonscad/pythonscad/commit/a8c3e6483c9aa18c96b1525c3fea89f135efbe73))
+* remove duplicate definition of `GeometryEvaluator::applyHull3D(const Geometry::Geometries&)` from src/geometry/GeometryEvaluator.cc ([7e012d4](https://github.com/pythonscad/pythonscad/commit/7e012d4157f92a026c70aad77ec059b868c955af))
+* **sync:** undo wrong color ([fb2eee9](https://github.com/pythonscad/pythonscad/commit/fb2eee9f647f956107b8edc32e639311f34c9126))
+* update application icon in Windows resource file ([#543](https://github.com/pythonscad/pythonscad/issues/543)) ([d9e3c0c](https://github.com/pythonscad/pythonscad/commit/d9e3c0cae943e4ead5f2ae7528f1a38aef9e761b))
+* update nightly icon references in Windows resource file ([#544](https://github.com/pythonscad/pythonscad/issues/544)) ([5f6ab29](https://github.com/pythonscad/pythonscad/commit/5f6ab296aea05ab7dc2add69657a3c224b75e6e6))
+
+
+### Documentation
+
+* complete Python API cheatsheet and reference documentation ([#531](https://github.com/pythonscad/pythonscad/issues/531)) ([c137d89](https://github.com/pythonscad/pythonscad/commit/c137d89b2227789956884b7b21ecf4d9fecd662d))
+* overhaul the upstream-sync documentation ([#538](https://github.com/pythonscad/pythonscad/issues/538)) ([4ba1f8b](https://github.com/pythonscad/pythonscad/commit/4ba1f8b1e86ece9b6a2f0b73f98c5e9814a86bc5))
+
 ## [0.19.1](https://github.com/pythonscad/pythonscad/compare/v0.19.0...v0.19.1) (2026-03-31)
 
 
