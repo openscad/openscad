@@ -286,7 +286,6 @@ void ColorList::sortByLightness(const bool descending)
 void ColorList::updateSelectedColor()
 {
   QPalette defaultPalette;
-  const auto styleSheet = QString("QLineEdit { color: %1; background-color: %2; }");
   const auto name = selectedColorLabel ? selectedColorLabel->text() : "";
   const auto colorRgb = selectedColorLabel ? selectedColorLabel->backgroundColor().name() : "";
   const auto colorRgbR =
@@ -295,21 +294,41 @@ void ColorList::updateSelectedColor()
     selectedColorLabel ? QString::number(selectedColorLabel->backgroundColor().green()) : "";
   const auto colorRgbB =
     selectedColorLabel ? QString::number(selectedColorLabel->backgroundColor().blue()) : "";
-  const auto color =
-    selectedColorLabel ? selectedColorLabel->backgroundColor() : defaultPalette.text().color();
+  const auto color = selectedColorLabel ? selectedColorLabel->backgroundColor() : QColor();
   ui->lineEditColorNameSelected->setText(name);
   ui->lineEditColorRgbSelected->setText(colorRgb);
   ui->lineEditColorRgbSelectedR->setText(colorRgbR);
   ui->lineEditColorRgbSelectedG->setText(colorRgbG);
   ui->lineEditColorRgbSelectedB->setText(colorRgbB);
-  ui->lineEditAsForeground->setStyleSheet(styleSheet.arg(color.name(), asForeground.name()));
-  ui->lineEditAsBackground->setStyleSheet(styleSheet.arg(asBackground.name(), color.name()));
+  // Bug:  the "reset sample text" icon is fixed by the theme (light or dark) and can be
+  // impossible to see if the selected background is close to the theme's icon color.
+  // This applies to both boxes; for "as foreground" it applies if you selected a "bad"
+  // background color, and for "as background" it applies if the selected color is "bad".
+  // https://stackoverflow.com/questions/24943711/qt-drawing-icons-using-color-and-alpha-map
+  // may be helpful.
+  setWidgetColor(ui->lineEditAsForeground, color, asForeground);
+  setWidgetColor(ui->lineEditAsBackground, asBackground, color);
+}
+
+void ColorList::setWidgetColor(QWidget *w, const QColor& fg, const QColor& bg) const
+{
+  // Transcribe the parent's palette onto the widget, updating the foreground and background
+  // colors as requested.  If the supplied color is invalid, don't update it.
+  QPalette p = w->parentWidget()->palette();
+  if (fg.isValid()) {
+    p.setColor(w->foregroundRole(), fg);
+  }
+  if (bg.isValid()) {
+    p.setColor(w->backgroundRole(), bg);
+    // Work around https://qt-project.atlassian.net/browse/QTBUG-145776
+    p.setColor(QPalette::Button, bg);
+  }
+  w->setPalette(p);
 }
 
 void ColorList::on_toolButtonAsForegroundReset_clicked()
 {
-  QPalette defaultPalette;
-  asForeground = defaultPalette.base().color().toRgb();
+  asForeground = QColor();
   updateSelectedColor();
 }
 
@@ -329,8 +348,7 @@ void ColorList::on_toolButtonAsForegroundColorDialog_clicked()
 
 void ColorList::on_toolButtonAsBackgroundReset_clicked()
 {
-  QPalette defaultPalette;
-  asBackground = defaultPalette.base().color().toRgb();
+  asBackground = QColor();
   updateSelectedColor();
 }
 

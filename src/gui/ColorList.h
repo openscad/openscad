@@ -47,6 +47,7 @@ private:
   void sortByLightness(const bool descending = false);
   void updateColorDialog(QColor& target);
   void updateSelectedColor();
+  void setWidgetColor(QWidget *w, const QColor& fg, const QColor& bg) const;
 
 protected slots:
   void updateSort();
