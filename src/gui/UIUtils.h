@@ -85,8 +85,6 @@ bool hasOfflineCheatSheet();
 
 void openOfflineCheatSheet();
 
-QString getBackgroundColorStyleSheet(const QColor& color);
-
 void dumpSaveState(const QByteArray& data);
 
 void dumpPalette(const QPalette& p);

@@ -236,6 +236,9 @@
               <property name="text">
                <string/>
               </property>
+              <property name="autoFillBackground">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
             <item>

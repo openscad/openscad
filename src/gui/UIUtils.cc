@@ -301,11 +301,6 @@ void UIUtils::openOfflineCheatSheet()
   }
 }
 
-QString UIUtils::getBackgroundColorStyleSheet(const QColor& color)
-{
-  return QString("background-color:%1;").arg(color.toRgb().name());
-}
-
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static bool dumpDockAreaLayoutInfo(QDataStream& stream)
 {
