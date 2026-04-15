@@ -437,9 +437,9 @@
       <div>Control roundness: number of segments / min angle / min size</div>
       <div><code>fn = 50; circle(10).show()</code></div>
 
-      <div class="func"><code><a href="../reference/variables/#time">time</a> / <a href="../reference/variables/#phi">phi</a></code></div>
-      <div>Animation step and phi = 2 * PI * time</div>
-      <div><code>cube(5).rotate([0, 0, time * 360]).show()</code></div>
+      <div class="func"><code><a href="../reference/variables/#time">t</a> / <a href="../reference/variables/#phi">phi</a></code></div>
+      <div>Animation step and phi = 2 * PI * t</div>
+      <div><code>cube(5).rotate([0, 0, t * 360]).show()</code></div>
   </div>
 </div>
 
