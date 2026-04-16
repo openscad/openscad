@@ -4310,6 +4310,7 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
     return NULL;
   }
 
+  node->autosize << false, false, false;
   if (newsize != NULL) {
     double x, y, z;
     if (python_vectorval(newsize, 3, 3, &x, &y, &z)) {
