@@ -18,11 +18,12 @@
  */
 #pragma once
 
-#include <functional>
-
+#include <QLayout>
+#include <QList>
 #include <QRect>
 #include <QStyle>
-#include <QLayout>
+#include <QWidget>
+#include <functional>
 
 class ColorLayout : public QLayout
 {

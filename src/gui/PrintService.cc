@@ -26,20 +26,19 @@
 
 #include "gui/PrintService.h"
 
-#include <mutex>
-#include <utility>
-#include <unordered_map>
-#include <memory>
-#include <string>
-
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QStringList>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
-#include "io/export.h"
 #include "core/Settings.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 using S = Settings::Settings;

@@ -30,21 +30,20 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QTimer>
-#include <algorithm>
-#include <functional>
-#include <exception>
 #include <QObject>
 #include <QString>
+#include <QTimer>
 #include <QtNetwork>
-
-#include <utility>
+#include <algorithm>
+#include <exception>
+#include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "utils/printutils.h"
-#include "platform/PlatformUtils.h"
 #include "gui/NetworkSignal.h"
+#include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 class NetworkException : public std::exception
 {

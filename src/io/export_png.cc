@@ -1,8 +1,7 @@
-#include "io/export.h"
-
-#include <ostream>
+#include <cassert>
 #include <cstdio>
 #include <memory>
+#include <ostream>
 
 #include "core/Tree.h"
 #include "geometry/Geometry.h"
@@ -10,17 +9,21 @@
 #include "glview/Camera.h"
 #include "glview/CsgInfo.h"
 #include "glview/OffscreenView.h"
-#include "glview/Renderer.h"
 #include "glview/RenderSettings.h"
+#include "glview/Renderer.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifndef NULLGL
-#include "glview/cgal/CGALRenderer.h"
 #include "glview/PolySetRenderer.h"
+#if not defined(USE_POLYSET_FOR_CGAL)
+#include "glview/cgal/CGALRenderer.h"
+#endif
 
 #ifdef ENABLE_OPENCSG
-#include "glview/preview/OpenCSGRenderer.h"
 #include <opencsg.h>
+
+#include "glview/preview/OpenCSGRenderer.h"
 #endif  // ENABLE_OPENCSG
 
 #include "glview/preview/ThrownTogetherRenderer.h"
@@ -47,6 +50,9 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     return false;
   }
   std::shared_ptr<Renderer> geomRenderer;
+#if defined(USE_POLYSET_FOR_CGAL)
+  geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
+#else
   // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
   // know that all geometries are convertible to PolySet.
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
@@ -56,6 +62,7 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   } else {
     geomRenderer = std::make_shared<CGALRenderer>(root_geom);
   }
+#endif
   const BoundingBox bbox = geomRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 

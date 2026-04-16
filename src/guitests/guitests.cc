@@ -1,8 +1,9 @@
-#include "TestModuleCache.h"
-#include "TestMainWindow.h"
-#include "TestTabManager.h"
-
 #include <QTest>
+#include <iostream>
+
+#include "TestMainWindow.h"
+#include "TestModuleCache.h"
+#include "TestTabManager.h"
 
 template <typename TestClass>
 int runTests(MainWindow *window)

@@ -1,16 +1,16 @@
 #include "gui/ScadApi.h"
 
+#include <QDir>
+#include <QFileInfo>
 #include <QList>
+#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 #include <string>
-#include <QDir>
-#include <QFileInfo>
-#include <QRegularExpression>
 
 #include "core/Builtins.h"
-#include "gui/ScintillaEditor.h"
 #include "core/parsersettings.h"
+#include "gui/ScintillaEditor.h"
 
 namespace {
 

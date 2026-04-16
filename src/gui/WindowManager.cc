@@ -1,5 +1,7 @@
 #include "gui/WindowManager.h"
+
 #include <QSet>
+
 #include "gui/MainWindow.h"
 
 void WindowManager::add(MainWindow *mainwin)

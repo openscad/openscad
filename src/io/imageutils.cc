@@ -1,9 +1,9 @@
 #include "io/imageutils.h"
 
-#include <iostream>
 #include <cassert>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 
 void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, size_t width,
                 size_t height)

@@ -1,10 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include "glview/GLView.h"
 #include "glview/Renderer.h"
+#include "glview/ShaderUtils.h"
 #include "glview/fbo.h"
-
-#include <memory>
 
 /**
  * Grab the of the Tree element that was rendered at a specific location

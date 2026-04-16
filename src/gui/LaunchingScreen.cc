@@ -1,18 +1,19 @@
 #include "gui/LaunchingScreen.h"
 
 #include <QDialog>
+#include <QFileInfo>
+#include <QListWidgetItem>
 #include <QModelIndex>
+#include <QString>
 #include <QStringList>
 #include <QVariant>
 #include <QWidget>
-#include <QFileInfo>
-#include <QListWidgetItem>
+#include <string>
 
-#include "version.h"
-#include "ui_LaunchingScreen.h"
 #include "gui/QSettingsCached.h"
-
 #include "gui/UIUtils.h"
+#include "ui_LaunchingScreen.h"
+#include "version.h"
 
 LaunchingScreen *LaunchingScreen::inst = nullptr;
 

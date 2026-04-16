@@ -23,18 +23,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "io/export.h"
-
 #include <cassert>
 #include <clocale>
 #include <cmath>
 #include <memory>
 #include <ostream>
+#include <string>
 
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "io/export.h"
 
 static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
 {

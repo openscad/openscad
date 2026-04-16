@@ -24,18 +24,19 @@
  *
  */
 
-#include "geometry/GeometryUtils.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
+#include <cstddef>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "core/CurveDiscretizer.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
-
-#include <memory>
-#include <cstddef>
-#include <sstream>
-#include <string>
-#include <vector>
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
 
 class CubeNode : public LeafNode
 {

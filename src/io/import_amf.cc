@@ -24,31 +24,32 @@
  *
  */
 
-#include "geometry/PolySet.h"
+#include "core/AST.h"
+#include "core/Assignment.h"
+#include "core/CsgOpNode.h"
+#include "core/ModuleInstantiation.h"
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
-#include "core/AST.h"
-#include "core/Assignment.h"
-#include "core/ModuleInstantiation.h"
-#include "core/CsgOpNode.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif
 
-#include <utility>
-#include <memory>
-#include <sys/types.h>
-#include <cstddef>
-#include <map>
-#include <cassert>
-#include <string>
-#include <vector>
 #include <libxml/xmlreader.h>
-#include <filesystem>
+#include <sys/types.h>
+
 #include <boost/lexical_cast.hpp>
+#include <cassert>
+#include <cstddef>
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");

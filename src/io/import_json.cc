@@ -26,15 +26,15 @@
 #include "io/import.h"
 
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <utility>
 
-#include "json/json.hpp"
-
 #include "core/AST.h"
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
+#include "json/json.hpp"
 #include "utils/printutils.h"
 
 using json = nlohmann::json;
@@ -87,7 +87,7 @@ Value import_json(const std::string& filename, EvaluationSession *session, const
       LOG(message_group::Warning, loc, "", "Could not read file '%1$s'", filename);
     }
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %s", filename, e.what());
+    LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %2$s", filename, e.what());
   }
 
   return Value::undefined.clone();

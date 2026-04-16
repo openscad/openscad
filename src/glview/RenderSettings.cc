@@ -1,4 +1,5 @@
 #include "glview/RenderSettings.h"
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include "utils/printutils.h"

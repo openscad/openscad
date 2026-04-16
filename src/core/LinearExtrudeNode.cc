@@ -26,21 +26,20 @@
 
 #include "core/LinearExtrudeNode.h"
 
+#include <cmath>
+#include <filesystem>
+#include <memory>
+#include <sstream>
+#include <utility>
+
+#include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "utils/printutils.h"
-#include "io/fileutils.h"
-#include "core/Builtins.h"
+#include "core/module.h"
 #include "handle_dep.h"
-
-#include <utility>
-#include <memory>
-#include <cmath>
-#include <sstream>
-
-#include <filesystem>
+#include "io/fileutils.h"
+#include "utils/printutils.h"
 
 namespace {
 std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst,
@@ -57,14 +56,16 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
 
   if (parameters["v"].isDefined()) {
     if (!parameters["v"].getVec3(node->height[0], node->height[1], node->height[2])) {
-      LOG(message_group::Error, "v when specified should be a 3d vector.");
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "v when specified should be a 3d vector");
     }
     height = 1.0;
   }
   const Value& heightValue = parameters[{"height", "h"}];
   if (heightValue.isDefined()) {
     if (!heightValue.getFiniteDouble(height)) {
-      LOG(message_group::Error, "height when specified should be a number.");
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "height when specified should be a number");
       height = 100.0;
     }
     node->height.normalize();

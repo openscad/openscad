@@ -3,17 +3,18 @@
 
 #include "geometry/roof_ss.h"
 
-#include <vector>
-#include <clipper2/clipper.engine.h>
-#include <iterator>
-#include <functional>
-#include <memory>
-
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Partition_traits_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/create_straight_skeleton_from_polygon_with_holes_2.h>
 #include <CGAL/partition_2.h>
-#include <CGAL/Partition_traits_2.h>
+#include <clipper2/clipper.engine.h>
+
+#include <cmath>
+#include <functional>
+#include <iterator>
+#include <memory>
+#include <vector>
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(6, 0, 0)
 #include <boost/shared_ptr.hpp>
 #endif
@@ -21,12 +22,12 @@
 #include <algorithm>
 #include <map>
 
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/GeometryUtils.h"
-#include "geometry/ClipperUtils.h"
 #include "core/RoofNode.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception(     \

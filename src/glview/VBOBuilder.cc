@@ -1,5 +1,6 @@
 #include "glview/VBOBuilder.h"
 
+#include <cmath>
 #include <unordered_map>
 #include <cstring>
 #include <cassert>

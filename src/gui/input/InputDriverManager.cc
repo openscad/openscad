@@ -25,20 +25,21 @@
  */
 #include "gui/input/InputDriverManager.h"
 
-#include "gui/input/InputDriverEvent.h"
-#include "gui/MainWindow.h"
+#include <QAction>
+#include <QApplication>
+#include <QCoreApplication>
 #include <QList>
+#include <QMenu>
 #include <QString>
 #include <QTimer>
 #include <algorithm>
+#include <cstddef>
 #include <list>
 #include <sstream>
-#include <QAction>
-#include <QMenu>
-#include <QApplication>
-#include <QCoreApplication>
-#include <cstddef>
 #include <string>
+
+#include "gui/MainWindow.h"
+#include "gui/input/InputDriverEvent.h"
 
 InputDriverManager *InputDriverManager::self = nullptr;
 

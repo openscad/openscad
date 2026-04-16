@@ -1,13 +1,14 @@
 #pragma once
 
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
-#include "core/module.h"
 #include "core/AST.h"
+#include "core/Assignment.h"
 #include "core/LocalScope.h"
+#include "core/module.h"
 
 class Feature;
 

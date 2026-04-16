@@ -32,10 +32,11 @@
 #include <QString>
 #include <QWidget>
 #include <cstddef>
+
 #include "core/Settings.h"
-#include "gui/input/InputDriverManager.h"
-#include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/SettingsWriter.h"
+#include "gui/input/InputDriverManager.h"
 #include "gui/input/InputEventMapper.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)

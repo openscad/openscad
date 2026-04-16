@@ -1,15 +1,17 @@
 #pragma once
 
-#include "core/NodeVisitor.h"
-#include "geometry/linalg.h"
-#include "core/enums.h"
-#include "geometry/Geometry.h"
-
 #include <cassert>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <map>
+
+#include "core/BaseVisitable.h"
+#include "core/NodeVisitor.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 
 class CGALNefGeometry;
 class Polygon2d;
@@ -110,8 +112,8 @@ private:
   Geometry::Geometries collectChildren3D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyMinkowski2D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyHull2D(const AbstractNode& node);
+  ResultObject applyHull3D(const Geometry::Geometries& children);
   std::unique_ptr<Polygon2d> applyFill2D(const AbstractNode& node);
-  std::unique_ptr<Geometry> applyHull3D(const AbstractNode& node);
   void applyResize3D(CGALNefGeometry& N, const Vector3d& newsize,
                      const Eigen::Matrix<bool, 3, 1>& autosize);
   std::unique_ptr<Polygon2d> applyToChildren2D(const AbstractNode& node, OpenSCADOperator op);

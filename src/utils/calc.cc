@@ -25,9 +25,9 @@
  */
 #include "utils/calc.h"
 
-#include <cmath>
-#include <cassert>
 #include <algorithm>
+#include <cassert>
+#include <cmath>
 
 #include "geometry/Grid.h"
 #include "utils/degree_trig.h"

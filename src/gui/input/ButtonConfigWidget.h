@@ -1,10 +1,11 @@
 #pragma once
 
-#include "gui/qtgettext.h"
 #include <QComboBox>
 #include <QWidget>
-#include "ui_ButtonConfigWidget.h"
+
 #include "core/Settings.h"
+#include "gui/qtgettext.h"
+#include "ui_ButtonConfigWidget.h"
 
 class ButtonConfigWidget : public QWidget, public Ui::Button
 {

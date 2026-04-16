@@ -25,18 +25,19 @@
  */
 #pragma once
 
+#include <ft2build.h>
+#include <hb.h>
+
 #include <memory>
+#include <optional>
+#include <ostream>
 #include <string>
 #include <vector>
-#include <ostream>
-#include <optional>
 
+#include "FontCache.h"
 #include "core/AST.h"
 #include "core/CurveDiscretizer.h"
 #include "core/Parameters.h"
-#include "FontCache.h"
-#include <hb.h>
-#include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 

@@ -26,9 +26,8 @@
 
 #pragma once
 
-#include <functional>
-
 #include <QObject>
+#include <functional>
 #include <utility>
 
 using network_progress_func_t = std::function<bool(double)>;

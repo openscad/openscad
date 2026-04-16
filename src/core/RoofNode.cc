@@ -4,15 +4,17 @@
 #include "core/RoofNode.h"
 
 #include <algorithm>
-#include <utility>
 #include <memory>
+#include <set>
 #include <sstream>
+#include <utility>
 
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"
-#include "core/Parameters.h"
 #include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "core/module.h"
+#include "utils/printutils.h"
 
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments,
                                                   const Children& children)

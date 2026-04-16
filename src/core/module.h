@@ -1,8 +1,9 @@
 #pragma once
 
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
+
 #include "Feature.h"
 
 class AbstractNode;

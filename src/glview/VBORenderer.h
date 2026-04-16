@@ -5,6 +5,7 @@
 #include <memory>
 #include <cstddef>
 #include "glview/Renderer.h"
+#include "glview/ShaderUtils.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "glview/system-gl.h"

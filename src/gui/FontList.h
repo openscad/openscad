@@ -7,15 +7,14 @@
 #include <QPoint>
 #include <QSet>
 #include <QSize>
+#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
 #include <QString>
 #include <QStyleOptionViewItem>
+#include <QStyledItemDelegate>
+#include <QWidget>
 #include <cstdint>
 #include <vector>
-
-#include <QWidget>
-#include <QStandardItemModel>
-#include <QStyledItemDelegate>
-#include <QSortFilterProxyModel>
 
 #include "gui/qtgettext.h"
 #include "ui_FontList.h"

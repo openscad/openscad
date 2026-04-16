@@ -1,12 +1,12 @@
 #include "platform/PlatformUtils.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <ios>
-#include <string>
 #include <map>
-
-#include "utils/printutils.h"
+#include <string>
 #include "utils/findversion.h"
+#include "utils/printutils.h"
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif
@@ -177,6 +177,7 @@ const std::string PlatformUtils::sysinfo(bool extended)
 }
 
 #include <io.h>
+
 #include <cstdio>
 
 #ifdef USE_MIMALLOC

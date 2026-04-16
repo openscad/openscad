@@ -1,18 +1,18 @@
 #pragma once
 
-#include <cstddef>
+#include <libintl.h>
+
 #include <clocale>
+#include <cstddef>
 #include <initializer_list>
 #include <iostream>
 #include <list>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
-#include <optional>
-
-#include <libintl.h>
 // Undefine some defines from libintl.h to presolve
 // some collisions in boost headers later
 #if defined snprintf

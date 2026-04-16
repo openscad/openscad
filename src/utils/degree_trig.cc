@@ -25,10 +25,9 @@
  */
 #include "utils/degree_trig.h"
 
+#include <Eigen/Core>
 #include <cmath>
 #include <limits>
-
-#include <Eigen/Core>
 
 #include "geometry/linalg.h"
 

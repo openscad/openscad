@@ -44,14 +44,14 @@
 #include <vector>
 
 #ifdef _WIN32
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #endif
 
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
-#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"

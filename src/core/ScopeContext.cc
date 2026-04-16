@@ -1,14 +1,19 @@
 #include "core/ScopeContext.h"
+
+#include <cmath>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "core/Context.h"
 #include "core/Expression.h"
 #include "core/Parameters.h"
-#include "utils/printutils.h"
 #include "core/SourceFileCache.h"
 #include "core/UserModule.h"
-
-#include <utility>
-#include <memory>
-#include <cmath>
-#include <vector>
+#include "core/Value.h"
+#include "core/callables.h"
+#include "utils/printutils.h"
 
 void ScopeContext::init()
 {

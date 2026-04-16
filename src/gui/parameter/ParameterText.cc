@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <string>
 
+#include "gui/parameter/ParameterVirtualWidget.h"
+
 ParameterText::ParameterText(QWidget *parent, StringParameter *parameter,
                              DescriptionStyle descriptionStyle)
   : ParameterVirtualWidget(parent, parameter), parameter(parameter)

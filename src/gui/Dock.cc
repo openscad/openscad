@@ -1,8 +1,8 @@
 #include "gui/Dock.h"
 
-#include <QWidget>
 #include <QDockWidget>
 #include <QRegularExpression>
+#include <QWidget>
 
 namespace {
 
@@ -39,9 +39,12 @@ Dock::~Dock()
   delete dockTitleWidget;
 }
 
+// When moving docked panes around is allowed (reorderMode/reorderWindows), enable a title bar.
+// When not allowed, disable the title bar.  Note that nullptr yields a default toolbar, while
+// docTitleWidget is an empty (and so invisible) widget.
 void Dock::setTitleBarVisibility(bool isVisible)
 {
-  setTitleBarWidget(isVisible ? dockTitleWidget : nullptr);
+  setTitleBarWidget(isVisible ? nullptr : dockTitleWidget);
 }
 
 void Dock::updateTitle()
@@ -76,15 +79,16 @@ void Dock::setNameSuffix(const QString& namesuffix_)
 
 void Dock::onTopLevelStatusChanged(bool isTopLevel)
 {
+  // CAUTION:  A previous incarnation of this set the window type of an undocked window to Qt::Window
+  // (rather than its default Qt::Tool) in an attempt to enable undocked windows to float behind the
+  // main window.  That didn't work (or at least not on all platforms), and caused #6667, breaking
+  // shortcuts when undocked.  See #6765 for more discussion.
+
   // update the title of the window so it contains the title suffix (in general filename)
-  // also update the flags and visibility to provide interactive feedback on the user action
-  // while it is moving the dock in topLevel=true state. The purpose of such setting
-  // on Qt::Window flag is to allow the dock to be floating behind the main window,
-  // something which isn't supported for regular QDockWidgets.
-  Qt::WindowFlags flags = (windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  // also update the visibility to provide interactive feedback on the user action
+  // while it is moving the dock in topLevel=true state.
   if (isTopLevel) {
-    setWindowFlags(flags);
-    // show() rmits an innocuous "Already setting window visible!" warning on macOS
+    // show() emits an innocuous "Already setting window visible!" warning on macOS
     ScopedMessageSilencer silencer;
     show();
   }

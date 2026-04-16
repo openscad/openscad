@@ -1,9 +1,9 @@
 #include "utils/hash.h"
 
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <cstdint>
-
-#include <boost/functional/hash.hpp>
+#include <functional>
 
 #include "geometry/linalg.h"
 

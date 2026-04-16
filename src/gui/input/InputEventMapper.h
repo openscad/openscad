@@ -25,11 +25,11 @@
  */
 #pragma once
 
-#include <QTimer>
 #include <QObject>
-
+#include <QTimer>
 #include <cstddef>
 #include <string>
+
 #include "core/Settings.h"
 #include "gui/input/InputDriverEvent.h"
 

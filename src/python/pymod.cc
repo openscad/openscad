@@ -25,14 +25,14 @@
  */
 #include <Python.h>
 
-#include <string>
-#include <vector>
 #include <cstdlib>
 #include <filesystem>
+#include <string>
+#include <system_error>
+#include <vector>
 
 #include "core/Settings.h"
 #include "platform/PlatformUtils.h"
-
 #include "pyopenscad.h"
 
 namespace fs = std::filesystem;

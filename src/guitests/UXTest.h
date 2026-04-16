@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+
 #include "gui/MainWindow.h"
 
 class UXTest : public QObject

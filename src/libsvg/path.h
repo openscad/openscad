@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <string>
+
 #include "libsvg/shape.h"
 
 namespace libsvg {

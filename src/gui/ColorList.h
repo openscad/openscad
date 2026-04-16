@@ -18,14 +18,14 @@
  */
 #pragma once
 
-#include "gui/ColorList.h"
-
-#include <QWidget>
-#include <QString>
 #include <QColor>
+#include <QList>
+#include <QString>
+#include <QWidget>
 
 #include "gui/ColorLabel.h"
 #include "gui/ColorLayout.h"
+#include "gui/ColorList.h"
 #include "gui/InitConfigurator.h"
 
 class Ui_ColorListWidget;

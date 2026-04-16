@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "core/node.h"
 #include "core/ModuleInstantiation.h"
+#include "core/node.h"
 #include "geometry/linalg.h"
 
 enum class CgalAdvType { MINKOWSKI, HULL, FILL, RESIZE };

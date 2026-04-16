@@ -1,9 +1,9 @@
 #pragma once
 
+#include <filesystem>
+#include <memory>
 #include <ostream>
 #include <string>
-#include <memory>
-#include <filesystem>
 #include <utility>
 namespace fs = std::filesystem;
 
@@ -22,7 +22,11 @@ public:
   }
 
   [[nodiscard]] std::string fileName() const { return path ? path->generic_string() : ""; }
-  [[nodiscard]] const fs::path& filePath() const { return *path; }
+  [[nodiscard]] const fs::path& filePath() const
+  {
+    static const fs::path empty_path;
+    return path ? *path : empty_path;
+  }
   [[nodiscard]] int firstLine() const { return first_line; }
   [[nodiscard]] int firstColumn() const { return first_col; }
   [[nodiscard]] int lastLine() const { return last_line; }

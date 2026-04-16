@@ -1,13 +1,13 @@
 #pragma once
 
+#include <QDialog>
+#include <QListWidgetItem>
 #include <QModelIndex>
+#include <QString>
 #include <QStringList>
+#include <QTreeWidgetItem>
 #include <QVariant>
 #include <QWidget>
-#include <QString>
-#include <QDialog>
-#include <QTreeWidgetItem>
-#include <QListWidgetItem>
 
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_LaunchingScreen.h"

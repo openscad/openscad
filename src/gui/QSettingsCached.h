@@ -1,8 +1,8 @@
 #pragma once
 
+#include <QSettings>
 #include <QString>
 #include <QVariant>
-#include <QSettings>
 #include <memory>
 #include <mutex>
 

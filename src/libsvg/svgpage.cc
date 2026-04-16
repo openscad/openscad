@@ -24,10 +24,10 @@
  */
 #include "libsvg/svgpage.h"
 
-#include <sstream>
 #include <cstdlib>
-#include <string>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 namespace libsvg {
 

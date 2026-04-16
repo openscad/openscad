@@ -27,9 +27,9 @@ If applicable, add trimmed down, self-contained code demonstrating the issue.
 If applicable, add screenshots to help explain your problem.
 
 **Environment and Version info (please complete the following information):**
- - OS: [e.g. Windows 10, macOS 12 Monterey, Ubuntu 22.04]
+ - OS: [e.g. Windows 11, macOS 26 Tahoe, Ubuntu 24.04]
  - System: [e.g. Intel PC 64-bit, Raspberry PI 4]
- - OpenSCAD Version [e.g. 2021.01, 2023.04.16] and where it was installed from
+ - OpenSCAD Version: [e.g. 2021.01, 2023.04.16] and where it was installed from
 
 **Library & Graphics card information**
 If applicable, add the content of the Help->Library Info window, or the output of running the `openscad --info` command.

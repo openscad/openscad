@@ -33,11 +33,12 @@
 #define TESS_H
 
 #include <setjmp.h>
-#include "bucketalloc.h"
-#include "mesh.h"
-#include "dict.h"
-#include "priorityq.h"
+
 #include "../Include/tesselator.h"
+#include "bucketalloc.h"
+#include "dict.h"
+#include "mesh.h"
+#include "priorityq.h"
 
 #ifdef __cplusplus
 extern "C" {

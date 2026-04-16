@@ -1,7 +1,10 @@
+/build*
+.venv
 .uuid
 .cache/
 .vs/
 .vscode/
+*.code-workspace
 .idea/
 .clangd/
 /*.scad

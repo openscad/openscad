@@ -1,28 +1,21 @@
 #include "geometry/GeometryEvaluator.h"
 
+#include <cassert>
+#include <cmath>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "Feature.h"
-#include "geometry/boolean_utils.h"
-#include "geometry/cgal/cgal.h"
-#include "geometry/ClipperUtils.h"
-#include "geometry/linalg.h"
-#include "geometry/linear_extrude.h"
-#include "geometry/Geometry.h"
-#include "geometry/GeometryCache.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetUtils.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetBuilder.h"
-#include "geometry/roof_ss.h"
-#include "geometry/roof_vd.h"
-#include "geometry/rotate_extrude.h"
-
-#include "glview/RenderSettings.h"
-
+#include "core/BaseVisitable.h"
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
-#include "core/ModuleInstantiation.h"
+#include "core/CurveDiscretizer.h"
 #include "core/LinearExtrudeNode.h"
+#include "core/ModuleInstantiation.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/RenderNode.h"
@@ -31,22 +24,33 @@
 #include "core/State.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
-#include "core/CurveDiscretizer.h"
 #include "core/Tree.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/boolean_utils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/linalg.h"
+#include "geometry/linear_extrude.h"
+#include "geometry/roof_ss.h"
+#include "geometry/roof_vd.h"
+#include "geometry/rotate_extrude.h"
+#include "glview/RenderSettings.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
-
-#include <iterator>
-#include <cassert>
-#include <list>
-#include <utility>
-#include <memory>
 #ifdef ENABLE_CGAL
+#include <CGAL/Point_2.h>
+#include <CGAL/convex_hull_2.h>
+
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/cgalutils.h"
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/Point_2.h>
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -146,7 +150,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
+    return applyHull3D(children);
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
@@ -202,6 +206,21 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     break;
   }
   }
+}
+
+GeometryEvaluator::ResultObject GeometryEvaluator::applyHull3D(const Geometry::Geometries& children)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    return ResultObject::mutableResult(
+      ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::HULL));
+  }
+#endif  // ENABLE_MANIFOLD
+#if ENABLE_CGAL
+  return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyHull3D(children)));
+#else
+  return ResultObject::mutableResult(PolySet::createEmpty());
+#endif
 }
 
 /*!
@@ -265,14 +284,6 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
 
   // Re-merge geometry in case of nested outlines
   return ClipperUtils::apply(newchildren, Clipper2Lib::ClipType::Union);
-}
-
-std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
-{
-  Geometry::Geometries children = collectChildren3D(node);
-
-  auto P = PolySet::createEmpty();
-  return applyHull(children);
 }
 
 std::unique_ptr<Polygon2d> GeometryEvaluator::applyMinkowski2D(const AbstractNode& node)

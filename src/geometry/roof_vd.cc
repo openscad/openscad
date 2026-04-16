@@ -3,22 +3,23 @@
 
 #include "geometry/roof_vd.h"
 
-#include <ostream>
-#include <cstdint>
-#include <memory>
+#include <algorithm>
+#include <boost/polygon/voronoi.hpp>
 #include <cmath>
 #include <cstddef>
-#include <algorithm>
+#include <cstdint>
 #include <map>
-#include <boost/polygon/voronoi.hpp>
+#include <memory>
+#include <ostream>
 #include <vector>
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySetBuilder.h"
 
-#include "geometry/GeometryUtils.h"
-#include "geometry/ClipperUtils.h"
+#include "core/CurveDiscretizer.h"
 #include "core/RoofNode.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception(     \
@@ -382,7 +383,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, const Curve
       // convex partition (actually a triangulation - maybe do a proper convex partition later)
       Polygon2d face_poly;
       Outline2d outline;
-      outline.vertices = face;
+      outline.vertices.assign(face.begin(), face.end());
       face_poly.addOutline(outline);
       auto tess = face_poly.tessellate();
       for (const IndexedFace& triangle : tess->indices) {

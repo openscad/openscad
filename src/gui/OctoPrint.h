@@ -26,13 +26,12 @@
 
 #pragma once
 
-#include <utility>
-#include <string>
-#include <vector>
-
 #include <QFile>
-#include <QString>
 #include <QJsonDocument>
+#include <QString>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "gui/Network.h"
 

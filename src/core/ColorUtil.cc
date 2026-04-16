@@ -1,13 +1,18 @@
+#include "core/ColorUtil.h"
+
+#include <algorithm>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/spirit/home/support/common_terminals.hpp>
+#include <cctype>
+#include <cmath>
+#include <optional>
 #include <string>
 #include <unordered_map>
-#include "geometry/linalg.h"
-#include "core/ColorUtil.h"
-#include "utils/printutils.h"
-#include <boost/algorithm/string/case_conv.hpp>
 
 #include "core/WebColors.h"
 #include "core/XkcdColors.h"
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
 namespace {
 

@@ -24,7 +24,18 @@
  *
  */
 
-#include "core/function.h"
+#include <algorithm>
+#include <boost/format.hpp>
+#include <cmath>
+#include <cstdint>
+#include <ctime>
+#include <limits>
+#include <memory>
+#include <random>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "core/AST.h"
 #include "core/Arguments.h"
@@ -35,25 +46,13 @@
 #include "core/FreetypeRenderer.h"
 #include "core/Parameters.h"
 #include "core/UserModule.h"
-#include "utils/printutils.h"
-#include "utils/degree_trig.h"
-#include "io/import.h"
+#include "core/function.h"
 #include "io/fileutils.h"
-#include "version.h"
-
-#include <utility>
-#include <cstdint>
-#include <memory>
-#include <cmath>
-#include <sstream>
-#include <ctime>
-#include <limits>
-#include <algorithm>
-#include <random>
-#include <vector>
-
+#include "io/import.h"
 #include "utils/boost-utils.h"
-#include <boost/format.hpp>
+#include "utils/degree_trig.h"
+#include "utils/printutils.h"
+#include "version.h"
 // hash double
 #include "geometry/linalg.h"
 
@@ -949,7 +948,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
   auto *session = arguments.session();
   Parameters parameters =
     Parameters::parse(std::move(arguments), loc, {"text", "size", "font"},
-                      {"direction", "language", "script", "halign", "valign", "spacing"});
+                      {"direction", "language", "script", "halign", "valign", "spacing", "em"});
   parameters.set_caller("textmetrics");
 
   FreetypeRenderer::Params ftparams(parameters);
@@ -999,7 +998,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 {
   auto *session = arguments.session();
-  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"size", "font"});
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"size", "font", "em"});
   parameters.set_caller("fontmetrics");
 
   FreetypeRenderer::Params ftparams(parameters);
@@ -1229,16 +1228,17 @@ void register_builtin_functions()
                    "chr(range) -> string",
                  });
 
-  Builtins::init(
-    "textmetrics", new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
-    {
-      "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
-    });
+  Builtins::init("textmetrics",
+                 new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
+                 {
+                   "textmetrics(text, size, font, direction, language, script, halign, valign, spacing, "
+                   "em) -> object",
+                 });
 
   Builtins::init("fontmetrics",
                  new BuiltinFunction(&builtin_fontmetrics, &Feature::ExperimentalTextMetricsFunctions),
                  {
-                   "fontmetrics(size, font) -> object",
+                   "fontmetrics(size, font, em) -> object",
                  });
 
   Builtins::init("ord", new BuiltinFunction(&builtin_ord),

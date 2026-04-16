@@ -1,10 +1,10 @@
-#include "io/imageutils.h"
+#include <ApplicationServices/ApplicationServices.h>
 
-#include <iostream>
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 
-#include <ApplicationServices/ApplicationServices.h>
+#include "io/imageutils.h"
 
 static CGDataConsumerCallbacks dc_callbacks;
 

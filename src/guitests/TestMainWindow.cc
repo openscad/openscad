@@ -1,6 +1,9 @@
-#include <QTest>
-#include <QStringList>
 #include "TestMainWindow.h"
+
+#include <QString>
+#include <QStringList>
+#include <QTest>
+
 #include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()

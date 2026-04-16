@@ -25,35 +25,35 @@
  */
 #include "core/Expression.h"
 
-#include <set>
-#include <functional>
-#include <ostream>
-#include <cstdint>
-#include <cmath>
-#include <cassert>
-#include <cstddef>
-#include <memory>
-#include <sstream>
 #include <algorithm>
+#include <boost/assign/std/vector.hpp>
+#include <boost/regex.hpp>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <ostream>
+#include <set>
+#include <sstream>
 #include <typeinfo>
 #include <utility>
 #include <variant>
 
 #include "Feature.h"
+#include "core/AST.h"
+#include "core/Assignment.h"
 #include "core/Context.h"
 #include "core/EvaluationSession.h"
-#include "core/function.h"
 #include "core/Parameters.h"
 #include "core/Value.h"
-
-#include "utils/compiler_specific.h"
-#include "utils/printutils.h"
+#include "core/function.h"
 #include "utils/StackCheck.h"
+#include "utils/boost-utils.h"
+#include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
-#include "utils/boost-utils.h"
-#include <boost/regex.hpp>
-#include <boost/assign/std/vector.hpp>
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const
@@ -260,27 +260,34 @@ static void NOINLINE print_range_err(const std::string& begin, const std::string
 
 Value Range::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  double begin_val;
-  double end_val;
-  if (!this->begin->evaluate(context).getDouble(begin_val) ||
-      !this->end->evaluate(context).getDouble(end_val)) {
+  const Value& begin_val = this->begin->evaluate(context);
+  const Value& end_val = this->end->evaluate(context);
+  double begin_d;
+  double end_d;
+  if (!begin_val.getDouble(begin_d) || !end_val.getDouble(end_d)) {
+    LOG(message_group::Warning, loc, context->documentRoot(),
+        "Unable to convert [%1$s:...:%2$s] to a range", begin_val.toEchoStringNoThrow(),
+        end_val.toEchoStringNoThrow());
     return Value::undefined.clone();
   }
 
-  double step_val = 1.0;
+  double step_d = 1.0;
   if (this->step) {
-    if (!this->step->evaluate(context).getDouble(step_val)) {
+    const Value& step_val = this->step->evaluate(context);
+    if (!step_val.getDouble(step_d)) {
+      LOG(message_group::Warning, loc, context->documentRoot(),
+          "Unable to convert [...:%1$s:...] to a step value", step_val.toEchoStringNoThrow());
       return Value::undefined.clone();
     }
   }
   if (this->isLiteral()) {
-    if ((step_val > 0) && (end_val < begin_val)) {
+    if ((step_d > 0) && (end_d < begin_d)) {
       print_range_err("is greater", "is positive", loc, context);
-    } else if ((step_val < 0) && (end_val > begin_val)) {
+    } else if ((step_d < 0) && (end_d > begin_d)) {
       print_range_err("is smaller", "is negative", loc, context);
     }
   }
-  return RangeType(begin_val, step_val, end_val);
+  return RangeType(begin_d, step_d, end_d);
 }
 
 void Range::print(std::ostream& stream, const std::string&) const

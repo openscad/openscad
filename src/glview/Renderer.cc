@@ -1,10 +1,13 @@
 #include "glview/Renderer.h"
 #include "geometry/linalg.h"
+#include "glview/ShaderUtils.h"
+#include "core/Selection.h"
 #include "glview/ColorMap.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 #include "glview/system-gl.h"
 
+#include <cstdio>
 #include <sstream>
 #include <Eigen/LU>
 #include <fstream>

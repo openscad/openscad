@@ -3,9 +3,12 @@
 #include <QWidget>
 #include <algorithm>
 #include <cassert>
-#include <limits>
+#include <cmath>
 #include <cstddef>
+#include <limits>
+
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter,
                                  DescriptionStyle descriptionStyle)

@@ -1,22 +1,21 @@
-#include "geometry/cgal/cgal.h"
-#include "geometry/cgal/cgalutils.h"
-
-#include <algorithm>
-#include <iterator>
-#include <ostream>
-#include <memory>
-#include <cstddef>
-#include <vector>
-
-#include <boost/range/adaptor/reversed.hpp>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 
-#include "geometry/linalg.h"
+#include <algorithm>
+#include <boost/range/adaptor/reversed.hpp>
+#include <cstddef>
+#include <iterator>
+#include <memory>
+#include <ostream>
+#include <vector>
+
+#include "geometry/Grid.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
-#include "geometry/Grid.h"
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {

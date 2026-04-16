@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "core/Arguments.h"
 #include "core/AST.h"
+#include "core/Arguments.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
 #include "core/ContextFrame.h"
 
 /*
@@ -46,6 +48,7 @@ public:
   boost::optional<const Value&> lookup(const std::string& name) const;
 
   void set_caller(const std::string& caller);
+  const std::string& get_caller() const { return caller; }
   const Value& get(const std::string& name) const;
   const Value& get(const std::initializer_list<std::string> names) const;
   double get(const std::string& name, double default_value) const;

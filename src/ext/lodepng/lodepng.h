@@ -112,8 +112,8 @@ or comment out LODEPNG_COMPILE_CPP below*/
 #endif
 
 #ifdef LODEPNG_COMPILE_CPP
-#include <vector>
 #include <string>
+#include <vector>
 #endif /*LODEPNG_COMPILE_CPP*/
 
 #ifdef LODEPNG_COMPILE_PNG

@@ -1,16 +1,16 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <sstream>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <array>
-#include <sstream>
-#include <tuple>
 
-#include "io/export_enums.h"
 #include "core/SettingsGuiEnums.h"
+#include "io/export_enums.h"
 
 namespace Settings {
 

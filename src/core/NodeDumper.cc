@@ -1,12 +1,16 @@
 #include "core/NodeDumper.h"
-#include "core/State.h"
-#include "core/ModuleInstantiation.h"
+
 #include <algorithm>
+#include <boost/regex.hpp>
 #include <iterator>
 #include <ostream>
-#include <string>
 #include <sstream>
-#include <boost/regex.hpp>
+#include <string>
+
+#include "core/BaseVisitable.h"
+#include "core/ModuleInstantiation.h"
+#include "core/State.h"
+#include "core/node.h"
 
 void GroupNodeChecker::incChildCount(int groupNodeIndex)
 {

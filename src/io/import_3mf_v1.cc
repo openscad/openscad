@@ -25,26 +25,26 @@
  */
 #include "io/import.h"
 
-#include <cstddef>
-#include <functional>
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <iomanip>
-#include <algorithm>
-
 #include <Model/COM/NMR_DLLInterfaces.h>
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <iomanip>
+#include <memory>
+#include <string>
+
+#include "core/AST.h"
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
-#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
-#include "utils/printutils.h"
-#include "utils/version_helper.h"
-#include "core/AST.h"
 #include "glview/RenderSettings.h"
 #include "io/lib3mf_utils.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"

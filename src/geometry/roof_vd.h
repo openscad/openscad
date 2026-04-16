@@ -4,9 +4,10 @@
 #pragma once
 
 #include <memory>
+
 #include "core/CurveDiscretizer.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
 
 namespace roof_vd {
 std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly,

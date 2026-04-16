@@ -1,18 +1,19 @@
-#include <iterator>
-#include <ios>
-#include <mutex>
-#include <string>
-#include <fstream>
-#include <unistd.h>
 #include <sys/resource.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 
-#include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <ios>
+#include <iterator>
+#include <mutex>
+#include <string>
 
-#include "version.h"
 #include "platform/PlatformUtils.h"
+#include "version.h"
 
 namespace fs = std::filesystem;
 
@@ -132,13 +133,13 @@ unsigned long PlatformUtils::stackLimit()
       return STACK_LIMIT_DEFAULT;
     }
     if (limit.rlim_cur > STACK_BUFFER_SIZE) {
-      return limit.rlim_cur - STACK_BUFFER_SIZE;
+      return static_cast<unsigned long>(limit.rlim_cur - STACK_BUFFER_SIZE);
     }
     if (limit.rlim_max == RLIM_INFINITY) {
       return STACK_LIMIT_DEFAULT;
     }
     if (limit.rlim_max > STACK_BUFFER_SIZE) {
-      return limit.rlim_max - STACK_BUFFER_SIZE;
+      return static_cast<unsigned long>(limit.rlim_max - STACK_BUFFER_SIZE);
     }
   }
 #endif  // __EMSCRIPTEN__

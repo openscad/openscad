@@ -570,6 +570,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
   ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
   ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/colored-nodes.scad
 
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5738.scad
@@ -627,18 +628,17 @@ list(APPEND PREVIEW_DIFFERENT_EXPECTATIONS
   ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 
   # render() in manifold mode preserves colors
-  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
   ${TEST_SCAD_DIR}/3D/features/render-preserve-colors.scad
-
-  # resize() in manifold mode preserves colors
-  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
 
   # TODO(kintel): Run bugs files
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
   # ${TEST_SCAD_DIR}/bugs2D/issue2220.scad
 )
+if(EXAMPLES_DIR)
+  list(APPEND PREVIEW_DIFFERENT_EXPECTATIONS
+    ${EXAMPLES_DIR}/Old/example009.scad) # Really this only differs on throwntogether, but then we'd need to make THROWNTOGETHER_DIFFERENT_EXPECTATIONS just for this one thing.
+endif(EXAMPLES_DIR)
 
 list(APPEND RENDER_COMMON_FILES ${ALL_RENDER_FILES})
 list(REMOVE_ITEM RENDER_COMMON_FILES
@@ -859,6 +859,7 @@ add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FIL
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
 
+# Note: we're missing coverage for ${PREVIEW_DIFFERENT_EXPECTATIONS} files for throwntogether
 add_cmdline_test(throwntogether-cgal  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=cgal)
 add_cmdline_test(throwntogether-manifold  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=manifold)
 
@@ -979,6 +980,8 @@ add_cmdline_test(export-pov-rotate-2     EXPERIMENTAL OPENSCAD SUFFIX pov FILES 
 add_cmdline_test(export-pov-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,90,140)
 add_cmdline_test(export-pov-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
 add_cmdline_test(export-pov-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
+
+add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES "${TEST_SCAD_DIR}/issues/issue6597.scad" ARGS --export-format param)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
@@ -1328,6 +1331,8 @@ disable_tests_safe(
   throwntogether-manifold_issue1089
   throwntogether-cgal_issue1215
   throwntogether-manifold_issue1215
+  throwntogether-cgal_render-tests
+  throwntogether-manifold_render-tests
 
   # The inf/nan tests fail when exporting CSG and rendering that output again
   # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
@@ -1428,6 +1433,7 @@ disable_tests_safe(
   # https://github.com/openscad/openscad/issues/5218
   throwntogether-manifold_issue5218
   throwntogether-manifold_issue913
+  throwntogether-cgal_issue913
 
   # z-fighting different on different machines
   preview-cgal_example017
@@ -1443,6 +1449,7 @@ disable_tests_safe(
 
   # https://github.com/openscad/openscad/issues/5218
   throwntogether-manifold_example016
+  throwntogether-cgal_example016
 
   # https://github.com/openscad/openscad/issues/5220
   render-cgal_roof

@@ -1,8 +1,15 @@
 #include "core/CurveDiscretizer.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <functional>
+#include <optional>
+#include <ostream>
 #include <queue>
+#include <utility>
+#include <vector>
 
 #include "Feature.h"
 #include "core/AST.h"  // for Location

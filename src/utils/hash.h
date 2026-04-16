@@ -1,9 +1,8 @@
 #pragma once
 
+#include <Eigen/Core>
 #include <cstddef>
 #include <functional>
-
-#include <Eigen/Core>
 
 #include "geometry/linalg.h"
 

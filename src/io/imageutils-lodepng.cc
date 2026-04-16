@@ -1,8 +1,7 @@
-#include "io/imageutils.h"
-
 #include <iostream>
 #include <vector>
 
+#include "io/imageutils.h"
 #include "lodepng/lodepng.h"
 
 bool write_png(std::ostream& output, unsigned char *pixels, int width, int height)

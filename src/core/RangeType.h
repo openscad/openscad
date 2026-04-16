@@ -1,10 +1,10 @@
 #pragma once
 
+#include <cmath>
+#include <cstdint>
 #include <iterator>
 #include <limits>
-#include <cstdint>
 #include <ostream>
-#include <cmath>
 
 class RangeType
 {

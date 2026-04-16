@@ -1,41 +1,43 @@
 #pragma once
 
-#include <ctime>
-#include <tuple>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include <QAction>
 #include <QCloseEvent>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QElapsedTimer>
 #include <QEvent>
 #include <QFile>
+#include <QIODevice>
+#include <QIcon>
 #include <QLabel>
 #include <QList>
+#include <QMainWindow>
 #include <QMap>
+#include <QMutex>
 #include <QObject>
 #include <QPoint>
+#include <QShortcut>
+#include <QSignalMapper>
+#include <QSoundEffect>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryFile>
+#include <QTime>
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
-#include <QMainWindow>
-#include <QElapsedTimer>
-#include <QIcon>
-#include <QIODevice>
-#include <QMutex>
-#include <QSoundEffect>
-#include <QTime>
-#include <QSignalMapper>
-#include <QShortcut>
+#include <ctime>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "core/Context.h"
-#include "glview/Renderer.h"
 #include "core/SourceFile.h"
+#include "glview/Camera.h"
+#include "glview/Renderer.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QSvgPlugin)
@@ -51,20 +53,19 @@ class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
 
+#include "RenderStatistic.h"
 #include "core/Tree.h"
 #include "geometry/Geometry.h"
 #include "gui/Editor.h"
-#include "gui/input/InputDriverEvent.h"
 #include "gui/Measurement.h"
-#include "gui/qt-obsolete.h"  // IWYU pragma: keep
-#include "gui/qtgettext.h"    // IWYU pragma: keep
 #include "gui/RubberBandManager.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/qt-obsolete.h"  // IWYU pragma: keep
+#include "gui/qtgettext.h"    // IWYU pragma: keep
+#include "io/export.h"
 #include "io/export_enums.h"
-#include "io/export.h"
-#include "io/export.h"
-#include "RenderStatistic.h"
 #include "ui_MainWindow.h"
 #include "utils/printutils.h"
 
@@ -129,6 +130,8 @@ private:
   std::vector<std::pair<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
+  bool windowStateSaved = false;
+  void saveWindowStateOnClose();
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
@@ -230,7 +233,6 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible);
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
@@ -241,6 +243,7 @@ private:
   Dock *getNextDockFromSender(QObject *sender);
   void addExportActions(QToolBar *toolbar, QAction *action) const;
   QAction *formatIdentifierToAction(const std::string& identifier) const;
+  QString getDockBaseName(const QString& title) const;
 
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};
@@ -402,8 +405,8 @@ public slots:
   void on_viewActionBack_triggered();
   void on_viewActionDiagonal_triggered();
   void on_viewActionCenter_triggered();
-  void on_viewActionPerspective_triggered();
-  void on_viewActionOrthogonal_triggered();
+  void on_viewActionPerspective_toggled(bool checked);
+  void on_viewActionOrthogonal_toggled(bool checked);
   void viewTogglePerspective();
   void on_viewActionResetView_triggered();
   void on_viewActionViewAll_triggered();

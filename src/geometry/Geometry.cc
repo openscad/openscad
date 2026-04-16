@@ -1,12 +1,14 @@
 #include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "utils/printutils.h"
-#include <sstream>
-#include <memory>
+
 #include <boost/foreach.hpp>
 #include <cstddef>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
+
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
 
 GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
 {

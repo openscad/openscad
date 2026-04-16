@@ -1,10 +1,10 @@
 #pragma once
 
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 class Annotation
 {

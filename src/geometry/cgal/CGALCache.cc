@@ -1,8 +1,8 @@
 #include "geometry/cgal/CGALCache.h"
 
 #include <cassert>
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #include "geometry/Geometry.h"

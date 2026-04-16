@@ -26,24 +26,8 @@
 
 #include "gui/MainWindow.h"
 
-#include <algorithm>
-#include <cassert>
-#include <cstring>
-#include <deque>
-#include <exception>
-#include <filesystem>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
 #include <sys/stat.h>
 
-#include <boost/version.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
@@ -86,44 +70,64 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QByteArray>
+#include <QDataStream>
+#include <QDebug>
+#include <QString>
+#include <algorithm>
+#include <boost/range/adaptor/reversed.hpp>
+#include <boost/version.hpp>
+#include <cassert>
+#include <cstring>
+#include <deque>
+#include <exception>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
 #include "core/CSGNode.h"
 #include "core/Context.h"
-#include "core/customizer/CommentParser.h"
 #include "core/EvaluationSession.h"
 #include "core/Expression.h"
-#include "core/node.h"
-#include "core/parsersettings.h"
-#include "core/progress.h"
 #include "core/RenderVariables.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
 #include "core/SourceFileCache.h"
+#include "core/customizer/CommentParser.h"
+#include "core/node.h"
+#include "core/parsersettings.h"
+#include "core/progress.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/GeometryEvaluator.h"
 #include "glview/PolySetRenderer.h"
+#include "glview/RenderSettings.h"
+#if not defined(USE_POLYSET_FOR_CGAL)
 #include "glview/cgal/CGALRenderer.h"
+#endif
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
-#include "glview/RenderSettings.h"
 #include "gui/AboutDialog.h"
 #include "gui/CGALWorker.h"
 #include "gui/ColorList.h"
-#include "gui/Editor.h"
 #include "gui/Dock.h"
-#include "gui/Measurement.h"
+#include "gui/Editor.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/ImportUtils.h"
-#include "gui/input/InputDriverEvent.h"
-#include "gui/input/InputDriverManager.h"
 #include "gui/LibraryInfoDialog.h"
+#include "gui/Measurement.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/Preferences.h"
 #include "gui/PrintInitDialog.h"
@@ -131,10 +135,12 @@
 #include "gui/QGLView.h"
 #include "gui/QSettingsCached.h"
 #include "gui/QWordSearchField.h"
-#include "gui/SettingsWriter.h"
 #include "gui/ScintillaEditor.h"
+#include "gui/SettingsWriter.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
 #include "io/dxfdim.h"
 #include "io/export.h"
 #include "io/fileutils.h"
@@ -145,27 +151,28 @@
 #include "version.h"
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgal.h"
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/manifoldutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif  // ENABLE_MANIFOLD
 #ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
-#include <opencsg.h>
 #endif
 #ifdef OPENSCAD_UPDATER
 #include "gui/AutoUpdater.h"
 #endif
 
 #ifdef ENABLE_PYTHON
-#include "python/python_public.h"
-#include "nettle/sha2.h"
 #include "nettle/base64.h"
+#include "nettle/sha2.h"
+#include "python/python_public.h"
 
 std::string SHA256HashString(std::string aString)
 {
@@ -435,17 +442,6 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
   }
 }
 
-/**
- * Update window settings that get overwritten by the restoreState()
- * Qt call. So the values are loaded before the call and restored here
- * regardless of the (potential outdated) serialized state.
- */
-void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible)
-{
-  viewActionHideEditorToolBar->setChecked(!isEditorToolbarVisible);
-  viewActionHide3DViewToolBar->setChecked(!isViewToolbarVisible);
-}
-
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
 {
 }
@@ -598,7 +594,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
   for (auto& [dock, name] : docks) {
-    dock->setTitleBarVisibility(!reorderMode);
+    dock->setTitleBarVisibility(reorderMode);
   }
 }
 
@@ -1154,6 +1150,7 @@ void MainWindow::show_examples()
 
 void MainWindow::actionOpenExample()
 {
+  auto guard = scopedSetCurrentOutput();
   const auto action = qobject_cast<QAction *>(sender());
   if (action) {
     const auto& path = action->data().toString();
@@ -1297,6 +1294,7 @@ void MainWindow::on_fileActionSaveACopy_triggered()
 
 void MainWindow::on_fileShowLibraryFolder_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
     LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", path);
@@ -1311,6 +1309,7 @@ void MainWindow::on_fileShowLibraryFolder_triggered()
 
 void MainWindow::on_fileActionReload_triggered()
 {
+  auto guard = scopedSetCurrentOutput();
   if (checkEditorModified()) {
     fileChangedOnDisk();                  // force cached autoReloadId to update
     (void)tabManager->refreshDocument();  // ignore errors opening the file
@@ -1512,6 +1511,15 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+  // OpenSCAD quits by closing all top-level windows. However, the order in which top-level are closed is
+  // not defined by Qt, so we may end up closing undocked dock widgets before we've had a chance to save
+  // their window state. This overrides close to proactively save the window state.
+  if (event->type() == QEvent::Close) {
+    if (qobject_cast<Dock *>(obj) && !static_cast<QCloseEvent *>(event)->spontaneous()) {
+      saveWindowStateOnClose();
+    }
+  }
+
   if (rubberBandManager.isVisible()) {
     if (event->type() == QEvent::KeyRelease) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -1943,6 +1951,9 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
+#if defined(USE_POLYSET_FOR_CGAL)
+    this->geomRenderer = std::make_shared<PolySetRenderer>(this->rootGeom);
+#else
     // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
     // know that all geometries are convertible to PolySet.
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
@@ -1952,6 +1963,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     } else {
       this->geomRenderer = std::make_shared<CGALRenderer>(this->rootGeom);
     }
+#endif
 
     // Go to CGAL view mode
     viewModeRender();
@@ -2057,6 +2069,24 @@ void MainWindow::rightClick(QPoint position)
       if (step->name() == "root") {
         continue;
       }
+      const bool hasSourceRef = step->modinst && !step->modinst->location().isNone();
+      if (!hasSourceRef) {
+        // Show an entry so the backtrace stays complete; no jump/highlight (no "id", no hover)
+        std::string name;
+        if (step->modinst) {
+          const std::string vname = step->verbose_name();
+          const int first_position = (vname.find("module") == std::string::npos) ? 0 : 7;
+          name = vname.empty() ? step->modinst->name() : vname.substr(first_position);
+        } else {
+          const std::string vname = step->verbose_name();
+          const int first_position = (vname.find("module") == std::string::npos) ? 0 : 7;
+          name = vname.empty() ? "?" : vname.substr(first_position);
+        }
+        ss.str("");
+        ss << name << " (no source reference)";
+        tracemenu.addAction(QString::fromStdString(ss.str()));
+        continue;
+      }
       auto location = step->modinst->location();
       ss.str("");
 
@@ -2139,7 +2169,10 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
   // starts at 1 because we will process this one after later
   for (size_t i = 1; i < stack.size() - 1; i++) {
     const auto& node = stack[i];
-
+    if (!node->modinst || node->modinst->location().isNone()) {
+      level++;
+      continue;
+    }
     auto& location = node->modinst->location();
     if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
       level++;
@@ -2155,6 +2188,9 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
   }
 
   auto& node = stack[0];
+  if (!node->modinst || node->modinst->location().isNone()) {
+    return;
+  }
   auto location = node->modinst->location();
   auto line = location.firstLine();
   auto column = location.firstColumn();
@@ -2176,6 +2212,9 @@ void MainWindow::setSelection(int index)
   const std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
 
   if (!selected_node) return;
+  if (!selected_node->modinst || selected_node->modinst->location().isNone()) {
+    return;
+  }
 
   currentlySelectedObject = index;
 
@@ -2749,14 +2788,18 @@ void MainWindow::setProjectionType(ProjectionType mode)
   qglview->update();
 }
 
-void MainWindow::on_viewActionPerspective_triggered()
+void MainWindow::on_viewActionPerspective_toggled(bool checked)
 {
-  setProjectionType(ProjectionType::PERSPECTIVE);
+  if (checked) {
+    setProjectionType(ProjectionType::PERSPECTIVE);
+  }
 }
 
-void MainWindow::on_viewActionOrthogonal_triggered()
+void MainWindow::on_viewActionOrthogonal_toggled(bool checked)
 {
-  setProjectionType(ProjectionType::ORTHOGONAL);
+  if (checked) {
+    setProjectionType(ProjectionType::ORTHOGONAL);
+  }
 }
 
 void MainWindow::viewTogglePerspective()
@@ -3003,6 +3046,22 @@ void MainWindow::updateWindowTitles()
     std::get<0>(d)->setNameSuffix(name);
   }
 }
+/**
+ * Convert a dock title to a base name for action naming.
+ * Removes mnemonic markers (&) and hyphens, creating a camelCase name.
+ * Examples: "&Editor" -> "Editor", "Error-&Log" -> "ErrorLog"
+ */
+QString MainWindow::getDockBaseName(const QString& title) const
+{
+  QString baseName = title;
+  // Remove mnemonic marker
+  baseName.remove('&');
+  // Remove hyphens
+  baseName.remove('-');
+  // Remove spaces
+  baseName.remove(' ');
+  return baseName;
+}
 
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
@@ -3187,22 +3246,36 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
   this->libraryInfoDialog->show();
 }
 
+void MainWindow::saveWindowStateOnClose()
+{
+  if (windowStateSaved) return;
+  windowStateSaved = true;
+
+  QSettingsCached settings;
+  settings.setValue("window/geometry", saveGeometry());
+  auto windowState = saveState();
+  UIUtils::dumpSaveState(windowState);
+  settings.setValue("window/state", windowState);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (tabManager->shouldClose()) {
     isClosing = true;
+    saveWindowStateOnClose();
     progress_report_fin();
-    // Disable invokeMethod calls for consoleOutput during shutdown,
-    // otherwise will segfault if echos are in progress.
-    hideCurrentOutput();
 
-    QSettingsCached settings;
-    settings.setValue("window/geometry", saveGeometry());
-    settings.setValue("window/state", saveState());
+    // Log to stdout from now on
+    clearCurrentOutput();
+
     if (this->tempFile) {
       delete this->tempFile;
       this->tempFile = nullptr;
     }
+
+    // Disable invokeMethod calls for consoleOutput during shutdown,
+    // otherwise will segfault if echos are in progress.
+    hideCurrentOutput();
     event->accept();
   } else {
     event->ignore();
@@ -3365,7 +3438,7 @@ void MainWindow::setupWindow()
  */
 void MainWindow::setupCoreSubsystems()
 {
-  renderCompleteSoundEffect = new QSoundEffect();
+  renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
   this->cgalworker = new CGALWorker();
@@ -3649,7 +3722,11 @@ void MainWindow::setupDocks()
     // correctly processed when the dock are floating (is in a different window that the mainwindow)
     dock->installEventFilter(this);
 
-    menuWindow->addAction(dock->toggleViewAction());
+    // Get the toggle action from Qt and set an objectName for DBus accessibility
+    QAction *toggleAction = dock->toggleViewAction();
+    QString baseName = getDockBaseName(title);
+    toggleAction->setObjectName("windowActionToggle" + baseName);
+    menuWindow->addAction(toggleAction);
 
     auto dockAction = navigationMenu->addAction(title);
     dockAction->setProperty("id", QVariant::fromValue(dock));
@@ -3850,6 +3927,10 @@ void MainWindow::restoreWindowState()
 
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  // Log to stdout
+  clearCurrentOutput();
+  UIUtils::dumpSaveState(windowState);
+  setCurrentOutput();
   restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
   // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
@@ -3880,7 +3961,10 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, colorListDock);
     tabifyDockWidget(colorListDock, animateDock);
+    parameterDock->hide();
+    viewportControlDock->hide();
     consoleDock->show();
+    consoleDock->raise();
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
@@ -3901,7 +3985,6 @@ void MainWindow::restoreWindowState()
 #endif  // ifdef Q_OS_WIN
   }
 
-  updateWindowSettings(isEditorToolbarVisible, is3DViewToolbarVisible);
 }
 
 void MainWindow::openRemainingFiles(const QStringList& filenames)

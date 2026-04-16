@@ -25,9 +25,12 @@
  */
 
 #include "geometry/linalg.h"
+#include "core/Selection.h"
 #include "gui/Measurement.h"
 #include "utils/vector_math.h"
 
+#include <cassert>
+#include <limits>
 #include <QPoint>
 #include <QString>
 #include <cmath>

@@ -1,9 +1,11 @@
 #include "glview/ShaderUtils.h"
 
+#include <cstdio>
 #include <sstream>
 #include <string>
 #include <fstream>
 
+#include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
 namespace ShaderUtils {

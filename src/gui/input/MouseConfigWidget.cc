@@ -25,7 +25,6 @@
  */
 
 #include "gui/input/MouseConfigWidget.h"
-#include "core/MouseConfig.h"
 
 #include <QChar>
 #include <QComboBox>
@@ -33,11 +32,13 @@
 #include <QString>
 #include <QWidget>
 #include <map>
+
+#include "core/MouseConfig.h"
 #include "core/Settings.h"
-#include "gui/input/InputDriverManager.h"
-#include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/Preferences.h"
+#include "gui/SettingsWriter.h"
+#include "gui/input/InputDriverManager.h"
 
 MouseConfigWidget::MouseConfigWidget(QWidget *parent) : QWidget(parent)
 {

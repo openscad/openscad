@@ -26,14 +26,17 @@
 
 #include "core/function.h"
 
+#include <cstddef>
+#include <memory>
+#include <ostream>
+#include <utility>
+
 #include "core/AST.h"
 #include "core/Arguments.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
 #include "core/Expression.h"
-
-#include <ostream>
-#include <memory>
-#include <cstddef>
-#include <utility>
+#include "core/Value.h"
 
 BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<const Context>&, const FunctionCall *),
                                  const Feature *feature)

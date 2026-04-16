@@ -24,13 +24,15 @@
  */
 #include "libsvg/use.h"
 
-#include <sstream>
-#include <memory>
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
+#include "libsvg/shape.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

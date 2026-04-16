@@ -1,0 +1,27 @@
+color([1, 0, 0, 1]) {
+	hull() {
+		cube(size = [10, 10, 10], center = false);
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [10, 10, 10], center = false);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 24], [0, 1, 0, 1], [0, 0, 1, 1], [0, 0, 0, 1]]) {
+	color([0, 0.501961, 0, 1]) {
+		minkowski(convexity = 0) {
+			cube(size = [8, 8, 8], center = false);
+			sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 41], [0, 1, 0, 5], [0, 0, 1, 5], [0, 0, 0, 1]]) {
+	color([0, 0, 1, 1]) {
+		resize(newsize = [0,0,0], auto = [0,0,0], convexity = 0) {
+			intersection() {
+				sphere($fn = 0, $fa = 12, $fs = 2, r = 6);
+				cube(size = [10, 10, 10], center = true);
+			}
+		}
+	}
+}
+

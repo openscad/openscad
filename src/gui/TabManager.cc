@@ -2,37 +2,40 @@
 
 #include <QApplication>
 #include <QStringBuilder>
+#include <string>
+#include <tuple>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
 #endif
-#include <QPoint>
-#include <QTabBar>
-#include <QWidget>
-#include <cassert>
-#include <functional>
-#include <exception>
-#include <QFileInfo>
-#include <QFile>
-#include <QDir>
-#include <QByteArray>
-#include <QStringList>
-#include <QSaveFile>
-#include <QShortcut>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QClipboard>
-#include <QDesktopServices>
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
+#include <QByteArray>
+#include <QClipboard>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QPoint>
+#include <QSaveFile>
+#include <QShortcut>
+#include <QStringList>
+#include <QTabBar>
+#include <QTextStream>
+#include <QWidget>
+#include <cassert>
+#include <cstddef>
+#include <exception>
+#include <functional>
+
 #include "gui/Editor.h"
 #include "gui/ImportUtils.h"
-#include "gui/ScintillaEditor.h"
-#include "gui/Preferences.h"
 #include "gui/MainWindow.h"
-
-#include <cstddef>
+#include "gui/Preferences.h"
+#include "gui/ScintillaEditor.h"
+#include "utils/printutils.h"
 
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
@@ -383,6 +386,16 @@ void TabManager::closeTab()
   applyAction(QObject::sender(), [this](int idx, EditorInterface *) { closeTabRequested(idx); });
 }
 
+void TabManager::closeAllButThisTab()
+{
+  applyAction(QObject::sender(), [this](int idx, EditorInterface *) {
+    int total = count();
+    for (int i = total - 1; i >= 0; i--) {
+      if (i != idx) closeTabRequested(i);
+    }
+  });
+}
+
 void TabManager::showContextMenuEvent(const QPoint& pos)
 {
   auto menu = editor->createStandardContextMenu();
@@ -430,8 +443,16 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   closeAction->setText(_("Close Tab"));
   connect(closeAction, &QAction::triggered, this, &TabManager::closeTab);
 
+  auto *closeAllButThisAction = new QAction(tabWidget);
+  closeAllButThisAction->setData(idx);
+  closeAllButThisAction->setText(_("Close All But This Tab"));
+  connect(closeAllButThisAction, &QAction::triggered, this, &TabManager::closeAllButThisTab);
+
   // Don't allow to close the last tab.
-  if (tabWidget->count() <= 1) closeAction->setDisabled(true);
+  if (tabWidget->count() <= 1) {
+    closeAction->setDisabled(true);
+    closeAllButThisAction->setDisabled(true);
+  }
 
   menu.addAction(copyFileNameAction);
   menu.addAction(copyFilePathAction);
@@ -439,6 +460,7 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   menu.addAction(openFolderAction);
   menu.addSeparator();
   menu.addAction(closeAction);
+  menu.addAction(closeAllButThisAction);
 
   QPoint globalCursorPos = QCursor::pos();
   menu.exec(globalCursorPos);
@@ -560,6 +582,9 @@ bool TabManager::refreshDocument()
       }
       file_opened = true;
     }
+  }
+  if (file_opened) {
+    parent->fileChangedOnDisk();
   }
   return file_opened;
 }

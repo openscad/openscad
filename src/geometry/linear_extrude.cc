@@ -1,24 +1,23 @@
 #include "geometry/linear_extrude.h"
 
 #include <algorithm>
-#include <iterator>
+#include <boost/logic/tribool.hpp>
 #include <cassert>
 #include <cmath>
-#include <utility>
-#include <memory>
 #include <cstddef>
+#include <iterator>
+#include <memory>
+#include <utility>
 #include <vector>
 
-#include <boost/logic/tribool.hpp>
-
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/GeometryUtils.h"
-#include "glview/RenderSettings.h"
 #include "core/LinearExtrudeNode.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
 
 namespace LinearExtrudeInternals {

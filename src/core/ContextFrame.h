@@ -1,14 +1,14 @@
 #pragma once
 
+#include <boost/optional.hpp>
 #include <cassert>
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <boost/optional.hpp>
 
 #include "core/AST.h"
-#include "core/callables.h"
 #include "core/ValueMap.h"
+#include "core/callables.h"
 
 class EvaluationSession;
 class Value;

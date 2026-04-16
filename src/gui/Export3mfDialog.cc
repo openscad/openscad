@@ -26,19 +26,20 @@
 
 #include "gui/Export3mfDialog.h"
 
-#include <string>
-#include <QString>
+#include <QApplication>
 #include <QCheckBox>
 #include <QColor>
-#include <QDialog>
 #include <QColorDialog>
+#include <QDialog>
 #include <QLineEdit>
+#include <QString>
+#include <string>
 
+#include "core/Settings.h"
+#include "gui/SettingsWriter.h"
+#include "gui/UIUtils.h"
 #include "io/export.h"
 #include "io/lib3mf_utils.h"
-#include "core/Settings.h"
-#include "gui/UIUtils.h"
-#include "gui/SettingsWriter.h"
 
 using S = Settings::SettingsExport3mf;
 using SEBool = Settings::SettingsEntryBool;

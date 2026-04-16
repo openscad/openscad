@@ -26,16 +26,16 @@
 
 #pragma once
 
-#include <functional>
-#include <string>
-#include <memory>
-
 #include <QDir>
 #include <QString>
+#include <functional>
+#include <memory>
+#include <string>
 
-#include "gui/PrintService.h"
-#include "geometry/Geometry.h"
 #include "core/Settings.h"
+#include "geometry/Geometry.h"
+#include "glview/Camera.h"
+#include "gui/PrintService.h"
 #include "io/export.h"
 
 class ExternalToolInterface

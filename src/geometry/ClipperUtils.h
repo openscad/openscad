@@ -1,11 +1,11 @@
 #pragma once
 
-#include "clipper2/clipper.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-
 #include <memory>
 #include <vector>
+
+#include "clipper2/clipper.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 
 namespace ClipperUtils {
 

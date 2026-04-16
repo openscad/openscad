@@ -24,25 +24,23 @@
  */
 #include "libsvg/path.h"
 
-#include <algorithm>
-#include <sstream>
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <cmath>
-#include <cctype>
-#include <string>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-
-#include <boost/tokenizer.hpp>
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
-#include "utils/degree_trig.h"
-#include "utils/calc.h"
+#include "libsvg/shape.h"
 #include "libsvg/util.h"
+#include "utils/calc.h"
+#include "utils/degree_trig.h"
 
 namespace libsvg {
 

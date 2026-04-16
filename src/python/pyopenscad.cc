@@ -23,13 +23,23 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <Python.h>
-#include <filesystem>
-
 #include "pyopenscad.h"
+
+#include <Python.h>
+
+#include <array>
+#include <filesystem>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+
 #include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
+#include "core/enums.h"
+#include "core/node.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 

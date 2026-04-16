@@ -26,18 +26,21 @@
 
 #include "core/RotateExtrudeNode.h"
 
+#include <algorithm>
+#include <cmath>
+#include <ios>
+#include <memory>
+#include <sstream>
+#include <utility>
+
 #include "core/Builtins.h"
 #include "core/Children.h"
-#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "utils/printutils.h"
-#include "io/fileutils.h"
+#include "core/module.h"
 #include "handle_dep.h"
-#include <ios>
-#include <utility>
-#include <cmath>
-#include <sstream>
+#include "io/fileutils.h"
+#include "utils/printutils.h"
 
 namespace {
 

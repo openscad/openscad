@@ -1,16 +1,16 @@
 #pragma once
 
-#include <QStringList>
 #include <QObject>
-#include <QString>
-#include <QWidget>
 #include <QScrollBar>
+#include <QString>
+#include <QStringList>
 #include <QTextEdit>
-#include "core/IndicatorData.h"
-#include "gui/parameter/ParameterWidget.h"
-
+#include <QWidget>
 #include <string>
 #include <vector>
+
+#include "core/IndicatorData.h"
+#include "gui/parameter/ParameterWidget.h"
 
 enum class EditorSelectionIndicatorStatus { SELECTED, IMPACTED };
 

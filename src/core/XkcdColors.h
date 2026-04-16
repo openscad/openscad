@@ -1,5 +1,5 @@
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 #include "core/ColorUtil.h"
 #include "geometry/linalg.h"

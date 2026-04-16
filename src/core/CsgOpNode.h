@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/enums.h"
+#include "core/node.h"
 
 class CsgOpNode : public AbstractNode
 {

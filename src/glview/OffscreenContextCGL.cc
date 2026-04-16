@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 
+#include "glview/OffscreenContext.h"
 #include "glview/system-gl.h"
 #include <OpenGL/OpenGL.h>
 

@@ -26,18 +26,18 @@
 #pragma once
 
 #include <QString>
-#include <QWidget>
 #include <QTimer>
+#include <QWidget>
 #include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "gui/qtgettext.h"  // IWYU pragma: keep
-#include "ui_ParameterWidget.h"
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
 #include "gui/parameter/ParameterVirtualWidget.h"
+#include "gui/qtgettext.h"  // IWYU pragma: keep
+#include "ui_ParameterWidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {

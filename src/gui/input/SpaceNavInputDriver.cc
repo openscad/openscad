@@ -30,6 +30,7 @@
  */
 
 #include "gui/input/SpaceNavInputDriver.h"
+#include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "utils/printutils.h"
 

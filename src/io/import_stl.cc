@@ -1,17 +1,19 @@
 #include "io/import.h"
 
-#include <array>
-#include <cstddef>
-#include <cstdint>
-#include <fstream>
-#include <ios>
-#include <memory>
-#include <string>
+#include <boost/predef.h>
 
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/predef.h>
 #include <boost/regex.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #include "core/AST.h"
 #include "geometry/PolySet.h"

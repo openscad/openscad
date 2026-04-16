@@ -24,15 +24,15 @@
  *
  */
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <cstddef>
 #include <string>
 #include <vector>
 
-#include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
+#include "core/node.h"
 
 struct img_data_t {
 public:

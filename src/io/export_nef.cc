@@ -24,12 +24,11 @@
  *
  */
 
-#include "io/export.h"
-
 #include <memory>
 #include <ostream>
 
 #include "geometry/Geometry.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL

@@ -26,10 +26,11 @@
 #pragma once
 
 #include <QColor>
-#include <QString>
-#include <QWidget>
-#include <QStringList>
 #include <QFileInfoList>
+#include <QList>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -88,5 +89,7 @@ QString getBackgroundColorStyleSheet(const QColor& color);
 
 QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend,
                                           float transparency = 0.2);
+
+void dumpSaveState(const QByteArray& data);
 
 }  // namespace UIUtils

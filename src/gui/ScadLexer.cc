@@ -4,12 +4,12 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <cstddef>
 #include <iterator>
 #include <string>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
 
 #if !ENABLE_LEXERTL
 
@@ -99,9 +99,10 @@ QStringList ScadLexer::autoCompletionWordSeparators() const
 // #define DEBUG_LEXERTL   1
 
 #if DEBUG_LEXERTL
-#include "lexertl/debug.hpp"
 #include <fstream>
 #include <iostream>
+
+#include "lexertl/debug.hpp"
 #endif
 
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src

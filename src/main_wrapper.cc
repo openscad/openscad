@@ -23,9 +23,9 @@ int main(int argc, char **argv)
 
 #ifdef _WIN32
 
+#include <boost/nowide/convert.hpp>
 #include <cstddef>
 #include <string>
-#include <boost/nowide/convert.hpp>
 
 // wmain gets arguments as wide character strings, which is the way that Windows likes to provide
 // non-ASCII arguments.  Convert them to UTF-8 strings and call the traditional main().

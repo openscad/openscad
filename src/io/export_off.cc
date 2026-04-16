@@ -25,17 +25,17 @@
  *
  */
 
-#include "io/export.h"
-
-#include <ostream>
-#include <memory>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <ostream>
 
 #include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "io/export.h"
+#include "utils/printutils.h"
 
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {

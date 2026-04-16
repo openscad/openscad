@@ -3,6 +3,7 @@
 
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
+
 #include <cstddef>
 #include <functional>
 #include <unordered_map>

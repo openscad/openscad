@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <string>
+
 #include "core/Settings.h"
 #include "gui/input/InputDriver.h"
 

@@ -26,54 +26,55 @@
 
 #include "gui/Preferences.h"
 
-#include <unordered_map>
-#include <vector>
+#include <QActionGroup>
+#include <QDialog>
+#include <QFileDialog>
 #include <QFont>
 #include <QFontComboBox>
-#include <QMainWindow>
-#include <QObject>
-#include <QDialog>
-#include <QSizePolicy>
-#include <QSpacerItem>
-#include <QString>
-#include <QStringList>
-#include <QWidget>
-#include <tuple>
-#include <cassert>
-#include <list>
-#include <QMenu>
-#include <QActionGroup>
-#include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QFileDialog>
-#include <QRegularExpression>
-#include <QRegularExpressionValidator>
-#include <QStatusBar>
-#include <QSettings>
-#include <QTextDocument>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QObject>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSettings>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QStatusBar>
+#include <QString>
+#include <QStringList>
+#include <QTextDocument>
+#include <QWidget>
 #include <boost/algorithm/string.hpp>
+#include <cassert>
+#include <list>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+#include "Feature.h"
 #include "OctoPrintApiKeyDialog.h"
+#include "core/Settings.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
-#include "Feature.h"
-#include "core/Settings.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
+#include <string>
+
 #include "glview/ColorMap.h"
-#include "gui/EditorColorMap.h"
 #include "glview/RenderSettings.h"
+#include "gui/EditorColorMap.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/OctoPrint.h"
+#include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
-#include "gui/OctoPrint.h"
-#include "gui/IgnoreWheelWhenNotFocused.h"
-#include "gui/PrintService.h"
-
-#include <string>
 
 static const char *featurePropertyName = "FeatureProperty";
 
@@ -103,11 +104,17 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   QStringList renderColorSchemes;
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
-  syntaxHighlight->clear();
-  syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+  {
+    const BlockSignals<QComboBox *> blocker(syntaxHighlight);
+    syntaxHighlight->clear();
+    syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+  }
 
-  colorSchemeChooser->clear();
-  colorSchemeChooser->addItems(renderColorSchemes);
+  {
+    const BlockSignals<QListWidget *> blocker(colorSchemeChooser);
+    colorSchemeChooser->clear();
+    colorSchemeChooser->addItems(renderColorSchemes);
+  }
   init();
   AxisConfig->init();
   setupFeaturesPage();
@@ -756,9 +763,17 @@ void Preferences::fireApplicationFontChanged() const
 
 void Preferences::on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont& font)
 {
+  // The global * stylesheet in setApplicationFont() applies font-family to
+  // all widgets including this QFontComboBox.  That can re-trigger this slot
+  // with a wrong match (e.g. "Ubuntu" prefix-matched back to "Ubuntu Mono").
+  // Block signals during the update to prevent the re-entrant cascade, then
+  // restore the correct selection afterwards.
   QSettingsCached settings;
   settings.setValue("advanced/applicationFontFamily", font.family());
+  fontComboBoxApplicationFontFamily->blockSignals(true);
   fireApplicationFontChanged();
+  fontComboBoxApplicationFontFamily->setCurrentFont(font);
+  fontComboBoxApplicationFontFamily->blockSignals(false);
 }
 
 void Preferences::on_comboBoxApplicationFontSize_currentIndexChanged(int index)
@@ -1491,10 +1506,7 @@ void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 void Preferences::updateGUIFontFamily(QFontComboBox *ffSelector, const QString& setting)
 {
   const auto fontfamily = getValue(setting).toString();
-  const auto fidx = ffSelector->findText(fontfamily, Qt::MatchContains);
-  if (fidx >= 0) {
-    BlockSignals<QFontComboBox *>(ffSelector)->setCurrentIndex(fidx);
-  }
+  BlockSignals<QFontComboBox *>(ffSelector)->setCurrentFont(QFont(fontfamily));
 }
 
 void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString& setting)

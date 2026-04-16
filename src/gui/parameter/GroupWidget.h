@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QString>
 #include <QGridLayout>
+#include <QString>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>

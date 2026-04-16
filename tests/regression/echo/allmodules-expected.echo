@@ -1,6 +1,6 @@
 ECHO: 
-ERROR: Unable to convert points = undef to a vector of coordinates in file allmodules.scad, line 19
-ERROR: Unable to convert points = undef to a vector of coordinates in file allmodules.scad, line 22
+WARNING: Unable to convert points = undef to a vector of coordinates in file allmodules.scad, line 19
+WARNING: Unable to convert points = undef to a vector of coordinates in file allmodules.scad, line 22
 WARNING: Unable to convert scale(undef) parameter to a number, a vec3 or vec2 of numbers or a number in file allmodules.scad, line 26
 WARNING: Problem converting rotate(a=undef) parameter in file allmodules.scad, line 27
 WARNING: Unable to convert mirror(undef) parameter to a vec3 or vec2 of numbers in file allmodules.scad, line 28

@@ -1,21 +1,20 @@
-#include "geometry/cgal/cgalutils.h"
-
-#include <unordered_map>
-#include <memory>
-#include <cstddef>
-#include <vector>
-
-#include <boost/range/adaptor/transformed.hpp>
 #include <CGAL/Point_3.h>
-#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
-#include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
-#include <CGAL/Surface_mesh.h>
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
+#include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 
-#include "geometry/cgal/cgal.h"
-#include "geometry/linalg.h"
+#include <boost/range/adaptor/transformed.hpp>
+#include <cstddef>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+
 #include "geometry/PolySetBuilder.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/linalg.h"
 
 namespace CGALUtils {
 

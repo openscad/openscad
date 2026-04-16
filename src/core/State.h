@@ -3,8 +3,9 @@
 #include <cstring>
 #include <memory>
 #include <utility>
-#include "geometry/linalg.h"
+
 #include "core/node.h"
+#include "geometry/linalg.h"
 
 class State
 {

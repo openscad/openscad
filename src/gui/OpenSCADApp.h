@@ -1,9 +1,10 @@
 #pragma once
 
+#include <QApplication>
 #include <QEvent>
 #include <QObject>
 #include <QString>
-#include <QApplication>
+
 #include "glview/RenderSettings.h"
 #include "gui/WindowManager.h"
 

@@ -1,9 +1,10 @@
 #pragma once
 
+#include <QElapsedTimer>
+#include <QWidget>
+
 #include "gui/qtgettext.h"
 #include "ui_ProgressWidget.h"
-#include <QWidget>
-#include <QElapsedTimer>
 
 class ProgressWidget : public QWidget, public Ui::ProgressWidget
 {

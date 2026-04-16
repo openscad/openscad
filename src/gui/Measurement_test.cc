@@ -1,5 +1,6 @@
-#include <catch2/catch_all.hpp>
 #include "Measurement.h"
+
+#include <catch2/catch_all.hpp>
 
 enum class MeasureMode { DISTANCE, ANGLE };
 

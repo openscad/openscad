@@ -1,10 +1,12 @@
 #pragma once
 
+#include <QObject>
+#include <QSet>
 #include <cstddef>
 #include <functional>
 #include <string>
-#include <QObject>
-#include <QSet>
+#include <tuple>
+
 #include "gui/Editor.h"
 
 class MainWindow;  // for circular dependency
@@ -81,6 +83,7 @@ private slots:
   void copyFilePath();
   void openFolder();
   void closeTab();
+  void closeAllButThisTab();
 
   void showContextMenuEvent(const QPoint&);
   void showTabHeaderContextMenu(const QPoint&);

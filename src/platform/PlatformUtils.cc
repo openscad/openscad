@@ -1,10 +1,10 @@
 #include "platform/PlatformUtils.h"
 
-#include <filesystem>
-#include <stdexcept>
 #include <cstdint>
 #include <cstdlib>
+#include <filesystem>
 #include <iomanip>
+#include <stdexcept>
 #include <string>
 #include <vector>
 

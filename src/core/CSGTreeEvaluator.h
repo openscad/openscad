@@ -1,14 +1,18 @@
 #pragma once
 
-#include <map>
-#include <list>
-#include <vector>
 #include <cstddef>
-#include "core/NodeVisitor.h"
+#include <list>
+#include <map>
 #include <memory>
-#include "core/ModuleInstantiation.h"
-#include "geometry/Geometry.h"
+#include <vector>
+
+#include "core/BaseVisitable.h"
 #include "core/CSGNode.h"
+#include "core/ModuleInstantiation.h"
+#include "core/NodeVisitor.h"
+#include "core/enums.h"
+#include "core/node.h"
+#include "geometry/Geometry.h"
 
 class CSGNode;
 class GeometryEvaluator;

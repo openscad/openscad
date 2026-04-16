@@ -20,6 +20,7 @@
 
 #include <string>
 #include <sstream>
+#include "glview/OffscreenContext.h"
 #include "utils/printutils.h"
 #include "glview/system-gl.h"
 #include <GL/gl.h>  // must be included after glew.h

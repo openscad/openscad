@@ -1,8 +1,9 @@
 #pragma once
 
-#include "gui/qtgettext.h"
 #include <QDialog>
 #include <QWidget>
+
+#include "gui/qtgettext.h"
 #include "ui_OpenCSGWarningDialog.h"
 
 class OpenCSGWarningDialog : public QDialog, public Ui::OpenCSGWarningDialog

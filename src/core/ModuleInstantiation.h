@@ -1,12 +1,14 @@
 #pragma once
 
-#include "core/AST.h"
-#include "core/LocalScope.h"
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "core/AST.h"
+#include "core/Assignment.h"
+#include "core/LocalScope.h"
 
 using ModuleInstantiationList = std::vector<class ModuleInstantiation *>;
 

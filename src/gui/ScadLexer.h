@@ -1,8 +1,9 @@
 #pragma once
 
-#include <QStringList>
-#include <QObject>
 #include <Qsci/qsciglobal.h>
+
+#include <QObject>
+#include <QStringList>
 #include <string>
 
 #define ENABLE_LEXERTL 1
@@ -40,12 +41,12 @@ private:
 
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
+#include <Qsci/qscilexercustom.h>
+#include <Qsci/qsciscintilla.h>
+
 #include "lexertl/dot.hpp"
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
-
-#include <Qsci/qscilexercustom.h>
-#include <Qsci/qsciscintilla.h>
 
 class LexInterface
 {

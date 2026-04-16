@@ -1,13 +1,12 @@
 #ifdef ENABLE_CGAL
 #include "utils/svg.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "geometry/cgal/cgalutils.h"
 

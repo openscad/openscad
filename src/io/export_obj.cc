@@ -25,15 +25,14 @@
  *
  */
 
-#include "io/export.h"
-
-#include <ostream>
 #include <memory>
+#include <ostream>
 
 #include "Feature.h"
 #include "geometry/Geometry.h"
-#include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "io/export.h"
 
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {

@@ -1,10 +1,9 @@
 #include "Feature.h"
 
-#include <string>
-#include <utility>
-
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <string>
+#include <utility>
 
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
