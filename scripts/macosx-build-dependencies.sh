@@ -119,7 +119,7 @@ PACKAGES=(
     "qt6 6.8.3"
 
     # https://opencsg.org/news.html
-    "opencsg 1.8.1"
+    "opencsg 1.8.2"
 
     # https://riverbankcomputing.com/software/qscintilla/download
     "qscintilla 2.14.1"
