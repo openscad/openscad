@@ -1409,6 +1409,7 @@ set(CORE_SOURCES
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
+  src/utils/png_util.cc
   src/core/SurfaceNode.cc
   src/core/SheetNode.cc
   src/core/TextNode.cc

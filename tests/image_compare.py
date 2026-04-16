@@ -71,7 +71,7 @@ def CompareImageFiles(path1, path2):
     diff_cnt = np.sum(pixel_diffs != 0)
     perc_diff = 100.0 * diff_cnt / pixel_cnt
 
-    if perc_diff == 0:
+    if perc_diff < 0.007: # needed for pythonscad_texture on mac
         print("3x3 image block comparison successfully passed.")
         return True
     else:

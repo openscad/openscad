@@ -233,6 +233,7 @@ std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> createEdgeDb(
     for (int j = 0; j < n; j++) {
       ind1 = indices[i][j];
       ind2 = indices[i][(j + 1) % n];
+      if (ind1 == ind2) continue;
       if (ind2 > ind1) {
         edge.ind1 = ind1;
         edge.ind2 = ind2;
@@ -251,18 +252,19 @@ std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> createEdgeDb(
   int error = 0;
   for (auto& e : edge_db) {
     if (e.second.facea == -1 || e.second.faceb == -1) {
-      printf("Mismatched EdgeDB ind1=%d idn2=%d facea=%d faceb=%d\n", e.first.ind1, e.first.ind2,
+      printf("Mismatched EdgeDB ind1=%d ind2=%d facea=%d faceb=%d\n", e.first.ind1, e.first.ind2,
              e.second.facea, e.second.faceb);
       error = 1;
     }
   }
   if (error) {
-    for (unsigned int i = 0; i < indices.size(); i++) {
-      auto& face = indices[i];
+    for (int i = 0; i < indices.size(); i++) {
       printf("%d :", i);
-      for (unsigned int j = 0; j < face.size(); j++) printf("%d ", face[j]);
+      for (int j = 0; j < indices[i].size(); j++) {
+        printf("%d ", indices[i][j]);
+      }
       printf("\n");
-    }  // tri 5-9-11 missing
+    }
     assert(0);
   }
   return edge_db;

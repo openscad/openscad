@@ -41,17 +41,24 @@ Subdivide mesh edges for finer geometric detail. This increases the number of tr
 === "Python"
 
 ```python
-oversample(obj, n, round=False)
-obj.oversample(n, round=False)
+oversample(obj, size, texture, projection, texturewidth, textureheight, texturedepth)
+obj.oversample(size, texture, projection, texturewidth, textureheight, texturedepth)
 ```
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `obj` | solid | — | The object to oversample |
-| `n` | int | — | Subdivision level |
-| `round` | bool | `False` | Round vertices toward a sphere |
+| `obj`    | solid | — | The object to oversample |
+| `size`   | double | — | maximal edge lengthl |
+| `texture`| string | — | path to png filel |
+| `projection`   | string | — | Projection type |
+| `texturewidth`   | double | — | width of single canvas on model |
+| `textureheigh`   | double | — | height of single danvas on model |
+| `texturedepth`   | double | — | texture depth for maximal png color |
+
+
+Valid projections are none, cylindrical, spherical, triplanar, cubic, planarx, planary, planarz
 
 **Examples:**
 

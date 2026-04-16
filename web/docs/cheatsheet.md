@@ -329,7 +329,7 @@
       <div>Explode a solid outward by a vector</div>
       <div><code>cube(5).explode([1,1,1]).show()</code></div>
 
-      <div class="func"><code><a href="../reference/repair/#oversample">oversample</a>(obj, n, round)</code></div>
+      <div class="func"><code><a href="../reference/repair/#oversample">oversample</a>(obj, size, texture, projection, texturewidth, textureheight, texturedepth)</code></div>
       <div>Subdivide mesh edges for finer detail</div>
       <div><code>cube(5).oversample(2).show()</code></div>
 

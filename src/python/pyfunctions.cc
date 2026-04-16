@@ -48,6 +48,7 @@
 #include "python/FrepNode.h"
 #endif
 #include "GeometryUtils.h"
+#include "utils/png_util.h"
 #include "core/FreetypeRenderer.h"
 #include "core/TransformNode.h"
 #include "core/LinearExtrudeNode.h"
@@ -3067,7 +3068,8 @@ PyObject *python_oo_children(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_children_core(obj);
 }
 
-PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
+PyObject *python_oversample_core(PyObject *obj, double size, const char *texture, const char *projection,
+                                 double texturewidth, double textureheight, double texturedepth)
 {
   PyObject *dummydict;
   PyTypeObject *type = PyOpenSCADObjectType(obj);
@@ -3080,36 +3082,69 @@ PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
   DECLARE_INSTANCE();
   auto node = std::make_shared<OversampleNode>(instance);
   node->children.push_back(child);
-  node->n = n;
-  node->round = 0;
-  if (round == Py_True) node->round = 1;
+
+  node->size = size;
+
+  auto filename = lookup_file(texture == NULL ? "" : texture, python_scriptpath.parent_path().u8string(),
+                              instance->location().filePath().parent_path().string());
+
+  node->texturefilename = filename;
+  node->textureprojection = PROJECTION_NONE;
+  if (projection != nullptr) {
+    node->textureprojection = -1;
+    for (int i = 0; i < TEXTUREPROJECTION_NUM; i++) {
+      if (strcmp(projection, projectionNames[i]) == 0) node->textureprojection = i;
+    }
+    if (node->textureprojection == -1) {
+      node->textureprojection = PROJECTION_NONE;
+      PyErr_SetString(PyExc_TypeError, "Unsupported texture projection\n");
+      return NULL;
+    }
+  }
+  node->texturewidth = texturewidth;
+  node->textureheight = textureheight;
+  node->texturedepth = texturedepth;
 
   return PyOpenSCADObjectFromNode(type, node);
 }
 
 PyObject *python_oversample(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  int n = 2;
-  char *kwlist[] = {"obj", "n", "round", NULL};
+  double size = 2;
+  char *kwlist[] = {"obj",          "size",          "texture",      "projection",
+                    "texturewidth", "textureheight", "texturedepth", NULL};
   PyObject *obj = NULL;
-  PyObject *round = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi|O", kwlist, &obj, &n, &round)) {
+  const char *texture = nullptr;
+  const char *projection = nullptr;
+  double texture_width = 1;
+  double texture_height = 1;
+  double texture_depth = 1;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|ssddd", kwlist, &obj, &size, &texture, &projection,
+                                   &texture_width, &texture_height, &texture_depth)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_oversample_core(obj, n, round);
+  return python_oversample_core(obj, size, texture, projection, texture_width, texture_height,
+                                texture_depth);
 }
 
 PyObject *python_oo_oversample(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  int n = 2;
-  char *kwlist[] = {"n", "round", NULL};
-  PyObject *round = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|O", kwlist, &n, &round)) {
+  double size = 2;
+  char *kwlist[] = {"size",          "texture",      "projection", "texturewidth",
+                    "textureheight", "texturedepth", NULL};
+  const char *texture = nullptr;
+  const char *projection = nullptr;
+  double texture_width = 1;
+  double texture_height = 1;
+  double texture_depth = 1;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|ssddd", kwlist, &size, &texture, &projection,
+                                   &texture_width, &texture_height, &texture_depth)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_oversample_core(obj, n, round);
+  return python_oversample_core(obj, size, texture, projection, texture_width, texture_height,
+                                texture_depth);
 }
 
 PyObject *python_debug_core(PyObject *obj, PyObject *faces)

@@ -468,6 +468,7 @@ def main():
               "src/utils/hash.cc",
               "src/utils/svg.cc",
               "src/utils/vector_math.cc",
+              "src/utils/png_util.cc",
               "src/utils/calc.cc" ]
     platform = [
               "src/platform/PlatformUtils.cc",
