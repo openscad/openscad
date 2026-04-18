@@ -296,9 +296,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   setup3DView();
   setupViewportControl();
-  setupPreferences();
-
   setupInput();
+  setupPreferences();
 
   restoreWindowState();
 
