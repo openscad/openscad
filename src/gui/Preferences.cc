@@ -44,7 +44,6 @@
 #include <QSettings>
 #include <QSizePolicy>
 #include <QSpacerItem>
-#include <QStatusBar>
 #include <QString>
 #include <QStringList>
 #include <QTextDocument>
@@ -763,7 +762,7 @@ void Preferences::fireApplicationFontChanged() const
 
 void Preferences::on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont& font)
 {
-  // The global * stylesheet in setApplicationFont() applies font-family to
+  // The global setting in setApplicationFont() applies font-family to
   // all widgets including this QFontComboBox.  That can re-trigger this slot
   // with a wrong match (e.g. "Ubuntu" prefix-matched back to "Ubuntu Mono").
   // Block signals during the update to prevent the re-entrant cascade, then

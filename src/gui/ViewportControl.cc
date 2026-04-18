@@ -32,16 +32,10 @@ void ViewportControl::initGUI()
 {
   auto spinDoubleBoxes = this->groupBoxAbsoluteCamera->findChildren<QDoubleSpinBox *>();
   for (auto spinDoubleBox : spinDoubleBoxes) {
-    spinDoubleBox->setMinimum(-DBL_MAX);
-    spinDoubleBox->setMaximum(+DBL_MAX);
     connect(spinDoubleBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
             &ViewportControl::updateCamera);
   }
 
-  spinBoxWidth->setMinimum(1);
-  spinBoxHeight->setMinimum(1);
-  spinBoxWidth->setMaximum(8192);
-  spinBoxHeight->setMaximum(8192);
   connect(spinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this,
           &ViewportControl::requestResize);
   connect(spinBoxHeight, QOverload<int>::of(&QSpinBox::valueChanged), this,
@@ -51,22 +45,6 @@ void ViewportControl::initGUI()
 void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
   this->qglview = mainWindow->qglview;
-}
-
-QString ViewportControl::yellowHintBackground()
-{
-  QPalette defaultPalette;
-  const auto bgColor = defaultPalette.base().color().toRgb();
-  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, warnBlendColor);
-  return styleSheet;
-}
-
-QString ViewportControl::redHintBackground()
-{
-  QPalette defaultPalette;
-  const auto bgColor = defaultPalette.base().color().toRgb();
-  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, errorBlendColor);
-  return styleSheet;
 }
 
 void ViewportControl::resizeEvent(QResizeEvent *event)
@@ -170,32 +148,49 @@ void ViewportControl::updateCamera()
   inputMutex.unlock();
 }
 
+// Given a widget and a color, set the widget's background to be tinted that color, allowing the
+// parent's background to show through.
+void ViewportControl::setBackgroundTint(QWidget *w, QColor color) const
+{
+  // Make the color translucent.
+  color.setAlphaF(tintAlpha);
+
+  // Get the parent's palette (which, note, we haven't mucked with.)
+  QPalette p = palette();
+
+  // I don't find documentation saying which of the various background-like roles a spinbox
+  // uses for its background, and it appears to be somewhat platform-specific, so set them all.
+  //
+  // Note:
+  // QWindow11Style::inputFillBrush uses the Button role for the background *if* the background
+  // role (which defaults to Window) is set.  I think this is a bug.
+  p.setColor(QPalette::Button, color);
+  p.setColor(QPalette::Window, color);
+  p.setColor(QPalette::Base, color);
+
+  w->setPalette(p);
+}
+
 void ViewportControl::updateViewportControlHints()
 {
   // viewport camera field of view
   double fov = doubleSpinBox_fov->value();
-  if (fov < 0 || fov > 180) {
+  if (fov < 5 || fov > 175) {
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(redHintBackground());
-  } else if (fov < 5 || fov > 175) {
-    doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(yellowHintBackground());
+    setBackgroundTint(doubleSpinBox_fov, warnTint);
   } else {
     doubleSpinBox_fov->setToolTip("");
-    doubleSpinBox_fov->setStyleSheet("");
+    doubleSpinBox_fov->setPalette(palette());  // reset to parent's palette
   }
 
   // camera distance
   double d = doubleSpinBox_d->value();
-  if (d < 0) {
-    doubleSpinBox_d->setToolTip(_("negative distances are not supported"));
-    doubleSpinBox_d->setStyleSheet(redHintBackground());
-  } else if (d < 5) {
+  if (d < 5) {
     doubleSpinBox_d->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_d->setStyleSheet(yellowHintBackground());
+    setBackgroundTint(doubleSpinBox_d, warnTint);
   } else {
     doubleSpinBox_d->setToolTip("");
-    doubleSpinBox_d->setStyleSheet("");
+    doubleSpinBox_d->setPalette(palette());  // reset to parent's palette
   }
 }
 

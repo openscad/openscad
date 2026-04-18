@@ -85,11 +85,8 @@ bool hasOfflineCheatSheet();
 
 void openOfflineCheatSheet();
 
-QString getBackgroundColorStyleSheet(const QColor& color);
-
-QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend,
-                                          float transparency = 0.2);
-
 void dumpSaveState(const QByteArray& data);
+
+void dumpPalette(const QPalette& p);
 
 }  // namespace UIUtils

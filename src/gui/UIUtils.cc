@@ -301,21 +301,6 @@ void UIUtils::openOfflineCheatSheet()
   }
 }
 
-QString UIUtils::getBackgroundColorStyleSheet(const QColor& color)
-{
-  return QString("background-color:%1;").arg(color.toRgb().name());
-}
-
-QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend,
-                                                   float transparency)
-{
-  const auto result =
-    QColor(255.0 * (transparency * blend.redF() + (1 - transparency) * input.redF()),
-           255.0 * (transparency * blend.greenF() + (1 - transparency) * input.greenF()),
-           255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
-  return getBackgroundColorStyleSheet(result);
-}
-
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static bool dumpDockAreaLayoutInfo(QDataStream& stream)
 {
@@ -490,3 +475,21 @@ void UIUtils::dumpSaveState(const QByteArray&)
 {
 }
 #endif  // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+void UIUtils::dumpPalette(const QPalette& p)
+{
+  for (int ri = 0; ri < QPalette::NColorRoles; ri++) {
+    QPalette::ColorRole r = (QPalette::ColorRole)ri;
+    printf("%2d", r);
+    for (int gi = 0; gi < QPalette::NColorGroups; gi++) {
+      QPalette::ColorGroup g = (QPalette::ColorGroup)gi;
+      if (p.isBrushSet(g, r)) {
+        printf("  %s ", qPrintable(p.color(g, r).name()));
+      } else {
+        printf(" (%s)", qPrintable(p.color(g, r).name()));
+      }
+    }
+    printf("\n");
+  }
+  fflush(stdout);
+}

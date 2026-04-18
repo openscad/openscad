@@ -130,15 +130,19 @@ double ExportPdfDialog::getGridSize() const
 void ExportPdfDialog::updateFillColor(const QColor& color)
 {
   this->fillColor = color;
-  QString styleSheet = QString("QLabel { background-color: %1; }").arg(color.name());
-  this->labelFillColor->setStyleSheet(styleSheet);
+  QWidget *w = this->labelFillColor;
+  QPalette p = w->palette();
+  p.setColor(w->backgroundRole(), color);
+  w->setPalette(p);
 }
 
 void ExportPdfDialog::updateStrokeColor(const QColor& color)
 {
   this->strokeColor = color;
-  QString styleSheet = QString("QLabel { background-color: %1; }").arg(color.name());
-  this->labelStrokeColor->setStyleSheet(styleSheet);
+  QWidget *w = this->labelStrokeColor;
+  QPalette p = w->palette();
+  p.setColor(w->backgroundRole(), color);
+  w->setPalette(p);
 }
 
 void ExportPdfDialog::updateFillControlsEnabled()

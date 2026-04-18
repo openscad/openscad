@@ -51,8 +51,7 @@ Export3mfDialog::Export3mfDialog()
   this->checkBoxAlwaysShowDialog->setChecked(S::export3mfAlwaysShowDialog.value());
   initButtonGroup(this->buttonGroupColors, S::export3mfColorMode);
   initButtonGroup(this->buttonGroupUnit, S::export3mfUnit);
-  this->color = QColor(QString::fromStdString(S::export3mfColor.value()));
-  this->labelColorsSelected->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->color));
+  updateColor(QColor(QString::fromStdString(S::export3mfColor.value())));
   this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.value());
   initComboBox(this->comboBoxMaterialType, S::export3mfMaterialType);
 
@@ -84,7 +83,10 @@ Export3mfDialog::Export3mfDialog()
 void Export3mfDialog::updateColor(const QColor& color)
 {
   this->color = color;
-  this->labelColorsSelected->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->color));
+  QWidget *w = this->labelColorsSelected;
+  QPalette p = w->palette();
+  p.setColor(w->backgroundRole(), this->color);
+  w->setPalette(p);
 }
 
 int Export3mfDialog::exec()
@@ -123,7 +125,10 @@ int Export3mfDialog::exec()
 
 void Export3mfDialog::on_toolButtonColorsSelected_clicked()
 {
-  updateColor(QColorDialog::getColor(this->color));
+  QColor newColor = QColorDialog::getColor(this->color);
+  if (newColor.isValid()) {
+    updateColor(newColor);
+  }
 }
 
 void Export3mfDialog::on_toolButtonColorsSelectedReset_clicked()

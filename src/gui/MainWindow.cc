@@ -60,6 +60,7 @@
 #include <QSoundEffect>
 #include <QSplitter>
 #include <QStatusBar>
+#include <QSizeGrip>
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTextEdit>
@@ -91,6 +92,7 @@
 #include <utility>
 #include <vector>
 
+#include "openscad_gui.h"
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
@@ -612,11 +614,6 @@ MainWindow::~MainWindow()
   }
 }
 
-void MainWindow::showProgress()
-{
-  updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
-}
-
 void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark)
 {
   // limit to progress bar update calls to 5 per second
@@ -627,22 +624,22 @@ void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *v
     auto thisp = static_cast<MainWindow *>(vp);
     auto v = static_cast<int>((mark * 1000.0) / progress_report_count);
     auto permille = v < 1000 ? v : 999;
-    if (permille > thisp->progresswidget->value()) {
-      QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
+    if (permille > thisp->progressWidget->value()) {
+      QMetaObject::invokeMethod(thisp->progressWidget, "setValue", Qt::QueuedConnection,
                                 Q_ARG(int, permille));
       QApplication::processEvents();
     }
 
     // FIXME: Check if cancel was requested by e.g. Application quit
-    if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
+    if (thisp->progressWidget->wasCanceled()) throw ProgressCancelException();
   }
 }
 
 bool MainWindow::network_progress_func(const double permille)
 {
-  QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection,
+  QMetaObject::invokeMethod(this->progressWidget, "setValue", Qt::QueuedConnection,
                             Q_ARG(int, (int)permille));
-  return (progresswidget && progresswidget->wasCanceled());
+  return (progressWidget && progressWidget->wasCanceled());
 }
 
 void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
@@ -807,19 +804,17 @@ void MainWindow::updateCompileResult()
       const QFileInfo fileInfo(activeEditor->filepath);
       msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
     }
-    toolButtonCompileResultIcon->setIcon(
-      QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
+    labelCompileResultIcon->setPixmap(QPixmap(QString(":/icons/information-icons-error.png")));
   } else {
     const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.",
                                compileWarnings);
     msg = QString(fmt).arg(compileWarnings);
-    toolButtonCompileResultIcon->setIcon(
-      QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
+    labelCompileResultIcon->setPixmap(QPixmap(QString(":/icons/information-icons-warning.png")));
   }
   const QFontMetrics fm(labelCompileResultMessage->font());
   const int sizeIcon = std::max(12, std::min(32, fm.height()));
   const int sizeClose = std::max(10, std::min(32, fm.height()) - 4);
-  toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
+  labelCompileResultIcon->setFixedSize(QSize(sizeIcon, sizeIcon));
   toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
   msg += _(
@@ -961,8 +956,7 @@ void MainWindow::compileCSG()
     this->processEvents();
 
     // Main CSG evaluation
-    this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
+    updateStatusBar(true);
 
     GeometryEvaluator geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
@@ -984,7 +978,7 @@ void MainWindow::compileCSG()
       LOG("CSG generation cancelled due to hardwarning being enabled.");
     }
     progress_report_fin();
-    updateStatusBar(nullptr);
+    updateStatusBar(false);
 
     LOG("Compiling design (CSG Products normalization)...");
     this->processEvents();
@@ -1856,12 +1850,11 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
     return;
   }
 
-  this->progresswidget = new ProgressWidget(this);
-  connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
+  updateStatusBar(true);
 
   const bool process_status = externalToolService.process(
     activeFileName.toStdString(), [this](double permille) { return network_progress_func(permille); });
-  updateStatusBar(nullptr);
+  updateStatusBar(false);
   if (!process_status) {
     return;
   }
@@ -1926,8 +1919,7 @@ void MainWindow::cgalRender()
   LOG("Rendering Polygon Mesh using %1$s...",
       renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
 
-  this->progresswidget = new ProgressWidget(this);
-  connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
+  updateStatusBar(true);
 
   if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
   else return;
@@ -1978,7 +1970,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG(message_group::UI_Warning, "No top level geometry to render");
   }
 
-  updateStatusBar(nullptr);
+  updateStatusBar(false);
 
   const bool renderSoundEnabled =
     GlobalPreferences::inst()->getValue("advanced/enableSoundNotification").toBool();
@@ -2276,37 +2268,15 @@ void MainWindow::setLastFocus(QWidget *widget)
   this->lastFocus = widget;
 }
 
-/**
- * Switch version label and progress widget. When switching to the progress
- * widget, the new instance is passed by the caller.
- * In case of resetting back to the version label, nullptr will be passed and
- * multiple calls can happen. So this method must guard against adding the
- * version label multiple times.
- *
- * @param progressWidget a pointer to the progress widget to show or nullptr in
- * case the display should switch back to the version label.
- */
-void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
+void MainWindow::updateStatusBar(bool isProgress)
 {
-  auto sb = this->statusBar();
-  if (progressWidget == nullptr) {
-    if (this->progresswidget != nullptr) {
-      sb->removeWidget(this->progresswidget);
-      delete this->progresswidget;
-      this->progresswidget = nullptr;
-    }
-    if (versionLabel == nullptr) {
-      versionLabel =
-        new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
-      sb->addPermanentWidget(this->versionLabel);
-    }
+  if (isProgress) {
+    progressWidget->reset();
+    versionLabel->hide();
+    progressWidget->show();
   } else {
-    if (this->versionLabel != nullptr) {
-      sb->removeWidget(this->versionLabel);
-      delete this->versionLabel;
-      this->versionLabel = nullptr;
-    }
-    sb->addPermanentWidget(progressWidget);
+    progressWidget->hide();
+    versionLabel->show();
   }
 }
 
@@ -3497,8 +3467,35 @@ void MainWindow::setupPreferences()
  */
 void MainWindow::setupStatusBar()
 {
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
-  updateStatusBar(nullptr);
+  statusBar()->setSizeGripEnabled(false);
+
+  QWidget *w = new QWidget();
+  w->setObjectName("statusBox");
+  statusBar()->addPermanentWidget(w, 1);
+
+  QHBoxLayout *hbox = new QHBoxLayout(w);
+  hbox->setContentsMargins(QMargins());
+
+  statusLabel = new QLabel("");
+  statusLabel->setObjectName("statusLabel");
+  statusLabel->setMinimumWidth(100);
+  hbox->addWidget(statusLabel);
+
+  hbox->addStretch(0);
+
+  versionLabel =
+    new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
+  versionLabel->setObjectName("versionLabel");
+  hbox->addWidget(versionLabel);
+
+  progressWidget = new ProgressWidget(nullptr);
+  hbox->addWidget(progressWidget);
+
+  QWidget *sizeGrip = new QSizeGrip(w);
+  sizeGrip->setObjectName("sizeGrip");
+  hbox->addWidget(sizeGrip, 0, Qt::AlignBottom);
+
+  updateStatusBar(false);
 }
 
 /**
@@ -3639,9 +3636,7 @@ void MainWindow::setupViewportControl()
  */
 void MainWindow::setup3DView()
 {
-  this->qglview->statusLabel = new QLabel(this);
-  this->qglview->statusLabel->setMinimumWidth(100);
-  statusBar()->addWidget(this->qglview->statusLabel);
+  this->qglview->statusLabel = statusLabel;
 
   const QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
@@ -3990,4 +3985,12 @@ void MainWindow::openRemainingFiles(const QStringList& filenames)
   for (int i = 1; i < filenames.size(); ++i) tabManager->createTab(filenames[i]);
 
   activeEditor->setFocus();
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ThemeChange) {
+    setGlobalTheme();
+  }
+  QMainWindow::changeEvent(event);
 }

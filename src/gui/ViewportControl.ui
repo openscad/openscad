@@ -170,10 +170,13 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
             <property name="minimum">
-             <double>-1000000000000000.000000000000000</double>
+             <double>0</double>
             </property>
             <property name="maximum">
-             <double>1000000000000000.000000000000000</double>
+             <double>360</double>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -183,10 +186,13 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
             <property name="minimum">
-             <double>-1000000000000000.000000000000000</double>
+             <double>0</double>
             </property>
             <property name="maximum">
-             <double>1000000000000000.000000000000000</double>
+             <double>360</double>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -197,6 +203,9 @@
             </property>
             <property name="maximum">
              <double>1000000000000000.000000000000000</double>
+            </property>
+            <property name="minimum">
+             <double>1</double>
             </property>
            </widget>
           </item>
@@ -215,6 +224,9 @@
             <property name="maximum">
              <double>180.000000000000000</double>
             </property>
+            <property name="minimum">
+             <double>0</double>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -230,10 +242,13 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
             <property name="minimum">
-             <double>-1000000000000000.000000000000000</double>
+             <double>0</double>
             </property>
             <property name="maximum">
-             <double>1000000000000000.000000000000000</double>
+             <double>360</double>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

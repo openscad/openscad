@@ -24,6 +24,17 @@ Animate::Animate(QWidget *parent) : QWidget(parent)
   setupUi(this);
   initGUI();
 
+  auto *stepsValidator = new QIntValidator(this);
+  stepsValidator->setBottom(0);
+  e_fsteps->setValidator(stepsValidator);
+
+  auto *fpsValidator = new QDoubleValidator(this);
+  fpsValidator->setBottom(0.0);
+  e_fps->setValidator(fpsValidator);
+
+  auto *tvalValidator = new QDoubleValidator(0.0, 1.0, -1, this);
+  e_tval->setValidator(tvalValidator);
+
   const auto width = groupBoxParameter->minimumSizeHint().width();
   const auto margins = layout()->contentsMargins();
   const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
@@ -111,22 +122,6 @@ void Animate::updatedAnimFpsAndAnimSteps()
     animateTimer->setSingleShot(false);
     animateTimer->setInterval(int(1000 / fps));
     animateTimer->start();
-  }
-
-  QPalette defaultPalette;
-  const auto bgColor = defaultPalette.base().color().toRgb();
-  QString redStyleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, errorBlendColor);
-
-  if (this->steps_ok || this->e_fsteps->text() == "") {
-    this->e_fsteps->setStyleSheet("");
-  } else {
-    this->e_fsteps->setStyleSheet(redStyleSheet);
-  }
-
-  if (this->fpsOK || this->e_fps->text() == "") {
-    this->e_fps->setStyleSheet("");
-  } else {
-    this->e_fps->setStyleSheet(redStyleSheet);
   }
 
   updatePauseButtonIcon();

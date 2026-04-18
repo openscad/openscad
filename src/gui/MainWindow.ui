@@ -98,9 +98,6 @@
           </item>
           <item row="0" column="2">
            <widget class="QToolButton" name="toolButtonCompileResultClose">
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
             <property name="text">
              <string/>
             </property>
@@ -114,34 +111,21 @@
               <height>22</height>
              </size>
             </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
-            </property>
             <property name="autoRaise">
              <bool>true</bool>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QToolButton" name="toolButtonCompileResultIcon">
-            <property name="styleSheet">
-             <string notr="true">QToolButton { border: none; }</string>
-            </property>
+           <widget class="QLabel" name="labelCompileResultIcon">
             <property name="text">
              <string/>
             </property>
-            <property name="icon">
-             <iconset resource="../../resources/common.qrc">
-              <normaloff>:/icons/information-icons-error.png</normaloff>:/icons/information-icons-error.png</iconset>
+            <property name="pixmap">
+             <pixmap resource="../../resources/common.qrc">:/icons/information-icons-error.png</pixmap>
             </property>
-            <property name="iconSize">
-             <size>
-              <width>22</width>
-              <height>22</height>
-             </size>
-            </property>
-            <property name="autoRaise">
-             <bool>false</bool>
+            <property name="scaledContents">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

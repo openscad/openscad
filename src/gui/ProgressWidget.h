@@ -15,6 +15,7 @@ public:
   ProgressWidget(QWidget *parent = nullptr);
   bool wasCanceled() const;
   int elapsedTime() const;
+  void reset();
 
 public slots:
   void setRange(int minimum, int maximum);
@@ -24,9 +25,6 @@ public slots:
 
 private slots:
   void on_stopButton_clicked();
-
-signals:
-  void requestShow();
 
 private:
   bool wascanceled;
