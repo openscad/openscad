@@ -57,33 +57,19 @@ class LaserCutter:
 
     def add_faces(self, facelist):
         self.faces = self.faces + facelist
-    def create_conn_type1(self, l):
+    def create_conn_type1(self, touches, l):
         res = []
-        n=int(l/20)
-        if n < 2:
-            n=2
-        for i in range(n):
-            res = res + [[i/n,-1, 0], [(i+0.5)/n,-1, 0], [(i+0.5)/n, 1, 0], [(i+1)/n,1, 0]]
+        for touch in touches:
+            n=int(l*(touch[1]-touch[0])/20)
+            if n < 2:
+                n=2
+            d=touch[0]
+            k=touch[1]-touch[0]
+            for i in range(n):
+                res = res + [[k*i/n+d,-1, 0], [k*(i+0.5)/n+d,-1, 0], [k*(i+0.5)/n+d, 1, 0], [k*(i+1)/n+d,1, 0]]
         return res
 
-    def link(self):
-
-        conn_plain = [[0,0, 0],[1,0, 0]]
-
-        # [x realtive, y is absolute, x absolute
-        conn_type2 = [ [0.0,-1, 0], [0.4,-1, 0], [0.4,1, 0], [0.6,1, 0], [0.6,-1, 0], [1,-1, 0] ] # face-edge male
-        conn_type2_ = [[0.4,-1, 0],[0.6 , -1, 0] ,[0.6,1, 0],[0.4,1, 0]] # face-edge female
-        conn_type3  = [[0,-1, 0],[1, -1,0],[1,1,0],[0,1,0]] # edge-edge
-
-        late_cuts = []
-        total_cuts = []
-
-        #LUT
-        lut = {}
-        vertices = []
-        edge_inv = {}
-        orgfaces = self.faces[:]
-        # make sure all faces are polygons, normalize input TODO combine transformations
+    def normalize(self): # make sure all faces are normalized: poygon().multmatrix()
         for i, f in enumerate(self.faces):
             # f are multmatrix - polygon
             mat = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
@@ -108,6 +94,27 @@ class LaserCutter:
                 newface.setattr(key, d[key])
             self.faces[i]=newface
 
+    def link(self):
+
+        conn_plain = [[0,0, 0],[1,0, 0]]
+
+        # [x realtive, y is absolute, x absolute
+        conn_type2 = [ [0.0,-1, 0], [0.4,-1, 0], [0.4,1, 0], [0.6,1, 0], [0.6,-1, 0], [1,-1, 0] ] # face-edge male
+        conn_type2_ = [[0.4,-1, 0],[0.6 , -1, 0] ,[0.6,1, 0],[0.4,1, 0]] # face-edge female
+        conn_type3  = [[0,-1, 0],[1, -1,0],[1,1,0],[0,1,0]] # edge-edge
+
+        late_cuts = []
+        total_cuts = []
+
+        #LUT
+        self.normalize()
+
+        # make deep copy of self.faces
+        orgfaces = []
+        for f in self.faces:
+            for pol in f:
+                newface = polygon(points=pol.points, paths = pol.paths).multmatrix(f.matrix)
+                orgfaces.append(newface)
 
         # faces, outlines, segments, other
         ifaces = [] # indexed ifaces[face][pathnum][ptnum]
@@ -117,38 +124,8 @@ class LaserCutter:
             mat = f.matrix
             #pt inventur
             for pol in f:
-
-                ipaths=[]
                 if len(pol.paths) == 0:
                     pol.paths=[list(range(len(pol.points)))]
-                for path in pol.paths:
-
-                    ipath = []
-
-                    for ind in path:
-                        pt = pol.points[ind]
-                        pt3 = multmatrix(pt + [0] , mat)
-                        # check if pt3 is very similar to an exising one
-                        for x, v in enumerate(vertices):
-                            if abs(v[0] - pt3[0]) < 1e-3 and abs(v[1] - pt3[1] ) < 1e-3 and  abs(v[2] - pt3[2]) < 1e-3:
-                                pt3=v
-                                lut[tuple(pt3)]=x
-                                break
-                        pt3t = tuple(pt3)
-                        # Create LUT from vertices
-                        if not pt3t in lut:
-                            ind=len(vertices)
-                            lut[pt3t]=ind
-                            vertices.append(pt3)
-                        ipath.append(lut[pt3t])
-
-                        # Create Eedge inventory
-                    ipaths.append(ipath)
-                    n=len(ipath)
-                    for i in range(n):
-                        edge=[ipath[i],ipath[(i+1)%n]]
-                        edge_inv[tuple(edge)]=1
-                ifaces.append(ipaths)
 
         # Process faces and edges now
 
@@ -162,20 +139,76 @@ class LaserCutter:
                 totalcuts=[]
                 for j, path in enumerate(pol.paths):
                     newpts=[]
-                    curface=ifaces[i][j]
 
-                    n=len(curface)
+                    n=len(path)
 
                     stripes = [] # pattern on each side
 
                     for k in range(n): # all edges
                         conn=conn_plain
-                        partedge=[curface[(k+1)%n],curface[k]]
                         pt1=multmatrix(pol.points[path[k]] + [0], mat)
                         pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat)
-                        if tuple(partedge) in edge_inv:
+                        debug=False
+                        if pt1 == [ 40,0,20] and pt2 == [0,0,20]:
+                            debug=True
+                        if debug == True:
+                            print("s", i, pt1, pt2)
+            #hier mit allen anderen edges gegenchecken ob sie colinear sind
+
+                        direction=translate(pt2, scale(pt1,-1))
+                        off_b=0
+                        off_e=norm(direction)
+
+                        direction = scale(direction, 1/norm(direction))
+
+                        touches = []
+                        for io, fo in enumerate(orgfaces):
+                            if io == i:
+                                continue
+                            if off_e < 3:
+                                continue
+                            mato = fo.matrix
+                            for polo in fo:
+                                for jo, patho in enumerate(polo.paths):
+                                    no=len(patho)
+                                    if(debug):
+                                        print(no)
+
+                                    for ko in range(no): # all edges
+                                        pt1o=multmatrix(polo.points[patho[ko]] + [0], mato)
+                                        pt2o=multmatrix(polo.points[patho[(ko+1)%no]] + [0], mato)
+                                        if(debug):
+                                            print(pt1o, pt2o)
+                                        directiono=translate(pt2o, scale(pt1o,-1))
+                                        if norm(directiono) < 2:
+                                            continue
+                                        directiono = scale(directiono, 1/norm(directiono))
+
+                                        # same dir ?
+                                        if abs(dot(direction, directiono)) < 0.9999:
+                                            continue
+                                        # calcualte offset of other line
+                                        off_bo = dot(translate(pt1o,scale(pt1,-1)),direction)
+                                        off_eo = dot(translate(pt2o,scale(pt1,-1)),direction)
+
+                                        # check if if meets in pt1
+                                        if norm(translate(pt1o,scale(translate(pt1, scale(direction, off_bo)),-1) )) > 0.0001:
+                                            continue
+
+                                        # check if overlappingh
+                                        if off_bo < off_b:
+                                            continue
+                                        if off_e < off_eo:
+                                            continue
+                                        pt1c = translate(pt1,scale(direction,max(off_b, off_eo)))
+                                        pt2c = translate(pt1,scale(direction,min(off_e, off_bo)))
+                                        if(debug) :
+                                            print("Found", pt1c, pt2c)
+                                        touches.append([max(off_b, off_eo)/off_e,min(off_e, off_bo)/off_e])
+
+                        if len(touches) > 0:
                             l=norm(translate(pt1, scale(pt2,-1)))
-                            conn = self.create_conn_type1(l)
+                            conn = self.create_conn_type1(touches,l)
 
                         if conn == conn_plain:
 
@@ -266,7 +299,8 @@ class LaserCutter:
                         y43=p4[1]-p3[1]
                         s=(x43*y31-x31*y43)/(x43*y21-x21*y43)
                         pt = [p1[0]+ s*x21, p1[1] + s*y21]
-                        newpts.append(pt)
+                        if s > 0:
+                            newpts.append(pt)
 
                     s=len(newpolpoints)
                     n=len(newpts)
