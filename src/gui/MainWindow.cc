@@ -89,6 +89,7 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/version.hpp>
 #include <cassert>
+#include <cctype>
 #include <cstring>
 #include <deque>
 #include <exception>
@@ -343,6 +344,128 @@ struct DockFocus {
   Dock *widget;
   std::function<void(MainWindow *)> focus;
 };
+
+size_t findLastAddParameterEvaluationEnd(const std::string& source)
+{
+  const std::string needle = "add_parameter";
+  const size_t pos = source.rfind(needle);
+  if (pos == std::string::npos) {
+    return std::string::npos;
+  }
+
+  size_t i = pos + needle.size();
+  while (i < source.size() && std::isspace(static_cast<unsigned char>(source[i]))) {
+    ++i;
+  }
+
+  // Keep legacy behavior for malformed/non-call matches.
+  if (i >= source.size() || source[i] != '(') {
+    const size_t lineEnd = source.find('\n', pos);
+    return lineEnd == std::string::npos ? source.size() : lineEnd;
+  }
+
+  enum class StringState { None, Single, Double, TripleSingle, TripleDouble };
+  StringState stringState = StringState::None;
+  int parenDepth = 0;
+  bool escaped = false;
+
+  for (; i < source.size(); ++i) {
+    const char c = source[i];
+
+    if (stringState == StringState::Single || stringState == StringState::Double) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (c == '\\') {
+        escaped = true;
+        continue;
+      }
+      if ((stringState == StringState::Single && c == '\'') ||
+          (stringState == StringState::Double && c == '"')) {
+        stringState = StringState::None;
+      }
+      continue;
+    }
+
+    if (stringState == StringState::TripleSingle) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (c == '\\') {
+        escaped = true;
+        continue;
+      }
+      if (i + 2 < source.size() && source[i] == '\'' && source[i + 1] == '\'' && source[i + 2] == '\'') {
+        stringState = StringState::None;
+        i += 2;
+      }
+      continue;
+    }
+
+    if (stringState == StringState::TripleDouble) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (c == '\\') {
+        escaped = true;
+        continue;
+      }
+      if (i + 2 < source.size() && source[i] == '"' && source[i + 1] == '"' && source[i + 2] == '"') {
+        stringState = StringState::None;
+        i += 2;
+      }
+      continue;
+    }
+
+    if (c == '#') {
+      const size_t nextLine = source.find('\n', i);
+      if (nextLine == std::string::npos) {
+        break;
+      }
+      i = nextLine;
+      continue;
+    }
+
+    if (c == '\'') {
+      if (i + 2 < source.size() && source[i + 1] == '\'' && source[i + 2] == '\'') {
+        stringState = StringState::TripleSingle;
+        i += 2;
+      } else {
+        stringState = StringState::Single;
+      }
+      continue;
+    }
+
+    if (c == '"') {
+      if (i + 2 < source.size() && source[i + 1] == '"' && source[i + 2] == '"') {
+        stringState = StringState::TripleDouble;
+        i += 2;
+      } else {
+        stringState = StringState::Double;
+      }
+      continue;
+    }
+
+    if (c == '(') {
+      ++parenDepth;
+      continue;
+    }
+
+    if (c == ')') {
+      --parenDepth;
+      if (parenDepth == 0) {
+        const size_t lineEnd = source.find('\n', i);
+        return lineEnd == std::string::npos ? source.size() : lineEnd;
+      }
+    }
+  }
+
+  // Fall back to file end if call appears unterminated.
+  return source.size();
+}
 
 QAction *findAction(const QList<QAction *>& actions, const std::string& name)
 {
@@ -2223,61 +2346,45 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor,
     editor->resetHighlighting();
     editor->parameterWidget->setEnabled(false);
     if (this->rootFile != nullptr) {
-      int pos = -1, pos1;
-      while (1) {
-        pos1 = fulltext_py.find("add_parameter", pos + 1);
-        if (pos1 == -1) break;
-        pos = pos1;
-      }
-      if (pos != -1) {
-        pos = fulltext_py.find("\n", pos);
-        if (pos != -1) {
-          std::string par_text = fulltext_py.substr(0, pos);
-          //
-          // add parameters as annotation in AST
-          auto error = evaluatePython(par_text, true);  // run dummy
-          if (!customizer_parameters.empty()) {
-            this->rootFile->scope->assignments = customizer_parameters;
-            CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');  // add annotations
-            editor->parameterWidget->setParameters(this->rootFile.get(),
-                                                   "\n");                    // set widgets values
-            editor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
-            editor->setIndicator(this->rootFile->indicatorData);
-          }
-          editor->parameterWidget->setEnabled(true);
+      const size_t evalEnd = findLastAddParameterEvaluationEnd(fulltext_py);
+      if (evalEnd != std::string::npos) {
+        std::string par_text = fulltext_py.substr(0, evalEnd);
+        //
+        // add parameters as annotation in AST
+        auto error = evaluatePython(par_text, true);  // run dummy
+        if (!customizer_parameters.empty()) {
+          this->rootFile->scope->assignments = customizer_parameters;
+          CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');  // add annotations
+          editor->parameterWidget->setParameters(this->rootFile.get(),
+                                                 "\n");                    // set widgets values
+          editor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
+          editor->setIndicator(this->rootFile->indicatorData);
         }
+        editor->parameterWidget->setEnabled(true);
       }
     } else {
       // No prior rootFile (e.g. session restore): parse to get parameters for customizer
-      int pos = -1, pos1;
-      while (1) {
-        pos1 = fulltext_py.find("add_parameter", pos + 1);
-        if (pos1 == -1) break;
-        pos = pos1;
-      }
-      if (pos != -1) {
-        pos = fulltext_py.find("\n", pos);
-        if (pos != -1) {
-          std::string par_text = fulltext_py.substr(0, pos);
-          auto error = evaluatePython(par_text, true);  // run dummy
-          if (!customizer_parameters.empty()) {
-            SourceFile *paramRoot = nullptr;
-            const bool paramParseOk = parse(paramRoot, "", fnameNative, fnameNative, false);
-            if (paramParseOk && paramRoot != nullptr) {
-              paramRoot->scope->assignments = customizer_parameters;
-              CommentParser::collectParameters(fulltext_py, paramRoot, '#');
-              const QByteArray documentUtf8 = document.toUtf8();
-              editor->parameterWidget->setParameters(
-                paramRoot,
-                std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size())));
-              editor->parameterWidget->applyParameters(paramRoot);
-              sourceFile = paramRoot;
-            } else {
-              delete paramRoot;
-            }
+      const size_t evalEnd = findLastAddParameterEvaluationEnd(fulltext_py);
+      if (evalEnd != std::string::npos) {
+        std::string par_text = fulltext_py.substr(0, evalEnd);
+        auto error = evaluatePython(par_text, true);  // run dummy
+        if (!customizer_parameters.empty()) {
+          SourceFile *paramRoot = nullptr;
+          const bool paramParseOk = parse(paramRoot, "", fnameNative, fnameNative, false);
+          if (paramParseOk && paramRoot != nullptr) {
+            paramRoot->scope->assignments = customizer_parameters;
+            CommentParser::collectParameters(fulltext_py, paramRoot, '#');
+            const QByteArray documentUtf8 = document.toUtf8();
+            editor->parameterWidget->setParameters(
+              paramRoot,
+              std::string(documentUtf8.constData(), static_cast<size_t>(documentUtf8.size())));
+            editor->parameterWidget->applyParameters(paramRoot);
+            sourceFile = paramRoot;
+          } else {
+            delete paramRoot;
           }
-          editor->parameterWidget->setEnabled(true);
         }
+        editor->parameterWidget->setEnabled(true);
       }
     }
 
