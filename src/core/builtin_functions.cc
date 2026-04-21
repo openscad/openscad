@@ -1022,6 +1022,7 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   ObjectType font(session);
   font.set("family", metrics.family_name);
   font.set("style", metrics.style_name);
+  font.set("version", metrics.version);
 
   ObjectType font_metrics(session);
   font_metrics.set("nominal", nominal);
