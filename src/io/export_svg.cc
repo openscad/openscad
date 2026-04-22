@@ -36,7 +36,8 @@
 #include "geometry/linalg.h"
 #include "io/export.h"
 
-static void append_svg_sub(std::vector<Outline2d>  outlines, std::ostream& output, const ExportInfo& exportInfo, bool closed)
+static void append_svg_sub(std::vector<Outline2d> outlines, std::ostream& output,
+                           const ExportInfo& exportInfo, bool closed)
 {
   // sort outlines by color
   while (outlines.size() > 0) {
@@ -73,8 +74,8 @@ static void append_svg_sub(std::vector<Outline2d>  outlines, std::ostream& outpu
           output << "\n";
         }
       }
-      if(closed) output << " z\n";
-      else output << "n";
+      if (closed) output << " z\n";
+      else output << "\n";
     }
     std::string color_str;
     if (col.r() < 0) {
@@ -90,7 +91,9 @@ static void append_svg_sub(std::vector<Outline2d>  outlines, std::ostream& outpu
       }
     }
     output << "\"";
-    if(options-> stroke) output << " stroke=\"" << options->strokeColor << "\" stroke-width=\"" << strokeWidth << "\"";
+    if (!closed) output << " stroke=\"" << color_str << "\" stroke-width=\"" << strokeWidth << "\"";
+    else if (options->stroke)
+      output << " stroke=\"" << options->strokeColor << "\" stroke-width=\"" << strokeWidth << "\"";
     output << " fill=\"" << color_str << "\"";
     output << "/>\n";
     outlines = out_remain;
