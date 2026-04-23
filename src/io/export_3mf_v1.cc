@@ -188,7 +188,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, const Export3mfPar
   info.writeProps((void *)&mesh);
 #endif
 
-  std::string name = "OpenSCAD Model";
+  std::string name = "PythonSCAD Model";
   std::string partname = "";
 
   if (ctx.modelcount > 1) {

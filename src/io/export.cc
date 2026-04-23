@@ -223,7 +223,7 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   case FileFormat::WRL:        export_wrl(root_geom, output); break;
   case FileFormat::AMF:        export_amf(root_geom, output); break;
   case FileFormat::_3MF:       {
-    Export3mfPartInfo info(root_geom, "OpenSCAD Model", nullptr);
+    Export3mfPartInfo info(root_geom, "PythonSCAD Model", nullptr);
     std::vector<Export3mfPartInfo> infos;
     infos.push_back(info);
     export_3mf(infos, output, exportInfo);

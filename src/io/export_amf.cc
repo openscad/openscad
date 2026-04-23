@@ -175,7 +175,7 @@ void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
          << "<amf unit=\"millimeter\">\r\n"
-         << " <metadata type=\"producer\">OpenSCAD " << openscad_detailedversionnumber
+         << " <metadata type=\"producer\">PythonSCAD " << openscad_detailedversionnumber
          << "</metadata>\r\n";
 
   objectid = 0;

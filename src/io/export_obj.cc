@@ -55,7 +55,7 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     out = createSortedPolySet(*out);
   }
 
-  output << "# OpenSCAD obj exporter\n";
+  output << "# PythonSCAD obj exporter\n";
 
 #ifdef ENABLE_PYTHON
   python_export_obj_att(output);

@@ -296,10 +296,24 @@ def post_process_3mf(filename):
     xml_content = re.sub(r' xmlns:t="[^"]*"', '', xml_content)
     xml_content = re.sub(r' xmlns:v="[^"]*"', '', xml_content)
     xml_content = re.sub(r' xmlns:i="[^"]*"', '', xml_content)
+    xml_content = re.sub(r'PythonSCAD Model', 'OpenSCAD Model', xml_content)
     # add tag end whitespace for lib3mf 2.0 output files
     xml_content = re.sub('\"/>', '\" />', xml_content)
     with open(filename, 'wb') as xml_file:
         xml_file.write(xml_content.encode('utf-8'))
+
+def post_process_progname(filename):
+    with open(filename, "rb") as f:
+        content = f.read()
+
+    content = content.replace(b"PythonSCAD Model\x0a\x00", b"OpenSCAD Model\x0a\x00\x00\x00")
+    content = content.replace(b"PythonSCAD_Model\x0a\x00", b"OpenSCAD_Model\x0a\x00\x00\x00")
+    content = content.replace(b"PythonSCAD_Model", b"OpenSCAD_Model")
+    content = content.replace(b"PythonSCAD Model", b"OpenSCAD Model")
+    content = content.replace(b"PythonSCAD obj exporter", b"OpenSCAD obj exporter")
+
+    with open(filename, "wb") as f:
+        f.write(content)
 
 def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
     cmdname = os.path.split(options.cmd)[1]
@@ -490,4 +504,7 @@ if __name__ == '__main__':
     resultfile = run_test(options.testname, options.cmd, args[1:], options.stdin, options.stdout)
     if not resultfile: exit(1)
     if options.suffix == "3mf": post_process_3mf(resultfile)
+    if options.suffix == "svg": post_process_progname(resultfile)
+    if options.suffix == "stl": post_process_progname(resultfile)
+    if options.suffix == "obj": post_process_progname(resultfile)
     if not verification or not compare_with_expected(resultfile): exit(1)

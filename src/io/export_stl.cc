@@ -268,7 +268,7 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
     std::ostringstream buffer;  // Using a memory buffer
-    char header[80] = "OpenSCAD Model\n";
+    char header[80] = "PythonSCAD Model\n";
     buffer.write(header, sizeof(header));
 
     // Placeholder for triangle count
@@ -298,9 +298,9 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   } else {
     // ASCII mode: Write directly to the output stream
     setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
-    output << "solid OpenSCAD_Model\n";
+    output << "solid PythonSCAD_Model\n";
     append_stl(geom, output, binary);
-    output << "endsolid OpenSCAD_Model\n";
+    output << "endsolid PythonSCAD_Model\n";
     setlocale(LC_NUMERIC, "");  // Restore default locale
   }
 }

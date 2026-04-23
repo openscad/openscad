@@ -56,7 +56,7 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
   // - generic cutters
 
   output << "999\n"
-         << "DXF from OpenSCAD\n";
+         << "DXF from PythonSCAD\n";
 
   //
   // SECTION 1

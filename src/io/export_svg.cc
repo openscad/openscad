@@ -150,7 +150,7 @@ void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
          << "<svg width=\"" << width << "mm\" height=\"" << height << "mm\" viewBox=\"" << minx << " "
          << miny << " " << width << " " << height
          << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
-         << "<title>OpenSCAD Model</title>\n";
+         << "<title>PythonSCAD Model</title>\n";
   append_svg(geom, output, exportInfo);
   output << "</svg>\n";
   setlocale(LC_NUMERIC, "");  // Set default locale
