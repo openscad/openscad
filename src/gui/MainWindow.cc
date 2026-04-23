@@ -2538,7 +2538,7 @@ void MainWindow::actionRenderPreview()
   resetMeasurementsState(false, "Render (not preview) to enable measurements");
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
-  compile(true, false);
+  compile(false, false);
 
   if (preview_requested) {
     // if the action was called when the gui was locked, we must request it one more time
