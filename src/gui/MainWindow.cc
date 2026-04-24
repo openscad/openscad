@@ -4195,7 +4195,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   editActionUndo->setEnabled(newEditor->canUndo());
 
   const QString name = getCurrentFileName();
-  setWindowTitle(name);
+  setWindowTitle(activeEditor->filepath);
 
   consoleDock->setNameSuffix(name);
   errorLogDock->setNameSuffix(name);
