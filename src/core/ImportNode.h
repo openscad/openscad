@@ -46,6 +46,6 @@ public:
   CurveDiscretizer discretizer;
   double origin_x, origin_y, scale;
   double width, height;
-  bool stroke = true;
+  bool stroke = false;
   std::unique_ptr<const class Geometry> createGeometry() const override;
 };

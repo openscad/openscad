@@ -487,7 +487,7 @@ void path::set_attrs(attr_map_t& attrs, void *context)
 
   if (!path_closed && !path_list.empty()) {
     path_t path = path_list.back();
-    if (is_open_path(path) && fValues->stroke) {
+    if (is_open_path(path) && !fValues->stroke) {
       path_list.pop_back();
       offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
     }

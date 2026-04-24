@@ -211,7 +211,7 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
             outline.vertices.emplace_back(x, y);
             outline.positive = true;
           }
-          if (outline.vertices[0] == outline.vertices[outline.vertices.size() - 1])
+          if (outline.vertices[0] == outline.vertices[outline.vertices.size() - 1] && stroke == false)
             poly.addOutline(outline);
           else poly.addPolyline(outline);
         }
