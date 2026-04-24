@@ -25,6 +25,8 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
+#include <clipper2/clipper.h>
+#include <geometry/ClipperUtils.h>
 
 /*!
    \class CSGTreeEvaluator
@@ -179,8 +181,32 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
 }
 
 // Creates a 1-unit-thick PolySet with dim==2 from a Polygon2d.
-std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d& p2d)
+std::shared_ptr<const PolySet> polygon2dToPolySet(Polygon2d p2d)
 {
+  // convert Polylines to Polygons, so they can be displayed
+  for (const auto& polyline : p2d.untransformedPolylines()) {
+    const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
+    const double scale = std::ldexp(1.0, scale_bits);
+
+    Clipper2Lib::Path64 line;
+    for (const auto& v : polyline.vertices) {
+      line.emplace_back(v.x() * scale, v.y() * scale);
+    }
+
+    Clipper2Lib::ClipperOffset co;
+    co.AddPath(line, Clipper2Lib::JoinType::Miter, Clipper2Lib::EndType::Square);
+    Clipper2Lib::Paths64 result;
+    co.Execute(0.1 * scale, result);
+
+    for (const auto& p : result) {
+      Outline2d result;
+      result.color = polyline.color;
+      for (const auto& point : p) {
+        result.vertices.push_back(Eigen::Vector2d(point.x / scale, point.y / scale));
+      }
+      p2d.addOutline(result);
+    }
+  }
   const auto ps = p2d.tessellate(true);
   constexpr int dim = 2;
   // Estimating num vertices and polygons: top + bottom + sides
@@ -243,7 +269,8 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
     }
   }
 
-  std::shared_ptr<CSGLeaf> t(new CSGLeaf(ps, state.matrix(), state.color(),                                          STR(node.name(), node.index()), node.index()));
+  std::shared_ptr<CSGLeaf> t(
+    new CSGLeaf(ps, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
   t->is_2d = is_2d;
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
   if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
