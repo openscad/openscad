@@ -34,14 +34,23 @@
 #include "core/Settings.h"
 #include "gui/input/InputDriver.h"
 
+struct ButtonDecodeGeneric {
+  size_t offset;
+  int offsetBit;
+  int bits;
+};
+
+class UsageInfo;
+
 class HidApiInputDriver : public InputDriver
 {
   Q_OBJECT
 
   std::string name;
-  unsigned int buttons{0};
+  unsigned int buttonState{0};
   hid_device *hid_dev{nullptr};
   const struct device_id *dev{nullptr};
+  std::vector<struct ButtonDecodeGeneric> buttonInfo;
 
 public:
   HidApiInputDriver();
@@ -52,8 +61,17 @@ public:
   const std::string& get_name() const override;
   std::string get_info() const override;
 
-  void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
-  void hidapi_decode_button(const unsigned char *buf, unsigned int len);
+  void hidapi_sm_decode(const unsigned char *buf, unsigned int len);
+  void hidapi_sm_decode_axis(const unsigned char *buf, unsigned int len);
+  void hidapi_sm_decode_button(const unsigned char *buf, unsigned int len);
+
+  void hidapi_generic_init();
+  void hidapi_generic_decode(const unsigned char *buf, unsigned int len);
+  void generic_loadDescriptor();
+  void patch(uint8_t *buf, size_t *len);
+  bool matchDescriptor(const std::string& s, uint8_t *buf, size_t len);
+  void doPatch(const std::string& s, uint8_t *buf, size_t *len);
+  static uint8_t hexNibble(char c);
 
   size_t getButtonCount() const override { return Settings::max_buttons; }
   size_t getAxisCount() const override { return Settings::max_axis; }
@@ -61,12 +79,30 @@ public:
 private:
   std::pair<hid_device *, const struct device_id *> enumerate() const;
   void hidapi_input(hid_device *hid_dev);
+
+  std::vector<std::shared_ptr<UsageInfo>> items;
 };
 
 struct device_id {
   int vendor_id;
   int product_id;
-  void (HidApiInputDriver::*axis_decoder)(const unsigned char *buf, unsigned int len);
-  void (HidApiInputDriver::*button_decoder)(const unsigned char *buf, unsigned int len);
+  void (HidApiInputDriver::*init)();
+  void (HidApiInputDriver::*decode)(const unsigned char *buf, unsigned int len);
   const char *name;
+};
+
+class HidException : public std::exception
+{
+public:
+  HidException(const QString& errorMessage)
+    : errorMessage(errorMessage.toStdString())
+  {
+  }
+
+  const std::string& getErrorMessage() const { return errorMessage; }
+
+  const char *what() const noexcept override { return errorMessage.c_str(); }
+
+private:
+  std::string errorMessage;
 };
