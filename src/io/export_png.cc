@@ -42,9 +42,12 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 {
   assert(root_geom != nullptr);
   PRINTD("export_png geom");
+  LOG(message_group::NONE, "DEBUG: export_png starting, creating OffscreenView (%1$dx%2$d)",
+      camera.pixel_width, camera.pixel_height);
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
+    LOG(message_group::NONE, "DEBUG: OffscreenView created successfully");
   } catch (const OffscreenViewException& ex) {
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
@@ -55,17 +58,23 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 #else
   // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
   // know that all geometries are convertible to PolySet.
+  LOG(message_group::NONE, "DEBUG: Creating renderer");
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
       std::dynamic_pointer_cast<const PolySet>(root_geom) ||
       std::dynamic_pointer_cast<const Polygon2d>(root_geom)) {
+    LOG(message_group::NONE, "DEBUG: Using PolySetRenderer");
     geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
   } else {
+    LOG(message_group::NONE, "DEBUG: Using CGALRenderer");
     geomRenderer = std::make_shared<CGALRenderer>(root_geom);
   }
 #endif
+  LOG(message_group::NONE, "DEBUG: Renderer created, getting bounding box");
   const BoundingBox bbox = geomRenderer->getBoundingBox();
+  LOG(message_group::NONE, "DEBUG: Bounding box retrieved, setting up camera");
   setupCamera(camera, bbox);
 
+  LOG(message_group::NONE, "DEBUG: Configuring glview");
   glview->setCamera(camera);
   glview->setRenderer(geomRenderer);
   glview->setColorScheme(RenderSettings::inst()->colorscheme);
@@ -73,8 +82,11 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
+  LOG(message_group::NONE, "DEBUG: Calling paintGL");
   glview->paintGL();
+  LOG(message_group::NONE, "DEBUG: paintGL completed, saving PNG");
   glview->save(output);
+  LOG(message_group::NONE, "DEBUG: PNG saved successfully");
   return true;
 }
 

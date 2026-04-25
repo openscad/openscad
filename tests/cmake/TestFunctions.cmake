@@ -12,10 +12,14 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
 endfunction()
 
 #
-# Tags the given tests as belonging to the given CONFIG, i.e. will
-# only be executed when run using ctest -C <CONFIG>
+# Tags the given tests as belonging to the given CONFIG.
+# This sets both the legacy CONFIGURATIONS property (for non-multi-config generators)
+# and the LABELS property (for use with ctest -L <CONFIG>).
 #
 # Usage example: set_test_config(Heavy dump_testname preview_testname2)
+#
+# Users should run tests with: ctest -L <CONFIG> (e.g., ctest -L Default, ctest -L Examples)
+# On MSVC and other multi-config generators: ctest -C Release -L Default
 #
 function(set_test_config CONFIG)
   cmake_parse_arguments(TESTCFG "" "" "FILES;PREFIXES" ${ARGN})
@@ -41,6 +45,9 @@ function(set_test_config CONFIG)
   endif()
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+  
+  # Note: LABELS property is set at test creation time in add_cmdline_test() and add_failing_test()
+  # This ensures labels are available immediately for filtering with ctest -L
 endfunction(set_test_config)
 
 #
@@ -55,6 +62,9 @@ function(remove_test_config CONFIG)
   list(REMOVE_ITEM ${CONFIG}_TEST_CONFIG ${FULLNAMES})
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+  
+  # Note: This modifies the configuration before tests are created,
+  # so labels will be set correctly at test creation time
 endfunction(remove_test_config)
 
 #
@@ -392,6 +402,7 @@ endfunction()
 #
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  list(LENGTH TESTCMD_FILES FILES_COUNT)
 
   set(EXTRA_OPTIONS "")
 
@@ -478,15 +489,30 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
-      message(DEBUG "${DBG_COMMAND_STR}")      
-      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE} -Xutf8=1
-        ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
-        -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-        ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-      )
+      message(DEBUG "${DBG_COMMAND_STR}")
+      # For multi-config generators (Visual Studio, Xcode), don't specify CONFIGURATIONS
+      # as it conflicts with build configurations (Debug, Release, etc.)
+      get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+      if(IS_MULTI_CONFIG)
+        add_test(NAME ${TEST_FULLNAME}
+          COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+          ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      else()
+        add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
+          COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+          ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      endif()
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+      # Set LABELS property to enable filtering with ctest -L
+      set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
     else()
       message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
     endif()
@@ -530,7 +556,16 @@ function(add_failing_test TESTCMD_BASENAME)
       set(FILENAME_OPTION -f ${FILE_BASENAME})
     endif()
 
-    add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    # For multi-config generators (Visual Studio, Xcode), don't specify CONFIGURATIONS
+    # as it conflicts with build configurations (Debug, Release, etc.)
+    get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(IS_MULTI_CONFIG)
+      add_test(NAME ${TEST_FULLNAME} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    else()
+      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    endif()
     set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+    # Set LABELS property to enable filtering with ctest -L
+    set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
   endforeach()
 endfunction()
