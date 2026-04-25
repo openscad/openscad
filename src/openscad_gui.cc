@@ -278,7 +278,12 @@ void setupAutosaveTimer(OpenSCADApp *app)
   timer->start();
 }
 
-bool saveSessionForShutdown()
+// Pure writer: serialize all open windows into the on-disk session file.
+// No side effects on window state. Safe to call from non-shutdown contexts
+// such as QGuiApplication::saveStateRequest, which the desktop session
+// manager may emit at any time (including very early in the lifecycle) and
+// which is NOT a shutdown signal.
+bool writeGlobalSessionFromAllWindows()
 {
   if (!Settings::Settings::sessionManagementEnabled.value()) return false;
   const auto& windows = scadApp->windowManager.getWindows();
@@ -289,20 +294,36 @@ bool saveSessionForShutdown()
     QFile::remove(TabManager::getAutosaveFilePath());
     return false;
   }
-  for (auto *win : windows) {
-    win->markSessionQuitting();
-  }
   QString saveError;
   const bool success =
     TabManager::saveGlobalSession(TabManager::getSessionFilePath(), &saveError, false);
   if (!success && !saveError.isEmpty()) {
-    LOG(message_group::UI_Warning, "Failed to save session on shutdown: %1$s",
-        saveError.toUtf8().constData());
+    LOG(message_group::UI_Warning, "Failed to save session: %1$s", saveError.toUtf8().constData());
   }
   if (success) {
     QFile::remove(TabManager::getAutosaveFilePath());
   }
   return success;
+}
+
+// Mark every open MainWindow as session-quitting so that subsequent
+// closeEvent() calls skip the interactive guards (single-window quit prompt
+// and shouldClose() unsaved-changes prompt). Only call from genuine shutdown
+// paths: QCoreApplication::aboutToQuit, QGuiApplication::commitDataRequest,
+// or POSIX termination signals.
+void markAllWindowsQuitting()
+{
+  for (auto *win : scadApp->windowManager.getWindows()) {
+    win->markSessionQuitting();
+  }
+}
+
+// Composite: mark windows as quitting and write the session. Use from
+// shutdown contexts only.
+bool saveSessionForShutdown()
+{
+  markAllWindowsQuitting();
+  return writeGlobalSessionFromAllWindows();
 }
 
 constexpr int kIpcTimeoutMs = 1500;
@@ -1029,8 +1050,12 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   QObject::connect(&app, &QGuiApplication::commitDataRequest, &app,
                    [](QSessionManager&) { saveSessionForShutdown(); });
+  // saveStateRequest is a session-manager checkpoint, NOT a shutdown signal.
+  // Persist current state but do NOT mark windows as quitting; otherwise a
+  // subsequent X-button close skips quitApplication() and the user's edits
+  // never reach disk.
   QObject::connect(&app, &QGuiApplication::saveStateRequest, &app,
-                   [](QSessionManager&) { saveSessionForShutdown(); });
+                   [](QSessionManager&) { writeGlobalSessionFromAllWindows(); });
 
 #ifdef Q_OS_UNIX
   setupUnixSignalHandlers(&app);
