@@ -11,9 +11,12 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/customizer/Annotation.h"
+#include "core/Context.h"
 #include "core/Assignment.h"
 #include "core/Expression.h"
 #include "core/SourceFile.h"
+#include "core/Value.h"
 #include "core/customizer/Annotation.h"
 #include "utils/printutils.h"
 
@@ -30,6 +33,21 @@ bool set_enum_value(json& o, const std::string& name, const EnumParameter::EnumI
     o[name] = std::get<std::string>(itemValue);
     return false;
   }
+}
+Value resolveValue(const Expression *expr, const Context *context)
+{
+  if (context) {
+    try {
+      return expr->evaluate(context->get_shared_ptr());
+    } catch (...) {
+    }
+  }
+  if (const auto *lit = dynamic_cast<const Literal *>(expr)) {
+    if (lit->isBool()) return {lit->toBool()};
+    if (lit->isDouble()) return {lit->toDouble()};
+    if (lit->isString()) return {lit->toString()};
+  }
+  return Value::undef("Could not resolve static or dynamic expression");
 }
 
 }  // namespace
@@ -436,104 +454,155 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
   return output;
 }
 
-std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment)
+std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment,
+                                                                 const Context *context)
 {
-  std::string name = assignment->getName();
-
-  const Expression *parameter = nullptr;
-  const Annotation *parameterAnnotation = assignment->annotation("Parameter");
-  if (!parameterAnnotation) {
-    return nullptr;
-  }
-  parameter = parameterAnnotation->getExpr().get();
-
-  std::string description;
-  const Annotation *descriptionAnnotation = assignment->annotation("Description");
-  if (descriptionAnnotation) {
-    const auto *expression = dynamic_cast<const Literal *>(descriptionAnnotation->getExpr().get());
-    if (expression && expression->isString()) {
-      description = expression->toString();
+  const Annotation *nativeAnn = assignment->annotation("NativeAttributes");
+  if (nativeAnn) {
+    if (auto *obj = dynamic_cast<const ObjectExpression *>(nativeAnn->getExpr().get())) {
+      return fromObjectExpression(obj, assignment, context);
     }
   }
 
+  const Annotation *paramAnn = assignment->annotation("Parameter");
+  if (!paramAnn) return nullptr;
+
+  const Expression *parameterExpr = paramAnn->getExpr().get();
+  std::string description;
   std::string group = "Parameters";
-  const Annotation *groupAnnotation = assignment->annotation("Group");
-  if (groupAnnotation) {
-    const auto *expression = dynamic_cast<const Literal *>(groupAnnotation->getExpr().get());
-    if (expression && expression->isString()) {
-      group = boost::algorithm::trim_copy(expression->toString());
+
+  const Annotation *descAnn = assignment->annotation("Description");
+  if (descAnn) {
+    if (auto *lit = dynamic_cast<const Literal *>(descAnn->getExpr().get())) {
+      if (lit->isString()) description = lit->toString();
+    }
+  }
+
+  const Annotation *groupAnn = assignment->annotation("Group");
+  if (groupAnn) {
+    if (auto *lit = dynamic_cast<const Literal *>(groupAnn->getExpr().get())) {
+      if (lit->isString()) group = boost::algorithm::trim_copy(lit->toString());
     }
     if (group == "Hidden") return nullptr;
   }
 
-  const Expression *valueExpression = assignment->getExpr().get();
-  if (const auto *expression = dynamic_cast<const Literal *>(valueExpression)) {
-    if (expression->isBool()) {
-      return std::make_unique<BoolParameter>(name, description, group, expression->toBool());
-    }
+  return ParameterObject::createParameter(assignment->getName(), description, group, parameterExpr,
+                                          assignment->getExpr().get());
+}
 
-    if (expression->isDouble() || expression->isString()) {
-      std::string key;
-      EnumParameter::EnumValue value;
-      if (expression->isDouble()) {
-        value = expression->toDouble();
-        key = STR(expression->toDouble());
-      } else {
-        value = expression->toString();
-        key = expression->toString();
-      }
-      EnumValues values = parseEnumItems(parameter, key, value);
-      if (!values.items.empty()) {
+std::unique_ptr<ParameterObject> ParameterObject::createParameter(const std::string& name,
+                                                                  const std::string& description,
+                                                                  const std::string& group,
+                                                                  const Expression *parameterExpr,
+                                                                  const Expression *valueExpression)
+{
+  if (const auto *lit = dynamic_cast<const Literal *>(valueExpression)) {
+    if (lit->isBool()) return std::make_unique<BoolParameter>(name, description, group, lit->toBool());
+
+    if (lit->isDouble() || lit->isString()) {
+      std::string key = lit->isDouble() ? STR(lit->toDouble()) : lit->toString();
+      EnumParameter::EnumValue value = lit->isDouble() ? EnumParameter::EnumValue(lit->toDouble())
+                                                       : EnumParameter::EnumValue(lit->toString());
+      EnumValues values = parseEnumItems(parameterExpr, key, value);
+      if (!values.items.empty())
         return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex,
                                                values.items);
-      }
     }
 
-    if (expression->isString()) {
-      std::string value = expression->toString();
-      boost::optional<size_t> maximumSize = boost::none;
-      const auto *maximumSizeExpression = dynamic_cast<const Literal *>(parameter);
-      if (maximumSizeExpression && maximumSizeExpression->isDouble()) {
-        maximumSize = (size_t)(maximumSizeExpression->toDouble());
+    if (lit->isString()) {
+      boost::optional<size_t> maximumSize;
+      if (const auto *maxLit = dynamic_cast<const Literal *>(parameterExpr)) {
+        if (maxLit->isDouble()) maximumSize = (size_t)maxLit->toDouble();
       }
-      return std::make_unique<StringParameter>(name, description, group, value, maximumSize);
+      return std::make_unique<StringParameter>(name, description, group, lit->toString(), maximumSize);
     }
 
-    if (expression->isDouble()) {
-      double value = expression->toDouble();
-      NumericLimits limits = parseNumericLimits(parameter, {value});
-      return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum,
+    if (lit->isDouble()) {
+      double val = lit->toDouble();
+      NumericLimits limits = parseNumericLimits(parameterExpr, {val});
+      return std::make_unique<NumberParameter>(name, description, group, val, limits.minimum,
                                                limits.maximum, limits.step);
     }
-  } else if (const auto *expression = dynamic_cast<const Vector *>(valueExpression)) {
-    if (expression->getChildren().size() < 1 || expression->getChildren().size() > 4) {
-      return nullptr;
-    }
-
-    std::vector<double> value;
-    for (const auto& element : expression->getChildren()) {
-      const auto *item = dynamic_cast<const Literal *>(element.get());
-      if (!item) {
-        return nullptr;
+  } else if (const auto *vec = dynamic_cast<const Vector *>(valueExpression)) {
+    std::vector<double> values;
+    for (const auto& child : vec->getChildren()) {
+      if (const auto *item = dynamic_cast<const Literal *>(child.get())) {
+        if (item->isDouble()) values.push_back(item->toDouble());
       }
-      if (!item->isDouble()) {
-        return nullptr;
-      }
-      value.push_back(item->toDouble());
     }
-
-    NumericLimits limits = parseNumericLimits(parameter, value);
-    return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum,
-                                             limits.maximum, limits.step);
+    if (values.size() >= 1 && values.size() <= 4) {
+      NumericLimits limits = parseNumericLimits(parameterExpr, values);
+      return std::make_unique<VectorParameter>(name, description, group, values, limits.minimum,
+                                               limits.maximum, limits.step);
+    }
   }
   return nullptr;
 }
 
-ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile)
+std::unique_ptr<ParameterObject> ParameterObject::fromObjectExpression(const ObjectExpression *nativeObj,
+                                                                       const Assignment *assignment,
+                                                                       const Context *context)
+{
+  std::string description, group = "Parameters";
+  bool isLocked = false;
+  bool isHidden = false;
+  RawAttributes raw;
+  const Expression *rangeExpr = nullptr;
+  std::shared_ptr<Expression> lockedExpr;
+  std::shared_ptr<Expression> hiddenExpr;
+  std::set<std::string> tempDependencies;
+
+  for (const auto& member : nativeObj->getMembers()) {
+    std::string key = member->getName();
+    const Expression *expr = member->getExpr().get();
+
+    if (key == "locked") lockedExpr = member->getExpr();
+    else if (key == "hidden") hiddenExpr = member->getExpr();
+    else if (key == "range") rangeExpr = expr;
+
+    if (expr) {
+      expr->collectDependencies(tempDependencies);
+    }
+
+    Value val = resolveValue(expr, context);
+    if (val.isDefined()) {
+      if (key == "description" || key == "desc") description = " " + val.toStrUtf8Wrapper().toString();
+      else if (key == "group") group = val.toStrUtf8Wrapper().toString();
+      else if (key == "locked") isLocked = val.toBool();
+      else if (key == "hidden") isHidden = val.toBool();
+      else if (key == "min") raw.minimum = val.toDouble();
+      else if (key == "max") raw.maximum = val.toDouble();
+      else if (key == "step") raw.step = val.toDouble();
+      else if (key == "range") {
+      } else if (key == "slider") raw.sliderEnabled = val.toBool();
+      else {
+        PRINT(Message("no such key " + key + " found", message_group::Error, member->location()));
+      }
+    }
+  }
+
+  auto param =
+    createParameter(assignment->getName(), description, group, rangeExpr, assignment->getExpr().get());
+  if (param) {
+    param->setLocked(isLocked);
+    param->setHidden(isHidden);
+
+    param->setLockedExpression(lockedExpr);
+    param->setHiddenExpression(hiddenExpr);
+
+    param->applyTypeAttributes(raw);
+
+    param->getDependencies() = std::move(tempDependencies);
+  }
+  return param;
+}
+
+ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile, const Context *context)
 {
   ParameterObjects output;
   for (const auto& assignment : sourceFile->scope->assignments) {
-    std::unique_ptr<ParameterObject> parameter = ParameterObject::fromAssignment(assignment.get());
+    std::unique_ptr<ParameterObject> parameter =
+      ParameterObject::fromAssignment(assignment.get(), context);
     if (parameter) {
       output.push_back(std::move(parameter));
     }
@@ -582,4 +651,67 @@ void ParameterObjects::apply(SourceFile *sourceFile) const
       namedParameters[assignment->getName()]->apply(assignment.get());
     }
   }
+}
+
+void ParameterObject::updateAttributes(const Context *context)
+{
+  if (context) {
+    if (this->lockedExpr) {
+      try {
+        bool newLocked = this->lockedExpr->evaluate(context->get_shared_ptr()).toBool();
+        this->setLocked(newLocked);
+      } catch (...) {
+      }
+    }
+    if (this->hiddenExpr) {
+      try {
+        bool newHidden = this->hiddenExpr->evaluate(context->get_shared_ptr()).toBool();
+        this->setHidden(newHidden);
+      } catch (...) {
+      }
+    }
+  }
+}
+
+void BoolParameter::updateContext(Context *context) const
+{
+  context->set_variable(name_, Value(value));
+}
+
+void StringParameter::updateContext(Context *context) const
+{
+  context->set_variable(name_, Value(value));
+}
+
+void NumberParameter::updateContext(Context *context) const
+{
+  context->set_variable(name_, Value(value));
+}
+
+void VectorParameter::updateContext(Context *context) const
+{
+  // We need to construct a Vector Value
+  Value::VectorType vecType(nullptr);
+  for (double v : value) {
+    vecType.emplace_back(Value(v));
+  }
+  context->set_variable(name_, Value(std::move(vecType)));
+}
+
+void EnumParameter::updateContext(Context *context) const
+{
+  const EnumValue& itemValue = items[valueIndex].value;
+  if (std::holds_alternative<double>(itemValue)) {
+    context->set_variable(name_, Value(std::get<double>(itemValue)));
+  } else {
+    context->set_variable(name_, Value(std::get<std::string>(itemValue)));
+  }
+}
+
+void NumberParameter::applyTypeAttributes(const RawAttributes& raw)
+{
+  if (raw.sliderEnabled.has_value()) sliderEnabled_ = *raw.sliderEnabled;
+  if (raw.minimum.has_value()) minimum = *raw.minimum;
+  if (raw.maximum.has_value()) maximum = *raw.maximum;
+  if (raw.step.has_value()) step = *raw.step;
 }
