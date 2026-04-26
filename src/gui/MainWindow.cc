@@ -633,7 +633,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   auto guard = scopedSetCurrentOutput();
 
   setupStatusBar();
-  setupViewportControl();
   setupAnimate();
 
   setupEditor(filenames);
@@ -644,11 +643,11 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupDocks();
 
   setup3DView();
-  setupPreferences();
-
+  setupViewportControl();
   updateStatusBar(nullptr);
   updateLanguageLabel();
   setupInput();
+  setupPreferences();
 
   restoreWindowState();
 
