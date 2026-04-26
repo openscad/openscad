@@ -644,11 +644,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   setup3DView();
   setupViewportControl();
-  setupPreferences();
-
   updateStatusBar(nullptr);
   updateLanguageLabel();
   setupInput();
+  setupPreferences();
 
   restoreWindowState();
 
