@@ -2266,7 +2266,14 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
     return true;
   }
   /*
-    if (content.rfind("from openscad import", 0) == 0) {  // 1st character already typed
+    // Disabled: PythonSCAD relies on a hash-based trust store (see
+    // readPythonTrustHash / writePythonTrustHash) instead of a content
+    // sniff.  Kept for historical reference; if anyone re-enables this
+    // shortcut, the prefix check must accept all three module names that
+    // a PythonSCAD script can legally start with.
+    if (content.rfind("from openscad import", 0) == 0 ||
+        content.rfind("from pythonscad import", 0) == 0 ||
+        content.rfind("from _openscad import", 0) == 0) {
       this->trusted_edit_document_name = file;
       return true;
     }

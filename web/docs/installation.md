@@ -115,6 +115,21 @@ sudo ./scripts/get-dependencies.py --yes --profile pythonscad-qt5
 pip install pythonscad
 ```
 
+After installing, you can choose between two equivalent imports:
+
+```python
+# Recommended for new PythonSCAD designs
+from pythonscad import *
+
+# Compatible with upstream OpenSCAD's Python integration
+from openscad import *
+```
+
+`pythonscad` is a strict superset of `openscad`; both call the same
+underlying C extension (`_openscad`). See
+[`doc/python-modules.md`](https://github.com/pythonscad/pythonscad/blob/master/doc/python-modules.md)
+for the layered module layout.
+
 ### Alternative: install from source
 
 - Install from a local checkout:

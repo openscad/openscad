@@ -149,6 +149,10 @@ src/core/parser.hxx
 src/core/parser.tab.h
 src/core/parser.cc
 pythonscad.egg-info/
+# Editable pip install drops the compiled extension at the project root.
+_openscad*.so
+libraries/python/stubs/dist/
+libraries/python/stubs/*.egg-info/
 
 # MkDocs build output
 web/site/

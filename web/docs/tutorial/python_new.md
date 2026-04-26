@@ -3,11 +3,27 @@
 OpenSCAD already got a rich set of functions, however, there
 could be some more ...
 
+## A note on imports
+
+Previously Python designs used `from openscad import *`, but now the recommended
+import is `from pythonscad import *`, which is
+a strict superset of `openscad` and will host PythonSCAD-only features
+going forward:
+
+```py
+# Recommended for new PythonSCAD designs
+from pythonscad import *
+```
+
+Both forms call the same underlying C extension. See
+[`doc/python-modules.md`](https://github.com/pythonscad/pythonscad/blob/master/doc/python-modules.md)
+for the layered module layout.
+
 ## divmatrix
 Sometimes its helpful to use multmatrix with the inverse of a matrix. Why don't use divmatrix right from the beginning ?
 
 ```py
-from openscad import *
+from pythonscad import *
 mat=[[1,0,0,10],[0,1,0,0],[0,0,1,0],[0,0,0,1]] # Move to the right by 10
 
 a=cube([1,1,1])
@@ -21,7 +37,7 @@ c.show()
 With mesh function you can convert solid to a set of vertices and triangles like so:
 
 ```py
-from openscad import *
+from pythonscad import *
 
 u=cube([1,1,1]) | cylinder(d=1,h=10)
 
@@ -39,7 +55,7 @@ This is reason to create path\_extrude. With path\_extrude you can extrude any s
 corner
 
 ```py
-from openscad import *
+from pythonscad import *
 p=path_extrude(square(1),[[0,0,0],[0,0,10,3], [10,0,10,3],[10,10,10]]);
 show(p);
 ```
@@ -49,7 +65,7 @@ show(p);
     Sometime translate or rotate is quite a burden to write when you just want to change one coordinate and still have to specify 3 values in the transformation
 
 ```py
-from openscad import *
+from pythonscad import *
 # these are easier to write instead specifying full translate or rotate
 obj=cube(2)
 part1 = obj.right(2.5)
@@ -70,7 +86,7 @@ only want the new dimension just on one place, not all over the object. This is 
 pull defines one point one direction where it inserts  "void"  right into the spanned area. Best use this to work on STL's
 
 ```py
-from openscad import *
+from pythonscad import *
 # One Cube
 c=cube([2,2,5])
 
@@ -87,7 +103,7 @@ No need to create SDF objects in other tools and import into OpenSCAD after.
 Thanks to embedded libfive this can be done online. Watch this small sample to get an idea, how easy it is:
 
 ```py
-from openscad import *
+from pythonscad import *
 from pylibfive import *
 
 # Just assemble you libfive object first
@@ -137,7 +153,7 @@ A great introduction to the world of SDF can be found in <a href="https://www.yo
 Align can be used to combine combjects together without difficult  transformations
 
 ```py
-from openscad import *
+from pythonscad import *
 c = cube()
 c1 = c
 # scale with -1 will also invert the directions of all handles, so the objects will be abutting instead of coincident
@@ -151,7 +167,7 @@ show(c1 | c2)
 PythonSCAD has a new primitive called "edge" which just has a length
 
 ```py
-from openscad import *
+from pythonscad import *
 e = edge(size=10, center=True)
 
 # and of course you can extrude it
@@ -171,7 +187,7 @@ so dont challenge the algorithmus. Usually if you have an idea, how to fillet, t
 
 
 ```py
-from openscad import *
+from pythonscad import *
 
 c=cube(10);
 
@@ -193,7 +209,7 @@ show(demo)
 You can retrieve a list of faces for any solid in a python list
 
 ```py
-from openscad import *
+from pythonscad import *
 
 core=sphere(r=2)
 faces = core.faces()
@@ -211,7 +227,7 @@ note that objects returned by faces (and edges) have a property called 'matrix' 
 You can use this to export your data to disk programmatically like so:
 
 ```py
-from openscad import *
+from pythonscad import *
 c = cube(10)
 cyl = cylinder(r=4,h=4)
 
@@ -231,7 +247,7 @@ export( {
 Spline is like 'polygon'  just with the difference, that the resulting object is very round and will meet the given points
 
 ```py
-from openscad import *
+from pythonscad import *
 
 pts=[[0,6],[10,-5],[20,10],[0,19]]
 s = spline(pts,fn=20).linear_extrude(height=1)
@@ -248,7 +264,7 @@ It can carry color but has not area and it's ignored in CSG operations. Its very
 
 
 ```py
-from openscad import *
+from pythonscad import *
 
 for i in range(10):
     polyline([[0,i], [20,i]]).show()
@@ -263,7 +279,7 @@ skin is like you put arbritary 2d objects in space and skin will cover all of th
 
 This is basically morphing a square into a circle
 ```py
-from openscad import *
+from pythonscad import *
 a=square(4,center=True).roty(40)
 b=circle(r=2,fn=20).rotx(40).up(10)
 s=skin(a,b)
@@ -279,7 +295,7 @@ to modify parameters through a GUI without editing code.
 ### Basic Usage
 
 ```py
-from openscad import *
+from pythonscad import *
 
 # Simple parameter with default value
 width = add_parameter("width", 10)
@@ -303,7 +319,7 @@ cube([width, width, width]).show()
 ### Sliders (Numbers)
 
 ```py
-from openscad import *
+from pythonscad import *
 
 # Integer slider using range() - note: range is exclusive, use 101 for max 100
 quality = add_parameter("quality", 50, range=range(0, 101, 5))
@@ -318,7 +334,7 @@ angle = add_parameter("angle", 45.0, step=0.5)
 ### Dropdown Menus
 
 ```py
-from openscad import *
+from pythonscad import *
 
 # Simple options list
 color = add_parameter("color", "red", options=["red", "green", "blue"])
@@ -330,7 +346,7 @@ quality = add_parameter("quality", 10, options={10: "Low", 20: "Medium", 30: "Hi
 ### Vectors
 
 ```py
-from openscad import *
+from pythonscad import *
 
 # Vector with constraints (applied to all elements, max 4 elements)
 size = add_parameter("size", [10, 20, 30], range=(1, 100, 1))
@@ -339,7 +355,7 @@ size = add_parameter("size", [10, 20, 30], range=(1, 100, 1))
 ### Groups and Organization
 
 ```py
-from openscad import *
+from pythonscad import *
 
 # Organize parameters into tabs
 width = add_parameter("width", 10, group="Dimensions")
@@ -354,7 +370,7 @@ units = add_parameter("units", "mm", group="Global")     # Appears on all tabs
 ### Descriptions
 
 ```py
-from openscad import *
+from pythonscad import *
 
 # Add help text
 width = add_parameter("width", 10,
@@ -369,7 +385,7 @@ your Python script. This is useful for setting up specific viewing angles when
 sharing scripts or creating presentations of your models.
 
 ```py
-from openscad import *
+from pythonscad import *
 
 c = cube(10, center=True)
 c.show()
@@ -395,7 +411,7 @@ Concat concatenates the triangles and vertices of serveral objects without actua
 createing an Union operation on them. This is useful when the sub-parts are not yet water-tight and CSG would fail on them.
 
 ```py
-from openscad import *
+from pythonscad import *
 
 alltogether = concat(part1, part2, part3)
 ```
@@ -411,7 +427,7 @@ Specify r or fn as an additional parameter and the new created common edges get 
 ### circle gets an angle parameter
 
 ```py
-from openscad import *
+from pythonscad import *
 
 pie = circle(r=5,angle=70)
 pie.show()
@@ -421,7 +437,7 @@ pie.show()
 ### same for cylinder, why should it be missing
 
 ```py
-from openscad import *
+from pythonscad import *
 
 pie = cylinder(r=5,h=6, angle=90)
 pie.show()
@@ -430,7 +446,7 @@ pie.show()
 
 ###  sphere can accept a function which  receives a 3d vector and will output a radius
 ```py
-from openscad import *
+from pythonscad import *
 
 def rfunc(v):
   cf = abs(v[0])+abs(v[1])+abs(v[2])+3
@@ -442,7 +458,7 @@ sphere(rfunc,fs=0.5,fn=10).show()
 ### linear\_extrude can also extrude a python function. this will get a height and shall return a 2d polygon
 
 ```py
-from openscad import *
+from pythonscad import *
 from math import *
 def xsection(h):
     v =5+sin(h)
@@ -456,7 +472,7 @@ prisma.show()
 ### rotate\_extrude can also extrude a python function. this will get a height and shall return a 2d polygon
 
 ```py
-from openscad import *
+from pythonscad import *
 from math import *
 def xsection(h):
     v =2*sin(4*pi*h)

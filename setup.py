@@ -521,17 +521,26 @@ def main():
     ] + lib3mf_defines + libfive_defines
 
     pythonscad_ext = Extension(
-        "openscad",
+        "_openscad",
         sources=all_sources,
         include_dirs=project_include_dirs,
         libraries=get_pkg_config_libraries() + lib3mf_libs,
         define_macros=all_defines,
     )
 
+    # The pure-Python overlay packages live under libraries/python/{openscad,pythonscad}
+    # so they are already shipped alongside the binary by the standalone CMake install
+    # (the libraries/ tree). Declare them here so `pip install` exposes the same
+    # three-module layout (`_openscad` + `openscad` + `pythonscad`) on PyPI.
     setup(
         version=get_version(),
         cmdclass={"build_ext": BuildExtWithLexYacc},
         ext_modules=[pythonscad_ext],
+        packages=["openscad", "pythonscad"],
+        package_dir={
+            "openscad": "libraries/python/openscad",
+            "pythonscad": "libraries/python/pythonscad",
+        },
     )
 
 

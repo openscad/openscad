@@ -167,10 +167,34 @@ Python support is implemented in `src/python/`:
 Python scripts use OpenSCAD as a library:
 
 ```python
-from openscad import *
+from pythonscad import *
 cube([10, 20, 30]).color("Tomato")
 show(c)
 ```
+
+#### Three-module layout
+
+PythonSCAD ships three importable modules; new C-side functionality goes
+into the C extension, new pure-Python OpenSCAD-compatible code goes into
+the `openscad` overlay, and PythonSCAD-only additions go into the
+`pythonscad` overlay:
+
+- `_openscad` - C extension built from `src/python/`. Registered via
+  `PyImport_AppendInittab("_openscad", ...)` in the embedded interpreter
+  and shipped as `_openscad.so`/`_openscad.pyd` in the pip wheel.
+- `openscad` - pure-Python overlay at
+  `libraries/python/openscad/__init__.py`. Re-exports `_openscad` 1:1 and
+  is the home for any pure-Python reimplementations or compatibility
+  shims that should match upstream OpenSCAD's API.
+- `pythonscad` - pure-Python overlay at
+  `libraries/python/pythonscad/__init__.py`. Re-exports `openscad` and is
+  the home for PythonSCAD-only features that should not bleed into the
+  OpenSCAD-compatible surface.
+
+Switching a script between `from openscad import *` and
+`from pythonscad import *` requires no other code change. See
+`doc/python-modules.md` for the per-symbol deprecation pattern that
+becomes available because of this layout.
 
 ### Directory Structure
 

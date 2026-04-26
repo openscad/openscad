@@ -140,14 +140,33 @@ source](#building-pythonscad-from-source).
 
 ## Example code
 
-```python
-# Import the openscad module's contents
-from openscad import *
+PythonSCAD ships two top-level modules:
 
-# Create a cube and tint it red
+- `pythonscad` — the recommended import for new PythonSCAD designs. It is
+  a strict superset of `openscad` and is the home for PythonSCAD-only
+  features.
+- `openscad` — kept for designs that should also be runnable by upstream
+  OpenSCAD's Python integration. It mirrors the OpenSCAD-compatible API
+  surface.
+
+You can switch existing designs from `from openscad import *` to `from pythonscad import *` without changing any other code.
+
+```python
+from pythonscad import *
+
 c = cube([10, 20, 30]).color("Tomato")
 
-# Render the cube
+show(c)
+```
+
+The same example using the OpenSCAD-compatible import (still fully
+supported):
+
+```python
+from openscad import *
+
+c = cube([10, 20, 30]).color("Tomato")
+
 show(c)
 ```
 

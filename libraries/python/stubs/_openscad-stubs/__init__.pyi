@@ -1,5 +1,6 @@
 """ PythonSCAD Stub File for use in editors like Visual Studio Code """
-from typing import Union, Optional, overload
+from enum import Enum
+from typing import List, Optional, Self, Union, overload
 
 PyOpenSCADs = Union["PyOpenSCAD", list["PyOpenSCAD"]]
 """Type for functions that accept either a single OpenSCAD object or a list of objects."""
@@ -246,9 +247,9 @@ class PyOpenSCAD:
         self,
         method: str = RoofMethod.TOP.name,
         convexity: int = 2,
-        fn: int = FN,
-        fa: float = FA,
-        fs: float = FS,
+        fn: int = 0,
+        fa: float = 0,
+        fs: float = 0,
     ) -> Self:
         """Create Roof from an 2D Shape"""
         ...
@@ -354,9 +355,9 @@ class PyOpenSCAD:
         scale: float = 1,
         twist: float = 0,
         closed: bool = False,
-        fn: int = FN,
-        fa: float = FA,
-        fs: float = FS,
+        fn: int = 0,
+        fa: float = 0,
+        fs: float = 0,
     ) -> Self:
         """Path_extrude an 2D Object
         xdir: initial vector of x axis
@@ -820,27 +821,27 @@ def translate(matrix: Matrix4x4, v: Vector3) -> Matrix4x4:
     ...
 
 
-def right(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def right(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Moves an Object to the right"""
     ...
 
-def left(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def left(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Moves an Object to the left"""
     ...
 
-def back(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def back(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Moves Object backwards"""
     ...
 
-def front(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def front(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Moves Object frontwards"""
     ...
 
-def up(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def up(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Move Object upwards"""
     ...
 
-def down(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def down(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Move Object downwards"""
     ...
 
@@ -876,15 +877,15 @@ def rotate(
     """
     ...
 
-def rotx(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def rotx(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Rotate Object around X Axis"""
     ...
 
-def roty(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def roty(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Rotate Object around Y Axis"""
     ...
 
-def rotz(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
+def rotz(obj: PyOpenSCAD, v: List[float]) -> PyOpenSCAD:
     """Rotate Object around Z Axis"""
     ...
 
@@ -1067,7 +1068,7 @@ def rotate_extrude(
     ...
 
 def path_extrude(
-    obj: PyOpenSCADType,
+    obj: PyOpenSCAD,
     path: List[float],
     xdir: List[float],
     convexity: int,
@@ -1175,7 +1176,7 @@ def render(obj: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
     """
     ...
 
-def output(obj: PyOpenSCADType) -> None:
+def output(obj: PyOpenSCAD) -> None:
     """same as show"""
     ...
 def resize(
@@ -1218,12 +1219,12 @@ def fill(*objects: PyOpenSCADs) -> PyOpenSCAD:
 
 
 def roof(
-    obj: PyOpenSCADType, method: str, convexity: int, fn: int, fa: float, fs: float
+    obj: PyOpenSCAD, method: str, convexity: int, fn: int, fa: float, fs: float
 ) -> PyOpenSCAD:
     """Create Roof from an 2D Shape"""
     ...
 
-def pull(obj: PyOpenSCADType, src: List[float], dst: List[float]) -> PyOpenSCAD:
+def pull(obj: PyOpenSCAD, src: List[float], dst: List[float]) -> PyOpenSCAD:
     """Pull apart Object, basically between src and dst it creates a prisma with the x-section
     src: anchor
     dst: how much to pull
@@ -1231,7 +1232,7 @@ def pull(obj: PyOpenSCADType, src: List[float], dst: List[float]) -> PyOpenSCAD:
     ...
 
 
-def export(obj: PyOpenSCADType, file: str) -> None:
+def export(obj: PyOpenSCAD, file: str) -> None:
     """Export the result to a file
     file:  output file name, format is automatically detected from suffix
     when obj is a dictionary, it allows 3mf export to export several paths
@@ -1270,14 +1271,14 @@ def only(obj: PyOpenSCAD) -> PyOpenSCAD:
 
 
 
-def oversample(obj: PyOpenSCADType, n: int, round: bool) -> PyOpenSCAD:
+def oversample(obj: PyOpenSCAD, n: int, round: bool) -> PyOpenSCAD:
     """Create artificial intermediate points into straight lines
     n: factor  of the oversampling
     bool: whether to round the oversampling
     """
     ...
 
-def fillet(obj: PyOpenSCADType, r: float, sel: PyOpenSCADType, fn: int) -> PyOpenSCAD:
+def fillet(obj: PyOpenSCAD, r: float, sel: PyOpenSCAD, fn: int) -> PyOpenSCAD:
     """Create nice roundings for sharp edges
     r: radius of the fillet
     sel: Object which overlaps the "selected" edges
@@ -1287,19 +1288,6 @@ def fillet(obj: PyOpenSCADType, r: float, sel: PyOpenSCADType, fn: int) -> PyOpe
 
 def group(obj: PyOpenSCAD) -> PyOpenSCAD:
     """Groups several Objects"""
-    ...
-
-
-def render(obj: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
-    """Force rendering an object.
-
-    Args:
-        obj: Object to render.
-        convexity: Convexity parameter for rendering. Defaults to 2.
-
-    Returns:
-        The object that will be forced to render. The original object is unaffected.
-    """
     ...
 
 
@@ -1362,7 +1350,7 @@ def osimport(
     filename: str,
     center: bool,
     dpi: float,
-    stroke: bool
+    stroke: bool,
     id: int,
 ) -> PyOpenSCAD:
     """Imports Object from disc
@@ -1413,7 +1401,7 @@ def scad(code: str) -> PyOpenSCAD:
 
 
 def align(
-    obj: PyOpenSCAD, refmat: Matrix4x4, objmat: Optional[Matrix4x4] -> None
+    obj: PyOpenSCAD, refmat: Matrix4x4, objmat: Optional[Matrix4x4] = None
 ) -> PyOpenSCAD:
     """Align an object to a reference matrix.
 

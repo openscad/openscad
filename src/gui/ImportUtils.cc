@@ -7,7 +7,7 @@ QMap<QString, QString> Importer::knownFileExtensions;
 
 int Importer::init()
 {
-  const QString importStatement = "from openscad import *\nmodel=osimport(\"%1\");\nmodel.show()\n";
+  const QString importStatement = "from pythonscad import *\nmodel=osimport(\"%1\");\nmodel.show()\n";
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
   knownFileExtensions["stl"] = importStatement;

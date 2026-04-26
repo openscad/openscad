@@ -54,7 +54,7 @@ std::string ASTNode::dump_python(const std::string& indent) const
   std::ostringstream stream_def;
   print_python(stream, stream_def, indent);
 
-  result << "from openscad import *\n\n";
+  result << "from pythonscad import *\n\n";
   result << stream_def.str() << "\n";
   result << "show( ";
   result << stream.str();

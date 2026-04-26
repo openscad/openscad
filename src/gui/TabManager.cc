@@ -199,7 +199,7 @@ void warnDesignPathIsDirectory(QWidget *dialogParent, const QString& absPath)
 void initEmptyUntitledTab(EditorInterface *editor)
 {
 #ifdef ENABLE_PYTHON
-  std::string templ = "from openscad import *\n";
+  std::string templ = "from pythonscad import *\n";
   std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
   std::stringstream ss(libs);
   std::string word;
@@ -302,7 +302,7 @@ void TabManager::prepareEditorBufferForNewDesignFile(EditorInterface *edt, const
   const QString suffix = Importer::effectiveSuffixForOpen(absPath);
 #ifdef ENABLE_PYTHON
   if (suffix == QStringLiteral("py")) {
-    std::string templ = "from openscad import *\n";
+    std::string templ = "from pythonscad import *\n";
     std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
     std::stringstream ss(libs);
     std::string word;
@@ -918,7 +918,7 @@ void TabManager::openTabFile(const QString& filename)
   } else {
 #ifdef ENABLE_PYTHON
     if (suffix == QStringLiteral("py")) {
-      std::string templ = "from openscad import *\n";
+      std::string templ = "from pythonscad import *\n";
       std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
       std::stringstream ss(libs);
       std::string word;
@@ -1257,7 +1257,9 @@ void TabManager::setTabSessionData(EditorInterface *edt, const QString& filepath
     // Old session files had no language field; untitled Python tabs use an empty path.
     if (filepath.isEmpty() && edt->language == LANG_SCAD) {
       const QString trimmed = content.trimmed();
-      if (trimmed.startsWith(QStringLiteral("from openscad import"))) {
+      if (trimmed.startsWith(QStringLiteral("from openscad import")) ||
+          trimmed.startsWith(QStringLiteral("from pythonscad import")) ||
+          trimmed.startsWith(QStringLiteral("from _openscad import"))) {
         edt->setLanguageManually(LANG_PYTHON);
       }
     }

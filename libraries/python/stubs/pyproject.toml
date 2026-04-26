@@ -3,20 +3,48 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pythonscad_stubs"
-version = "0.0.1"
-authors = [
-  { name="Guenther Sohler", email="guenther.sohler@gmail.com" },
-]
-description = "PythonSCAD - python enhanced OpenSCAD"
+name = "pythonscad-stubs"
+version = "0.2.0"
+description = "Type stubs for PythonSCAD (_openscad / openscad / pythonscad)"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
+authors = [
+  { name = "Guenther Sohler", email = "guenther.sohler@gmail.com" },
+]
+license = { file = "LICENSE" }
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development",
+  "Topic :: Software Development :: Documentation",
+  "Typing :: Stubs Only",
 ]
 
 [project.urls]
-Homepage = "http://pythonscad.org"
-Issues = "https://github.com/gsohler/openscad/issues"
+Homepage = "https://pythonscad.org"
+Issues = "https://github.com/pythonscad/pythonscad/issues"
+
+# Stub-only distribution per PEP 561. Each `<name>-stubs` directory ships
+# the `__init__.pyi` (carrying the type annotations) and the `py.typed`
+# marker that tells type checkers the package is typed. `zip-safe = false`
+# is required so type checkers can read the raw `.pyi` files at runtime.
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+# `find_packages()` only discovers directories with an `__init__.py`; the
+# stub directories deliberately have only `__init__.pyi`, so we use the
+# namespace-aware finder (PEP 420) and explicitly include the three
+# PEP 561 stub directories.
+[tool.setuptools.packages.find]
+include = ["_openscad-stubs", "openscad-stubs", "pythonscad-stubs"]
+namespaces = true
+
+[tool.setuptools.package-data]
+"_openscad-stubs" = ["py.typed", "__init__.pyi"]
+"openscad-stubs" = ["py.typed", "__init__.pyi"]
+"pythonscad-stubs" = ["py.typed", "__init__.pyi"]

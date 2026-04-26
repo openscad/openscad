@@ -202,6 +202,25 @@ Run IPython interpreter.
 \fB\-\-python\-module\fP \fImodule\fP
 Call pip Python module.
 
+.SS Python modules
+
+PythonSCAD exposes its API through three importable modules:
+.TP
+\fB_openscad\fP
+Low-level C extension. Implementation detail; user code should normally
+import \fBpythonscad\fP or \fBopenscad\fP instead.
+.TP
+\fBopenscad\fP
+Pure-Python overlay re-exporting \fB_openscad\fP. Kept stable for designs
+that should also be runnable by upstream OpenSCAD's Python integration.
+.TP
+\fBpythonscad\fP
+Strict superset of \fBopenscad\fP and the recommended import for new
+PythonSCAD designs. Future PythonSCAD-only features will be added here.
+.PP
+A script can switch between \fBfrom openscad import *\fP and
+\fBfrom pythonscad import *\fP without any other code change.
+
 .SH COMMAND LINE EXAMPLES
 .PP
 
