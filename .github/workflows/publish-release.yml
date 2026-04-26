@@ -258,6 +258,10 @@ jobs:
       - name: Publish release
         uses: actions/github-script@v8
         with:
+          # Use bot account PAT so the resulting `release: released` event
+          # can trigger downstream workflows (e.g. publish-to-pypi.yml).
+          # The default GITHUB_TOKEN cannot trigger other workflows.
+          github-token: ${{ secrets.RELEASE_TOKEN }}
           script: |
             const releaseId = ${{ needs.wait-for-builds.outputs.release_id }};
             const releaseTag = '${{ needs.wait-for-builds.outputs.release_tag }}';
