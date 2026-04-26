@@ -24,10 +24,10 @@ Animate::Animate(QWidget *parent) : QWidget(parent)
   setupUi(this);
   initGUI();
 
-  const auto width = groupBoxParameter->minimumSizeHint().width();
+  const auto width = animateParameters->minimumSizeHint().width();
   const auto margins = layout()->contentsMargins();
   const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
-  const auto parameterMargins = groupBoxParameter->layout()->contentsMargins();
+  const auto parameterMargins = animateParameters->layout()->contentsMargins();
   initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() +
                  scrollMargins.right() + parameterMargins.left() + parameterMargins.right();
 }
@@ -260,8 +260,8 @@ int Animate::nextFrame()
 
 void Animate::resizeEvent(QResizeEvent *event)
 {
-  auto layoutParameters = dynamic_cast<QBoxLayout *>(groupBoxParameter->layout());
-  auto layoutButtons = dynamic_cast<QBoxLayout *>(groupBoxButtons->layout());
+  auto layoutParameters = dynamic_cast<QBoxLayout *>(animateParameters->layout());
+  auto layoutButtons = dynamic_cast<QBoxLayout *>(animateButtons->layout());
 
   if (layoutParameters && layoutButtons) {
     if (layoutParameters->direction() == QBoxLayout::LeftToRight) {
