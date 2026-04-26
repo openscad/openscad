@@ -29,7 +29,9 @@
 #include <QtCore/qstringliteral.h>
 
 #include <QDialog>
+#include <QCoreApplication>
 #include <QDir>
+#include <QEventLoop>
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QGuiApplication>
@@ -37,6 +39,7 @@
 #include <QObject>
 #include <QPalette>
 #include <QSurfaceFormat>
+#include <QTimer>
 #include <QStringList>
 #include <QStyleHints>
 #include <Qt>
@@ -281,6 +284,34 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
                    &OpenSCADApp::setRenderBackend3D);
 
   set_render_color_scheme(arg_colorscheme, false);
+  auto waitForQueuedStartupOpen = [&]() {
+    const bool waitingForStartupOpen =
+      inputFiles.empty() || (inputFiles.size() == 1 && inputFiles.front().empty());
+
+    if (!waitingForStartupOpen || app.hasQueuedOpenFiles()) {
+      return;
+    }
+
+    QEventLoop loop;
+    QTimer::singleShot(0, &loop, &QEventLoop::quit);
+    QObject::connect(&app, &OpenSCADApp::queuedOpenFilesAvailable, &loop, &QEventLoop::quit);
+    loop.exec();
+  };
+  auto mergeQueuedOpenFiles = [&]() {
+    const QStringList queuedOpenFiles = app.takeQueuedOpenFiles();
+    if (!queuedOpenFiles.isEmpty() && inputFiles.size() == 1 && inputFiles.front().empty()) {
+      inputFiles.clear();
+    }
+    for (const auto& file : queuedOpenFiles) {
+      inputFiles.push_back(file.toStdString());
+    }
+  };
+  auto consumeQueuedStartupOpenFiles = [&]() {
+    waitForQueuedStartupOpen();
+    mergeQueuedOpenFiles();
+  };
+  consumeQueuedStartupOpenFiles();
+
   auto noInputFiles = false;
 
   if (!inputFiles.size()) {
@@ -315,6 +346,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
       return 0;
     }
   }
+
+  consumeQueuedStartupOpenFiles();
 
   QStringList inputFilesList;
   for (const auto& infile : inputFiles) {
