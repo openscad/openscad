@@ -29,6 +29,7 @@ constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
+constexpr inline auto SECTION_EXPORT_DXF = "export-dxf";
 constexpr inline auto SECTION_COLOR_LIST = "color-list";
 
 class SettingsEntryBase
@@ -611,6 +612,20 @@ public:
 
   static constexpr std::array<const SettingsEntryBase *, 5> cmdline{
     &exportSvgFill, &exportSvgFillColor, &exportSvgStroke, &exportSvgStrokeColor, &exportSvgStrokeWidth,
+  };
+};
+
+class SettingsExportDxf
+{
+public:
+  // The DXF version to export. Default is Legacy (original OpenSCAD behaviour).
+  // When a GUI dialog is added, exportDxfAlwaysShowDialog controls whether it
+  // appears automatically, following the same pattern as PDF, 3MF, and SVG.
+  static SettingsEntryBool exportDxfAlwaysShowDialog;
+  static SettingsEntryEnum<DxfVersion> exportDxfVersion;
+
+  static constexpr std::array<const SettingsEntryBase *, 1> cmdline{
+    &exportDxfVersion,
   };
 };
 

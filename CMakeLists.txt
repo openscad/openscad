@@ -1291,6 +1291,7 @@ set(GUI_SOURCES
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
   src/gui/Export3mfDialog.cc
+  src/gui/ExportDxfDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/ExportSvgDialog.cc
   src/gui/OctoPrintApiKeyDialog.cc
@@ -1366,6 +1367,7 @@ set(GUI_HEADERS
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
     src/gui/Export3mfDialog.h
+    src/gui/ExportDxfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/ExportSvgDialog.h
     src/gui/OctoPrintApiKeyDialog.h
@@ -1424,6 +1426,7 @@ set(GUI_UIS
     src/gui/Console.ui
     src/gui/ErrorLog.ui
     src/gui/Export3mfDialog.ui
+    src/gui/ExportDxfDialog.ui
     src/gui/ExportPdfDialog.ui
     src/gui/ExportSvgDialog.ui
     src/gui/OctoPrintApiKeyDialog.ui

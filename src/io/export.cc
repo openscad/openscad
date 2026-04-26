@@ -179,6 +179,34 @@ bool is2D(FileFormat format)
 
 }  // namespace fileformat
 
+// =====================================================================
+// ExportDxfOptions implementation
+// =====================================================================
+//
+// Uses the settings framework exactly like ExportPdfOptions,
+// Export3mfOptions, and ExportSvgOptions.
+//
+// Command-line usage:
+//   openscad -o out.dxf -O export-dxf/version=R14 input.scad
+//   openscad --help-export   (lists all valid values)
+// =====================================================================
+
+std::shared_ptr<const ExportDxfOptions> ExportDxfOptions::withOptions(
+  const CmdLineExportOptions& cmdLineOptions)
+{
+  return std::make_shared<const ExportDxfOptions>(ExportDxfOptions{
+    .version = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_DXF,
+                                   Settings::SettingsExportDxf::exportDxfVersion),
+  });
+}
+
+std::shared_ptr<const ExportDxfOptions> ExportDxfOptions::fromSettings()
+{
+  return std::make_shared<const ExportDxfOptions>(ExportDxfOptions{
+    .version = Settings::SettingsExportDxf::exportDxfVersion.value(),
+  });
+}
+
 ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,
                             const std::string& filepath, const Camera *camera,
                             const CmdLineExportOptions& cmdLineOptions)
@@ -200,6 +228,8 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::SVG) {
     exportInfo.optionsSvg = ExportSvgOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::DXF) {
+    exportInfo.optionsDxf = ExportDxfOptions::withOptions(cmdLineOptions);
   }
 
   return exportInfo;
@@ -216,10 +246,13 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   case FileFormat::WRL:        export_wrl(root_geom, output); break;
   case FileFormat::AMF:        export_amf(root_geom, output); break;
   case FileFormat::_3MF:       export_3mf(root_geom, output, exportInfo); break;
-  case FileFormat::DXF:        export_dxf(root_geom, output); break;
-  case FileFormat::SVG:        export_svg(root_geom, output, exportInfo); break;
-  case FileFormat::PDF:        export_pdf(root_geom, output, exportInfo); break;
-  case FileFormat::POV:        export_pov(root_geom, output, exportInfo); break;
+  case FileFormat::DXF:
+    export_dxf(root_geom, output,
+               exportInfo.optionsDxf ? exportInfo.optionsDxf->version : DxfVersion::Legacy);
+    break;
+  case FileFormat::SVG: export_svg(root_geom, output, exportInfo); break;
+  case FileFormat::PDF: export_pdf(root_geom, output, exportInfo); break;
+  case FileFormat::POV: export_pov(root_geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
   case FileFormat::NEF3:   export_nef3(root_geom, output); break;
