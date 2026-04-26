@@ -1249,6 +1249,7 @@ else()
     src/glview/Renderer.cc
     src/glview/ShaderUtils.cc
     src/glview/system-gl.cc
+    src/glview/glthread-context.cc
     src/glview/VBOBuilder.cc
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
