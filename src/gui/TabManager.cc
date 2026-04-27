@@ -19,6 +19,8 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QPoint>
+#include <QEvent>
+#include <QMouseEvent>
 #include <QSaveFile>
 #include <QShortcut>
 #include <QStringList>
@@ -49,6 +51,7 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(tabWidget, &QTabWidget::tabCloseRequested, this, &TabManager::closeTabRequested);
   connect(tabWidget, &QTabWidget::customContextMenuRequested, this,
           &TabManager::showTabHeaderContextMenu);
+  tabWidget->tabBar()->installEventFilter(this);
 
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::stopAnimation);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
@@ -61,6 +64,22 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
 
   // Disable the closing button for the first tabbar
   setTabsCloseButtonVisibility(0, false);
+}
+
+bool TabManager::eventFilter(QObject *watched, QEvent *event)
+{
+  if (watched == tabWidget->tabBar() && event->type() == QEvent::MouseButtonPress) {
+    const auto *mouseEvent = static_cast<QMouseEvent *>(event);
+    if (mouseEvent->button() == Qt::MiddleButton) {
+      const int idx = tabWidget->tabBar()->tabAt(mouseEvent->pos());
+      // Match tab close button / context menu: do not remove the last tab from the bar here.
+      if (idx >= 0 && tabWidget->count() > 1) {
+        closeTabRequested(idx);
+        return true;
+      }
+    }
+  }
+  return QObject::eventFilter(watched, event);
 }
 
 QTabBar::ButtonPosition TabManager::getClosingButtonPosition()
