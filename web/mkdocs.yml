@@ -84,6 +84,7 @@ nav:
   - Contact: contact.md
 
 markdown_extensions:
+  - admonition
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
@@ -94,5 +95,4 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
   - attr_list

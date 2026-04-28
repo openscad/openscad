@@ -390,12 +390,12 @@
       <div><code>osimport("model.stl").show()</code></div>
 
       <div class="func"><code><a href="../reference/io/#osuse">osuse</a>(file)</code></div>
-      <div>Use an OpenSCAD library file (like <code>use &lt;...&gt;</code>)</div>
-      <div><code>osuse("library.scad")</code></div>
+      <div>Use an OpenSCAD library file (like <code>use &lt;...&gt;</code>); call modules/functions on the returned handle</div>
+      <div><code>lib = osuse("library.scad"); lib.my_module().show()</code></div>
 
       <div class="func"><code><a href="../reference/io/#osinclude">osinclude</a>(file)</code></div>
-      <div>Include an OpenSCAD file (like <code>include &lt;...&gt;</code>)</div>
-      <div><code>osinclude("config.scad")</code></div>
+      <div>Include an OpenSCAD file (like <code>include &lt;...&gt;</code>) — deprecated, use <code>osuse</code> instead</div>
+      <div><code>lib = osinclude("config.scad")</code></div>
 
       <div class="func"><code><a href="../reference/io/#scad">scad</a>(code)</code></div>
       <div>Execute inline OpenSCAD code from Python</div>
