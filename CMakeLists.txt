@@ -344,7 +344,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     ")
     add_custom_command(
       POST_BUILD TARGET OpenSCADExe
-      COMMAND ${CMAKE_COMMAND} "-DFILE=$<TARGET_FILE:OpenSCADExe>" -P "${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake"
+      COMMAND "${CMAKE_COMMAND}" "-DFILE=$<TARGET_FILE:OpenSCADExe>" -P "${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake"
     )
   else()
     message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
@@ -622,7 +622,7 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCADLibInternal PUBLIC ${Python_LIBRARIES})
   target_include_directories(OpenSCADLibInternal PUBLIC ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${Nettle_LIBRARIES})
-  add_custom_target(OpenSCADLibInternalPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  add_custom_target(OpenSCADLibInternalPython ALL COMMAND "${CMAKE_COMMAND}" -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
 endif()
 
 if(ENABLE_HIDAPI STREQUAL "AUTO")
@@ -1564,7 +1564,7 @@ list(REMOVE_ITEM Sources "src/main_wrapper.cc")
 if (SORT_BUILD)
   # Build the last modified sources first (to fail fast during development)
   execute_process(
-    COMMAND ../scripts/sort_cmake_filelist.sh "${Sources}"
+    COMMAND "${CMAKE_SOURCE_DIR}/scripts/sort_cmake_filelist.sh" "${Sources}"
     OUTPUT_VARIABLE Sources)
 endif()
 
@@ -1777,7 +1777,8 @@ if(ENABLE_TESTS)
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
     include(CTest)
     include(Catch)
-    catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)
+    # LABELS Default so `ctest -L Default` runs unit tests together with regression tests.
+    catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS PROPERTIES LABELS "Default")
   else()
     message(WARNING "Catch2 3 was not found. OpenSCADUnitTests will not be built.")
   endif()

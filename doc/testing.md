@@ -21,16 +21,11 @@ Windows builds are a special case, since they are cross-compiled from a linux sy
 
 From your build directory:
 
-  * `ctest -j8`: Runs tests enabled by default using 8 parallel processes.
+  * `ctest -j8`: Runs tests using 8 parallel processes (combine with `-L` to pick a group).
   * `ctest -R <regex>`: Runs only matching tests.
       * Example: `ctest -R dxf`.
-  * `ctest -C <configs>`: Adds extended tests belonging to configs.
-  * Valid configs include:
-      * **Default:** Run default tests.
-      * **Heavy:** Run more time consuming tests (\> \~10 seconds).
-      * **Examples:** Test all examples.
-      * **Bugs:** Test known bugs (tests will fail).
-      * **All:** Test everything.
+  * `ctest -L <group>`: Run tests in a group (Default, Heavy, Examples, Bugs, All, Good).
+  * On **Visual Studio / Xcode** (multi-config generators), `ctest -C` selects the **build** configuration (Release, Debug). Use both, e.g. `ctest -C Release -L Default`.
 
 **Windows:**
 
@@ -111,10 +106,10 @@ This is almost the same as adding a new regression test:
 
 1.  Create the example under `examples/`.
 2.  Run the test with the environment variable `TEST_GENERATE=1`.
-      * Example: `$ TEST_GENERATE=1 ctest -C Examples -R exampleNNN`.
+      * Example: `$ TEST_GENERATE=1 ctest -L Examples -R exampleNNN`.
       * This will generate a `exampleNNN-expected.txt` file which is used for regression testing.
 3.  Manually verify that the output is correct (`tests/regression/<testapp>/exampleNNN.<suffix>`).
-4.  Run the test normally and verify that it passes: `$ ctest -C Examples -R exampleNNN`.
+4.  Run the test normally and verify that it passes: `$ ctest -L Examples -R exampleNNN`.
 
 ## Troubleshooting
 
@@ -126,13 +121,13 @@ For example :
 
 ```bash
 $ Xvfb :5 -screen 0 800x600x24 &
-$ DISPLAY=:5 ctest
+$ DISPLAY=:5 ctest -L Default
 ```
 
 or
 
 ```bash
-$ xvfb-run ctest
+$ xvfb-run ctest -L Default
 ```
 
 Some versions of Xvfb may fail, however.

@@ -12,10 +12,15 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
 endfunction()
 
 #
-# Tags the given tests as belonging to the given CONFIG, i.e. will
-# only be executed when run using ctest -C <CONFIG>
+# Tags the given tests as belonging to the given CONFIG.
+# Registers test group membership via LABELS (use ctest -L <group> to select tests).
+# CONFIGURATIONS is not set: on multi-config generators -C is the build configuration
+# (Release/Debug); test groups are always selected with -L.
 #
 # Usage example: set_test_config(Heavy dump_testname preview_testname2)
+#
+# Users should run tests with: ctest -L <group> (e.g., ctest -L Default, ctest -L Examples).
+# On multi-config generators (MSVC, Xcode) also pass build config: ctest -C Release -L Default
 #
 function(set_test_config CONFIG)
   cmake_parse_arguments(TESTCFG "" "" "FILES;PREFIXES" ${ARGN})
@@ -41,6 +46,9 @@ function(set_test_config CONFIG)
   endif()
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+
+  # Note: LABELS property is set at test creation time in add_cmdline_test() and add_failing_test()
+  # This ensures labels are available immediately for filtering with ctest -L
 endfunction(set_test_config)
 
 #
@@ -55,6 +63,9 @@ function(remove_test_config CONFIG)
   list(REMOVE_ITEM ${CONFIG}_TEST_CONFIG ${FULLNAMES})
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+
+  # Note: This modifies the configuration before tests are created,
+  # so labels will be set correctly at test creation time
 endfunction(remove_test_config)
 
 #
@@ -467,7 +478,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # endif()
 
     string(JOIN " " DBG_COMMAND_STR
-      "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
+      "add_test(" ${TEST_FULLNAME}
       COMMAND ${Python3_EXECUTABLE} -Xutf8=1
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
@@ -478,17 +489,33 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
-      message(DEBUG "${DBG_COMMAND_STR}")      
-      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE} -Xutf8=1
-        ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
-        -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-        ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-      )
-      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+      message(DEBUG "${DBG_COMMAND_STR}")
+      message(DEBUG "set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})")
+      # Do not pass a quoted empty TESTCMD_SCRIPT — that becomes "" on the argv and breaks OpenSCAD.
+      if(TESTCMD_SCRIPT)
+        # TESTCMD_EXE may be a list (e.g. ${Python3_EXECUTABLE} -Xutf8=1 for .py SCRIPT); do not quote — that merges into one argv.
+        add_test(NAME ${TEST_FULLNAME}
+          COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
+          "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          ${TESTCMD_EXE} "${TESTCMD_SCRIPT}" "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      else()
+        add_test(NAME ${TEST_FULLNAME}
+          COMMAND "${Python3_EXECUTABLE}" -Xutf8=1
+          "${TEST_CMDLINE_TOOL_PY}" ${COMPARATOR} -c "${IMAGE_COMPARE_EXE}"
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          "${TESTCMD_EXE}" "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      endif()
+      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+      # Set LABELS property to enable filtering with ctest -L
+      set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
     else()
       message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
+      message(DEBUG "set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL}) (skipped: experimental)")
     endif()
   endforeach()
 endfunction()
@@ -530,7 +557,9 @@ function(add_failing_test TESTCMD_BASENAME)
       set(FILENAME_OPTION -f ${FILE_BASENAME})
     endif()
 
-    add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    add_test(NAME ${TEST_FULLNAME} COMMAND "${TESTCMD_EXE}" "${TESTCMD_SCRIPT}" "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
     set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+    # Set LABELS property to enable filtering with ctest -L
+    set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
   endforeach()
 endfunction()
