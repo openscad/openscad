@@ -351,56 +351,6 @@ void python_retrieve_pyname(const std::shared_ptr<AbstractNode>& node)
   node->setPyName(name);
   */
 }
-/*
- * converts a python obejct into an integer by all means
- */
-
-std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int *dragflags)
-{
-  std::vector<Vector3d> results;
-  if (PyList_Check(vec)) {
-    // check if its a valid vec<Vector3d>
-    int valid = 1;
-    for (int i = 0; valid && i < PyList_Size(vec); i++) {
-      PyObject *item = PyList_GetItem(vec, i);
-      if (!PyList_Check(item)) valid = 0;
-    }
-    if (valid) {
-      for (int j = 0; j < PyList_Size(vec); j++) {
-        Vector3d result(0, 0, 0);
-        PyObject *item = PyList_GetItem(vec, j);
-        if (PyList_Size(item) >= mindim && PyList_Size(item) <= maxdim) {
-          for (int i = 0; i < PyList_Size(item); i++) {
-            if (PyList_Size(item) > i) {
-              if (python_numberval(PyList_GetItem(item, i), &result[i], nullptr, 0))
-                return results;  // Error
-            }
-          }
-        }
-        results.push_back(result);
-      }
-      return results;
-    }
-    Vector3d result(0, 0, 0);
-    if (PyList_Size(vec) >= mindim && PyList_Size(vec) <= maxdim) {
-      for (int i = 0; i < PyList_Size(vec); i++) {
-        if (PyList_Size(vec) > i) {
-          if (python_numberval(PyList_GetItem(vec, i), &result[i], dragflags, 1 << i))
-            return results;  // Error
-        }
-      }
-    }
-    results.push_back(result);
-  }
-  Vector3d result(0, 0, 0);
-  if (!python_numberval(vec, &result[0], nullptr, 0)) {
-    result[1] = result[0];
-    result[2] = result[1];
-    results.push_back(result);
-  }
-  return results;  // Error
-}
-
 /**
  * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
  * @param kwargs *Remove* any control parameter arguments found.
@@ -1442,6 +1392,7 @@ static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
 PyMODINIT_FUNC PyInit__openscad(void)
 {
   if (PyType_Ready(&PyOpenSCADType) < 0) return nullptr;
+  if (PyType_Ready(&PyOpenSCADVectorType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADItemRefType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADObjectIterType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADBoundMemberType) < 0) return nullptr;

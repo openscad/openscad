@@ -114,6 +114,13 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
     if (w != NULL) *w = *x;
     return 0;
   }
+  if (vec->ob_type == &PyOpenSCADVectorType) {
+    PyOpenSCADVectorObject *v = (PyOpenSCADVectorObject *)vec;
+    *x = v->v[0];
+    *y = v->v[1];
+    *z = v->v[2];
+    return 0;
+  }
   return 1;
 }
 
@@ -149,6 +156,11 @@ int python_tomatrix(PyObject *pyt, Matrix4d& mat)
 int python_tovector(PyObject *pyt, Vector3d& vec)
 {
   if (pyt == nullptr) return 1;
+  if (pyt->ob_type == &PyOpenSCADVectorType) {
+    PyOpenSCADVectorObject *v = (PyOpenSCADVectorObject *)pyt;
+    for (int i = 0; i < 3; i++) vec[i] = v->v[i];
+    return 0;
+  }
   double val;
   if (!PyList_Check(pyt)) return 1;
   if (PyList_Size(pyt) != 3) return 1;
@@ -162,9 +174,11 @@ int python_tovector(PyObject *pyt, Vector3d& vec)
 
 PyObject *python_fromvector(const Vector3d vec)
 {
-  PyObject *res = PyList_New(3);
-  for (int i = 0; i < 3; i++) PyList_SetItem(res, i, PyFloat_FromDouble(vec[i]));
-  return res;
+  PyOpenSCADVectorObject *pyvec =
+    (PyOpenSCADVectorObject *)PyOpenSCADVectorType.tp_alloc(&PyOpenSCADVectorType, 0);
+  if (pyvec)
+    for (int i = 0; i < 3; i++) pyvec->v[i] = vec[i];
+  return (PyObject *)pyvec;
 }
 
 std::vector<Vector3d> python_to2dvarpointlist(PyObject *pypoints)
@@ -291,4 +305,65 @@ PyObject *python_from2dlong(const std::vector<IndexedFace>& intlist)
   }
 
   return result;
+}
+
+/*
+ * Parses a Python object into one or more Vector3d values.
+ * Accepts Python lists or OpenSCAD vector objects within the given dimensions.
+ */
+
+std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int *dragflags)
+{
+  std::vector<Vector3d> results;
+  if (PyList_Check(vec)) {
+    // check if its a valid vec<Vector3d>
+    int valid = 1;
+    for (int i = 0; valid && i < PyList_Size(vec); i++) {
+      PyObject *item = PyList_GetItem(vec, i);
+      if (!PyList_Check(item) && item->ob_type != &PyOpenSCADVectorType) valid = 0;
+    }
+    if (valid) {
+      for (int j = 0; j < PyList_Size(vec); j++) {
+        Vector3d result(0, 0, 0);
+        PyObject *item = PyList_GetItem(vec, j);
+        if (PyList_Check(item)) {
+          if (PyList_Size(item) >= mindim && PyList_Size(item) <= maxdim) {
+            for (int i = 0; i < PyList_Size(item); i++) {
+              if (PyList_Size(item) > i) {
+                if (python_numberval(PyList_GetItem(item, i), &result[i], nullptr, 0))
+                  return results;  // Error
+              }
+            }
+          }
+        } else if (item->ob_type == &PyOpenSCADVectorType) {
+          PyOpenSCADVectorObject *obj = (PyOpenSCADVectorObject *)item;
+          for (int i = 0; i < 3; i++) result[i] = obj->v[i];
+        }
+        results.push_back(result);
+      }
+      return results;
+    }
+    Vector3d result(0, 0, 0);
+    if (PyList_Size(vec) >= mindim && PyList_Size(vec) <= maxdim) {
+      for (int i = 0; i < PyList_Size(vec); i++) {
+        if (PyList_Size(vec) > i) {
+          if (python_numberval(PyList_GetItem(vec, i), &result[i], dragflags, 1 << i))
+            return results;  // Error
+        }
+      }
+    }
+    results.push_back(result);
+  }
+  Vector3d result(0, 0, 0);
+  if (!python_numberval(vec, &result[0], nullptr, 0)) {
+    result[1] = result[0];
+    result[2] = result[1];
+    results.push_back(result);
+  }
+  if (vec->ob_type == &PyOpenSCADVectorType) {
+    PyOpenSCADVectorObject *obj = (PyOpenSCADVectorObject *)vec;
+    for (int i = 0; i < 3; i++) result[i] = obj->v[i];
+    results.push_back(result);
+  }
+  return results;  // Error
 }

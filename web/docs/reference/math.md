@@ -177,8 +177,96 @@ result = cross(vec1, vec2)
 ```python
 from openscad import *
 
-c = cross([1, 0, 0], [0, 1, 0])   # [0, 0, 1]
-c = cross([0, 1, 0], [1, 0, 0])   # [0, 0, -1]
+c = cross([1, 0, 0], [0, 1, 0])   # vector(0, 0, 1)
+c = cross([0, 1, 0], [1, 0, 0])   # vector(0, 0, -1)
 ```
+
+## Vector functions
+
+There are many places, where PythonSCAD accepts vectors which are supplied as Python lists with 2 or 3 numbers.
+Alernatively, PythonSCAD also accepts PythonSCAD Vector objects with calculating capabilities
+
+
+### Vector addition
+
+
+=== "Python"
+
+```python
+from openscad import *
+
+vec1 = vector(1,2,3)
+vec2 = vector(1,1,1)
+print(vec1 + vec2)
+
+```
+
+### Vector subtraction
+
+=== "Python"
+
+```python
+from openscad import *
+
+vec1 = vector(3,3,3)
+vec2 = vector(1,2,4)
+print(vec1 - vec2)
+
+```
+
+### Vector scaling
+
+=== "Python"
+
+```python
+from openscad import *
+
+dim = sphere(1).size * 2.5
+print(dim)
+
+```
+
+### Cross Product
+
+=== "Python"
+
+```python
+from openscad import *
+
+vec1 = vector(1,0,0)
+vec2 = vector(0,1,0)
+
+print(vec1 * vec2)
+
+```
+
+### Dot Product
+
+=== "Python"
+
+```python
+from openscad import *
+
+vec1 = vector(1,4,7)
+vec2 = vector(1,2,4)
+
+print(vec1.dot(vec2))
+
+```
+
+### Values access
+
+=== "Python"
+
+```python
+from openscad import *
+
+vec1 = vector(1,4,7)
+vec1[1] = -3.5
+print(vec1[0], vec1[1],vec1[2])
+
+```
+
+
 
 **OpenSCAD reference:** [cross](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Mathematical_Functions#cross)

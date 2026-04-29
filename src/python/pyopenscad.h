@@ -25,6 +25,10 @@ struct PyOpenSCADBoundMemberObject {
   int index;
 };
 
+typedef struct {
+  PyObject_HEAD double v[3];
+} PyOpenSCADVectorObject;
+
 void PyObjectDeleter(PyObject *pObject);
 using PyObjectUniquePtr = std::unique_ptr<PyObject, decltype(&PyObjectDeleter)>;
 
@@ -42,6 +46,7 @@ PyMODINIT_FUNC PyInit__openscad(void);
 // NOLINTEND(bugprone-reserved-identifier)
 
 extern PyTypeObject PyOpenSCADType;
+extern PyTypeObject PyOpenSCADVectorType;
 extern PyTypeObject PyOpenSCADBoundMemberType;
 extern PyObject *python_result_obj;
 extern std::vector<SelectedObject> python_result_handle;

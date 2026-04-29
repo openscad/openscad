@@ -13,3 +13,4 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor);
 std::vector<int> python_intlistval(PyObject *list);
 int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y, double *z, double *w,
                      int *flags);
+std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int *dragflags);
