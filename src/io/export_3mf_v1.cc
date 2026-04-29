@@ -91,7 +91,6 @@ struct ExportContext {
   int modelcount = 0;
   Color4f defaultColor;
   DWORD defaultColorId = 0;
-  std::vector<DWORD> materialids;
   const ExportInfo& info;
   const std::shared_ptr<const Export3mfOptions> options;
 };
@@ -140,7 +139,8 @@ int count_mesh_objects(PLib3MFModel *& model)
 }
 
 bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps,
-                           int triangle_index, int color_index, ExportContext& ctx)
+                           int triangle_index, int color_index, const std::vector<DWORD>& materialids,
+                           ExportContext& ctx)
 {
   if (color_index < 0) {
     return true;
@@ -157,7 +157,7 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
 
   if (ctx.basematerial) {
     if (lib3mf_propertyhandler_setbasematerial(propertyhandler, triangle_index, ctx.basematerialid,
-                                               ctx.materialids[color_index]) != LIB3MF_OK) {
+                                               materialids[color_index]) != LIB3MF_OK) {
       export_3mf_error("Can't set triangle base material.", ctx.model);
       return false;
     }
@@ -179,6 +179,14 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
 bool append_polyset(const std::shared_ptr<const PolySet>& ps, const Export3mfPartInfo info,
                     ExportContext& ctx)
 {
+  // Per-mesh local: each PolySet's `color_indices` are indices into *this*
+  // mesh's `colors`, so the lib3mf-side material IDs registered for those
+  // colors must also be looked up per-mesh. Keeping this in `ctx` (as was
+  // done previously) caused the second mesh's `color_index=0` to resolve
+  // to the FIRST mesh's material ID, silently painting all subsequent
+  // meshes with the first one's color. See pythonscad/pythonscad#591.
+  std::vector<DWORD> materialids;
+
   PLib3MFModelMeshObject *mesh = nullptr;
   if (lib3mf_model_addmeshobject(ctx.model, &mesh) != LIB3MF_OK) {
     export_3mf_error("Can't add mesh to 3MF model.", ctx.model);
@@ -266,9 +274,9 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, const Export3mfPar
       }
     }
 
-    ctx.materialids.reserve(sorted_ps->colors.size());
+    materialids.reserve(sorted_ps->colors.size());
     for (size_t i = 0; i < sorted_ps->colors.size(); i++) {
-      ctx.materialids.push_back(materialFunc(materials + i, sorted_ps->colors[i]));
+      materialids.push_back(materialFunc(materials + i, sorted_ps->colors[i]));
     }
   }
 
@@ -280,7 +288,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, const Export3mfPar
 
   for (size_t i = 0; i < sorted_ps->color_indices.size(); ++i) {
     const int32_t idx = sorted_ps->color_indices[i];
-    if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, ctx)) {
+    if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, materialids, ctx)) {
       return false;
     }
   }
