@@ -63,6 +63,7 @@ nav:
       - Object Properties: reference/properties.md
       - Object Model: reference/object_model.md
       - Display and Export: reference/display.md
+      - Multi-tool Export: reference/multitool.md
       - I/O and Integration: reference/io.md
       - Math Functions: reference/math.md
       - Special Variables: reference/variables.md

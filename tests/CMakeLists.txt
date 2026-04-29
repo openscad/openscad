@@ -139,6 +139,7 @@ set(TEST_PYTHONSCAD_DIR "${CCSD}/data/pythonscad")
 set(TEST_PYTHONSCAD_ECHO_DIR "${CCSD}/data/pythonscad-echo")
 set(TEST_PYTHONSCAD_LASER_DIR "${CCSD}/data/pythonscad-laser")
 set(TEST_PYTHONSCAD_3D_EXPORT_DIR "${CCSD}/data/pythonscad-3d-export")
+set(TEST_PYTHONSCAD_MULTITOOL_EXPORT_DIR "${CCSD}/data/pythonscad-multitool-export")
 set(TEST_PYTHONSCAD_OVERLAY_DIR "${CCSD}/data/pythonscad-overlay")
 set(TEST_PYTHONSCAD_OVERLAY_ECHO_DIR "${CCSD}/data/pythonscad-overlay-echo")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
@@ -267,6 +268,7 @@ file(GLOB PYTHONSCAD_FILES    ${TEST_PYTHONSCAD_DIR}/*.py)
 file(GLOB PYTHONSCAD_ECHO_FILES    ${TEST_PYTHONSCAD_ECHO_DIR}/*.py)
 file(GLOB PYTHONSCAD_LASER_FILES    ${TEST_PYTHONSCAD_LASER_DIR}/*.py)
 file(GLOB PYTHONSCAD_3D_EXPORT_FILES ${TEST_PYTHONSCAD_3D_EXPORT_DIR}/*.py)
+file(GLOB PYTHONSCAD_MULTITOOL_EXPORT_FILES ${TEST_PYTHONSCAD_MULTITOOL_EXPORT_DIR}/*.py)
 file(GLOB PYTHONSCAD_OVERLAY_FILES ${TEST_PYTHONSCAD_OVERLAY_DIR}/*.py)
 file(GLOB PYTHONSCAD_OVERLAY_ECHO_FILES ${TEST_PYTHONSCAD_OVERLAY_ECHO_DIR}/*.py)
 file(GLOB SCAD_3D_EXPORT_FILES      ${TEST_SCAD_DIR}/3d-export/*.scad)
@@ -1356,6 +1358,23 @@ endif()
 if (ENABLE_LIB3MF_TESTS)
   add_cmdline_test(export-3d-pythonscad EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${PYTHONSCAD_3D_EXPORT_FILES} ARGS --enable=predictible-output --render --trust-python)
 endif()
+
+#
+# In-script export() tests for PythonSCAD
+#
+# Each fixture runs with a per-test scratch CWD and writes one or more
+# files via in-script export() (or helpers like MultiToolExporter). The
+# scratch directory tree is then auto-discovered recursively (every
+# file, every extension, every subdirectory) and tree-diffed against
+# tests/regression/<testname>/<basename>/<rel-path>, which mirrors the
+# actual layout one-for-one, after format-aware post-processing keyed
+# by each file's own extension. A single fixture can legitimately
+# mix formats. Use TEST_GENERATE=1 to create or refresh goldens.
+#
+add_export_files_test(multitool-export
+    EXPERIMENTAL
+    FILES ${PYTHONSCAD_MULTITOOL_EXPORT_FILES}
+)
 
 #
 # --enable=discretization-by-error tests

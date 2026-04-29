@@ -1,0 +1,26 @@
+len: 2
+filename[0]: p-red.stl
+filename[1]: p-blue.stl
+part(last) is bare object: True
+parts len: 2
+parts names: ['red', 'blue']
+parts last is bare: True
+append non-tuple: TypeError
+append wrong arity: TypeError
+append non-str name: TypeError
+append empty name: ValueError
+extend bad item: TypeError
+insert bad item: TypeError
+setitem bad item: TypeError
+setitem slice bad: TypeError
+iadd bad item: TypeError
+iadd mid-bad item: TypeError
+constructor bad item: ValueError
+len after failed extend: 2
+export duplicate names: ValueError
+created nested dir: True
+export call: True nodir-red.stl
+export call: True nodir-blue.stl
+export call: True nodir-green.stl
+export call: True tmp/.../x-a.3mf
+export call: True tmp/.../x-b.3mf

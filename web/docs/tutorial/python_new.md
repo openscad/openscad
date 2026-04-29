@@ -242,6 +242,35 @@ export( {
 
 ```
 
+## MultiToolExporter
+
+When working with multi-tool / multi-color 3D printers, a single model is
+often split into one part per filament. `MultiToolExporter` is a
+PythonSCAD-only `list` subclass that automates that split: it stores
+`(name, object)` pairs (the same shape as `dict.items()`) and, on export,
+writes each part as `f"{prefix}{name}{suffix}"`, where each part has all
+*later* objects subtracted from it. That cumulative-difference rule
+guarantees overlapping volume is claimed by exactly one part.
+
+```py
+from pythonscad import *
+
+# Two-color flag: red star punched out of a blue background.
+background = cube([200, 100, 1]).color("blue")
+star       = cylinder(r=20, h=2, fn=5).translate([100, 50, -0.5]).color("red")
+
+exporter = MultiToolExporter("out/flag-", ".stl", mkdir=True)
+exporter.append(("blue", background))  # blue: rectangle minus the star area
+exporter.append(("red",  star))        # red: the star itself (later wins)
+exporter.export()
+# writes out/flag-blue.stl and out/flag-red.stl
+```
+
+`exporter.show()` previews the same split inside the GUI without writing
+files, and items can also be seeded directly via the constructor's
+`items=[...]` argument. See
+[Multi-tool Export](../reference/multitool.md) for the full reference.
+
 ## spline
 
 Spline is like 'polygon'  just with the difference, that the resulting object is very round and will meet the given points

@@ -67,12 +67,51 @@ obj.export(file)
 from openscad import *
 
 cube(10).export("mycube.stl")
+```
 
-# Multi-object 3MF export
-c = cube(10)
+### Multi-object 3MF export
+
+Passing a `dict` instead of a single solid emits one 3MF part per
+entry, all packed into the output file:
+
+=== "Python"
+
+```python
+from openscad import *
+
+c   = cube(10)
 cyl = cylinder(r=4, h=4)
 export({"cube": c, "cylinder": cyl}, "myfile.3mf")
 ```
+
+* **Keys** become part names in the 3MF metadata, so they must be
+  `str` / Unicode -- non-string keys are not supported and may error
+  or crash at runtime. **Values** are the solids. Insertion order is
+  preserved (CPython 3.7+ `dict` semantics).
+* **3MF only.** For non-3MF extensions, dict values that aren't
+  recognised as solids are filtered first; `TypeError: This Format
+  can at most export one object` is raised only when more than one
+  recognised value remains. STL / OFF / AMF / etc. therefore still
+  work for a dict that yields zero or one recognised value after
+  filtering.
+* **`dict` only (including `dict` subclasses).** Mapping types that
+  do not subclass `dict` -- `collections.UserDict`, generic
+  `collections.abc.Mapping` implementations, ... -- are rejected
+  with `TypeError: Object not recognized`.
+* **Value conversion.** Recognised values are
+  :class:`PyOpenSCADObject` instances and lists of them (the list is
+  unioned). The sentinels behave specially: `None` and `False`
+  resolve to the built-in *empty* object and `True` to the *full*
+  universe -- they are **not** dropped, they pass through as parts.
+  Other values (numbers, strings, ...) are silently filtered out.
+  If no value is recognised at all, `export()` raises
+  `TypeError: Object not recognized` rather than writing an empty
+  file.
+
+This pairs naturally with [`MultiToolExporter`](multitool.md): the
+exporter computes cumulative-difference splits and you feed them
+through the multi-object form to land everything in one 3MF file
+(see the example on the multi-tool reference page).
 
 ---
 
