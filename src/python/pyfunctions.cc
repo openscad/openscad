@@ -315,11 +315,38 @@ PyObject *python_oo__repr_mimebundle_(PyObject *self, PyObject *args, PyObject *
   return bundle;
 }
 
+#if PY_VERSION_HEX < 0x030D0000
+// Fallback for CPython < 3.13 where this API does not exist. CPython >= 3.13
+// ships the real implementation in libpython, so we MUST NOT redefine it: the
+// dynamic linker resolves _asyncio.so's reference to the main executable's
+// copy first, and a broken polyfill silently corrupts asyncio internals
+// (e.g. enter_task() does Py_DECREF(*result) on the stack slot we never
+// wrote, crashing on the first await).
 int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value, PyObject **result)
 {
-  PyDict_SetDefault(d, key, default_value);
+  PyObject *existing = PyDict_GetItemWithError(d, key);
+  if (existing != NULL) {
+    if (result != NULL) {
+      Py_INCREF(existing);
+      *result = existing;
+    }
+    return 1;
+  }
+  if (PyErr_Occurred()) {
+    if (result != NULL) *result = NULL;
+    return -1;
+  }
+  if (PyDict_SetItem(d, key, default_value) < 0) {
+    if (result != NULL) *result = NULL;
+    return -1;
+  }
+  if (result != NULL) {
+    Py_INCREF(default_value);
+    *result = default_value;
+  }
   return 0;
 }
+#endif
 
 int type_add_method(PyTypeObject *type, PyMethodDef *meth)  // from typeobject.c
 {
