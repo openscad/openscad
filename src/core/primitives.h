@@ -227,3 +227,20 @@ public:
   std::vector<Vector2d> points;
   double fn, fa, fs;
 };
+
+class SheetNode : public LeafNode
+{
+public:
+  VISITABLE();
+  SheetNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  std::string toString() const override;
+  std::string name() const override { return "sheet"; }
+#ifdef ENABLE_PYTHON
+  void *func = nullptr;
+#endif
+  double imin, imax, jmin, jmax;
+  bool ispan, jspan;
+  int convexity{1};
+  std::unique_ptr<const Geometry> createGeometry() const override;
+  double fs;
+};

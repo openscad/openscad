@@ -647,6 +647,14 @@ if(ENABLE_PYTHON)
     src/python/pydata.cc
     src/python/pymod.cc
     src/python/pyfunctions.cc
+    src/python/py_math.cc
+    src/python/py_primitives.cc
+    src/python/py_transform.cc
+    src/python/py_extrude.cc
+    src/python/py_csg.cc
+    src/python/py_analysis.cc
+    src/python/py_ops.cc
+    src/python/py_io.cc
     src/python/pyconversion.cc)
   if(ENABLE_LIBFIVE)
     list(APPEND PYTHON_SOURCES

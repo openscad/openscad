@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 
+typedef std::vector<int> intList;
 // Forward declarations
 class AbstractNode;
 class Tree;
@@ -39,7 +40,9 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_polyline(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_spline(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs);
 
 #ifdef ENABLE_LIBFIVE
 PyObject *python_frep(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -47,6 +50,12 @@ PyObject *python_ifrep(PyObject *self, PyObject *args, PyObject *kwargs);
 #endif
 
 // Transformation functions
+PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, PyObject *ref, int dragflag);
+PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2);
+PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2);
+PyObject *python_nb_matmult(PyObject *arg1, PyObject *arg2);
+PyObject *python_number_trans(PyObject *pynum, Vector3d transvec, int vecs);
+
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_translate_core(PyObject *obj, PyObject *v);
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -57,6 +66,8 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_mirror_core(PyObject *obj, PyObject *val_v);
 PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_divmatrix(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_explode(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_oo_explode(PyObject *self, PyObject *args, PyObject *kwargs);
 
 // Directional movement functions
 PyObject *python_right(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -96,6 +107,7 @@ PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_dot(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_cross(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_norm(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_vector(PyObject *self, PyObject *args, PyObject *kwargs);
 
 // CSG operations
 PyObject *python_union(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -150,6 +162,7 @@ PyObject *python_only(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_highlight(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_background(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_only(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_rendervars(PyObject *self, PyObject *args, PyObject *kwargs);
 
 // Analysis functions
 PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -184,6 +197,7 @@ PyObject *python_fillet(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_fillet(PyObject *obj, PyObject *args, PyObject *kwargs);
 
 // Import/Export functions
+PyObject *python_machineconfig(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_export(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_export_core(PyObject *obj, char *file);
 PyObject *python_oo_export(PyObject *obj, PyObject *args, PyObject *kwargs);
@@ -317,6 +331,12 @@ PyObject *python_dir_sub_core(PyObject *obj, double arg, int mode);
 // Math helper functions
 PyObject *python_math_sub1(PyObject *self, PyObject *args, PyObject *kwargs, int mode);
 PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int mode);
+
+// Analysis
+PyObject *python_inside(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_oo_inside(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_children(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_oo_children(PyObject *self, PyObject *args, PyObject *kwargs);
 
 // Sphere creation helpers
 int sphereCalcIndInt(PyObject *func, Vector3d& dir);

@@ -41,7 +41,6 @@
 #include "core/RenderNode.h"
 #include "core/SkinNode.h"
 #include "core/SurfaceNode.h"
-#include "core/SheetNode.h"
 #include "core/TextNode.h"
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
