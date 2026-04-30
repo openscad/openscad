@@ -140,6 +140,24 @@ set(TEST_PYTHONSCAD_ECHO_DIR "${CCSD}/data/pythonscad-echo")
 set(TEST_PYTHONSCAD_LASER_DIR "${CCSD}/data/pythonscad-laser")
 set(TEST_PYTHONSCAD_3D_EXPORT_DIR "${CCSD}/data/pythonscad-3d-export")
 set(TEST_PYTHONSCAD_MULTITOOL_EXPORT_DIR "${CCSD}/data/pythonscad-multitool-export")
+# Per-format fixture dirs for the in-script export() ctests (issue #586).
+# One directory per file-format keeps each test group focused and lets
+# add_export_files_test() pick fixtures up via a flat glob.
+set(TEST_PYTHONSCAD_EXPORT_STL_DIR     "${CCSD}/data/pythonscad-export-stl")
+set(TEST_PYTHONSCAD_EXPORT_STL_BIN_DIR "${CCSD}/data/pythonscad-export-stl-bin")
+set(TEST_PYTHONSCAD_EXPORT_3MF_DIR     "${CCSD}/data/pythonscad-export-3mf")
+set(TEST_PYTHONSCAD_EXPORT_OBJ_DIR     "${CCSD}/data/pythonscad-export-obj")
+set(TEST_PYTHONSCAD_EXPORT_SVG_DIR     "${CCSD}/data/pythonscad-export-svg")
+set(TEST_PYTHONSCAD_EXPORT_POV_DIR     "${CCSD}/data/pythonscad-export-pov")
+# Note: there is intentionally no `pythonscad-export-amf` group --
+# AMF mesh tessellation (vertex order + triangle indexing) is not
+# stable across the CI matrix even with --enable=predictible-output
+# (see PR #590 / issue #586). Upstream OpenSCAD also has no
+# byte-compare `export-amf` ctest for the same reason; only the
+# render-PNG `render-amf_*` tests exist. AMF is also deprecated. If
+# determinism is fixed later, add a fixture under
+# tests/data/pythonscad-export-amf/ and an `add_export_files_test()`
+# entry below.
 set(TEST_PYTHONSCAD_OVERLAY_DIR "${CCSD}/data/pythonscad-overlay")
 set(TEST_PYTHONSCAD_OVERLAY_ECHO_DIR "${CCSD}/data/pythonscad-overlay-echo")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
@@ -269,6 +287,13 @@ file(GLOB PYTHONSCAD_ECHO_FILES    ${TEST_PYTHONSCAD_ECHO_DIR}/*.py)
 file(GLOB PYTHONSCAD_LASER_FILES    ${TEST_PYTHONSCAD_LASER_DIR}/*.py)
 file(GLOB PYTHONSCAD_3D_EXPORT_FILES ${TEST_PYTHONSCAD_3D_EXPORT_DIR}/*.py)
 file(GLOB PYTHONSCAD_MULTITOOL_EXPORT_FILES ${TEST_PYTHONSCAD_MULTITOOL_EXPORT_DIR}/*.py)
+# Per-format glob lists for the in-script export() ctests (issue #586).
+file(GLOB PYTHONSCAD_EXPORT_STL_FILES     ${TEST_PYTHONSCAD_EXPORT_STL_DIR}/*.py)
+file(GLOB PYTHONSCAD_EXPORT_STL_BIN_FILES ${TEST_PYTHONSCAD_EXPORT_STL_BIN_DIR}/*.py)
+file(GLOB PYTHONSCAD_EXPORT_3MF_FILES     ${TEST_PYTHONSCAD_EXPORT_3MF_DIR}/*.py)
+file(GLOB PYTHONSCAD_EXPORT_OBJ_FILES     ${TEST_PYTHONSCAD_EXPORT_OBJ_DIR}/*.py)
+file(GLOB PYTHONSCAD_EXPORT_SVG_FILES     ${TEST_PYTHONSCAD_EXPORT_SVG_DIR}/*.py)
+file(GLOB PYTHONSCAD_EXPORT_POV_FILES     ${TEST_PYTHONSCAD_EXPORT_POV_DIR}/*.py)
 file(GLOB PYTHONSCAD_OVERLAY_FILES ${TEST_PYTHONSCAD_OVERLAY_DIR}/*.py)
 file(GLOB PYTHONSCAD_OVERLAY_ECHO_FILES ${TEST_PYTHONSCAD_OVERLAY_ECHO_DIR}/*.py)
 file(GLOB SCAD_3D_EXPORT_FILES      ${TEST_SCAD_DIR}/3d-export/*.scad)
@@ -1374,6 +1399,52 @@ endif()
 add_export_files_test(multitool-export
     EXPERIMENTAL
     FILES ${PYTHONSCAD_MULTITOOL_EXPORT_FILES}
+)
+
+#
+# Per-format ctests for the in-script export() function (issue #586).
+#
+# Each fixture is a single Python script that calls
+# ``export(geom, "<file>.<ext>")`` exactly once (or once-per-part, in
+# the dict / multi-color 3MF case) so the produced bytes can be
+# byte-compared against a checked-in golden after format-aware
+# normalization. STL ASCII goes through the registered ".stl"
+# identifier; STL binary uses the ".stlbin" fallthrough trick to keep
+# python_export_core()'s BINARY_STL default since export() has no
+# format kwarg today. 3MF is split into single-color (single-object
+# branch) and multi-color (PyDict_Check branch); 3MF tests are gated
+# on ENABLE_LIB3MF_TESTS like the upstream export-3mf coverage.
+#
+# Test group names use the ``pythonscad-export-<fmt>`` prefix to keep
+# the in-script export() goldens in their own ``tests/regression/``
+# subtree, separate from the existing OpenSCAD-DSL ``export-<fmt>``
+# ctests (which use a different file-naming convention).
+#
+add_export_files_test(pythonscad-export-stl
+    EXPERIMENTAL
+    FILES ${PYTHONSCAD_EXPORT_STL_FILES}
+)
+add_export_files_test(pythonscad-export-stl-bin
+    EXPERIMENTAL
+    FILES ${PYTHONSCAD_EXPORT_STL_BIN_FILES}
+)
+if (ENABLE_LIB3MF_TESTS)
+    add_export_files_test(pythonscad-export-3mf
+        EXPERIMENTAL
+        FILES ${PYTHONSCAD_EXPORT_3MF_FILES}
+    )
+endif()
+add_export_files_test(pythonscad-export-obj
+    EXPERIMENTAL
+    FILES ${PYTHONSCAD_EXPORT_OBJ_FILES}
+)
+add_export_files_test(pythonscad-export-svg
+    EXPERIMENTAL
+    FILES ${PYTHONSCAD_EXPORT_SVG_FILES}
+)
+add_export_files_test(pythonscad-export-pov
+    EXPERIMENTAL
+    FILES ${PYTHONSCAD_EXPORT_POV_FILES}
 )
 
 #

@@ -25,20 +25,22 @@
 #      are skipped because they are runtime side-effects of
 #      ``-DPROFILE=ON`` builds, not fixture outputs.
 #   4. Applies format-aware post-processing (header progname rewrite for
-#      STL/SVG/OBJ, inner-XML extraction for 3MF; other extensions pass
-#      through untouched) keyed by each file's own extension, then
-#      compares each produced file against
-#      `tests/regression/<testname>/<basename>/<rel-path>` using
-#      `test_cmdline_tool.compare_default()` -- a normalized text
-#      comparison (line-ending normalization + unified diff), not a raw
-#      bytes-equality check. For the ASCII / text-derived formats that
-#      the post-processors normalize, this is effectively
-#      bytes-equality; true binary outputs (binary STL, AMF, ...) would
-#      need a separate bytes-equality branch added to `_post_process`
-#      and the comparison step. The expected directory mirrors the
-#      actual directory layout one-for-one (relative path is the key on
-#      both sides), so missing or unexpected files are caught by simple
-#      set diffing.
+#      STL/STLBIN/SVG/OBJ/POV, inner-XML extraction for 3MF; other
+#      extensions pass through untouched) keyed by each file's own
+#      extension, then compares each produced file against
+#      `tests/regression/<testname>/<basename>/<rel-path>`.
+#      Suffixes listed in ``_BINARY_SUFFIXES`` (currently the binary-STL
+#      fallthrough suffix ``.stlbin``) take a strict
+#      ``filecmp.cmp(shallow=False)`` bytes-equality path because
+#      text-line normalization would corrupt the embedded floats / int
+#      packing; everything else uses ``test_cmdline_tool.compare_default()``
+#      -- a normalized text comparison (line-ending normalization +
+#      unified diff). For the ASCII / text-derived formats that the
+#      post-processors normalize, the text compare is effectively
+#      bytes-equality after normalization. The expected directory
+#      mirrors the actual directory layout one-for-one (relative path
+#      is the key on both sides), so missing or unexpected files are
+#      caught by simple set diffing.
 #
 # Because discovery is "every file under rundir", a single fixture can
 # legitimately mix formats (e.g. a `MultiToolExporter` writing
@@ -68,6 +70,7 @@
 # Exit codes match test_cmdline_tool.py: 0 pass, 1 failure, 2 invalid args.
 
 import argparse
+import filecmp
 import os
 import shutil
 import subprocess
@@ -86,17 +89,103 @@ def _setup_tct_options():
     tct.options.exclude_debug = False
 
 
+# Length of the fixed-size text header at the start of a binary STL
+# file (see ``src/io/export_stl.cc``: ``char header[80] = ...``); the
+# first 4 bytes after that are the little-endian uint32 triangle count
+# and after that are per-triangle 50-byte records.
+_BINARY_STL_HEADER_LEN = 80
+
+
+def post_process_stlbin(filename):
+    """Length-preserving rewrite of the 80-byte binary STL header.
+
+    Reusing ``tct.post_process_progname`` directly on a binary STL is
+    unsafe: of its five ``bytes.replace`` substitutions, only the
+    first two (``PythonSCAD Model\\x0a\\x00`` -> ``OpenSCAD Model
+    \\x0a\\x00\\x00\\x00`` and the ``_Model`` variant) are
+    length-preserving. The remaining three (``PythonSCAD_Model`` ->
+    ``OpenSCAD_Model``, etc.) shrink by two bytes; if they ever fired
+    on a binary STL -- whether because the writer changed how it
+    terminates the model name in the 80-byte header, or because the
+    raw triangle bytes coincidentally spelled out one of those
+    patterns -- the file would lose two bytes and every subsequent
+    triangle-count / triangle-record offset would shift.
+
+    Sidestep that by only touching the fixed 80-byte header and only
+    applying the length-preserving padding-compensated substitution
+    that the binary writer's header layout actually produces. The
+    triangle data starting at byte 80 is left strictly untouched.
+    Length is asserted to never change so the rewrite cannot silently
+    desynchronize the body from the header.
+    """
+    with open(filename, "rb") as f:
+        content = f.read()
+    if len(content) < _BINARY_STL_HEADER_LEN:
+        # Truncated / malformed binary STL: leave it alone so the
+        # comparison step surfaces the real problem instead of having
+        # this normalizer mask it.
+        return
+    header = content[:_BINARY_STL_HEADER_LEN]
+    body = content[_BINARY_STL_HEADER_LEN:]
+    new_header = header.replace(
+        b"PythonSCAD Model\x0a\x00",
+        b"OpenSCAD Model\x0a\x00\x00\x00",
+    )
+    if len(new_header) != _BINARY_STL_HEADER_LEN:
+        raise RuntimeError(
+            f"post_process_stlbin: header length changed from "
+            f"{_BINARY_STL_HEADER_LEN} to {len(new_header)} "
+            f"-- binary STL branding layout drifted?"
+        )
+    with open(filename, "wb") as f:
+        f.write(new_header + body)
+
+
 # Format-aware post-processors, keyed by lowercase file extension
 # (including the leading dot). Files whose extension is not listed pass
 # through untouched and are compared as-is by ``tct.compare_default``,
 # which already does line-ending-tolerant text comparison. Add a new
 # entry here if a future format requires extra normalization.
+#
+# ``.stlbin`` is the conventional fallthrough suffix used by fixtures
+# that want to exercise the binary-STL code path through the in-script
+# ``export()`` function: the suffix is unrecognized by
+# ``fileformat::fromIdentifier``, so ``python_export_core`` keeps its
+# ``BINARY_STL`` default (see ``src/python/pyfunctions.cc``). The
+# resulting file is real binary STL whose 80-byte header carries the
+# PythonSCAD branding, so we route it through the dedicated
+# ``post_process_stlbin`` helper above (which only rewrites the fixed
+# header and never touches the triangle data) rather than reusing
+# ``tct.post_process_progname`` -- see that helper's docstring for
+# why generic, partially length-changing text replacements are not
+# safe on binary STL bytes.
+#
+# AMF is intentionally *not* listed here: AMF mesh tessellation
+# (vertex order + triangle indexing) is not stable across the CI
+# matrix even with --enable=predictible-output, so byte-compare is not
+# viable yet. See PR #590 / issue #586 and the corresponding note in
+# ``tests/CMakeLists.txt``. If a future change makes AMF deterministic,
+# a ``post_process_amf`` helper that normalizes the
+# ``<metadata type="producer">PythonSCAD <version></metadata>`` line
+# (currently emitted from ``src/io/export_amf.cc``) will need to be
+# reintroduced alongside the fixture.
 _POST_PROCESSORS = {
     ".stl": tct.post_process_progname,
+    ".stlbin": post_process_stlbin,
     ".svg": tct.post_process_progname,
     ".obj": tct.post_process_progname,
     ".3mf": tct.post_process_3mf,
+    ".pov": tct.post_process_progname,
 }
+
+
+# Suffixes whose produced files are genuinely binary -- text-line
+# normalization in ``tct.compare_default`` would corrupt embedded
+# floats / int packing, so these go through a strict bytes-equality
+# check instead. Today this is only the binary-STL fallthrough suffix
+# (see ``_POST_PROCESSORS`` note above); add new entries here when a
+# new binary format gets fixture coverage.
+_BINARY_SUFFIXES = frozenset({".stlbin"})
 
 
 def _post_process(path):
@@ -104,6 +193,64 @@ def _post_process(path):
     fn = _POST_PROCESSORS.get(Path(path).suffix.lower())
     if fn is not None:
         fn(str(path))
+
+
+def _is_binary(path):
+    return Path(path).suffix.lower() in _BINARY_SUFFIXES
+
+
+def _compare_bytes(expected, actual):
+    """Strict bytes-equality compare with a small diagnostic on mismatch.
+
+    Returns True on match, False otherwise. Used for files in
+    ``_BINARY_SUFFIXES`` where the existing text-mode
+    ``tct.compare_default`` would mangle non-text bytes. Stays silent
+    on the happy path so passing ctests do not get noisy headers; only
+    emits diagnostic lines when ``filecmp.cmp`` reports a mismatch.
+    """
+    if filecmp.cmp(str(expected), str(actual), shallow=False):
+        return True
+    print('binary comparison: ', file=sys.stderr)
+    print(' expected file: ', expected, file=sys.stderr)
+    print(' actual file:   ', actual, file=sys.stderr)
+    expected_bytes = Path(expected).read_bytes()
+    actual_bytes = Path(actual).read_bytes()
+    if len(expected_bytes) != len(actual_bytes):
+        print(
+            f' size mismatch: expected={len(expected_bytes)} '
+            f'actual={len(actual_bytes)}',
+            file=sys.stderr,
+        )
+    common_prefix = min(len(expected_bytes), len(actual_bytes))
+    first_diff = None
+    for i in range(common_prefix):
+        eb = expected_bytes[i]
+        ab = actual_bytes[i]
+        if eb != ab:
+            first_diff = (
+                f' first byte diff at offset {i}: '
+                f'expected={eb:#04x} actual={ab:#04x}'
+            )
+            break
+    # Files matched up to the shorter length but differed in size --
+    # one is a strict prefix of the other, so the first differing
+    # offset is at the boundary itself; report the truncated side as
+    # ``<eof>`` so the caller sees where divergence really is.
+    if first_diff is None and len(expected_bytes) != len(actual_bytes):
+        i = common_prefix
+        if len(expected_bytes) < len(actual_bytes):
+            first_diff = (
+                f' first byte diff at offset {i}: '
+                f'expected=<eof> actual={actual_bytes[i]:#04x}'
+            )
+        else:
+            first_diff = (
+                f' first byte diff at offset {i}: '
+                f'expected={expected_bytes[i]:#04x} actual=<eof>'
+            )
+    if first_diff is not None:
+        print(first_diff, file=sys.stderr)
+    return False
 
 
 def _run_pythonscad(pythonscad, fixture, extra_args, rundir):
@@ -303,9 +450,13 @@ def main():
     for rel in sorted(actual.keys() & expected.keys()):
         produced = actual[rel]
         _post_process(produced)
-        tct.expectedfilename = str(expected[rel])
-        if not tct.compare_default(str(produced)):
-            ok = False
+        if _is_binary(produced):
+            if not _compare_bytes(expected[rel], produced):
+                ok = False
+        else:
+            tct.expectedfilename = str(expected[rel])
+            if not tct.compare_default(str(produced)):
+                ok = False
 
     return 0 if ok else 1
 

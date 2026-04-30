@@ -27,8 +27,18 @@ repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v5.0.0
       hooks:
+          # Regression goldens under tests/regression/ are byte-faithful
+          # captures of generator output (POV, STL, OBJ, ...) and may
+          # legitimately contain trailing whitespace or no final
+          # newline; e.g. the POV exporter emits "polygon { 5, " with a
+          # trailing space, and binary STL has no terminating newline.
+          # The whitespace and EOF fixers must not touch those files,
+          # otherwise they desynchronize from the freshly-generated
+          # output the tests compare against.
           - id: trailing-whitespace
+            exclude: ^tests/regression/
           - id: end-of-file-fixer
+            exclude: ^tests/regression/
           - id: check-yaml
           - id: detect-private-key
     - repo: https://github.com/pre-commit/mirrors-clang-format
