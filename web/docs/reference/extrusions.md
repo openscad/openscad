@@ -45,7 +45,7 @@ def xsection(h):
     v = 5 + sin(h)
     return [[-v, -v], [v, -v], [v, v], [-v, v]]
 
-linear_extrude(xsection, height=10, fn=20).show()
+linear_extrude(xsection, height=10, slices=20).show()
 ```
 
 The `twist` parameter can also be a Python function:
