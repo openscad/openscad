@@ -3563,6 +3563,8 @@ void MainWindow::setupEditor(const QStringList& filenames)
   connect(this->editActionUnindent, &QAction::triggered, tabManager, &TabManager::unindentSelection);
   connect(this->editActionComment, &QAction::triggered, tabManager, &TabManager::commentSelection);
   connect(this->editActionUncomment, &QAction::triggered, tabManager, &TabManager::uncommentSelection);
+  connect(this->editActionMoveLineUp, &QAction::triggered, tabManager, &TabManager::moveLineUp);
+  connect(this->editActionMoveLineDown, &QAction::triggered, tabManager, &TabManager::moveLineDown);
 
   connect(this->editActionToggleBookmark, &QAction::triggered, tabManager, &TabManager::toggleBookmark);
   connect(this->editActionNextBookmark, &QAction::triggered, tabManager, &TabManager::nextBookmark);
@@ -3582,6 +3584,52 @@ void MainWindow::setupEditor(const QStringList& filenames)
   onTabManagerEditorChanged(activeEditor);
   QObject::connect(editorDock, &Dock::visibilityChanged, this,
                    &MainWindow::onEditorDockVisibilityChanged);
+
+  // -----------------------------------------------------------------------
+  // FIX #6667: Editor keyboard shortcuts broken when editor is undocked.
+  //
+  // Root cause: these QActions are owned by MainWindow and their shortcut
+  // context defaults to Qt::WindowShortcut, which means Qt only fires them
+  // when the *main* window has focus.  When the editor dock is floating it
+  // becomes its own top-level window, so the main window no longer has
+  // focus and every shortcut below silently stops working.
+  //
+  // Fix: change the context to Qt::WidgetWithChildrenShortcut and register
+  // each action on editorDock.  Qt then fires the shortcut whenever the
+  // dock itself *or any widget inside it* (ScintillaEditor, tab bar, …)
+  // has focus — whether the dock is attached or floating.
+  //
+  // Signals/slots, naming, data-flow and all other behaviour are unchanged.
+  // -----------------------------------------------------------------------
+  const QList<QAction *> editorScopedActions = {
+    this->editActionFind,
+    this->editActionFindAndReplace,
+    this->editActionFindNext,
+    this->editActionFindPrevious,
+    this->editActionUseSelectionForFind,
+    this->editActionComment,
+    this->editActionUncomment,
+    this->editActionIndent,
+    this->editActionUnindent,
+    this->editActionMoveLineUp,
+    this->editActionMoveLineDown,
+    this->editActionToggleBookmark,
+    this->editActionNextBookmark,
+    this->editActionPrevBookmark,
+    this->editActionJumpToNextError,
+    this->editActionInsertTemplate,
+    this->editActionFoldAll,
+    this->editActionConvertTabsToSpaces,
+    this->editActionNextTab,
+    this->editActionPrevTab,
+  };
+  for (QAction *action : editorScopedActions) {
+    action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    editorDock->addAction(action);
+  }
+  // -----------------------------------------------------------------------
+  // END FIX #6667
+  // -----------------------------------------------------------------------
 }
 
 /**
@@ -3754,7 +3802,9 @@ void MainWindow::setupMenusAndActions()
   this->labelCompileResultMessage->setOpenExternalLinks(false);
   connect(this->labelCompileResultMessage, &QLabel::linkActivated, this, &MainWindow::showLink);
 
-  // actions not included in menu
+  // actions not included in menu — registered on MainWindow so they remain
+  // available globally (e.g. via InputDriverManager / DBus); the editor-scoped
+  // shortcut bindings for these are added in setupEditor() via editorDock.
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
 
