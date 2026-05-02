@@ -595,6 +595,14 @@ int cmdline(const CommandLine& cmd)
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   }
 
+  RenderVariables render_variables = {
+    .preview = fileformat::canPreview(export_format)
+                 ? (cmd.viewOptions.renderer == RenderType::OPENCSG ||
+                    cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
+                 : false,
+    .camera = cmd.camera,
+  };
+
 #ifdef ENABLE_PYTHON
   python_active = false;
   if (cmd.filename.c_str() != NULL) {
@@ -603,14 +611,6 @@ int cmdline(const CommandLine& cmd)
       else LOG("Python is not enabled");
     }
   }
-
-  RenderVariables render_variables = {
-    .preview = fileformat::canPreview(export_format)
-                 ? (cmd.viewOptions.renderer == RenderType::OPENCSG ||
-                    cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
-                 : false,
-    .camera = cmd.camera,
-  };
 
   std::string text_py = text;
   if (python_active) {
@@ -652,7 +652,6 @@ int cmdline(const CommandLine& cmd)
   }
 
   root_file->handleDependencies();
-
 
   if (cmd.animate.frames == 0) {
     render_variables.time = 0;
