@@ -25,6 +25,7 @@
  */
 
 #include "gui/MainWindow.h"
+#include "gui/WorkspaceSaver.h"
 
 #include <sys/stat.h>
 
@@ -1516,15 +1517,6 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-  // OpenSCAD quits by closing all top-level windows. However, the order in which top-level are closed is
-  // not defined by Qt, so we may end up closing undocked dock widgets before we've had a chance to save
-  // their window state. This overrides close to proactively save the window state.
-  if (event->type() == QEvent::Close) {
-    if (qobject_cast<Dock *>(obj) && !static_cast<QCloseEvent *>(event)->spontaneous()) {
-      saveWindowStateOnClose();
-    }
-  }
-
   if (rubberBandManager.isVisible()) {
     if (event->type() == QEvent::KeyRelease) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -3235,23 +3227,12 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
   this->libraryInfoDialog->show();
 }
 
-void MainWindow::saveWindowStateOnClose()
-{
-  if (windowStateSaved) return;
-  windowStateSaved = true;
-
-  QSettingsCached settings;
-  settings.setValue("window/geometry", saveGeometry());
-  auto windowState = saveState();
-  UIUtils::dumpSaveState(windowState);
-  settings.setValue("window/state", windowState);
-}
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  WorkspaceSaver::instance()->captureState(this);
   if (tabManager->shouldClose()) {
+    WorkspaceSaver::instance()->lock();
     isClosing = true;
-    saveWindowStateOnClose();
     progress_report_fin();
 
     // Log to stdout from now on
@@ -3267,6 +3248,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     hideCurrentOutput();
     event->accept();
   } else {
+    WorkspaceSaver::instance()->unlock();
     event->ignore();
   }
 }
