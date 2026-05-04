@@ -11,7 +11,11 @@ on:
         default: ''
 
 permissions:
-  contents: write
+  # `contents: write` is workflow-scope here only as an interim
+  # measure: several jobs (release-asset upload, release publish)
+  # legitimately need it. Per-job scoping across all workflows is
+  # tracked in #613.
+  contents: write # zizmor: ignore[excessive-permissions] tracked in #613
   actions: read
 
 jobs:
@@ -28,6 +32,8 @@ jobs:
       - name: Wait for build workflows
         id: wait
         uses: actions/github-script@v9
+        env:
+          INPUT_RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         with:
           script: |
             const BUILD_WORKFLOWS = [
@@ -47,7 +53,7 @@ jobs:
             let releaseTag;
 
             if (context.eventName === 'workflow_dispatch') {
-              const inputTag = '${{ github.event.inputs.release_tag }}';
+              const inputTag = process.env.INPUT_RELEASE_TAG;
 
               if (inputTag) {
                 try {
@@ -199,8 +205,9 @@ jobs:
       - name: Download release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEEDS_WAIT_FOR_BUILDS_OUTPUTS_RELEASE_TAG: ${{ needs.wait-for-builds.outputs.release_tag }}
         run: |
-          TAG="${{ needs.wait-for-builds.outputs.release_tag }}"
+          TAG="${NEEDS_WAIT_FOR_BUILDS_OUTPUTS_RELEASE_TAG}"
           mkdir -p release-assets
           cd release-assets
           gh release download "$TAG" -R "${{ github.repository }}"
@@ -209,9 +216,10 @@ jobs:
       - name: Compute and upload checksums
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEEDS_WAIT_FOR_BUILDS_OUTPUTS_RELEASE_TAG: ${{ needs.wait-for-builds.outputs.release_tag }}
         run: |
           set -e
-          TAG="${{ needs.wait-for-builds.outputs.release_tag }}"
+          TAG="${NEEDS_WAIT_FOR_BUILDS_OUTPUTS_RELEASE_TAG}"
           cd release-assets
 
           skip_suffixes='.sha256 .sha512 .asc'
@@ -257,14 +265,19 @@ jobs:
     steps:
       - name: Publish release
         uses: actions/github-script@v9
+        env:
+          NEEDS_RELEASE_ID: ${{ needs.wait-for-builds.outputs.release_id }}
+          NEEDS_RELEASE_TAG: ${{ needs.wait-for-builds.outputs.release_tag }}
+          NEEDS_RELEASE_URL: ${{ needs.wait-for-builds.outputs.release_url }}
         with:
           # Use bot account PAT so the resulting `release: released` event
           # can trigger downstream workflows (e.g. publish-to-pypi.yml).
           # The default GITHUB_TOKEN cannot trigger other workflows.
           github-token: ${{ secrets.RELEASE_TOKEN }}
           script: |
-            const releaseId = ${{ needs.wait-for-builds.outputs.release_id }};
-            const releaseTag = '${{ needs.wait-for-builds.outputs.release_tag }}';
+            const releaseId = Number(process.env.NEEDS_RELEASE_ID);
+            const releaseTag = process.env.NEEDS_RELEASE_TAG;
+            const releaseUrl = process.env.NEEDS_RELEASE_URL;
 
             await github.rest.repos.updateRelease({
               owner: context.repo.owner,
@@ -276,7 +289,7 @@ jobs:
             });
 
             console.log(`✅ Release ${releaseTag} published successfully!`);
-            console.log(`🔗 ${{ needs.wait-for-builds.outputs.release_url }}`);
+            console.log(`🔗 ${releaseUrl}`);
 
   handle-failure:
     needs: wait-for-builds
@@ -285,10 +298,13 @@ jobs:
     steps:
       - name: Update release with failure status
         uses: actions/github-script@v9
+        env:
+          NEEDS_RELEASE_ID: ${{ needs.wait-for-builds.outputs.release_id }}
+          NEEDS_STATUS_REPORT: ${{ needs.wait-for-builds.outputs.status_report }}
         with:
           script: |
-            const releaseId = ${{ needs.wait-for-builds.outputs.release_id }};
-            const statusReport = `${{ needs.wait-for-builds.outputs.status_report }}`;
+            const releaseId = Number(process.env.NEEDS_RELEASE_ID);
+            const statusReport = process.env.NEEDS_STATUS_REPORT;
 
             const { data: release } = await github.rest.repos.getRelease({
               owner: context.repo.owner,

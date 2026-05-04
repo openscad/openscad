@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -28,4 +29,10 @@ jobs:
 
       - name: Validate PR title
         run: |
-          echo "${{ github.event.pull_request.title }}" | npx commitlint --verbose
+          # `printf '%s\n'` rather than `echo` so that titles containing
+          # `-n` / `-e` / backslash sequences are passed to commitlint
+          # byte-for-byte instead of being interpreted by the shell
+          # builtin.
+          printf '%s\n' "$GITHUB_EVENT_PULL_REQUEST_TITLE" | npx commitlint --verbose
+        env:
+          GITHUB_EVENT_PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}

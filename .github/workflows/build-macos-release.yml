@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: 'recursive'
+          persist-credentials: false
 
       - name: Fetch tags for version detection
         run: |
@@ -137,12 +138,14 @@ jobs:
       - name: Create x86_64 app archive
         run: |
           set -e
-          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_APPNAME_OUTPUTS_APP_BUNDLE}"
           APP_DIR=$(dirname "$APP_BUNDLE")
           APP_NAME=$(basename "$APP_BUNDLE")
           echo "Archiving $APP_BUNDLE (preserve symlinks)"
           tar --xattrs -C "$APP_DIR" -cf pythonscad-x86_64-app.tar "$APP_NAME"
           ls -lh pythonscad-x86_64-app.tar
+        env:
+          STEPS_APPNAME_OUTPUTS_APP_BUNDLE: ${{ steps.appname.outputs.app_bundle }}
 
       - name: Upload x86_64 artifact
         uses: actions/upload-artifact@v7
@@ -160,6 +163,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: 'recursive'
+          persist-credentials: false
 
       - name: Fetch tags for version detection
         run: |
@@ -270,12 +274,14 @@ jobs:
       - name: Create arm64 app archive
         run: |
           set -e
-          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_APPNAME_OUTPUTS_APP_BUNDLE}"
           APP_DIR=$(dirname "$APP_BUNDLE")
           APP_NAME=$(basename "$APP_BUNDLE")
           echo "Archiving $APP_BUNDLE (preserve symlinks)"
           tar --xattrs -C "$APP_DIR" -cf pythonscad-arm64-app.tar "$APP_NAME"
           ls -lh pythonscad-arm64-app.tar
+        env:
+          STEPS_APPNAME_OUTPUTS_APP_BUNDLE: ${{ steps.appname.outputs.app_bundle }}
 
       - name: Upload arm64 artifact
         uses: actions/upload-artifact@v7
@@ -292,6 +298,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
         # No submodules needed, only for scripts
 
       - name: Fetch tags for version detection
@@ -739,10 +747,12 @@ jobs:
       - name: Fix app bundle for macOS distribution
         env:
           SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
+          STEPS_INSTALL_CERT_OUTPUTS_CERT_INSTALLED: ${{ steps.install_cert.outputs.cert_installed }}
         run: |
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           EXEC_NAME=$(basename "$APP_BUNDLE" .app)
-          if [ "${{ steps.install_cert.outputs.cert_installed }}" = "true" ] && [ -n "$SIGNING_IDENTITY" ]; then
+          if [ "${STEPS_INSTALL_CERT_OUTPUTS_CERT_INSTALLED}" = "true" ] && [ -n "$SIGNING_IDENTITY" ]; then
             SIGN_ID="$SIGNING_IDENTITY"
             CODESIGN_EXTRA="--timestamp --options runtime"
           else
@@ -888,7 +898,7 @@ jobs:
 
       - name: Validate code signature
         run: |
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           EXEC_NAME=$(basename "$APP_BUNDLE" .app)
 
           echo "=== Validating code signature with codesign ==="
@@ -934,24 +944,28 @@ jobs:
           fi
 
           echo "=== Signature validation passed ==="
+        env:
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
 
       - name: Run macOS sanity check
         run: |
           # Validate the merged universal binary
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           # Determine executable name (pythonscad or pythonscad-snapshot)
           EXEC_NAME=$(basename "$APP_BUNDLE" .app)
           EXEC_PATH="$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
 
           echo "Validating executable: $EXEC_PATH"
           python3 ./scripts/macosx-sanity-check.py "$EXEC_PATH"
+        env:
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
 
       - name: Create DMG
         id: dmg
         run: |
           # Get version from git
           VERSION=$(git describe --tags --always --dirty)
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           APP_NAME=$(basename "$APP_BUNDLE")
           DMG_NAME="PythonSCAD-${VERSION}.dmg"
 
@@ -1029,13 +1043,16 @@ jobs:
 
           hdiutil detach "$TEST_MOUNT" 2>&1 | grep -v "expected" || true
           rm -rf "$TEST_MOUNT"
+        env:
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
 
       - name: Sign DMG
         if: steps.install_cert.outputs.cert_installed == 'true'
         env:
           SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
+          STEPS_DMG_OUTPUTS_DMG_FILE: ${{ steps.dmg.outputs.dmg_file }}
         run: |
-          DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
+          DMG_FILE="${STEPS_DMG_OUTPUTS_DMG_FILE}"
           if [ -z "$SIGNING_IDENTITY" ]; then
             echo "SIGNING_IDENTITY not set; skipping DMG signing."
             exit 0
@@ -1049,12 +1066,13 @@ jobs:
           APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}
+          STEPS_DMG_OUTPUTS_DMG_FILE: ${{ steps.dmg.outputs.dmg_file }}
         run: |
           if [ -z "$APPLE_API_KEY_P8_BASE64" ] || [ -z "$APPLE_API_KEY_ID" ] || [ -z "$APPLE_ISSUER_ID" ]; then
             echo "App Store Connect API key secrets not set; skipping notarization."
             exit 0
           fi
-          DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
+          DMG_FILE="${STEPS_DMG_OUTPUTS_DMG_FILE}"
           KEY_P8="$RUNNER_TEMP/authkey.p8"
           SUBMIT_LOG="$RUNNER_TEMP/notarytool_submit.log"
           echo -n "$APPLE_API_KEY_P8_BASE64" | base64 --decode -o "$KEY_P8"
@@ -1086,8 +1104,8 @@ jobs:
         id: validation
         continue-on-error: true
         run: |
-          DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          DMG_FILE="${STEPS_DMG_OUTPUTS_DMG_FILE}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
 
           echo "=== Final validation of DMG and app bundle ==="
           VALIDATION_FAILED=0
@@ -1107,7 +1125,7 @@ jobs:
           fi
 
           # Validate DMG notarization ticket
-          if [ "${{ steps.install_cert.outputs.cert_installed }}" = "true" ]; then
+          if [ "${STEPS_INSTALL_CERT_OUTPUTS_CERT_INSTALLED}" = "true" ]; then
             echo "Checking DMG notarization ticket..."
             if ! stapler validate "$DMG_FILE" 2>&1 | grep -q "validate action worked"; then
               echo "ERROR: DMG notarization ticket validation failed!"
@@ -1168,6 +1186,10 @@ jobs:
             echo "See errors above. DMG will still be uploaded as artifact for inspection."
             exit 1
           fi
+        env:
+          STEPS_DMG_OUTPUTS_DMG_FILE: ${{ steps.dmg.outputs.dmg_file }}
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
+          STEPS_INSTALL_CERT_OUTPUTS_CERT_INSTALLED: ${{ steps.install_cert.outputs.cert_installed }}
 
       - name: Prepare artifacts
         id: artifacts
@@ -1175,8 +1197,8 @@ jobs:
         run: |
           mkdir -p /tmp/out
 
-          DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          DMG_FILE="${STEPS_DMG_OUTPUTS_DMG_FILE}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           basename_dmg=$(basename "$DMG_FILE")
 
           echo "Copying DMG: $DMG_FILE"
@@ -1188,11 +1210,15 @@ jobs:
 
           echo "dmg_path=/tmp/out/$basename_dmg" >> $GITHUB_OUTPUT
           echo "dmg_name=$(basename "$basename_dmg" .dmg)" >> $GITHUB_OUTPUT
-          echo "validation_status=${{ steps.validation.outcome }}" >> $GITHUB_OUTPUT
+          echo "validation_status=${STEPS_VALIDATION_OUTCOME}" >> $GITHUB_OUTPUT
 
           # List what we have
           echo "Artifacts prepared:"
           ls -lh /tmp/out/
+        env:
+          STEPS_DMG_OUTPUTS_DMG_FILE: ${{ steps.dmg.outputs.dmg_file }}
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
+          STEPS_VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
 
       - name: Upload DMG package
         if: always() && steps.artifacts.outputs.dmg_path != ''
@@ -1213,14 +1239,17 @@ jobs:
       - name: Post validation status
         if: always()
         run: |
-          if [ "${{ steps.validation.outcome }}" = "failure" ]; then
+          if [ "${STEPS_VALIDATION_OUTCOME}" = "failure" ]; then
             echo "⚠️ VALIDATION FAILED - DMG has been uploaded for manual inspection"
             echo "Download the artifacts to inspect the issue locally:"
-            echo "  - DMG: ${{ steps.artifacts.outputs.dmg_name }}"
+            echo "  - DMG: ${STEPS_ARTIFACTS_OUTPUTS_DMG_NAME}"
             echo "  - Pre-DMG app bundle: pre-dmg-app-bundle-debug"
           else
             echo "✅ All validations passed!"
           fi
+        env:
+          STEPS_VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+          STEPS_ARTIFACTS_OUTPUTS_DMG_NAME: ${{ steps.artifacts.outputs.dmg_name }}
 
       - name: Upload artifacts to release
         if: (github.event_name == 'release' || github.event.inputs.upload_to_release != '') && steps.validation.outcome == 'success'
@@ -1234,13 +1263,15 @@ jobs:
       - name: Fail workflow if validation failed
         if: always()
         run: |
-          if [ "${{ steps.validation.outcome }}" != "success" ]; then
+          if [ "${STEPS_VALIDATION_OUTCOME}" != "success" ]; then
             echo "❌ Workflow failed because validation did not pass"
             echo "DMG and artifacts are available for inspection but were NOT uploaded to the release"
             exit 1
           else
             echo "✅ Validation passed - DMG was uploaded to release (if applicable)"
           fi
+        env:
+          STEPS_VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
 
       - name: Clean up signing keychain
         if: always() && steps.install_cert.outputs.cert_installed == 'true'

@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup (detached) tmate session if enabled
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
@@ -31,6 +33,48 @@ jobs:
         with:
           detached: true
           limit-access-to-actor: true
+
+      - name: Validate deploy configuration
+        # Verify every secret/variable the deploy step needs is
+        # populated before doing the (relatively expensive) mkdocs
+        # build. Without this pre-flight, a missing
+        # `WEB_SFTP_SSH_KEY` would write an empty `deploy_key` and
+        # only fail during `rsync` with a confusing
+        # `Permission denied (publickey)` — well after the site
+        # build has already run. Same logic for the host/user/path
+        # variables: any of them missing would let the workflow
+        # fall through to a broken `rsync URL`. Failing fast here
+        # turns those into a clear "this repo isn't configured for
+        # deploys" message that points the maintainer straight at
+        # the Settings page.
+        env:
+          WEB_SFTP_SSH_KEY: ${{ secrets.WEB_SFTP_SSH_KEY }}
+          WEB_SFTP_HOST_KEY: ${{ vars.WEB_SFTP_HOST_KEY }}
+          WEB_SFTP_HOST: ${{ vars.WEB_SFTP_HOST }}
+          WEB_SFTP_USER: ${{ vars.WEB_SFTP_USER }}
+          WEB_SFTP_PATH: ${{ vars.WEB_SFTP_PATH }}
+        run: |
+          missing=""
+          for var in WEB_SFTP_SSH_KEY WEB_SFTP_HOST_KEY \
+                     WEB_SFTP_HOST WEB_SFTP_USER WEB_SFTP_PATH; do
+            if [ -z "${!var}" ]; then
+              missing="${missing} ${var}"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            {
+              echo "Error: required deploy configuration is missing:${missing}"
+              echo
+              echo "Populate them under Settings → Secrets and variables → Actions:"
+              echo "  - WEB_SFTP_SSH_KEY:  Secret  (private SSH key for the deploy account)"
+              echo "  - WEB_SFTP_HOST_KEY: Variable (output of \`ssh-keyscan -p <PORT> <HOST>\`)"
+              echo "  - WEB_SFTP_HOST:     Variable (deploy server hostname)"
+              echo "  - WEB_SFTP_USER:     Variable (SFTP username)"
+              echo "  - WEB_SFTP_PATH:     Variable (target path on the deploy server)"
+              echo "  - WEB_SFTP_PORT:     Variable (optional; defaults to 22)"
+            } >&2
+            exit 1
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -50,28 +94,73 @@ jobs:
           source .venv/bin/activate
           mkdocs build --strict
 
-      - name: Setup SSH key for SFTP
+      - name: Setup SSH key and known_hosts for SFTP
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.WEB_SFTP_SSH_KEY }}" > ~/.ssh/deploy_key
+          # `printf` (not `echo`) so backslash escapes / option-looking
+          # leading bytes in the key material are written byte-faithfully.
+          printf '%s' "$WEB_SFTP_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          # Setup SSH known_hosts
-          PORT="${{ vars.WEB_SFTP_PORT || '22' }}"
-          if [ "$PORT" = "22" ]; then
-            ssh-keyscan -H ${{ vars.WEB_SFTP_HOST }} >> ~/.ssh/known_hosts
-          else
-            ssh-keyscan -p $PORT -H ${{ vars.WEB_SFTP_HOST }} >> ~/.ssh/known_hosts
+          # Pin the deploy server's host key from a trusted source
+          # (the `WEB_SFTP_HOST_KEY` repository variable, populated
+          # out-of-band by a maintainer) instead of discovering it
+          # via `ssh-keyscan` at deploy time. Live discovery would
+          # re-fetch over the network on every run and silently
+          # accept whatever answers, which an active MITM could
+          # exploit to relay our authenticated SSH session to a
+          # host of their choosing — letting them upload arbitrary
+          # content to the public site under our credentials.
+          # With this pin, a host-key change is a hard failure
+          # that requires a maintainer to consciously update the
+          # variable.
+          #
+          # To populate / rotate, run from a trusted network:
+          #   ssh-keyscan -p "$PORT" "$HOST"
+          # (no `-H`, so the hostname stays in plaintext and is
+          # easier to eyeball-verify later) and paste the
+          # multi-line output verbatim into the `WEB_SFTP_HOST_KEY`
+          # variable under Settings → Secrets and variables →
+          # Actions → Variables.
+          #
+          # Fail loudly if the variable is missing rather than
+          # falling through to an empty `known_hosts` — OpenSSH's
+          # `accept-new` default would otherwise silently TOFU the
+          # first key the server presents, which is exactly the
+          # live-discovery behaviour this pin replaces.
+          if [ -z "$WEB_SFTP_HOST_KEY" ]; then
+            echo "Error: WEB_SFTP_HOST_KEY repository variable is unset." >&2
+            echo "Populate it via Settings → Secrets and variables → Actions → Variables." >&2
+            exit 1
           fi
+          printf '%s\n' "$WEB_SFTP_HOST_KEY" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+        env:
+          WEB_SFTP_SSH_KEY: ${{ secrets.WEB_SFTP_SSH_KEY }}
+          WEB_SFTP_HOST_KEY: ${{ vars.WEB_SFTP_HOST_KEY }}
 
       - name: Deploy to SFTP server
         run: |
-          PORT="${{ vars.WEB_SFTP_PORT || '22' }}"
+          PORT="${WEB_SFTP_PORT:-22}"
 
+          # Don't pass `StrictHostKeyChecking=no` here: the previous
+          # step populated `~/.ssh/known_hosts` with the trusted
+          # host key from the `WEB_SFTP_HOST_KEY` repository
+          # variable, and ssh's default behaviour
+          # (`StrictHostKeyChecking=accept-new`/`yes` depending on
+          # version) honours that pin. Disabling strict checking
+          # would silently accept any key that happens to answer
+          # on the deploy host's address — i.e. defeat the entire
+          # point of pinning.
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=no" \
+            -e "ssh -i ~/.ssh/deploy_key -p $PORT" \
             web/site/ \
-            ${{ vars.WEB_SFTP_USER }}@${{ vars.WEB_SFTP_HOST }}:${{ vars.WEB_SFTP_PATH }}/
+            "${VARS_WEB_SFTP_USER}@${VARS_WEB_SFTP_HOST}:${VARS_WEB_SFTP_PATH}/"
+        env:
+          WEB_SFTP_PORT: ${{ vars.WEB_SFTP_PORT }}
+          VARS_WEB_SFTP_USER: ${{ vars.WEB_SFTP_USER }}
+          VARS_WEB_SFTP_HOST: ${{ vars.WEB_SFTP_HOST }}
+          VARS_WEB_SFTP_PATH: ${{ vars.WEB_SFTP_PATH }}
 
       - name: Cleanup SSH key
         if: always()

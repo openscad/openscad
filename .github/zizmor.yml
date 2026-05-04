@@ -1,0 +1,50 @@
+# zizmor (https://github.com/zizmorcore/zizmor) configuration.
+#
+# Tracks any project-specific deviations from zizmor's defaults.
+# Each deviation explains *why* it exists, so a future audit can
+# re-evaluate whether the relaxation is still warranted.
+#
+# Long-tail cleanup of the items listed here is tracked in #613.
+
+rules:
+  unpinned-uses:
+    config:
+      # zizmor's default since v1.20.0 is to require SHA-pinning for
+      # *every* `uses:` clause. Applied verbatim that produces 75
+      # errors against this repo (every `actions/checkout@v6`, every
+      # `actions/upload-artifact@v7`, etc.).
+      #
+      # Policy:
+      #   - The @actions namespace ref-pins. Note that `@v6`-style
+      #     refs are *mutable tags* (the publisher can rewrite them
+      #     to point at a different commit at any time), not
+      #     immutable SHAs — so this is a trust-the-publisher pin
+      #     rather than a cryptographic one. Acceptable for
+      #     `@actions/*` because (a) those are first-party
+      #     GitHub-owned actions, (b) hash-pinning every
+      #     `actions/*` `uses:` clause is high-friction with no
+      #     concrete threat reduction beyond the supply-chain
+      #     controls GitHub already enforces on its own org. Hash
+      #     pin (`@<sha>`) anything where the publisher isn't on
+      #     that footing.
+      #   - The currently-used third-party actions explicitly
+      #     ref-pin for now; hash-pinning each one is tracked in
+      #     #613. The explicit enumeration is deliberate: if a new
+      #     third-party action gets introduced later, the default
+      #     `*: hash-pin` rule kicks in and the linter raises a hard
+      #     error, instead of silently allowing the supply-chain
+      #     surface to grow.
+      policies:
+        actions/*: ref-pin
+        # Third-party — tracked for hash-pinning in #613:
+        docker/setup-qemu-action: ref-pin
+        googleapis/release-please-action: ref-pin
+        msys2/setup-msys2: ref-pin
+        mxschmitt/action-tmate: ref-pin
+        nanzm/get-time-action: ref-pin
+        pypa/gh-action-pypi-publish: ref-pin
+        softprops/action-gh-release: ref-pin
+        ssciwr/setup-mesa-dist-win: ref-pin
+        takanome-dev/assign-issue-action: ref-pin
+        # Anything not listed above must be hash-pinned.
+        "*": hash-pin

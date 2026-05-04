@@ -1,0 +1,96 @@
+name: pre-commit
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          # On `pull_request`, the default checkout ref is GitHub's
+          # synthetic merge commit (`refs/pull/N/merge`), which mixes
+          # the base branch's tip into the PR's content. `pre-commit`
+          # hooks read file content from the working tree, so without
+          # this pin they'd lint *merged* content instead of pure
+          # PR-head content. With `master` advancing after the PR is
+          # opened, that means the required check could fail on
+          # changes the PR never made. Pin to the head SHA so the
+          # working tree is exactly what the PR is proposing.
+          ref: ${{ github.event.pull_request.head.sha }}
+          # `pre-commit run --from-ref/--to-ref` needs both PR base and
+          # head SHAs in history to compute the diff to lint.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+          cache: pip
+
+      - name: Cache pre-commit hook environments
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit (PR diff)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # `pull_request.base.sha` is the current tip of the base
+          # branch, not the merge base with the head branch. If
+          # `master` advances after the PR is opened, comparing
+          # against `base.sha` would lint files that changed on
+          # `master` but never in this PR. Use the merge-base so the
+          # diff is exactly the PR's contribution.
+          MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          pre-commit run --from-ref "$MERGE_BASE" --to-ref "$HEAD_SHA" \
+                         --show-diff-on-failure --color always
+
+      - name: Re-run hooks against full target set
+        run: |
+          # `pre-commit run --from-ref/--to-ref` above only runs
+          # hooks against files in the PR diff. That has a known
+          # gap: a PR whose only change is hook configuration (e.g.
+          # the weekly autoupdate PRs from
+          # `pre-commit-autoupdate.yml`, or a PR tweaking
+          # `.github/zizmor.yml`'s allowlist or `.clang-format`'s
+          # rules) has an empty target file set for every
+          # file-scoped hook, so rev/arg/policy changes would never
+          # be exercised in CI.
+          #
+          # Close that gap by additionally running every hook
+          # against `--all-files` on every PR. The runtime overhead
+          # is negligible because `pre-commit`'s own per-file cache
+          # makes the second pass a no-op for files that didn't
+          # change in the diff. This is also the canonical
+          # `pre-commit/action`-equivalent invocation, so any new
+          # hook added to `.pre-commit-config.yaml` is automatically
+          # included in CI without needing a parallel allowlist
+          # here — `.pre-commit-config.yaml` stays the single source
+          # of truth.
+          #
+          # Hooks listed in `SKIP` have a pre-existing legacy
+          # backlog of failures inherited from upstream OpenSCAD
+          # (`shellcheck` on `tests/{compare-bitmaps,virtualfb}.sh`,
+          # `clang-format` on the imported core, `markdownlint-cli2`
+          # on imported docs, `trailing-whitespace` /
+          # `end-of-file-fixer` on imported assets). They still run
+          # in the diff-scoped step above, so they catch anything
+          # *new* a PR introduces; they're only skipped here so the
+          # `--all-files` pass doesn't fail on inherited code that
+          # this PR didn't touch. Drop each from the `SKIP` list as
+          # its part of the #613 cleanup lands.
+          SKIP=trailing-whitespace,end-of-file-fixer,clang-format,markdownlint-cli2,shellcheck \
+            pre-commit run --all-files --color always

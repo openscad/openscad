@@ -74,3 +74,58 @@ repos:
             name: check-mkdocs
             args: ["--config", "web/mkdocs.yml"]
             files: ^web/
+    - repo: https://github.com/rhysd/actionlint
+      rev: v1.7.12
+      hooks:
+          # Lints GitHub Actions workflow files: schema validation,
+          # expression syntax, pinned-action checks, etc.
+          #
+          # `-shellcheck=` (empty) disables actionlint's bundled
+          # shellcheck integration on workflow `run:` blocks. The
+          # integration is genuinely valuable, but the existing
+          # workflow `run:` blocks have a long tail of pre-existing
+          # SC2086 / SC2012 / SC2015 / etc. findings that are tracked
+          # for cleanup in #613. Without this flag, behaviour
+          # diverges between contributors who have `shellcheck`
+          # installed (CI runners; many Linux distros) and those
+          # who don't (a typical macOS dev box). Drop this arg once
+          # the #613 backlog is clear so workflow-embedded shell
+          # gets shellchecked too. Standalone `*.sh` files are
+          # already linted by the separate `shellcheck-py` hook
+          # below, regardless of this flag.
+          - id: actionlint
+            args: ["-shellcheck="]
+    - repo: https://github.com/shellcheck-py/shellcheck-py
+      rev: v0.11.0.1
+      hooks:
+          # Lints shell scripts (anything with a shell shebang or `*.sh`)
+          # for correctness, portability, and security pitfalls. Bundles
+          # the shellcheck binary as a Python wheel so contributors don't
+          # need a system install.
+          #
+          # `--severity=warning` keeps real issues (SC2086 unquoted
+          # expansion, SC2155 mask-return-value, etc.) and skips the
+          # long-tail style nags we'd otherwise have to triage one by
+          # one. Submodules are upstream code we don't own; tests/data
+          # has intentionally-weird shell test fixtures (cascade*.sh
+          # etc.) that exist to exercise edge cases.
+          - id: shellcheck
+            args: ["--severity=warning"]
+            exclude: ^(submodules|tests/data)/
+    - repo: https://github.com/zizmorcore/zizmor-pre-commit
+      rev: v1.24.1
+      hooks:
+          # Security audits for GitHub Actions workflows and composite
+          # actions. Catches template/expression injection from
+          # attacker-controlled contexts (PR titles, issue bodies, ...),
+          # over-broad permissions, dangerous triggers, etc.
+          #
+          # Gated at --min-severity=high so the hook only fails on
+          # hard errors. The PR-scoped CI runner (pre-commit.yml)
+          # runs this same hook with the same threshold, so
+          # warning/info-level findings (template injection from
+          # `matrix.*`, hash-pinning of third-party actions,
+          # `superfluous-actions`, etc.) don't block merges either.
+          # Long-tail cleanup is tracked in #613.
+          - id: zizmor
+            args: ["--no-progress", "--min-severity=high"]

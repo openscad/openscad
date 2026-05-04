@@ -26,7 +26,11 @@ jobs:
       - name: Checkout code
         if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Tag created
         if: ${{ steps.release.outputs.release_created }}
-        run: echo "Release ${{ steps.release.outputs.tag_name }} created"
+        run: echo "Release ${STEPS_RELEASE_OUTPUTS_TAG_NAME} created"
+        env:
+          STEPS_RELEASE_OUTPUTS_TAG_NAME: ${{ steps.release.outputs.tag_name }}

@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Validate and prepare matrix
         id: set-matrix
@@ -100,6 +102,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Fetch tags for version detection
         run: |
@@ -445,6 +448,8 @@ jobs:
     steps:
       - name: Checkout main repository
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Download all RPM artifacts
         uses: actions/download-artifact@v8

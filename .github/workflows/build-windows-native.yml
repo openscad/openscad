@@ -30,6 +30,7 @@ jobs:
           submodules: 'recursive'
           # Build from the release tag when uploading to a release (avoids -dirty in filenames)
           ref: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release || github.ref }}
+          persist-credentials: false
 
       - name: Configure git (disable line-ending conversion for accurate dirty check)
         shell: bash
@@ -46,8 +47,11 @@ jobs:
       - name: Set version for release build (avoid -dirty in package filenames)
         if: github.event.release.tag_name != '' || github.event.inputs.upload_to_release != ''
         shell: bash
+        env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          UPLOAD_TO_RELEASE: ${{ github.event.inputs.upload_to_release }}
         run: |
-          TAG="${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}"
+          TAG="${RELEASE_TAG_NAME:-$UPLOAD_TO_RELEASE}"
           # Strip leading 'v' for CMake (e.g. v0.6.0 -> 0.6.0)
           OPENSCAD_VERSION="${TAG#v}"
           echo "OPENSCAD_VERSION=$OPENSCAD_VERSION" >> $GITHUB_ENV
