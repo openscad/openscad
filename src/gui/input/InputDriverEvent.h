@@ -47,6 +47,9 @@ public:
 class InputEvent : public QEvent
 {
 public:
+  // True if this event should be processed only if we are the active window.  It's true for
+  // "real" input devices, and false for DBUS, since DBUS is specifically directed to us and so
+  // should apply whether or not we are active.
   const bool activeOnly;
 
   InputEvent(const bool activeOnly = true);
