@@ -12,6 +12,7 @@
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
+#include "utils/CallTraceStack.h"
 
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
                                 const bool inlined) const
@@ -57,19 +58,6 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
   }
 }
 
-/**
- * This is separated because PRINTB uses quite a lot of stack space
- * and the method using it evaluate()
- * is called often when recursive modules are evaluated.
- * noinline is required, as we here specifically optimize for stack usage
- * during normal operating, not runtime during error handling.
- */
-static void NOINLINE print_trace(EvaluationException& e, const ModuleInstantiation *mod,
-                                 const std::shared_ptr<const Context>& context)
-{
-  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
-}
-
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   const std::shared_ptr<const Context>& context) const
 {
@@ -78,14 +66,12 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
     return nullptr;
   }
 
-  try {
-    auto node = module->module->instantiate(module->defining_context, this, context);
-    return node;
-  } catch (EvaluationException& e) {
-    print_trace(e, this, context);
-    e.traceDepth--;
-    throw;
-  }
+  // Use CallTraceStack guard instead of try/catch
+  CallTraceStack::Guard trace_guard(CallTraceStack::Entry::Type::ModuleInstantiation, this->name(),
+                                    this->loc, context);
+
+  // No try/catch needed - exception propagates directly, trace is in CallTraceStack
+  return module->module->instantiate(module->defining_context, this, context);
 }
 
 std::shared_ptr<LocalScope> IfElseModuleInstantiation::makeElseScope()

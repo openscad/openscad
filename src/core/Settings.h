@@ -337,6 +337,10 @@ struct LocalAppParameter {
   operator bool() const { return type != LocalAppParameterType::invalid; }
 };
 
+// Forward declarations for stream operators
+std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param);
+std::istream& operator>>(std::istream& stream, LocalAppParameter& param);
+
 template <typename item_type>
 class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
