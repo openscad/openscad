@@ -45,6 +45,19 @@
       ]
     },
     {
+      "family": "ubuntu",
+      "name": "Ubuntu",
+      "version": "26.04",
+      "codename": "resolute",
+      "lts": true,
+      "eol_date": "2031-05",
+      "runner": "ubuntu-24.04",
+      "docker_image": "ubuntu:resolute",
+      "architectures": [
+        "amd64"
+      ]
+    },
+    {
       "family": "debian",
       "name": "Debian",
       "version": "11",
@@ -105,6 +118,19 @@
       "eol_date": "2026-11",
       "runner": "ubuntu-24.04",
       "docker_image": "fedora:43",
+      "architectures": [
+        "amd64"
+      ]
+    },
+    {
+      "family": "fedora",
+      "name": "Fedora",
+      "version": "44",
+      "codename": "44",
+      "lts": false,
+      "eol_date": "2027-06",
+      "runner": "ubuntu-24.04",
+      "docker_image": "fedora:44",
       "architectures": [
         "amd64"
       ]
