@@ -144,7 +144,10 @@ void bezier_patch(PolySetBuilder& builder, Vector3d center, Vector3d dir[3], int
   }
 }
 
-void debug_pt(const char *msg, Vector3d pt) { printf("%s %g/%g/%g\n", msg, pt[0], pt[1], pt[2]); }
+void debug_pt(const char *msg, Vector3d pt)
+{
+  printf("%s %g/%g/%g\n", msg, pt[0], pt[1], pt[2]);
+}
 
 std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> ps,
                                                 std::vector<bool> corner_selected, double r_, int bn,
@@ -727,23 +730,32 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 std::unique_ptr<const Geometry> FilletNode::createGeometry() const
 {
   std::shared_ptr<const PolySet> ps;
+  std::shared_ptr<PolySet> ps_merged;
   std::vector<bool> corner_selected;
   if (this->children.size() >= 1) {
     ps = childToPolySet(this->children[0]);
     if (ps == nullptr) return std::unique_ptr<PolySet>();
+
+    ps_merged = std::make_shared<PolySet>(*ps);
+
+    std::vector<Vector4d> normals = calcTriangleNormals(ps->vertices, ps->indices);
+    std::vector<int> faceParents;
+    std::vector<Vector4d> newnormals;
+    ps_merged->indices = mergeTriangles(ps->indices, normals, newnormals, faceParents, ps->vertices);
+
   } else return std::unique_ptr<PolySet>();
 
   if (this->children.size() >= 2) {
     std::shared_ptr<const PolySet> sel = childToPolySet(this->children[1]);
     if (sel != nullptr) {
       auto sel_tess = PolySetUtils::tessellate_faces(*sel);
-      for (size_t i = 0; i < ps->vertices.size(); i++) {
-        corner_selected.push_back(sel_tess->point_inside(ps->vertices[i]));
+      for (size_t i = 0; i < ps_merged->vertices.size(); i++) {
+        corner_selected.push_back(sel_tess->point_inside(ps_merged->vertices[i]));
       }
     }
 
   } else {
-    for (size_t i = 0; i < ps->vertices.size(); i++) corner_selected.push_back(true);
+    for (size_t i = 0; i < ps_merged->vertices.size(); i++) corner_selected.push_back(true);
   }
-  return createFilletInt(ps, corner_selected, this->r, this->fn, this->minang);
+  return createFilletInt(ps_merged, corner_selected, this->r, this->fn, this->minang);
 }

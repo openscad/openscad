@@ -472,16 +472,16 @@ static indexedFaceList mergeTrianglesSub(const std::vector<IndexedFace>& triangl
       // Reduce colinear points
       int n = poly.size();
       IndexedFace poly_new;
-      int cur = poly[0], next;
+      int last = poly[n - 1], cur = poly[0], next;
       for (int i = 0; i < n; i++) {
         next = poly[(i + 1) % n];
-        if (1) {  // (p2-p1).cross(p1-p0).norm() > 0.00001) {
-                  // TODO enable again, need partner also to remove
+        Vector3d d1 = (vert[next] - vert[cur]).normalized();
+        Vector3d d2 = (vert[cur] - vert[last]).normalized();
+        if (d1.cross(d2).norm() > 0.00001) {
           poly_new.push_back(cur);
-          cur = next;
-        } else {
-          cur = next;
         }
+        last = cur;
+        cur = next;
       }
 
       if (poly_new.size() > 2) result.push_back(poly_new);
