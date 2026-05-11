@@ -132,6 +132,11 @@ void configureOpenGLContext()
 
 }  // namespace
 
+void setGlobalTheme()
+{
+  QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
+}
+
 namespace {
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
@@ -200,7 +205,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 {
   configureOpenGLContext();
   OpenSCADApp app(argc, argv);
-  QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
+  setGlobalTheme();
 
   // set up groups for QSettings
   QCoreApplication::setOrganizationName("OpenSCAD");
