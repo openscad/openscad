@@ -185,6 +185,7 @@
 #ifdef ENABLE_PYTHON
 #include "nettle/base64.h"
 #include "nettle/sha2.h"
+#include "nettle/version.h"
 #include "python/python_public.h"
 
 std::string SHA256HashString(std::string aString)
@@ -194,7 +195,11 @@ std::string SHA256HashString(std::string aString)
 
   sha256_init(&sha256_ctx);
   sha256_update(&sha256_ctx, aString.length(), (uint8_t *)aString.c_str());
+#if NETTLE_VERSION_MAJOR >= 4
+  sha256_digest(&sha256_ctx, digest);
+#else
   sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
+#endif
 
   base64_encode_ctx base64_ctx;
   char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE) + 1];
