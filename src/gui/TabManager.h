@@ -79,7 +79,7 @@ public:
   // Session file schema version. Increment when the format changes and add a
   // migration step in migrateSession().  Old files without a version field are
   // treated as version 1.
-  static constexpr int SESSION_VERSION = 5;
+  static constexpr int SESSION_VERSION = 6;
 
 public:
   static constexpr const int FIND_HIDDEN = 0;

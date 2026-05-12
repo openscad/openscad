@@ -5087,8 +5087,27 @@ void MainWindow::setupMenusAndActions()
 }
 
 /**
-  Restore GUI state from settings.
+   Restore the top-level window geometry from serialized geometry data.
+   Used for both settings-based and session-based window restore.
  */
+void MainWindow::applySessionWindowGeometry(const QByteArray& geometry)
+{
+  if (geometry.isEmpty()) {
+    return;
+  }
+
+  restoreGeometry(geometry);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+  // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
+  // Blindly restoring a maximized window to a different screen resolution causes a crash
+  // on the next move/resize operation on macOS:
+  // https://github.com/openscad/openscad/issues/5486
+  if (isMaximized()) {
+    setGeometry(screen()->availableGeometry());
+  }
+#endif
+}
+
 void MainWindow::restoreWindowState()
 {
   const QSettingsCached settings;
@@ -5102,16 +5121,7 @@ void MainWindow::restoreWindowState()
   clearCurrentOutput();
   UIUtils::dumpSaveState(windowState);
   setCurrentOutput();
-  restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-  // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
-  // Blindly restoring a maximized window to a different screen resolution causes a crash
-  // on the next move/resize operation on macOS:
-  // https://github.com/openscad/openscad/issues/5486
-  if (isMaximized()) {
-    setGeometry(screen()->availableGeometry());
-  }
-#endif
+  applySessionWindowGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
   restoreState(windowState);
 
   if (windowState.size() == 0) {

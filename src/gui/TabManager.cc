@@ -1324,6 +1324,10 @@ void TabManager::saveSession(const QString& path)
     findPanel.insert(QStringLiteral("text"), parent->findInputField->text());
     findPanel.insert(QStringLiteral("replaceText"), parent->replaceInputField->text());
     win.insert(QStringLiteral("findPanel"), findPanel);
+    const QByteArray windowGeometry = parent->saveGeometry();
+    if (!windowGeometry.isEmpty()) {
+      win.insert(QStringLiteral("windowGeometry"), QString::fromLatin1(windowGeometry.toBase64()));
+    }
   }
 
   QJsonArray windows;
@@ -1410,6 +1414,10 @@ bool TabManager::saveGlobalSession(const QString& path, QString *error, bool sho
       findPanel.insert(QStringLiteral("text"), mainWin->findInputField->text());
       findPanel.insert(QStringLiteral("replaceText"), mainWin->replaceInputField->text());
       win.insert(QStringLiteral("findPanel"), findPanel);
+      const QByteArray windowGeometry = mainWin->saveGeometry();
+      if (!windowGeometry.isEmpty()) {
+        win.insert(QStringLiteral("windowGeometry"), QString::fromLatin1(windowGeometry.toBase64()));
+      }
     }
     windows.append(win);
   }
@@ -1460,6 +1468,10 @@ bool TabManager::migrateSession(QJsonObject& root, int fromVersion)
     }
     case 4: {
       // v4 -> v5: optional per-tab diskBacked (loaded from disk or saved at least once).
+      break;
+    }
+    case 5: {
+      // v5 -> v6: optional per-window windowGeometry (saveGeometry() base64 payload).
       break;
     }
     default:
@@ -1566,6 +1578,8 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
   const QJsonObject win = windows[windowIndex].toObject();
   const QJsonObject viewState = win.value(QStringLiteral("viewState")).toObject();
   const QJsonObject findPanel = win.value(QStringLiteral("findPanel")).toObject();
+  const QByteArray windowGeometry =
+    QByteArray::fromBase64(win.value(QStringLiteral("windowGeometry")).toString().toLatin1());
   const QJsonArray tabs = win.value(QStringLiteral("tabs")).toArray();
   if (tabs.isEmpty()) return false;
   const int savedCurrentIndex = win.value(QStringLiteral("currentIndex")).toInt(0);
@@ -1728,6 +1742,10 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
     parent->viewActionPerspective->setChecked(!isOrthogonal);
     parent->qglview->update();
     parent->viewportControlWidget->cameraChanged();
+  }
+
+  if (!windowGeometry.isEmpty() && parent) {
+    parent->applySessionWindowGeometry(windowGeometry);
   }
 
   if (missingCount > 0) {

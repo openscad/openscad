@@ -214,6 +214,9 @@ public:
 
   void markSessionQuitting();
 
+  /// Apply persisted top-level window geometry blob (QWidget::saveGeometry payload).
+  void applySessionWindowGeometry(const QByteArray& geometry);
+
   /// Mtime+size fingerprint for auto-reload (empty if path missing or stat fails).
   static std::string autoReloadIdentityForPath(const QString& filepath);
 
