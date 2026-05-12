@@ -37,7 +37,9 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "GeometryEvaluator.h"
+#ifdef ENABLE_LIBFIVE
 #include "FrepNode.h"
+#endif
 #include "core/FreetypeRenderer.h"
 #include "core/TextNode.h"
 
