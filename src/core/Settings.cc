@@ -354,6 +354,18 @@ SettingsEntryInt Settings::inputMouseCtrlShiftRightClick(
   "inputMouse", "ctrlShiftRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS,
   MouseConfig::presetSettings.at(default_mouse_preset)
     .at(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK));
+SettingsEntryInt Settings::inputMouseScroll(
+  "inputMouse", "scroll", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS,
+  MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::SCROLL));
+SettingsEntryInt Settings::inputMouseShiftScroll(
+  "inputMouse", "shiftScroll", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS,
+  MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::SHIFT_SCROLL));
+SettingsEntryInt Settings::inputMouseCtrlScroll(
+  "inputMouse", "ctrlScroll", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS,
+  MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_SCROLL));
+SettingsEntryInt Settings::inputMouseCtrlShiftScroll(
+  "inputMouse", "ctrlShiftScroll", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS,
+  MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_SHIFT_SCROLL));
 SettingsEntryDouble Settings::axisTrim0("input", "axisTrim0", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim1("input", "axisTrim1", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim2("input", "axisTrim2", -1.0, 0.01, 1.0, 0.0);
