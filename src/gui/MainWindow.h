@@ -95,12 +95,6 @@ public:
   std::shared_ptr<SourceFile> parsedFile;          // Last parse for include list
   std::shared_ptr<AbstractNode> absoluteRootNode;  // Result of tree evaluation
   std::shared_ptr<AbstractNode> rootNode;          // Root if the root modifier (!) is used
-#ifdef ENABLE_PYTHON
-  std::string trusted_edit_document_name;
-  std::string untrusted_edit_document_name;
-  bool trust_python_file(const std::string& file, const std::string& content);
-  void clearPythonUntrustStateForPath(const std::string& path);
-#endif
   Tree tree;
   EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
