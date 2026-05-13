@@ -67,11 +67,6 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     this->treeWidget->addTopLevelItem(categoryItem);
   }
 
-#ifdef ENABLE_PYTHON
-  connect(this->pushButtonNew, &QPushButton::clicked, this, &LaunchingScreen::openPython);
-#else
-  this->pushButtonNew->hide();
-#endif
   connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
   connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
   connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this,
@@ -167,7 +162,11 @@ void LaunchingScreen::openUserManualURL() const
 
 void LaunchingScreen::on_pushButtonNew_clicked()
 {
+#ifdef ENABLE_PYTHON
+  openPython();
+#else
   accept();
+#endif
 }
 
 void LaunchingScreen::on_pushButtonOpen_clicked()
