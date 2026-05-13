@@ -12,6 +12,8 @@
 extern bool python_active;
 extern bool python_trusted;
 extern bool python_runipython;
+extern bool python_runrepl;
+extern std::vector<std::string> python_replargs;
 extern AssignmentList customizer_parameters;
 extern AssignmentList customizer_parameters_finished;
 extern std::shared_ptr<RenderVariables> renderVarsSet;
@@ -23,7 +25,23 @@ std::string evaluatePython(const std::string& code, bool dry_run = false);
 void finishPython();
 void python_lock(void);
 void python_unlock(void);
-void ipython(void);
+// Launch the real IPython interactive shell. `args` is forwarded as the
+// IPython argv (so `pythonscad --ipython script.py arg1` runs `script.py`
+// inside IPython with `arg1` available). The user namespace starts
+// empty; the user is responsible for any imports they need (`from
+// pythonscad import *`, `from openscad import *`, or `import
+// pythonscad`). If IPython cannot be imported (most commonly because
+// it is not installed), prints a diagnostic to stderr and falls back
+// to repl(). Returns an exit code suitable for the caller to propagate
+// to the OS: 0 on a clean shell exit, non-zero if the embedded
+// interpreter could not be initialised.
+int ipython(const std::vector<std::string>& args);
+// Open the basic embedded CPython REPL on stdin. Used as the explicit
+// `--repl` entry point and as the fallback when IPython is unavailable.
+// The user namespace starts empty; the user is responsible for any
+// imports they need. Returns an exit code suitable for the caller to
+// propagate (0 on clean exit, non-zero on init failure).
+int repl(void);
 
 std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_module,
                                                 const std::shared_ptr<const Context>& cxt,

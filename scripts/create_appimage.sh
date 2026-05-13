@@ -195,7 +195,11 @@ if [ -d "${APPDIR}/usr/local" ]; then
     info "Relocating files from /usr/local to /usr..."
     # Merge /usr/local into /usr
     cp -r "${APPDIR}/usr/local/"* "${APPDIR}/usr/" || true
-    rm -rf "${APPDIR}/usr/local"
+    # `${APPDIR:?}` (SC2115): make `rm -rf` fail loudly if APPDIR is
+    # ever empty/unset rather than silently expanding to `rm -rf
+    # /usr/local`. A no-op for the normal happy path; a foot-gun
+    # safety net otherwise.
+    rm -rf "${APPDIR:?}/usr/local"
 fi
 
 # Set up environment for linuxdeploy
@@ -206,7 +210,11 @@ export EXTRA_QT_PLUGINS="svg;platforms"
 # Configure Qt paths for linuxdeploy-plugin-qt
 if [ "${QT_VERSION}" = "6" ]; then
     if command -v qmake6 >/dev/null 2>&1; then
-        export QMAKE=$(command -v qmake6)
+        # Split assignment + export (SC2155): combining them masks
+        # `command -v`'s exit code, so a failing lookup would be
+        # silently swallowed by `export`'s success.
+        QMAKE=$(command -v qmake6)
+        export QMAKE
         QT_PLUGIN_PATH=$(qmake6 -query QT_INSTALL_PLUGINS)
         export QT_PLUGIN_PATH
         info "Using Qt6 from: $(qmake6 -query QT_INSTALL_PREFIX)"
@@ -216,7 +224,9 @@ if [ "${QT_VERSION}" = "6" ]; then
     fi
 else
     if command -v qmake >/dev/null 2>&1; then
-        export QMAKE=$(command -v qmake)
+        # Split assignment + export (SC2155); see Qt6 branch above.
+        QMAKE=$(command -v qmake)
+        export QMAKE
         QT_PLUGIN_PATH=$(qmake -query QT_INSTALL_PLUGINS)
         export QT_PLUGIN_PATH
         info "Using Qt5 from: $(qmake -query QT_INSTALL_PREFIX)"
@@ -309,9 +319,39 @@ fi
 # Ensure Python shared library is included
 info "Copying Python shared libraries..."
 PYTHON_SO="libpython${PYTHON_VERSION}.so"
-if [ ! -f "${APPDIR}/usr/lib/${PYTHON_SO}"* ]; then
+# `[ -f <glob> ]` is broken (SC2144): the glob expands to multiple
+# words and `-f` only takes one operand, so the test silently does
+# the wrong thing whenever more than one matching file exists. Use
+# `compgen -G` (a bash builtin that returns 0 iff the glob matched
+# something) so the "is a libpython.so* present?" check is correct
+# regardless of how many candidates are found.
+if ! compgen -G "${APPDIR}/usr/lib/${PYTHON_SO}*" >/dev/null; then
     # Find and copy the Python shared library
     find /usr/lib -name "${PYTHON_SO}*" -exec cp -P {} "${APPDIR}/usr/lib/" \; 2>/dev/null || true
+fi
+
+# Bundle runtime Python deps (currently: IPython) for --ipython.
+# The destination matches `bundledFallbackPaths` in src/python/pyopenscad.cc,
+# which expects ../lib/pythonscad-bundled-py relative to the executable.
+# The user's system-installed IPython (if any) still wins because the
+# bundled directory is *appended* to sys.path inside initPython.
+if [ "${BUNDLE_RUNTIME_PYTHON:-yes}" = "yes" ]; then
+    info "Bundling runtime Python dependencies (IPython, ...)"
+    BUNDLE_DEST="${APPDIR}/usr/lib/pythonscad-bundled-py"
+    # `create_appimage.sh` is a release-pipeline tool: it's invoked
+    # by the AppImage CI workflow and by maintainers cutting a build
+    # locally, both of whom expect the bundling step to "just work".
+    # We therefore default BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES to 1
+    # (auto-install pip-licenses if missing) and only let the caller
+    # opt out by setting the env var to 0 explicitly. This keeps the
+    # AppImage build self-contained and matches the CI workflows for
+    # macOS / Windows which set the same flag.
+    BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES="${BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES:-1}" \
+        "${SCRIPT_DIR}/bundle-runtime-python.sh" "${BUNDLE_DEST}" \
+        --python python3 \
+        || die "Failed to bundle runtime Python dependencies"
+else
+    info "Skipping runtime Python dep bundling (BUNDLE_RUNTIME_PYTHON=${BUNDLE_RUNTIME_PYTHON})"
 fi
 
 # Set up proper AppDir structure for appimagetool

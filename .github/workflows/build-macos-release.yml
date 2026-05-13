@@ -135,6 +135,20 @@ jobs:
           echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
           echo "Found app bundle: $APP_BUNDLE"
 
+      - name: Bundle runtime Python deps (IPython) into .app
+        run: |
+          # Destination must match `bundledFallbackPaths` in
+          # src/python/pyopenscad.cc: ../Resources/pythonscad-bundled-py
+          # relative to the executable inside Contents/MacOS.
+          # NOT Contents/Frameworks/: macOS `codesign` treats every
+          # subdirectory there as a sub-bundle and chokes on pip's
+          # `*.dist-info` metadata directories.
+          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          chmod +x ./scripts/bundle-runtime-python.sh
+          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
+            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
+
       - name: Create x86_64 app archive
         run: |
           set -e
@@ -270,6 +284,20 @@ jobs:
           echo "app_bundle=$APP_BUNDLE" >> $GITHUB_OUTPUT
           echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
           echo "Found app bundle: $APP_BUNDLE"
+
+      - name: Bundle runtime Python deps (IPython) into .app
+        run: |
+          # Destination must match `bundledFallbackPaths` in
+          # src/python/pyopenscad.cc: ../Resources/pythonscad-bundled-py
+          # relative to the executable inside Contents/MacOS.
+          # NOT Contents/Frameworks/: macOS `codesign` treats every
+          # subdirectory there as a sub-bundle and chokes on pip's
+          # `*.dist-info` metadata directories.
+          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          chmod +x ./scripts/bundle-runtime-python.sh
+          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
+            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
 
       - name: Create arm64 app archive
         run: |
@@ -719,6 +747,18 @@ jobs:
           echo ""
           echo "QtCore framework dependencies:"
           otool -L "$FRAMEWORKS_DIR/QtCore.framework/Versions/A/QtCore" | grep -E "icu|brotli" || echo "No ICU or brotli references found"
+
+      - name: Bundle runtime Python deps (IPython) into merged .app
+        run: |
+          # Pure-Python wheels are architecture-independent, so we just
+          # re-run the bundler on the merged universal .app rather than
+          # trying to lipo per-arch bundles together. Anything previously
+          # installed by the per-arch jobs gets overwritten by --upgrade.
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          chmod +x ./scripts/bundle-runtime-python.sh
+          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
+            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
 
       - name: Install Apple code signing certificate
         id: install_cert

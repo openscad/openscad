@@ -117,6 +117,24 @@ jobs:
             $EXTRA_CMAKE
           cmake --build . -j4
 
+      - name: Bundle runtime Python deps (IPython) into build tree
+        run: |
+          # Bundle into ${CMAKE_BINARY_DIR}/pythonscad-bundled-py BEFORE
+          # `cmake --install` runs. The CMakeLists.txt install rule is
+          #   install(DIRECTORY ${CMAKE_BINARY_DIR}/pythonscad-bundled-py/
+          #           DESTINATION lib/pythonscad-bundled-py OPTIONAL)
+          # so the contents land at lib/pythonscad-bundled-py in the
+          # CPack ZIP / NSIS installer, which is exactly what
+          # `bundledFallbackPaths` in src/python/pyopenscad.cc searches
+          # at runtime. The earlier flow bundled into build/staging/
+          # *after* `cmake --install`, but CPack regenerates its own
+          # staging from the install rules and ignored that directory --
+          # so the bundle silently failed to ship in the artifact.
+          BUNDLE_DEST="build/pythonscad-bundled-py"
+          chmod +x ./scripts/bundle-runtime-python.sh
+          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
+            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python
+
       - name: Install to staging directory
         run: |
           cd build
@@ -155,12 +173,42 @@ jobs:
           echo "Generated packages:"
           ls -la *.zip *.exe
 
+      - name: Show NSIS log on CPack failure
+        if: always() && steps.cpack.outcome == 'failure'
+        run: |
+          NSIS_DIR="build/_CPack_Packages/windows-x86-64/NSIS"
+          echo "=== Listing ${NSIS_DIR} ==="
+          ls -la "${NSIS_DIR}" 2>/dev/null || true
+          if [ -f "${NSIS_DIR}/NSISOutput.log" ]; then
+            echo "=== ${NSIS_DIR}/NSISOutput.log ==="
+            cat "${NSIS_DIR}/NSISOutput.log"
+          else
+            echo "NSISOutput.log not found under ${NSIS_DIR}"
+          fi
+
       - name: Sanity test - verify executable runs
         run: |
           cd build/staging
           echo "Testing pythonscad --info..."
           ./pythonscad.exe --info
           echo "Sanity test passed!"
+
+      - name: Sanity test - verify bundled IPython is in staging tree
+        run: |
+          # Regression guard for pythonscad#621: the bundled IPython
+          # must actually live in the CPack staging tree at the path
+          # `bundledFallbackPaths` in src/python/pyopenscad.cc looks
+          # for, otherwise --ipython falls back to "not installed" on
+          # end users' machines. Fail fast in CI rather than discover
+          # it post-release.
+          BUNDLE_DIR="build/staging/lib/pythonscad-bundled-py"
+          if [ ! -d "${BUNDLE_DIR}/IPython" ]; then
+            echo "FAIL: ${BUNDLE_DIR}/IPython is missing -- the bundled" >&2
+            echo "      IPython did not flow through cmake --install." >&2
+            ls -la "${BUNDLE_DIR}" || true
+            exit 1
+          fi
+          echo "Bundled IPython landed at ${BUNDLE_DIR}/IPython"
 
       - name: Prepare artifacts
         id: artifacts

@@ -2159,6 +2159,27 @@ if(NOT APPLE OR APPLE_UNIX)
     else()
       install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pythonscad-python DESTINATION "${OPENSCAD_BINDIR}")
     endif()
+
+    # On Windows, the runtime Python deps (currently: IPython 8.x and its
+    # transitive deps) are populated into ${CMAKE_BINARY_DIR}/pythonscad-bundled-py
+    # by scripts/bundle-runtime-python.sh, invoked from the Windows build
+    # workflow ahead of `cmake --install`. CPack then picks the directory
+    # up via this install rule and packages it into the ZIP / NSIS
+    # installer at the path that `bundledFallbackPaths` in
+    # src/python/pyopenscad.cc searches at runtime. OPTIONAL keeps source
+    # builds (and any CI flow that hasn't run the bundle script) green --
+    # the directory's absence at install time is not a hard error, just
+    # means the user falls back to whatever IPython is on their sys.path.
+    #
+    # AppImage and macOS use a different layout (build-{appimage,macos}-*.yml
+    # write the bundle directly into the .AppImage / .app at packaging
+    # time via scripts/create_appimage.sh / inline bundle steps, outside
+    # `cmake --install`'s view). This rule is therefore Windows-only.
+    if(WIN32)
+      install(DIRECTORY "${CMAKE_BINARY_DIR}/pythonscad-bundled-py/"
+              DESTINATION "lib/pythonscad-bundled-py"
+              OPTIONAL)
+    endif()
   endif()
   if(WIN32)
     if(ENABLE_PYTHON)
@@ -2276,6 +2297,60 @@ if(NOT APPLE OR APPLE_UNIX)
           DESTINATION "."
         )
         message(STATUS "Native MSYS2 build: Runtime DLLs will be bundled from ${MSYS2_BIN_DIR}")
+
+        # Resolve DLL dependencies of Python's own lib-dynload extension
+        # modules (_ctypes.pyd, _ssl.pyd, _sqlite3.pyd, ...). The base
+        # RUNTIME_DEPENDENCY_SET above only walks OpenSCADExe's import
+        # table, which transitively reaches libpython3.x.dll but NOT
+        # libffi-8.dll / libsqlite3-0.dll / libssl-3-x64.dll / etc. --
+        # those are loaded by Python at `import ctypes` / `import ssl`
+        # / ... time and so are invisible to a static walk of the main
+        # exe. Without this scan, `import ctypes` (which IPython does
+        # transitively via IPython.utils._process_win32) fails with
+        # "DLL load failed while importing _ctypes" on end-user
+        # Windows installs that lack MSYS2 globally on PATH.
+        #
+        # Use an install(CODE) hook so the scan happens AFTER the
+        # python stdlib `install(DIRECTORY)` rule above has copied
+        # lib-dynload into the staging tree. file(GET_RUNTIME_DEPENDENCIES)
+        # then sees the actual .pyd set that's about to be shipped
+        # (robust to Python minor-version upgrades and to the MSYS2
+        # python package shedding/adding extension modules).
+        install(CODE "
+          set(_msys2_bindir \"${MSYS2_BIN_DIR}\")
+          set(_pyver \"${PYTHON_MINGW_VERSION}\")
+          set(_lib_dynload \"\${CMAKE_INSTALL_PREFIX}/lib/python\${_pyver}/lib-dynload\")
+          if(NOT IS_DIRECTORY \"\${_lib_dynload}\")
+            message(STATUS \"lib-dynload not found at \${_lib_dynload}; skipping .pyd dep scan\")
+            return()
+          endif()
+          file(GLOB _pyd_files \"\${_lib_dynload}/*.pyd\")
+          if(NOT _pyd_files)
+            message(STATUS \"no .pyd files in \${_lib_dynload}; skipping dep scan\")
+            return()
+          endif()
+          file(GET_RUNTIME_DEPENDENCIES
+            MODULES \${_pyd_files}
+            RESOLVED_DEPENDENCIES_VAR _resolved
+            UNRESOLVED_DEPENDENCIES_VAR _unresolved
+            PRE_EXCLUDE_REGEXES \"api-ms-.*\" \"ext-ms-.*\"
+            POST_EXCLUDE_REGEXES \".*[Ss]ystem32.*\" \".*[Ww]indows.*\"
+            DIRECTORIES \"\${_msys2_bindir}\"
+          )
+          foreach(_dep IN LISTS _resolved)
+            get_filename_component(_dep_name \"\${_dep}\" NAME)
+            if(EXISTS \"\${CMAKE_INSTALL_PREFIX}/\${_dep_name}\")
+              # Already shipped by the OpenSCADExe scan -- skip.
+              continue()
+            endif()
+            message(STATUS \"Installing Python lib-dynload dep: \${_dep_name}\")
+            file(INSTALL \"\${_dep}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}\")
+          endforeach()
+          if(_unresolved)
+            message(WARNING \"Unresolved lib-dynload deps: \${_unresolved}\")
+          endif()
+        ")
+        message(STATUS "Native MSYS2 build: lib-dynload .pyd DLL deps will be bundled at install time")
       endif()
     endif()
   else()

@@ -1,0 +1,40 @@
+# Runtime Python dependencies bundled / declared by PythonSCAD.
+#
+# Only place packages here that are needed at runtime by the embedded
+# CPython interpreter (i.e. that the user's Python code can `import`).
+# Build-time-only tools belong elsewhere.
+#
+# Pinning policy: pin to the major version range. Patch and minor
+# upgrades are picked up automatically by Dependabot (configured in
+# .github/dependabot.yaml), which re-runs CI to catch any regressions.
+#
+# This file is consumed by:
+#   * pyproject.toml [project.dependencies]     (published pip wheel,
+#                                                kept in sync manually)
+#   * scripts/bundle-runtime-python.sh          (canonical bundle helper,
+#                                                called by every binary pipeline)
+#   * .github/workflows/build-appimage.yml      (via scripts/create_appimage.sh)
+#   * .github/workflows/build-macos-release.yml (per-arch + universal .app)
+#   * .github/workflows/build-windows-native.yml (CPack staging dir)
+#   * .github/dependabot.yaml                   (auto-bump watcher)
+#
+# Distribution-native packages (.deb, .rpm) deliberately do NOT consume
+# this file; they declare a `Recommends:` on `python3-ipython` instead
+# so the distro packagers stay in control of the dependency.
+
+# IPython provides the rich interactive shell launched by
+# `pythonscad --ipython`. The basic embedded REPL launched by
+# `pythonscad --repl` works without any optional packages.
+#
+# Capped at <9 deliberately: IPython 9.x added a hard runtime
+# dependency on `psutil>=7`, and there is no prebuilt psutil wheel
+# for the MSYS2/UCRT64 ABI tag (`mingw_x86_64_ucrt_gnu-cpython-3xx`)
+# that the Windows native build uses. pip then falls back to building
+# psutil from source, where psutil's bundled `ntextapi.h` collides
+# with MSYS2 UCRT64's `winternl.h` (`MaximumWaitReason` /
+# `KWAIT_REASON` redefinition) and the build aborts. IPython 8.x has
+# no psutil dependency, covers every PythonSCAD `--ipython` use case
+# (rich `In [N]:` prompt, history, tab completion), and produces a
+# smaller bundle. Revisit when IPython 10 ships or when MSYS2 has a
+# usable psutil wheel for the build's Python version.
+ipython>=8,<9

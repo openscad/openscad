@@ -43,7 +43,9 @@ Rules-Requires-Root: no
 Package: pythonscad
 Architecture: amd64 arm64
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: meshlab, openscad-mcad
+Recommends: meshlab,
+            openscad-mcad,
+            python3-ipython
 Description: The Programmer's Solid 3D CAD Modeller
  PythonSCAD is a software for creating solid 3D CAD objects with Python
  and OpenSCAD scripting languages.

@@ -68,7 +68,10 @@ static void displayError(char *msg, DWORD errcode)
   }
 }
 
-static void displayLastError(char *msg) { displayError(msg, GetLastError()); }
+static void displayLastError(char *msg)
+{
+  displayError(msg, GetLastError());
+}
 
 typedef struct {
   /*volatile*/ int status;
@@ -130,51 +133,72 @@ int main(int argc, char *argv[])
   }
   (void)wcscat(cmd, cmdline);
 
-  // look for '-o -' combination
-  for (preserve_stdout = FALSE, i = /*sic!*/ 2; i < argc; ++i) {
-    register char *s = argv[i];
-    if ('-' == s[0] && '\0' == s[1])  // it is "-"
-      if (!strcmp("-o", argv[i - 1])) {
+  // look for '-o -' combination, and for the interactive --repl / --ipython flags
+  // that need the child's stdout/stderr wired straight to the console rather
+  // than funnelled through our pipe + watchdog. Without this, Python's prompt
+  // (`>>>`) is block-buffered into the pipe and never reaches the user, and
+  // IPython's prompt_toolkit sees a non-TTY stdout and bails out -- which is
+  // exactly the symptom reported in pythonscad#620 / #621 (the program prints
+  // its startup banner on stderr and then exits without ever showing a prompt).
+  {
+    int interactive_python = FALSE;
+    for (preserve_stdout = FALSE, i = 1; i < argc; ++i) {
+      register char *s = argv[i];
+      if ('-' == s[0] && '\0' == s[1] && i >= 2 && !strcmp("-o", argv[i - 1])) {
         preserve_stdout = TRUE;
-        break;
+      } else if (!strcmp("--repl", s) || !strcmp("--ipython", s)) {
+        interactive_python = TRUE;
       }
-  }
-
-  ZeroMemory(&info, sizeof(info));
-
-  info.startupInfo.cb = sizeof(info.startupInfo);
-  info.startupInfo.dwFlags = STARTF_USESTDHANDLES;
-  info.startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-  info.startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-  info.hOutput = GetStdHandle(STD_ERROR_HANDLE);
-
-  sa.nLength = sizeof(sa);
-  sa.lpSecurityDescriptor = NULL;
-  sa.bInheritHandle = FALSE;
-  if (!CreatePipe(&info.hRead, &hWrite, &sa, 1024)) {
-    displayLastError("CreatePipe(): ");
-    return 1;
-  }
-  // make inheritable write handle(s)
-  curr_proc = GetCurrentProcess();
-  if (!DuplicateHandle(curr_proc, hWrite, curr_proc, &info.startupInfo.hStdError, 0L, TRUE,
-                       DUPLICATE_SAME_ACCESS)) {
-    displayLastError("DuplicateHandle(): ");
-    return 1;
-  }
-  if (!preserve_stdout) {
-    info.hOutput = info.startupInfo.hStdOutput;
-#if 1  // Should I really duplicate handle or plain copy suffice?
-    if (!DuplicateHandle(curr_proc, hWrite, curr_proc, &info.startupInfo.hStdOutput, 0L, TRUE,
-                         DUPLICATE_SAME_ACCESS)) {
-      displayLastError("DuplicateHandle(): ");
-      return 1;
     }
+    if (interactive_python) {
+      preserve_stdout = TRUE;  // pass stdout through unchanged
+    }
+
+    ZeroMemory(&info, sizeof(info));
+
+    info.startupInfo.cb = sizeof(info.startupInfo);
+    info.startupInfo.dwFlags = STARTF_USESTDHANDLES;
+    info.startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+    info.startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    info.hOutput = GetStdHandle(STD_ERROR_HANDLE);
+
+    if (interactive_python) {
+      // No pipe / watchdog -- the child writes directly to the parent's
+      // stderr, so Python sees a real console handle on every fd and can
+      // run an interactive prompt the same way a regular `python.exe`
+      // session does on Windows.
+      info.startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+      info.hRead = NULL;
+    } else {
+      sa.nLength = sizeof(sa);
+      sa.lpSecurityDescriptor = NULL;
+      sa.bInheritHandle = FALSE;
+      if (!CreatePipe(&info.hRead, &hWrite, &sa, 1024)) {
+        displayLastError("CreatePipe(): ");
+        return 1;
+      }
+      // make inheritable write handle(s)
+      curr_proc = GetCurrentProcess();
+      if (!DuplicateHandle(curr_proc, hWrite, curr_proc, &info.startupInfo.hStdError, 0L, TRUE,
+                           DUPLICATE_SAME_ACCESS)) {
+        displayLastError("DuplicateHandle(): ");
+        return 1;
+      }
+      if (!preserve_stdout) {
+        info.hOutput = info.startupInfo.hStdOutput;
+#if 1  // Should I really duplicate handle or plain copy suffice?
+        if (!DuplicateHandle(curr_proc, hWrite, curr_proc, &info.startupInfo.hStdOutput, 0L, TRUE,
+                             DUPLICATE_SAME_ACCESS)) {
+          displayLastError("DuplicateHandle(): ");
+          return 1;
+        }
 #else
-    info.startupInfo.hStdOutput = info.startupInfo.hStdError;
+        info.startupInfo.hStdOutput = info.startupInfo.hStdError;
 #endif
+      }
+      (void)CloseHandle(hWrite);
+    }
   }
-  (void)CloseHandle(hWrite);
   if (!CreateProcessW(NULL, cmd, NULL, NULL, TRUE, CREATE_UNICODE_ENVIRONMENT, NULL, NULL,
                       &info.startupInfo, &info.processInfo)) {
     // fwprintf(stderr, L"Cannot run: %s\n", cmd);
@@ -183,8 +207,9 @@ int main(int argc, char *argv[])
     displayLastError("Cannot run " EXE_NAME "\n");
     return 1;
   }
-  // Create thread to work around ReadFile() blocking
-  if (!CreateThread(NULL, 32768, watchdog, &info, 0, NULL)) {
+  // Create thread to work around ReadFile() blocking. Skipped when the child
+  // has direct access to the parent's stderr (interactive --repl / --ipython).
+  if (info.hRead != NULL && !CreateThread(NULL, 32768, watchdog, &info, 0, NULL)) {
     displayLastError("CreateThread(): ");
     result = 1;
   }

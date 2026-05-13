@@ -13,3 +13,45 @@ updates:
     ignore:
       - dependency-name: "takanome-dev/assign-issue-action"
         versions: ["<2.4"]
+
+  # Track upstream releases of the Python packages we bundle inside
+  # AppImage / macOS .app / Windows installer (currently: IPython).
+  # Dependabot watches `requirements/runtime.txt` and opens a PR
+  # whenever a new compatible version is released; CI then re-runs
+  # the bundling pipeline + ipython smoke / PTY / precedence tests
+  # against the bumped wheel before we ship it.
+  - package-ecosystem: "pip"
+    directory: "/requirements"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      runtime-python-deps:
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "python-runtime-bundle"
+    commit-message:
+      prefix: "build(deps)"
+      include: "scope"
+
+  # The published pip wheel re-declares the same dependency surface
+  # in its [project.dependencies] table; keep it in lock-step with
+  # `requirements/runtime.txt` so the wheel installation and the
+  # bundled binary distributions never diverge on IPython version.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      pyproject-deps:
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "python-wheel"
+    commit-message:
+      prefix: "build(deps)"
+      include: "scope"

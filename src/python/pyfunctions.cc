@@ -345,6 +345,28 @@ PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
   return dict;
 }
 
+// IPython display hook. Tries to build a `pythreejs` widget via the
+// `jupyterdisplay` helper module (which lives at
+// libraries/python/jupyterdisplay.py and is on sys.path because
+// initPython prepends `libraries/python` to it; the importable name is
+// therefore `jupyterdisplay`, NOT `libraries.python.jupyterdisplay`).
+// If anything along the way fails -- helper module not found, optional
+// dependencies (`numpy`, `pythreejs`, `ipywidgets`) missing, widget
+// construction raised, ... -- we return `None` rather than raising.
+//
+// Returning `None` is IPython's documented `_repr_mimebundle_`
+// "no rich representation available" sentinel: IPython then transparently
+// falls through to `__repr__`. This matches what the user wants in a
+// terminal `pythonscad --ipython` session, where `pythreejs` /
+// `ipywidgets` / numpy are typically absent and a `cube(10)` echo
+// previously crashed with `TypeError: jupyterdisplay module not found`
+// (PR #600). In a real Jupyter notebook the same code path still yields
+// the rich widget when the deps ARE present, because the import succeeds
+// and we fall through to the widget's own `_repr_mimebundle_`.
+//
+// We `PyErr_Clear()` on every error path so the caller doesn't see a
+// half-set exception on top of the `None` return, which would confuse
+// IPython's display dispatcher.
 PyObject *python_oo__repr_mimebundle_(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   PyObject *include = NULL;
@@ -353,22 +375,21 @@ PyObject *python_oo__repr_mimebundle_(PyObject *self, PyObject *args, PyObject *
   char *kwlist[] = {"include", "exclude", NULL};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist, &include, &exclude)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing _repr_mimebundle_");
-    return nullptr;
+    PyErr_Clear();
+    Py_RETURN_NONE;
   }
 
-  // jetzt dein Python viewer aufrufen
-  PyObject *viewer_module = PyImport_ImportModule("libraries.python.jupyterdisplay");
+  PyObject *viewer_module = PyImport_ImportModule("jupyterdisplay");
   if (!viewer_module) {
-    PyErr_SetString(PyExc_TypeError, "jupyterdisplay module not found");
-    return nullptr;
+    PyErr_Clear();
+    Py_RETURN_NONE;
   }
 
   PyObject *func = PyObject_GetAttrString(viewer_module, "build_widget");
   if (!func) {
     Py_DECREF(viewer_module);
-    PyErr_SetString(PyExc_TypeError, "build_widget method not found");
-    return nullptr;
+    PyErr_Clear();
+    Py_RETURN_NONE;
   }
 
   PyObject *widget = PyObject_CallFunctionObjArgs(func, self, NULL);
@@ -376,22 +397,29 @@ PyObject *python_oo__repr_mimebundle_(PyObject *self, PyObject *args, PyObject *
   Py_DECREF(viewer_module);
 
   if (!widget) {
-    PyErr_SetString(PyExc_TypeError, "error during execution of build_widget");
-    return nullptr;
+    PyErr_Clear();
+    Py_RETURN_NONE;
   }
 
-  // jetzt den Formatter des Widgets verwenden
   PyObject *method = PyObject_GetAttrString(widget, "_repr_mimebundle_");
   if (!method) {
     Py_DECREF(widget);
-    PyErr_SetString(PyExc_TypeError, "error during execution of repr");
-    return nullptr;
+    PyErr_Clear();
+    Py_RETURN_NONE;
   }
 
   PyObject *bundle = PyObject_Call(method, args, kwargs);
 
   Py_DECREF(method);
   Py_DECREF(widget);
+
+  if (!bundle) {
+    // The widget itself raised while formatting (e.g. transitive ipywidgets
+    // call failed). Same contract: swallow the exception and let IPython
+    // fall through to __repr__.
+    PyErr_Clear();
+    Py_RETURN_NONE;
+  }
 
   return bundle;
 }

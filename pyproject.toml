@@ -30,6 +30,19 @@ classifiers = [
     "Topic :: Multimedia :: Graphics :: 3D Modeling",
     "Topic :: Scientific/Engineering",
 ]
+# Keep in sync with requirements/runtime.txt. The pip wheel
+# automatically resolves these transitively, so we never have to vendor
+# the source. Bundle-producing scripts (AppImage, macOS .app, Windows
+# installer) consume requirements/runtime.txt directly via
+# `pip install --target=...`.
+#
+# IPython is capped at <9 to avoid IPython 9.x's hard `psutil>=7`
+# dependency, which has no prebuilt MSYS2/UCRT64 wheel and fails to
+# build from source against MSYS2's `winternl.h`. See the longer
+# rationale in requirements/runtime.txt.
+dependencies = [
+    "ipython>=8,<9",
+]
 
 [project.urls]
 Homepage = "https://pythonscad.org"

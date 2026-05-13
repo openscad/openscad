@@ -50,6 +50,22 @@ jobs:
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: |
         ./scripts/get-dependencies.py --yes --profile pythonscad-qt6
+    - name: Install Python test dependencies (IPython + pexpect for --ipython tests)
+      run: |
+        # Homebrew Python on macOS is "externally managed" (PEP 668),
+        # so we go through pip --break-system-packages with a fallback
+        # to plain pip for older runner images. ipython and pexpect
+        # need to be importable by the *system* python3 because that
+        # is what the embedded interpreter resolves at runtime.
+        #
+        # `ipython<9` matches the cap in `requirements/runtime.txt`
+        # and `pyproject.toml`. We deliberately exercise the same
+        # major version that binary bundles (AppImage / .app /
+        # Windows installer) and the published pip wheel ship, so
+        # CI catches regressions in the version users actually run.
+        # See requirements/runtime.txt for the rationale on why <9.
+        python3 -m pip install --break-system-packages --upgrade 'ipython<9' pexpect \
+          || python3 -m pip install --upgrade 'ipython<9' pexpect
     - name: Build OpenSCAD
       run: |
         mkdir build

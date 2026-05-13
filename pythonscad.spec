@@ -61,7 +61,13 @@ Requires:       harfbuzz >= 0.9.19
 Requires:       freetype >= 2.4
 Requires:       fontconfig >= 2.10
 
+# python3-ipython is a soft dependency: PythonSCAD's --ipython flag
+# launches the rich IPython prompt when this package is installed,
+# and gracefully falls back to the basic embedded REPL otherwise.
+# We use Recommends rather than Requires to keep the install footprint
+# small for users who don't intend to use the interactive prompt.
 Recommends:     meshlab
+Recommends:     python3-ipython
 
 %description
 PythonSCAD is a software for creating solid 3D CAD objects with Python

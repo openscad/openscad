@@ -1495,6 +1495,87 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nef3)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nefdbg)
 
+###################################################
+# Python REPL / IPython smoke tests (issue ipython)
+#
+# These exercise the `--ipython` and `--repl` CLI flags by piping a
+# tiny script into the binary on stdin. They are intentionally *not*
+# golden-file regression tests: an interactive REPL has no
+# deterministic output to diff. Instead the harness scripts assert on
+# exit code, presence of an `OK` sentinel marker, and a few
+# fingerprint checks (e.g. IPython `In [` prompt vs. fallback
+# diagnostic).
+#
+# Skipped when ENABLE_PYTHON is OFF.
+###################################################
+if(ENABLE_PYTHON)
+  add_test(NAME ipython-smoke CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_ipython_cli.py
+      ${OPENSCAD_BINPATH}
+  )
+  set_property(TEST ipython-smoke PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+
+  # `ipython-fallback` self-skips by printing a single "SKIP" line
+  # when it cannot force the missing-IPython scenario (e.g. when
+  # IPython was installed straight into the system stdlib path,
+  # which is unusual but does happen on some CI workers). Wire up
+  # SKIP_REGULAR_EXPRESSION (matching `^SKIP`) so ctest reports
+  # the inconclusive outcome explicitly rather than masquerading
+  # as a green PASS.
+  add_test(NAME ipython-fallback CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_ipython_fallback.py
+      ${OPENSCAD_BINPATH}
+  )
+  set_property(TEST ipython-fallback PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+  set_property(TEST ipython-fallback PROPERTY SKIP_REGULAR_EXPRESSION "^SKIP")
+
+  add_test(NAME repl-smoke CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_repl_cli.py
+      ${OPENSCAD_BINPATH}
+  )
+  set_property(TEST repl-smoke PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+
+  # Layer-2: drive `pythonscad --ipython` through a real PTY (pexpect)
+  # so we exercise the actual interactive prompt, not just the
+  # non-interactive piped-stdin path covered by `ipython-smoke`. This
+  # catches regressions in IPython's `In [N]:` prompt rendering and
+  # in our IPython-bootstrap code that would silently degrade to the
+  # fallback REPL on a real terminal.
+  #
+  # The harness internally prints "SKIP" when pexpect is unavailable
+  # or when running on Windows (PTY semantics differ); the
+  # SKIP_REGULAR_EXPRESSION property turns those prints into an
+  # explicit ctest "Skipped" outcome instead of a false PASS.
+  add_test(NAME ipython-pty CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_ipython_pty.py
+      ${OPENSCAD_BINPATH}
+  )
+  set_property(TEST ipython-pty PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+  set_property(TEST ipython-pty PROPERTY SKIP_REGULAR_EXPRESSION "^SKIP")
+
+  # Layer-4: assert the bundled-fallback precedence contract. The
+  # bundled `pythonscad-bundled-py` directory must always come AFTER
+  # any user-installed IPython on sys.path, otherwise the bundle
+  # would shadow the user's chosen IPython instead of falling back
+  # to it. This invariant is the entire reason the bundling pipeline
+  # uses `PyList_Append` (not `insert(0, ...)`) in initPython.
+  #
+  # Builds without a bundled directory print "SKIP-NORMAL" because
+  # the invariant is vacuously satisfied; the bundle-shipping
+  # AppImage / macOS / Windows artifacts exercise the test for real.
+  add_test(NAME ipython-precedence CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_ipython_precedence.py
+      ${OPENSCAD_BINPATH}
+  )
+  set_property(TEST ipython-precedence PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+  set_property(TEST ipython-precedence PROPERTY SKIP_REGULAR_EXPRESSION "^SKIP-")
+endif()
+
 if(NOT ENABLE_LIBFIVE)
   message(STATUS "LIBFIVE is not enabled. Skipping related tests.")
   disable_tests_safe(
