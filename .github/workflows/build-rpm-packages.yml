@@ -279,9 +279,11 @@ jobs:
           DO_SIGN: ${{ (github.event_name == 'release' || github.event.inputs.upload_to_release != '') && 'true' || 'false' }}
         run: |
           # Run the entire build inside a Docker container with proper ARM64 emulation
+          mkdir -p /tmp/rpms
           docker run --rm \
             --platform linux/arm64 \
             -v "$PWD:/workspace" \
+            -v /tmp/rpms:/tmp/rpms \
             -w /workspace \
             -e OUTPUT_DIR=/tmp/rpms \
             -e FEDORA_RELEASE=${{ matrix.version }} \
@@ -405,10 +407,6 @@ jobs:
                 done
               fi
             '
-
-          # Copy built packages from Docker to host
-          sudo cp -r /tmp/rpms /tmp/rpms-host || true
-          sudo mv /tmp/rpms-host /tmp/rpms || true
 
       - name: Test package installation (amd64 only)
         if: matrix.arch == 'amd64'

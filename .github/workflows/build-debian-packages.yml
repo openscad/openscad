@@ -236,9 +236,11 @@ jobs:
           else
             KEY_INPUT=""
           fi
+          mkdir -p /tmp/debs
           printf '%s' "$KEY_INPUT" | docker run --rm -i \
             --platform linux/arm64 \
             -v "$PWD:/workspace" \
+            -v /tmp/debs:/tmp/debs \
             -w /workspace \
             -e OUTPUT_DIR=/tmp/debs \
             -e DEBIAN_DISTRO="$MATRIX_DISTRO" \
@@ -275,10 +277,6 @@ jobs:
               chmod +x ./scripts/build-debian-package.sh
               ./scripts/build-debian-package.sh
             '
-
-          # Copy built packages from Docker to host
-          sudo cp -r /tmp/debs /tmp/debs-host || true
-          sudo mv /tmp/debs-host /tmp/debs || true
 
       - name: Get version for release upload
         id: version
