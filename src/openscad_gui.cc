@@ -338,7 +338,22 @@ QString lockFilePath()
 QString serverNameFromPath(const QString& path)
 {
   const QByteArray hash = QCryptographicHash::hash(path.toUtf8(), QCryptographicHash::Sha1).toHex();
-  return QStringLiteral("pythonscad.instance.") + QString::fromUtf8(hash);
+  const QString longName = QStringLiteral("pythonscad.instance.") + QString::fromUtf8(hash);
+
+#if defined(Q_OS_UNIX)
+  // POSIX sockaddr_un.sun_path is at most 104 bytes (103 usable + null terminator).
+  // QLocalServer places the socket under QDir::tempPath() + '/'. On macOS, that
+  // expands to /var/folders/<2>/<32>/T (~51 chars), so the full 60-char name would
+  // produce a 112-char path that exceeds the limit and causes listen() to fail.
+  // Fall back to a short prefix ("ps." + full 40-char SHA-1 hex = 43 chars) whenever
+  // the temp-dir prefix would push us over the limit.
+  const QString tmpPrefix = QDir::tempPath() + QLatin1Char('/');
+  if (tmpPrefix.size() + longName.size() > 103) {
+    return QStringLiteral("ps.") + QString::fromUtf8(hash);
+  }
+#endif
+
+  return longName;
 }
 
 QString serverName()
