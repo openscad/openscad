@@ -284,7 +284,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   // Docks
   setupConsole();
   setupStatusBar();
-  setupViewportControl();
   setupAnimate();
   setupEditor(filenames);
   setupCustomizer();
@@ -294,9 +293,9 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupDocks();
 
   setup3DView();
-  setupPreferences();
-
+  setupViewportControl();
   setupInput();
+  setupPreferences();
 
   restoreWindowState();
 

@@ -51,6 +51,7 @@ void ViewportControl::initGUI()
 void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
   this->qglview = mainWindow->qglview;
+  cameraChanged();
 }
 
 QString ViewportControl::yellowHintBackground()
