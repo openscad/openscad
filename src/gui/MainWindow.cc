@@ -423,14 +423,13 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t
 void MainWindow::addMenuItemCB(QString callback)
 {
 #ifdef ENABLE_PYTHON
-  const char *cbstr = callback.toStdString().c_str();
   std::string content = loadInitFile();
   if (content.size() == 0) return;
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
   initPython(binDir, "", nullptr);
   evaluatePython(content);
-  evaluatePython(cbstr);
+  evaluatePython(callback.toStdString());
   finishPython();
 #endif
 }

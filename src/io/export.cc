@@ -397,14 +397,12 @@ void export_debug_polyset(const PolySet& ps)
           ps->indices = vert;
   */
 
-  const PolySet psx(ps);
-
   Export3mfOptions options3mf;
   options3mf.decimalPrecision = 6;
   ExportInfo exportInfo = {.format = FileFormat::_3MF,
                            .sourceFilePath = "debug.3mf",
                            .options3mf = std::make_shared<Export3mfOptions>(options3mf)};
 
-  auto ss = std::shared_ptr<const Geometry>(&psx);
+  auto ss = std::make_shared<const PolySet>(ps);
   exportFileByName(ss, "debug.3mf", exportInfo);
 }
