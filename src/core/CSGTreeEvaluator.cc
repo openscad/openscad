@@ -116,6 +116,7 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
           }
         }
         break;
+      case OpenSCADOperator::CONCAT:
       case OpenSCADOperator::UNION:
         if (t != t1 && t != t2 && t1->isHighlight() && t2->isHighlight()) {
           t->setHighlight(true);
