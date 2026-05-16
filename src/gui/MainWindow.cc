@@ -1175,6 +1175,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 void MainWindow::waitAfterReload()
 {
+  setCurrentOutput();
   no_exceptions_for_warnings();
   auto mtime = this->rootFile->handleDependencies();
   auto stop = would_have_thrown();
@@ -1400,6 +1401,7 @@ void MainWindow::compileCSGThread(void)
 }
 void MainWindow::compileCSGDone()
 {
+  setCurrentOutput();
 #ifdef ENABLE_PYTHON
   python_lock();
 #endif
@@ -3601,6 +3603,7 @@ void MainWindow::refreshParametersFromEditor()
     return;
   }
   if (!activeEditor) return;
+  auto guard = scopedSetCurrentOutput();
   parseTopLevelDocument(true);
 }
 
@@ -3969,6 +3972,7 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
+  setCurrentOutput();
   // Opening/reloading sets editor text which arms parameterRefreshTimer; that debounced
   // parseTopLevelDocument() would call parseDocument() again (e.g. second Python trust dialog).
   if (parameterRefreshTimer) {
