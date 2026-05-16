@@ -1947,7 +1947,7 @@ if (SNAPSHOT)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_SNAPSHOT)
 endif()
 set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc)
-set(MACOSX_BUNDLE_ICON_FILE icon${SNAPSHOT_SUFFIX}.icns)
+set(MACOSX_BUNDLE_ICON_FILE pythonscad.icns)
 
 if (APPLE)
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/mac.qrc)
