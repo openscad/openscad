@@ -17,7 +17,7 @@ class Assignment;
 class ParameterObject
 {
 public:
-  enum class ParameterType { Bool, String, Number, Vector, Enum };
+  enum class ParameterType { Bool, String, Number, Vector, Enum, Color };
 
   virtual ~ParameterObject() = default;
   static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
@@ -166,6 +166,50 @@ public:
   int valueIndex;
   int defaultValueIndex;
   std::vector<EnumItem> items;
+};
+
+class ColorParameter : public ParameterObject
+{
+public:
+  enum class ColorFormat { Hex, Vector };
+
+  ColorParameter(const std::string& name, const std::string& description, const std::string& group,
+                 const std::string& defaultValue)
+    : ParameterObject(name, description, group, ParameterObject::ParameterType::Color),
+      stringValue(defaultValue),
+      defaultStringValue(defaultValue),
+      format(ColorFormat::Hex)
+  {
+  }
+
+  ColorParameter(const std::string& name, const std::string& description, const std::string& group,
+                 const std::vector<double>& defaultValue)
+    : ParameterObject(name, description, group, ParameterObject::ParameterType::Color),
+      vectorValue(defaultValue),
+      defaultVectorValue(defaultValue),
+      format(ColorFormat::Vector)
+  {
+  }
+
+  void reset() override
+  {
+    if (format == ColorFormat::Hex) {
+      stringValue = defaultStringValue;
+    } else {
+      vectorValue = defaultVectorValue;
+    }
+  }
+
+  bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
+  void apply(Assignment *assignment) const override;
+
+  std::string stringValue;
+  std::string defaultStringValue;
+  std::vector<double> vectorValue;
+  std::vector<double> defaultVectorValue;
+  ColorFormat format;
 };
 
 class ParameterObjects : public std::vector<std::unique_ptr<ParameterObject>>

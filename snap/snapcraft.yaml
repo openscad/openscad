@@ -40,11 +40,10 @@ apps:
     desktop: usr/share/applications/openscad-nightly.desktop
     environment:
       DISABLE_WAYLAND: 1
-      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy
 
 parts:
   cgal:
-    source: https://github.com/CGAL/cgal/releases/download/v6.1.1/CGAL-6.1.1-library.tar.xz
+    source: https://github.com/CGAL/cgal/releases/download/v6.0.1/CGAL-6.0.1-library.tar.xz
     plugin: cmake
     cmake-parameters: [
       "-DCMAKE_BUILD_TYPE=Release",
@@ -70,7 +69,7 @@ parts:
     ]
 
   harfbuzz:
-    source: https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz
+    source: https://github.com/harfbuzz/harfbuzz/releases/download/11.4.1/harfbuzz-11.4.1.tar.xz
     plugin: meson
     build-packages:
       - meson
@@ -113,18 +112,17 @@ parts:
             -DSNAPSHOT=ON
         cmake --build .
         cmake --install . --prefix "${SNAPCRAFT_PART_INSTALL}/usr"
-    after: [ desktop-qt, cgal, lib3mf2, harfbuzz ]
+    after: [ desktop-qt5, cgal, lib3mf2, harfbuzz ]
     stage:
     - -usr/lib/*/libharfbuzz*
     build-packages:
     - git
     - clang
-    - qt6-base-dev
-    - qt6-multimedia-dev
-    - libqt6svg6-dev
-    - libqt6opengl6-dev
-    - libqt6core5compat6-dev
-    - libqscintilla2-qt6-dev
+    - qtbase5-dev
+    - qtmultimedia5-dev
+    - libqt5svg5-dev
+    - libqt5opengl5-dev
+    - libqt5gamepad5-dev
     - libeigen3-dev
     - libglib2.0-dev
     - bison
@@ -150,16 +148,9 @@ parts:
     - libgl-dev
     - libxml2-dev
     - libfontconfig1-dev
+    - libqscintilla2-qt5-dev
     stage-packages:
-    - qt6-wayland
-    - libqt6svg6
-    - libqt6opengl6
-    - libqt6concurrent6
-    - libqt6multimedia6
-    - libqt6printsupport6
-    - libqt6core5compat6
-    - libqt6openglwidgets6t64
-    - libqscintilla2-qt6-15
+    - qtwayland5
     - libasyncns0
     - libboost-regex1.83.0
     - libboost-system1.83.0
@@ -174,24 +165,32 @@ parts:
     - libgmpxx4ldbl
     - libogg0
     - libpulse0
+    - libqt5svg5
+    - libqt5opengl5
+    - libqt5gamepad5
+    - libqt5concurrent5
+    - libqt5multimedia5
+    - libqt5printsupport5
+    - libqscintilla2-qt5-15
     - libsndfile1
     - libvorbis0a
     - libvorbisenc2
     - libzip4t64
     - libtbb12
     - libatomic1
-    - libproxy1v5
     - libpython3.12t64
 
-  desktop-qt:
-    source: https://github.com/t4saha/snapcraft-desktop-helpers-Qt6.git
+  # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
+  desktop-qt5:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
     source-subdir: qt
     plugin: make
+    make-parameters: ["FLAVOR=qt5"]
     stage:
     - -usr/lib/*/libharfbuzz*
     build-packages:
       - build-essential
-      - qt6-base-dev
+      - qtbase5-dev
       - dpkg-dev
     stage-packages:
       - libxkbcommon0
@@ -199,11 +198,12 @@ parts:
       - light-themes
       - adwaita-icon-theme
       - shared-mime-info
+      - libqt5gui5
       - libgdk-pixbuf2.0-0
-      - xdg-user-dirs
+      - libqt5svg5 # for loading icon themes which are svg
       - locales-all
-      - libqt6gui6
-      - libqt6svg6 # for loading icon themes which are svg
+      - xdg-user-dirs
+      - fcitx-frontend-qt5
 
   patches:
     source: snap/local/patches
