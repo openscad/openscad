@@ -56,6 +56,8 @@ struct ExampleEntry {
 
 static const int maxRecentFiles = 10;
 
+inline constexpr const char *pythonBrandColor = "#306591";
+
 QFileInfo openFile(QWidget *parent = nullptr, QStringList extensions = {});
 
 QFileInfoList openFiles(QWidget *parent = nullptr, QStringList extensions = {});

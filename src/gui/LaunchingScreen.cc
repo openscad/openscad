@@ -39,6 +39,10 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   this->setStyleSheet(
     "QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
 
+  QString brandingText = this->label_3->text();
+  brandingText.replace("__PYTHON_BRAND_COLOR__", UIUtils::pythonBrandColor);
+  this->label_3->setText(brandingText);
+
   this->versionNumberLabel->setText("PythonSCAD " +
                                     QString::fromStdString(std::string(openscad_displayversionnumber)));
 
