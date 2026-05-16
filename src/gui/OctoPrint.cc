@@ -167,7 +167,11 @@ const QString OctoPrint::upload(const QString& exportFileName, const QString& fi
   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant{"application/octet-stream"});
 
   auto *file = new QFile(exportFileName, multiPart);
-  file->open(QIODevice::ReadOnly);
+  if (!file->open(QIODevice::ReadOnly)) {
+    qWarning() << "Failed to open file:" << file->fileName();
+    delete multiPart;
+    return {};
+  }
   filePart.setBodyDevice(file);
 
   multiPart->append(filePart);
