@@ -69,7 +69,7 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
 
   const CFIndex fileImageIndex = 1;
   CFMutableDictionaryRef fileDict = nullptr;
-  CFStringRef fileUTType = kUTTypePNG;
+  CFStringRef fileUTType = CFSTR("public.png");
   // Create an image destination opaque reference for authoring an image file
   CGImageDestinationRef imageDest =
     CGImageDestinationCreateWithDataConsumer(dataconsumer, fileUTType, fileImageIndex, fileDict);
