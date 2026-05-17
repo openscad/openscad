@@ -3588,22 +3588,7 @@ void MainWindow::editorContentChanged()
 
     // removes the live selection feedbacks in both the 3d view and editor.
     clearAllSelectionIndicators();
-
-    // debounced refresh of customizer parameters so they show without F5
-    parameterRefreshTimer->start();
   }
-}
-
-void MainWindow::refreshParametersFromEditor()
-{
-  if (isClosing || isBeingDestroyed) return;
-  if (GuiLocker::isLocked()) {
-    if (parameterRefreshTimer) parameterRefreshTimer->start();
-    return;
-  }
-  if (!activeEditor) return;
-  auto guard = scopedSetCurrentOutput();
-  parseTopLevelDocument(true);
 }
 
 void MainWindow::on_viewActionTop_triggered()
@@ -3972,11 +3957,6 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
   setCurrentOutput();
-  // Opening/reloading sets editor text which arms parameterRefreshTimer; that debounced
-  // parseTopLevelDocument() would call parseDocument() again (e.g. second Python trust dialog).
-  if (parameterRefreshTimer) {
-    parameterRefreshTimer->stop();
-  }
   try {
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
@@ -4396,11 +4376,6 @@ void MainWindow::setupCoreSubsystems()
   consoleUpdater->setSingleShot(true);
   connect(consoleUpdater, &QTimer::timeout, this->console, &Console::update);
   this->consoleUpdater->start(0);  // Show initial messages immediately
-
-  parameterRefreshTimer = new QTimer(this);
-  parameterRefreshTimer->setSingleShot(true);
-  parameterRefreshTimer->setInterval(1000);
-  connect(parameterRefreshTimer, &QTimer::timeout, this, &MainWindow::refreshParametersFromEditor);
 
   progressThrottle->start();
 }
@@ -5019,11 +4994,28 @@ void MainWindow::openRemainingFiles(const QStringList& filenames)
       if (ok) windowIndex = parsedIndex;
     }
     tabManager->restoreSession(TabManager::getSessionFilePath(), windowIndex);
-    // Note: do NOT call parseTopLevelDocument() here.
-    // restoreSession() -> tabSwitched() -> onTabManagerEditorChanged() already
-    // triggers actionRenderPreview() which compiles the document and initializes
-    // Python. Calling parseTopLevelDocument() again would re-enter initPython()
-    // after the CSG worker has released the GIL, causing a crash.
+    // After restore, populate the customizer via a single dry-run parse.
+    // We use QTimer::singleShot(0) to defer until after the event loop has
+    // processed the compile triggered by tabSwitched()->onTabManagerEditorChanged(),
+    // avoiding a re-entrant initPython() call while the CSG worker holds the GIL.
+    // If auto-reload is on, parseTopLevelDocument() was already called synchronously
+    // inside compile(), so GuiLocker will be locked (CSG thread running) and we skip.
+    // If auto-reload is off, no compile runs, GuiLocker is free, and the dry-run
+    // populates the customizer once.
+    QTimer::singleShot(0, this, [this]() {
+      if (activeEditor && !GuiLocker::isLocked()) {
+        try {
+          auto guard = scopedSetCurrentOutput();
+          parseTopLevelDocument(true);
+        } catch (const HardWarningException&) {
+          exceptionCleanup();
+        } catch (const std::exception& ex) {
+          UnknownExceptionCleanup(ex.what());
+        } catch (...) {
+          UnknownExceptionCleanup();
+        }
+      }
+    });
   }
 
   activeEditor->setFocus();
