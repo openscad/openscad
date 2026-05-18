@@ -1,4 +1,4 @@
-click==8.3.3
+click==8.4.0
 mkdocs
 mkdocs-material
 pymdown-extensions
