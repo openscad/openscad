@@ -637,37 +637,69 @@ void python_catch_error(std::string& errorstr)
   PyObject *pyExcTraceback;
   PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
   PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
-  if (pyExcType != nullptr) Py_XDECREF(pyExcType);
 
-  if (pyExcValue != nullptr) {
-    PyObjectUniquePtr str_exc_value(PyObject_Repr(pyExcValue), &PyObjectDeleter);
-    /* Best-effort: this is a void error-formatter, so we cannot
-     * propagate a helper failure to a caller. Clear any exception
-     * the helper sets (e.g. TypeError from a repr() containing lone
-     * surrogates) and degrade silently to no-append.
-     *
-     * Same treatment for a NULL repr -- PyObject_Repr() also leaves
-     * an exception set on failure, and we don't want to poison the
-     * next unrelated C-API call from the GUI. */
-    if (str_exc_value.get() != nullptr) {
-      std::string suberror;
-      if (python_pyobject_to_utf8(str_exc_value.get(), suberror, "python_catch_error()")) {
-        errorstr += suberror;
+  /* Best-effort: use traceback.format_exception() to produce a full
+   * Python-style traceback for the GUI console.  Every helper call is
+   * wrapped in an error-clear so that a failure here never poisons the
+   * next unrelated C-API call from the GUI. */
+  bool formatted = false;
+  PyObject *tb_mod = PyImport_ImportModule("traceback");
+  if (tb_mod) {
+    PyObject *fmt_fn = PyObject_GetAttrString(tb_mod, "format_exception");
+    if (fmt_fn) {
+      PyObject *lines = PyObject_CallFunction(fmt_fn, "OOO", pyExcType ? pyExcType : Py_None,
+                                              pyExcValue ? pyExcValue : Py_None,
+                                              pyExcTraceback ? pyExcTraceback : Py_None);
+      if (lines && PyList_Check(lines)) {
+        Py_ssize_t n = PyList_Size(lines);
+        for (Py_ssize_t i = 0; i < n; i++) {
+          std::string chunk;
+          if (python_pyobject_to_utf8(PyList_GetItem(lines, i), chunk, "python_catch_error")) {
+            errorstr += chunk;
+            formatted = true;
+          } else {
+            PyErr_Clear();
+          }
+        }
       } else {
         PyErr_Clear();
       }
+      Py_XDECREF(lines);
+      Py_DECREF(fmt_fn);
     } else {
       PyErr_Clear();
     }
-    Py_XDECREF(pyExcValue);
+    Py_DECREF(tb_mod);
+  } else {
+    PyErr_Clear();
   }
-  if (pyExcTraceback != nullptr) {
-    const auto *tb_o = reinterpret_cast<PyTracebackObject *>(pyExcTraceback);
-    int line_num = tb_o->tb_lineno;
-    errorstr += " in line ";
-    errorstr += std::to_string(line_num);
-    Py_XDECREF(pyExcTraceback);
+
+  if (!formatted) {
+    /* Fallback: append repr of the exception value and line number,
+     * matching the old behaviour. */
+    if (pyExcValue != nullptr) {
+      PyObjectUniquePtr str_exc_value(PyObject_Repr(pyExcValue), &PyObjectDeleter);
+      if (str_exc_value.get() != nullptr) {
+        std::string suberror;
+        if (python_pyobject_to_utf8(str_exc_value.get(), suberror, "python_catch_error()")) {
+          errorstr += suberror;
+        } else {
+          PyErr_Clear();
+        }
+      } else {
+        PyErr_Clear();
+      }
+    }
+    if (pyExcTraceback != nullptr) {
+      const auto *tb_o = reinterpret_cast<PyTracebackObject *>(pyExcTraceback);
+      errorstr += " in line ";
+      errorstr += std::to_string(tb_o->tb_lineno);
+    }
   }
+
+  Py_XDECREF(pyExcType);
+  Py_XDECREF(pyExcValue);
+  Py_XDECREF(pyExcTraceback);
 }
 
 PyObject *python_callfunction(const std::shared_ptr<const Context>& cxt, const std::string& name,
@@ -1359,9 +1391,9 @@ stderr_bak = None\n\
 
 #ifndef OPENSCAD_NOGUI
   if (result == nullptr) {
-    PyErr_Print();
     error = "";
     python_catch_error(error);
+    PyErr_Print();
   }
   for (int i = 0; i < 2; i++) {
     PyObjectUniquePtr catcher(nullptr, &PyObjectDeleter);

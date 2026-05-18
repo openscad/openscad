@@ -1773,6 +1773,8 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     export-pdf_centered
     export-pdf_simple-pdf
+    # os.chmod(0o000) does not deny reads to the owner on Windows
+    pythonscadecho_import-error-handling-permission
     PROPERTIES DISABLED TRUE
   )
 endif()

@@ -1,0 +1,5 @@
+Can't open file "/__nonexistent_dir_xyz__/out.stl" for export
+Invalid suffix . Defaulting to binary STL.
+Can't open file "" for export
+nonexistent parent dir: OSError
+empty filename: OSError

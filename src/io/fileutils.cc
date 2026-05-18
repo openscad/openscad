@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
    used to be backwards compatible with <= 2013.01 (see issue #217).
  */
 std::string lookup_file(const std::string& filename, const std::string& path,
-                        const std::string& fallbackpath)
+                        const std::string& fallbackpath, FileOperation operation)
 {
   std::string resultfile;
   if (!filename.empty() && !fs::path(filename).is_absolute()) {
@@ -26,10 +26,17 @@ std::string lookup_file(const std::string& filename, const std::string& path,
 
     if (!fs::exists(absfile) && fs::exists(absfile_fallback)) {
       resultfile = absfile_fallback.string();
-      LOG(message_group::Deprecated,
-          "Imported file (%1$s) found in document root instead of relative to the importing module. "
-          "This behavior is deprecated",
-          std::string(filename));
+      if (operation == FileOperation::Export) {
+        LOG(message_group::Deprecated,
+            "Exported file (%1$s) found in document root instead of relative to the exporting "
+            "module. This behavior is deprecated",
+            std::string(filename));
+      } else {
+        LOG(message_group::Deprecated,
+            "Imported file (%1$s) found in document root instead of relative to the importing "
+            "module. This behavior is deprecated",
+            std::string(filename));
+      }
     } else {
       resultfile = absfile.string();
     }

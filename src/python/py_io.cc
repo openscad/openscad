@@ -248,7 +248,8 @@ PyObject *python_export_core(PyObject *obj, char *file)
   }
   std::string filename;
   if (python_scriptpath.string().size() > 0)
-    filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");  // TODO problem hbier
+    filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".",
+                           FileOperation::Export);  // TODO problem hbier
   else filename = file;
   const auto path = fs::path(filename);
   std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
@@ -439,12 +440,19 @@ PyObject *python_export_core(PyObject *obj, char *file)
       return nullptr;
     }
     export_3mf(export3mfPartInfos, fstream, exportInfo);
+    if (fstream.fail()) {
+      PyErr_Format(PyExc_OSError, "export(): write error for file '%s' (disk full?)", file);
+      return nullptr;
+    }
   } else {
     if (export3mfPartInfos.size() > 1) {
       PyErr_SetString(PyExc_TypeError, "This Format can at most export one object");
       return nullptr;
     }
-    exportFileByName(export3mfPartInfos[0].geom, file, exportInfo);
+    if (!exportFileByName(export3mfPartInfos[0].geom, file, exportInfo)) {
+      PyErr_Format(PyExc_OSError, "export(): failed to write file '%s'", file);
+      return nullptr;
+    }
   }
   Py_RETURN_NONE;
 }
@@ -494,9 +502,28 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
   }
-  filename = lookup_file(v == NULL ? "" : v, python_scriptpath.parent_path().u8string(),
+  if (v == NULL || v[0] == '\0') {
+    PyErr_SetString(PyExc_ValueError, "osimport(): filename must not be empty");
+    return NULL;
+  }
+  filename = lookup_file(v, python_scriptpath.parent_path().u8string(),
                          instance->location().filePath().parent_path().string());
-  if (!filename.empty()) handle_dep(filename);
+  {
+    const fs::path fpath = fs::u8path(filename);
+    if (!fs::exists(fpath)) {
+      PyErr_Format(PyExc_FileNotFoundError, "osimport(): file not found: '%s'", v);
+      return NULL;
+    }
+    if (!fs::is_regular_file(fpath)) {
+      PyErr_Format(PyExc_OSError, "osimport(): path is not a regular file: '%s'", v);
+      return NULL;
+    }
+    if (!std::ifstream(filename).good()) {
+      PyErr_Format(PyExc_PermissionError, "osimport(): permission denied: '%s'", v);
+      return NULL;
+    }
+  }
+  handle_dep(filename);
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
     std::string extraw = fs::path(filename).extension().generic_string();
@@ -935,7 +962,26 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     else PyErr_SetString(PyExc_TypeError, "Error during parsing osuse(path)");
     return NULL;
   }
+  if (file == NULL || file[0] == '\0') {
+    PyErr_SetString(PyExc_ValueError, "osuse(): filename must not be empty");
+    return NULL;
+  }
   const std::string includedfile = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
+  {
+    const fs::path fpath = fs::u8path(includedfile);
+    if (!fs::exists(fpath)) {
+      PyErr_Format(PyExc_FileNotFoundError, "osuse(): file not found: '%s'", file);
+      return NULL;
+    }
+    if (!fs::is_regular_file(fpath)) {
+      PyErr_Format(PyExc_OSError, "osuse(): path is not a regular file: '%s'", file);
+      return NULL;
+    }
+    if (!std::ifstream(includedfile).good()) {
+      PyErr_Format(PyExc_PermissionError, "osuse(): permission denied: '%s'", file);
+      return NULL;
+    }
+  }
   stream << "include <" << includedfile << ">\n";
 
   // Pass the Python script path as the "source" file doing the including
