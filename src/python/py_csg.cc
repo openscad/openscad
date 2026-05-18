@@ -508,8 +508,11 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2,
 
 PyObject *python_nb_add(PyObject *arg1, PyObject *arg2)
 {
+  if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    return python_nb_sub(arg1, arg2, OpenSCADOperator::UNION);
+  }
   return python_nb_sub_vec3(arg1, arg2, 0);
-}  // translate
+}  // solid+solid -> union; solid+vector -> translate
 
 PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2)
 {

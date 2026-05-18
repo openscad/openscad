@@ -1,3 +1,4 @@
-Traceback (most recent call last):
-  File "<string>", line 5, in <module>
-TypeError: invalid argument right to operator
+vector(4.98079,4.98079,4.98079)
+vector(-0.980785,-0.980785,-0.980785)
+vector(5.96157,5.96157,5.96157)
+vector(-0.980785,-0.980785,-0.980785)
