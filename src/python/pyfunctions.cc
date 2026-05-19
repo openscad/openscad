@@ -80,6 +80,7 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
       result = python_from2dlong(polyhedron->faces);
     }
   }
+
   if (result != nullptr) return result;
 
   if (hier > 0) {
@@ -137,6 +138,8 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
     return python_position_core(obj);
   } else if (keystr == "bbox") {
     return python_bbox_core(obj);
+  } else if (keystr == "c") {
+    return python_solid_root_color_rgba(obj);
   }
   return result;
 }
@@ -166,7 +169,12 @@ int python__setitem__(PyObject *obj, PyObject *key, PyObject *v)
   // case CPython passes v == NULL. The hier setter only makes sense
   // for assignment, so skip it on deletion.
   if (node != nullptr && v != nullptr) {
-    python__getsetitem_hier(node, keystr, v, 2);
+    PyObject *hier_result = python__getsetitem_hier(node, keystr, v, 2);
+    if (hier_result == nullptr && PyErr_Occurred()) return -1;
+    if (hier_result != nullptr) {
+      Py_DECREF(hier_result);
+      return 0;
+    }
   }
 
   if (self->dict == NULL) {

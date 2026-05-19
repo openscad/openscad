@@ -295,6 +295,8 @@ cube(10).color("blue", alpha=0.5).show()
 
 **OpenSCAD reference:** [color](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#color)
 
+**See also:** [`solid.c`](properties.md#c) — read or write the color of a `color()` node after construction.
+
 ---
 
 ## offset

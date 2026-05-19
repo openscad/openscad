@@ -1443,11 +1443,19 @@ stderr_bak = None\n\
 
 int python__setitem__(PyObject *dict, PyObject *key, PyObject *v);
 PyObject *python__getitem__(PyObject *dict, PyObject *key);
+PyObject *python_solid_root_color_rgba(PyObject *obj);
 
-PyObject *python__getattro__(PyObject *dict, PyObject *key)
+PyObject *python__getattro__(PyObject *obj, PyObject *key)
 {
-  PyObject *result = python__getitem__(dict, key);
-  if (result == Py_None || result == nullptr) result = PyObject_GenericGetAttr(dict, key);
+  /* Attribute "c" may legitimately be None (uncolored solid); python__getitem__
+   * uses the same Py_None sentinel for "unhandled", so tp_getattro would wrongly
+   * fall through to GenericGetAttr. Resolve "c" before that merge.
+   * PyUnicode_CompareWithASCIIString avoids an allocation and is NUL-safe. */
+  if (PyUnicode_CompareWithASCIIString(key, "c") == 0) {
+    return python_solid_root_color_rgba(obj);
+  }
+  PyObject *result = python__getitem__(obj, key);
+  if (result == Py_None || result == nullptr) result = PyObject_GenericGetAttr(obj, key);
   return result;
 }
 

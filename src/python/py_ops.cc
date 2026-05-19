@@ -26,6 +26,7 @@
 
 #include "genlang/genlang.h"
 #include <Python.h>
+#include <algorithm>
 #include "pyopenscad.h"
 #include <io/fileutils.h>
 #include <handle_dep.h>
@@ -302,6 +303,26 @@ PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_color_core(obj, color, alpha);
+}
+
+PyObject *python_solid_root_color_rgba(PyObject *obj)
+{
+  PyObject *dummy_dict_raw = nullptr;
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict_raw);
+  auto dummy_dict = py_owned(dummy_dict_raw);
+  if (node == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "invalid solid for attribute c");
+    return nullptr;
+  }
+  const auto color_node = std::dynamic_pointer_cast<ColorNode>(node);
+  if (!color_node || !color_node->color.isValid()) {
+    Py_RETURN_NONE;
+  }
+  const Color4f& col = color_node->color;
+  return Py_BuildValue("(dddd)", static_cast<double>(std::clamp(col.r(), 0.0f, 1.0f)),
+                       static_cast<double>(std::clamp(col.g(), 0.0f, 1.0f)),
+                       static_cast<double>(std::clamp(col.b(), 0.0f, 1.0f)),
+                       static_cast<double>(std::clamp(col.a(), 0.0f, 1.0f)));
 }
 
 PyObject *python_oversample_core(PyObject *obj, double size, const char *texture, const char *projection,

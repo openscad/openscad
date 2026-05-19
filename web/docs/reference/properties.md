@@ -263,10 +263,51 @@ print(len(parts))  # 2
 
 ---
 
+## c
+
+Read the RGBA color of the root `color()` wrapper on a solid.
+
+**Syntax:**
+
+=== "Python"
+
+```python
+obj.c      # attribute access
+obj["c"]   # mapping protocol
+```
+
+**Returns:** `(r, g, b, a)` as a tuple of floats in `[0, 1]` when the outermost node is a
+`color()` wrapper, `None` otherwise.
+
+**Examples:**
+
+=== "Python"
+
+```python
+from openscad import *
+
+c = cube(10).color("Red")
+print(c.c)          # (1.0, 0.0, 0.0, 1.0)
+print(c["c"])       # (1.0, 0.0, 0.0, 1.0)  — mapping protocol
+
+print(cube(10).c)   # None — no color wrapper
+
+u = cube(1).color("Red") | sphere(2).color("Blue")
+print(u.c)            # None — union is the root, not a ColorNode
+print(u.children()[0].c)  # (1.0, 0.0, 0.0, 1.0)
+print(u.children()[1].c)  # (0.0, 0.0, 1.0, 1.0)
+```
+
+To set or change a color, use [`color()`](transformations.md#color).
+
+**See also:** [`color()`](transformations.md#color)
+
+---
+
 ## Dynamic Attributes
 
 Solid objects support dynamic attribute access for node-specific data. These attributes are available through both dot notation (`obj.attr`) and subscript notation (`obj["attr"]`).
-These attributes cannot only be read, but also overwriten.
+These attributes cannot only be read, but also overwritten.
 
 ### Built-in dynamic attributes
 

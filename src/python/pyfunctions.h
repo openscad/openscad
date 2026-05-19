@@ -254,6 +254,8 @@ PyObject *python_str(PyObject *self);
 // Dictionary access
 PyObject *python__getitem__(PyObject *obj, PyObject *key);
 int python__setitem__(PyObject *dict, PyObject *key, PyObject *v);
+/** Root ColorNode RGBA as (r,g,b,a) in [0,1], or None (see solid attribute "c"). */
+PyObject *python_solid_root_color_rgba(PyObject *obj);
 
 // Number operations
 PyObject *python_nb_add(PyObject *arg1, PyObject *arg2);

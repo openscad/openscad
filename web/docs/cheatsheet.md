@@ -285,6 +285,10 @@
       <div>Get child nodes as a tuple</div>
       <div><code>parts = union(cube(5), sphere(3)).children()</code></div>
 
+      <div class="func"><code><a href="../reference/properties/#c">obj.c</a></code></div>
+      <div>Read root color RGBA tuple (r,g,b,a) in [0,1], or None</div>
+      <div><code>cube(5).color("Red").c  # (1.0, 0.0, 0.0, 1.0)</code></div>
+
       <div class="func"><code><a href="../reference/properties/#dynamic-attributes">obj.points / obj.paths / obj.matrix</a></code></div>
       <div>Access node-specific data (polygon points, face matrix, etc.)</div>
       <div><code>pts = my_polygon.points</code></div>
