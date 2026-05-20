@@ -15,10 +15,15 @@ on:
         required: false
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   build-appimage:
     name: Build AppImage (Qt${{ matrix.qt_version }} / ${{ matrix.arch }})
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -100,9 +105,13 @@ jobs:
     - name: Get AppImage filename
       id: appimage
       run: |
-        APPIMAGE_FILE=$(ls dist/PythonSCAD-*.AppImage | head -1)
-        echo "filename=$(basename ${APPIMAGE_FILE})" >> $GITHUB_OUTPUT
-        echo "filepath=${APPIMAGE_FILE}" >> $GITHUB_OUTPUT
+        APPIMAGE_FILE=$(find dist -maxdepth 1 -name 'PythonSCAD-*.AppImage' | head -1)
+        if [ -z "$APPIMAGE_FILE" ] || [ ! -f "$APPIMAGE_FILE" ]; then
+          echo "ERROR: No AppImage found in dist/" >&2
+          exit 1
+        fi
+        echo "filename=$(basename "${APPIMAGE_FILE}")" >> "$GITHUB_OUTPUT"
+        echo "filepath=${APPIMAGE_FILE}" >> "$GITHUB_OUTPUT"
 
     - name: Sign AppImage (release only)
       id: sign
@@ -119,7 +128,8 @@ jobs:
           echo "AppImage not found: $APPIMAGE_FILE"
           exit 1
         fi
-        sudo apt-get update -qq && sudo apt-get install -y -qq gnupg 2>/dev/null || true
+        sudo apt-get update -qq || true
+        sudo apt-get install -y -qq gnupg 2>/dev/null || true
         export GNUPGHOME="${HOME}/.gnupg"
         mkdir -p "$GNUPGHOME"
         chmod 700 "$GNUPGHOME"
@@ -134,7 +144,7 @@ jobs:
           -u "$GPG_KEY_ID" --detach-sign --armor "$APPIMAGE_FILE"
         echo "Signed: ${APPIMAGE_FILE}.asc"
         gpg --verify "${APPIMAGE_FILE}.asc" "$APPIMAGE_FILE"
-        echo "asc_path=${APPIMAGE_FILE}.asc" >> $GITHUB_OUTPUT
+        echo "asc_path=${APPIMAGE_FILE}.asc" >> "$GITHUB_OUTPUT"
 
     - name: Upload AppImage as artifact
       uses: actions/upload-artifact@v7
@@ -145,11 +155,14 @@ jobs:
 
     - name: Upload AppImage to release
       if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
-      uses: softprops/action-gh-release@v3
-      with:
-        files: |
-          ${{ steps.appimage.outputs.filepath }}
-          ${{ steps.sign.outputs.asc_path }}
-        tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+        STEPS_APPIMAGE_OUTPUTS_FILEPATH: ${{ steps.appimage.outputs.filepath }}
+        STEPS_SIGN_OUTPUTS_ASC_PATH: ${{ steps.sign.outputs.asc_path }}
+      run: |
+        UPLOAD_ARGS=("$STEPS_APPIMAGE_OUTPUTS_FILEPATH")
+        if [ -n "$STEPS_SIGN_OUTPUTS_ASC_PATH" ]; then
+          UPLOAD_ARGS+=("$STEPS_SIGN_OUTPUTS_ASC_PATH")
+        fi
+        gh release upload "$RELEASE_TAG" "${UPLOAD_ARGS[@]}" --clobber

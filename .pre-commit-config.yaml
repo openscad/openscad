@@ -78,23 +78,11 @@ repos:
       rev: v1.7.12
       hooks:
           # Lints GitHub Actions workflow files: schema validation,
-          # expression syntax, pinned-action checks, etc.
-          #
-          # `-shellcheck=` (empty) disables actionlint's bundled
-          # shellcheck integration on workflow `run:` blocks. The
-          # integration is genuinely valuable, but the existing
-          # workflow `run:` blocks have a long tail of pre-existing
-          # SC2086 / SC2012 / SC2015 / etc. findings that are tracked
-          # for cleanup in #613. Without this flag, behaviour
-          # diverges between contributors who have `shellcheck`
-          # installed (CI runners; many Linux distros) and those
-          # who don't (a typical macOS dev box). Drop this arg once
-          # the #613 backlog is clear so workflow-embedded shell
-          # gets shellchecked too. Standalone `*.sh` files are
-          # already linted by the separate `shellcheck-py` hook
-          # below, regardless of this flag.
+          # expression syntax, pinned-action checks, etc. When
+          # shellcheck is on PATH (GitHub-hosted runners ship it in
+          # the base image), actionlint also checks workflow run:
+          # blocks for SC2086, SC2012, SC2162, etc.
           - id: actionlint
-            args: ["-shellcheck="]
     - repo: https://github.com/shellcheck-py/shellcheck-py
       rev: v0.11.0.1
       hooks:

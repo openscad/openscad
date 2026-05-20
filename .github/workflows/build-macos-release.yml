@@ -15,6 +15,9 @@ on:
         required: false
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   build-intel:
     runs-on: macos-15-intel
@@ -79,7 +82,7 @@ jobs:
             -DUSE_BUILTIN_MANIFOLD=ON
 
           # Build
-          make -j$NUMCPU
+          make -j"$NUMCPU"
 
           # Find the app bundle
           APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -type d | head -1)
@@ -131,11 +134,13 @@ jobs:
             echo "ERROR: No .app bundle found in build_MACOSX"
             exit 1
           fi
-          echo "app_bundle=$APP_BUNDLE" >> $GITHUB_OUTPUT
-          echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
+          echo "app_bundle=$APP_BUNDLE" >> "$GITHUB_OUTPUT"
+          echo "app_name=$(basename "$APP_BUNDLE")" >> "$GITHUB_OUTPUT"
           echo "Found app bundle: $APP_BUNDLE"
 
       - name: Bundle runtime Python deps (IPython) into .app
+        env:
+          STEPS_APPNAME_OUTPUTS_APP_BUNDLE: ${{ steps.appname.outputs.app_bundle }}
         run: |
           # Destination must match `bundledFallbackPaths` in
           # src/python/pyopenscad.cc: ../Resources/pythonscad-bundled-py
@@ -143,7 +148,7 @@ jobs:
           # NOT Contents/Frameworks/: macOS `codesign` treats every
           # subdirectory there as a sub-bundle and chokes on pip's
           # `*.dist-info` metadata directories.
-          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_APPNAME_OUTPUTS_APP_BUNDLE}"
           BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
           chmod +x ./scripts/bundle-runtime-python.sh
           BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
@@ -229,7 +234,7 @@ jobs:
             -DUSE_BUILTIN_MANIFOLD=ON
 
           # Build
-          make -j$NUMCPU
+          make -j"$NUMCPU"
 
           # Find the app bundle
           APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -type d | head -1)
@@ -281,11 +286,13 @@ jobs:
             echo "ERROR: No .app bundle found in build_MACOSX"
             exit 1
           fi
-          echo "app_bundle=$APP_BUNDLE" >> $GITHUB_OUTPUT
-          echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
+          echo "app_bundle=$APP_BUNDLE" >> "$GITHUB_OUTPUT"
+          echo "app_name=$(basename "$APP_BUNDLE")" >> "$GITHUB_OUTPUT"
           echo "Found app bundle: $APP_BUNDLE"
 
       - name: Bundle runtime Python deps (IPython) into .app
+        env:
+          STEPS_APPNAME_OUTPUTS_APP_BUNDLE: ${{ steps.appname.outputs.app_bundle }}
         run: |
           # Destination must match `bundledFallbackPaths` in
           # src/python/pyopenscad.cc: ../Resources/pythonscad-bundled-py
@@ -293,7 +300,7 @@ jobs:
           # NOT Contents/Frameworks/: macOS `codesign` treats every
           # subdirectory there as a sub-bundle and chokes on pip's
           # `*.dist-info` metadata directories.
-          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_APPNAME_OUTPUTS_APP_BUNDLE}"
           BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
           chmod +x ./scripts/bundle-runtime-python.sh
           BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
@@ -323,6 +330,8 @@ jobs:
     needs: [build-intel, build-arm64]
     name: Merge Universal Binary and Package
     timeout-minutes: 60
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -418,10 +427,10 @@ jobs:
           # Debug: List frameworks in each bundle
           echo "=== Debug: x86_64 frameworks ==="
           if [ -d "$X86_BUNDLE/Contents/Frameworks" ]; then
-            find "$X86_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -maxdepth 1 2>/dev/null | while read fw; do
+            find "$X86_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -maxdepth 1 2>/dev/null | while IFS= read -r fw; do
               fw_name=$(basename "$fw" .framework)
               # Find actual version directory instead of using Current symlink
-              ACTUAL_VER=$(ls "$fw/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              ACTUAL_VER=$(find "$fw/Versions/" -maxdepth 1 -mindepth 1 -type d ! -name "Current" -exec basename {} \; 2>/dev/null | head -1)
               if [ -n "$ACTUAL_VER" ] && [ -f "$fw/Versions/$ACTUAL_VER/$fw_name" ]; then
                 echo "$(basename "$fw"): $(lipo -info "$fw/Versions/$ACTUAL_VER/$fw_name" 2>&1 | grep -o 'x86_64\|arm64' | tr '\n' ' ')"
               fi
@@ -429,10 +438,10 @@ jobs:
           fi
           echo "=== Debug: arm64 frameworks ==="
           if [ -d "$ARM_BUNDLE/Contents/Frameworks" ]; then
-            find "$ARM_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -maxdepth 1 2>/dev/null | while read fw; do
+            find "$ARM_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -maxdepth 1 2>/dev/null | while IFS= read -r fw; do
               fw_name=$(basename "$fw" .framework)
               # Find actual version directory instead of using Current symlink
-              ACTUAL_VER=$(ls "$fw/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              ACTUAL_VER=$(find "$fw/Versions/" -maxdepth 1 -mindepth 1 -type d ! -name "Current" -exec basename {} \; 2>/dev/null | head -1)
               if [ -n "$ACTUAL_VER" ] && [ -f "$fw/Versions/$ACTUAL_VER/$fw_name" ]; then
                 echo "$(basename "$fw"): $(lipo -info "$fw/Versions/$ACTUAL_VER/$fw_name" 2>&1 | grep -o 'x86_64\|arm64' | tr '\n' ' ')"
               fi
@@ -474,7 +483,7 @@ jobs:
             DYLIB_PATHS=$(echo -e "$DYLIB_PATHS\n$ARM_DYLIBS" | sort -u)
           fi
 
-          echo "$DYLIB_PATHS" | while read rel_path; do
+          echo "$DYLIB_PATHS" | while IFS= read -r rel_path; do
             [ -z "$rel_path" ] && continue
             x86_file="$X86_BUNDLE/$rel_path"
             arm_file="$ARM_BUNDLE/$rel_path"
@@ -506,7 +515,7 @@ jobs:
             FRAMEWORK_PATHS=$(echo -e "$FRAMEWORK_PATHS\n$ARM_FRAMEWORKS" | sort -u)
           fi
 
-          echo "$FRAMEWORK_PATHS" | while read framework_rel; do
+          echo "$FRAMEWORK_PATHS" | while IFS= read -r framework_rel; do
             [ -z "$framework_rel" ] && continue
             framework_name=$(basename "$framework_rel" .framework)
 
@@ -526,7 +535,7 @@ jobs:
             # Qt frameworks have binary at: QtCore.framework/Versions/A/QtCore
             # Find the actual version directory (usually 'A') instead of using 'Current' symlink
             if [ -d "$x86_framework/Versions" ]; then
-              ACTUAL_VERSION=$(ls "$x86_framework/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              ACTUAL_VERSION=$(find "$x86_framework/Versions/" -maxdepth 1 -mindepth 1 -type d ! -name "Current" -exec basename {} \; 2>/dev/null | head -1)
               if [ -n "$ACTUAL_VERSION" ]; then
                 framework_binary="Versions/$ACTUAL_VERSION/$framework_name"
                 if [ -f "$x86_framework/$framework_binary" ]; then
@@ -542,8 +551,8 @@ jobs:
 
                 # Also merge framework Resources if they contain binaries
                 if [ -d "$x86_framework/Versions/$ACTUAL_VERSION" ]; then
-                  find "$x86_framework/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while read lib; do
-                    lib_rel="${lib#$x86_framework/}"
+                  find "$x86_framework/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while IFS= read -r lib; do
+                    lib_rel="${lib#"$x86_framework/"}"
                     x86_lib="$x86_framework/$lib_rel"
                     arm_lib="$arm_framework/$lib_rel"
                     merged_lib="$merged_framework/$lib_rel"
@@ -573,9 +582,9 @@ jobs:
               cp -R "$arm_python" "$MERGED_DIR/$APP_NAME/Contents/Frameworks/"
             elif [ -d "$x86_python" ] && [ -d "$arm_python" ]; then
               # In both - merge binaries
-              PYTHON_VERSION=$(ls "$x86_python/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+              PYTHON_VERSION=$(find "$x86_python/Versions/" -maxdepth 1 -mindepth 1 -type d -exec basename {} \; 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
               if [ -z "$PYTHON_VERSION" ]; then
-                PYTHON_VERSION=$(ls "$arm_python/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+                PYTHON_VERSION=$(find "$arm_python/Versions/" -maxdepth 1 -mindepth 1 -type d -exec basename {} \; 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
               fi
 
               if [ -n "$PYTHON_VERSION" ]; then
@@ -593,8 +602,8 @@ jobs:
                 fi
 
                 # Merge Python extension modules (.so files)
-                find "$x86_python" -name "*.so" -type f 2>/dev/null | while read so_file; do
-                  rel_path="${so_file#$x86_python/}"
+                find "$x86_python" -name "*.so" -type f 2>/dev/null | while IFS= read -r so_file; do
+                  rel_path="${so_file#"$x86_python/"}"
                   x86_so="$x86_python/$rel_path"
                   arm_so="$arm_python/$rel_path"
                   merged_so="$MERGED_DIR/$APP_NAME/Contents/Frameworks/Python.framework/$rel_path"
@@ -635,7 +644,7 @@ jobs:
             PLUGIN_PATHS=$(echo -e "$PLUGIN_PATHS\n$ARM_PLUGINS" | sort -u)
           fi
 
-          echo "$PLUGIN_PATHS" | while read rel_path; do
+          echo "$PLUGIN_PATHS" | while IFS= read -r rel_path; do
             [ -z "$rel_path" ] && continue
             x86_plugin="$X86_BUNDLE/$rel_path"
             arm_plugin="$ARM_BUNDLE/$rel_path"
@@ -709,8 +718,8 @@ jobs:
               "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib"
           fi
 
-          echo "app_bundle=$MERGED_DIR/$APP_NAME" >> $GITHUB_OUTPUT
-          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "app_bundle=$MERGED_DIR/$APP_NAME" >> "$GITHUB_OUTPUT"
+          echo "app_name=$APP_NAME" >> "$GITHUB_OUTPUT"
 
           # Verify main executable is universal
           echo "=== Verifying main executable ==="
@@ -749,12 +758,14 @@ jobs:
           otool -L "$FRAMEWORKS_DIR/QtCore.framework/Versions/A/QtCore" | grep -E "icu|brotli" || echo "No ICU or brotli references found"
 
       - name: Bundle runtime Python deps (IPython) into merged .app
+        env:
+          STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
         run: |
           # Pure-Python wheels are architecture-independent, so we just
           # re-run the bundler on the merged universal .app rather than
           # trying to lipo per-arch bundles together. Anything previously
           # installed by the per-arch jobs gets overwritten by --upgrade.
-          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
           chmod +x ./scripts/bundle-runtime-python.sh
           BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
@@ -768,12 +779,12 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
           if [ -z "$BUILD_CERTIFICATE_BASE64" ]; then
-            echo "cert_installed=false" >> $GITHUB_OUTPUT
+            echo "cert_installed=false" >> "$GITHUB_OUTPUT"
             echo "No BUILD_CERTIFICATE_BASE64 secret set; skipping certificate install (ad-hoc signing will be used)."
             exit 0
           fi
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
@@ -781,7 +792,7 @@ jobs:
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH"
-          echo "cert_installed=true" >> $GITHUB_OUTPUT
+          echo "cert_installed=true" >> "$GITHUB_OUTPUT"
           echo "Apple code signing certificate installed."
 
       - name: Fix app bundle for macOS distribution
@@ -794,10 +805,10 @@ jobs:
           EXEC_NAME=$(basename "$APP_BUNDLE" .app)
           if [ "${STEPS_INSTALL_CERT_OUTPUTS_CERT_INSTALLED}" = "true" ] && [ -n "$SIGNING_IDENTITY" ]; then
             SIGN_ID="$SIGNING_IDENTITY"
-            CODESIGN_EXTRA="--timestamp --options runtime"
+            CODESIGN_EXTRA=(--timestamp --options runtime)
           else
             SIGN_ID="-"
-            CODESIGN_EXTRA=""
+            CODESIGN_EXTRA=()
           fi
 
           echo "=== Fixing executable permissions ==="
@@ -822,42 +833,44 @@ jobs:
 
           echo "=== Signing all binaries (inside-out approach) ==="
           # Step 1: Sign all standalone dylibs (not in frameworks)
-          find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA {} \; 2>&1 | grep -v "replacing existing signature" || true
-          find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA {} \; 2>&1 | grep -v "replacing existing signature" || true
+          find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" {} \; 2>&1 | grep -v "replacing existing signature" || true
+          find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" {} \; 2>&1 | grep -v "replacing existing signature" || true
 
           # Step 2: Sign Python framework components (innermost first)
           if [ -d "$APP_BUNDLE/Contents/Frameworks/Python.framework" ]; then
             echo "=== Signing Python framework ==="
             PY_FW="$APP_BUNDLE/Contents/Frameworks/Python.framework"
-            PY_VER=$(ls "$PY_FW/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+            PY_VER=$(find "$PY_FW/Versions/" -maxdepth 1 -mindepth 1 -type d -exec basename {} \; 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
             if [ -n "$PY_VER" ]; then
               PY_ROOT="$PY_FW/Versions/$PY_VER"
               # Sign all .so extension modules (lib-dynload and any other Mach-O)
               echo "Signing Python .so modules..."
-              find "$PY_ROOT" -name "*.so" -type f 2>/dev/null | while read f; do
+              find "$PY_ROOT" -name "*.so" -type f 2>/dev/null | while IFS= read -r f; do
                 if file "$f" | grep -q Mach-O; then
-                  codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$f" 2>&1 | grep -v "replacing existing signature" || true
+                  codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$f" 2>&1 | grep -v "replacing existing signature" || true
                 fi
               done
               # Sign bin/python3.x and any other Mach-O in bin
               echo "Signing Python binaries..."
               for bin in "$PY_ROOT/bin"/*; do
-                [ -f "$bin" ] && file "$bin" | grep -q Mach-O && codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$bin" 2>&1 | grep -v "replacing existing signature" || true
+                if [ -f "$bin" ] && file "$bin" | grep -q Mach-O; then
+                  codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$bin" 2>&1 | grep -v "replacing existing signature" || true
+                fi
               done
               # Sign nested Python.app: executable first, then the app bundle
               if [ -f "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" ]; then
                 echo "Signing nested Python.app..."
-                codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" 2>&1 | grep -v "replacing existing signature" || true
-                codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_ROOT/Resources/Python.app" 2>&1 | grep -v "replacing existing signature" || true
+                codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" 2>&1 | grep -v "replacing existing signature" || true
+                codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Resources/Python.app" 2>&1 | grep -v "replacing existing signature" || true
               fi
               # Sign main Python framework binary
               if [ -f "$PY_ROOT/Python" ]; then
                 echo "Signing Python framework binary..."
-                codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_ROOT/Python" 2>&1 | grep -v "replacing existing signature" || true
+                codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Python" 2>&1 | grep -v "replacing existing signature" || true
               fi
               # Sign the Python framework itself as a bundle
               echo "Signing Python.framework as a bundle..."
-              codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$PY_FW" 2>&1 | grep -v "replacing existing signature" || true
+              codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_FW" 2>&1 | grep -v "replacing existing signature" || true
             fi
           fi
 
@@ -870,24 +883,24 @@ jobs:
 
             # Find the actual version directory (usually 'A')
             if [ -d "$fw/Versions" ]; then
-              ACTUAL_VERSION=$(ls "$fw/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              ACTUAL_VERSION=$(find "$fw/Versions/" -maxdepth 1 -mindepth 1 -type d ! -name "Current" -exec basename {} \; 2>/dev/null | head -1)
               if [ -n "$ACTUAL_VERSION" ]; then
                 # Sign any dylibs within the framework version
-                find "$fw/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while read lib; do
+                find "$fw/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while IFS= read -r lib; do
                   if file "$lib" | grep -q "Mach-O"; then
-                    codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$lib" 2>&1 | grep -v "replacing existing signature" || true
+                    codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$lib" 2>&1 | grep -v "replacing existing signature" || true
                   fi
                 done
 
                 # Sign the main framework binary if it exists
                 if [ -f "$fw/Versions/$ACTUAL_VERSION/$fw_name" ]; then
-                  codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$fw/Versions/$ACTUAL_VERSION/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
+                  codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$fw/Versions/$ACTUAL_VERSION/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
                 fi
               fi
             fi
 
             # Sign the framework itself as a bundle (this is critical for spctl validation)
-            codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$fw" 2>&1 | grep -v "replacing existing signature" || true
+            codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$fw" 2>&1 | grep -v "replacing existing signature" || true
           done
 
           # Diagnose framework structure before signing
@@ -897,7 +910,7 @@ jobs:
             fw_name=$(basename "$fw")
             echo "--- Framework: $fw_name ---"
             echo "Top-level structure:"
-            ls -la "$fw/" 2>/dev/null | head -15
+            find "$fw/" -maxdepth 1 -ls 2>/dev/null | head -15
             echo ""
             echo "Recursive structure (max depth 3):"
             find "$fw" -maxdepth 3 -ls 2>/dev/null | head -30
@@ -921,14 +934,14 @@ jobs:
           # Step 4: Sign the main executable
           echo "=== Signing main executable ==="
           if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" ]; then
-            codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" 2>&1 | grep -v "replacing existing signature" || true
+            codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" 2>&1 | grep -v "replacing existing signature" || true
           fi
 
           # Step 5: Sign the app bundle itself (NOT with --deep, since we already signed components)
           # This is the proper way to sign bundles according to Apple's guidelines
           # CODESIGN_EXTRA adds --timestamp --options runtime for notarization when using Developer ID
           echo "=== Signing app bundle ==="
-          codesign --force --sign "$SIGN_ID" $CODESIGN_EXTRA --verbose=4 "$APP_BUNDLE" 2>&1 || true
+          codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" --verbose=4 "$APP_BUNDLE" 2>&1 || true
 
           # Remove quarantine attributes
           xattr -cr "$APP_BUNDLE" 2>/dev/null || true
@@ -939,6 +952,7 @@ jobs:
       - name: Validate code signature
         run: |
           APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
+          # shellcheck disable=SC2034
           EXEC_NAME=$(basename "$APP_BUNDLE" .app)
 
           echo "=== Validating code signature with codesign ==="
@@ -953,10 +967,13 @@ jobs:
           # This is the critical validation that checks if macOS will allow the app to run
           # At this stage, "Unnotarized Developer ID" is acceptable (notarization happens later with DMG)
           # But we want to catch issues like "invalid destination for symbolic link"
-          SPCTL_OUTPUT=$(spctl --assess --type execute --verbose=4 "$APP_BUNDLE" 2>&1) || SPCTL_RESULT=$?
+          set +e
+          SPCTL_OUTPUT=$(spctl --assess --type execute --verbose=4 "$APP_BUNDLE" 2>&1)
+          SPCTL_EXIT=$?
+          set -e
           echo "$SPCTL_OUTPUT"
 
-          if echo "$SPCTL_OUTPUT" | grep -q "rejected"; then
+          if [ "$SPCTL_EXIT" -ne 0 ]; then
             if echo "$SPCTL_OUTPUT" | grep -q "source=Unnotarized Developer ID"; then
               echo "⚠ App is signed but not yet notarized (expected at this stage)"
               echo "✓ Notarization will happen when creating the DMG"
@@ -1013,7 +1030,7 @@ jobs:
           for fw in "$APP_BUNDLE/Contents/Frameworks"/*.framework; do
             [ ! -d "$fw" ] && continue
             echo "--- $(basename "$fw") ---"
-            ls -la "$fw/" | head -10
+            find "$fw/" -maxdepth 1 -ls 2>/dev/null | head -10
             echo "Symlinks:"
             find "$fw" -type l -ls 2>/dev/null | head -5
             echo ""
@@ -1042,7 +1059,7 @@ jobs:
           for fw in "$STAGED_APP/Contents/Frameworks"/*.framework; do
             [ ! -d "$fw" ] && continue
             echo "--- $(basename "$fw") ---"
-            ls -la "$fw/" | head -10
+            find "$fw/" -maxdepth 1 -ls 2>/dev/null | head -10
             echo "Symlinks:"
             find "$fw" -type l -exec sh -c 'echo "$1 -> $(readlink "$1")"' _ {} \; 2>/dev/null | head -5
             echo ""
@@ -1052,7 +1069,7 @@ jobs:
           echo "=== Creating DMG ==="
           hdiutil create -volname "PythonSCAD" -srcfolder "$DMG_STAGING" -ov -format UDZO "$DMG_NAME"
 
-          echo "dmg_file=$DMG_NAME" >> $GITHUB_OUTPUT
+          echo "dmg_file=$DMG_NAME" >> "$GITHUB_OUTPUT"
           echo "Created DMG: $DMG_NAME"
 
           echo "=== DEBUG: Mounting DMG to inspect contents ==="
@@ -1065,7 +1082,7 @@ jobs:
             for fw in "$TEST_MOUNT/$APP_NAME/Contents/Frameworks"/*.framework; do
               [ ! -d "$fw" ] && continue
               echo "--- $(basename "$fw") ---"
-              ls -la "$fw/" | head -10
+              find "$fw/" -maxdepth 1 -ls 2>/dev/null | head -10
               echo "Symlinks:"
               find "$fw" -type l -exec sh -c 'link="$1"; target=$(readlink "$link"); echo "$link -> $target"; [ -e "$target" ] || echo "  BROKEN!"' _ {} \; 2>/dev/null | head -10
               echo ""
@@ -1145,6 +1162,7 @@ jobs:
         continue-on-error: true
         run: |
           DMG_FILE="${STEPS_DMG_OUTPUTS_DMG_FILE}"
+          # shellcheck disable=SC2034
           APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
 
           echo "=== Final validation of DMG and app bundle ==="
@@ -1248,9 +1266,11 @@ jobs:
           echo "Creating tar of pre-DMG app bundle for debugging..."
           tar -czf /tmp/out/pre-dmg-app-bundle.tar.gz -C "$(dirname "$APP_BUNDLE")" "$(basename "$APP_BUNDLE")"
 
-          echo "dmg_path=/tmp/out/$basename_dmg" >> $GITHUB_OUTPUT
-          echo "dmg_name=$(basename "$basename_dmg" .dmg)" >> $GITHUB_OUTPUT
-          echo "validation_status=${STEPS_VALIDATION_OUTCOME}" >> $GITHUB_OUTPUT
+          {
+            echo "dmg_path=/tmp/out/$basename_dmg"
+            echo "dmg_name=$(basename "$basename_dmg" .dmg)"
+            echo "validation_status=${STEPS_VALIDATION_OUTCOME}"
+          } >> "$GITHUB_OUTPUT"
 
           # List what we have
           echo "Artifacts prepared:"
@@ -1293,12 +1313,10 @@ jobs:
 
       - name: Upload artifacts to release
         if: (github.event_name == 'release' || github.event.inputs.upload_to_release != '') && steps.validation.outcome == 'success'
-        uses: softprops/action-gh-release@v3
-        with:
-          files: /tmp/out/*.dmg
-          tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+        run: gh release upload "$RELEASE_TAG" /tmp/out/*.dmg --clobber
 
       - name: Fail workflow if validation failed
         if: always()
@@ -1316,4 +1334,4 @@ jobs:
       - name: Clean up signing keychain
         if: always() && steps.install_cert.outputs.cert_installed == 'true'
         run: |
-          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
+          security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" 2>/dev/null || true

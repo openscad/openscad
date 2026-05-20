@@ -19,6 +19,9 @@ concurrency:
   group: publish-yum-repo
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   prepare-matrix:
     name: Prepare build matrix from supported distributions
@@ -79,16 +82,21 @@ jobs:
     name: Build .rpm (${{ matrix.distro }} ${{ matrix.version }} ${{ matrix.arch }})
     needs: prepare-matrix
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
 
     # Note: Don't use container field for ARM64 - it pulls amd64 images
     # ARM64 builds use explicit docker run with --platform flag
+    # zizmor: ignore[unpinned-images] — images are tag-pinned in
+    # supported-distributions.json (e.g. fedora:44, rockylinux:9), not
+    # digest-pinned. Accepted risk; digest-pinning is tracked in #663.
     container: ${{ matrix.arch == 'amd64' && matrix.container || null }}
 
     steps:
-      - name: Install git and basic tools (amd64 container)
+      - name: Install git, basic tools, and gh CLI (amd64 container)
         if: matrix.arch == 'amd64'
         run: |
           if [ -f /etc/fedora-release ]; then
@@ -96,6 +104,11 @@ jobs:
           else
             dnf install -y git tar gzip epel-release
           fi
+          # Write the gh CLI repo file inline — avoids DNF4 vs DNF5
+          # config-manager syntax differences and curl-minimal conflicts on EL9.
+          printf '[gh-cli]\nname=packages for the GitHub CLI\nbaseurl=https://cli.github.com/packages/rpm\nenabled=1\ngpgcheck=1\ngpgkey=https://cli.github.com/packages/githubcli-archive-keyring.gpg\n' \
+            > /etc/yum.repos.d/gh-cli.repo
+          dnf install -y gh
 
       - name: Checkout code
         uses: actions/checkout@v6
@@ -146,8 +159,10 @@ jobs:
           fi
 
           # Set VERSION environment variable for spec file parsing
-          export VERSION=$(cat VERSION.txt | tr -d '\n' | tr -d '\r')
-          export CHANGELOG_DATE=$(date "+%a %b %d %Y")
+          VERSION=$(tr -d '\n\r' < VERSION.txt)
+          export VERSION
+          CHANGELOG_DATE=$(date "+%a %b %d %Y")
+          export CHANGELOG_DATE
 
           # Install build dependencies from spec file
           dnf builddep -y pythonscad.spec
@@ -257,7 +272,7 @@ jobs:
           done
 
           # Clean up passphrase file if it exists (RPM 4.x path)
-          [ -n "${PASSPHRASE_FILE:-}" ] && rm -f "$PASSPHRASE_FILE" || true
+          if [ -n "${PASSPHRASE_FILE:-}" ]; then rm -f "$PASSPHRASE_FILE"; fi
 
           # Import public key into RPM keyring for verification
           gpg --export -a "${{ secrets.GPG_KEY_ID }}" > /tmp/pubkey.asc
@@ -277,6 +292,9 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           DO_SIGN: ${{ (github.event_name == 'release' || github.event.inputs.upload_to_release != '') && 'true' || 'false' }}
+          MATRIX_VERSION: ${{ matrix.version }}
+          MATRIX_DISTRO: ${{ matrix.distro }}
+          MATRIX_CONTAINER: ${{ matrix.container }}
         run: |
           # Run the entire build inside a Docker container with proper ARM64 emulation
           mkdir -p /tmp/rpms
@@ -286,14 +304,14 @@ jobs:
             -v /tmp/rpms:/tmp/rpms \
             -w /workspace \
             -e OUTPUT_DIR=/tmp/rpms \
-            -e FEDORA_RELEASE=${{ matrix.version }} \
-            -e DISTRO_TYPE=${{ matrix.distro }} \
+            -e FEDORA_RELEASE="$MATRIX_VERSION" \
+            -e DISTRO_TYPE="$MATRIX_DISTRO" \
             -e ARCH=aarch64 \
             -e GPG_SIGNING_KEY="$GPG_SIGNING_KEY" \
             -e GPG_PASSPHRASE="$GPG_PASSPHRASE" \
             -e GPG_KEY_ID="$GPG_KEY_ID" \
             -e DO_SIGN="$DO_SIGN" \
-            ${{ matrix.container }} \
+            "$MATRIX_CONTAINER" \
             bash -c '
               set -e
 
@@ -430,12 +448,10 @@ jobs:
 
       - name: Upload to GitHub Release
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
-        uses: softprops/action-gh-release@v3
-        with:
-          files: /tmp/rpms/*
-          tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+        run: gh release upload "$RELEASE_TAG" /tmp/rpms/* --clobber
 
   publish-yum-repo:
     name: Publish YUM repository to SFTP

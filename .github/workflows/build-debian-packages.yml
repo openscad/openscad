@@ -19,6 +19,9 @@ concurrency:
   group: publish-apt-repo
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   prepare-matrix:
     name: Prepare build matrix from supported distributions
@@ -80,20 +83,32 @@ jobs:
     name: Build .deb (${{ matrix.family }} / ${{ matrix.distro }} / ${{ matrix.arch }})
     needs: prepare-matrix
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     # Note: Don't use container field for ARM64 - it pulls amd64 images
     # ARM64 builds use explicit docker run with --platform flag
+    # zizmor: ignore[unpinned-images] — images are tag-pinned in
+    # supported-distributions.json (e.g. ubuntu:jammy), not digest-pinned.
+    # Accepted risk; digest-pinning is tracked in #663.
     container: ${{ matrix.arch == 'amd64' && matrix.docker_image || null }}
 
     steps:
-      - name: Ensure git is available and configure (amd64 container)
+      - name: Ensure git and gh CLI are available (amd64 container)
         if: matrix.arch == 'amd64' && matrix.docker_image
         run: |
           apt-get update
-          apt-get install -y git ca-certificates
-          git config --global --add safe.directory '*'
+          apt-get install -y git ca-certificates curl
+          # Install gh CLI so the release-upload step works inside the container
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            > /etc/apt/sources.list.d/github-cli.list
+          apt-get update
+          apt-get install -y gh
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Checkout code
         uses: actions/checkout@v6
@@ -126,17 +141,18 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
           TZ: Etc/UTC
+          MATRIX_DISTRO: ${{ matrix.distro }}
         run: |
           sudo apt-get update
 
           # Determine Qt profile based on distribution version
           # Older distros (Ubuntu 22.04, Debian 11) use Qt5, newer use Qt6
-          if [ "${{ matrix.distro }}" = "jammy" ] || [ "${{ matrix.distro }}" = "bullseye" ]; then
+          if [ "$MATRIX_DISTRO" = "jammy" ] || [ "$MATRIX_DISTRO" = "bullseye" ]; then
             QT_PROFILE="pythonscad-qt5"
           else
             QT_PROFILE="pythonscad-qt6"
           fi
-          echo "Using profile: $QT_PROFILE for ${{ matrix.distro }}"
+          echo "Using profile: $QT_PROFILE for $MATRIX_DISTRO"
 
           # Install base dependencies using get-dependencies
           sudo ./scripts/get-dependencies.py --yes --profile "$QT_PROFILE"
@@ -155,6 +171,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
           TZ: Etc/UTC
+          MATRIX_DISTRO: ${{ matrix.distro }}
         run: |
           apt-get update
           # Install git and Python first (needed for uni-get-dependencies)
@@ -162,12 +179,12 @@ jobs:
 
           # Determine Qt profile based on distribution version
           # Older distros (Ubuntu 22.04, Debian 11) use Qt5, newer use Qt6
-          if [ "${{ matrix.distro }}" = "jammy" ] || [ "${{ matrix.distro }}" = "bullseye" ]; then
+          if [ "$MATRIX_DISTRO" = "jammy" ] || [ "$MATRIX_DISTRO" = "bullseye" ]; then
             QT_PROFILE="pythonscad-qt5"
           else
             QT_PROFILE="pythonscad-qt6"
           fi
-          echo "Using profile: $QT_PROFILE for ${{ matrix.distro }}"
+          echo "Using profile: $QT_PROFILE for $MATRIX_DISTRO"
 
           # Install base dependencies using get-dependencies (running as root, no sudo needed)
           ./scripts/get-dependencies.py --yes --profile "$QT_PROFILE"
@@ -281,19 +298,24 @@ jobs:
       - name: Get version for release upload
         id: version
         run: |
-          VERSION=$(cat VERSION.txt | tr -d '\n' | tr -d '\r')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(tr -d '\n\r' < VERSION.txt)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Rename package for GitHub Release (family + distro + arch)
+        env:
+          STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
+          MATRIX_FAMILY: ${{ matrix.family }}
+          MATRIX_DISTRO: ${{ matrix.distro }}
+          MATRIX_ARCH: ${{ matrix.arch }}
         run: |
-          DEB_FILE=$(ls /tmp/debs/pythonscad_*.deb | head -1)
+          DEB_FILE=$(find /tmp/debs -maxdepth 1 -name 'pythonscad_*.deb' | head -1)
           if [ -z "$DEB_FILE" ]; then
             echo "Error: No .deb file found"
             exit 1
           fi
 
-          VERSION="${{ steps.version.outputs.version }}"
-          NEW_NAME="pythonscad_${VERSION}-1_${{ matrix.family }}_${{ matrix.distro }}_${{ matrix.arch }}.deb"
+          VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
+          NEW_NAME="pythonscad_${VERSION}-1_${MATRIX_FAMILY}_${MATRIX_DISTRO}_${MATRIX_ARCH}.deb"
           mv "$DEB_FILE" "/tmp/debs/$NEW_NAME"
           ls -lh /tmp/debs/
 
@@ -321,12 +343,10 @@ jobs:
 
       - name: Upload to GitHub Release
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
-        uses: softprops/action-gh-release@v3
-        with:
-          files: /tmp/debs/pythonscad_*.deb
-          tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+        run: gh release upload "$RELEASE_TAG" /tmp/debs/pythonscad_*.deb --clobber
 
   publish-apt-repo:
     name: Publish APT repository to SFTP

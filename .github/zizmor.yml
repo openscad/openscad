@@ -34,6 +34,11 @@ rules:
       #     `*: hash-pin` rule kicks in and the linter raises a hard
       #     error, instead of silently allowing the supply-chain
       #     surface to grow.
+      #   - softprops/action-gh-release has been replaced with the
+      #     built-in `gh release upload` CLI, so it no longer appears
+      #     in any workflow.
+      #   - pypa/gh-action-pypi-publish is hash-pinned (receives
+      #     id-token: write for OIDC publishing to PyPI).
       policies:
         actions/*: ref-pin
         # Third-party — tracked for hash-pinning in #613:
@@ -42,8 +47,7 @@ rules:
         msys2/setup-msys2: ref-pin
         mxschmitt/action-tmate: ref-pin
         nanzm/get-time-action: ref-pin
-        pypa/gh-action-pypi-publish: ref-pin
-        softprops/action-gh-release: ref-pin
+        # pypa/gh-action-pypi-publish is hash-pinned (id-token: write); omitted here.
         ssciwr/setup-mesa-dist-win: ref-pin
         takanome-dev/assign-issue-action: ref-pin
         # Anything not listed above must be hash-pinned.

@@ -8,6 +8,9 @@ on:
     branches:
     - master
 
+permissions:
+  contents: read
+
 jobs:
   Beautify:
     runs-on: ubuntu-latest

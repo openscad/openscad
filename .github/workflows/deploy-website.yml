@@ -15,6 +15,9 @@ concurrency:
   group: deploy-website
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   deploy-website:
     name: Build and deploy mkdocs website

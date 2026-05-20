@@ -8,6 +8,9 @@ on:
     branches:
     - master
 
+permissions:
+  contents: read
+
 jobs:
   RunClangTidy:
     runs-on: ubuntu-24.04

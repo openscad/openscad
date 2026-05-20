@@ -9,6 +9,9 @@ on:
         required: true
         default: 'warning'
 
+permissions:
+  contents: read
+
 jobs:
   stale:
     runs-on: ubuntu-latest
