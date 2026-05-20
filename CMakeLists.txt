@@ -1344,7 +1344,7 @@ set(GUI_SOURCES
   src/gui/parameter/ParameterVector.cc
   src/gui/parameter/ParameterVirtualWidget.cc
   src/gui/parameter/ParameterWidget.cc
-  src/gui/ai/AiDock.cc
+  src/gui/ai/AIDock.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
@@ -1415,7 +1415,7 @@ set(GUI_HEADERS
     src/gui/parameter/ParameterVector.h
     src/gui/parameter/ParameterVirtualWidget.h
     src/gui/parameter/ParameterWidget.h
-    src/gui/ai/AiDock.h
+    src/gui/ai/AIDock.h
 )
 
 # To be added in Source for QtCreator to show them in project tree
