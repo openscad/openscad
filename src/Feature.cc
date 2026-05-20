@@ -46,6 +46,7 @@ const Feature Feature::ExperimentalVectorSwizzle(
 const Feature Feature::ExperimentalDiscretizationByError(
   "discretization-by-error",
   "Specify the maximum error in $fe and shapes will be segmented appropriately.");
+const Feature Feature::ExperimentalAiFeatures("ai-features", "Enable AI features.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
