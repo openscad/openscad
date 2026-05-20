@@ -13,7 +13,7 @@
       "lts": true,
       "eol_date": "2027-06",
       "runner": "ubuntu-22.04",
-      "docker_image": "ubuntu:jammy",
+      "docker_image": "ubuntu@sha256:ce941a2a18bbb922e434d6d6d2b31e571a5c3826eaf6ada0a41dcc905bd2d906",
       "architectures": [
         "amd64"
       ]
@@ -26,7 +26,7 @@
       "lts": true,
       "eol_date": "2029-05",
       "runner": "ubuntu-24.04",
-      "docker_image": "ubuntu:noble",
+      "docker_image": "ubuntu@sha256:cdb5fd928fced577cfecf12c8966e830fcdf42ee481fb0b91904eeddc2fe5eff",
       "architectures": [
         "amd64"
       ]
@@ -39,7 +39,7 @@
       "lts": false,
       "eol_date": "2026-07",
       "runner": "ubuntu-24.04",
-      "docker_image": "ubuntu:questing",
+      "docker_image": "ubuntu@sha256:91e7ac4c041dd191af1b9012fadbf489280894699c3f31e180969c4478781b7b",
       "architectures": [
         "amd64"
       ]
@@ -52,7 +52,7 @@
       "lts": true,
       "eol_date": "2031-05",
       "runner": "ubuntu-24.04",
-      "docker_image": "ubuntu:resolute",
+      "docker_image": "ubuntu@sha256:d31acef2a964b6df1f2b7e20a1525c4f2378024e087a4f8a8a9a4247e6a79573",
       "architectures": [
         "amd64"
       ]
@@ -65,7 +65,7 @@
       "lts": true,
       "eol_date": "2026-08",
       "runner": null,
-      "docker_image": "debian:bullseye",
+      "docker_image": "debian@sha256:cf7b10d27ddb50e2089cc618dc274ae57de64eb1468fa5e46155c99a5a8dc824",
       "architectures": [
         "amd64"
       ]
@@ -78,7 +78,7 @@
       "lts": true,
       "eol_date": "2028-06",
       "runner": null,
-      "docker_image": "debian:bookworm",
+      "docker_image": "debian@sha256:6b2217693a4963470f76adbee0d8d5371293fd102bfe3bcb77615566b0b0efe7",
       "architectures": [
         "amd64"
       ]
@@ -91,7 +91,7 @@
       "lts": false,
       "eol_date": "2030-06",
       "runner": null,
-      "docker_image": "debian:trixie",
+      "docker_image": "debian@sha256:2477d9ee0ead4370c778ce3aa42258a0b07684d1a84ded8f4af518383fbc3f2d",
       "architectures": [
         "amd64"
       ]
@@ -104,7 +104,7 @@
       "lts": false,
       "eol_date": "2026-05",
       "runner": "ubuntu-24.04",
-      "docker_image": "fedora:42",
+      "docker_image": "fedora@sha256:7c63468daf71fdc5bda3699cd483b169bb995b5137265d5ffe8f04e2ce87fbb8",
       "architectures": [
         "amd64"
       ]
@@ -117,7 +117,7 @@
       "lts": false,
       "eol_date": "2026-11",
       "runner": "ubuntu-24.04",
-      "docker_image": "fedora:43",
+      "docker_image": "fedora@sha256:815a0cf451f5741be990631adfb4a3afb0140ebb1f65d7698205b531ba2f0da4",
       "architectures": [
         "amd64"
       ]
@@ -130,7 +130,7 @@
       "lts": false,
       "eol_date": "2027-06",
       "runner": "ubuntu-24.04",
-      "docker_image": "fedora:44",
+      "docker_image": "fedora@sha256:f717d3f59ea0dc45d3c024c9477e786bab7d418d26636920d17b48016f1e69ca",
       "architectures": [
         "amd64"
       ]
@@ -143,7 +143,8 @@
       "lts": true,
       "eol_date": "2032-05",
       "runner": "ubuntu-24.04",
-      "docker_image": "rockylinux:9",
+      "docker_image":
+        "rockylinux@sha256:d644d203142cd5b54ad2a83a203e1dee68af2229f8fe32f52a30c6e1d3c3a9e0",
       "architectures": [
         "amd64"
       ]
@@ -155,7 +156,7 @@
     "native_runners":
       "Use native GitHub runner if available (runner field is not null). Otherwise use Docker image.",
     "docker_images":
-      "Docker base images for distributions without native runners. Requires installation of build tools.",
+      "Docker base images pinned to immutable digests. The codename field indicates the corresponding tag (e.g. codename=jammy -> ubuntu:jammy). To update a digest: docker manifest inspect <image>:<tag> | python3 -c \"import sys,json; m=json.load(sys.stdin); [print(e['digest']) for e in m.get('manifests',[]) if e.get('platform',{}).get('architecture')=='amd64' and e.get('platform',{}).get('os')=='linux']\"",
     "families":
       "Supported families: 'debian', 'ubuntu' (for .deb packages), 'fedora', 'el' (for .rpm packages)."
   }

@@ -90,9 +90,6 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     # Note: Don't use container field for ARM64 - it pulls amd64 images
     # ARM64 builds use explicit docker run with --platform flag
-    # zizmor: ignore[unpinned-images] — images are tag-pinned in
-    # supported-distributions.json (e.g. ubuntu:jammy), not digest-pinned.
-    # Accepted risk; digest-pinning is tracked in #663.
     container: ${{ matrix.arch == 'amd64' && matrix.docker_image || null }}
 
     steps:
