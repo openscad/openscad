@@ -45,26 +45,39 @@ sudo mv PythonSCAD-<version>.AppImage /usr/local/bin/pythonscad
 
 ## Windows
 
-We provide both a ZIP distribution and an installer for Windows.
+We provide three distribution formats for Windows:
 
-- ZIP: extract the zip somewhere convenient and run the contained
-  `pythonscad.exe`.
-- Installer: run the installer to install PythonSCAD on your system.
+- **MSIX package**: The recommended install format on Windows 11.
+- **NSIS Installer**: A traditional setup wizard.
+- **ZIP archive**: Extract anywhere and run `pythonscad.exe`.
 
-Note about digital signing:
+### Code signing
 
-Currently the installer and binaries are not digitally signed with
-a Microsoft Authenticode certificate. This means Windows SmartScreen
-or antivirus software may show warnings or block execution. Typical
-steps to run unsigned software on Windows:
+PythonSCAD Windows binaries are not yet signed with a Microsoft Authenticode
+certificate. Each format requires a slightly different workaround.
 
-- If Windows shows a SmartScreen warning, click **More info** then
-  **Run anyway**.
-- If Windows blocks the file, right-click the downloaded file,
-  choose **Properties**, and check **Unblock** (if present), then
-  click **OK** and retry.
-- You may need to run the installer as Administrator for
-  system-wide installation.
+#### MSIX package
+
+Open PowerShell **as Administrator** and run:
+
+```powershell
+Add-AppxPackage -Path "C:\Users\You\Downloads\PythonSCAD-1.0.0-windows-x86-64.msix" -AllowUnsigned
+```
+
+Replace the filename with the actual name of the downloaded `.msix` file.
+
+#### NSIS installer and ZIP
+
+When you run the installer or the extracted `.exe`, Windows SmartScreen may
+show a blue dialog titled **"Windows protected your PC"**:
+
+1. Click **More info**.
+2. Click **Run anyway**.
+
+If **Run anyway** does not appear (this can happen when **Smart App Control**
+is enabled on fresh Windows 11 installations), right-click the downloaded file,
+choose **Properties**, tick **Unblock** at the bottom of the General tab, click
+**OK**, and then re-run the file.
 
 ---
 

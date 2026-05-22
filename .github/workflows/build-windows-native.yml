@@ -62,6 +62,24 @@ jobs:
           echo "OPENSCAD_VERSION=$OPENSCAD_VERSION" >> "$GITHUB_ENV"
           echo "Using release version for package name: $OPENSCAD_VERSION"
 
+      - name: Derive MSIX version (4-part numeric required by makeappx)
+        id: msix-version
+        shell: bash
+        run: |
+          # MSIX Identity Version must be X.Y.Z.W with only numeric components.
+          # OPENSCAD_VERSION is set to e.g. "0.20.0" on release builds and is
+          # empty on snapshot/test builds (version comes from git describe at
+          # cmake time). Fall back to "0.0.0.0" for non-release runs where an
+          # exact version is not available yet.
+          VERSION="${OPENSCAD_VERSION:-0.0.0}"
+          # Strip any pre-release/build suffix (e.g. "0.20.0-rc1" -> "0.20.0")
+          VERSION="${VERSION%%-*}"
+          VERSION="${VERSION%%+*}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          MSIX_VERSION="${MAJOR:-0}.${MINOR:-0}.${PATCH:-0}.0"
+          echo "version=$MSIX_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using MSIX version: $MSIX_VERSION"
+
       - name: Setup (detached) tmate session if enabled
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         uses: mxschmitt/action-tmate@v3
@@ -105,9 +123,9 @@ jobs:
         run: |
           mkdir build && cd build
           # Use explicit version for release builds so package filenames never get -dirty
-          EXTRA_CMAKE=""
+          EXTRA_CMAKE=()
           if [ -n "${OPENSCAD_VERSION:-}" ]; then
-            EXTRA_CMAKE="-DOPENSCAD_VERSION=$OPENSCAD_VERSION"
+            EXTRA_CMAKE+=("-DOPENSCAD_VERSION=$OPENSCAD_VERSION")
           fi
           cmake .. -G"Ninja" \
             -DCMAKE_BUILD_TYPE=Release \
@@ -119,7 +137,7 @@ jobs:
             -DPORTABLE_BINARY=ON \
             -DENABLE_TESTS=OFF \
             -DPACKAGE_ARCH=windows-x86-64 \
-            $EXTRA_CMAKE
+            "${EXTRA_CMAKE[@]}"
           cmake --build . -j4
 
       - name: Bundle runtime Python deps (IPython) into build tree
@@ -267,10 +285,55 @@ jobs:
           path: ${{ steps.artifacts.outputs.exe_path }}
           retention-days: 30
 
+      # Build MSIX before the release upload so it can be included in the release assets.
+      # The composite action handles: locating makeappx, generating AppxManifest.xml,
+      # staging assets, packing, and optional code signing.
+      # To enable code signing add secrets WINDOWS_SIGN_CERTIFICATE (base64 PFX) and
+      # WINDOWS_SIGN_CERTIFICATE_PASSWORD to the repository, then uncomment the
+      # sign-certificate-base64 / sign-certificate-password inputs below.
+      - name: Derive MSIX filename (match CPack ZIP naming)
+        id: msix-filename
+        run: |
+          # Extract the version string from the CPack ZIP so the MSIX filename
+          # matches exactly (e.g. PythonSCAD-0.20.0-windows-x86-64.msix).
+          ZIP=$(ls build/PythonSCAD-*.zip 2>/dev/null | grep -v Installer | head -1 || true)
+          if [ -n "$ZIP" ]; then
+            BASE=$(basename "$ZIP" .zip)      # PythonSCAD-0.20.0-windows-x86-64
+          else
+            BASE="PythonSCAD-snapshot-windows-x86-64"
+          fi
+          MSIX_NAME="${BASE}.msix"
+          echo "msix_name=$MSIX_NAME" >> "$GITHUB_OUTPUT"
+          echo "Using MSIX filename: $MSIX_NAME"
+
+      - name: Build MSIX package
+        id: msix
+        uses: ./.github/actions/build-msix
+        with:
+          staging-dir: build/staging
+          executable-name: pythonscad.exe
+          package-version: ${{ steps.msix-version.outputs.version }}
+          publisher-cn: 'CN=PythonSCAD, OID.2.25.311729368913984317654407730594956997722=1'
+          icon-source: resources/icons/pythonscad.png
+          output-msix: ${{ steps.msix-filename.outputs.msix_name }}
+          # sign-certificate-base64: ${{ secrets.WINDOWS_SIGN_CERTIFICATE }}
+          # sign-certificate-password: ${{ secrets.WINDOWS_SIGN_CERTIFICATE_PASSWORD }}
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.msix-filename.outputs.msix_name }}
+          path: ${{ steps.msix-filename.outputs.msix_name }}
+          retention-days: 30
+
       - name: Upload artifacts to release
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
-        shell: bash
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3
+        with:
+          files: |
+            artifacts/*.zip
+            artifacts/*.exe
+            ${{ steps.msix-filename.outputs.msix_name }}
+          tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
-        run: gh release upload "$RELEASE_TAG" artifacts/*.zip artifacts/*.exe --clobber
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

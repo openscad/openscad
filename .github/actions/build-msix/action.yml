@@ -1,0 +1,266 @@
+name: Build MSIX Package
+description: >
+  Locates makeappx.exe, generates AppxManifest.xml, stages assets, packs an
+  MSIX, and optionally signs it with signtool. Designed so that the same
+  action can be called from both the MinGW (MSYS2) workflow and a future MSVC
+  workflow without duplication.
+
+inputs:
+  staging-dir:
+    description: 'Directory that cmake --install populated (must contain the EXE)'
+    required: true
+    default: 'build/staging'
+  executable-name:
+    description: 'Name of the installed EXE inside staging-dir'
+    required: true
+    default: 'pythonscad.exe'
+  package-version:
+    description: >
+      4-part numeric MSIX version (e.g. "0.20.0.0"). The caller should convert
+      the semantic version (0.20.0) to this form before passing it in.
+    required: true
+  publisher-cn:
+    description: >
+      Publisher field in AppxManifest Identity. For unsigned packages this must
+      include the special unsigned-namespace OID suffix:
+      "CN=PythonSCAD, OID.2.25.311729368913984317654407730594956997722=1"
+      Signed packages use a normal CN= matching the code-signing certificate.
+    required: true
+    default: 'CN=PythonSCAD, OID.2.25.311729368913984317654407730594956997722=1'
+  icon-source:
+    description: 'Path to the source PNG icon (relative to repo root)'
+    required: true
+    default: 'resources/icons/pythonscad.png'
+  output-msix:
+    description: 'Output .msix filename'
+    required: true
+    default: 'PythonSCAD.msix'
+  # --- Code signing (leave empty to skip) ---
+  sign-certificate-base64:
+    description: >
+      Base64-encoded PFX certificate for code signing. When provided the
+      packed MSIX is signed with signtool. Store this value in a GitHub
+      Actions secret (e.g. WINDOWS_SIGN_CERTIFICATE). Both raw Base64 and
+      PEM-wrapped (certutil -encode) formats are accepted; header/footer
+      lines and whitespace are stripped automatically.
+    required: false
+    default: ''
+  sign-certificate-password:
+    description: >
+      Password for the PFX certificate. Store in a GitHub Actions secret
+      (e.g. WINDOWS_SIGN_CERTIFICATE_PASSWORD).
+    required: false
+    default: ''
+  sign-timestamp-url:
+    description: 'RFC 3161 timestamp server URL used when signing'
+    required: false
+    default: 'https://timestamp.digicert.com'
+
+outputs:
+  msix_path:
+    description: 'Path to the generated (and optionally signed) .msix file'
+    value: ${{ steps.pack.outputs.msix_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Locate makeappx.exe
+      id: locate-makeappx
+      shell: powershell
+      run: |
+        $tool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" `
+          -ErrorAction SilentlyContinue |
+          Sort-Object { $_.VersionInfo.FileVersionRaw } -Descending |
+          Select-Object -First 1
+        if (-not $tool) {
+          Write-Error "makeappx.exe not found under Windows Kits. Ensure the Windows SDK is installed."
+          exit 1
+        }
+        Write-Host "Found makeappx: $($tool.FullName)"
+        "path=$($tool.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Create AppxManifest.xml
+      shell: powershell
+      env:
+        MSIX_VERSION: ${{ inputs.package-version }}
+        MSIX_PUBLISHER: ${{ inputs.publisher-cn }}
+        MSIX_EXECUTABLE: ${{ inputs.executable-name }}
+        MSIX_STAGING_DIR: ${{ inputs.staging-dir }}
+      run: |
+        # Build the manifest via XmlDocument so we avoid PowerShell here-string
+        # column-0 constraints that break YAML literal block scalars.
+        $ns       = "http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+        $nsUap    = "http://schemas.microsoft.com/appx/manifest/uap/windows10"
+        $nsRescap = "http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+
+        $doc = New-Object System.Xml.XmlDocument
+        $decl = $doc.CreateXmlDeclaration("1.0", "utf-8", $null)
+        $doc.AppendChild($decl) | Out-Null
+
+        $pkg = $doc.CreateElement("Package", $ns)
+        $pkg.SetAttribute("xmlns:uap", $nsUap)
+        $pkg.SetAttribute("xmlns:rescap", $nsRescap)
+        $pkg.SetAttribute("IgnorableNamespaces", "uap rescap")
+        $doc.AppendChild($pkg) | Out-Null
+
+        $id = $doc.CreateElement("Identity", $ns)
+        $id.SetAttribute("Name", "PythonSCAD")
+        $id.SetAttribute("Publisher", $env:MSIX_PUBLISHER)
+        $id.SetAttribute("Version", $env:MSIX_VERSION)
+        $pkg.AppendChild($id) | Out-Null
+
+        $props = $doc.CreateElement("Properties", $ns)
+        foreach ($pair in @(
+            @("DisplayName",          "PythonSCAD"),
+            @("PublisherDisplayName", "PythonSCAD"),
+            @("Logo",                 "Assets\logo.png")
+        )) {
+          $el = $doc.CreateElement($pair[0], $ns); $el.InnerText = $pair[1]
+          $props.AppendChild($el) | Out-Null
+        }
+        $pkg.AppendChild($props) | Out-Null
+
+        $res = $doc.CreateElement("Resources", $ns)
+        $lang = $doc.CreateElement("Resource", $ns); $lang.SetAttribute("Language", "en-us")
+        $res.AppendChild($lang) | Out-Null
+        $pkg.AppendChild($res) | Out-Null
+
+        $deps = $doc.CreateElement("Dependencies", $ns)
+        $tdf  = $doc.CreateElement("TargetDeviceFamily", $ns)
+        $tdf.SetAttribute("Name", "Windows.Desktop")
+        $tdf.SetAttribute("MinVersion", "10.0.19041.0")
+        $tdf.SetAttribute("MaxVersionTested", "10.0.26100.0")
+        $deps.AppendChild($tdf) | Out-Null
+        $pkg.AppendChild($deps) | Out-Null
+
+        $apps = $doc.CreateElement("Applications", $ns)
+        $app  = $doc.CreateElement("Application", $ns)
+        $app.SetAttribute("Id", "PythonSCAD")
+        $app.SetAttribute("Executable", $env:MSIX_EXECUTABLE)
+        $app.SetAttribute("EntryPoint", "Windows.FullTrustApplication")
+        $ve = $doc.CreateElement("VisualElements", $nsUap)
+        $ve.SetAttribute("DisplayName", "PythonSCAD")
+        $ve.SetAttribute("Description", "PythonSCAD - 3D modelling with Python")
+        $ve.SetAttribute("BackgroundColor", "transparent")
+        $ve.SetAttribute("Square150x150Logo", "Assets\logo.png")
+        $ve.SetAttribute("Square44x44Logo", "Assets\logo.png")
+        $app.AppendChild($ve) | Out-Null
+        $apps.AppendChild($app) | Out-Null
+        $pkg.AppendChild($apps) | Out-Null
+
+        $caps = $doc.CreateElement("Capabilities", $ns)
+        $rc = $doc.CreateElement("Capability", $nsRescap); $rc.SetAttribute("Name", "runFullTrust")
+        $dc = $doc.CreateElement("DeviceCapability", $ns); $dc.SetAttribute("Name", "graphicsDevice")
+        $caps.AppendChild($rc) | Out-Null
+        $caps.AppendChild($dc) | Out-Null
+        $pkg.AppendChild($caps) | Out-Null
+
+        if (-not (Test-Path $env:MSIX_STAGING_DIR)) {
+          Write-Error "staging-dir '$env:MSIX_STAGING_DIR' does not exist. Ensure cmake --install ran successfully."
+          exit 1
+        }
+        $manifestPath = Join-Path $env:MSIX_STAGING_DIR "AppxManifest.xml"
+        $settings = New-Object System.Xml.XmlWriterSettings
+        $settings.Indent = $true
+        $settings.Encoding = [System.Text.UTF8Encoding]::new($false)
+        $writer = [System.Xml.XmlWriter]::Create($manifestPath, $settings)
+        $doc.Save($writer)
+        $writer.Close()
+        Write-Host "Wrote AppxManifest.xml to $manifestPath"
+
+    - name: Stage MSIX assets
+      shell: powershell
+      env:
+        MSIX_STAGING_DIR: ${{ inputs.staging-dir }}
+        ICON_SOURCE: ${{ inputs.icon-source }}
+      run: |
+        $assetsDir = Join-Path $env:MSIX_STAGING_DIR "Assets"
+        New-Item -ItemType Directory -Path $assetsDir -Force | Out-Null
+        # Copy icon with a fixed name so the manifest reference (Assets\logo.png) always matches.
+        Copy-Item $env:ICON_SOURCE (Join-Path $assetsDir "logo.png") -Force
+        Write-Host "Staged assets to $assetsDir"
+
+    - name: Pack MSIX
+      id: pack
+      shell: powershell
+      env:
+        MAKEAPPX_PATH: ${{ steps.locate-makeappx.outputs.path }}
+        MSIX_STAGING_DIR: ${{ inputs.staging-dir }}
+        MSIX_EXECUTABLE: ${{ inputs.executable-name }}
+        OUTPUT_MSIX: ${{ inputs.output-msix }}
+      run: |
+        if (-not (Test-Path $env:MSIX_STAGING_DIR)) {
+          Write-Error "staging-dir '$env:MSIX_STAGING_DIR' does not exist. Ensure cmake --install ran successfully."
+          exit 1
+        }
+        $stagingDir = Resolve-Path $env:MSIX_STAGING_DIR
+        $exePath = Join-Path $stagingDir $env:MSIX_EXECUTABLE
+        if (-not (Test-Path $exePath)) {
+          Write-Error "Executable not found at '$exePath'. Check staging-dir and executable-name inputs."
+          exit 1
+        }
+        & $env:MAKEAPPX_PATH pack /d "$stagingDir" /p "$env:OUTPUT_MSIX"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $fullPath = Resolve-Path $env:OUTPUT_MSIX
+        Write-Host "Packed MSIX: $fullPath"
+        "msix_path=$fullPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Validate signing inputs
+      if: ${{ inputs.sign-certificate-base64 != '' || inputs.sign-certificate-password != '' }}
+      shell: powershell
+      env:
+        CERT_BASE64: ${{ inputs.sign-certificate-base64 }}
+        CERT_PASSWORD: ${{ inputs.sign-certificate-password }}
+      run: |
+        if (-not $env:CERT_BASE64 -or -not $env:CERT_PASSWORD) {
+          Write-Error "Both sign-certificate-base64 and sign-certificate-password must be set to enable signing. Only one was provided."
+          exit 1
+        }
+
+    # Code signing — only runs when both certificate secrets are provided.
+    # To enable: set repository secrets WINDOWS_SIGN_CERTIFICATE (base64 PFX)
+    # and WINDOWS_SIGN_CERTIFICATE_PASSWORD, then pass them as inputs.
+    - name: Sign MSIX (optional)
+      if: ${{ inputs.sign-certificate-base64 != '' && inputs.sign-certificate-password != '' }}
+      shell: powershell
+      env:
+        CERT_BASE64: ${{ inputs.sign-certificate-base64 }}
+        CERT_PASSWORD: ${{ inputs.sign-certificate-password }}
+        TIMESTAMP_URL: ${{ inputs.sign-timestamp-url }}
+        OUTPUT_MSIX: ${{ inputs.output-msix }}
+      run: |
+        if (-not $env:CERT_PASSWORD) {
+          Write-Error "sign-certificate-password is required when sign-certificate-base64 is set"
+          exit 1
+        }
+        $pfxPath = Join-Path $env:RUNNER_TEMP "sign.pfx"
+        # Strip header/footer lines (e.g. from certutil -encode) and whitespace
+        # so FromBase64String works whether the secret is raw Base64 or PEM-wrapped.
+        $b64 = ($env:CERT_BASE64 -split "`n" |
+          Where-Object { $_ -notmatch '^\s*-----' -and $_.Trim() -ne '' } |
+          ForEach-Object { $_.Trim() }) -join ''
+        try {
+          $certBytes = [System.Convert]::FromBase64String($b64)
+        } catch {
+          Write-Error "sign-certificate-base64 is not valid Base64. Check that the secret was pasted correctly and is not truncated."
+          exit 1
+        }
+        [System.IO.File]::WriteAllBytes($pfxPath, $certBytes)
+        try {
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" `
+            -ErrorAction SilentlyContinue |
+            Sort-Object { $_.VersionInfo.FileVersionRaw } -Descending |
+            Select-Object -First 1
+          if (-not $signtool) { Write-Error "signtool.exe not found"; exit 1 }
+          & $signtool.FullName sign `
+            /fd SHA256 `
+            /p $env:CERT_PASSWORD `
+            /f $pfxPath `
+            /tr $env:TIMESTAMP_URL `
+            /td SHA256 `
+            "$env:OUTPUT_MSIX"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Write-Host "Signed $env:OUTPUT_MSIX"
+        } finally {
+          Remove-Item $pfxPath -Force -ErrorAction SilentlyContinue
+        }
