@@ -2922,7 +2922,7 @@
 	  <item row="1" column="1">
            <widget class="QLabel" name="labelGlobalTrustPython">
             <property name="text">
-             <string>Globally trust Python</string>
+             <string>Globally trust Python designs</string>
             </property>
            </widget>
           </item>

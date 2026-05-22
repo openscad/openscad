@@ -3,6 +3,7 @@
 #include <QColor>
 #include <QCursor>
 #include <QEvent>
+#include <QApplication>
 #include <QGuiApplication>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
@@ -36,8 +37,19 @@
 #include "core/Settings.h"
 #include "gui/Preferences.h"
 #include "gui/ScadLexer.h"
+#include "gui/qtgettext.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
+
+#ifdef ENABLE_PYTHON
+#include <QHBoxLayout>
+#include <QIcon>
+#include <QLabel>
+#include <QPalette>
+#include <QPushButton>
+#include <QSizePolicy>
+#include "python/python_public.h"
+#endif
 
 namespace fs = std::filesystem;
 
@@ -173,6 +185,34 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
   scintillaLayout->addWidget(qsci);
+
+#ifdef ENABLE_PYTHON
+  pythonTrustBar = new QFrame(this);
+  pythonTrustBar->setObjectName("pythonTrustBar");
+  pythonTrustBar->setFrameShape(QFrame::NoFrame);
+  updateTrustBarPalette();
+  auto *barLayout = new QHBoxLayout(pythonTrustBar);
+  barLayout->setContentsMargins(8, 4, 8, 4);
+
+  auto *warningIconLabel = new QLabel(pythonTrustBar);
+  warningIconLabel->setPixmap(
+    QIcon::fromTheme("dialog-warning", QIcon(":/icons/information-icons-warning.png")).pixmap(16, 16));
+  barLayout->addWidget(warningIconLabel);
+
+  auto *msgLabel =
+    new QLabel(q_("This Python design is not trusted. Execution is disabled.", nullptr), pythonTrustBar);
+  msgLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+  barLayout->addWidget(msgLabel);
+
+  auto *trustButton = new QPushButton(q_("Trust Design", nullptr), pythonTrustBar);
+  barLayout->addWidget(trustButton);
+  connect(trustButton, &QPushButton::clicked, this, [this]() { trustCurrent(); });
+
+  scintillaLayout->insertWidget(0, pythonTrustBar);
+  pythonTrustBar->hide();
+
+  connect(this, &EditorInterface::trustStateChanged, this, &ScintillaEditor::updateTrustBar);
+#endif
 
   qsci->setUtf8(true);
   qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
@@ -334,6 +374,15 @@ void ScintillaEditor::applySettings()
   onTextChanged();
 
   setupAutoComplete(false);
+#ifdef ENABLE_PYTHON
+  // Re-evaluate trust from the hash store when preferences change (e.g. global trust toggled).
+  // For disk-backed Python files this ensures trusted reflects the current settings, so F5/F6
+  // are correctly enabled/disabled without requiring a manual "Trust Design" click.
+  if (language == LANG_PYTHON && !filepath.isEmpty()) {
+    trust_python_file();
+  }
+  updateTrustBar();
+#endif
 }
 
 void ScintillaEditor::setupAutoComplete(const bool forceOff)
@@ -1562,6 +1611,42 @@ void ScintillaEditor::onLanguageChanged(int lang)
   this->qsci->update();
   // This is needed otherwise the sidebar with line numbers has the wrong size and bg color
   this->setHighlightScheme(GlobalPreferences::inst()->getValue("editor/syntaxhighlight").toString());
+#ifdef ENABLE_PYTHON
+  updateTrustBar();
+#endif
+}
+
+#ifdef ENABLE_PYTHON
+void ScintillaEditor::updateTrustBar()
+{
+  const bool globalTrust = python_trusted || Settings::SettingsPython::globalTrustPython.value();
+  const bool showBar = (language == LANG_PYTHON) && !filepath.isEmpty() && !trusted && !globalTrust;
+  pythonTrustBar->setVisible(showBar);
+}
+
+void ScintillaEditor::updateTrustBarPalette()
+{
+  const QPalette appPal = QApplication::palette();
+  const bool isDark = appPal.color(QPalette::WindowText).lightness() > 165;
+  const QColor bg = isDark ? QColor(120, 90, 0) : QColor(255, 220, 80);
+  const QColor fg = isDark ? QColor(255, 245, 220) : QColor(40, 30, 0);
+  // Use a stylesheet rather than QPalette so the colour update is guaranteed to
+  // repaint immediately and is not suppressed by palette-inheritance caching.
+  pythonTrustBar->setStyleSheet(QString("QFrame#pythonTrustBar { background-color: %1; color: %2; }"
+                                        "QFrame#pythonTrustBar QLabel { color: %2; }"
+                                        "QFrame#pythonTrustBar QPushButton { color: %2; }")
+                                  .arg(bg.name(), fg.name()));
+}
+#endif
+
+void ScintillaEditor::changeEvent(QEvent *event)
+{
+  EditorInterface::changeEvent(event);
+#ifdef ENABLE_PYTHON
+  if (event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange) {
+    updateTrustBarPalette();
+  }
+#endif
 }
 
 void ScintillaEditor::setCursorPosition(int line, int col)

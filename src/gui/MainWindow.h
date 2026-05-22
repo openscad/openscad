@@ -257,6 +257,9 @@ private:
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
   void updateLanguageLabel();
+#ifdef ENABLE_PYTHON
+  void updatePythonTrustActions();
+#endif
   void showLanguageMenu();
   void activateDock(Dock *);
   Dock *findVisibleDockToActivate(int offset) const;
@@ -287,7 +290,7 @@ private slots:
   void on_fileActionSave_triggered();
   void on_fileActionSaveAs_triggered();
   void on_fileActionPythonRevoke_triggered();
-  void on_fileActionPythonTrustCurrent_triggered();
+  void on_fileActionPythonTrustCurrentDesign_triggered();
   void on_fileActionPythonCreateVenv_triggered();
   void on_fileActionPythonSelectVenv_triggered();
   void on_fileActionSaveACopy_triggered();
@@ -510,6 +513,9 @@ private:
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
   QMenu *navigationMenu{nullptr};
+#ifdef ENABLE_PYTHON
+  QMetaObject::Connection editorTrustConnection;
+#endif
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 

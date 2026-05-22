@@ -249,7 +249,10 @@
      <property name="title">
       <string>Python</string>
      </property>
-     <addaction name="fileActionPythonTrustCurrent"/>
+     <property name="icon">
+      <iconset theme="chokusen-python"/>
+     </property>
+     <addaction name="fileActionPythonTrustCurrentDesign"/>
      <addaction name="fileActionPythonRevoke"/>
      <addaction name="separator"/>
      <addaction name="fileActionPythonSelectVenv"/>
@@ -1404,20 +1407,23 @@
     <string>Export as &amp;DXF...</string>
    </property>
   </action>
-  <action name="fileActionPythonTrustCurrent">
+  <action name="fileActionPythonTrustCurrentDesign">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Trust Current Document...</string>
+    <string>&amp;Trust Current Design</string>
    </property>
    <property name="toolTip">
-    <string>Mark the active saved Python document as trusted (same as choosing Yes in the trust prompt)</string>
+    <string>Toggle trust for the active saved Python design</string>
    </property>
   </action>
   <action name="fileActionPythonRevoke">
    <property name="text">
-    <string>Revoke Trusted Python Files</string>
+    <string>&amp;Revoke Trust for All Python Designs...</string>
    </property>
    <property name="toolTip">
-    <string>Revoke Trusted Python Files</string>
+    <string>Revoke trust for all Python designs and clear the trust store</string>
    </property>
   </action>
   <action name="fileActionClose">
@@ -1705,12 +1711,12 @@
   </action>
   <action name="fileActionPythonCreateVenv">
    <property name="text">
-    <string>Create Virtual Environment</string>
+    <string>Create Virtual &amp;Environment...</string>
    </property>
   </action>
   <action name="fileActionPythonSelectVenv">
    <property name="text">
-    <string>Select Virtual Environment</string>
+    <string>&amp;Select Virtual Environment...</string>
    </property>
   </action>
  </widget>

@@ -68,7 +68,7 @@ public:
   void resetLanguageDetection();
 #ifdef ENABLE_PYTHON
   bool trust_python_file(void);
-  void clearPythonUntrustState(void);
+  bool hasPythonTrustHash(void) const;
   void trustCurrent(void);
   void revokeTrust(void);
 #endif
@@ -79,6 +79,9 @@ signals:
   void showContextMenuEvent(const QPoint& pos);
   void focusIn();
   void escapePressed();
+#ifdef ENABLE_PYTHON
+  void trustStateChanged();
+#endif
 
 public slots:
   virtual void zoomIn() = 0;
@@ -121,7 +124,6 @@ public:
   /// True after loading from an existing file on disk or a successful save to this path.
   bool diskBacked = false;
   bool trusted = false;
-  bool untrusted = false;
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;

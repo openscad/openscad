@@ -56,6 +56,9 @@
 #include "gui/UnsavedChangesDialog.h"
 #include "utils/printutils.h"
 #include <genlang/genlang.h>
+#ifdef ENABLE_PYTHON
+#include "python/python_public.h"
+#endif
 
 #include <algorithm>
 
@@ -510,8 +513,6 @@ void TabManager::createTab(const QString& filename, bool initializeEmptyEditor)
   editor = scintillaEditor;
   //  Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
   this->use_gvim = GlobalPreferences::inst()->getValue("editor/usegvim").toBool();
-  //  this->use_gvim = true;
-  parent->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(parent->parameterDock);
   connect(editor->parameterWidget, &ParameterWidget::parametersChanged, parent,
           &MainWindow::actionRenderPreview);
@@ -570,7 +571,8 @@ void TabManager::createTab(const QString& filename, bool initializeEmptyEditor)
   connect(scintillaEditor, &ScintillaEditor::hyperlinkIndicatorClicked, this,
           &TabManager::onHyperlinkIndicatorClicked);
 
-  // Fill the editor with the content of the file
+  // Fill the editor with the content of the file — do this before exposing the editor as
+  // activeEditor so checkAutoReload() never sees a half-initialised tab (wrong language, no trust).
   if (filename.isEmpty()) {
     editor->filepath = "";
     editor->diskBacked = false;
@@ -580,7 +582,14 @@ void TabManager::createTab(const QString& filename, bool initializeEmptyEditor)
     }
   } else {
     openTabFile(filename);
+    // Prime autoReloadId directly so the first auto-reload tick doesn't treat the fresh
+    // file as "changed on disk". We can't rely on fileChangedOnDisk() here because
+    // activeEditor still points at the previous tab at this point.
+    if (!editor->filepath.isEmpty()) {
+      editor->autoReloadId = MainWindow::autoReloadIdentityForPath(editor->filepath);
+    }
   }
+  parent->activeEditor = editor;
   editorList.insert(editor);
 
   // Get the name of the tab in editor
@@ -1037,11 +1046,39 @@ bool TabManager::refreshDocument()
 #endif
       auto text = reader.readAll();
       LOG("Loaded design '%1$s'.", editor->filepath.toStdString());
-      if (editor->toPlainText() != text) {
+      const bool contentChanged = editor->toPlainText() != text;
+      if (contentChanged) {
         editor->setPlainText(text);
         setContentRenderState();  // since last render
         editor->recomputeLanguageActive();
       }
+#ifdef ENABLE_PYTHON
+      // Run trust check unconditionally — text may match (session restore) but trusted
+      // is still at its default (false) and needs to be resolved from the hash store.
+      if (editor->language == LANG_PYTHON) {
+        if (editor->trusted && contentChanged && !python_trusted &&
+            !Settings::SettingsPython::globalTrustPython.value() && editor->hasPythonTrustHash()) {
+          // File changed externally while per-file trusted (e.g. external editor workflow).
+          // Re-trust and update the stored hash so future opens also auto-trust.
+          // Only when a per-file hash already exists — if trust came from global/CLI trust
+          // (no hash entry), fall through to trust_python_file() so the file becomes
+          // untrusted until explicitly trusted again.
+          editor->trustCurrent();
+        } else {
+          // Fresh open, previously untrusted, content unchanged, or trust came from
+          // global/CLI — run hash check eagerly so the trust bar appears immediately.
+          // If content changed under global/CLI trust, clear trusted first so the hash
+          // check is not short-circuited if global trust is later disabled.
+          if (contentChanged &&
+              (python_trusted || Settings::SettingsPython::globalTrustPython.value())) {
+            editor->revokeTrust();
+          }
+          editor->trust_python_file();
+        }
+      } else {
+        editor->revokeTrust();
+      }
+#endif
       editor->diskBacked = true;
       file_opened = true;
     }
@@ -1228,47 +1265,56 @@ void TabManager::setTabSessionData(EditorInterface *edt, const QString& filepath
                                    const QByteArray& customizerState, std::optional<int> sessionLanguage,
                                    bool diskBackedValue)
 {
-  const QSignalBlocker blockEditor(edt);
-  const QSignalBlocker blockParameters(edt->parameterWidget);
-  edt->filepath = filepath;
-  edt->diskBacked = diskBackedValue;
-  edt->setPlainText(content);
-  edt->setContentModified(contentModified);
-  edt->parameterWidget->setModified(parameterModified);
-  if (!customizerState.isEmpty()) {
-    edt->parameterWidget->setSessionState(customizerState);
-  }
+  {
+    const QSignalBlocker blockEditor(edt);
+    const QSignalBlocker blockParameters(edt->parameterWidget);
+    edt->filepath = filepath;
+    edt->diskBacked = diskBackedValue;
+    edt->setPlainText(content);
+    edt->setContentModified(contentModified);
+    edt->parameterWidget->setModified(parameterModified);
+    if (!customizerState.isEmpty()) {
+      edt->parameterWidget->setSessionState(customizerState);
+    }
 #ifdef ENABLE_PYTHON
-  if (sessionLanguage.has_value()) {
-    const int lang = *sessionLanguage;
-    if (lang == LANG_PYTHON || lang == LANG_SCAD) {
-      edt->setLanguageManually(lang);
+    if (sessionLanguage.has_value()) {
+      const int lang = *sessionLanguage;
+      if (lang == LANG_PYTHON || lang == LANG_SCAD) {
+        edt->setLanguageManually(lang);
+      } else {
+        edt->resetLanguageDetection();
+        edt->recomputeLanguageActive();
+      }
     } else {
       edt->resetLanguageDetection();
       edt->recomputeLanguageActive();
-    }
-  } else {
-    edt->resetLanguageDetection();
-    edt->recomputeLanguageActive();
-    // Old session files had no language field; untitled Python tabs use an empty path.
-    if (filepath.isEmpty() && edt->language == LANG_SCAD) {
-      const QString trimmed = content.trimmed();
-      if (trimmed.startsWith(QStringLiteral("from openscad import")) ||
-          trimmed.startsWith(QStringLiteral("from pythonscad import")) ||
-          trimmed.startsWith(QStringLiteral("from _openscad import"))) {
-        edt->setLanguageManually(LANG_PYTHON);
+      // Old session files had no language field; untitled Python tabs use an empty path.
+      if (filepath.isEmpty() && edt->language == LANG_SCAD) {
+        const QString trimmed = content.trimmed();
+        if (trimmed.startsWith(QStringLiteral("from openscad import")) ||
+            trimmed.startsWith(QStringLiteral("from pythonscad import")) ||
+            trimmed.startsWith(QStringLiteral("from _openscad import"))) {
+          edt->setLanguageManually(LANG_PYTHON);
+        }
       }
     }
-  }
 #else
-  (void)sessionLanguage;
-  edt->resetLanguageDetection();
-  edt->recomputeLanguageActive();
+    (void)sessionLanguage;
+    edt->resetLanguageDetection();
+    edt->recomputeLanguageActive();
 #endif
-  parent->onLanguageActiveChanged(edt->language);
-  auto [fname, fpath] = getEditorTabNameWithModifier(edt);
-  setEditorTabName(fname, fpath, edt);
-  updateTabIcon(edt);
+    parent->onLanguageActiveChanged(edt->language);
+    auto [fname, fpath] = getEditorTabNameWithModifier(edt);
+    setEditorTabName(fname, fpath, edt);
+    updateTabIcon(edt);
+  }  // QSignalBlockers released here
+#ifdef ENABLE_PYTHON
+  // Eagerly initialize trust state outside the signal-blocking scope so
+  // trustStateChanged() is delivered and the trust bar updates immediately.
+  if (edt->language == LANG_PYTHON && !filepath.isEmpty()) {
+    edt->trust_python_file();
+  }
+#endif
 }
 
 void TabManager::saveSession(const QString& path)
@@ -1861,6 +1907,9 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
   // this condition.
   // FIXME jeff hayes - i have recently seen a better way to handle this, when i have found that note
   // again i will revist this
+#ifdef ENABLE_PYTHON
+  const bool wasUntitled = !edt->diskBacked || edt->filepath.isEmpty();
+#endif
   QSaveFile file(path);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
@@ -1889,6 +1938,19 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     edt->diskBacked = true;
     QSettingsCached settings;
     settings.setValue(QStringLiteral("lastOpenDirName"), QFileInfo(path).absolutePath());
+#ifdef ENABLE_PYTHON
+    if (edt->language == LANG_PYTHON && !python_trusted &&
+        !Settings::SettingsPython::globalTrustPython.value()) {
+      // First save of a user-authored buffer: the design was trusted as untitled
+      // (filepath was empty) but has no per-file hash yet. Trust it immediately so
+      // Preview/Render remain enabled and a persistent hash entry is written.
+      // For subsequent saves of already-trusted designs, update the hash to match
+      // the new on-disk content so trust persists across restarts.
+      if (wasUntitled || edt->trusted) {
+        edt->trustCurrent();
+      }
+    }
+#endif
   } else {
     saveError(file, _("Error saving design"), path);
   }

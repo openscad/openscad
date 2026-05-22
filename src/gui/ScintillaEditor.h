@@ -2,6 +2,7 @@
 
 #include <Qsci/qsciscintilla.h>
 
+#include <QFrame>
 #include <QMap>
 #include <QObject>
 #include <QString>
@@ -76,6 +77,7 @@ private:
                    const QColor& defaultColor);
 
   bool eventFilter(QObject *obj, QEvent *event) override;
+  void changeEvent(QEvent *event) override;
   bool handleKeyEventNavigateNumber(QKeyEvent *);
   bool handleWheelEventNavigateNumber(QWheelEvent *);
   bool handleKeyEventBlockCopy(QKeyEvent *);
@@ -160,6 +162,12 @@ private:
     14;  // Represents the impacted selected area text 14-15-16
 
   bool indicatorsActive = false;
+
+#ifdef ENABLE_PYTHON
+  QFrame *pythonTrustBar = nullptr;
+  void updateTrustBar();
+  void updateTrustBarPalette();
+#endif
 
 #if ENABLE_LEXERTL
   ScadLexer2 *lexer;

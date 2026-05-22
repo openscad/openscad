@@ -156,79 +156,54 @@ void EditorInterface::resetLanguageDetection()
 
 #ifdef ENABLE_PYTHON
 extern bool python_trusted;
+bool EditorInterface::hasPythonTrustHash(void) const
+{
+  if (filepath.isEmpty()) return false;
+  const QByteArray pathBytes = filepath.toUtf8();
+  const std::string pathUtf8(pathBytes.constData(), static_cast<size_t>(pathBytes.size()));
+  QSettingsCached settings;
+  // Pure presence check — no migration side-effects. Check all key variants.
+  return settings.contains(pythonTrustSettingKeyNew(pathUtf8)) ||
+         settings.contains(pythonTrustSettingKeyLegacyLocal(pathUtf8)) ||
+         settings.contains(pythonTrustSettingKeyLegacyCharCtorUtf8(pathUtf8)) ||
+         settings.contains(pythonTrustSettingKeyLegacyRawUtf8(pathUtf8));
+}
+
 bool EditorInterface::trust_python_file(void)
 {
+  if (python_trusted || Settings::SettingsPython::globalTrustPython.value() || filepath.isEmpty()) {
+    // Global/CLI trust or unsaved buffer: effective trust without a per-file hash.
+    // Do NOT set trusted=true here — trusted is reserved for hash-verified per-file trust.
+    // Callers check effective trust as: trusted || python_trusted || globalTrustPython.
+    return true;
+  }
+
+  if (trusted) return true;
+
+  const QByteArray contentBytes = toPlainText().toUtf8();
+  const std::string act_hash =
+    SHA256HashString(std::string(contentBytes.constData(), static_cast<size_t>(contentBytes.size())));
+
   QSettingsCached settings;
-  if (python_trusted) return true;
-  if (Settings::SettingsPython::globalTrustPython.value() == true) return true;
-
-  // Trust unsaved files (empty filepath) - they're created by the user, not loaded from disk
-  if (filepath.toStdString().empty()) {
-    return true;
-  }
-
-  std::string act_hash, ref_hash;
-  auto content = toPlainText().toUtf8().constData();
-  act_hash = SHA256HashString(content);
-
-  if (untrusted) return false;
-
-  if (trusted) {
-    writePythonTrustHash(settings, filepath.toUtf8().constData(), act_hash);
-    return true;
-  }
-
-  if (strlen(content) <= 1) {  // 1st character already typed
-    trusted = true;
-    return true;
-  }
-  /*
-    // Disabled: PythonSCAD relies on a hash-based trust store (see
-    // readPythonTrustHash / writePythonTrustHash) instead of a content
-    // sniff.  Kept for historical reference; if anyone re-enables this
-    // shortcut, the prefix check must accept all three module names that
-    // a PythonSCAD script can legally start with.
-    if (content.rfind("from openscad import", 0) == 0 || content.rfind("from pythonscad import", 0) == 0
-    || content.rfind("from _openscad import", 0) == 0) { trusted = true; return true;
-    }
-  */
-  ref_hash = readPythonTrustHash(settings, filepath.toUtf8().constData()).toStdString();
+  const std::string ref_hash =
+    readPythonTrustHash(settings, filepath.toUtf8().constData()).toStdString();
 
   if (act_hash == ref_hash) {
     trusted = true;
+    emit trustStateChanged();
     return true;
   }
 
-  auto ret = QMessageBox::warning(this, "Application",
-                                  _("Python files can potentially contain harmful stuff.\n"
-                                    "Do you trust this file ?\n"),
-                                  QMessageBox::Yes | QMessageBox::YesAll | QMessageBox::No);
-  if (ret == QMessageBox::YesAll) {
-    python_trusted = true;
-    return true;
-  }
-  if (ret == QMessageBox::Yes) {
-    trusted = true;
-    writePythonTrustHash(settings, filepath.toUtf8().constData(), act_hash);
-    return true;
-  }
-
-  if (ret == QMessageBox::No) {
-    untrusted = true;
-    return false;
-  }
+  trusted = false;
+  emit trustStateChanged();
   return false;
-}
-void EditorInterface::clearPythonUntrustState(void)
-{
-  untrusted = false;
 }
 
 void EditorInterface::trustCurrent(void)
 {
 #ifdef ENABLE_PYTHON
   if (language != LANG_PYTHON) {
-    QMessageBox::information(this, _("Python"), _("The active document is not a Python file."));
+    QMessageBox::information(this, _("Python"), _("The active design is not a Python design."));
     return;
   }
   if (filepath.isEmpty()) {
@@ -242,16 +217,15 @@ void EditorInterface::trustCurrent(void)
   QSettingsCached settings;
   const QByteArray pathUtf8 = filepath.toUtf8();
   const std::string fpath(pathUtf8.constData(), static_cast<size_t>(pathUtf8.size()));
-  clearPythonUntrustState();
   writePythonTrustHash(settings, fpath, SHA256HashString(content));
   trusted = true;
-  QMessageBox::information(this, _("Python"), _("This document is now trusted for Python execution."));
+  emit trustStateChanged();
 #endif
 }
 void EditorInterface::revokeTrust(void)
 {
   trusted = false;
-  untrusted = false;
+  emit trustStateChanged();
 }
 
 #endif
