@@ -230,7 +230,7 @@ void UIUtils::openURL(const QString& url)
 
 void UIUtils::openHomepageURL()
 {
-  QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
+  QDesktopServices::openUrl(QUrl("https://www.pythonscad.org/"));
 }
 
 static void openVersionedURL(const QString& url)

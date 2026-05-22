@@ -1491,7 +1491,7 @@
   </action>
   <action name="helpActionHomepage">
    <property name="text">
-    <string>&amp;OpenSCAD Homepage</string>
+    <string>&amp;PythonSCAD Homepage</string>
    </property>
   </action>
   <action name="designActionAutoReload">
