@@ -171,7 +171,7 @@ std::string LibraryInfo::info()
     << "\nUser Config Path: " << PlatformUtils::userConfigPath()
     << "\nBackup Path: " << PlatformUtils::backupPath()
     << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)
-    << "\nOpenSCAD library path:\n";
+    << "\nPythonSCAD library path:\n";
 
   for (const auto& path : librarypath) {
     s << "  " << path << "\n";

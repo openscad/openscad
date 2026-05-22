@@ -1506,7 +1506,7 @@ int PyOpenSCADItemRef_set_value(PyOpenSCADItemRef *self, PyObject *value, void *
   std::shared_ptr<AbstractNode> childnode = PyOpenSCADObjectToNode(value, &value_dict_raw);
   auto value_dict = py_owned(value_dict_raw);
   if (!childnode) {
-    PyErr_SetString(PyExc_TypeError, "invalid OpenSCAD object");
+    PyErr_SetString(PyExc_TypeError, "invalid PythonSCAD object");
     return -1;
   }
   parnode->children[self->index] = childnode;

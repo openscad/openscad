@@ -1785,7 +1785,7 @@ void MainWindow::on_fileActionPythonSelectVenv_triggered()
     Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
     Settings::Settings::visit(SettingsWriter());
     QMessageBox::information(this, _("Select Virtual Environment"),
-                             "Virtual environment selected, please restart OpenSCAD to activate.",
+                             "Virtual environment selected, please restart PythonSCAD to activate.",
                              QMessageBox::Ok);
   }
 #endif  // ifdef ENABLE_PYTHON

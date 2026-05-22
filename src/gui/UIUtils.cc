@@ -240,7 +240,7 @@ static void openVersionedURL(const QString& url)
 
 void UIUtils::openUserManualURL()
 {
-  openVersionedURL("https://www.openscad.org/documentation.html?version=%1");
+  openVersionedURL("https://pythonscad.org/tutorial/getting_started/");
 }
 
 fs::path UIUtils::returnOfflineUserManualPath()
