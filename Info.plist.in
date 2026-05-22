@@ -96,6 +96,8 @@
 			<string>Viewer</string>
 		</dict>
 	</array>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSPrincipalClass</key>

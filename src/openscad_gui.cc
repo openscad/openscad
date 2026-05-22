@@ -921,6 +921,13 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
                    &OpenSCADApp::setApplicationFont);
   QObject::connect(GlobalPreferences::inst(), &Preferences::guiThemeChanged, &app,
                    &OpenSCADApp::setGuiTheme);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+  // Re-apply the theme when the OS appearance changes so "auto" mode tracks
+  // the system setting at runtime without requiring a restart.
+  QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app, [&app]() {
+    app.setGuiTheme(GlobalPreferences::inst()->getValue("advanced/guiTheme").toString());
+  });
+#endif
   QObject::connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, &app,
                    &OpenSCADApp::setRenderBackend3D);
 

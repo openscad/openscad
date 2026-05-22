@@ -4,6 +4,7 @@
 #include "gui/Preferences.h"
 #ifdef Q_OS_MACOS
 #include "gui/EventFilter.h"
+#include "platform/CocoaUtils.h"
 #endif
 
 #include "geometry/GeometryCache.h"
@@ -230,6 +231,18 @@ void OpenSCADApp::setGuiTheme(const QString& preference)
     themePalette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(190, 190, 190));
   }
   scadApp->setPalette(themePalette);
+
+#ifdef Q_OS_MACOS
+  // For explicit dark/light, lock NSApp appearance so Cocoa widgets match.
+  // For "auto", pass nil so macOS manages it — this keeps colorSchemeChanged
+  // firing on OS-level changes, which would otherwise be silenced once the
+  // app appearance is locked.
+  if (preference == "auto") {
+    CocoaUtils::resetAppearance();
+  } else {
+    CocoaUtils::setAppearance(useDark);
+  }
+#endif
 
   QIcon::setThemeName(useDark ? "chokusen-dark" : "chokusen");
 

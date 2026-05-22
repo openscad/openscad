@@ -48,6 +48,7 @@
 #include <QString>
 #include <QStringList>
 #include <QTextDocument>
+#include <QScrollArea>
 #include <QWidget>
 #include <boost/algorithm/string.hpp>
 #include <cassert>
@@ -99,6 +100,15 @@ class SettingsReader : public Settings::SettingsVisitor
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
   setupUi(this);
+
+#ifdef Q_OS_MACOS
+  // On macOS the Cocoa platform plugin leaves QScrollArea viewports transparent,
+  // so the palette's Window color (dark in dark mode) is never painted behind
+  // the child widgets.  Enabling autoFillBackground fixes the background.
+  for (QScrollArea *sa : findChildren<QScrollArea *>()) {
+    sa->viewport()->setAutoFillBackground(true);
+  }
+#endif
 
   std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
   QStringList renderColorSchemes;
