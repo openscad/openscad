@@ -266,7 +266,7 @@ if [ -d "${PYTHON_O_DIR}" ]; then
 fi
 
 # Set the desktop file path for linuxdeploy
-DESKTOP_FILE="${APPDIR}/usr/share/applications/pythonscad.desktop"
+DESKTOP_FILE="${APPDIR}/usr/share/applications/org.pythonscad.pythonscad.desktop"
 if [ ! -f "${DESKTOP_FILE}" ]; then
     die "Desktop file not found at ${DESKTOP_FILE}"
 fi

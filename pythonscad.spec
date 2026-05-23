@@ -117,7 +117,7 @@ find %{buildroot} -type f \( -name "*.so*" -o -perm /111 \) -exec chrpath --dele
 %{_libdir}/libfive.so*
 %{_datadir}/pythonscad/
 %{_datadir}/icons/hicolor/*/apps/pythonscad.png
-%{_datadir}/applications/pythonscad.desktop
+%{_datadir}/applications/org.pythonscad.pythonscad.desktop
 %{_datadir}/mime/packages/pythonscad.xml
 %{_datadir}/metainfo/org.pythonscad.PythonSCAD.appdata.xml
 %{_mandir}/man1/pythonscad.1*
