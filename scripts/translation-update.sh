@@ -42,6 +42,7 @@ updatepot()
  OPTS=$OPTS' --keyword=_:1,2c'
  OPTS=$OPTS' --keyword=q_:1,2c'
  OPTS=$OPTS' --keyword=ngettext:1,2'
+ OPTS=$OPTS' --from-code=UTF-8'
  OPTS=$OPTS' --files-from=./locale/POTFILES'
  cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/pythonscad-tmp.pot'
  echo $cmd
@@ -126,7 +127,7 @@ if [ -z ${1+x} ]; then
   echo "Generating POTFILES..."
   BUILDDIR=$(
 	find "$CURDIR" -name ui_MainWindow.h \
-	| grep OpenSCAD.*_autogen/include/ui_MainWindow.h \
+	| grep 'OpenSCAD.*_autogen/include/ui_MainWindow.h' \
 	| sed -e 's,/*OpenSCAD.*_autogen/include/ui_MainWindow.h,,'
   )
   echo "Found directory: $BUILDDIR"
