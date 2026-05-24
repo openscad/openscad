@@ -64,9 +64,16 @@ export-pdf/paper-size=a3. Use \-\-help\-export to list all available settings.
 More than one \fB-O\fP option can be given.
 .TP
 \fB\-D\fP \fIvar=val\fP
-This option can be used to assign constant values to OpenSCAD variables. The
-variable's value is an expression, so if this mechanism is used to assign
-strings, care has to be taken that the shell does not consume quotation marks.
+Pre-define a variable before the design is evaluated.
+For \fBOpenSCAD\fP designs, \fIvar=val\fP is appended as an OpenSCAD
+expression after the script, so the value acts as a constant that the script
+cannot override.
+For \fBPython\fP designs, \fIvar=val\fP is executed as Python code
+\fIbefore\fP the script, so the script can reassign the variable freely; the
+value is therefore an initial default rather than a constant.
+Note: \fB\-D\fP is not applied to Python designs when \fB\-\-animate\fP is used.
+In both cases, if this mechanism is used to assign strings, care has to be
+taken that the shell does not consume quotation marks.
 More than one \fB\-D\fP option can be given.
 .TP
 \fB\-p\fP \fIfile\fP

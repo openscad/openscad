@@ -17,8 +17,8 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:102
 #: src/gui/AboutDialog.h:17
-msgid "About OpenSCAD"
-msgstr "OpenSCAD-ի մասին"
+msgid "About PythonSCAD"
+msgstr "PythonSCAD-ի մասին"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:104
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:304
@@ -30,7 +30,7 @@ msgid ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"2em;\">Script-based 3D modeling app with Python support</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -219,10 +219,10 @@ msgid "Axis Setup:"
 msgstr "Առանցքի կարգաբերում ՝"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:893
-msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
+msgid "<b>Driver selection:</b> <i>(changes require restarting PythonSCAD)</i>"
 msgstr ""
 "<b>Driver֊ի ընտրություն:</b> <i>(փոփոխությունից հետո անհրաժեշտ է "
-"վերագործարկել OpenSCAD֊ը)</i>"
+"վերագործարկել PythonSCAD֊ը)</i>"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:894
 msgid "SpaceNav"
@@ -1033,8 +1033,8 @@ msgid "Enable outline stroke for exported geometry."
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:106
-msgid "OpenSCAD Font List"
-msgstr "OpenSCAD Տառատեսակների ցանկ"
+msgid "PythonSCAD Font List"
+msgstr "PythonSCAD Տառատեսակների ցանկ"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:107
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:77
@@ -1170,8 +1170,8 @@ msgid "Style"
 msgstr "Ոճ"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:293
-msgid "Welcome to OpenSCAD"
-msgstr "Բարի գալուստ OpenSCAD"
+msgid "Welcome to PythonSCAD"
+msgstr "Բարի գալուստ PythonSCAD"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:294
 msgid "New"
@@ -1215,8 +1215,8 @@ msgid "Lib & Build Info"
 msgstr "Գրադար․ և կառուց․ տեղեկ․"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:76
-msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD֊ի ամբողջական գրադարանները և կառուցման տեղեկատվությունը"
+msgid "PythonSCAD Detailed Library and Build Information"
+msgstr "PythonSCAD֊ի ամբողջական գրադարանները և կառուցման տեղեկատվությունը"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1249
 #, fuzzy
@@ -1726,8 +1726,8 @@ msgid "&Flush Caches"
 msgstr "&Մաքրել «քեշը»"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1468
-msgid "&OpenSCAD Homepage"
-msgstr "&OpenSCAD գլխավոր կայք"
+msgid "&PythonSCAD Homepage"
+msgstr "&PythonSCAD գլխավոր կայք"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1469
 msgid "&Automatic Reload and Preview"
@@ -2593,8 +2593,8 @@ msgid "Show Welcome Screen"
 msgstr "Ցույց տալ ԲԱՐԻ ԳԱԼՈՒՍՏ֊ը"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2377
-msgid "Enable user interface localization (requires restart of OpenSCAD)"
-msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է OpenSCAD֊ի վերագործարկում)"
+msgid "Enable user interface localization (requires restart of PythonSCAD)"
+msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է PythonSCAD֊ի վերագործարկում)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2378
 msgid "Bring window to front after automatic reload"
@@ -2707,9 +2707,8 @@ msgid "Debugging"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2406
-#, fuzzy
-msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
-msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է OpenSCAD֊ի վերագործարկում)"
+msgid "Enable tracing of HIDAPI events (requires restart of PythonSCAD)"
+msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2407
 msgid "Dialog visibility"
@@ -2877,7 +2876,7 @@ msgstr "Պահել վահանակի պարունակությունը"
 
 #: src/gui/Export3mfDialog.cc:77
 msgid ""
-"This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for "
+"This PythonSCAD build uses lib3mf version 1. Setting the decimal precision for "
 "export needs version 2 or later."
 msgstr ""
 
@@ -3124,7 +3123,7 @@ msgstr ""
 
 #: src/gui/QGLView.cc:163
 msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+"It is highly recommended to use PythonSCAD on a system with OpenGL 2.0 or "
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
@@ -3253,20 +3252,20 @@ msgstr "Հիմունքներ"
 
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in2:6
-msgid "The Programmers Solid 3D CAD Modeller"
+msgid "Script-based 3D modeling app with Python support"
 msgstr ""
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:20
 msgid ""
-"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"PythonSCAD is a software for creating solid 3D CAD models. Unlike most free "
 "software for creating 3D models (such as Blender) it does not focus on the "
 "artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
 "might be the application you are looking for when you are planning to create "
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD- ը 3D CAD մոդելներ ստեղծելու ծրագիր է: Ի տարբերություն 3D մոդելների "
+"PythonSCAD- ը 3D CAD մոդելներ ստեղծելու ծրագիր է: Ի տարբերություն 3D մոդելների "
 "ստեղծման համար նախատեսված շատ անվճար ծրագրաշարի (օրինակ ՝ Blender), այն չի "
 "կենտրոնանում 3D մոդելավորման գեղարվեստական բաղադրիչի վրա, փոխարենը ՝ CAD ֊ի: "
 "Այսպիսով, սա կարող է լինել այն ծրագիրը, որը փնտրում եք, երբ նախատեսում եք "
@@ -3277,14 +3276,14 @@ msgstr ""
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:21
 msgid ""
-"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
+"PythonSCAD is not an interactive modeller. Instead it is something like a 3D-"
 "compiler that reads in a script file that describes the object and renders "
 "the 3D model from this script file. This gives you (the designer) full "
 "control over the modelling process and enables you to easily change any step "
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD- ը ինտերակտիվ մոդերատոր չէ: Փոխարենը այն 3D կազմողի պես մի բան է, "
+"PythonSCAD- ը ինտերակտիվ մոդերատոր չէ: Փոխարենը այն 3D կազմողի պես մի բան է, "
 "որը կարդում է օբյեկտը նկարագրող սցենարի նիշքը  և այս սցենարի նիշքից "
 "ներկայացնում է 3D մոդելը: Սա ձեզ (դիզայներին) լիակատար վերահսկողություն է "
 "տալիս մոդելավորման գործընթացի վրա և հնարավորություն է տալիս հեշտությամբ "
@@ -3294,19 +3293,19 @@ msgstr ""
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:22
 msgid ""
-"OpenSCAD provides two main modelling techniques: First there is constructive "
+"PythonSCAD provides two main modelling techniques: First there is constructive "
 "solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
 "data exchange format for this 2D outlines Autocad DXF files are used. In "
 "addition to 2D paths for extrusion it is also possible to read design "
-"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
+"parameters from DXF files. Besides DXF files PythonSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenSCAD- ը տրամադրում է մոդելավորման երկու հիմնական տեխնիկա. Նախ կա "
+"PythonSCAD- ը տրամադրում է մոդելավորման երկու հիմնական տեխնիկա. Նախ կա "
 "կառուցողական ամուր երկրաչափություն (aka CSG), երկրորդը `2D ուրվագծերի "
 "արտահոսքն է: Որպես այս 2D ուրվագծերի տվյալների փոխանակման ձևաչափ ՝ "
 "օգտագործվում են Autocad DXF նիշքեր: Բացի արտածման համար 2D ուրվագծերից "
 "հնարավոր է նաև կարդալ դիզայնի կարգաբերումները DXF նիշքերից: Բացի DXF "
-"նիշքերից, OpenSCAD- ը կարող է կարդալ և ստեղծել 3D մոդելներ STL և OFF նիշքերի "
+"նիշքերից, PythonSCAD- ը կարող է կարդալ և ստեղծել 3D մոդելներ STL և OFF նիշքերի "
 "ձևաչափերով:"
 
 #: src/openscad_gui.cc

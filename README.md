@@ -16,17 +16,18 @@ It is a fork of [OpenSCAD](https://openscad.org) which not only adds
 support for using Python as a native language, but also adds new
 features and improves existing ones.
 
-- [When to not use PythonSCAD](#when-to-not-use-pythonscad)
-- [Difference to OpenSCAD](#difference-to-openscad)
+- [PythonSCAD](#pythonscad)
+  - [When to not use PythonSCAD](#when-to-not-use-pythonscad)
+  - [Difference to OpenSCAD](#difference-to-openscad)
   - [Intentional language limitations of OpenSCAD](#intentional-language-limitations-of-openscad)
   - [Solids as 1st class objects](#solids-as-1st-class-objects)
   - [Additional methods in PythonSCAD](#additional-methods-in-pythonscad)
   - [Python](#python)
   - [PythonSCAD -\> functional language, OpenSCAD -\> descriptive Language](#pythonscad---functional-language-openscad---descriptive-language)
-- [Installing](#installing)
-- [Example code](#example-code)
-- [Documentation](#documentation)
-- [Building PythonSCAD from source](#building-pythonscad-from-source)
+  - [Installing](#installing)
+  - [Example code](#example-code)
+    - [Documentation](#documentation)
+    - [Building PythonSCAD from source](#building-pythonscad-from-source)
   - [Prerequisites](#prerequisites)
   - [Getting the source code](#getting-the-source-code)
   - [Contributing Changes](#contributing-changes)
@@ -36,6 +37,7 @@ features and improves existing ones.
   - [Building on Nix](#building-on-nix)
   - [Building for Windows](#building-for-windows)
   - [Building for WebAssembly](#building-for-webassembly)
+    - [Browser](#browser)
 
 ## When to not use PythonSCAD
 
@@ -355,7 +357,7 @@ sudo make install
 
 ## Building for Windows
 
-OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
+PythonSCAD for Windows is usually cross-compiled from Linux. If you wish to
 attempt an MSVC build on Windows, please see this site:
 <https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows>
 
@@ -393,7 +395,7 @@ For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 ## Building for WebAssembly
 
-We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a
+We support building PythonSCAD headless for WebAssembly w/ Emscripten, using a
 premade Docker image built in
 [openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which
 also has usage examples).

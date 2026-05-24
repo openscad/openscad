@@ -193,7 +193,7 @@ void QGLView::display_opencsg_warning_dialog()
   QString message =
     _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
   message +=
-    _("It is highly recommended to use OpenSCAD on a system with "
+    _("It is highly recommended to use PythonSCAD on a system with "
       "OpenGL 2.0 or later.\n"
       "Your renderer information is as follows:\n");
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)

@@ -348,7 +348,7 @@ QString UIUtils::getBackupFileName(QWidget *parent)
   extensions << "py";
 #endif
   extensions.replaceInStrings(QRegularExpression("^"), "*.");
-  const auto filter = QString("OpenSCAD Backups (%1)").arg(extensions.join(" "));
+  const auto filter = QString("PythonSCAD Backups (%1)").arg(extensions.join(" "));
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   // QT5 just shows the most recent files in my place , getSaveFileName workaround

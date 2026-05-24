@@ -75,7 +75,7 @@ Export3mfDialog::Export3mfDialog()
     this->toolButtonDecimalPrecisionReset->setEnabled(false);
     this->labelDecimalPrecision->setEnabled(false);
     this->spinBoxDecimalPrecision->setToolTip(
-      _("This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for export needs "
+      _("This PythonSCAD build uses lib3mf version 1. Setting the decimal precision for export needs "
         "version 2 or later."));
     this->toolButtonDecimalPrecisionReset->setToolTip("");
   }

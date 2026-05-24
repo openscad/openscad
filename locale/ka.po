@@ -21,8 +21,8 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:102
 #: src/gui/AboutDialog.h:17
-msgid "About OpenSCAD"
-msgstr "OpenSCAD-ის შესახებ"
+msgid "About PythonSCAD"
+msgstr "PythonSCAD-ის შესახებ"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:104
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:304
@@ -33,7 +33,7 @@ msgid ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"2em;\">Script-based 3D modeling app with Python support</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -222,9 +222,9 @@ msgid "Axis Setup:"
 msgstr "ღერძების მორგება:"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:893
-msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
+msgid "<b>Driver selection:</b> <i>(changes require restarting PythonSCAD)</i>"
 msgstr ""
-"<b>დრაივერის არჩევანი:</b> <i>(ცვლილებისთვის აუცილებელია OpenSCAD-ის "
+"<b>დრაივერის არჩევანი:</b> <i>(ცვლილებისთვის აუცილებელია PythonSCAD-ის "
 "გადატვირთვა)</i>"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:894
@@ -1024,8 +1024,8 @@ msgid "Enable outline stroke for exported geometry."
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:106
-msgid "OpenSCAD Font List"
-msgstr "OpenSCAD-ის ფონტების სია"
+msgid "PythonSCAD Font List"
+msgstr "PythonSCAD-ის ფონტების სია"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:107
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:77
@@ -1161,8 +1161,8 @@ msgid "Style"
 msgstr "სტილი"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:293
-msgid "Welcome to OpenSCAD"
-msgstr "მოგესალმებათ OpenSCAD"
+msgid "Welcome to PythonSCAD"
+msgstr "მოგესალმებათ PythonSCAD"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:294
 msgid "New"
@@ -1206,8 +1206,8 @@ msgid "Lib & Build Info"
 msgstr "ბიბლიოთეკის და აგების ინფორმაცია"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:76
-msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD-ის ბიბლიოთეკისა და აგების დეტალური ინფორმაცია"
+msgid "PythonSCAD Detailed Library and Build Information"
+msgstr "PythonSCAD-ის ბიბლიოთეკისა და აგების დეტალური ინფორმაცია"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1249
 msgid "&New File"
@@ -1704,8 +1704,8 @@ msgid "&Flush Caches"
 msgstr "&კეშის გასუფთავება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1468
-msgid "&OpenSCAD Homepage"
-msgstr "&OpenSCAD-ის საწყისი გვერდი"
+msgid "&PythonSCAD Homepage"
+msgstr "&PythonSCAD-ის საწყისი გვერდი"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1469
 msgid "&Automatic Reload and Preview"
@@ -2556,9 +2556,9 @@ msgid "Show Welcome Screen"
 msgstr "საწყისი ეკრანის ჩვენება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2377
-msgid "Enable user interface localization (requires restart of OpenSCAD)"
+msgid "Enable user interface localization (requires restart of PythonSCAD)"
 msgstr ""
-"მომხმარებლის ინტერფეისის ლოკალიზაციის ჩართვა (აუცილებელია OpenSCAD-ის "
+"მომხმარებლის ინტერფეისის ლოკალიზაციის ჩართვა (აუცილებელია PythonSCAD-ის "
 "გადატვირთვა)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2378
@@ -2670,9 +2670,9 @@ msgid "Debugging"
 msgstr "გამართვა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2406
-msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
+msgid "Enable tracing of HIDAPI events (requires restart of PythonSCAD)"
 msgstr ""
-"HIDAPI მოვლენების ტრეისინგის ჩართვა (OpenSCAD-ის გადატვირთვა აუცილებელია)"
+"HIDAPI მოვლენების ტრეისინგის ჩართვა (PythonSCAD-ის გადატვირთვა აუცილებელია)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2407
 msgid "Dialog visibility"
@@ -2840,7 +2840,7 @@ msgstr "კონსოლის შემცველობის შება�
 
 #: src/gui/Export3mfDialog.cc:77
 msgid ""
-"This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for "
+"This PythonSCAD build uses lib3mf version 1. Setting the decimal precision for "
 "export needs version 2 or later."
 msgstr ""
 
@@ -3087,7 +3087,7 @@ msgstr ""
 
 #: src/gui/QGLView.cc:163
 msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+"It is highly recommended to use PythonSCAD on a system with OpenGL 2.0 or "
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
@@ -3214,20 +3214,20 @@ msgstr "საწყისები"
 
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in2:6
-msgid "The Programmers Solid 3D CAD Modeller"
+msgid "Script-based 3D modeling app with Python support"
 msgstr "Solid 3D CAD მოდელერი პროგრამისტებისთვის"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:20
 msgid ""
-"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"PythonSCAD is a software for creating solid 3D CAD models. Unlike most free "
 "software for creating 3D models (such as Blender) it does not focus on the "
 "artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
 "might be the application you are looking for when you are planning to create "
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD მყარი 3D CAD მოდელების შექმნის პროგრამაა. სხვა 3D მოდელების შექმნის "
+"PythonSCAD მყარი 3D CAD მოდელების შექმნის პროგრამაა. სხვა 3D მოდელების შექმნის "
 "პროგრამებისგან განსხვავებით (მაგ: Blender), მისი ფოკუსი ხელოვნის 3D "
 "მოდელირების მაგიერ CAD-ის ასპექტებზეა. ამიტომ ის შეიძლება იყოს ის აპლიკაცია, "
 "რომელსაც ეძებთ, როცა გეგმავთ შექმნათ 3D მოდელები მანქანის ნაწილებისთვის, "
@@ -3237,14 +3237,14 @@ msgstr ""
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:21
 msgid ""
-"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
+"PythonSCAD is not an interactive modeller. Instead it is something like a 3D-"
 "compiler that reads in a script file that describes the object and renders "
 "the 3D model from this script file. This gives you (the designer) full "
 "control over the modelling process and enables you to easily change any step "
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD -ი ინტერაქტიურ მოდელერს არ წარმოადგენს. ის უფრო 3D კომპილატორის "
+"PythonSCAD -ი ინტერაქტიურ მოდელერს არ წარმოადგენს. ის უფრო 3D კომპილატორის "
 "მსგავსი პროგრამაა, რომელიც ობიექტის აღწერის სკრიპტის ფაილების კითხულობს და "
 "მათგან 3D მოდელებს გენერირებს. ეს თქვენ (დიზაინერს) მოდელირების პროცეზე სრულ "
 "კონტროლს და მოდელირების ნებისმიერ საფეხურზე ჩარევის საშუალებას გაძლევთ."
@@ -3252,11 +3252,11 @@ msgstr ""
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:22
 msgid ""
-"OpenSCAD provides two main modelling techniques: First there is constructive "
+"PythonSCAD provides two main modelling techniques: First there is constructive "
 "solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
 "data exchange format for this 2D outlines Autocad DXF files are used. In "
 "addition to 2D paths for extrusion it is also possible to read design "
-"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
+"parameters from DXF files. Besides DXF files PythonSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
 

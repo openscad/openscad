@@ -2269,7 +2269,7 @@
                <item>
                 <widget class="QCheckBox" name="localizationCheckBox">
                  <property name="text">
-                  <string>Enable user interface localization (requires restart of OpenSCAD)</string>
+                  <string>Enable user interface localization (requires restart of PythonSCAD)</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -2828,7 +2828,7 @@
                <item>
                 <widget class="QCheckBox" name="enableHidapiTraceCheckBox">
                  <property name="text">
-                  <string>Enable tracing of HIDAPI events (requires restart of OpenSCAD)</string>
+                  <string>Enable tracing of HIDAPI events (requires restart of PythonSCAD)</string>
                  </property>
                 </widget>
                </item>

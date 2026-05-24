@@ -2,7 +2,7 @@
 Type=Application
 Version=1.0
 Name=PythonSCAD
-Comment=The Programmers Solid 3D CAD Modeller
+Comment=Script-based 3D modeling app with Python support
 Icon=pythonscad
 Exec=${EXECUTABLE_NAME} %f
 StartupWMClass=org.pythonscad.pythonscad

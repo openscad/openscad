@@ -20,8 +20,8 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:102
 #: src/gui/AboutDialog.h:17
-msgid "About OpenSCAD"
-msgstr "OpenSCAD Hakkında"
+msgid "About PythonSCAD"
+msgstr "PythonSCAD Hakkında"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:104
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:304
@@ -32,7 +32,7 @@ msgid ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"2em;\">Script-based 3D modeling app with Python support</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
@@ -221,9 +221,9 @@ msgid "Axis Setup:"
 msgstr "Eksen Kurulumu:"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:893
-msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
+msgid "<b>Driver selection:</b> <i>(changes require restarting PythonSCAD)</i>"
 msgstr ""
-"<b>Sürücü seçimi:</b> <i>(değişiklikler OpenSCAD'in yeniden başlatılmasını "
+"<b>Sürücü seçimi:</b> <i>(değişiklikler PythonSCAD'in yeniden başlatılmasını "
 "gerektirir)</i>"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:894
@@ -1031,8 +1031,8 @@ msgid "Enable outline stroke for exported geometry."
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:106
-msgid "OpenSCAD Font List"
-msgstr "OpenSCAD Yazı Tipi Listesi"
+msgid "PythonSCAD Font List"
+msgstr "PythonSCAD Yazı Tipi Listesi"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:107
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:77
@@ -1168,8 +1168,8 @@ msgid "Style"
 msgstr "Stil"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:293
-msgid "Welcome to OpenSCAD"
-msgstr "OpenSCAD'e hoş geldiniz"
+msgid "Welcome to PythonSCAD"
+msgstr "PythonSCAD'e hoş geldiniz"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:294
 msgid "New"
@@ -1213,8 +1213,8 @@ msgid "Lib & Build Info"
 msgstr "Lib & Derleme Bilgisi"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:76
-msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD Ayrıntılı Kitaplığı ve Yapı Bilgileri"
+msgid "PythonSCAD Detailed Library and Build Information"
+msgstr "PythonSCAD Ayrıntılı Kitaplığı ve Yapı Bilgileri"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1249
 msgid "&New File"
@@ -1713,8 +1713,8 @@ msgid "&Flush Caches"
 msgstr "&Önbellekleri Temizle"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1468
-msgid "&OpenSCAD Homepage"
-msgstr "&OpenSCAD Ana Sayfası"
+msgid "&PythonSCAD Homepage"
+msgstr "&PythonSCAD Ana Sayfası"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1469
 msgid "&Automatic Reload and Preview"
@@ -2566,9 +2566,9 @@ msgid "Show Welcome Screen"
 msgstr "Karşılama Ekranını Göster"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2377
-msgid "Enable user interface localization (requires restart of OpenSCAD)"
+msgid "Enable user interface localization (requires restart of PythonSCAD)"
 msgstr ""
-"Kullanıcı arabirimi yerelleştirmesini etkinleştir (OpenSCAD'in yeniden "
+"Kullanıcı arabirimi yerelleştirmesini etkinleştir (PythonSCAD'in yeniden "
 "başlatılmasını gerektirir)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2378
@@ -2679,9 +2679,9 @@ msgid "Debugging"
 msgstr "Hata Ayıklama"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2406
-msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
+msgid "Enable tracing of HIDAPI events (requires restart of PythonSCAD)"
 msgstr ""
-"HIDAPI olaylarının izlenmesini etkinleştir (OpenSCAD'in yeniden "
+"HIDAPI olaylarının izlenmesini etkinleştir (PythonSCAD'in yeniden "
 "başlatılmasını gerektirir)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2407
@@ -2850,7 +2850,7 @@ msgstr "Konsol içeriğini kaydet"
 
 #: src/gui/Export3mfDialog.cc:77
 msgid ""
-"This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for "
+"This PythonSCAD build uses lib3mf version 1. Setting the decimal precision for "
 "export needs version 2 or later."
 msgstr ""
 
@@ -3098,7 +3098,7 @@ msgstr ""
 
 #: src/gui/QGLView.cc:163
 msgid ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
+"It is highly recommended to use PythonSCAD on a system with OpenGL 2.0 or "
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
@@ -3225,20 +3225,20 @@ msgstr "Temel bilgiler"
 
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in2:6
-msgid "The Programmers Solid 3D CAD Modeller"
+msgid "Script-based 3D modeling app with Python support"
 msgstr "Programcılar Katı 3B CAD Modelleyici"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:20
 msgid ""
-"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"PythonSCAD is a software for creating solid 3D CAD models. Unlike most free "
 "software for creating 3D models (such as Blender) it does not focus on the "
 "artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
 "might be the application you are looking for when you are planning to create "
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD, katı 3B CAD modelleri oluşturmak için bir yazılımdır. 3B modeller "
+"PythonSCAD, katı 3B CAD modelleri oluşturmak için bir yazılımdır. 3B modeller "
 "oluşturmaya yönelik çoğu ücretsiz yazılımın (Blender gibi) aksine, 3B "
 "modellemenin sanatsal yönlerine değil, CAD yönlerine odaklanır. Bu nedenle, "
 "makine parçalarının 3B modellerini oluşturmayı planlarken aradığınız "
@@ -3248,14 +3248,14 @@ msgstr ""
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:21
 msgid ""
-"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
+"PythonSCAD is not an interactive modeller. Instead it is something like a 3D-"
 "compiler that reads in a script file that describes the object and renders "
 "the 3D model from this script file. This gives you (the designer) full "
 "control over the modelling process and enables you to easily change any step "
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD etkileşimli bir modelleyici değildir. Bunun yerine, nesneyi "
+"PythonSCAD etkileşimli bir modelleyici değildir. Bunun yerine, nesneyi "
 "tanımlayan bir komut dosyasında okuyan ve bu komut dosyasından 3B modeli "
 "işleyen bir 3B derleyici gibi bir şeydir. Bu size (tasarımcıya) modelleme "
 "süreci üzerinde tam kontrol sağlar ve modelleme sürecindeki herhangi bir "
@@ -3265,18 +3265,18 @@ msgstr ""
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:22
 msgid ""
-"OpenSCAD provides two main modelling techniques: First there is constructive "
+"PythonSCAD provides two main modelling techniques: First there is constructive "
 "solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
 "data exchange format for this 2D outlines Autocad DXF files are used. In "
 "addition to 2D paths for extrusion it is also possible to read design "
-"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
+"parameters from DXF files. Besides DXF files PythonSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenSCAD iki ana modelleme tekniği sunar: Birincisi yapıcı katı geometri "
+"PythonSCAD iki ana modelleme tekniği sunar: Birincisi yapıcı katı geometri "
 "(aka CSG) ve ikincisi 2B anahatların ekstrüzyonu vardır. Bu 2B anahatlar "
 "için veri alışverişi formatı olarak Autocad DXF dosyaları kullanılır. "
 "Ekstrüzyon için 2B yollara ek olarak, DXF dosyalarından tasarım "
-"parametrelerini okumak da mümkündür. DXF dosyalarının yanı sıra OpenSCAD, "
+"parametrelerini okumak da mümkündür. DXF dosyalarının yanı sıra PythonSCAD, "
 "STL ve OFF dosya formatlarında 3B modelleri okuyabilir ve oluşturabilir."
 
 #: src/openscad_gui.cc
