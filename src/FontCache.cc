@@ -240,6 +240,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 
 void FontCache::register_font_file(const std::string& path)
 {
+  PRINTDB("register_font_file: '%s'", path);
   if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
     LOG(message_group::Warning, Location::NONE, "", "Can't register font '%1$s'", path);
   }
@@ -413,18 +414,82 @@ FontFacePtr FontCache::find_face_fontconfig(const std::string& font) const
   }
   init_pattern(pattern);
 
+  // Copy the requested family/style to std::string BEFORE substitutions.
+  // FcConfigSubstitute/FcDefaultSubstitute may mutate the underlying pattern
+  // strings, leaving raw FcChar8* pointers dangling.
+  FcChar8 *req_family_raw = nullptr;
+  FcChar8 *req_style_raw = nullptr;
+  FcPatternGetString(pattern, FC_FAMILY, 0, &req_family_raw);
+  FcPatternGetString(pattern, FC_STYLE, 0, &req_style_raw);
+  const std::string req_family = req_family_raw ? reinterpret_cast<const char *>(req_family_raw) : "";
+  const std::string req_style = req_style_raw ? reinterpret_cast<const char *>(req_style_raw) : "";
+
   FcConfigSubstitute(this->config, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
 
-  FcPattern *match = FcFontMatch(this->config, pattern, &result);
+  // fontconfig 2.18.0 changed scoring so app-registered fonts (added via
+  // FcConfigAppFontAddFile) can lose to system fonts even on exact family name
+  // matches. Work around this by scanning the app font set directly: prefer an
+  // exact family+style match, then fall back to family+"Regular", then to any
+  // family match. Only use FcFontMatch if no app font has the requested family.
+  FcPattern *app_match = nullptr;
+  if (!req_family.empty()) {
+    FcFontSet *appset = FcConfigGetFonts(this->config, FcSetApplication);
+    if (appset) {
+      // When no style is requested, default to "Regular" rather than taking
+      // the first entry which may be Bold/Italic from the bundled font set.
+      const std::string target_style = req_style.empty() ? "Regular" : req_style;
+      const auto *req_fam_fc = reinterpret_cast<const FcChar8 *>(req_family.c_str());
+      const auto *tgt_sty_fc = reinterpret_cast<const FcChar8 *>(target_style.c_str());
+      FcPattern *exact = nullptr, *family_only = nullptr;
+      for (int i = 0; i < appset->nfont && !exact; i++) {
+        FcChar8 *fam = nullptr, *sty = nullptr;
+        if (FcPatternGetString(appset->fonts[i], FC_FAMILY, 0, &fam) != FcResultMatch) continue;
+        if (FcStrCmpIgnoreCase(fam, req_fam_fc) != 0) continue;
+        FcPatternGetString(appset->fonts[i], FC_STYLE, 0, &sty);
+        if (sty && FcStrCmpIgnoreCase(sty, tgt_sty_fc) == 0) {
+          exact = appset->fonts[i];
+        } else if (!family_only) {
+          family_only = appset->fonts[i];
+        }
+      }
+      FcPattern *best = exact ? exact : family_only;
+      if (best) {
+        FcChar8 *bfam = nullptr, *bsty = nullptr;
+        FcPatternGetString(best, FC_FAMILY, 0, &bfam);
+        FcPatternGetString(best, FC_STYLE, 0, &bsty);
+        PRINTDB("app font set match: family='%s' style='%s' for request='%s'",
+                (bfam ? (const char *)bfam : "?") % (bsty ? (const char *)bsty : "?") % font);
+        app_match = FcFontRenderPrepare(this->config, pattern, best);
+      }
+    }
+  }
 
-  FcChar8 *file_value;
-  if (FcPatternGetString(match, FC_FILE, 0, &file_value) != FcResultMatch) {
+  FcPattern *match = app_match ? app_match : FcFontMatch(this->config, pattern, &result);
+  if (!match) {
+    FcPatternDestroy(pattern);
     return nullptr;
   }
 
+  FcChar8 *matched_family = nullptr;
+  FcChar8 *matched_style = nullptr;
+  FcPatternGetString(match, FC_FAMILY, 0, &matched_family);
+  FcPatternGetString(match, FC_STYLE, 0, &matched_style);
+  FcChar8 *file_value;
+  if (FcPatternGetString(match, FC_FILE, 0, &file_value) != FcResultMatch) {
+    FcPatternDestroy(pattern);
+    FcPatternDestroy(match);
+    return nullptr;
+  }
+
+  PRINTDB("fontconfig match: requested='%s' -> family='%s' style='%s' file='%s'",
+          font % (matched_family ? (const char *)matched_family : "(unknown)") %
+            (matched_style ? (const char *)matched_style : "(unknown)") % (const char *)file_value);
+
   int font_index;
   if (FcPatternGetInteger(match, FC_INDEX, 0, &font_index) != FcResultMatch) {
+    FcPatternDestroy(pattern);
+    FcPatternDestroy(match);
     return nullptr;
   }
 
