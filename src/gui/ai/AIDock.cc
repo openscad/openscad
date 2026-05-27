@@ -1,14 +1,11 @@
 #include "gui/ai/AIDock.h"
+#include "gui/ai/ChatWidget.h"
 #include <QShowEvent>
-#include <QVBoxLayout>
-#include <QWidget>
 
 AIDock::AIDock(QWidget *parent) : Dock(parent)
 {
-  this->centralWidget = new QWidget(this);
-  this->layout = new QVBoxLayout(this->centralWidget);
-
-  setWidget(this->centralWidget);
+  this->chatWidget = new ChatWidget(this);
+  setWidget(this->chatWidget);
 }
 
 AIDock::~AIDock()

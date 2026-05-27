@@ -3,8 +3,7 @@
 
 #include "gui/Dock.h"
 
-class QWidget;
-class QVBoxLayout;
+class ChatWidget;
 
 class AIDock : public Dock
 {
@@ -18,6 +17,5 @@ protected:
   void showEvent(QShowEvent *event) override;
 
 private:
-  QWidget *centralWidget;
-  QVBoxLayout *layout;
+  ChatWidget *chatWidget;
 };
