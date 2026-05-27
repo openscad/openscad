@@ -547,7 +547,6 @@ void TabManager::createTab(const QString& filename, bool initializeEmptyEditor)
   editor->addTemplate();
 
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::updateActionUndoState);
-  connect(editor, &EditorInterface::contentsChanged, parent, &MainWindow::editorContentChanged);
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::setContentRenderState);
   // Bump autosave generation on each edit while dirty. modificationChanged only fires when the
   // modified flag toggles, so typing in an already-dirty tab would otherwise not advance
@@ -590,6 +589,8 @@ void TabManager::createTab(const QString& filename, bool initializeEmptyEditor)
     }
   }
   parent->activeEditor = editor;
+  // Connect only after activeEditor is set; editorContentChanged() dereferences it immediately.
+  connect(editor, &EditorInterface::contentsChanged, parent, &MainWindow::editorContentChanged);
   editorList.insert(editor);
 
   // Get the name of the tab in editor
