@@ -2135,6 +2135,7 @@ std::string MainWindow::autoReloadIdentityForPath(const QString& filepath)
 
 bool MainWindow::fileChangedOnDisk()
 {
+  if (!activeEditor) return false;
   if (activeEditor->filepath.isEmpty()) return false;
   if (!activeEditor->diskBacked) return false;
   const std::string newid = autoReloadIdentityForPath(activeEditor->filepath);

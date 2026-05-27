@@ -71,7 +71,6 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     this->treeWidget->addTopLevelItem(categoryItem);
   }
 
-  connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
   connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
   connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this,
           &LaunchingScreen::enableRecentButton);
