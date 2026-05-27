@@ -36,6 +36,7 @@ features and improves existing ones.
   - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
   - [Building on Nix](#building-on-nix)
   - [Building for Windows](#building-for-windows)
+  - [Windows SmartScreen certificate](#windows-smartscreen-certificate)
   - [Building for WebAssembly](#building-for-webassembly)
     - [Browser](#browser)
 
@@ -392,6 +393,10 @@ installer:
 ```
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
+
+## Windows SmartScreen certificate
+
+The code signing certificate for Windows is kindly provided by nomike aka Michael Postmann.
 
 ## Building for WebAssembly
 
