@@ -665,7 +665,9 @@ int cmdline(const CommandLine& cmd)
 #ifdef ENABLE_PYTHON
       if (python_active) {
         initPython(PlatformUtils::applicationPath(), cmd.filename, &render_variables);
-        auto error = evaluatePython(text_py);
+        auto error = evaluatePython(commandline_commands);
+        if (error.size() > 0) LOG(error.c_str());
+        error = evaluatePython(text_py);
         if (error.size() > 0) LOG(error.c_str());
         finishPython();
       }
