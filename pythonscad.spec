@@ -42,6 +42,8 @@ BuildRequires:  lib3mf-devel
 BuildRequires:  libzip-devel
 BuildRequires:  libcurl-devel
 BuildRequires:  cairo-devel
+BuildRequires:  hidapi-devel
+BuildRequires:  libspnav-devel
 BuildRequires:  gettext
 BuildRequires:  qt6-qtbase-devel
 BuildRequires:  qt6-qtmultimedia-devel
