@@ -1,0 +1,309 @@
+name: Notify Signing Required
+
+# Triggered automatically when Release Please creates a new pre-release.
+# Waits for all platform build workflows to finish, then posts signing
+# instructions to the release body (which triggers a GitHub notification
+# email to release watchers) and exits.  The release stays as a pre-release
+# indefinitely until the maintainer runs the local signing script, which
+# re-uploads the signed artifacts and triggers the publish-release workflow.
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to notify on (leave empty to find latest pre-release)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write # zizmor: ignore[excessive-permissions] tracked in #613
+  actions: read
+
+jobs:
+  wait-for-builds:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == true
+    outputs:
+      release_id: ${{ steps.wait.outputs.release_id }}
+      release_tag: ${{ steps.wait.outputs.release_tag }}
+      release_url: ${{ steps.wait.outputs.release_url }}
+      all_succeeded: ${{ steps.wait.outputs.all_succeeded }}
+      status_report: ${{ steps.wait.outputs.status_report }}
+    steps:
+      - name: Wait for build workflows
+        id: wait
+        uses: actions/github-script@v9
+        env:
+          INPUT_RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+        with:
+          script: |
+            const BUILD_WORKFLOWS = [
+              'Build and Upload AppImage',
+              'Build Debian packages',
+              'Build and upload macOS build',
+              'Build RPM packages',
+              'Build Windows Native Package',
+            ];
+
+            const MAX_WAIT_MS = 90 * 60 * 1000; // 90 minutes
+            const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
+            const start = Date.now();
+
+            // Determine which release to work with
+            let release;
+            let releaseTag;
+
+            if (context.eventName === 'workflow_dispatch') {
+              const inputTag = process.env.INPUT_RELEASE_TAG;
+
+              if (inputTag) {
+                try {
+                  const { data: rel } = await github.rest.repos.getReleaseByTag({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    tag: inputTag,
+                  });
+                  release = rel;
+                  releaseTag = inputTag;
+                } catch (error) {
+                  core.setFailed(`Release not found for tag: ${inputTag}`);
+                  return;
+                }
+              } else {
+                const { data: releases } = await github.rest.repos.listReleases({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  per_page: 10,
+                });
+
+                release = releases.find(r => r.prerelease);
+                if (!release) {
+                  core.setFailed('No prerelease found');
+                  return;
+                }
+                releaseTag = release.tag_name;
+              }
+            } else {
+              release = context.payload.release;
+              releaseTag = release.tag_name;
+            }
+
+            core.setOutput('release_id', release.id);
+            core.setOutput('release_tag', releaseTag);
+            core.setOutput('release_url', release.html_url);
+
+            console.log(`🔍 Monitoring release: ${releaseTag}`);
+            console.log(`📦 Release ID: ${release.id}`);
+            console.log(`🏗️  Waiting for ${BUILD_WORKFLOWS.length} build workflows to complete...`);
+
+            // Main polling loop
+            while (Date.now() - start < MAX_WAIT_MS) {
+              // Paginate through all release-event runs so we don't miss runs
+              // once the repo has accumulated more than 100 release events.
+              let allRuns = [];
+              let page = 1;
+              while (true) {
+                const { data: batch } = await github.rest.actions.listWorkflowRunsForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  event: 'release',
+                  per_page: 100,
+                  page,
+                });
+                allRuns = allRuns.concat(batch.workflow_runs);
+                if (batch.workflow_runs.length < 100) break;
+                page++;
+              }
+
+              const releaseRuns = allRuns.filter(r => {
+                const runTag = r.head_branch;
+                return runTag === releaseTag;
+              });
+
+              const buildRuns = releaseRuns.filter(r =>
+                BUILD_WORKFLOWS.includes(r.name)
+              );
+
+              const statusByWorkflow = {};
+              BUILD_WORKFLOWS.forEach(name => {
+                const run = buildRuns.find(r => r.name === name);
+                statusByWorkflow[name] = run ? {
+                  status: run.status,
+                  conclusion: run.conclusion,
+                  url: run.html_url,
+                  id: run.id,
+                } : null;
+              });
+
+              console.log('\n📊 Current status:');
+              for (const [name, info] of Object.entries(statusByWorkflow)) {
+                if (!info) {
+                  console.log(`  ⏳ ${name}: Not started yet`);
+                } else if (info.status === 'completed') {
+                  const icon = info.conclusion === 'success' ? '✅' :
+                               info.conclusion === 'failure' ? '❌' :
+                               info.conclusion === 'cancelled' ? '🚫' : '⚠️';
+                  console.log(`  ${icon} ${name}: ${info.conclusion}`);
+                } else {
+                  console.log(`  🔄 ${name}: ${info.status}`);
+                }
+              }
+
+              const allStarted = BUILD_WORKFLOWS.every(name => statusByWorkflow[name] !== null);
+
+              if (!allStarted) {
+                const notStarted = BUILD_WORKFLOWS.filter(name => !statusByWorkflow[name]).length;
+                console.log(`\n⏳ Waiting... ${notStarted} workflow(s) not started yet`);
+                await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+                continue;
+              }
+
+              const allCompleted = Object.values(statusByWorkflow).every(
+                info => info && info.status === 'completed'
+              );
+
+              if (!allCompleted) {
+                const running = Object.values(statusByWorkflow).filter(
+                  info => info && info.status !== 'completed'
+                ).length;
+                console.log(`\n⏳ Waiting... ${running} workflow(s) still running`);
+                await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+                continue;
+              }
+
+              console.log('\n✨ All workflows completed!');
+
+              const allSucceeded = Object.values(statusByWorkflow).every(
+                info => info && info.conclusion === 'success'
+              );
+
+              if (allSucceeded) {
+                console.log('\n🎉 All builds succeeded!');
+                core.setOutput('all_succeeded', 'true');
+                return;
+              } else {
+                console.log('\n⚠️  Some builds failed.');
+                core.setOutput('all_succeeded', 'false');
+
+                let statusReport = '\n\n## 🏗️ Build Status\n\n';
+                statusReport += '⚠️ **Some builds failed.** This release remains as a prerelease.\n\n';
+
+                for (const [name, info] of Object.entries(statusByWorkflow)) {
+                  const icon = info.conclusion === 'success' ? '✅' :
+                               info.conclusion === 'failure' ? '❌' :
+                               info.conclusion === 'cancelled' ? '🚫' : '⚠️';
+                  statusReport += `- ${icon} [${name}](${info.url})\n`;
+                }
+
+                statusReport += '\n**To publish this release:**\n';
+                statusReport += '1. Fix any failed builds and re-run them\n';
+                statusReport += '2. Re-run the [Notify Signing Required workflow](../../actions/workflows/notify-signing.yml)\n';
+                statusReport += '3. Or manually publish from the GitHub UI once builds are fixed\n';
+
+                core.setOutput('status_report', statusReport);
+                return;
+              }
+            }
+
+            console.log('\n⏱️  Timeout reached');
+            core.setFailed(`Timed out waiting for build workflows after ${MAX_WAIT_MS / 60000} minutes`);
+
+  notify:
+    needs: wait-for-builds
+    if: needs.wait-for-builds.outputs.all_succeeded == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post signing instructions to release body
+        uses: actions/github-script@v9
+        env:
+          NEEDS_RELEASE_ID: ${{ needs.wait-for-builds.outputs.release_id }}
+          NEEDS_RELEASE_TAG: ${{ needs.wait-for-builds.outputs.release_tag }}
+          NEEDS_RELEASE_URL: ${{ needs.wait-for-builds.outputs.release_url }}
+        with:
+          script: |
+            const releaseId = Number(process.env.NEEDS_RELEASE_ID);
+            const releaseTag = process.env.NEEDS_RELEASE_TAG;
+            const releaseUrl = process.env.NEEDS_RELEASE_URL;
+
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+            });
+
+            // Avoid posting duplicate notes if the workflow is re-run.
+            if ((release.body || '').includes('Awaiting Windows code signing')) {
+              console.log('Signing note already present — skipping duplicate post.');
+              return;
+            }
+
+            // Build the signing note without a literal "---" at column 0,
+            // which YAML would misparse as a document separator inside the
+            // block scalar.
+            const signingNote = [
+              '',
+              '———',
+              '',
+              '## ⏳ Awaiting Windows code signing',
+              '',
+              'All platform builds completed successfully. The Windows installer and MSIX',
+              'package need to be signed with the Certum SimplySign certificate before this',
+              'release is published.',
+              '',
+              '**To complete the release:**',
+              '',
+              '1. Connect SimplySign Desktop (tray icon → Connect to SimplySign,',
+              '   enter username + token from the mobile app).',
+              '2. Run the signing script on your local Windows machine:',
+              '   ```powershell',
+              '   git pull',
+              `   .\\scripts\\sign-windows-release.ps1 -Tag ${releaseTag}`,
+              '   ```',
+              '3. The script signs the artifacts, re-uploads them, then automatically',
+              '   triggers the Publish Release workflow to finalize the release.',
+            ].join('\n');
+
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              body: (release.body || '') + signingNote,
+            });
+
+            console.log(`📝 Signing instructions posted to release ${releaseTag}.`);
+            console.log(`🔗 ${releaseUrl}`);
+            console.log('Release remains as pre-release until the signing script is run.');
+
+  handle-failure:
+    needs: wait-for-builds
+    if: needs.wait-for-builds.outputs.all_succeeded == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update release with failure status
+        uses: actions/github-script@v9
+        env:
+          NEEDS_RELEASE_ID: ${{ needs.wait-for-builds.outputs.release_id }}
+          NEEDS_STATUS_REPORT: ${{ needs.wait-for-builds.outputs.status_report }}
+        with:
+          script: |
+            const releaseId = Number(process.env.NEEDS_RELEASE_ID);
+            const statusReport = process.env.NEEDS_STATUS_REPORT;
+
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+            });
+
+            const updatedBody = (release.body || '') + statusReport;
+
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              body: updatedBody,
+            });
+
+            core.setFailed('Some build workflows failed. Release kept as prerelease.');
