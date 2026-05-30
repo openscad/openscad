@@ -1,13 +1,58 @@
-; Unregister file associations
-${UnRegisterExtension} ".scad" "PythonSCAD_File"
-${UnRegisterExtension} ".scad" "OpenSCAD_File"
-${UnRegisterExtension} ".py" "PythonSCAD_Python_File"
+; Unregister file associations scope-aware, mirroring the install logic.
+; $InstallMode: 1 = all users (HKCR), 0 = current user (HKCU). Both branches use
+; the same pattern: remove ONLY the values/keys we wrote. Never DeleteRegKey on
+; the extension key itself — it may contain subkeys (OpenWithProgids,
+; OpenWithList, etc.) or values written by other programs that we must not
+; touch. So we open-code the backup-restore logic for both scopes: if a
+; backup_val exists, restore it; otherwise just clear the default value we set,
+; leaving the extension key with any unrelated subkeys/values intact.
+;
+; .py treatment: install only added a ProgID and an OpenWithProgids entry; it
+; did NOT take over the .py default association, so there is no backup_val to
+; restore. We just delete the ProgID key and our OpenWithProgids entry.
+${If} $InstallMode = 1
+  ; All-users install: associations live in HKCR (writes redirect to HKLM\Software\Classes).
+  DeleteRegKey HKCR "PythonSCAD_File"
+  DeleteRegKey HKCR "PythonSCAD_Python_File"
+  DeleteRegValue HKCR ".py\OpenWithProgids" "PythonSCAD_Python_File"
+  ReadRegStr $0 HKCR ".scad" ""
+  StrCmp $0 "PythonSCAD_File" 0 scad_not_ours
+    ReadRegStr $1 HKCR ".scad" "backup_val"
+    StrCmp $1 "" 0 +3
+      ; No backup — remove just the default value we set, not the whole key.
+      DeleteRegValue HKCR ".scad" ""
+      Goto scad_not_ours
+    WriteRegStr HKCR ".scad" "" $1
+    DeleteRegValue HKCR ".scad" "backup_val"
+  scad_not_ours:
+${Else}
+  ; Per-user install: associations live in HKCU\Software\Classes.
+  DeleteRegKey HKCU "Software\Classes\PythonSCAD_File"
+  DeleteRegKey HKCU "Software\Classes\PythonSCAD_Python_File"
+  DeleteRegValue HKCU "Software\Classes\.py\OpenWithProgids" "PythonSCAD_Python_File"
+  ReadRegStr $0 HKCU "Software\Classes\.scad" ""
+  StrCmp $0 "PythonSCAD_File" 0 scad_cu_not_ours
+    ReadRegStr $1 HKCU "Software\Classes\.scad" "backup_val"
+    StrCmp $1 "" 0 +3
+      ; No backup — remove just the default value we set, not the whole key.
+      DeleteRegValue HKCU "Software\Classes\.scad" ""
+      Goto scad_cu_not_ours
+    WriteRegStr HKCU "Software\Classes\.scad" "" $1
+    DeleteRegValue HKCU "Software\Classes\.scad" "backup_val"
+  scad_cu_not_ours:
+${EndIf}
 
-; Remove start menu shortcuts
-SetShellVarContext all
-Delete "$SMPROGRAMS\PythonSCAD\PythonSCAD.lnk"
-Delete "$SMPROGRAMS\PythonSCAD\Uninstall PythonSCAD.lnk"
-RMDir "$SMPROGRAMS\PythonSCAD"
-Delete "$SMPROGRAMS\PythonSCAD.lnk"
+; Remove the App Paths registry entries written at install time.
+!define /ifndef APPPATHS_UN "Software\Microsoft\Windows\CurrentVersion\App Paths\pythonscad.exe"
+${If} $InstallMode = 1
+  DeleteRegKey HKLM "${APPPATHS_UN}"
+${Else}
+  DeleteRegKey HKCU "${APPPATHS_UN}"
+${EndIf}
+
+; Remove the root Start Menu shortcut added by extra-install-commands.
+; The MUI_PAGE_STARTMENU shortcuts under $STARTMENU_FOLDER are removed by the
+; CPack template's own uninstall section, so we only clean up our additions here.
+Delete "$SMPROGRAMS\@CPACK_PACKAGE_NAME@.lnk"
 
 ${RefreshShellIcons}

@@ -1,0 +1,28 @@
+[Settings]
+NumFields=3
+
+[Field 1]
+Type=label
+Text=Choose additional install options for @CPACK_PACKAGE_NAME@.
+Left=0
+Right=-1
+Top=0
+Bottom=20
+
+[Field 2]
+Type=CheckBox
+Text=Add @CPACK_PACKAGE_NAME@ to the PATH (so 'pythonscad' works in cmd/PowerShell)
+Left=0
+Right=-1
+Top=30
+Bottom=40
+State=1
+
+[Field 3]
+Type=CheckBox
+Text=Create @CPACK_PACKAGE_NAME@ Desktop Icon
+Left=0
+Right=-1
+Top=50
+Bottom=60
+State=0

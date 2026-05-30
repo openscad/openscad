@@ -27,6 +27,11 @@ if(POLICY CMP0167) # Since CMake 3.30
   # Use upstream's FindBoost.cmake to find Boost libraries.
   cmake_policy(SET CMP0167 NEW)
 endif()
+if(POLICY CMP0207) # Since CMake 4.3
+  # Normalize paths to forward slashes before matching filters in
+  # file(GET_RUNTIME_DEPENDENCIES) and install(RUNTIME_DEPENDENCY_SET).
+  cmake_policy(SET CMP0207 NEW)
+endif()
 
 include("cmake/Modules/openscad_version.cmake")
 configure_file(
@@ -2426,31 +2431,34 @@ if(WIN32)
   set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME}")
   set(CPACK_NSIS_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
 
-  # Enable per-user installation option (no admin required)
-  # This allows installing to user's local AppData instead of Program Files
   set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 
   # Add "Run PythonSCAD" checkbox on finish page
   set(CPACK_NSIS_MUI_FINISHPAGE_RUN "pythonscad.exe")
 
-  # Copy NSIS helper files to build directory so they're accessible with simple paths
-  configure_file("${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh"
-                 "${CMAKE_BINARY_DIR}/nsis-mingw-file-association.nsh" COPYONLY)
+  # Use our customized NSIS template which implements RequestExecutionLevel user
+  # with a custom install-mode page (nsDialogs) and on-demand UAC elevation via
+  # ShellExecuteEx runas. CPack's NSIS generator locates the template via
+  # cmCPackGenerator::FindTemplate, which searches CMAKE_MODULE_PATH (propagated
+  # to CPack as CPACK_MODULE_PATH) before falling back to CMake's bundled template.
+  # There is no CPACK_NSIS_TEMPLATE variable -- adding cmake/nsis to the module
+  # path is the only way to override the default template.
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/nsis")
 
-  # Pre-install includes for file association and utility macros
-  # CPack runs NSIS from build/_CPack_Packages/<system>/NSIS/
-  # Use relative path back to build directory: ../../../
-  set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "\
-    !include \\\"FileFunc.nsh\\\"\n\
-    !include \\\"..\\\\..\\\\..\\\\nsis-mingw-file-association.nsh\\\"\
-  ")
 
-  # Extra install commands - includes file association and compatibility shortcut
+  # CPACK_NSIS_DEFINES is emitted at the top level of the generated .nsi file.
+  set(CPACK_NSIS_DEFINES "")
+
+  # CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS runs inside the install Section.
+  # Shell context and INSTDIR are set by .onInit / InstallModePage_Leave.
+  set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "")
+
+  # Extra install commands — conditional per-user/all-users registry and shortcuts
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    !include \\\"..\\\\..\\\\..\\\\nsis-extra-install-commands.nsh\\\"\n\
-    CreateShortCut $INSTDIR\\\\openscad.lnk $INSTDIR\\\\pythonscad.exe\
+    !include \\\"..\\\\..\\\\..\\\\nsis-extra-install-commands.nsh\\\"\
   ")
 
+  # Extra uninstall commands — conditional cleanup based on stored install mode
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
     !include \\\"..\\\\..\\\\..\\\\nsis-extra-uninstall-commands.nsh\\\"\
   ")

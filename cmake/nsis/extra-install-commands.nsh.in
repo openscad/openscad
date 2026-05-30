@@ -1,22 +1,114 @@
-!define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
+!define /ifndef ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
 
-; Calculate and store installed size
+; Persist install mode under the ARP uninstall key in the appropriate hive.
+; Storing it there (rather than a separate Software\PythonSCAD key) ensures
+; it lives in the same hive as the uninstall entry and cannot conflict between
+; a per-user and an all-users install on the same machine.
+; $InstallMode: 1 = all users (HKLM), 0 = current user (HKCU).
+${If} $InstallMode = 1
+  WriteRegStr HKLM "${ARP}" "InstallMode" "AllUsers"
+  WriteRegStr HKLM "${ARP}" "InstallLocation" "$INSTDIR"
+${Else}
+  WriteRegStr HKCU "${ARP}" "InstallMode" "CurrentUser"
+  WriteRegStr HKCU "${ARP}" "InstallLocation" "$INSTDIR"
+${EndIf}
+
+; Write the installed size into the ARP key so "Apps & features" shows it.
 ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 IntFmt $0 "0x%08X" $0
-WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
+${If} $InstallMode = 1
+  WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
+${Else}
+  WriteRegDWORD HKCU "${ARP}" "EstimatedSize" "$0"
+${EndIf}
 
-; Register file association for .scad files (using pythonscad.exe, not openscad.exe)
-${RegisterExtension} "$INSTDIR\pythonscad.exe" ".scad" "PythonSCAD_File"
-${RegisterExtension} "$INSTDIR\pythonscad.exe" ".py" "PythonSCAD_Python_File"
+; Register file associations scope-aware:
+; - All-users installs use HKCR (HKLM\Software\Classes) which requires admin
+;   rights that are already granted at this point.
+; - Per-user installs write to HKCU\Software\Classes which takes precedence over
+;   HKCR for the current user on Vista+ without requiring elevation.
+;
+; .scad is the canonical PythonSCAD file type and is registered as the default
+; handler. .py is NOT registered as the default handler (developers commonly
+; use IDEs like VS Code/PyCharm/IDLE for .py files and silently hijacking that
+; association would break their setup); instead PythonSCAD is added to the
+; "Open with..." submenu via OpenWithProgids so users can opt in per-file.
+;
+; The ProgID writes are open-coded so we can use a human-readable
+; "Edit with PythonSCAD" verb label and a friendly ProgID description like
+; "PythonSCAD File" -- the same shared pattern is used for both .scad and
+; .py (and for both HKCR and HKCU), keeping the install / uninstall logic
+; symmetric and easy to audit.
+; Each entry uses a backup_val convention so uninstall can restore any
+; pre-existing default association (e.g. an OpenSCAD .scad handler).
+${If} $InstallMode = 1
+  ; .scad: default handler in HKCR (HKLM\Software\Classes).
+  ; Back up any existing default before overwriting, so uninstall can
+  ; restore it via the same backup_val convention.
+  ReadRegStr $0 HKCR ".scad" ""
+  StrCmp $0 "" scad_no_backup
+  StrCmp $0 "PythonSCAD_File" scad_no_backup
+    WriteRegStr HKCR ".scad" "backup_val" $0
+  scad_no_backup:
+  WriteRegStr HKCR ".scad" "" "PythonSCAD_File"
+  WriteRegStr HKCR "PythonSCAD_File" "" "PythonSCAD File"
+  WriteRegStr HKCR "PythonSCAD_File\shell" "" "open"
+  WriteRegStr HKCR "PythonSCAD_File\DefaultIcon" "" "$INSTDIR\pythonscad.exe,0"
+  WriteRegStr HKCR "PythonSCAD_File\shell\open\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  WriteRegStr HKCR "PythonSCAD_File\shell\edit" "" "Edit with PythonSCAD"
+  WriteRegStr HKCR "PythonSCAD_File\shell\edit\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  ; .py: install the ProgID but do NOT take over the default association.
+  ; OpenWithProgids advertises PythonSCAD in the per-extension "Open with"
+  ; list without changing whatever IDE/editor currently owns .py.
+  WriteRegStr HKCR "PythonSCAD_Python_File" "" "PythonSCAD Python File"
+  WriteRegStr HKCR "PythonSCAD_Python_File\shell" "" "open"
+  WriteRegStr HKCR "PythonSCAD_Python_File\DefaultIcon" "" "$INSTDIR\pythonscad.exe,0"
+  WriteRegStr HKCR "PythonSCAD_Python_File\shell\open\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  WriteRegStr HKCR "PythonSCAD_Python_File\shell\edit" "" "Edit with PythonSCAD"
+  WriteRegStr HKCR "PythonSCAD_Python_File\shell\edit\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  WriteRegStr HKCR ".py\OpenWithProgids" "PythonSCAD_Python_File" ""
+${Else}
+  ; Back up any existing user .scad default before overwriting, so uninstall
+  ; can restore it via the same backup_val convention.
+  ; Use explicit labels to avoid relative-jump miscounts.
+  ReadRegStr $0 HKCU "Software\Classes\.scad" ""
+  StrCmp $0 "" scad_cu_no_backup
+  StrCmp $0 "PythonSCAD_File" scad_cu_no_backup
+    WriteRegStr HKCU "Software\Classes\.scad" "backup_val" $0
+  scad_cu_no_backup:
+  WriteRegStr HKCU "Software\Classes\.scad" "" "PythonSCAD_File"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_File" "" "PythonSCAD File"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_File\shell" "" "open"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_File\DefaultIcon" "" "$INSTDIR\pythonscad.exe,0"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_File\shell\open\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_File\shell\edit" "" "Edit with PythonSCAD"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_File\shell\edit\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  ; .py: install the ProgID and add it to OpenWithProgids, but do NOT change
+  ; the .py default association (preserves the user's IDE / editor choice).
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_Python_File" "" "PythonSCAD Python File"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_Python_File\shell" "" "open"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_Python_File\DefaultIcon" "" "$INSTDIR\pythonscad.exe,0"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_Python_File\shell\open\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_Python_File\shell\edit" "" "Edit with PythonSCAD"
+  WriteRegStr HKCU "Software\Classes\PythonSCAD_Python_File\shell\edit\command" "" '"$INSTDIR\pythonscad.exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\.py\OpenWithProgids" "PythonSCAD_Python_File" ""
+${EndIf}
 
-; Create start menu shortcuts
-; SetShellVarContext all puts shortcuts in the All Users start menu
-SetShellVarContext all
-CreateDirectory "$SMPROGRAMS\PythonSCAD"
-CreateShortCut "$SMPROGRAMS\PythonSCAD\PythonSCAD.lnk" "$INSTDIR\pythonscad.exe" "" "$INSTDIR\pythonscad.exe" 0
-CreateShortCut "$SMPROGRAMS\PythonSCAD\Uninstall PythonSCAD.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
+; App Paths registry entries so 'Start > Run' (Win+R) and ShellExecute-based
+; launchers can find pythonscad.exe by basename even when PATH is not set.
+; Scoped to match the install: HKLM for all-users, HKCU for per-user.
+!define /ifndef APPPATHS "Software\Microsoft\Windows\CurrentVersion\App Paths\pythonscad.exe"
+${If} $InstallMode = 1
+  WriteRegStr HKLM "${APPPATHS}" "" "$INSTDIR\pythonscad.exe"
+  WriteRegStr HKLM "${APPPATHS}" "Path" "$INSTDIR"
+${Else}
+  WriteRegStr HKCU "${APPPATHS}" "" "$INSTDIR\pythonscad.exe"
+  WriteRegStr HKCU "${APPPATHS}" "Path" "$INSTDIR"
+${EndIf}
 
-; Also create a shortcut directly in the start menu root for better discoverability
-CreateShortCut "$SMPROGRAMS\PythonSCAD.lnk" "$INSTDIR\pythonscad.exe" "" "$INSTDIR\pythonscad.exe" 0
+; Add an extra shortcut directly in the Start Menu root for discoverability.
+; The CPack template's MUI_PAGE_STARTMENU already creates the main shortcut
+; under $SMPROGRAMS\$STARTMENU_FOLDER, so we only add the root-level alias here.
+CreateShortCut "$SMPROGRAMS\@CPACK_PACKAGE_NAME@.lnk" "$INSTDIR\pythonscad.exe" "" "$INSTDIR\pythonscad.exe" 0
 
 ${RefreshShellIcons}
