@@ -19,6 +19,7 @@
   Var ADD_TO_PATH_CURRENT_USER
   Var INSTALL_DESKTOP
   Var IS_DEFAULT_INSTALLDIR
+  Var ArpRegKey
 ;--------------------------------
 ;Include Modern UI
 
@@ -59,6 +60,11 @@
   Var InitialInstallMode
   Var AllUsersRadio
 
+  ; Use distinct uninstall-subkey names per install scope so Windows Settings
+  ; can surface both entries when per-user and all-users installs coexist.
+  !define ARP_KEY_ALL_USERS "@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@_AllUsers"
+  !define ARP_KEY_CURRENT_USER "@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@_CurrentUser"
+
 ; IsElevated macro: sets the output variable to 1 if the current process token
 ; has TokenElevation (i.e. the process is actually elevated via UAC), 0 otherwise.
 ; Uses advapi32 GetTokenInformation with TokenElevation (class 20).
@@ -85,6 +91,18 @@
     ${EndIf}
   ${EndIf}
 !macroend
+
+!macro SetArpRegKeyFromInstallMode UN
+Function ${UN}SetArpRegKeyFromInstallMode
+  ${If} $InstallMode = 1
+    StrCpy $ArpRegKey "${ARP_KEY_ALL_USERS}"
+  ${Else}
+    StrCpy $ArpRegKey "${ARP_KEY_CURRENT_USER}"
+  ${EndIf}
+FunctionEnd
+!macroend
+!insertmacro SetArpRegKeyFromInstallMode ""
+!insertmacro SetArpRegKeyFromInstallMode "un."
 
 @CPACK_NSIS_DEFINES@
 @CPACK_NSIS_MANIFEST_DPI_AWARE_CODE@
@@ -126,7 +144,7 @@ Var AR_RegFlags
 
   ClearErrors
   ;Reading component status from registry
-  ReadRegDWORD $AR_RegFlags SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@\Components\${SecName}" "Installed"
+  ReadRegDWORD $AR_RegFlags SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey\Components\${SecName}" "Installed"
   IfErrors "default_${SecName}"
     ;Status will stay default if registry value not found
     ;(component was never installed)
@@ -159,13 +177,13 @@ Var AR_RegFlags
     ;Section is not selected:
     ;Calling Section uninstall macro and writing zero installed flag
     !insertmacro "Remove_${${SecName}}"
-    WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@\Components\${SecName}" \
+    WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey\Components\${SecName}" \
   "Installed" 0
     Goto "exit_${SecName}"
 
  "leave_${SecName}:"
     ;Section is selected:
-    WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@\Components\${SecName}" \
+    WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey\Components\${SecName}" \
   "Installed" 1
 
  "exit_${SecName}:"
@@ -536,7 +554,7 @@ Function ConditionalAddToRegistry
   Pop $0
   Pop $1
   StrCmp "$0" "" ConditionalAddToRegistry_EmptyString
-    WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" \
+    WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey" \
     "$1" "$0"
     ;MessageBox MB_OK "Set Registry: '$1' to '$0'"
     DetailPrint "Set install registry entry: '$1' to '$0'"
@@ -717,7 +735,11 @@ Section "-Core installation"
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\@CPACK_NSIS_UNINSTALL_NAME@.exe"
   Push "DisplayName"
-  Push "@CPACK_NSIS_DISPLAY_NAME@"
+  ${If} $InstallMode = 1
+    Push "@CPACK_NSIS_DISPLAY_NAME@ (all users)"
+  ${Else}
+    Push "@CPACK_NSIS_DISPLAY_NAME@ (current user)"
+  ${EndIf}
   Call ConditionalAddToRegistry
   Push "DisplayVersion"
   Push "@CPACK_PACKAGE_VERSION@"
@@ -835,7 +857,13 @@ Function InstallModePage_OnClick
   Pop $1
   nsDialogs::GetUserData $1
   Pop $1
-  ; Show UAC shield on Next only when "All users" is selected
+  ; Show UAC shield only when "All users" is selected and elevation is still needed.
+  ${If} $1 = 1
+    !insertmacro IsElevated $2
+    ${If} $2 = 1
+      StrCpy $1 0
+    ${EndIf}
+  ${EndIf}
   GetDlgItem $0 $HWNDParent 1
   SendMessage $0 ${BCM_SETSHIELD} 0 $1
 FunctionEnd
@@ -902,6 +930,7 @@ Function InstallModePage_Leave
   ${If} $9 = 0
     ; Just for me
     StrCpy $InstallMode 0
+    Call SetArpRegKeyFromInstallMode
     StrCpy $INSTDIR "$LOCALAPPDATA\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
     SetShellVarContext current
     ; Clear the shield from the Next button
@@ -919,10 +948,14 @@ Function InstallModePage_Leave
     ${If} $0 = 1
       ; Already elevated: just update mode and continue
       StrCpy $InstallMode 1
+      Call SetArpRegKeyFromInstallMode
       StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
       StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
         StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
       SetShellVarContext all
+      ; No UAC prompt will occur in this path, so clear any stale shield.
+      GetDlgItem $0 $HWNDParent 1
+      SendMessage $0 ${BCM_SETSHIELD} 0 0
       ; If the user switched from per-user to all-users while already elevated,
       ; .onInit only checked HKCU. Re-check HKLM now.
       ${If} $InitialInstallMode = 0
@@ -958,17 +991,17 @@ FunctionEnd
 ; synchronously. On No, continue. On Cancel, Abort.
 Function CheckExistingInstallInteractive
   ${If} $InstallMode = 1
-    ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "UninstallString"
+    ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_ALL_USERS}" "UninstallString"
     ${If} $0 == ""
       Return
     ${EndIf}
-    ReadRegStr $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "DisplayName"
+    ReadRegStr $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_ALL_USERS}" "DisplayName"
   ${Else}
-    ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "UninstallString"
+    ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_CURRENT_USER}" "UninstallString"
     ${If} $0 == ""
       Return
     ${EndIf}
-    ReadRegStr $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "DisplayName"
+    ReadRegStr $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_CURRENT_USER}" "DisplayName"
   ${EndIf}
 
   MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
@@ -1044,12 +1077,13 @@ Function un.onInit
   ; which is less widely recognised by reviewers even though it does map to
   ; $INSTDIR per the plugin source).
   StrCpy $3 $INSTDIR
-  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "InstallMode"
+  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_CURRENT_USER}" "InstallMode"
   ${If} $0 == "CurrentUser"
-    ReadRegStr $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "InstallLocation"
+    ReadRegStr $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_CURRENT_USER}" "InstallLocation"
     System::Call 'kernel32::lstrcmpiW(w r1, w r3) i.r2'
     ${If} $2 = 0
       StrCpy $InstallMode 0
+      Call un.SetArpRegKeyFromInstallMode
       SetShellVarContext current
       Return
     ${EndIf}
@@ -1057,12 +1091,13 @@ Function un.onInit
 
   ; Check HKLM for an all-users install record. Verify InstallLocation matches
   ; $INSTDIR so the per-user uninstaller doesn't match the all-users ARP entry.
-  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "InstallMode"
+  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_ALL_USERS}" "InstallMode"
   ${If} $0 == "AllUsers"
-    ReadRegStr $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "InstallLocation"
+    ReadRegStr $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_ALL_USERS}" "InstallLocation"
     System::Call 'kernel32::lstrcmpiW(w r1, w r3) i.r2'
     ${If} $2 = 0
       StrCpy $InstallMode 1
+      Call un.SetArpRegKeyFromInstallMode
       SetShellVarContext all
       ; All-users install requires an elevated token. Re-launch elevated if needed,
       ; passing the original command line so silent-mode flags (/S _?=...) are
@@ -1104,6 +1139,7 @@ Function un.onInit
 
   ; Fallback: default to current user
   StrCpy $InstallMode 0
+  Call un.SetArpRegKeyFromInstallMode
   SetShellVarContext current
 FunctionEnd
 
@@ -1148,17 +1184,17 @@ FunctionEnd
 
 Section "Uninstall"
   ReadRegStr $START_MENU SHCTX \
-   "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "StartMenu"
+   "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey" "StartMenu"
   ;MessageBox MB_OK "Start menu is in: $START_MENU"
   ReadRegStr $DO_NOT_ADD_TO_PATH SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "DoNotAddToPath"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey" "DoNotAddToPath"
   ReadRegStr $ADD_TO_PATH_ALL_USERS SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "AddToPathAllUsers"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey" "AddToPathAllUsers"
   ReadRegStr $ADD_TO_PATH_CURRENT_USER SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "AddToPathCurrentUser"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey" "AddToPathCurrentUser"
   ;MessageBox MB_OK "Add to path: $DO_NOT_ADD_TO_PATH all users: $ADD_TO_PATH_ALL_USERS"
   ReadRegStr $INSTALL_DESKTOP SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "InstallToDesktop"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey" "InstallToDesktop"
 
   ; Remove desktop shortcut if it was installed
   StrCmp $INSTALL_DESKTOP "1" 0 skip_desktop_uninstall
@@ -1179,7 +1215,7 @@ Section "Uninstall"
 
   ;Remove the uninstaller itself.
   Delete "$INSTDIR\@CPACK_NSIS_UNINSTALL_NAME@.exe"
-  DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
+  DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\$ArpRegKey"
 
   ;Remove the installation directory if it is empty.
   RMDir "$INSTDIR"
@@ -1279,6 +1315,7 @@ Function .onInit
     !insertmacro IsElevated $R1
     ${If} $R1 = 1
       StrCpy $InstallMode 1
+      Call SetArpRegKeyFromInstallMode
       StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
       StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
         StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
@@ -1311,17 +1348,22 @@ Function .onInit
   !insertmacro IsElevated $0
   ${If} $0 = 1
     StrCpy $InstallMode 1
+    Call SetArpRegKeyFromInstallMode
     StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
     StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
       StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
     SetShellVarContext all
   ${Else}
     StrCpy $InstallMode 0
+    Call SetArpRegKeyFromInstallMode
     StrCpy $INSTDIR "$LOCALAPPDATA\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
     SetShellVarContext current
   ${EndIf}
 
   done_init_mode:
+
+  ; Ensure registry helper writes target the scoped uninstall key selected above.
+  Call SetArpRegKeyFromInstallMode
 
   StrCmp "@CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL@" "ON" 0 done_uninst_check
 
@@ -1331,13 +1373,13 @@ Function .onInit
   ; is installing all-users (or vice versa). $InstallMode is already set above
   ; (either by /elevated re-launch or by the UserInfo::GetAccountType default).
   ${If} $InstallMode = 1
-    ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "UninstallString"
+    ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_ALL_USERS}" "UninstallString"
     StrCmp $0 "" done_uninst_check 0
-    ReadRegStr $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "DisplayName"
+    ReadRegStr $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_ALL_USERS}" "DisplayName"
   ${Else}
-    ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "UninstallString"
+    ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_CURRENT_USER}" "UninstallString"
     StrCmp $0 "" done_uninst_check 0
-    ReadRegStr $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "DisplayName"
+    ReadRegStr $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ARP_KEY_CURRENT_USER}" "DisplayName"
   ${EndIf}
   MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
   "$1 is already installed. $\n$\nDo you want to uninstall the old version before installing the new one?" \

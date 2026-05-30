@@ -1,4 +1,5 @@
-!define /ifndef ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
+!define /ifndef ARP_ALL "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@_AllUsers"
+!define /ifndef ARP_CURRENT "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@_CurrentUser"
 
 ; Persist install mode under the ARP uninstall key in the appropriate hive.
 ; Storing it there (rather than a separate Software\PythonSCAD key) ensures
@@ -6,20 +7,20 @@
 ; a per-user and an all-users install on the same machine.
 ; $InstallMode: 1 = all users (HKLM), 0 = current user (HKCU).
 ${If} $InstallMode = 1
-  WriteRegStr HKLM "${ARP}" "InstallMode" "AllUsers"
-  WriteRegStr HKLM "${ARP}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "${ARP_ALL}" "InstallMode" "AllUsers"
+  WriteRegStr HKLM "${ARP_ALL}" "InstallLocation" "$INSTDIR"
 ${Else}
-  WriteRegStr HKCU "${ARP}" "InstallMode" "CurrentUser"
-  WriteRegStr HKCU "${ARP}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKCU "${ARP_CURRENT}" "InstallMode" "CurrentUser"
+  WriteRegStr HKCU "${ARP_CURRENT}" "InstallLocation" "$INSTDIR"
 ${EndIf}
 
 ; Write the installed size into the ARP key so "Apps & features" shows it.
 ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 IntFmt $0 "0x%08X" $0
 ${If} $InstallMode = 1
-  WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
+  WriteRegDWORD HKLM "${ARP_ALL}" "EstimatedSize" "$0"
 ${Else}
-  WriteRegDWORD HKCU "${ARP}" "EstimatedSize" "$0"
+  WriteRegDWORD HKCU "${ARP_CURRENT}" "EstimatedSize" "$0"
 ${EndIf}
 
 ; Register file associations scope-aware:
