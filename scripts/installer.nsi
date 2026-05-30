@@ -6,6 +6,7 @@ Name "OpenSCAD"
 OutFile "openscad_setup.exe"
 !include "installer_arch.nsi"
 DirText "This will install OpenSCAD on your computer. Choose a directory"
+
 Section "install"
 SetOutPath $INSTDIR
 File openscad.exe
@@ -27,17 +28,17 @@ WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" 
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "Publisher" "The OpenSCAD Developers"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "URLInfoAbout" "https://openscad.org/"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "URLUpdateInfo" "https://openscad.org/downloads.html"
-WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "HelpLink" "https://forum.openscad.org/"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "HelpLink" "https://openscad.org/documentation.html"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "UninstallString" "$INSTDIR\Uninstall.exe"
 WriteRegStr HKCR ".scad" "PerceivedType" "text"
 SectionEnd
+
 Section "Uninstall"
 ${unregisterExtension} ".scad" "OpenSCAD_File"
 Delete $INSTDIR\Uninstall.exe
-Delete $INSTDIR\MyProg.exe
 SetShellVarContext all
 Delete $SMPROGRAMS\OpenSCAD.lnk
-DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD"
+DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD"
 RMDir /r $INSTDIR\fonts
 RMDir /r $INSTDIR\color-schemes
 RMDir /r $INSTDIR\templates
