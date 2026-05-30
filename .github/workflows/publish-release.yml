@@ -258,12 +258,20 @@ jobs:
             gh release upload "$TAG" "${uploads[@]}" -R "${{ github.repository }}" --clobber
           fi
 
+  # When triggered automatically by a release event (Release Please), all builds
+  # have succeeded but the Windows artifacts are still unsigned. Post signing
+  # instructions to the release body and leave it as a pre-release so the
+  # maintainer can sign locally and then re-trigger this workflow manually.
+  #
+  # When triggered manually (workflow_dispatch) — i.e. after signing is done —
+  # publish immediately.
   publish:
     needs: [wait-for-builds, checksums]
     if: needs.wait-for-builds.outputs.all_succeeded == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Publish release
+      - name: Publish release (manual re-trigger after signing)
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v9
         env:
           NEEDS_RELEASE_ID: ${{ needs.wait-for-builds.outputs.release_id }}
@@ -290,6 +298,67 @@ jobs:
 
             console.log(`✅ Release ${releaseTag} published successfully!`);
             console.log(`🔗 ${releaseUrl}`);
+
+      - name: Await Windows signing (automatic release event)
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/github-script@v9
+        env:
+          NEEDS_RELEASE_ID: ${{ needs.wait-for-builds.outputs.release_id }}
+          NEEDS_RELEASE_TAG: ${{ needs.wait-for-builds.outputs.release_tag }}
+          NEEDS_RELEASE_URL: ${{ needs.wait-for-builds.outputs.release_url }}
+        with:
+          script: |
+            const releaseId = Number(process.env.NEEDS_RELEASE_ID);
+            const releaseTag = process.env.NEEDS_RELEASE_TAG;
+            const releaseUrl = process.env.NEEDS_RELEASE_URL;
+
+            // Append signing instructions to the release body so GitHub
+            // sends a notification to release watchers (including the maintainer).
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+            });
+
+            // Build the signing note without a literal "---" at column 0,
+            // which YAML would misparse as a document separator inside the
+            // block scalar. Use a JS variable instead.
+            const hr = '———'; // em-dashes, renders as a visual separator in Markdown
+            const signingNote = [
+              '',
+              hr,
+              '',
+              '## ⏳ Awaiting Windows code signing',
+              '',
+              'All platform builds completed successfully. The Windows installer and MSIX',
+              'package need to be signed with the Certum SimplySign certificate before this',
+              'release is published.',
+              '',
+              '**To complete the release:**',
+              '',
+              '1. Connect SimplySign Desktop (tray icon → Connect to SimplySign, enter',
+              '   username + token from the mobile app).',
+              '2. Run the signing script on your local Windows machine:',
+              '   ```powershell',
+              '   git pull',
+              `   .\\scripts\\sign-windows-release.ps1 -Tag ${releaseTag}`,
+              '   ```',
+              '3. Approve the push notification(s) in the SimplySign mobile app.',
+              '4. Once the script completes, trigger the',
+              '   [Publish Release workflow](../../actions/workflows/publish-release.yml)',
+              '   manually (Run workflow → leave tag empty).',
+            ].join('\n');
+
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              body: (release.body || '') + signingNote,
+            });
+
+            console.log(`📝 Release ${releaseTag} updated with signing instructions.`);
+            console.log(`🔗 ${releaseUrl}`);
+            console.log('Release remains as pre-release until signed and manually published.');
 
   handle-failure:
     needs: wait-for-builds
