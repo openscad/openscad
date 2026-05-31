@@ -271,11 +271,7 @@ void UIUtils::openOfflineUserManual()
 
 void UIUtils::openCheatSheetURL()
 {
-#ifdef OPENSCAD_SNAPSHOT
-  openVersionedURL("https://www.openscad.org/cheatsheet/snapshot.html?version=%1");
-#else
   openVersionedURL("https://www.openscad.org/cheatsheet/index.html?version=%1");
-#endif
 }
 
 void UIUtils::openPythonCheatSheetURL()

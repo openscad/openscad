@@ -4,7 +4,6 @@
 # Configuration variables
 #   -DHEADLESS=<ON|OFF>
 #   -DNULLGL=<ON|OFF>
-#   -DSNAPSHOT=<ON|OFF>
 #   -DEXPERIMENTAL=<ON|OFF>
 #
 
@@ -49,7 +48,6 @@ option(USE_MANIFOLD_MINKOWSKI "Use Manifold's Minkowski instead of CGAL's" OFF)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
 option(USE_POLYSET_FOR_CGAL "Force CGAL backend to use PolySetRenderer instead of CGALRenderer." OFF)
-option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(USE_QT6 "Build the GUI with Qt6" ON)
 option(ENABLE_EGL "Enable EGL support if available" ON)
@@ -1946,12 +1944,7 @@ if(ENABLE_GUI_TESTS)
   target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_GUI_TESTS)
 endif()
 
-if (SNAPSHOT)
-  set(SNAPSHOT_SUFFIX "-nightly")
-  set(SNAPSHOT_NAME_SUFFIX " (Nightly)")
-  target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_SNAPSHOT)
-endif()
-set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc)
+set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/pythonscad_win32.rc)
 set(MACOSX_BUNDLE_ICON_FILE pythonscad.icns)
 
 if (APPLE)
@@ -2366,11 +2359,11 @@ if(NOT APPLE OR APPLE_UNIX)
     endif()
     install(FILES ${RESOURCE_DIR}/icons/pythonscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME org.pythonscad.pythonscad${SUFFIX_WITH_DASH}.desktop)
     install(FILES ${RESOURCE_DIR}/icons/pythonscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME ${EXECUTABLE_NAME}.xml)
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME pythonscad.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME pythonscad.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME pythonscad.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME pythonscad.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME pythonscad.png)
   endif()
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
@@ -2552,8 +2545,8 @@ if(OFFLINE_DOCS)
   add_subdirectory(resources)
 endif()
 
-configure_file(${RESOURCE_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc.in
-	       ${CMAKE_BINARY_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc)
+configure_file(${RESOURCE_DIR}/pythonscad_win32.rc.in
+	       ${CMAKE_BINARY_DIR}/pythonscad_win32.rc)
 include(CPack)
 
 add_sanitizers(OpenSCADLibInternal)
