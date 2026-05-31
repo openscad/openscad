@@ -492,7 +492,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   const char *v = NULL, *layer = NULL, *id = NULL;
   PyObject *center = NULL;
   int convexity = 2;
-  double scale = 1.0, width = 1, height = 1, dpi = 1.0;
+  double scale = 1.0, width = 1, height = 1, dpi = ImportNode::SVG_DEFAULT_DPI;
   PyObject *origin = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|siO!dddOdsOddd", kwlist, &v, &layer, &convexity,
                                    &PyList_Type, &origin, &scale, &width, &height, &center, &dpi, &id,
@@ -558,8 +558,8 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   node->center = 0;
   if (center == Py_True) node->center = 1;
 
-  node->stroke = true;
-  if (stroke == Py_False) node->stroke = false;
+  node->stroke = false;
+  if (stroke == Py_True) node->stroke = true;
 
   node->scale = scale;
   if (node->scale <= 0) node->scale = 1;
