@@ -306,6 +306,29 @@ jobs:
           echo "msix_name=$MSIX_NAME" >> "$GITHUB_OUTPUT"
           echo "Using MSIX filename: $MSIX_NAME"
 
+      # Determine the MSIX publisher DN.
+      # When the CERTUM_CERTIFICATE_CN repository variable is set the real
+      # certificate Subject DN is used so that signtool can sign the MSIX
+      # after the build (the Identity Publisher must exactly match the signing
+      # certificate's Subject DN).
+      # Without the variable the unsigned-namespace OID placeholder is used,
+      # which allows makeappx to produce a valid (unsigned) package.
+      - name: Resolve MSIX publisher DN
+        id: msix-publisher
+        shell: bash
+        env:
+          CERTUM_DN: ${{ vars.CERTUM_CERTIFICATE_CN }}
+        run: |
+          if [ -n "$CERTUM_DN" ]; then
+            CERTUM_DN_CLEAN="$(printf '%s' "$CERTUM_DN" | tr -d '\r\n')"
+            echo "publisher_dn=$CERTUM_DN_CLEAN" >> "$GITHUB_OUTPUT"
+            echo "Using real certificate DN for MSIX publisher."
+          else
+            PLACEHOLDER="CN=PythonSCAD, OID.2.25.311729368913984317654407730594956997722=1"
+            echo "publisher_dn=$PLACEHOLDER" >> "$GITHUB_OUTPUT"
+            echo "CERTUM_CERTIFICATE_CN variable not set — using unsigned placeholder DN."
+          fi
+
       - name: Build MSIX package
         id: msix
         uses: ./.github/actions/build-msix
@@ -313,11 +336,9 @@ jobs:
           staging-dir: build/staging
           executable-name: pythonscad.exe
           package-version: ${{ steps.msix-version.outputs.version }}
-          publisher-cn: 'CN=PythonSCAD, OID.2.25.311729368913984317654407730594956997722=1'
+          publisher-cn: ${{ steps.msix-publisher.outputs.publisher_dn }}
           icon-source: resources/icons/pythonscad.png
           output-msix: ${{ steps.msix-filename.outputs.msix_name }}
-          # sign-certificate-base64: ${{ secrets.WINDOWS_SIGN_CERTIFICATE }}
-          # sign-certificate-password: ${{ secrets.WINDOWS_SIGN_CERTIFICATE_PASSWORD }}
 
       - name: Upload MSIX artifact
         uses: actions/upload-artifact@v7
