@@ -7,6 +7,14 @@ include ./src/*.h
 include ./src/platform/*.h
 include ./src/python/*.h
 include ./src/io/*.h
+# All lib3mf API variants must ship in the sdist; detect_lib3mf() picks one at
+# pip install time based on the host's lib3mf version (see setup.py).
+include ./src/io/export_3mf_dummy.cc
+include ./src/io/export_3mf_v1.cc
+include ./src/io/export_3mf_v2.cc
+include ./src/io/import_3mf_dummy.cc
+include ./src/io/import_3mf_v1.cc
+include ./src/io/import_3mf_v2.cc
 include ./src/libsvg/*.h
 include ./src/core/*.h
 include ./src/core/*.hxx
