@@ -6,7 +6,10 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <unordered_set>
 #include <utility>
+
+#include "core/SourceFile.h"
 
 class ApiFunc
 {
@@ -80,4 +83,16 @@ public:
   void autoCompletionSelected(const QString& selection) override;
   QStringList callTips(const QStringList& context, int commas, QsciScintilla::CallTipsStyle style,
                        QList<int>& shifts) override;
+
+  void updateCompleterInfoFromSourceFile(const SourceFile *sourceFile,
+                                         bool flagAutoCompleteIncludeVariables,
+                                         bool flagAutoCompleteIncludeModules,
+                                         bool flagAutoCompleteIncludeFunctions);
+
+  void updateCompleterInfoFromInputText(bool flagAutoCompleteIncludeVariables,
+                                        bool flagAutoCompleteIncludeModules,
+                                        bool flagAutoCompleteIncludeFunctions);
+
+private:
+  QStringList captureUserVariables;
 };

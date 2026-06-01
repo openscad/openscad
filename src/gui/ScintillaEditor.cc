@@ -241,6 +241,14 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   // Disabling buffered drawing resolves non-integer HiDPI scaling.
   qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);
+
+  /*
+  connect(qsci, &QsciScintilla::textChanged, this, [this]() {
+    if (this->api) {
+      this->api->updateCompleterInfoFromText(qsci->text());
+    }
+  });
+  */
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint& pos)
@@ -1617,4 +1625,22 @@ void ScintillaEditor::clearSelectionIndicators(int lineFrom, int colFrom, int li
 
   qsci->clearIndicatorRange(lineFrom, colFrom, lineTo, colTo, selectionIndicatorIsActiveNumber);
   qsci->clearIndicatorRange(lineFrom, colFrom, lineTo, colTo, selectionIndicatorIsActiveNumber + 1);
+}
+
+void ScintillaEditor::updateCompleterInfoFromInputText(bool flagAutoCompleteIncludeVariables,
+                                                       bool flagAutoCompleteIncludeModules,
+                                                       bool flagAutoCompleteIncludeFunctions)
+{
+  api->updateCompleterInfoFromInputText(flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules,
+                                        flagAutoCompleteIncludeFunctions);
+}
+
+void ScintillaEditor::updateCompleterInfoFromSourceFile(const SourceFile *sourceFile,
+                                                        bool flagAutoCompleteIncludeVariables,
+                                                        bool flagAutoCompleteIncludeModules,
+                                                        bool flagAutoCompleteIncludeFunctions)
+{
+  api->updateCompleterInfoFromSourceFile(sourceFile, flagAutoCompleteIncludeVariables,
+                                         flagAutoCompleteIncludeModules,
+                                         flagAutoCompleteIncludeFunctions);
 }
