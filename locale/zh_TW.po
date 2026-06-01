@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2020.02.17\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 02:48+0200\n"
+"POT-Creation-Date: 2026-06-01 03:39+0200\n"
 "PO-Revision-Date: 2020-05-28 14:42+0200\n"
 "Last-Translator: Michael Tsao <cwtsao@sce.pccu.edu.tw>\n"
 "Language-Team: Distance Learning Center at the Chinese Culture University "
@@ -534,7 +534,7 @@ msgid "Clear console"
 msgstr "清除控制台"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:46
-#: src/gui/TabManager.cc:1801
+#: src/gui/TabManager.cc:1840
 #, fuzzy
 msgid "Save As..."
 msgstr "另存為(&A)"
@@ -1264,7 +1264,7 @@ msgid "Select Design"
 msgstr "動作"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1063
-#: src/gui/MainWindow.cc:4442
+#: src/gui/MainWindow.cc:4443
 msgid "Welcome..."
 msgstr ""
 
@@ -1328,7 +1328,7 @@ msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1088
-#: src/gui/MainWindow.cc:4443
+#: src/gui/MainWindow.cc:4444
 #, fuzzy
 msgid "Close &Window"
 msgstr "新視窗"
@@ -3196,7 +3196,7 @@ msgid ""
 "href=\"#console\">console window</a>."
 msgstr "詳見<a href=\"#console\">控制台視窗</a>."
 
-#: src/gui/MainWindow.cc:1543 src/gui/TabManager.cc:230
+#: src/gui/MainWindow.cc:1543 src/gui/TabManager.cc:232
 msgid "Session Save"
 msgstr ""
 
@@ -3244,12 +3244,12 @@ msgstr ""
 msgid "Select Virtual Environment"
 msgstr ""
 
-#: src/gui/MainWindow.cc:2347 src/gui/TabManager.cc:197
-#: src/gui/TabManager.cc:295
+#: src/gui/MainWindow.cc:2348 src/gui/TabManager.cc:199
+#: src/gui/TabManager.cc:297
 msgid "Application"
 msgstr "套用"
 
-#: src/gui/MainWindow.cc:2348
+#: src/gui/MainWindow.cc:2349
 msgid ""
 "The file has changed on disk, but this tab has unsaved edits.\n"
 "Reloading will discard your changes.\n"
@@ -3257,73 +3257,73 @@ msgid ""
 "Do you really want to reload the file?"
 msgstr ""
 
-#: src/gui/MainWindow.cc:2968
+#: src/gui/MainWindow.cc:2969
 msgid "Click to change language"
 msgstr ""
 
-#: src/gui/MainWindow.cc:3013
+#: src/gui/MainWindow.cc:3014
 msgid "Auto-detect from file extension"
 msgstr ""
 
-#: src/gui/MainWindow.cc:3412
+#: src/gui/MainWindow.cc:3413
 msgid "Export %1 File"
 msgstr "匯出 %1 檔案"
 
-#: src/gui/MainWindow.cc:3413
+#: src/gui/MainWindow.cc:3414
 msgid "%1 Files (*%2)"
 msgstr "%1 個檔案 (*%2)"
 
-#: src/gui/MainWindow.cc:3461
+#: src/gui/MainWindow.cc:3462
 msgid "Export CSG File"
 msgstr "匯出CSG檔案"
 
-#: src/gui/MainWindow.cc:3462
+#: src/gui/MainWindow.cc:3463
 msgid "CSG Files (*.csg)"
 msgstr "CSG檔案 (*.csg)"
 
-#: src/gui/MainWindow.cc:3485
+#: src/gui/MainWindow.cc:3486
 msgid "Export Image"
 msgstr "匯出圖片"
 
-#: src/gui/MainWindow.cc:3485
+#: src/gui/MainWindow.cc:3486
 msgid "PNG Files (*.png)"
 msgstr "PNG檔 (*.png)"
 
-#: src/gui/MainWindow.cc:4742
+#: src/gui/MainWindow.cc:4743
 #, fuzzy
 msgid "&Editor"
 msgstr "編輯器"
 
-#: src/gui/MainWindow.cc:4743
+#: src/gui/MainWindow.cc:4744
 #, fuzzy
 msgid "&Console"
 msgstr "控制台"
 
-#: src/gui/MainWindow.cc:4744
+#: src/gui/MainWindow.cc:4745
 #, fuzzy
 msgid "C&ustomizer"
 msgstr "自訂"
 
-#: src/gui/MainWindow.cc:4745
+#: src/gui/MainWindow.cc:4746
 #, fuzzy
 msgid "Error-&Log"
 msgstr "錯誤日誌"
 
-#: src/gui/MainWindow.cc:4746
+#: src/gui/MainWindow.cc:4747
 #, fuzzy
 msgid "&Animate"
 msgstr "動畫"
 
-#: src/gui/MainWindow.cc:4747
+#: src/gui/MainWindow.cc:4748
 msgid "&Font List"
 msgstr "字型清單(&F)"
 
-#: src/gui/MainWindow.cc:4748
+#: src/gui/MainWindow.cc:4749
 #, fuzzy
 msgid "C&olor List"
 msgstr "色彩方案:"
 
-#: src/gui/MainWindow.cc:4749
+#: src/gui/MainWindow.cc:4750
 #, fuzzy
 msgid "&Viewport-Control"
 msgstr "隱藏3D檢視工具列"
@@ -3463,21 +3463,21 @@ msgstr ""
 msgid "Trust Design"
 msgstr "設計(&D)"
 
-#: src/gui/TabManager.cc:128
+#: src/gui/TabManager.cc:130
 msgid "Python script (*.py)"
 msgstr ""
 
-#: src/gui/TabManager.cc:131 src/gui/TabManager.cc:136
+#: src/gui/TabManager.cc:133 src/gui/TabManager.cc:138
 #, fuzzy
 msgid "OpenSCAD script (*.scad)"
 msgstr "OpenSCAD設計 (*.scad)"
 
-#: src/gui/TabManager.cc:139
+#: src/gui/TabManager.cc:141
 #, fuzzy
 msgid "All files (*)"
 msgstr "%1 個檔案 (*%2)"
 
-#: src/gui/TabManager.cc:161
+#: src/gui/TabManager.cc:163
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
@@ -3485,11 +3485,11 @@ msgstr ""
 "%1 已存在。\n"
 "是否要覆寫？"
 
-#: src/gui/TabManager.cc:198
+#: src/gui/TabManager.cc:200
 msgid "Cannot open design file \"%1\": path is a directory."
 msgstr ""
 
-#: src/gui/TabManager.cc:231
+#: src/gui/TabManager.cc:233
 msgid ""
 "Could not write session file:\n"
 "%1\n"
@@ -3499,11 +3499,11 @@ msgid ""
 "Session changes may be lost."
 msgstr ""
 
-#: src/gui/TabManager.cc:240
+#: src/gui/TabManager.cc:242
 msgid "Unable to create the session directory."
 msgstr ""
 
-#: src/gui/TabManager.cc:296
+#: src/gui/TabManager.cc:298
 #, fuzzy
 msgid ""
 "The file \"%1\" does not exist.\n"
@@ -3513,49 +3513,72 @@ msgstr ""
 "%1 已存在。\n"
 "是否要覆寫？"
 
-#: src/gui/TabManager.cc:793
+#: src/gui/TabManager.cc:796
 msgid "Copy file name"
 msgstr "複製檔案名稱"
 
-#: src/gui/TabManager.cc:799
+#: src/gui/TabManager.cc:802
 msgid "Copy full path"
 msgstr "複製完整路徑"
 
-#: src/gui/TabManager.cc:805
+#: src/gui/TabManager.cc:808
 #, fuzzy
 msgid "Open Folder"
 msgstr "檔案(&F)"
 
-#: src/gui/TabManager.cc:810
+#: src/gui/TabManager.cc:813
 #, fuzzy
 msgid "Close Tab"
 msgstr "關閉分頁"
 
-#: src/gui/TabManager.cc:815
+#: src/gui/TabManager.cc:818
 msgid "Close All But This Tab"
 msgstr ""
 
-#: src/gui/TabManager.cc:1111
+#: src/gui/TabManager.cc:1114
 #, fuzzy
 msgid "Do you want to save the changes you made to %1?"
 msgstr "是否要儲存你的變更？"
 
-#: src/gui/TabManager.cc:1112
+#: src/gui/TabManager.cc:1115
 msgid "Your changes will be lost if you don't save them."
 msgstr ""
 
-#: src/gui/TabManager.cc:1117
+#: src/gui/TabManager.cc:1120
 #, fuzzy
 msgid "Don't save"
 msgstr "不再顯示"
 
-#: src/gui/TabManager.cc:1583 src/gui/TabManager.cc:1590
-#: src/gui/TabManager.cc:1598 src/gui/TabManager.cc:1608
-#: src/gui/TabManager.cc:1796
+#: src/gui/TabManager.cc:1582 src/gui/TabManager.cc:1612
+#: src/gui/TabManager.cc:1619 src/gui/TabManager.cc:1647
+#: src/gui/TabManager.cc:1835
 msgid "Session Restore"
 msgstr ""
 
 #: src/gui/TabManager.cc:1584
+msgid ""
+"The session file was created by a newer version of PythonSCAD (session "
+"version %1, but this build only supports up to version %2)."
+msgstr ""
+
+#: src/gui/TabManager.cc:1589
+msgid ""
+"Exit to keep the session file for use with a newer PythonSCAD, or discard it "
+"to start fresh here.\n"
+"\n"
+"Session file:\n"
+"%1"
+msgstr ""
+
+#: src/gui/TabManager.cc:1592
+msgid "Exit"
+msgstr ""
+
+#: src/gui/TabManager.cc:1593
+msgid "Discard session"
+msgstr ""
+
+#: src/gui/TabManager.cc:1613
 msgid ""
 "Could not open the session file for reading:\n"
 "%1\n"
@@ -3565,7 +3588,7 @@ msgid ""
 "Starting with a fresh session."
 msgstr ""
 
-#: src/gui/TabManager.cc:1591
+#: src/gui/TabManager.cc:1620
 msgid ""
 "The session file is corrupt or unreadable:\n"
 "%1\n"
@@ -3574,48 +3597,39 @@ msgid ""
 "Starting with a fresh session."
 msgstr ""
 
-#: src/gui/TabManager.cc:1599
-msgid ""
-"The session file was created by a newer version of PythonSCAD (session "
-"version %1, but this build only supports up to version %2).\n"
-"\n"
-"Please upgrade PythonSCAD or delete the session file:\n"
-"%3"
-msgstr ""
-
-#: src/gui/TabManager.cc:1609
+#: src/gui/TabManager.cc:1648
 msgid ""
 "The session file uses an old format (version %1) that cannot be migrated to "
 "the current format (version %2). Starting with a fresh session."
 msgstr ""
 
-#: src/gui/TabManager.cc:1797
+#: src/gui/TabManager.cc:1836
 msgid "%1 file(s) could not be found on disk."
 msgstr ""
 
-#: src/gui/TabManager.cc:1799
+#: src/gui/TabManager.cc:1838
 msgid ""
 "The session contents were restored, but the file paths are stale.\n"
 "Use Save As to pick a new location."
 msgstr ""
 
-#: src/gui/TabManager.cc:1802
+#: src/gui/TabManager.cc:1841
 msgid "Dismiss"
 msgstr ""
 
-#: src/gui/TabManager.cc:1915 src/gui/TabManager.cc:2067
+#: src/gui/TabManager.cc:1954 src/gui/TabManager.cc:2106
 msgid "Failed to open file for writing"
 msgstr "寫入時開啟檔案錯誤"
 
-#: src/gui/TabManager.cc:1955 src/gui/TabManager.cc:2081
+#: src/gui/TabManager.cc:1994 src/gui/TabManager.cc:2120
 msgid "Error saving design"
 msgstr "儲存設計錯誤"
 
-#: src/gui/TabManager.cc:1967
+#: src/gui/TabManager.cc:2006
 msgid "Save File"
 msgstr "儲存檔案"
 
-#: src/gui/TabManager.cc:2044
+#: src/gui/TabManager.cc:2083
 #, fuzzy
 msgid "Save A Copy"
 msgstr "全部儲存"

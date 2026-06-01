@@ -18,6 +18,7 @@
 
 #include <QByteArray>
 #include <QClipboard>
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDir>
@@ -32,6 +33,7 @@
 #include <QStringList>
 #include <QTabBar>
 #include <QTextStream>
+#include <QTimer>
 #include <QWidget>
 #include <cassert>
 #include <cstddef>
@@ -1572,6 +1574,31 @@ TabManager::SessionFileReadStatus TabManager::readSessionFileRoot(const QString&
   return SessionFileReadStatus::Ok;
 }
 
+TabManager::TooNewSessionChoice TabManager::promptTooNewSession(const QString& path, int fileVersion,
+                                                                QWidget *parent)
+{
+  QMessageBox box(parent);
+  box.setIcon(QMessageBox::Warning);
+  box.setWindowTitle(_("Session Restore"));
+  box.setText(QString(_("The session file was created by a newer version of PythonSCAD "
+                        "(session version %1, but this build only supports up to version %2)."))
+                .arg(fileVersion)
+                .arg(SESSION_VERSION));
+  box.setInformativeText(
+    QString(_("Exit to keep the session file for use with a newer PythonSCAD, or discard it to "
+              "start fresh here.\n\nSession file:\n%1"))
+      .arg(path));
+  auto *exitButton = box.addButton(_("Exit"), QMessageBox::RejectRole);
+  auto *discardButton = box.addButton(_("Discard session"), QMessageBox::DestructiveRole);
+  box.setDefaultButton(exitButton);
+  box.exec();
+
+  if (box.clickedButton() == discardButton) {
+    return TooNewSessionChoice::DiscardAndContinue;
+  }
+  return TooNewSessionChoice::ExitKeepSession;
+}
+
 bool TabManager::restoreSession(const QString& path, int windowIndex)
 {
   QJsonObject root;
@@ -1595,15 +1622,25 @@ bool TabManager::restoreSession(const QString& path, int windowIndex)
                            .arg(path));
     return false;
   case SessionFileReadStatus::TooNew:
-    QMessageBox::critical(
-      parent, QString(_("Session Restore")),
-      QString(_("The session file was created by a newer version of PythonSCAD "
-                "(session version %1, but this build only supports up to version %2).\n\n"
-                "Please upgrade PythonSCAD or delete the session file:\n%3"))
-        .arg(tooNewVer)
-        .arg(SESSION_VERSION)
-        .arg(path));
-    return false;
+    switch (promptTooNewSession(path, tooNewVer, parent)) {
+    case TooNewSessionChoice::ExitKeepSession:
+      setSkipSessionSave(true);
+      QTimer::singleShot(0, QCoreApplication::instance(), []() {
+        if (scadApp) {
+          for (auto *win : scadApp->windowManager.getWindows()) {
+            win->markSessionQuitting();
+          }
+          scadApp->quit();
+        } else {
+          QCoreApplication::quit();
+        }
+      });
+      return false;
+    case TooNewSessionChoice::DiscardAndContinue:
+      removeSessionFile();
+      QFile::remove(getAutosaveFilePath());
+      return false;
+    }
   case SessionFileReadStatus::MigrateFailed:
     QMessageBox::warning(
       parent, QString(_("Session Restore")),

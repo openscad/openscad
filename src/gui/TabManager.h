@@ -12,6 +12,7 @@
 #include "gui/Editor.h"
 
 class MainWindow;  // for circular dependency
+class QWidget;
 
 class TabManager : public QObject
 {
@@ -76,6 +77,26 @@ public:
   static void setSkipSessionSave(bool skip);
   static bool shouldSkipSessionSave();
 
+  enum class SessionFileReadStatus {
+    Ok,
+    OpenFailed,
+    InvalidJson,
+    TooNew,
+    MigrateFailed,
+  };
+  /// Read session JSON from disk; on \c Ok, \a outRoot holds the normalized object (migrated).
+  static SessionFileReadStatus readSessionFileRoot(const QString& path, QJsonObject *outRoot,
+                                                   QString *openError = nullptr,
+                                                   int *tooNewVersion = nullptr,
+                                                   int *migrateFailedAtVersion = nullptr);
+
+  enum class TooNewSessionChoice {
+    ExitKeepSession,
+    DiscardAndContinue,
+  };
+  static TooNewSessionChoice promptTooNewSession(const QString& path, int fileVersion,
+                                                 QWidget *parent = nullptr);
+
   // Session file schema version. Increment when the format changes and add a
   // migration step in migrateSession().  Old files without a version field are
   // treated as version 1.
@@ -114,19 +135,6 @@ private:
                          const QByteArray& customizerState = QByteArray(),
                          std::optional<int> sessionLanguage = std::nullopt, bool diskBacked = false);
   static bool migrateSession(QJsonObject& root, int fromVersion);
-
-  enum class SessionFileReadStatus {
-    Ok,
-    OpenFailed,
-    InvalidJson,
-    TooNew,
-    MigrateFailed,
-  };
-  /// Read session JSON from disk; on \c Ok, \a outRoot holds the normalized object (migrated).
-  static SessionFileReadStatus readSessionFileRoot(const QString& path, QJsonObject *outRoot,
-                                                   QString *openError = nullptr,
-                                                   int *tooNewVersion = nullptr,
-                                                   int *migrateFailedAtVersion = nullptr);
 
   QTabBar::ButtonPosition getClosingButtonPosition();
   void zoomIn();
