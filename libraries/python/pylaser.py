@@ -1,4 +1,4 @@
-from openscad import *
+from pythonscad import *
 from random import *
 
 """
@@ -77,7 +77,7 @@ class LaserCutter:
             while True:
                 try:
                     newmat=iter.matrix
-                except:
+                except AttributeError:
                     break
                 mat = multmatrix(mat, newmat)
                 iter, = iter.children()

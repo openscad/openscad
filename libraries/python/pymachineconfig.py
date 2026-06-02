@@ -1,6 +1,6 @@
 import os
 import json
-from openscad import *
+from pythonscad import *
 
 """
 MachineConfig class which can be used to read lasercutter and 3D
@@ -32,8 +32,8 @@ class MachineConfig:
     def _check_lasermode(self, value):
         try:
             if self._config["default"]["property"]["lasermode"] != value:
-                print("Error: lasermode masmatch.  Ignoring overwrite.")
-        except:
+                print("Error: lasermode mismatch.  Ignoring overwrite.")
+        except (KeyError, TypeError):
             self._config["default"]["property"]["lasermode"] = value
             self.write_settings()
 
@@ -113,7 +113,7 @@ class MachineConfig:
         with open(name, 'r', encoding='utf-8') as f:
             cfg = json.loads(f.read())
             return cfg
-        
+
     def write(self, config=None, name="PythonSCAD.json", backup=None):
         name = self.configfile(name)
 
@@ -129,7 +129,7 @@ class MachineConfig:
         if jstr is not None:
             with open(name,'w') as fout:
                 fout.write(jstr)
-        
+
         return
 
     def write_settings(self, config=None):
@@ -137,7 +137,7 @@ class MachineConfig:
             config = self._config
 
         mc = machineconfig(config)
-        
+
     def set_config(self, config):
         self._config = config
         self.write_settings()
@@ -166,7 +166,7 @@ class MachineConfig:
         except ValueError as e:
             print(f"An error occurred: {e}")
             return None
-    
+
     def get_label_by_type(self, label):
         try:
             values = set([x for x in self._config
@@ -175,7 +175,7 @@ class MachineConfig:
         except ValueError as e:
             print(f"An error occurred: {e}")
             return None
-    
+
     def get_property(self, label):
         try:
             return self._config[label]["property"]
@@ -185,7 +185,7 @@ class MachineConfig:
 
     def working_config(self):
         return self._working
-    
+
     def gen_working(self, label="default"):
         """
         Create a flat representation of all variables associated with
@@ -212,8 +212,8 @@ class MachineConfig:
             # FIXME: need to also handle 'C:' naming
             return name
 
-        if (xdg is not None) and (os.path.exists(os.path.join(xgd,name))):
-            return os.path.join(xgd,name)
+        if xdg and os.path.exists(os.path.join(xdg, name)):
+            return os.path.join(xdg, name)
 
         if home is not None:
             return os.path.join(home,".config","PythonSCAD",name)
@@ -320,4 +320,3 @@ class MachineConfig:
     def gen_color2hex(self, power=-1,feed=-1):
         color = self.gen_color(power,feed)
         return f"0x{color:08X}"
-

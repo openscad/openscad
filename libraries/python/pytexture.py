@@ -1,9 +1,9 @@
-from openscad import *
+from pythonscad import *
 from math import *
 
 def find_face(faces, n):
     return max(faces, key = lambda  f : f.matrix[0][2]*n[0]+f.matrix[1][2]*n[1]+f.matrix[2][2]*n[2])
-    
+
 
 def face_bbox(face):
     pts=face.mesh()[0]
@@ -22,7 +22,7 @@ def solid_bbox(solid):
     maxy=max(pts, key = lambda pt:pt[1])
     maxz=max(pts, key = lambda pt:pt[2])
     return minx[0], miny[1], minz[2], maxx[0], maxy[1], maxz[2]
-    
+
 def load_texture(texturefile, tilesize, eff_thick,inv=False):
     tile = surface(texturefile,color=True, invert=inv)
     tileminx, tileminy, tileminz, tilemaxx, tilemaxy, tilemaxz= solid_bbox(tile)
@@ -32,7 +32,7 @@ def load_texture(texturefile, tilesize, eff_thick,inv=False):
     texscale=tilesize/tilespanx
     tile = tile.scale([texscale,texscale,eff_thick/tilespanz])
     if inv:
-        tile=tile.up(eff_thick)                
+        tile=tile.up(eff_thick)
     return [tile, tilespanx*texscale, tilespany*texscale]
 
 def add_texture(face, tile ,align_ang=0, patch_ang=90):
@@ -48,4 +48,3 @@ def add_texture(face, tile ,align_ang=0, patch_ang=90):
     texturemask = faceflat.offset(tileheight).roof().scale([1,1,-tanval]).up(tileheight*tanval)
     texture= (union(tiles) + [faceminx-0.2,faceminy-0.2]) & texturemask
     texture.rotz(-align_ang).multmatrix(face.matrix).show()
-
