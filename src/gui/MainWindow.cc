@@ -1264,13 +1264,14 @@ void MainWindow::compileDone(bool didchange)
 
     if (scintillaEditor) {
       if (completionMode == "ParsedFileMode") {
-        scintillaEditor->updateCompleterInfoFromInputText(
-          flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules,
-          flagAutoCompleteIncludeFunctions);  // this is Regex Mode
-      } else if (completionMode == "RegexInputTextMode") {
-        scintillaEditor->updateCompleterInfoFromSourceFile(
+        scintillaEditor->correctUserVarNamesForCompletionFromSourceFile(
           parsedFile.get(), flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules,
           flagAutoCompleteIncludeFunctions);
+
+      } else if (completionMode == "RegexInputTextMode") {
+        scintillaEditor->correctUserVarNamesForCompletionFromInputText(flagAutoCompleteIncludeVariables,
+                                                                       flagAutoCompleteIncludeModules,
+                                                                       flagAutoCompleteIncludeFunctions);
       }
     }
   }

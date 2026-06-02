@@ -67,13 +67,13 @@ public:
   void setFocus() override;
   void setupAutoComplete(const bool forceOff = false);
 
-  void updateCompleterInfoFromInputText(bool flagAutoCompleteIncludeVariables,
-                                        bool flagAutoCompleteIncludeModules,
-                                        bool flagAutoCompleteIncludeFunctions);
-  void updateCompleterInfoFromSourceFile(const SourceFile *sourceFile,
-                                         bool flagAutoCompleteIncludeVariables,
-                                         bool flagAutoCompleteIncludeModules,
-                                         bool flagAutoCompleteIncludeFunctions);
+  void correctUserVarNamesForCompletionFromSourceFile(const SourceFile *sourceFile,
+                                                      bool flagAutoCompleteIncludeVariables,
+                                                      bool flagAutoCompleteIncludeModules,
+                                                      bool flagAutoCompleteIncludeFunctions);
+  void correctUserVarNamesForCompletionFromInputText(bool flagAutoCompleteIncludeVariables,
+                                                     bool flagAutoCompleteIncludeModules,
+                                                     bool flagAutoCompleteIncludeFunctions);
 
 private:
   void getRange(int *lineFrom, int *lineTo);
