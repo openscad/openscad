@@ -8,12 +8,12 @@ Render and display one or more objects in the PythonSCAD viewport. This is the p
 
 === "Python"
 
-```python
-show(obj)
-show(obj1, obj2, ...)
-show([obj1, obj2, ...])
-obj.show()
-```
+    ```python
+    show(obj)
+    show(obj1, obj2, ...)
+    show([obj1, obj2, ...])
+    obj.show()
+    ```
 
 **Parameters:**
 
@@ -27,15 +27,15 @@ Passing a list of solids implicitly creates a union.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).show()
+    cube(10).show()
 
-show(cube(5), sphere(3).right(10))
+    show(cube(5), sphere(3).right(10))
 
-show([cube(5).right(5 * i) for i in range(5)])
-```
+    show([cube(5).right(5 * i) for i in range(5)])
+    ```
 
 ---
 
@@ -47,10 +47,10 @@ Export an object to a file. Supports STL, 3MF, OFF, AMF, and other formats based
 
 === "Python"
 
-```python
-export(obj, file)
-obj.export(file)
-```
+    ```python
+    export(obj, file)
+    obj.export(file)
+    ```
 
 **Parameters:**
 
@@ -63,11 +63,11 @@ obj.export(file)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).export("mycube.stl")
-```
+    cube(10).export("mycube.stl")
+    ```
 
 ### Multi-object 3MF export
 
@@ -76,13 +76,13 @@ entry, all packed into the output file:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c   = cube(10)
-cyl = cylinder(r=4, h=4)
-export({"cube": c, "cylinder": cyl}, "myfile.3mf")
-```
+    c   = cube(10)
+    cyl = cylinder(r=4, h=4)
+    export({"cube": c, "cylinder": cyl}, "myfile.3mf")
+    ```
 
 * **Keys** become part names in the 3MF metadata, so they must be
   `str` / Unicode -- non-string keys are not supported and may error
@@ -123,10 +123,10 @@ Force full geometry evaluation of an object. This computes the exact geometry, w
 
 === "Python"
 
-```python
-render(obj, convexity=2)
-obj.render(convexity=2)
-```
+    ```python
+    render(obj, convexity=2)
+    obj.render(convexity=2)
+    ```
 
 **Parameters:**
 
@@ -139,11 +139,11 @@ obj.render(convexity=2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).render().show()
-```
+    cube(10).render().show()
+    ```
 
 **OpenSCAD reference:** [render](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#render)
 
@@ -157,10 +157,10 @@ Project a 3D object onto the XY plane, producing a 2D shape.
 
 === "Python"
 
-```python
-projection(obj, cut=False, convexity=2)
-obj.projection(cut=False, convexity=2)
-```
+    ```python
+    projection(obj, cut=False, convexity=2)
+    obj.projection(cut=False, convexity=2)
+    ```
 
 **Parameters:**
 
@@ -174,15 +174,15 @@ obj.projection(cut=False, convexity=2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Silhouette projection
-sphere(10).projection().show()
+    # Silhouette projection
+    sphere(10).projection().show()
 
-# Cross-section at Z=0
-sphere(10).projection(cut=True).show()
-```
+    # Cross-section at Z=0
+    sphere(10).projection(cut=True).show()
+    ```
 
 **OpenSCAD reference:** [projection](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_the_2D_Subsystem#3D_to_2D_Projection)
 
@@ -196,9 +196,9 @@ Group objects together without performing any boolean operation. The children re
 
 === "Python"
 
-```python
-group(obj)
-```
+    ```python
+    group(obj)
+    ```
 
 **Parameters:**
 
@@ -210,12 +210,12 @@ group(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-g = group(cube(5) | sphere(3))
-g.show()
-```
+    g = group(cube(5) | sphere(3))
+    g.show()
+    ```
 
 ---
 
@@ -227,24 +227,24 @@ Mark an object for highlighting in the preview. The object is rendered in a dist
 
 === "Python"
 
-```python
-highlight(obj)
-obj.highlight()
-+obj
-```
+    ```python
+    highlight(obj)
+    obj.highlight()
+    +obj
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-show(highlight(cube(5)) | sphere(3).right(10))
+    show(highlight(cube(5)) | sphere(3).right(10))
 
-# Operator form
-show(+cube(5) | sphere(3).right(10))
-```
+    # Operator form
+    show(+cube(5) | sphere(3).right(10))
+    ```
 
 **OpenSCAD reference:** [Debug Modifier](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Modifier_Characters#Debug_Modifier)
 
@@ -258,24 +258,24 @@ Render an object transparently and exclude it from CSG operations. Useful for sh
 
 === "Python"
 
-```python
-background(obj)
-obj.background()
--obj
-```
+    ```python
+    background(obj)
+    obj.background()
+    -obj
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-show(background(cube(10)) | sphere(5))
+    show(background(cube(10)) | sphere(5))
 
-# Operator form
-show(-cube(10) | sphere(5))
-```
+    # Operator form
+    show(-cube(10) | sphere(5))
+    ```
 
 **OpenSCAD reference:** [Background Modifier](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Modifier_Characters#Background_Modifier)
 
@@ -289,23 +289,23 @@ Show only this object, ignoring everything else in the scene. Equivalent to the 
 
 === "Python"
 
-```python
-only(obj)
-obj.only()
-~obj
-```
+    ```python
+    only(obj)
+    obj.only()
+    ~obj
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-show(cube(10) | only(sphere(5)))
+    show(cube(10) | only(sphere(5)))
 
-# Operator form
-show(cube(10) | ~sphere(5))
-```
+    # Operator form
+    show(cube(10) | ~sphere(5))
+    ```
 
 **OpenSCAD reference:** [Root Modifier](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Modifier_Characters#Root_Modifier)

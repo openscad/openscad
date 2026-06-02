@@ -8,9 +8,9 @@ Create a box (rectangular prism) in the first octant. When `center` is true, the
 
 === "Python"
 
-```python
-cube(size=1, center=False)
-```
+    ```python
+    cube(size=1, center=False)
+    ```
 
 **Parameters:**
 
@@ -31,18 +31,18 @@ The `center` parameter accepts a 3-character string where each character control
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).show()
+    cube(10).show()
 
-cube([10, 20, 30]).show()
+    cube([10, 20, 30]).show()
 
-cube([10, 20, 30], center=True).show()
+    cube([10, 20, 30], center=True).show()
 
-# Per-axis centering: center X and Y, keep Z at bottom
-cube([10, 20, 30], center="||<").show()
-```
+    # Per-axis centering: center X and Y, keep Z at bottom
+    cube([10, 20, 30], center="||<").show()
+    ```
 
 **OpenSCAD reference:** [cube](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Primitive_Solids#cube)
 
@@ -56,11 +56,11 @@ Create a sphere centered at the origin.
 
 === "Python"
 
-```python
-sphere(r=1)
-sphere(d=2)
-sphere(func, fn=..., fa=..., fs=...)
-```
+    ```python
+    sphere(r=1)
+    sphere(d=2)
+    sphere(func, fn=..., fa=..., fs=...)
+    ```
 
 **Parameters:**
 
@@ -78,29 +78,29 @@ The `r` parameter can be a Python function that receives a 3D direction vector a
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-def rfunc(v):
-    cf = abs(v[0]) + abs(v[1]) + abs(v[2]) + 3
-    return 10 / cf
+    def rfunc(v):
+        cf = abs(v[0]) + abs(v[1]) + abs(v[2]) + 3
+        return 10 / cf
 
-sphere(rfunc, fs=0.5, fn=10).show()
-```
+    sphere(rfunc, fs=0.5, fn=10).show()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-sphere(10).show()
+    sphere(10).show()
 
-sphere(d=20).show()
+    sphere(d=20).show()
 
-sphere(5, fn=100).show()
-```
+    sphere(5, fn=100).show()
+    ```
 
 **OpenSCAD reference:** [sphere](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Primitive_Solids#sphere)
 
@@ -114,13 +114,13 @@ Create a cylinder or cone centered on the Z axis. The base sits on the XY plane 
 
 === "Python"
 
-```python
-cylinder(h=1, r=1, center=False)
-cylinder(h=1, r1=1, r2=1, center=False)
-cylinder(h=1, d=2, center=False)
-cylinder(h=1, d1=2, d2=2, center=False)
-cylinder(h=1, r=1, angle=360)
-```
+    ```python
+    cylinder(h=1, r=1, center=False)
+    cylinder(h=1, r1=1, r2=1, center=False)
+    cylinder(h=1, d=2, center=False)
+    cylinder(h=1, d1=2, d2=2, center=False)
+    cylinder(h=1, r=1, angle=360)
+    ```
 
 **Parameters:**
 
@@ -145,28 +145,28 @@ The `angle` parameter creates a partial cylinder (pie/wedge shape):
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cylinder(r=5, h=6, angle=90).show()
-```
+    cylinder(r=5, h=6, angle=90).show()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cylinder(h=10, r=5).show()
+    cylinder(h=10, r=5).show()
 
-cylinder(h=10, r1=5, r2=2).show()
+    cylinder(h=10, r1=5, r2=2).show()
 
-cylinder(h=10, d=8, center=True).show()
+    cylinder(h=10, d=8, center=True).show()
 
-# High-resolution cylinder
-cylinder(h=10, r=5, fn=100).show()
-```
+    # High-resolution cylinder
+    cylinder(h=10, r=5, fn=100).show()
+    ```
 
 **OpenSCAD reference:** [cylinder](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Primitive_Solids#cylinder)
 
@@ -180,9 +180,9 @@ Create a 3D solid from a list of vertices and face indices.
 
 === "Python"
 
-```python
-polyhedron(points, faces, convexity=2)
-```
+    ```python
+    polyhedron(points, faces, convexity=2)
+    ```
 
 **Parameters:**
 
@@ -198,34 +198,34 @@ polyhedron(points, faces, convexity=2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-pts = [
-    [0, 0, 0], [10, 0, 0], [10, 10, 0], [0, 10, 0],
-    [0, 0, 10], [10, 0, 10], [10, 10, 10], [0, 10, 10]
-]
-faces = [
-    [0, 1, 2, 3],  # bottom
-    [4, 5, 6, 7],  # top
-    [0, 1, 5, 4],  # front
-    [1, 2, 6, 5],  # right
-    [2, 3, 7, 6],  # back
-    [3, 0, 4, 7],  # left
-]
-polyhedron(pts, faces).show()
-```
+    pts = [
+        [0, 0, 0], [10, 0, 0], [10, 10, 0], [0, 10, 0],
+        [0, 0, 10], [10, 0, 10], [10, 10, 10], [0, 10, 10]
+    ]
+    faces = [
+        [0, 1, 2, 3],  # bottom
+        [4, 5, 6, 7],  # top
+        [0, 1, 5, 4],  # front
+        [1, 2, 6, 5],  # right
+        [2, 3, 7, 6],  # back
+        [3, 0, 4, 7],  # left
+    ]
+    polyhedron(pts, faces).show()
+    ```
 
 You can also reconstruct a solid from its mesh data:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
-pts, tris = c.mesh()
-polyhedron(pts, tris).show()
-```
+    c = cube(10)
+    pts, tris = c.mesh()
+    polyhedron(pts, tris).show()
+    ```
 
 **OpenSCAD reference:** [polyhedron](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Primitive_Solids#polyhedron)

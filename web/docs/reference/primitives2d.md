@@ -10,9 +10,9 @@ Create a rectangle in the first quadrant. When `center` is true, it is centered 
 
 === "Python"
 
-```python
-square(dim=1, center=False)
-```
+    ```python
+    square(dim=1, center=False)
+    ```
 
 **Parameters:**
 
@@ -25,15 +25,15 @@ square(dim=1, center=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-square(10).show()
+    square(10).show()
 
-square([20, 10]).show()
+    square([20, 10]).show()
 
-square([20, 10], center=True).show()
-```
+    square([20, 10], center=True).show()
+    ```
 
 **OpenSCAD reference:** [square](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_the_2D_Subsystem#square)
 
@@ -47,11 +47,11 @@ Create a circle at the origin.
 
 === "Python"
 
-```python
-circle(r=1)
-circle(d=2)
-circle(r=1, angle=360)
-```
+    ```python
+    circle(r=1)
+    circle(d=2)
+    circle(r=1, angle=360)
+    ```
 
 **Parameters:**
 
@@ -70,29 +70,29 @@ The `angle` parameter creates a pie/sector shape:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-circle(r=5, angle=70).show()
-```
+    circle(r=5, angle=70).show()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-circle(10).show()
+    circle(10).show()
 
-circle(d=20).show()
+    circle(d=20).show()
 
-# Hexagon
-circle(r=5, fn=6).show()
+    # Hexagon
+    circle(r=5, fn=6).show()
 
-# High-resolution circle
-circle(r=10, fn=100).show()
-```
+    # High-resolution circle
+    circle(r=10, fn=100).show()
+    ```
 
 **OpenSCAD reference:** [circle](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_the_2D_Subsystem#circle)
 
@@ -106,9 +106,9 @@ Create a 2D polygon from a list of points.
 
 === "Python"
 
-```python
-polygon(points, paths=None, convexity=2)
-```
+    ```python
+    polygon(points, paths=None, convexity=2)
+    ```
 
 **Parameters:**
 
@@ -122,17 +122,17 @@ polygon(points, paths=None, convexity=2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-polygon([[0, 0], [10, 0], [5, 10]]).show()
+    polygon([[0, 0], [10, 0], [5, 10]]).show()
 
-# Polygon with a hole
-polygon(
-    points=[[0,0], [20,0], [20,20], [0,20], [5,5], [15,5], [15,15], [5,15]],
-    paths=[[0,1,2,3], [4,5,6,7]]
-).show()
-```
+    # Polygon with a hole
+    polygon(
+        points=[[0,0], [20,0], [20,20], [0,20], [5,5], [15,5], [15,15], [5,15]],
+        paths=[[0,1,2,3], [4,5,6,7]]
+    ).show()
+    ```
 
 **OpenSCAD reference:** [polygon](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_the_2D_Subsystem#polygon)
 
@@ -146,9 +146,9 @@ Create an open polyline from a list of points. Unlike `polygon`, a polyline is n
 
 === "Python"
 
-```python
-polyline(points)
-```
+    ```python
+    polyline(points)
+    ```
 
 **Parameters:**
 
@@ -162,12 +162,12 @@ Polylines can carry color but have no area and are ignored in CSG operations.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-for i in range(10):
-    polyline([[0, i], [20, i]]).show()
-```
+    for i in range(10):
+        polyline([[0, i], [20, i]]).show()
+    ```
 
 ---
 
@@ -179,9 +179,9 @@ Create a smooth 2D curve that passes through the given control points. Similar t
 
 === "Python"
 
-```python
-spline(points, fn=0, fa=0, fs=0)
-```
+    ```python
+    spline(points, fn=0, fa=0, fs=0)
+    ```
 
 **Parameters:**
 
@@ -196,13 +196,13 @@ spline(points, fn=0, fa=0, fs=0)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-pts = [[0, 6], [10, -5], [20, 10], [0, 19]]
-s = spline(pts, fn=20).linear_extrude(height=1)
-s.show()
-```
+    pts = [[0, 6], [10, -5], [20, 10], [0, 19]]
+    s = spline(pts, fn=20).linear_extrude(height=1)
+    s.show()
+    ```
 
 ---
 
@@ -214,10 +214,10 @@ Create 2D text geometry.
 
 === "Python"
 
-```python
-text(t, size=10, font="", spacing=1, direction="ltr",
-     language="en", script="latin", halign="left", valign="baseline")
-```
+    ```python
+    text(t, size=10, font="", spacing=1, direction="ltr",
+         language="en", script="latin", halign="left", valign="baseline")
+    ```
 
 **Parameters:**
 
@@ -238,13 +238,13 @@ text(t, size=10, font="", spacing=1, direction="ltr",
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-text("Hello PythonSCAD", size=10).linear_extrude(height=2).show()
+    text("Hello PythonSCAD", size=10).linear_extrude(height=2).show()
 
-text("Centered", size=15, halign="center", valign="center").show()
-```
+    text("Centered", size=15, halign="center", valign="center").show()
+    ```
 
 **OpenSCAD reference:** [text](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Text)
 
@@ -258,10 +258,10 @@ Get the bounding box metrics of a text string without creating geometry. Returns
 
 === "Python"
 
-```python
-textmetrics(t, size=10, font="", spacing=1, direction="ltr",
-            language="en", script="latin", halign="left", valign="baseline")
-```
+    ```python
+    textmetrics(t, size=10, font="", spacing=1, direction="ltr",
+                language="en", script="latin", halign="left", valign="baseline")
+    ```
 
 **Parameters:**
 
@@ -273,9 +273,9 @@ Same parameters as [`text`](#text).
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-m = textmetrics("Hello", size=10)
-print(m)
-```
+    m = textmetrics("Hello", size=10)
+    print(m)
+    ```

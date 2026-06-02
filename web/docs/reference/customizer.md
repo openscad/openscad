@@ -8,10 +8,10 @@ Add a parameter that appears in the PythonSCAD Customizer GUI. Users can modify 
 
 === "Python"
 
-```python
-value = add_parameter(name, default, description="", group="Parameters",
-                      range=None, step=None, max_length=None, options=None)
-```
+    ```python
+    value = add_parameter(name, default, description="", group="Parameters",
+                        range=None, step=None, max_length=None, options=None)
+    ```
 
 **Parameters:**
 
@@ -36,16 +36,16 @@ The parameter type is inferred from the default value:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-width = add_parameter("width", 10)          # integer
-scale = add_parameter("scale", 1.5)         # float
-name = add_parameter("name", "default")     # string
-enabled = add_parameter("enabled", True)    # boolean (checkbox)
+    width = add_parameter("width", 10)          # integer
+    scale = add_parameter("scale", 1.5)         # float
+    name = add_parameter("name", "default")     # string
+    enabled = add_parameter("enabled", True)    # boolean (checkbox)
 
-cube([width, width, width]).show()
-```
+    cube([width, width, width]).show()
+    ```
 
 ---
 
@@ -55,15 +55,15 @@ Use `range` to create a slider widget:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Integer slider (range() is exclusive, so use 101 for max 100)
-quality = add_parameter("quality", 50, range=range(0, 101, 5))
+    # Integer slider (range() is exclusive, so use 101 for max 100)
+    quality = add_parameter("quality", 50, range=range(0, 101, 5))
 
-# Float slider using tuple (min, max) or (min, max, step)
-scale = add_parameter("scale", 1.0, range=(0.1, 10.0, 0.1))
-```
+    # Float slider using tuple (min, max) or (min, max, step)
+    scale = add_parameter("scale", 1.0, range=(0.1, 10.0, 0.1))
+    ```
 
 ---
 
@@ -73,11 +73,11 @@ Use `step` for a spinbox without a slider:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-angle = add_parameter("angle", 45.0, step=0.5)
-```
+    angle = add_parameter("angle", 45.0, step=0.5)
+    ```
 
 ---
 
@@ -87,15 +87,15 @@ Use `options` for a dropdown menu:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Simple list
-color = add_parameter("color", "red", options=["red", "green", "blue"])
+    # Simple list
+    color = add_parameter("color", "red", options=["red", "green", "blue"])
 
-# Labeled options (value: label)
-quality = add_parameter("quality", 10, options={10: "Low", 20: "Medium", 30: "High"})
-```
+    # Labeled options (value: label)
+    quality = add_parameter("quality", 10, options={10: "Low", 20: "Medium", 30: "High"})
+    ```
 
 ---
 
@@ -105,17 +105,17 @@ Organize parameters into tabs using `group`:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-width = add_parameter("width", 10, group="Dimensions")
-height = add_parameter("height", 20, group="Dimensions")
-color = add_parameter("color", "red", group="Appearance")
+    width = add_parameter("width", 10, group="Dimensions")
+    height = add_parameter("height", 20, group="Dimensions")
+    color = add_parameter("color", "red", group="Appearance")
 
-# Special groups
-debug = add_parameter("debug", False, group="Hidden")    # not shown in UI
-units = add_parameter("units", "mm", group="Global")     # appears on all tabs
-```
+    # Special groups
+    debug = add_parameter("debug", False, group="Hidden")    # not shown in UI
+    units = add_parameter("units", "mm", group="Global")     # appears on all tabs
+    ```
 
 ---
 
@@ -125,13 +125,13 @@ Add help text with `description`:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-width = add_parameter("width", 10,
-    description="Width of the model in mm",
-    group="Dimensions")
-```
+    width = add_parameter("width", 10,
+        description="Width of the model in mm",
+        group="Dimensions")
+    ```
 
 ---
 
@@ -141,11 +141,11 @@ Limit string input length:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-name = add_parameter("name", "hello", max_length=20)
-```
+    name = add_parameter("name", "hello", max_length=20)
+    ```
 
 ---
 
@@ -155,8 +155,8 @@ Vector parameters (lists) support constraints applied to all elements:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-size = add_parameter("size", [10, 20, 30], range=(1, 100, 1))
-```
+    size = add_parameter("size", [10, 20, 30], range=(1, 100, 1))
+    ```

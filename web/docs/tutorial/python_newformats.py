@@ -14,7 +14,7 @@ Just test it on a simple model and explore the limits.
 With the new polyline primitive and existing 2d primitives, PythonSCAD can be used to design Lasercut designs.
 
 
-```py
+```python
 
 machineconfig({
 "default":{

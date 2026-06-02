@@ -8,11 +8,11 @@ PythonSCAD overloads Python operators on solid objects to provide concise syntax
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(5) + [10, 0, 0]).show()
-```
+    (cube(5) + [10, 0, 0]).show()
+    ```
 
 When both operands are lists/vectors, standard addition applies.
 
@@ -26,13 +26,13 @@ When both operands are lists/vectors, standard addition applies.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(10) - sphere(7)).show()
+    (cube(10) - sphere(7)).show()
 
-(cube(5) - [10, 0, 0]).show()  # same as translate by [-10, 0, 0]
-```
+    (cube(5) - [10, 0, 0]).show()  # same as translate by [-10, 0, 0]
+    ```
 
 ---
 
@@ -44,13 +44,13 @@ from openscad import *
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(5) * 2).show()
+    (cube(5) * 2).show()
 
-(cube(5) * [1, 2, 3]).show()
-```
+    (cube(5) * [1, 2, 3]).show()
+    ```
 
 ---
 
@@ -60,11 +60,11 @@ from openscad import *
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(5) | sphere(3)).show()
-```
+    (cube(5) | sphere(3)).show()
+    ```
 
 ---
 
@@ -74,11 +74,11 @@ from openscad import *
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(10) & sphere(7)).show()
-```
+    (cube(10) & sphere(7)).show()
+    ```
 
 ---
 
@@ -88,12 +88,12 @@ from openscad import *
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
-(cube(5) @ mat).show()
-```
+    mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
+    (cube(5) @ mat).show()
+    ```
 
 ---
 
@@ -105,11 +105,11 @@ mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(3) ^ sphere(2).right(10)).show()
-```
+    (cube(3) ^ sphere(2).right(10)).show()
+    ```
 
 ---
 
@@ -121,11 +121,11 @@ from openscad import *
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-(cube(10) % sphere(1)).show()
-```
+    (cube(10) % sphere(1)).show()
+    ```
 
 ---
 
@@ -139,11 +139,11 @@ from openscad import *
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-show(+cube(5) | -sphere(3))
-```
+    show(+cube(5) | -sphere(3))
+    ```
 
 These correspond to OpenSCAD's `#`, `%`, and `!` modifier characters.
 

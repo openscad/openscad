@@ -8,11 +8,11 @@ Import geometry from a file. This is the PythonSCAD equivalent of OpenSCAD's `im
 
 === "Python"
 
-```python
-osimport(file, layer="", convexity=2, origin=None, scale=None,
-         width=0, height=0, center=False, dpi=96, id="", stroke=False,
-         fn=0, fa=0, fs=0)
-```
+    ```python
+    osimport(file, layer="", convexity=2, origin=None, scale=None,
+             width=0, height=0, center=False, dpi=96, id="", stroke=False,
+             fn=0, fa=0, fs=0)
+    ```
 
 **Parameters:**
 
@@ -37,15 +37,15 @@ osimport(file, layer="", convexity=2, origin=None, scale=None,
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-model = osimport("model.stl")
-model.show()
+    model = osimport("model.stl")
+    model.show()
 
-drawing = osimport("design.svg", dpi=96)
-drawing.linear_extrude(height=2).show()
-```
+    drawing = osimport("design.svg", dpi=96)
+    drawing.linear_extrude(height=2).show()
+    ```
 
 **OpenSCAD reference:** [import](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Importing_Geometry#import)
 
@@ -66,9 +66,9 @@ analog of OpenSCAD's `use <file.scad>`, with two semantic differences:
 
 === "Python"
 
-```python
-lib = osuse(file)
-```
+    ```python
+    lib = osuse(file)
+    ```
 
 **Parameters:**
 
@@ -96,36 +96,36 @@ Calling a module from an imported library:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-mcad = osuse("MCAD/gears.scad")
+    mcad = osuse("MCAD/gears.scad")
 
-g = mcad.gear(
-    number_of_teeth=20,
-    circular_pitch=200,
-    pressure_angle=20,
-    clearance=0,
-    verbose=False,
-)
-g.show()
-```
+    g = mcad.gear(
+        number_of_teeth=20,
+        circular_pitch=200,
+        pressure_angle=20,
+        clearance=0,
+        verbose=False,
+    )
+    g.show()
+    ```
 
 Calling a function and reading variables from an imported library:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-lib = osuse("mylib.scad")
+    lib = osuse("mylib.scad")
 
-width = lib.get_width()
-radius = lib.calculate_radius(diameter=10)
+    width = lib.get_width()
+    radius = lib.calculate_radius(diameter=10)
 
-print(lib.my_constant)
-print(lib["$fn"])
-```
+    print(lib.my_constant)
+    print(lib["$fn"])
+    ```
 
 ---
 
@@ -160,9 +160,9 @@ modules explicitly via the handle (e.g. `lib.my_module().show()`).
 
 === "Python"
 
-```python
-lib = osinclude(file)
-```
+    ```python
+    lib = osinclude(file)
+    ```
 
 **Parameters:**
 
@@ -174,12 +174,12 @@ lib = osinclude(file)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-lib = osinclude("config.scad")
-print(lib.default_radius)
-```
+    lib = osinclude("config.scad")
+    print(lib.default_radius)
+    ```
 
 ---
 
@@ -191,9 +191,9 @@ Execute inline OpenSCAD code from within a Python script.
 
 === "Python"
 
-```python
-scad(code)
-```
+    ```python
+    scad(code)
+    ```
 
 **Parameters:**
 
@@ -205,12 +205,12 @@ scad(code)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-result = scad("cube(10);")
-result.show()
-```
+    result = scad("cube(10);")
+    result.show()
+    ```
 
 ---
 
@@ -222,9 +222,9 @@ Import a model from a network URL. This function is only available in GUI mode.
 
 === "Python"
 
-```python
-nimport(url)
-```
+    ```python
+    nimport(url)
+    ```
 
 **Parameters:**
 
@@ -236,9 +236,9 @@ nimport(url)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-model = nimport("https://example.com/model.stl")
-model.show()
-```
+    model = nimport("https://example.com/model.stl")
+    model.show()
+    ```

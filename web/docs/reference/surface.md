@@ -6,9 +6,9 @@ Generate a 3D surface from a heightmap data file or image.
 
 === "Python"
 
-```python
-surface(file, center=False, convexity=2, invert=False, color=False)
-```
+    ```python
+    surface(file, center=False, convexity=2, invert=False, color=False)
+    ```
 
 **Parameters:**
 
@@ -29,12 +29,12 @@ surface(file, center=False, convexity=2, invert=False, color=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-surface(file="terrain.dat", center=True).show()
+    surface(file="terrain.dat", center=True).show()
 
-surface(file="heightmap.png", convexity=5).show()
-```
+    surface(file="heightmap.png", convexity=5).show()
+    ```
 
 **OpenSCAD reference:** [surface](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#surface)

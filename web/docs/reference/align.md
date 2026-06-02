@@ -10,17 +10,17 @@ Every solid has a default handle called `origin`, which starts as the identity m
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube([10, 10, 10])
+    c = cube([10, 10, 10])
 
-# Create a handle at the top center
-c.top_center = translate(c.origin, [5, 5, 10])
+    # Create a handle at the top center
+    c.top_center = translate(c.origin, [5, 5, 10])
 
-# Create a handle pointing to the right side
-c.right_center = translate(roty(c.origin, 90), [10, 5, 5])
-```
+    # Create a handle pointing to the right side
+    c.right_center = translate(roty(c.origin, 90), [10, 5, 5])
+    ```
 
 Handles are stored as regular attributes on the solid and persist through transformations.
 
@@ -34,10 +34,10 @@ Align an object to a handle (reference matrix) on another object. This is a powe
 
 === "Python"
 
-```python
-align(obj, refmat, objmat=None, flip=False)
-obj.align(refmat, objmat=None, flip=False)
-```
+    ```python
+    align(obj, refmat, objmat=None, flip=False)
+    obj.align(refmat, objmat=None, flip=False)
+    ```
 
 **Parameters:**
 
@@ -52,21 +52,21 @@ obj.align(refmat, objmat=None, flip=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube([10, 10, 10])
+    c = cube([10, 10, 10])
 
-# Create handles
-c.top_center = translate(c.origin, [5, 5, 10])
-c.right_center = translate(roty(c.origin, 90), [10, 5, 5])
+    # Create handles
+    c.top_center = translate(c.origin, [5, 5, 10])
+    c.right_center = translate(roty(c.origin, 90), [10, 5, 5])
 
-# Attach a cylinder to the right side
-cyl = cylinder(d=1, h=2)
-c |= cyl.align(c.right_center, cyl.origin)
+    # Attach a cylinder to the right side
+    cyl = cylinder(d=1, h=2)
+    c |= cyl.align(c.right_center, cyl.origin)
 
-c.show()
-```
+    c.show()
+    ```
 
 ### Abutting objects
 
@@ -74,12 +74,12 @@ Scaling a handle by -1 inverts its directions, so aligned objects will be placed
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube()
-c1 = c
-c2 = c.align(scale(c1.origin, -1), c.origin)
+    c = cube()
+    c1 = c
+    c2 = c.align(scale(c1.origin, -1), c.origin)
 
-show(c1 | c2)
-```
+    show(c1 | c2)
+    ```

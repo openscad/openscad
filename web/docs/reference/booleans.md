@@ -10,10 +10,10 @@ Combine multiple objects into one. The result contains all volume from all input
 
 === "Python"
 
-```python
-union(obj1, obj2, ..., r=None, fn=None)
-obj1 | obj2
-```
+    ```python
+    union(obj1, obj2, ..., r=None, fn=None)
+    obj1 | obj2
+    ```
 
 **Parameters:**
 
@@ -29,24 +29,24 @@ Specifying `r` and `fn` adds rounded fillets to the edges created by the union:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-union(cube(10), sphere(7).right(5), r=1, fn=10).show()
-```
+    union(cube(10), sphere(7).right(5), r=1, fn=10).show()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-union(cube(10), sphere(7)).show()
+    union(cube(10), sphere(7)).show()
 
-# Operator form
-(cube(10) | sphere(7)).show()
-```
+    # Operator form
+    (cube(10) | sphere(7)).show()
+    ```
 
 **OpenSCAD reference:** [union](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/CSG_Modelling#union)
 
@@ -60,10 +60,10 @@ Subtract one or more objects from the first object.
 
 === "Python"
 
-```python
-difference(obj1, obj2, ..., r=None, fn=None)
-obj1 - obj2
-```
+    ```python
+    difference(obj1, obj2, ..., r=None, fn=None)
+    obj1 - obj2
+    ```
 
 **Parameters:**
 
@@ -78,17 +78,17 @@ obj1 - obj2
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-difference(cube(10), sphere(7)).show()
+    difference(cube(10), sphere(7)).show()
 
-# Operator form
-(cube(10) - sphere(7)).show()
+    # Operator form
+    (cube(10) - sphere(7)).show()
 
-# With filleted edges
-difference(cube(10), cylinder(r=4, h=12, center=True), r=0.5, fn=8).show()
-```
+    # With filleted edges
+    difference(cube(10), cylinder(r=4, h=12, center=True), r=0.5, fn=8).show()
+    ```
 
 **OpenSCAD reference:** [difference](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/CSG_Modelling#difference)
 
@@ -102,10 +102,10 @@ Keep only the volume that is common to all input objects.
 
 === "Python"
 
-```python
-intersection(obj1, obj2, ...)
-obj1 & obj2
-```
+    ```python
+    intersection(obj1, obj2, ...)
+    obj1 & obj2
+    ```
 
 **Parameters:**
 
@@ -117,14 +117,14 @@ obj1 & obj2
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-intersection(cube(10), sphere(7)).show()
+    intersection(cube(10), sphere(7)).show()
 
-# Operator form
-(cube(10) & sphere(7)).show()
-```
+    # Operator form
+    (cube(10) & sphere(7)).show()
+    ```
 
 **OpenSCAD reference:** [intersection](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/CSG_Modelling#intersection)
 
@@ -138,10 +138,10 @@ Create the convex hull of multiple objects. The result is the smallest convex so
 
 === "Python"
 
-```python
-hull(obj1, obj2, ...)
-obj1 ^ obj2
-```
+    ```python
+    hull(obj1, obj2, ...)
+    obj1 ^ obj2
+    ```
 
 **Parameters:**
 
@@ -153,14 +153,14 @@ obj1 ^ obj2
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-hull(cube(3), sphere(2).right(10)).show()
+    hull(cube(3), sphere(2).right(10)).show()
 
-# Operator form
-(cube(3) ^ sphere(2).right(10)).show()
-```
+    # Operator form
+    (cube(3) ^ sphere(2).right(10)).show()
+    ```
 
 **OpenSCAD reference:** [hull](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#hull)
 
@@ -174,9 +174,9 @@ Fill concavities in a 2D shape, creating a convex outline.
 
 === "Python"
 
-```python
-fill(obj1, obj2, ...)
-```
+    ```python
+    fill(obj1, obj2, ...)
+    ```
 
 **Parameters:**
 
@@ -188,11 +188,11 @@ fill(obj1, obj2, ...)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-fill(polygon([[0,0], [10,0], [5,3], [10,10], [0,10]])).show()
-```
+    fill(polygon([[0,0], [10,0], [5,3], [10,10], [0,10]])).show()
+    ```
 
 ---
 
@@ -204,10 +204,10 @@ Compute the Minkowski sum of two objects. Conceptually, this "traces" one object
 
 === "Python"
 
-```python
-minkowski(obj1, obj2, convexity=2)
-obj1 % obj2
-```
+    ```python
+    minkowski(obj1, obj2, convexity=2)
+    obj1 % obj2
+    ```
 
 **Parameters:**
 
@@ -221,15 +221,15 @@ obj1 % obj2
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Round the edges of a cube
-minkowski(cube(10), sphere(1)).show()
+    # Round the edges of a cube
+    minkowski(cube(10), sphere(1)).show()
 
-# Operator form
-(cube(10) % sphere(1)).show()
-```
+    # Operator form
+    (cube(10) % sphere(1)).show()
+    ```
 
 **OpenSCAD reference:** [minkowski](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#minkowski)
 
@@ -243,9 +243,9 @@ Concatenate the meshes of multiple objects without performing boolean operations
 
 === "Python"
 
-```python
-concat(obj1, obj2, ...)
-```
+    ```python
+    concat(obj1, obj2, ...)
+    ```
 
 **Parameters:**
 
@@ -257,9 +257,9 @@ concat(obj1, obj2, ...)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-alltogether = concat(part1, part2, part3)
-alltogether.show()
-```
+    alltogether = concat(part1, part2, part3)
+    alltogether.show()
+    ```

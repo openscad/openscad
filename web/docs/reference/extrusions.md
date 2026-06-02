@@ -10,11 +10,11 @@ Extrude a 2D shape (or Python function) along the Z axis.
 
 === "Python"
 
-```python
-linear_extrude(obj, height=1, convexity=1, origin=None, scale=None,
-               center=False, slices=1, segments=0, twist=None)
-obj.linear_extrude(height=1, ...)
-```
+    ```python
+    linear_extrude(obj, height=1, convexity=1, origin=None, scale=None,
+                   center=False, slices=1, segments=0, twist=None)
+    obj.linear_extrude(height=1, ...)
+    ```
 
 **Parameters:**
 
@@ -37,40 +37,40 @@ The `obj` parameter can be a Python function that receives a height value and re
 
 === "Python"
 
-```python
-from openscad import *
-from math import *
+    ```python
+    from pythonscad import *
+    from math import *
 
-def xsection(h):
-    v = 5 + sin(h)
-    return [[-v, -v], [v, -v], [v, v], [-v, v]]
+    def xsection(h):
+        v = 5 + sin(h)
+        return [[-v, -v], [v, -v], [v, v], [-v, v]]
 
-linear_extrude(xsection, height=10, slices=20).show()
-```
+    linear_extrude(xsection, height=10, slices=20).show()
+    ```
 
 The `twist` parameter can also be a Python function:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-square(5, center=True).linear_extrude(height=20, twist=90, slices=50).show()
-```
+    square(5, center=True).linear_extrude(height=20, twist=90, slices=50).show()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-circle(5).linear_extrude(height=10).show()
+    circle(5).linear_extrude(height=10).show()
 
-circle(5).linear_extrude(height=10, twist=90, slices=50).show()
+    circle(5).linear_extrude(height=10, twist=90, slices=50).show()
 
-circle(5).linear_extrude(height=10, scale=[2, 0.5]).show()
-```
+    circle(5).linear_extrude(height=10, scale=[2, 0.5]).show()
+    ```
 
 **OpenSCAD reference:** [linear_extrude](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_the_2D_Subsystem#linear_extrude)
 
@@ -84,11 +84,11 @@ Extrude a 2D shape by rotating it around the Z axis.
 
 === "Python"
 
-```python
-rotate_extrude(obj, convexity=1, scale=1.0, angle=360, twist=None,
-               origin=None, offset=None, v=None, method=None)
-obj.rotate_extrude(...)
-```
+    ```python
+    rotate_extrude(obj, convexity=1, scale=1.0, angle=360, twist=None,
+                   origin=None, offset=None, v=None, method=None)
+    obj.rotate_extrude(...)
+    ```
 
 **Parameters:**
 
@@ -111,40 +111,40 @@ The `obj` parameter can be a Python function that receives an angle and returns 
 
 === "Python"
 
-```python
-from openscad import *
-from math import *
+    ```python
+    from pythonscad import *
+    from math import *
 
-def xsection(h):
-    v = 2 * sin(4 * pi * h)
-    return [[10+v, -v], [15-v, -v], [15-v, 5+v], [10+v, 5+v]]
+    def xsection(h):
+        v = 2 * sin(4 * pi * h)
+        return [[10+v, -v], [15-v, -v], [15-v, 5+v], [10+v, 5+v]]
 
-rotate_extrude(xsection, fn=50).show()
-```
+    rotate_extrude(xsection, fn=50).show()
+    ```
 
 The `v` parameter creates a helix by translating the profile along a vector per revolution:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-circle(3).right(10).rotate_extrude(v=[0, 0, 20], angle=600).show()
-```
+    circle(3).right(10).rotate_extrude(v=[0, 0, 20], angle=600).show()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Simple torus
-circle(3).right(10).rotate_extrude().show()
+    # Simple torus
+    circle(3).right(10).rotate_extrude().show()
 
-# Partial rotation
-square([2, 3]).right(5).rotate_extrude(angle=270).show()
-```
+    # Partial rotation
+    square([2, 3]).right(5).rotate_extrude(angle=270).show()
+    ```
 
 **OpenSCAD reference:** [rotate_extrude](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_the_2D_Subsystem#rotate_extrude)
 
@@ -158,11 +158,11 @@ Extrude a 2D shape along an arbitrary 3D path. A 4th value in each path vertex s
 
 === "Python"
 
-```python
-path_extrude(obj, path, xdir=None, convexity=1, origin=None,
-             scale=None, twist=None, closed=False, fn=-1, fa=-1, fs=-1)
-obj.path_extrude(path, ...)
-```
+    ```python
+    path_extrude(obj, path, xdir=None, convexity=1, origin=None,
+                 scale=None, twist=None, closed=False, fn=-1, fa=-1, fs=-1)
+    obj.path_extrude(path, ...)
+    ```
 
 **Parameters:**
 
@@ -182,16 +182,16 @@ obj.path_extrude(path, ...)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Extrude a square along a path with rounded corners
-p = path_extrude(
-    square(1),
-    [[0,0,0], [0,0,10,3], [10,0,10,3], [10,10,10]]
-)
-p.show()
-```
+    # Extrude a square along a path with rounded corners
+    p = path_extrude(
+        square(1),
+        [[0,0,0], [0,0,10,3], [10,0,10,3], [10,10,10]]
+    )
+    p.show()
+    ```
 
 ---
 
@@ -203,9 +203,9 @@ Create a surface that smoothly connects multiple 2D profiles placed in 3D space.
 
 === "Python"
 
-```python
-skin(obj1, obj2, ..., convexity=1, align_angle=None, segments=None, interpolate=None)
-```
+    ```python
+    skin(obj1, obj2, ..., convexity=1, align_angle=None, segments=None, interpolate=None)
+    ```
 
 **Parameters:**
 
@@ -221,11 +221,11 @@ skin(obj1, obj2, ..., convexity=1, align_angle=None, segments=None, interpolate=
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-# Morph a square into a circle
-a = square(4, center=True).roty(40)
-b = circle(r=2, fn=20).rotx(40).up(10)
-skin(a, b).show()
-```
+    # Morph a square into a circle
+    a = square(4, center=True).roty(40)
+    b = circle(r=2, fn=20).rotx(40).up(10)
+    skin(a, b).show()
+    ```

@@ -8,11 +8,11 @@ All transformation and operation functions are available as methods on solid obj
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).translate([5, 0, 0]).rotate([0, 0, 45]).color("red").show()
-```
+    cube(10).translate([5, 0, 0]).rotate([0, 0, 45]).color("red").show()
+    ```
 
 The following methods are available on every solid object:
 
@@ -42,22 +42,22 @@ Create a deep copy of a solid object, including its metadata dictionary.
 
 === "Python"
 
-```python
-copy = obj.clone()
-```
+    ```python
+    copy = obj.clone()
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-a = cube(10)
-a["name"] = "original"
-b = a.clone()
-b["name"] = "copy"
-```
+    a = cube(10)
+    a["name"] = "original"
+    b = a.clone()
+    b["name"] = "copy"
+    ```
 
 ---
 
@@ -69,9 +69,9 @@ Return the metadata dictionary stored on the solid.
 
 === "Python"
 
-```python
-d = obj.dict()
-```
+    ```python
+    d = obj.dict()
+    ```
 
 **Returns:** A Python dictionary containing all custom attributes stored on the object.
 
@@ -79,14 +79,14 @@ d = obj.dict()
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
-c["material"] = "PLA"
-c["color"] = "red"
-print(c.dict())  # {'material': 'PLA', 'color': 'red'}
-```
+    c = cube(10)
+    c["material"] = "PLA"
+    c["color"] = "red"
+    print(c.dict())  # {'material': 'PLA', 'color': 'red'}
+    ```
 
 ---
 
@@ -96,19 +96,19 @@ Solids support both dot notation and subscript notation for storing and retrievi
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
+    c = cube(10)
 
-# Subscript notation
-c["name"] = "Fancy cube"
-print(c["name"])
+    # Subscript notation
+    c["name"] = "Fancy cube"
+    print(c["name"])
 
-# Dot notation (same effect)
-c.top_middle = [5, 5, 10]
-print(c.top_middle)
-```
+    # Dot notation (same effect)
+    c.top_middle = [5, 5, 10]
+    print(c.top_middle)
+    ```
 
 ### hasattr / getattr / setattr
 
@@ -116,14 +116,14 @@ These methods check for, retrieve, and set attributes on solids:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
-c.setattr("weight", 42)
-print(c.hasattr("weight"))  # True
-print(c.getattr("weight"))  # 42
-```
+    c = cube(10)
+    c.setattr("weight", 42)
+    print(c.hasattr("weight"))  # True
+    print(c.getattr("weight"))  # 42
+    ```
 
 ---
 
@@ -133,16 +133,16 @@ Solids are iterable. Iterating over a compound solid (e.g. a union) yields `Chil
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-u = union(cube(10), sphere(10))
-for ch in u:
-    ch.show()
+    u = union(cube(10), sphere(10))
+    for ch in u:
+        ch.show()
 
-    # Replace a child
-    ch.value = cylinder(r=1, h=20)
-```
+        # Replace a child
+        ch.value = cylinder(r=1, h=20)
+    ```
 
 ### ChildRef
 
@@ -155,13 +155,13 @@ Each iteration yields a `ChildRef` object with:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-u = union(cube(5), sphere(3), cylinder(r=2, h=10))
-print(len(u))   # 3
-print(u[0])     # first child
-```
+    u = union(cube(5), sphere(3), cylinder(r=2, h=10))
+    print(len(u))   # 3
+    print(u[0])     # first child
+    ```
 
 ---
 
@@ -171,11 +171,11 @@ Solids implement `_repr_mimebundle_` for rendering in Jupyter notebooks. When a 
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).color("blue")  # automatically displayed in Jupyter
-```
+    cube(10).color("blue")  # automatically displayed in Jupyter
+    ```
 
 ---
 
@@ -187,9 +187,9 @@ Register a user-defined method that becomes available on all solid objects.
 
 === "Python"
 
-```python
-memberfunction(name, func, docstring="")
-```
+    ```python
+    memberfunction(name, func, docstring="")
+    ```
 
 **Parameters:**
 
@@ -203,16 +203,16 @@ memberfunction(name, func, docstring="")
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-def double_size(obj):
-    return obj.scale([2, 2, 2])
+    def double_size(obj):
+        return obj.scale([2, 2, 2])
 
-memberfunction("double", double_size)
+    memberfunction("double", double_size)
 
-cube(5).double().show()
-```
+    cube(5).double().show()
+    ```
 
 ---
 
@@ -222,9 +222,9 @@ Solids have `__repr__` and `__str__` methods that return an ASCII tree dump of t
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10) | sphere(5)
-print(c)
-```
+    c = cube(10) | sphere(5)
+    print(c)
+    ```

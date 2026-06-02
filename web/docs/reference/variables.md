@@ -8,25 +8,25 @@ Number of segments used to approximate curves (circles, spheres, cylinders, etc.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-fn = 100
-circle(10).show()  # high-resolution circle
+    fn = 100
+    circle(10).show()  # high-resolution circle
 
-fn = 6
-circle(10).show()  # hexagon
-```
+    fn = 6
+    circle(10).show()  # hexagon
+    ```
 
 You can also pass `fn` as a keyword argument to individual functions:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-circle(10, fn=100).show()
-```
+    circle(10, fn=100).show()
+    ```
 
 **OpenSCAD reference:** [$fn](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#$fn)
 
@@ -38,12 +38,12 @@ Minimum angle in degrees for each segment of a curve. Smaller values produce smo
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-fa = 1  # very smooth curves
-sphere(10).show()
-```
+    fa = 1  # very smooth curves
+    sphere(10).show()
+    ```
 
 **OpenSCAD reference:** [$fa](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#$fa)
 
@@ -55,12 +55,12 @@ Minimum circumferential length for each segment of a curve. Smaller values produ
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-fs = 0.5  # fine detail
-sphere(10).show()
-```
+    fs = 0.5  # fine detail
+    sphere(10).show()
+    ```
 
 **OpenSCAD reference:** [$fs](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#$fs)
 
@@ -72,11 +72,11 @@ Animation time step, ranging from 0 to 1. Updated by PythonSCAD's animation syst
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).rotate([0, 0, time * 360]).show()
-```
+    cube(10).rotate([0, 0, time * 360]).show()
+    ```
 
 ---
 
@@ -86,10 +86,10 @@ Convenience variable equal to `2 * PI * time`. Useful for smooth cyclic animatio
 
 === "Python"
 
-```python
-from openscad import *
-from math import sin
+    ```python
+    from pythonscad import *
+    from math import sin
 
-r = 5 + 3 * sin(phi)
-sphere(r).show()
-```
+    r = 5 + 3 * sin(phi)
+    sphere(r).show()
+    ```

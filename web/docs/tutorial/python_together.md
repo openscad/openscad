@@ -31,35 +31,33 @@ Here’s a quick example:
 
     // but you can also just call a python function with
     my_python_func("message")
-
     ```
 
 === "Python"
 
-    ```py
-    from openscad import *
+    ```python
+    from pythonscad import *
 
     # this is file pythonlib.py and it defines the python functions referred above
     def python_add(a,b):
         return a+b
 
     def python_cube(size): # fucntion  parameters can be
-    # numbers, strings and even arrays are supported
+        # numbers, strings and even arrays are supported
         return cube([size,size,1]) # My special sizing requirement
 
     def my_python_func(text):
         fd=fopen("myfile","w")
         # you could write text to this file if you wanted
         # just dont return a solid here as you dont have one...
-
     ```
 
 Of course you can also use SCAD from within python
 
 === "Python"
 
-    ```py
-    from openscad import *
+    ```python
+    from pythonscad import *
 
     obj = scad("""
        union()
@@ -69,7 +67,6 @@ Of course you can also use SCAD from within python
        }
     """)
     obj.show()
-
     ```
 
-Apart from different syntax, pythonscad  also provides some additional functions compared to OpenSCAD [here](./python_new.md).
+Apart from different syntax, pythonscad also provides some additional [functions compared to OpenSCAD](./python_new.md).

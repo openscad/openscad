@@ -1,5 +1,4 @@
-from openscad import *
+from pythonscad import *
 
-p=path_extrude(square(1),[[0,0,0],[0,0,10,3],
-    [10,0,10,3],[10,10,10]]);
-output(p);
+p = path_extrude(square(1), [[0, 0, 0], [0, 0, 10, 3], [10, 0, 10, 3], [10, 10, 10]])
+output(p)

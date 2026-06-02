@@ -8,10 +8,10 @@ Explode a solid outward by a vector, separating its components.
 
 === "Python"
 
-```python
-explode(obj, v)
-obj.explode(v)
-```
+    ```python
+    explode(obj, v)
+    obj.explode(v)
+    ```
 
 **Parameters:**
 
@@ -24,11 +24,11 @@ obj.explode(v)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).explode([1, 1, 1]).show()
-```
+    cube(5).explode([1, 1, 1]).show()
+    ```
 
 ---
 
@@ -40,10 +40,10 @@ Subdivide mesh edges for finer geometric detail. This increases the number of tr
 
 === "Python"
 
-```python
-oversample(obj, size, texture, projection, texturewidth, textureheight, texturedepth)
-obj.oversample(size, texture, projection, texturewidth, textureheight, texturedepth)
-```
+    ```python
+    oversample(obj, size, texture, projection, texturewidth, textureheight, texturedepth)
+    obj.oversample(size, texture, projection, texturewidth, textureheight, texturedepth)
+    ```
 
 **Parameters:**
 
@@ -64,11 +64,11 @@ Valid projections are none, cylindrical, spherical, triplanar, cubic, planarx, p
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).oversample(2).show()
-```
+    cube(5).oversample(2).show()
+    ```
 
 ---
 
@@ -80,10 +80,10 @@ Visualize mesh faces for debugging purposes. Colors faces to help identify geome
 
 === "Python"
 
-```python
-debug(obj, faces=False)
-obj.debug(faces=False)
-```
+    ```python
+    debug(obj, faces=False)
+    obj.debug(faces=False)
+    ```
 
 **Parameters:**
 
@@ -96,11 +96,11 @@ obj.debug(faces=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).debug().show()
-```
+    cube(5).debug().show()
+    ```
 
 ---
 
@@ -112,10 +112,10 @@ Attempt to make a solid watertight (manifold). This is useful for fixing importe
 
 === "Python"
 
-```python
-repair(obj, color=False)
-obj.repair(color=False)
-```
+    ```python
+    repair(obj, color=False)
+    obj.repair(color=False)
+    ```
 
 **Parameters:**
 
@@ -128,13 +128,13 @@ obj.repair(color=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-broken = osimport("broken_mesh.stl")
-fixed = broken.repair()
-fixed.show()
-```
+    broken = osimport("broken_mesh.stl")
+    fixed = broken.repair()
+    fixed.show()
+    ```
 
 ---
 
@@ -146,10 +146,10 @@ Split a solid into its disconnected components. Returns a list of separate solid
 
 === "Python"
 
-```python
-separate(obj)
-obj.separate()
-```
+    ```python
+    separate(obj)
+    obj.separate()
+    ```
 
 **Parameters:**
 
@@ -163,11 +163,11 @@ obj.separate()
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-combined = concat(cube(5), cube(5).right(20))
-parts = separate(combined)
-for p in parts:
-    p.show()
-```
+    combined = concat(cube(5), cube(5).right(20))
+    parts = separate(combined)
+    for p in parts:
+        p.show()
+    ```

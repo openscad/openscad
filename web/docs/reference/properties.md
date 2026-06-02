@@ -10,10 +10,10 @@ Get the bounding box dimensions of an object.
 
 === "Python"
 
-```python
-obj.size
-size(obj)
-```
+    ```python
+    obj.size
+    size(obj)
+    ```
 
 **Returns:** A list `[width, height, depth]` for 3D objects or `[width, height]` for 2D objects.
 
@@ -21,12 +21,12 @@ size(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube([10, 20, 30])
-print(c.size)  # [10.0, 20.0, 30.0]
-```
+    c = cube([10, 20, 30])
+    print(c.size)  # [10.0, 20.0, 30.0]
+    ```
 
 ---
 
@@ -38,10 +38,10 @@ Get the minimum corner coordinates of the bounding box.
 
 === "Python"
 
-```python
-obj.position
-position(obj)
-```
+    ```python
+    obj.position
+    position(obj)
+    ```
 
 **Returns:** A list `[x, y, z]` for 3D objects or `[x, y]` for 2D objects, representing the minimum corner of the bounding box.
 
@@ -49,12 +49,12 @@ position(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10).translate([5, 5, 5])
-print(c.position)  # [5.0, 5.0, 5.0]
-```
+    c = cube(10).translate([5, 5, 5])
+    print(c.position)  # [5.0, 5.0, 5.0]
+    ```
 
 ---
 
@@ -66,10 +66,10 @@ Get the bounding box as a solid object.
 
 === "Python"
 
-```python
-obj.bbox
-bbox(obj)
-```
+    ```python
+    obj.bbox
+    bbox(obj)
+    ```
 
 **Returns:** A cube (3D) or square (2D) representing the bounding box of the object.
 
@@ -77,13 +77,13 @@ bbox(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-s = sphere(10)
-s.bbox.color("red", alpha=0.3).show()
-s.show()
-```
+    s = sphere(10)
+    s.bbox.color("red", alpha=0.3).show()
+    s.show()
+    ```
 
 ---
 
@@ -95,10 +95,10 @@ Extract the mesh data (vertices and triangles) from a solid.
 
 === "Python"
 
-```python
-obj.mesh(triangulate=True, color=False)
-mesh(obj, triangulate=True, color=False)
-```
+    ```python
+    obj.mesh(triangulate=True, color=False)
+    mesh(obj, triangulate=True, color=False)
+    ```
 
 **Parameters:**
 
@@ -114,18 +114,18 @@ mesh(obj, triangulate=True, color=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
-pts, tris = c.mesh()
+    c = cube(10)
+    pts, tris = c.mesh()
 
-# Modify vertices and reconstruct
-for pt in pts:
-    if pt[2] > 5:
-        pt[0] += 3
-polyhedron(pts, tris).show()
-```
+    # Modify vertices and reconstruct
+    for pt in pts:
+        if pt[2] > 5:
+            pt[0] += 3
+    polyhedron(pts, tris).show()
+    ```
 
 ---
 
@@ -137,10 +137,10 @@ Get a list of face solids from an object. Each face is a 2D solid with a `matrix
 
 === "Python"
 
-```python
-obj.faces(triangulate=False)
-faces(obj, triangulate=False)
-```
+    ```python
+    obj.faces(triangulate=False)
+    faces(obj, triangulate=False)
+    ```
 
 **Parameters:**
 
@@ -155,17 +155,17 @@ faces(obj, triangulate=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-core = sphere(r=2)
-face_list = core.faces()
+    core = sphere(r=2)
+    face_list = core.faces()
 
-flower = core
-for f in face_list:
-    flower |= f.linear_extrude(height=4)
-flower.show()
-```
+    flower = core
+    for f in face_list:
+        flower |= f.linear_extrude(height=4)
+    flower.show()
+    ```
 
 ---
 
@@ -177,10 +177,10 @@ Get a list of edge solids from a face or 2D object.
 
 === "Python"
 
-```python
-obj.edges()
-edges(obj)
-```
+    ```python
+    obj.edges()
+    edges(obj)
+    ```
 
 **Returns:** A list of edge solids, each with a `.matrix` attribute.
 
@@ -188,13 +188,13 @@ edges(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-sq = square(10)
-edge_list = sq.edges()
-print(len(edge_list))
-```
+    sq = square(10)
+    edge_list = sq.edges()
+    print(len(edge_list))
+    ```
 
 ---
 
@@ -206,10 +206,10 @@ Check whether a given point is inside the solid.
 
 === "Python"
 
-```python
-obj.inside(point)
-inside(obj, point)
-```
+    ```python
+    obj.inside(point)
+    inside(obj, point)
+    ```
 
 **Parameters:**
 
@@ -224,13 +224,13 @@ inside(obj, point)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
-print(c.inside([5, 5, 5]))   # True
-print(c.inside([15, 5, 5]))  # False
-```
+    c = cube(10)
+    print(c.inside([5, 5, 5]))   # True
+    print(c.inside([15, 5, 5]))  # False
+    ```
 
 ---
 
@@ -242,10 +242,10 @@ Get the child nodes of a compound solid as a tuple.
 
 === "Python"
 
-```python
-obj.children()
-children(obj)
-```
+    ```python
+    obj.children()
+    children(obj)
+    ```
 
 **Returns:** A tuple of child solid objects.
 
@@ -253,13 +253,13 @@ children(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-u = union(cube(5), sphere(3))
-parts = u.children()
-print(len(parts))  # 2
-```
+    u = union(cube(5), sphere(3))
+    parts = u.children()
+    print(len(parts))  # 2
+    ```
 
 ---
 
@@ -271,10 +271,10 @@ Read the RGBA color of the root `color()` wrapper on a solid.
 
 === "Python"
 
-```python
-obj.c      # attribute access
-obj["c"]   # mapping protocol
-```
+    ```python
+    obj.c      # attribute access
+    obj["c"]   # mapping protocol
+    ```
 
 **Returns:** `(r, g, b, a)` as a tuple of floats in `[0, 1]` when the outermost node is a
 `color()` wrapper, `None` otherwise.
@@ -283,20 +283,20 @@ obj["c"]   # mapping protocol
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10).color("Red")
-print(c.c)          # (1.0, 0.0, 0.0, 1.0)
-print(c["c"])       # (1.0, 0.0, 0.0, 1.0)  — mapping protocol
+    c = cube(10).color("Red")
+    print(c.c)          # (1.0, 0.0, 0.0, 1.0)
+    print(c["c"])       # (1.0, 0.0, 0.0, 1.0)  — mapping protocol
 
-print(cube(10).c)   # None — no color wrapper
+    print(cube(10).c)   # None — no color wrapper
 
-u = cube(1).color("Red") | sphere(2).color("Blue")
-print(u.c)            # None — union is the root, not a ColorNode
-print(u.children()[0].c)  # (1.0, 0.0, 0.0, 1.0)
-print(u.children()[1].c)  # (0.0, 0.0, 1.0, 1.0)
-```
+    u = cube(1).color("Red") | sphere(2).color("Blue")
+    print(u.c)            # None — union is the root, not a ColorNode
+    print(u.children()[0].c)  # (1.0, 0.0, 0.0, 1.0)
+    print(u.children()[1].c)  # (0.0, 0.0, 1.0, 1.0)
+    ```
 
 To set or change a color, use [`color()`](transformations.md#color).
 
@@ -324,15 +324,15 @@ You can store arbitrary data on any solid:
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
-c["name"] = "my cube"
-c.material = "PLA"
+    c = cube(10)
+    c["name"] = "my cube"
+    c.material = "PLA"
 
-print(c["name"])     # "my cube"
-print(c.material)    # "PLA"
-```
+    print(c["name"])     # "my cube"
+    print(c.material)    # "PLA"
+    ```
 
 See [Object Model](object_model.md) for more details on attribute access.

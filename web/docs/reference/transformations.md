@@ -10,10 +10,10 @@ Move an object by a displacement vector.
 
 === "Python"
 
-```python
-translate(obj, v)
-obj.translate(v)
-```
+    ```python
+    translate(obj, v)
+    obj.translate(v)
+    ```
 
 **Parameters:**
 
@@ -26,13 +26,13 @@ obj.translate(v)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).translate([10, 0, 0]).show()
+    cube(5).translate([10, 0, 0]).show()
 
-translate(cube(5), [10, 20, 0]).show()
-```
+    translate(cube(5), [10, 20, 0]).show()
+    ```
 
 **OpenSCAD reference:** [translate](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#translate)
 
@@ -46,10 +46,10 @@ Rotate an object by angles in degrees.
 
 === "Python"
 
-```python
-rotate(obj, a, v=None, ref=None)
-obj.rotate(a, v=None, ref=None)
-```
+    ```python
+    rotate(obj, a, v=None, ref=None)
+    obj.rotate(a, v=None, ref=None)
+    ```
 
 **Parameters:**
 
@@ -64,13 +64,13 @@ obj.rotate(a, v=None, ref=None)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).rotate([45, 0, 0]).show()
+    cube(5).rotate([45, 0, 0]).show()
 
-cube(5).rotate(45, [0, 0, 1]).show()
-```
+    cube(5).rotate(45, [0, 0, 1]).show()
+    ```
 
 **OpenSCAD reference:** [rotate](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#rotate)
 
@@ -84,10 +84,10 @@ Scale an object by factors along each axis.
 
 === "Python"
 
-```python
-scale(obj, v)
-obj.scale(v)
-```
+    ```python
+    scale(obj, v)
+    obj.scale(v)
+    ```
 
 **Parameters:**
 
@@ -100,11 +100,11 @@ obj.scale(v)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).scale([1, 2, 3]).show()
-```
+    cube(5).scale([1, 2, 3]).show()
+    ```
 
 **OpenSCAD reference:** [scale](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#scale)
 
@@ -118,10 +118,10 @@ Mirror an object across a plane defined by a normal vector passing through the o
 
 === "Python"
 
-```python
-mirror(obj, v)
-obj.mirror(v)
-```
+    ```python
+    mirror(obj, v)
+    obj.mirror(v)
+    ```
 
 **Parameters:**
 
@@ -134,13 +134,13 @@ obj.mirror(v)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).mirror([1, 0, 0]).show()
+    cube(5).mirror([1, 0, 0]).show()
 
-cube(5).mirror([1, 1, 0]).show()
-```
+    cube(5).mirror([1, 1, 0]).show()
+    ```
 
 **OpenSCAD reference:** [mirror](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#mirror)
 
@@ -154,10 +154,10 @@ Resize an object to fit exact dimensions.
 
 === "Python"
 
-```python
-resize(obj, newsize, auto=False, convexity=2)
-obj.resize(newsize, auto=False, convexity=2)
-```
+    ```python
+    resize(obj, newsize, auto=False, convexity=2)
+    obj.resize(newsize, auto=False, convexity=2)
+    ```
 
 **Parameters:**
 
@@ -172,14 +172,14 @@ obj.resize(newsize, auto=False, convexity=2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-sphere(5).resize([10, 10, 20]).show()
+    sphere(5).resize([10, 10, 20]).show()
 
-# Auto-scale: set X to 20, scale Y and Z proportionally
-sphere(5).resize([20, 0, 0], auto=True).show()
-```
+    # Auto-scale: set X to 20, scale Y and Z proportionally
+    sphere(5).resize([20, 0, 0], auto=True).show()
+    ```
 
 **OpenSCAD reference:** [resize](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#resize)
 
@@ -193,10 +193,10 @@ Apply a 4x4 transformation matrix to an object.
 
 === "Python"
 
-```python
-multmatrix(obj, m)
-obj.multmatrix(m)
-```
+    ```python
+    multmatrix(obj, m)
+    obj.multmatrix(m)
+    ```
 
 **Parameters:**
 
@@ -209,12 +209,12 @@ obj.multmatrix(m)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
-cube(5).multmatrix(mat).show()
-```
+    mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
+    cube(5).multmatrix(mat).show()
+    ```
 
 **OpenSCAD reference:** [multmatrix](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#multmatrix)
 
@@ -228,10 +228,10 @@ Apply the inverse of a 4x4 transformation matrix. This is a PythonSCAD extension
 
 === "Python"
 
-```python
-divmatrix(obj, m)
-obj.divmatrix(m)
-```
+    ```python
+    divmatrix(obj, m)
+    obj.divmatrix(m)
+    ```
 
 **Parameters:**
 
@@ -244,15 +244,15 @@ obj.divmatrix(m)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
-a = cube(1)
-b = a.multmatrix(mat)   # move right by 10
-c = b.divmatrix(mat)    # move back left
-c.show()
-```
+    mat = [[1,0,0,10], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
+    a = cube(1)
+    b = a.multmatrix(mat)   # move right by 10
+    c = b.divmatrix(mat)    # move back left
+    c.show()
+    ```
 
 ---
 
@@ -264,10 +264,10 @@ Apply a color to an object.
 
 === "Python"
 
-```python
-color(obj, c, alpha=1.0)
-obj.color(c, alpha=1.0)
-```
+    ```python
+    color(obj, c, alpha=1.0)
+    obj.color(c, alpha=1.0)
+    ```
 
 **Parameters:**
 
@@ -281,17 +281,17 @@ obj.color(c, alpha=1.0)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10).color("Tomato").show()
+    cube(10).color("Tomato").show()
 
-cube(10).color([1, 0, 0]).show()
+    cube(10).color([1, 0, 0]).show()
 
-cube(10).color("#ff6347").show()
+    cube(10).color("#ff6347").show()
 
-cube(10).color("blue", alpha=0.5).show()
-```
+    cube(10).color("blue", alpha=0.5).show()
+    ```
 
 **OpenSCAD reference:** [color](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#color)
 
@@ -307,10 +307,10 @@ Offset a 2D shape inward or outward.
 
 === "Python"
 
-```python
-offset(obj, r=None, delta=None, chamfer=False, fn=0, fa=0, fs=0)
-obj.offset(r=None, delta=None, chamfer=False, fn=0, fa=0, fs=0)
-```
+    ```python
+    offset(obj, r=None, delta=None, chamfer=False, fn=0, fa=0, fs=0)
+    obj.offset(r=None, delta=None, chamfer=False, fn=0, fa=0, fs=0)
+    ```
 
 **Parameters:**
 
@@ -328,15 +328,15 @@ Exactly one of `r` or `delta` should be provided.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-square(10).offset(r=2).show()
+    square(10).offset(r=2).show()
 
-square(10).offset(delta=-1).show()
+    square(10).offset(delta=-1).show()
 
-square(10).offset(delta=2, chamfer=True).show()
-```
+    square(10).offset(delta=2, chamfer=True).show()
+    ```
 
 **OpenSCAD reference:** [offset](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#offset)
 
@@ -352,28 +352,28 @@ PythonSCAD provides shorthand functions for single-axis translations:
 
 === "Python"
 
-```python
-right(obj, val)    # translate along +X
-left(obj, val)     # translate along -X
-front(obj, val)    # translate along -Y
-back(obj, val)     # translate along +Y
-up(obj, val)       # translate along +Z
-down(obj, val)     # translate along -Z
+    ```python
+    right(obj, val)    # translate along +X
+    left(obj, val)     # translate along -X
+    front(obj, val)    # translate along -Y
+    back(obj, val)     # translate along +Y
+    up(obj, val)       # translate along +Z
+    down(obj, val)     # translate along -Z
 
-obj.right(val)     # method form
-```
+    obj.right(val)     # method form
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(2).right(5).up(3).show()
+    cube(2).right(5).up(3).show()
 
-cube(2).left(5).down(3).show()
-```
+    cube(2).left(5).down(3).show()
+    ```
 
 ---
 
@@ -387,22 +387,22 @@ Single-axis rotation shortcuts:
 
 === "Python"
 
-```python
-rotx(obj, val)     # rotate around X axis
-roty(obj, val)     # rotate around Y axis
-rotz(obj, val)     # rotate around Z axis
+    ```python
+    rotx(obj, val)     # rotate around X axis
+    roty(obj, val)     # rotate around Y axis
+    rotz(obj, val)     # rotate around Z axis
 
-obj.rotx(val)      # method form
-```
+    obj.rotx(val)      # method form
+    ```
 
 **Examples:**
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(5).rotx(45).show()
+    cube(5).rotx(45).show()
 
-cube(5).roty(90).rotz(45).show()
-```
+    cube(5).roty(90).rotz(45).show()
+    ```

@@ -8,9 +8,9 @@ Create a 1D edge (line segment) with a given length. Edges are the simplest prim
 
 === "Python"
 
-```python
-edge(size=1, center=False)
-```
+    ```python
+    edge(size=1, center=False)
+    ```
 
 **Parameters:**
 
@@ -23,15 +23,15 @@ edge(size=1, center=False)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-e = edge(size=10, center=True)
+    e = edge(size=10, center=True)
 
-# Extrude an edge to create a square
-sq = linear_extrude(e, height=10)
-sq.show()
+    # Extrude an edge to create a square
+    sq = linear_extrude(e, height=10)
+    sq.show()
 
-# Get back the edges of a shape as a Python list
-all_edges = sq.edges()
-```
+    # Get back the edges of a shape as a Python list
+    all_edges = sq.edges()
+    ```

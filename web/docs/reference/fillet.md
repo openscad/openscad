@@ -6,10 +6,10 @@ Add rounded fillets or chamfers to the edges of a solid. This is a PythonSCAD-sp
 
 === "Python"
 
-```python
-fillet(obj, r, sel=None, fn=2, minang=None)
-obj.fillet(r, sel=None, fn=2, minang=None)
-```
+    ```python
+    fillet(obj, r, sel=None, fn=2, minang=None)
+    obj.fillet(r, sel=None, fn=2, minang=None)
+    ```
 
 **Parameters:**
 
@@ -25,18 +25,18 @@ obj.fillet(r, sel=None, fn=2, minang=None)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(10)
+    c = cube(10)
 
-# Bevel all edges (fn=2 = chamfer)
-c.fillet(1).show()
+    # Bevel all edges (fn=2 = chamfer)
+    c.fillet(1).show()
 
-# Smooth fillet with more segments
-c.fillet(2, fn=5).show()
+    # Smooth fillet with more segments
+    c.fillet(2, fn=5).show()
 
-# Fillet only front-facing edges using a selection mask
-mask = cube([30, 1, 30], center=True)
-c.fillet(3, mask, fn=20).show()
-```
+    # Fillet only front-facing edges using a selection mask
+    mask = cube([30, 1, 30], center=True)
+    c.fillet(3, mask, fn=20).show()
+    ```

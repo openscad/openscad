@@ -6,9 +6,9 @@ Generate a 3D surface from a Python function. This is a PythonSCAD-only function
 
 === "Python"
 
-```python
-sheet(func, imin, imax, jmin, jmax, fs=1.0, iclose=False, jclose=False)
-```
+    ```python
+    sheet(func, imin, imax, jmin, jmax, fs=1.0, iclose=False, jclose=False)
+    ```
 
 **Parameters:**
 
@@ -27,16 +27,16 @@ sheet(func, imin, imax, jmin, jmax, fs=1.0, iclose=False, jclose=False)
 
 === "Python"
 
-```python
-from openscad import *
-from math import sin, cos, pi
+    ```python
+    from pythonscad import *
+    from math import sin, cos, pi
 
-def torus(i, j):
-    R, r = 10, 3
-    x = (R + r * cos(j)) * cos(i)
-    y = (R + r * cos(j)) * sin(i)
-    z = r * sin(j)
-    return [x, y, z]
+    def torus(i, j):
+        R, r = 10, 3
+        x = (R + r * cos(j)) * cos(i)
+        y = (R + r * cos(j)) * sin(i)
+        z = r * sin(j)
+        return [x, y, z]
 
-sheet(torus, 0, 2*pi, 0, 2*pi, fs=0.3, iclose=True, jclose=True).show()
-```
+    sheet(torus, 0, 2*pi, 0, 2*pi, fs=0.3, iclose=True, jclose=True).show()
+    ```

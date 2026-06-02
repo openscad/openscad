@@ -6,10 +6,10 @@ Create a roof shape from a 2D polygon by lifting edges to form a peaked structur
 
 === "Python"
 
-```python
-roof(obj, method=None, convexity=2)
-obj.roof(method=None, convexity=2)
-```
+    ```python
+    roof(obj, method=None, convexity=2)
+    obj.roof(method=None, convexity=2)
+    ```
 
 **Parameters:**
 
@@ -23,8 +23,8 @@ obj.roof(method=None, convexity=2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-polygon([[0,0], [20,0], [20,20], [0,20]]).roof().show()
-```
+    polygon([[0,0], [20,0], [20,20], [0,20]]).roof().show()
+    ```

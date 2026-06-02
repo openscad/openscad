@@ -12,12 +12,12 @@ Calculate the sine of an angle in degrees.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-y = Sin(45)   # 0.7071...
-y = Sin(90)   # 1.0
-```
+    y = Sin(45)   # 0.7071...
+    y = Sin(90)   # 1.0
+    ```
 
 ### Cos
 
@@ -25,12 +25,12 @@ Calculate the cosine of an angle in degrees.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-y = Cos(60)   # 0.5
-y = Cos(0)    # 1.0
-```
+    y = Cos(60)   # 0.5
+    y = Cos(0)    # 1.0
+    ```
 
 ### Tan
 
@@ -38,11 +38,11 @@ Calculate the tangent of an angle in degrees.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-y = Tan(45)   # 1.0
-```
+    y = Tan(45)   # 1.0
+    ```
 
 ### Asin
 
@@ -50,11 +50,11 @@ Calculate the arc sine, returning degrees.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-angle = Asin(0.5)   # 30.0
-```
+    angle = Asin(0.5)   # 30.0
+    ```
 
 ### Acos
 
@@ -62,11 +62,11 @@ Calculate the arc cosine, returning degrees.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-angle = Acos(0.5)   # 60.0
-```
+    angle = Acos(0.5)   # 60.0
+    ```
 
 ### Atan
 
@@ -74,11 +74,11 @@ Calculate the arc tangent, returning degrees.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-angle = Atan(1.0)   # 45.0
-```
+    angle = Atan(1.0)   # 45.0
+    ```
 
 **OpenSCAD reference:** [Mathematical Functions](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Mathematical_Functions)
 
@@ -92,9 +92,9 @@ Calculate the Euclidean length (magnitude) of a vector.
 
 === "Python"
 
-```python
-length = norm(vec)
-```
+    ```python
+    length = norm(vec)
+    ```
 
 **Parameters:**
 
@@ -106,12 +106,12 @@ length = norm(vec)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-length = norm([3, 4])       # 5.0
-length = norm([1, 2, 3])    # 3.7416...
-```
+    length = norm([3, 4])       # 5.0
+    length = norm([1, 2, 3])    # 3.7416...
+    ```
 
 **OpenSCAD reference:** [norm](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Mathematical_Functions#norm)
 
@@ -125,9 +125,9 @@ Calculate the dot product of two vectors.
 
 === "Python"
 
-```python
-result = dot(vec1, vec2)
-```
+    ```python
+    result = dot(vec1, vec2)
+    ```
 
 **Parameters:**
 
@@ -140,12 +140,12 @@ result = dot(vec1, vec2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-d = dot([1, 0, 0], [0, 1, 0])   # 0.0
-d = dot([1, 2, 3], [4, 5, 6])   # 32.0
-```
+    d = dot([1, 0, 0], [0, 1, 0])   # 0.0
+    d = dot([1, 2, 3], [4, 5, 6])   # 32.0
+    ```
 
 ---
 
@@ -157,9 +157,9 @@ Calculate the cross product of two 3D vectors.
 
 === "Python"
 
-```python
-result = cross(vec1, vec2)
-```
+    ```python
+    result = cross(vec1, vec2)
+    ```
 
 **Parameters:**
 
@@ -174,12 +174,12 @@ result = cross(vec1, vec2)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cross([1, 0, 0], [0, 1, 0])   # vector(0, 0, 1)
-c = cross([0, 1, 0], [1, 0, 0])   # vector(0, 0, -1)
-```
+    c = cross([1, 0, 0], [0, 1, 0])   # vector(0, 0, 1)
+    c = cross([0, 1, 0], [1, 0, 0])   # vector(0, 0, -1)
+    ```
 
 ## Vector functions
 
@@ -192,80 +192,80 @@ Alernatively, PythonSCAD also accepts PythonSCAD Vector objects with calculating
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-vec1 = vector(1,2,3)
-vec2 = vector(1,1,1)
-print(vec1 + vec2)
+    vec1 = vector(1,2,3)
+    vec2 = vector(1,1,1)
+    print(vec1 + vec2)
 
-```
+    ```
 
 ### Vector subtraction
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-vec1 = vector(3,3,3)
-vec2 = vector(1,2,4)
-print(vec1 - vec2)
+    vec1 = vector(3,3,3)
+    vec2 = vector(1,2,4)
+    print(vec1 - vec2)
 
-```
+    ```
 
 ### Vector scaling
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-dim = sphere(1).size * 2.5
-print(dim)
+    dim = sphere(1).size * 2.5
+    print(dim)
 
-```
+    ```
 
 ### Cross Product
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-vec1 = vector(1,0,0)
-vec2 = vector(0,1,0)
+    vec1 = vector(1,0,0)
+    vec2 = vector(0,1,0)
 
-print(vec1 * vec2)
+    print(vec1 * vec2)
 
-```
+    ```
 
 ### Dot Product
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-vec1 = vector(1,4,7)
-vec2 = vector(1,2,4)
+    vec1 = vector(1,4,7)
+    vec2 = vector(1,2,4)
 
-print(vec1.dot(vec2))
+    print(vec1.dot(vec2))
 
-```
+    ```
 
 ### Values access
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-vec1 = vector(1,4,7)
-vec1[1] = -3.5
-print(vec1[0], vec1[1],vec1[2])
+    vec1 = vector(1,4,7)
+    vec1[1] = -3.5
+    print(vec1[0], vec1[1],vec1[2])
 
-```
+    ```
 
 
 

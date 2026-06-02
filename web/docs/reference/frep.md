@@ -10,9 +10,9 @@ Mesh a signed distance function (libfive expression) into a solid that PythonSCA
 
 === "Python"
 
-```python
-frep(exp, min, max, res)
-```
+    ```python
+    frep(exp, min, max, res)
+    ```
 
 **Parameters:**
 
@@ -27,17 +27,17 @@ frep(exp, min, max, res)
 
 === "Python"
 
-```python
-from openscad import *
-from pylibfive import *
+    ```python
+    from pythonscad import *
+    from pylibfive import *
 
-c = lv_coord()
-s1 = lv_sphere(lv_trans(c, [2, 2, 2]), 2)
-b1 = lv_box(c, [2, 2, 2])
-sdf = lv_union_stairs(s1, b1, 1, 3)
+    c = lv_coord()
+    s1 = lv_sphere(lv_trans(c, [2, 2, 2]), 2)
+    b1 = lv_box(c, [2, 2, 2])
+    sdf = lv_union_stairs(s1, b1, 1, 3)
 
-frep(sdf, [-4, -4, -4], [4, 4, 4], 20).show()
-```
+    frep(sdf, [-4, -4, -4], [4, 4, 4], 20).show()
+    ```
 
 ---
 
@@ -49,9 +49,9 @@ Convert a mesh (solid) into a libfive implicit function (SDF tree). This is the 
 
 === "Python"
 
-```python
-tree = ifrep(obj)
-```
+    ```python
+    tree = ifrep(obj)
+    ```
 
 **Parameters:**
 
@@ -65,12 +65,12 @@ tree = ifrep(obj)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube(5)
-tree = ifrep(c)
-```
+    c = cube(5)
+    tree = ifrep(c)
+    ```
 
 ---
 
@@ -80,9 +80,9 @@ The `libfive` Python module provides low-level SDF building blocks. Import it wi
 
 === "Python"
 
-```python
-import libfive as lv
-```
+    ```python
+    import libfive as lv
+    ```
 
 ### Coordinate functions
 
@@ -124,14 +124,14 @@ The `pylibfive` library provides convenience functions built on top of the raw l
 
 === "Python"
 
-```python
-from pylibfive import *
+    ```python
+    from pylibfive import *
 
-c = lv_coord()
-s = lv_sphere(c, 2)           # sphere SDF
-b = lv_box(c, [2, 2, 2])      # box SDF
-u = lv_union_stairs(s, b, 1, 3)  # staircase union
-```
+    c = lv_coord()
+    s = lv_sphere(c, 2)           # sphere SDF
+    b = lv_box(c, [2, 2, 2])      # box SDF
+    u = lv_union_stairs(s, b, 1, 3)  # staircase union
+    ```
 
 ### Resources
 

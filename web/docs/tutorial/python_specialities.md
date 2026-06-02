@@ -16,8 +16,8 @@ It's possible to store arbitrary data along with solids
 
 === "Python"
 
-    ```py
-    from openscad import *
+    ```python
+    from pythonscad import *
 
     # Create the cube object, and store it in variable "c"
     c = cube([10,10,2])
@@ -44,8 +44,9 @@ It's possible to store arbitrary data along with solids
 Solids are easily iterable.
 
 === "Python"
-    ```py
-    from openscad import *
+
+    ```python
+    from pythonscad import *
 
     # Create the cube object, and store it in variable "c"
     u = union(cube(10), sphere(10))
@@ -67,8 +68,8 @@ You can use all the transformations to objects and also to handles like this:
 
 === "Python"
 
-    ```py
-    from openscad import *
+    ```python
+    from pythonscad import *
     c=cube([10,10,10])
 
     # translate the origin with an offset, so top_center sits on top of the cube
@@ -94,8 +95,8 @@ Most of the Object manipulation function are available in two different flavors:
 
 === "Python"
 
-    ```py
-    from openscad import *
+    ```python
+    from pythonscad import *
 
     # Create a green cube with functions
     cu=cube(3)

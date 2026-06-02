@@ -8,9 +8,9 @@ Control the camera and viewport settings from your Python script. Useful for set
 
 === "Python"
 
-```python
-rendervars(vpd=None, vpf=None, vpr=None, vpt=None)
-```
+    ```python
+    rendervars(vpd=None, vpf=None, vpr=None, vpt=None)
+    ```
 
 **Parameters:**
 
@@ -27,12 +27,12 @@ All parameters are optional. Only the ones you provide will be changed.
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-cube(10, center=True).show()
-rendervars(vpd=150, vpr=[55, 0, 25], vpt=[0, 0, 5])
-```
+    cube(10, center=True).show()
+    rendervars(vpd=150, vpr=[55, 0, 25], vpt=[0, 0, 5])
+    ```
 
 ---
 
@@ -44,9 +44,9 @@ Add a custom menu item to the PythonSCAD GUI. This function is only available in
 
 === "Python"
 
-```python
-add_menuitem(menuname, itemname, callback)
-```
+    ```python
+    add_menuitem(menuname, itemname, callback)
+    ```
 
 **Parameters:**
 
@@ -60,14 +60,14 @@ add_menuitem(menuname, itemname, callback)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-def my_action():
-    print("Menu item clicked!")
+    def my_action():
+        print("Menu item clicked!")
 
-add_menuitem("Tools", "My Custom Action", my_action)
-```
+    add_menuitem("Tools", "My Custom Action", my_action)
+    ```
 
 ---
 
@@ -79,9 +79,9 @@ Return the current model object.
 
 === "Python"
 
-```python
-m = model()
-```
+    ```python
+    m = model()
+    ```
 
 **Returns:** The current model as a solid object.
 
@@ -95,9 +95,9 @@ Return the absolute file path of the current script.
 
 === "Python"
 
-```python
-path = modelpath()
-```
+    ```python
+    path = modelpath()
+    ```
 
 **Returns:** A string with the absolute path to the currently running script file.
 
@@ -105,11 +105,11 @@ path = modelpath()
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-print(modelpath())
-```
+    print(modelpath())
+    ```
 
 ---
 
@@ -121,9 +121,9 @@ Return the PythonSCAD version as a list.
 
 === "Python"
 
-```python
-v = version()
-```
+    ```python
+    v = version()
+    ```
 
 **Returns:** A list like `[year, month, day]`.
 
@@ -131,11 +131,11 @@ v = version()
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-print(version())
-```
+    print(version())
+    ```
 
 **OpenSCAD reference:** [version](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#OpenSCAD_Version)
 
@@ -149,9 +149,9 @@ Return the PythonSCAD version as a single number.
 
 === "Python"
 
-```python
-n = version_num()
-```
+    ```python
+    n = version_num()
+    ```
 
 **Returns:** An integer encoding the version.
 
@@ -165,9 +165,9 @@ Create a marked value for use with F-Rep / libfive. This wraps a numeric value a
 
 === "Python"
 
-```python
-m = marked(value)
-```
+    ```python
+    m = marked(value)
+    ```
 
 **Parameters:**
 
@@ -187,9 +187,9 @@ Set machine configuration parameters. This is used to configure machine-specific
 
 === "Python"
 
-```python
-machineconfig(config)
-```
+    ```python
+    machineconfig(config)
+    ```
 
 **Parameters:**
 
@@ -201,8 +201,8 @@ machineconfig(config)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-machineconfig({"bed_x": 200, "bed_y": 200, "bed_z": 200})
-```
+    machineconfig({"bed_x": 200, "bed_y": 200, "bed_z": 200})
+    ```

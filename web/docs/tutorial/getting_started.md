@@ -30,29 +30,29 @@ Lets create a 5x5x5 cube.
 
 === "Python"
 
-```py
-# getting PythonSCAD functions into the namespace
-from pythonscad import *
+    ```python
+    # getting PythonSCAD functions into the namespace
+    from pythonscad import *
 
-# Create the cube object, and store it in variable "c"
-c = cube(5)
-# Or, more explicitely
-c = cube([5,5,5])
+    # Create the cube object, and store it in variable "c"
+    c = cube(5)
+    # Or, more explicitely
+    c = cube([5,5,5])
 
-# Display the cube
-show(c)
-```
+    # Display the cube
+    show(c)
+    ```
 
 === "OpenSCAD"
 
-```c++
-// Create the cube object
-cube(5);
-// Or, more explicitely
-cube([5,5,5]);
+    ```c++
+    // Create the cube object
+    cube(5);
+    // Or, more explicitely
+    cube([5,5,5]);
 
-// The cube is displayed implicitely
-```
+    // The cube is displayed implicitely
+    ```
 
 That was pretty easy!
 Next, let's see how to [combine multiple shapes](./combining_objects.md).

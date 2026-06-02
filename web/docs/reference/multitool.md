@@ -10,11 +10,11 @@ so it is available under either of these imports:
 
 === "Python"
 
-```python
-from pythonscad import *
-# or, equivalently for this class:
-from pythonscad import MultiToolExporter
-```
+    ```python
+    from pythonscad import *
+    # or, equivalently for this class:
+    from pythonscad import MultiToolExporter
+    ```
 
 ## MultiToolExporter
 
@@ -52,9 +52,9 @@ everything that overlaps with it.
 
 === "Python"
 
-```python
-MultiToolExporter(prefix, suffix, mkdir=False, items=())
-```
+    ```python
+    MultiToolExporter(prefix, suffix, mkdir=False, items=())
+    ```
 
 **Parameters:**
 
@@ -102,49 +102,49 @@ A two-color flag (red star cut out of a blue background):
 
 === "Python"
 
-```python
-from pythonscad import *
+    ```python
+    from pythonscad import *
 
-background = cube([200, 100, 1]).color("blue")
-star       = cylinder(r=20, h=2, fn=5).translate([100, 50, -0.5]).color("red")
+    background = cube([200, 100, 1]).color("blue")
+    star       = cylinder(r=20, h=2, fn=5).translate([100, 50, -0.5]).color("red")
 
-exporter = MultiToolExporter("out/flag-", ".stl", mkdir=True)
-exporter.append(("blue", background))    # blue: rectangle minus the star area
-exporter.append(("red",  star))          # red: the star itself (later wins)
-exporter.export()
-# -> writes out/flag-blue.stl and out/flag-red.stl
-```
+    exporter = MultiToolExporter("out/flag-", ".stl", mkdir=True)
+    exporter.append(("blue", background))    # blue: rectangle minus the star area
+    exporter.append(("red",  star))          # red: the star itself (later wins)
+    exporter.export()
+    # -> writes out/flag-blue.stl and out/flag-red.stl
+    ```
 
 Seeding from the constructor:
 
 === "Python"
 
-```python
-from pythonscad import *
+    ```python
+    from pythonscad import *
 
-red  = cube(10).color("red")
-blue = cube(10).color("blue").right(5)
+    red  = cube(10).color("red")
+    blue = cube(10).color("blue").right(5)
 
-MultiToolExporter(
-    prefix="out/cube-",
-    suffix=".3mf",
-    mkdir=True,
-    items=[("red", red), ("blue", blue)],
-).export()
-```
+    MultiToolExporter(
+        prefix="out/cube-",
+        suffix=".3mf",
+        mkdir=True,
+        items=[("red", red), ("blue", blue)],
+    ).export()
+    ```
 
 Previewing the same split inside the GUI without writing files:
 
 === "Python"
 
-```python
-from pythonscad import *
+    ```python
+    from pythonscad import *
 
-exporter = MultiToolExporter("ignored-", ".stl")
-exporter.append(("red",  red))
-exporter.append(("blue", blue))
-exporter.show()
-```
+    exporter = MultiToolExporter("ignored-", ".stl")
+    exporter.append(("red",  red))
+    exporter.append(("blue", blue))
+    exporter.show()
+    ```
 
 ### Combining with multi-object 3MF export
 
@@ -156,19 +156,19 @@ run the parts through `parts()` and feed the result into a `dict`:
 
 === "Python"
 
-```python
-from pythonscad import *
+    ```python
+    from pythonscad import *
 
-background = cube([200, 100, 1]).color("blue")
-star       = cylinder(r=20, h=2, fn=5).translate([100, 50, -0.5]).color("red")
+    background = cube([200, 100, 1]).color("blue")
+    star       = cylinder(r=20, h=2, fn=5).translate([100, 50, -0.5]).color("red")
 
-exporter = MultiToolExporter("", "")  # prefix/suffix unused for this path
-exporter.append(("blue", background))
-exporter.append(("red",  star))
+    exporter = MultiToolExporter("", "")  # prefix/suffix unused for this path
+    exporter.append(("blue", background))
+    exporter.append(("red",  star))
 
-# Cumulative-difference split, then a single 3MF with two named parts.
-export(dict(exporter.parts()), "flag.3mf")
-```
+    # Cumulative-difference split, then a single 3MF with two named parts.
+    export(dict(exporter.parts()), "flag.3mf")
+    ```
 
 The dict-form `export()` accepts only `.3mf` when, after filtering,
 two or more recognised values remain. The filter is *not* a uniform

@@ -8,10 +8,10 @@ dimensions in one specific area without scaling the entire object.
 
 === "Python"
 
-```python
-pull(obj, src, dst)
-obj.pull(src, dst)
-```
+    ```python
+    pull(obj, src, dst)
+    obj.pull(src, dst)
+    ```
 
 **Parameters:**
 
@@ -25,10 +25,10 @@ obj.pull(src, dst)
 
 === "Python"
 
-```python
-from openscad import *
+    ```python
+    from pythonscad import *
 
-c = cube([2, 2, 5])
-p = c.pull([1, 1, 3], [4, -2, 5])
-p.show()
-```
+    c = cube([2, 2, 5])
+    p = c.pull([1, 1, 3], [4, -2, 5])
+    p.show()
+    ```
