@@ -84,15 +84,15 @@ public:
   QStringList callTips(const QStringList& context, int commas, QsciScintilla::CallTipsStyle style,
                        QList<int>& shifts) override;
 
-  void updateCompleterInfoFromSourceFile(const SourceFile *sourceFile,
-                                         bool flagAutoCompleteIncludeVariables,
-                                         bool flagAutoCompleteIncludeModules,
-                                         bool flagAutoCompleteIncludeFunctions);
+  void correctUserVarNamesForCompletionFromSourceFile(const SourceFile *sourceFile,
+                                                      bool flagAutoCompleteIncludeVariables,
+                                                      bool flagAutoCompleteIncludeModules,
+                                                      bool flagAutoCompleteIncludeFunctions);
 
-  void updateCompleterInfoFromInputText(bool flagAutoCompleteIncludeVariables,
-                                        bool flagAutoCompleteIncludeModules,
-                                        bool flagAutoCompleteIncludeFunctions);
+  void correctUserVarNamesForCompletionFromInputText(bool flagAutoCompleteIncludeVariables,
+                                                     bool flagAutoCompleteIncludeModules,
+                                                     bool flagAutoCompleteIncludeFunctions);
 
 private:
-  QStringList captureUserVariables;
+  QStringList userVariableNames;
 };
