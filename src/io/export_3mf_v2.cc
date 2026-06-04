@@ -447,8 +447,7 @@ void export_3mf(const std::vector<struct Export3mfPartInfo>& infos, std::ostream
 
   try {
     // Signatures match the lib3mf typedefs verbatim — no cast needed.
-    writer->WriteToCallback(lib3mf_write_callback,
-                            lib3mf_seek_callback, &output);
+    writer->WriteToCallback(lib3mf_write_callback, lib3mf_seek_callback, &output);
   } catch (Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
   }
