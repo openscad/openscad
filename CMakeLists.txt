@@ -1300,6 +1300,7 @@ set(GUI_SOURCES
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
+  src/gui/WorkspaceSaver.cc
   src/gui/Measurement.cc
   src/gui/Animate.cc
   src/gui/FontList.cc
@@ -1380,6 +1381,7 @@ set(GUI_HEADERS
     src/gui/LaunchingScreen.h
     src/gui/LibraryInfoDialog.h
     src/gui/MainWindow.h
+    src/gui/WorkspaceSaver.h
     src/gui/MouseSelector.h
     src/gui/Network.h
     src/gui/NetworkSignal.h

@@ -74,6 +74,7 @@
 #include "gui/LaunchingScreen.h"
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
+#include "gui/WorkspaceSaver.h"
 #include "gui/Preferences.h"
 #include "gui/QSettingsCached.h"
 #include "openscad.h"
@@ -200,6 +201,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 {
   configureOpenGLContext();
   OpenSCADApp app(argc, argv);
+  WorkspaceSaver::instance();
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
