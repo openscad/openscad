@@ -36,6 +36,7 @@ const std::string polyline::name("polyline");
 
 void polyline::set_attrs(attr_map_t& attrs, void *context)
 {
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   shape::set_attrs(attrs, context);
   this->points = attrs["points"];
 
@@ -56,8 +57,8 @@ void polyline::set_attrs(attr_map_t& attrs, void *context)
     }
     first = !first;
   }
-
-  offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
+  if (!fValues->stroke) offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
+  else path_list.push_back(path);
 }
 
 }  // namespace libsvg

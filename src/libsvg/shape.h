@@ -131,6 +131,7 @@ public:
 
   [[nodiscard]] virtual const path_list_t& get_path_list() const { return path_list; }
   [[nodiscard]] virtual const std::string& get_fill() const { return fill; }
+  [[nodiscard]] virtual const std::string& get_stroke() const { return stroke; }
 
   [[nodiscard]] virtual bool is_excluded() const;
   [[nodiscard]] virtual bool is_container() const { return false; }
