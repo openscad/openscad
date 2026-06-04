@@ -633,4 +633,10 @@ public:
   virtual void handle(SettingsEntryBase& entry) const = 0;
 };
 
+class SettingsAutoCompletion
+{
+public:
+  static SettingsEntryEnum<std::string> autocompleteMode;
+};
+
 }  // namespace Settings

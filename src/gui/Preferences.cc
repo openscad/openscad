@@ -238,6 +238,9 @@ void Preferences::init()
   this->defaultmap["view/hideColorList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
+  this->defaultmap["editor/autoCompleteIncludeVariables"] = true;
+  this->defaultmap["editor/autoCompleteIncludeModules"] = true;
+  this->defaultmap["editor/autoCompleteIncludeFunctions"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
   this->defaultmap["ai/activeProfile"] = "OpenAI GPT-4";
@@ -433,6 +436,8 @@ void Preferences::init()
   if (!profile.isEmpty()) {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
   }
+
+  initComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);
 
   emit editorConfigChanged();
 }
@@ -833,6 +838,11 @@ void Preferences::on_comboBoxTabKeyFunction_activated(int val)
   applyComboBox(comboBoxTabKeyFunction, val, Settings::Settings::tabKeyFunction);
 }
 
+void Preferences::on_comboBoxAutoCompletionMode_activated(int val)
+{
+  applyComboBox(comboBoxAutoCompletionMode, val, Settings::SettingsAutoCompletion::autocompleteMode);
+}
+
 void Preferences::on_checkBoxHighlightCurrentLine_toggled(bool val)
 {
   Settings::Settings::highlightCurrentLine.setValue(val);
@@ -951,7 +961,30 @@ void Preferences::on_checkBoxEnableAutocomplete_toggled(bool state)
   settings.setValue("editor/enableAutocomplete", state);
   this->labelCharacterThreshold->setEnabled(state);
   this->lineEditCharacterThreshold->setEnabled(state);
+
+  this->checkBoxAutocompleteIncludeVariables->setEnabled(state);
+  this->checkBoxAutocompleteIncludeModules->setEnabled(state);
+  this->checkBoxAutocompleteIncludeFunctions->setEnabled(state);
+
   emit autocompleteChanged(state);
+}
+
+void Preferences::on_checkBoxAutocompleteIncludeVariables_toggled(bool state)
+{
+  QSettingsCached settings;
+  settings.setValue("editor/autoCompleteIncludeVariables", state);
+}
+
+void Preferences::on_checkBoxAutocompleteIncludeModules_toggled(bool state)
+{
+  QSettingsCached settings;
+  settings.setValue("editor/autoCompleteIncludeModules", state);
+}
+
+void Preferences::on_checkBoxAutocompleteIncludeFunctions_toggled(bool state)
+{
+  QSettingsCached settings;
+  settings.setValue("editor/autoCompleteIncludeFunctions", state);
 }
 
 void Preferences::on_lineEditCharacterThreshold_textChanged(const QString& text)
@@ -1768,6 +1801,13 @@ void Preferences::updateGUI()
     ->setChecked(getValue("editor/enableAutocomplete").toBool());
   BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)
     ->setText(getValue("editor/characterThreshold").toString());
+  BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeVariables)
+    ->setChecked(getValue("editor/autoCompleteIncludeVariables").toBool());
+  BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeModules)
+    ->setChecked(getValue("editor/autoCompleteIncludeModules").toBool());
+  BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeFunctions)
+    ->setChecked(getValue("editor/autoCompleteIncludeFunctions").toBool());
+
   BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
 
   this->secLabelOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
@@ -1778,6 +1818,11 @@ void Preferences::updateGUI()
     getValue("advanced/enableSoundNotification").toBool());
   this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
   this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
+
+  this->checkBoxAutocompleteIncludeVariables->setEnabled(getValue("editor/enableAutocomplete").toBool());
+  this->checkBoxAutocompleteIncludeModules->setEnabled(getValue("editor/enableAutocomplete").toBool());
+  this->checkBoxAutocompleteIncludeFunctions->setEnabled(getValue("editor/enableAutocomplete").toBool());
+
   this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
 
   updateComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
@@ -1835,6 +1880,7 @@ void Preferences::updateGUI()
   } else {
     loadAIParams("OpenAI GPT-4");
   }
+  updateComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
