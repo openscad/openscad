@@ -282,7 +282,8 @@ void Preferences::init()
   }
 
   if (profiles.isEmpty()) {
-    profiles = {_("OpenAI GPT-4"), _("Anthropic Claude"), _("Ollama Local"), _("Custom / Local LLM")};
+    profiles =
+      QStringList{_("OpenAI GPT-4"), _("Anthropic Claude"), _("Ollama Local"), _("Custom / Local LLM")};
     for (const auto& p : profiles) {
       nlohmann::json prof = nlohmann::json::object();
       nlohmann::json params = nlohmann::json::object();
