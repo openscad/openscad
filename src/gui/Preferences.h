@@ -193,6 +193,14 @@ private slots:
 
   void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
 
+  void on_checkBoxAutocompleteIncludeVariables_toggled(bool state);
+
+  void on_checkBoxAutocompleteIncludeModules_toggled(bool state);
+
+  void on_checkBoxAutocompleteIncludeFunctions_toggled(bool state);
+
+  void on_comboBoxAutoCompletionMode_activated(int val);
+
 private:
   friend GlobalPreferences;
   Preferences(QWidget *parent = nullptr);
