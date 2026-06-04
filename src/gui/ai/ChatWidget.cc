@@ -83,8 +83,9 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   connect(clearButton, &QPushButton::clicked, this, &ChatWidget::onClearPressed);
 
   // Initial welcome greeting
-  addMessage(_("Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. \"draw a "
-               "sphere\" or \"create a box with a hole\"."),
+  addMessage(_("Hello! I am your OpenSCAD AI assistant. Note: AI connection is under development and is "
+               "not yet active. I currently only simulate responses.\n\nAsk me to write some code, e.g. "
+               "\"draw a sphere\" or \"create a box with a hole\"."),
              false);
 }
 
@@ -165,8 +166,9 @@ void ChatWidget::onClearPressed()
     delete child;
   }
 
-  addMessage(_("Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. \"draw a "
-               "sphere\" or \"create a box with a hole\"."),
+  addMessage(_("Hello! I am your OpenSCAD AI assistant. Note: AI connection is under development and is "
+               "not yet active. I currently only simulate responses.\n\nAsk me to write some code, e.g. "
+               "\"draw a sphere\" or \"create a box with a hole\"."),
              false);
 }
 

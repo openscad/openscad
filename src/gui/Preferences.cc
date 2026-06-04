@@ -263,6 +263,7 @@ void Preferences::init()
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
   addPrefPage(group, prefsActionAI, pageAI);
+  this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
 
   // Initialize AI parameters table
   this->tableWidgetAIParams->setColumnCount(2);
@@ -519,6 +520,9 @@ void Preferences::featuresCheckBoxToggled(bool state)
   feature->enable(state);
   QSettingsCached settings;
   settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
+  if (feature == &Feature::ExperimentalAiFeatures) {
+    this->prefsActionAI->setVisible(state);
+  }
   emit ExperimentalChanged();
 }
 
@@ -1835,6 +1839,7 @@ void Preferences::updateGUI()
   } else {
     loadAIParams("OpenAI GPT-4");
   }
+  this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,

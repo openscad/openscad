@@ -2896,6 +2896,19 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="labelAIUnderDevWarning">
+          <property name="text">
+           <string>Note: AI integration is currently under active development. Storing preferences is supported, but API connection is not yet active.</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::AutoText</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QScrollArea" name="scrollAreaAI">
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
