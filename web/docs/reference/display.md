@@ -168,6 +168,7 @@ Project a 3D object onto the XY plane, producing a 2D shape.
 |-----------|------|---------|-------------|
 | `obj` | solid | — | 3D object to project |
 | `cut` | bool | `False` | If `True`, only the cross-section at Z=0 is returned; if `False`, the entire silhouette is projected |
+| `detail` | bool | `False` | If `True`, preserves all the edges during creating  the projection, only valid when cut is False |
 | `convexity` | int | `2` | Convexity for rendering |
 
 **Examples:**
