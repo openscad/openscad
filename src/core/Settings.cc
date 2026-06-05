@@ -533,4 +533,10 @@ SettingsEntryEnum<ColorListSortType> SettingsColorList::colorListSortType(
   ColorListSortType::alphabetical);
 SettingsEntryBool SettingsColorList::colorListSortAscending(SECTION_COLOR_LIST, "sort-ascending", true);
 
+SettingsEntryEnum<std::string> SettingsAutoCompletion::autocompleteMode(
+  "editor", "autocompleteMode",
+  {{"ParsedFileMode", "parsedFileMode", _("Parsed File Mode")},
+   {"RegexInputTextMode", "regexInputTextMode", _("Regex Input Text Mode")}},
+  "ParsedFileMode");
+
 }  // namespace Settings

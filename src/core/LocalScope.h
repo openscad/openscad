@@ -43,6 +43,16 @@ public:
   AssignmentList assignments;
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
+  inline const std::unordered_map<std::string, std::shared_ptr<UserFunction>>& getUserFunctions() const
+  {
+    return functions;
+  }
+
+  inline const std::unordered_map<std::string, std::shared_ptr<UserModule>>& getUserModules() const
+  {
+    return modules;
+  }
+
   // Modules and functions are stored twice; once for lookup and once for AST serialization
   // FIXME: Should we split this class into an ASTNode and a run-time support class?
   std::unordered_map<std::string, std::shared_ptr<UserFunction>> functions;
