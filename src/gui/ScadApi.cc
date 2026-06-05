@@ -8,7 +8,9 @@
 #include <QStringList>
 #include <string>
 
+#include "core/BuiltinContext.h"
 #include "core/Builtins.h"
+#include "core/EvaluationSession.h"
 #include "core/parsersettings.h"
 #include "gui/ScintillaEditor.h"
 
@@ -128,6 +130,15 @@ void ScadApi::autoCompleteFunctions(const QStringList& context, QStringList& lis
       }
     }
   }
+
+  // for auto-complete on user varables
+  if (list.isEmpty()) {
+    foreach (const QString& name, userVariableNames) {
+      if (name.contains(c)) {
+        list.append(name);
+      }
+    }
+  }
 }
 
 void ScadApi::autoCompletionSelected(const QString& /*selection*/)
@@ -145,4 +156,75 @@ QStringList ScadApi::callTips(const QStringList& context, int /*commas*/,
     }
   }
   return callTips;
+}
+
+void ScadApi::correctUserVarNamesForCompletionFromSourceFile(const SourceFile *sourceFile,
+                                                             bool flagAutoCompleteIncludeVariables,
+                                                             bool flagAutoCompleteIncludeModules,
+                                                             bool flagAutoCompleteIncludeFunctions)
+{
+  if (!sourceFile) return;
+
+  userVariableNames.clear();
+
+  if (flagAutoCompleteIncludeVariables) {
+    for (const auto& assignment : sourceFile->scope->assignments) {
+      userVariableNames << QString::fromStdString(assignment->getName());
+    }
+  }
+
+  if (flagAutoCompleteIncludeModules) {
+    for (const auto& [fnname, fn] : sourceFile->scope->getUserModules()) {
+      userVariableNames << QString::fromStdString(fnname);
+    }
+  }
+
+  if (flagAutoCompleteIncludeModules) {
+    for (const auto& [modname, mod] : sourceFile->scope->getUserFunctions()) {
+      userVariableNames << QString::fromStdString(modname);
+    }
+  }
+
+  userVariableNames.removeDuplicates();
+}
+
+void ScadApi::correctUserVarNamesForCompletionFromInputText(bool flagAutoCompleteIncludeVariables,
+                                                            bool flagAutoCompleteIncludeModules,
+                                                            bool flagAutoCompleteIncludeFunctions)
+{
+  const QString text = editor->toPlainText();
+
+  auto fnCollectName = [&text](const QRegularExpression& re, QStringList& target) {
+    auto it = re.globalMatch(text);
+    while (it.hasNext()) {
+      auto match = it.next();
+      const QString name = match.captured(1);
+      if (!name.isEmpty()) {
+        target << name;
+      }
+    }
+  };
+
+  userVariableNames.clear();
+
+  static QRegularExpression const varPattern(R"(^\s*([a-zA-Z_\$][a-zA-Z0-9_]*)\s*=\s*(?!function\b))",
+                                             QRegularExpression::MultilineOption);
+
+  static QRegularExpression const modPattern(R"(\bmodule\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\()");
+
+  static QRegularExpression const funcPattern(R"(\bfunction\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*[\(=])");
+
+  if (flagAutoCompleteIncludeVariables) {
+    fnCollectName(varPattern, userVariableNames);
+  }
+
+  if (flagAutoCompleteIncludeModules) {
+    fnCollectName(modPattern, userVariableNames);
+  }
+
+  if (flagAutoCompleteIncludeFunctions) {
+    fnCollectName(funcPattern, userVariableNames);
+  }
+
+  userVariableNames.removeDuplicates();
 }

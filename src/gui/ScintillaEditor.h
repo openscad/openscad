@@ -67,6 +67,14 @@ public:
   void setFocus() override;
   void setupAutoComplete(const bool forceOff = false);
 
+  void correctUserVarNamesForCompletionFromSourceFile(const SourceFile *sourceFile,
+                                                      bool flagAutoCompleteIncludeVariables,
+                                                      bool flagAutoCompleteIncludeModules,
+                                                      bool flagAutoCompleteIncludeFunctions);
+  void correctUserVarNamesForCompletionFromInputText(bool flagAutoCompleteIncludeVariables,
+                                                     bool flagAutoCompleteIncludeModules,
+                                                     bool flagAutoCompleteIncludeFunctions);
+
 private:
   void getRange(int *lineFrom, int *lineTo);
   void setColormap(const EditorColorScheme *colorScheme);
