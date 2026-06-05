@@ -53,7 +53,6 @@ public:
     return modules;
   }
 
-private:
   // Modules and functions are stored twice; once for lookup and once for AST serialization
   // FIXME: Should we split this class into an ASTNode and a run-time support class?
   std::unordered_map<std::string, std::shared_ptr<UserFunction>> functions;
