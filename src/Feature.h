@@ -22,6 +22,7 @@ public:
   static const Feature ExperimentalPredictibleOutput;
   static const Feature ExperimentalVectorSwizzle;
   static const Feature ExperimentalDiscretizationByError;
+  static const Feature ExperimentalAiFeatures;
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif

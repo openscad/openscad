@@ -2925,6 +2925,196 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageAI">
+       <layout class="QVBoxLayout" name="verticalLayoutAI">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="labelAIHeader">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>AI Preferences</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelAIUnderDevWarning">
+          <property name="text">
+           <string>Note: AI integration is currently under active development. Storing preferences is supported, but API connection is not yet active.</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::AutoText</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QScrollArea" name="scrollAreaAI">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContentsAI">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>839</width>
+             <height>750</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayoutAIScroll">
+            <item>
+             <widget class="QGroupBox" name="groupBoxAIProfile">
+              <property name="title">
+               <string>Profiles</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayoutAIProfile">
+               <item row="0" column="0">
+                <widget class="QLabel" name="labelAIProfile">
+                 <property name="text">
+                  <string>Active Profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="comboBoxAIProfile"/>
+               </item>
+               <item row="0" column="2">
+                <widget class="QPushButton" name="pushButtonAINewProfile">
+                 <property name="text">
+                  <string>New Profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QPushButton" name="pushButtonAIDeleteProfile">
+                 <property name="text">
+                  <string>Delete</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxAIConfig">
+              <property name="title">
+               <string>API Configuration</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayoutAIConfig">
+               <item row="0" column="0">
+                <widget class="QLabel" name="labelAIApiEndpoint">
+                 <property name="text">
+                  <string>API Endpoint</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEditAIApiEndpoint"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="labelAIApiKey">
+                 <property name="text">
+                  <string>API Key</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEditAIApiKey">
+                 <property name="echoMode">
+                  <enum>QLineEdit::Password</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxAIParams">
+              <property name="title">
+               <string>API Parameters</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayoutAIParams">
+               <item>
+                <widget class="QTableWidget" name="tableWidgetAIParams">
+                 <property name="columnCount">
+                  <number>2</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutAIParamsButtons">
+                 <item>
+                  <widget class="QPushButton" name="pushButtonAIParamAdd">
+                   <property name="text">
+                    <string>Add Parameter</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonAIParamRemove">
+                   <property name="text">
+                    <string>Remove Parameter</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerAIParams">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacerAI">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2964,6 +3154,7 @@
    <addaction name="prefsActionInputButton"/>
    <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
+   <addaction name="prefsActionAI"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -3092,6 +3283,21 @@
    </property>
    <property name="text">
     <string>Dialogs</string>
+   </property>
+  </action>
+  <action name="prefsActionAI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsFeatures.png</normaloff>:/icons/prefsFeatures.png</iconset>
+   </property>
+   <property name="text">
+    <string>AI</string>
+   </property>
+   <property name="toolTip">
+    <string>AI and LLM configurations</string>
    </property>
   </action>
   <action name="actionLocalAppParameterDir">
