@@ -119,7 +119,7 @@ Renderer::Renderer()
   colormap_[ColorMode::HIGHLIGHT_EDGES] = {255, 171, 86, 128};
   colormap_[ColorMode::BACKGROUND_EDGES] = {150, 150, 150, 128};
 
-  Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
+  Renderer::setColorScheme(ColorMap::instance().defaultColorScheme());
 
   PRINTD("Renderer() end");
 }

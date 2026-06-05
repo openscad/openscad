@@ -138,14 +138,10 @@ void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
   }
 }
 
-ColorMap *ColorMap::inst(bool erase)
+ColorMap& ColorMap::instance()
 {
-  static auto *instance = new ColorMap;
-  if (erase) {
-    delete instance;
-    instance = nullptr;
-  }
-  return instance;
+  static ColorMap colormap;
+  return colormap;
 }
 
 ColorMap::ColorMap()
@@ -215,8 +211,8 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
-  if (ColorMap::inst()->defaultColorScheme().count(rc))
-    return ColorMap::inst()->defaultColorScheme().at(rc);
+  if (ColorMap::instance().defaultColorScheme().count(rc))
+    return ColorMap::instance().defaultColorScheme().at(rc);
   return {0, 0, 0, 127};
 }
 
