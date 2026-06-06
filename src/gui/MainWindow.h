@@ -54,6 +54,7 @@ class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
 class CSGTreeEvaluator;
+class AIDock;
 
 #include "RenderStatistic.h"
 #include "core/Tree.h"
@@ -97,6 +98,7 @@ public:
   Tree tree;
   EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
+  AIDock *aiDock;
 
   std::shared_ptr<const Geometry> rootGeom;
   std::shared_ptr<Renderer> geomRenderer;
@@ -159,6 +161,7 @@ private:
   /// First CLI path was a missing design file; tab UI deferred until user answers create prompt.
   QString deferredCliMissingFile;
   void handleDeferredCliMissingFile();
+  void setupAIDock();
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -334,6 +337,9 @@ private slots:
   void onColorListDockVisibilityChanged(bool isVisible);
   void onViewportControlDockVisibilityChanged(bool isVisible);
   void onParametersDockVisibilityChanged(bool isVisible);
+
+  void onAIDockVisibilityChanged(bool isVisible);
+  void onExperimentalChanged();
 
   void onColorListColorSelected(const QString&);
 

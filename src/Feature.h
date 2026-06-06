@@ -24,6 +24,7 @@ public:
   static const Feature ExperimentalWrapPolygon;
   static const Feature ExperimentalVectorSwizzle;
   static const Feature ExperimentalDiscretizationByError;
+  static const Feature ExperimentalAiFeatures;
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
   static const Feature ExperimentalAddParameterPureFunction;
