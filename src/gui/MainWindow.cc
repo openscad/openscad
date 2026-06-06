@@ -1249,6 +1249,31 @@ void MainWindow::compileDone(bool didchange)
   } catch (const HardWarningException&) {
     exceptionCleanup();
   }
+
+  if (didchange) {
+    const bool flagAutoCompleteIncludeVariables =
+      GlobalPreferences::inst()->getValue("editor/autoCompleteIncludeVariables").toBool();
+    const bool flagAutoCompleteIncludeModules =
+      GlobalPreferences::inst()->getValue("editor/autoCompleteIncludeModules").toBool();
+    const bool flagAutoCompleteIncludeFunctions =
+      GlobalPreferences::inst()->getValue("editor/autoCompleteIncludeFunctions").toBool();
+
+    const auto completionMode = Settings::SettingsAutoCompletion::autocompleteMode.value();
+
+    auto *scintillaEditor = dynamic_cast<ScintillaEditor *>(this->activeEditor);
+
+    if (scintillaEditor) {
+      if (completionMode == "ParsedFileMode") {
+        scintillaEditor->updateCompleterInfoFromInputText(
+          flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules,
+          flagAutoCompleteIncludeFunctions);  // this is Regex Mode
+      } else if (completionMode == "RegexInputTextMode") {
+        scintillaEditor->updateCompleterInfoFromSourceFile(
+          parsedFile.get(), flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules,
+          flagAutoCompleteIncludeFunctions);
+      }
+    }
+  }
 }
 
 void MainWindow::compileEnded()
