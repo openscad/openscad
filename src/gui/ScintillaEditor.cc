@@ -1590,8 +1590,13 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
       val <= hyperlinkIndicatorOffset + static_cast<int>(indicatorData.size())) {
     if (!indicatorsActive) {
       QTimer::singleShot(0, this, [this] {
+#ifdef Q_OS_MACOS
+        QToolTip::showText(QCursor::pos(), "Use <b>Cmd + Click</b> to open the file", this, rect(),
+                           toolTipDuration());
+#else
         QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(),
                            toolTipDuration());
+#endif
       });
     }
   }
