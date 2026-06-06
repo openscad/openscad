@@ -165,12 +165,12 @@ void configureOpenGLContext()
 #endif
 }
 
+}  // namespace
 bool shouldOfferAutosaveRestore(const QString& autosavePath, const QString& sessionPath)
 {
   const QFileInfo autosaveInfo(autosavePath);
   if (!autosaveInfo.exists()) return false;
 
-<<<<<<< HEAD
   const QFileInfo sessionInfo(sessionPath);
   if (!sessionInfo.exists()) return true;
 

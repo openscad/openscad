@@ -3279,7 +3279,7 @@ static std::unique_ptr<PolySet> debugObject(const DebugNode& node, const PolySet
   *psx = *ps;
 
   if (psx->color_indices.size() < psx->indices.size()) {
-    auto cs = ColorMap::inst()->defaultColorScheme();
+    auto cs = ColorMap::instance().defaultColorScheme();
     Color4f def_color = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_FRONT_COLOR);
     int defind = psx->colors.size();
     psx->colors.push_back(def_color);
