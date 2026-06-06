@@ -144,7 +144,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   ps->colors.reserve(originalIDToColor_.size());
   ps->color_indices.reserve(ps->indices.size());
 
-  auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+  auto colorScheme = ColorMap::instance().findColorScheme(RenderSettings::inst()->colorscheme);
   int32_t faceFrontColorIndex = -1;
   int32_t faceBackColorIndex = -1;
 
