@@ -29,12 +29,19 @@
 #include <QActionGroup>
 #include <QDialog>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QFont>
 #include <QFontComboBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QTableWidget>
+#include <QHeaderView>
+#include "json/json.hpp"
+#include <QFile>
+#include <QDir>
+#include "platform/PlatformUtils.h"
 #include <QMainWindow>
 #include <QMenu>
 #include <QMessageBox>
@@ -79,6 +86,43 @@
 
 static const char *featurePropertyName = "FeatureProperty";
 
+namespace {
+QString getAISettingsFilePath()
+{
+  QString configPath = QString::fromStdString(PlatformUtils::userConfigPath());
+  if (configPath.isEmpty()) {
+    configPath = QDir::homePath() + "/.openscad";
+  }
+  QDir().mkpath(configPath);
+  return configPath + "/ai_settings.json";
+}
+
+nlohmann::json readAISettings()
+{
+  QFile file(getAISettingsFilePath());
+  if (!file.open(QIODevice::ReadOnly)) {
+    return nlohmann::json::object();
+  }
+  QByteArray data = file.readAll();
+  file.close();
+  auto j = nlohmann::json::parse(data.constData(), nullptr, false);
+  if (j.is_discarded() || !j.is_object()) {
+    return nlohmann::json::object();
+  }
+  return j;
+}
+
+void writeAISettings(const nlohmann::json& j)
+{
+  QFile file(getAISettingsFilePath());
+  if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+    std::string s = j.dump(4);
+    file.write(s.c_str(), s.length());
+    file.close();
+  }
+}
+}  // namespace
+
 using S = Settings::Settings;
 
 Q_DECLARE_METATYPE(Feature *);
@@ -110,7 +154,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   }
 #endif
 
-  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+  std::list<std::string> names = ColorMap::instance().colorSchemeNames(true);
   QStringList renderColorSchemes;
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
@@ -220,6 +264,7 @@ void Preferences::init()
   this->defaultmap["editor/autoCompleteIncludeFunctions"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
+  this->defaultmap["ai/activeProfile"] = "OpenAI GPT-4";
 
   // Toolbar
   auto *group = new QActionGroup(this);
@@ -242,6 +287,92 @@ void Preferences::init()
   addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
+  addPrefPage(group, prefsActionAI, pageAI);
+  this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
+
+  // Initialize AI parameters table
+  this->tableWidgetAIParams->setColumnCount(2);
+  this->tableWidgetAIParams->setHorizontalHeaderLabels({_("Parameter Key"), _("Parameter Value")});
+  this->tableWidgetAIParams->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  this->tableWidgetAIParams->setSelectionBehavior(QAbstractItemView::SelectRows);
+  this->tableWidgetAIParams->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  nlohmann::json aiSettings = readAISettings();
+  std::string activeProfile = aiSettings.value("activeProfile", "OpenAI GPT-4");
+  QString activeProfileQS = QString::fromStdString(activeProfile);
+
+  nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+  QStringList profiles;
+  for (auto it = profilesObj.begin(); it != profilesObj.end(); ++it) {
+    profiles.append(QString::fromStdString(it.key()));
+  }
+
+  if (profiles.isEmpty()) {
+    profiles =
+      QStringList{_("OpenAI GPT-4"), _("Anthropic Claude"), _("Ollama Local"), _("Custom / Local LLM")};
+    for (const auto& p : profiles) {
+      nlohmann::json prof = nlohmann::json::object();
+      nlohmann::json params = nlohmann::json::object();
+      std::string pStr = p.toStdString();
+      if (p == _("OpenAI GPT-4")) {
+        prof["endpoint"] = "https://api.openai.com/v1";
+        params["model"] = "gpt-4o";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+      } else if (p == _("Anthropic Claude")) {
+        prof["endpoint"] = "https://api.anthropic.com/v1";
+        params["model"] = "claude-3-5-sonnet-latest";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+        params["anthropic-version"] = "2023-06-01";
+      } else if (p == _("Ollama Local")) {
+        prof["endpoint"] = "http://localhost:11434/v1";
+        params["model"] = "deepseek-coder";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+      } else {
+        prof["endpoint"] = "http://localhost:8080/v1";
+        params["model"] = "custom";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+      }
+      prof["params"] = params;
+      prof["apiKey"] = "";
+      profilesObj[pStr] = prof;
+    }
+    aiSettings["profiles"] = profilesObj;
+    aiSettings["activeProfile"] = activeProfile;
+    writeAISettings(aiSettings);
+  }
+
+  this->comboBoxAIProfile->clear();
+  this->comboBoxAIProfile->addItems(profiles);
+
+  // Connect table cell changes to slot
+  connect(this->tableWidgetAIParams, &QTableWidget::itemChanged, this,
+          &Preferences::on_tableWidgetAIParams_itemChanged);
+
+  // Set default active profile index
+  int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
+  if (activeIdx >= 0) {
+    this->comboBoxAIProfile->setCurrentIndex(activeIdx);
+    loadAIParams(activeProfileQS);
+  } else {
+    this->comboBoxAIProfile->setCurrentIndex(0);
+    loadAIParams(this->comboBoxAIProfile->itemText(0));
+  }
 
   connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
@@ -402,6 +533,7 @@ void Preferences::hidePasswords()
 {
   this->pushButtonOctoPrintApiKey->setChecked(false);
   this->lineEditOctoPrintApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
+  this->lineEditAIApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
 }
 
 void Preferences::on_stackedWidget_currentChanged(int)
@@ -433,6 +565,9 @@ void Preferences::featuresCheckBoxToggled(bool state)
   feature->enable(state);
   QSettingsCached settings;
   settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
+  if (feature == &Feature::ExperimentalAiFeatures) {
+    this->prefsActionAI->setVisible(state);
+  }
   emit ExperimentalChanged();
 }
 
@@ -1415,6 +1550,223 @@ void Preferences::updateSessionManagementWidgets()
   this->spinBoxAutosaveSessionInterval->setEnabled(enabled &&
                                                    this->checkBoxAutosaveSessionEnabled->isChecked());
 }
+// ---- AI Config Slots ----
+
+void Preferences::on_comboBoxAIProfile_currentIndexChanged(int index)
+{
+  if (index < 0) return;
+  const QString profileName = this->comboBoxAIProfile->itemText(index);
+
+  nlohmann::json aiSettings = readAISettings();
+  aiSettings["activeProfile"] = profileName.toStdString();
+  writeAISettings(aiSettings);
+
+  loadAIParams(profileName);
+}
+
+void Preferences::on_pushButtonAINewProfile_clicked()
+{
+  bool ok = false;
+  const QString name =
+    QInputDialog::getText(this, _("New AI Profile"), _("Profile name:"), QLineEdit::Normal, "", &ok);
+  if (!ok || name.trimmed().isEmpty()) return;
+
+  const QString trimmed = name.trimmed();
+  if (this->comboBoxAIProfile->findText(trimmed) >= 0) {
+    QMessageBox::warning(this, _("Duplicate Profile"), _("A profile with that name already exists."));
+    return;
+  }
+
+  this->comboBoxAIProfile->addItem(trimmed);
+
+  nlohmann::json aiSettings = readAISettings();
+  nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+
+  nlohmann::json newProfile = nlohmann::json::object();
+  newProfile["endpoint"] = "http://localhost:8080/v1";
+  newProfile["apiKey"] = "";
+
+  nlohmann::json params = nlohmann::json::object();
+  params["model"] = "custom";
+  params["temperature"] = 0.7;
+  params["max_tokens"] = 2048;
+  params["system_prompt"] =
+    "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+  params["context_limit"] = 10;
+  newProfile["params"] = params;
+
+  profilesObj[trimmed.toStdString()] = newProfile;
+  aiSettings["profiles"] = profilesObj;
+  writeAISettings(aiSettings);
+
+  this->comboBoxAIProfile->setCurrentIndex(this->comboBoxAIProfile->count() - 1);
+}
+
+void Preferences::on_pushButtonAIDeleteProfile_clicked()
+{
+  const int idx = this->comboBoxAIProfile->currentIndex();
+  if (idx < 0) return;
+
+  const QString profileName = this->comboBoxAIProfile->currentText();
+  const auto result = QMessageBox::question(this, _("Delete AI Profile"),
+                                            QString(_("Delete profile \"%1\"?")).arg(profileName),
+                                            QMessageBox::Yes | QMessageBox::No);
+  if (result != QMessageBox::Yes) return;
+
+  nlohmann::json aiSettings = readAISettings();
+  nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+  profilesObj.erase(profileName.toStdString());
+  aiSettings["profiles"] = profilesObj;
+  writeAISettings(aiSettings);
+
+  this->comboBoxAIProfile->removeItem(idx);
+}
+
+void Preferences::on_lineEditAIApiEndpoint_textChanged(const QString& text)
+{
+  Q_UNUSED(text);
+  saveAIParams();
+}
+
+void Preferences::on_lineEditAIApiKey_textChanged(const QString& text)
+{
+  Q_UNUSED(text);
+  saveAIParams();
+}
+
+void Preferences::on_pushButtonAIParamAdd_clicked()
+{
+  this->tableWidgetAIParams->blockSignals(true);
+  int row = this->tableWidgetAIParams->rowCount();
+  this->tableWidgetAIParams->insertRow(row);
+
+  QTableWidgetItem *keyItem = new QTableWidgetItem("");
+  QTableWidgetItem *valItem = new QTableWidgetItem("");
+
+  this->tableWidgetAIParams->setItem(row, 0, keyItem);
+  this->tableWidgetAIParams->setItem(row, 1, valItem);
+  this->tableWidgetAIParams->blockSignals(false);
+
+  this->tableWidgetAIParams->setCurrentCell(row, 0);
+  this->tableWidgetAIParams->editItem(keyItem);
+}
+
+void Preferences::on_pushButtonAIParamRemove_clicked()
+{
+  const int row = this->tableWidgetAIParams->currentRow();
+  if (row >= 0) {
+    this->tableWidgetAIParams->removeRow(row);
+    saveAIParams();
+  }
+}
+
+void Preferences::on_tableWidgetAIParams_itemChanged(QTableWidgetItem *item)
+{
+  Q_UNUSED(item);
+  saveAIParams();
+}
+
+void Preferences::loadAIParams(const QString& profileName)
+{
+  nlohmann::json aiSettings = readAISettings();
+  nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+  std::string profileNameStr = profileName.toStdString();
+  nlohmann::json profileObj = profilesObj.value(profileNameStr, nlohmann::json::object());
+
+  std::string endpoint = profileObj.value("endpoint", "");
+  std::string apiKey = profileObj.value("apiKey", "");
+  BlockSignals<QLineEdit *>(this->lineEditAIApiEndpoint)->setText(QString::fromStdString(endpoint));
+  BlockSignals<QLineEdit *>(this->lineEditAIApiKey)->setText(QString::fromStdString(apiKey));
+
+  this->tableWidgetAIParams->blockSignals(true);
+  this->tableWidgetAIParams->setRowCount(0);
+
+  nlohmann::json paramsObj = profileObj.value("params", nlohmann::json::object());
+  QStringList keys;
+  for (auto it = paramsObj.begin(); it != paramsObj.end(); ++it) {
+    keys.append(QString::fromStdString(it.key()));
+  }
+  keys.sort();
+
+  for (const auto& key : keys) {
+    int row = this->tableWidgetAIParams->rowCount();
+    this->tableWidgetAIParams->insertRow(row);
+
+    QTableWidgetItem *keyItem = new QTableWidgetItem(key);
+
+    nlohmann::json valJson = paramsObj.value(key.toStdString(), nlohmann::json(""));
+    QString valQS;
+    if (valJson.is_number_integer()) {
+      valQS = QString::number(valJson.get<int>());
+    } else if (valJson.is_number_float()) {
+      valQS = QString::number(valJson.get<double>());
+    } else if (valJson.is_boolean()) {
+      valQS = valJson.get<bool>() ? "true" : "false";
+    } else if (valJson.is_string()) {
+      valQS = QString::fromStdString(valJson.get<std::string>());
+    } else {
+      valQS = "";
+    }
+
+    QTableWidgetItem *valItem = new QTableWidgetItem(valQS);
+
+    this->tableWidgetAIParams->setItem(row, 0, keyItem);
+    this->tableWidgetAIParams->setItem(row, 1, valItem);
+  }
+
+  this->tableWidgetAIParams->blockSignals(false);
+}
+
+void Preferences::saveAIParams()
+{
+  const int idx = this->comboBoxAIProfile->currentIndex();
+  if (idx < 0) return;
+  const QString profileName = this->comboBoxAIProfile->itemText(idx);
+  std::string profileNameStr = profileName.toStdString();
+
+  nlohmann::json aiSettings = readAISettings();
+  nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+  nlohmann::json profileObj = profilesObj.value(profileNameStr, nlohmann::json::object());
+
+  profileObj["endpoint"] = this->lineEditAIApiEndpoint->text().toStdString();
+  profileObj["apiKey"] = this->lineEditAIApiKey->text().toStdString();
+
+  nlohmann::json paramsObj = nlohmann::json::object();
+  for (int row = 0; row < this->tableWidgetAIParams->rowCount(); ++row) {
+    QTableWidgetItem *keyItem = this->tableWidgetAIParams->item(row, 0);
+    QTableWidgetItem *valItem = this->tableWidgetAIParams->item(row, 1);
+    if (!keyItem) continue;
+
+    const QString key = keyItem->text().trimmed();
+    if (key.isEmpty()) continue;
+
+    const QString valText = valItem ? valItem->text().trimmed() : "";
+    std::string keyStr = key.toStdString();
+
+    bool okInt = false;
+    int valInt = valText.toInt(&okInt);
+
+    bool okDouble = false;
+    double valDouble = valText.toDouble(&okDouble);
+
+    if (okInt) {
+      paramsObj[keyStr] = valInt;
+    } else if (okDouble && valText.contains('.')) {
+      paramsObj[keyStr] = valDouble;
+    } else if (valText.toLower() == "true") {
+      paramsObj[keyStr] = true;
+    } else if (valText.toLower() == "false") {
+      paramsObj[keyStr] = false;
+    } else {
+      paramsObj[keyStr] = valText.toStdString();
+    }
+  }
+  profileObj["params"] = paramsObj;
+
+  profilesObj[profileNameStr] = profileObj;
+  aiSettings["profiles"] = profilesObj;
+  writeAISettings(aiSettings);
+}
 
 void Preferences::writeSettings()
 {
@@ -1666,6 +2018,18 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxOctoPrintSlicingProfile,
                  Settings::Settings::octoPrintSlicerProfile.value());
 
+  // AI tab: populate fields from current profile settings
+  nlohmann::json aiSettings = readAISettings();
+  std::string activeProfile = aiSettings.value("activeProfile", "OpenAI GPT-4");
+  QString activeProfileQS = QString::fromStdString(activeProfile);
+  int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
+  if (activeIdx >= 0) {
+    BlockSignals<QComboBox *>(this->comboBoxAIProfile)->setCurrentIndex(activeIdx);
+    loadAIParams(activeProfileQS);
+  } else {
+    loadAIParams("OpenAI GPT-4");
+  }
+  this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
   updateComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);
 }
 

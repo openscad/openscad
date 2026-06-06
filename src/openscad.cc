@@ -749,18 +749,18 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
     return;
   }
 
-  if (ColorMap::inst()->findColorScheme(color_scheme)) {
+  if (ColorMap::instance().findColorScheme(color_scheme)) {
     RenderSettings::inst()->colorscheme = color_scheme;
     return;
   }
 
   if (exit_if_not_found) {
-    LOG((boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
+    LOG((boost::algorithm::join(ColorMap::instance().colorSchemeNames(), "\n")));
 
     exit(1);
   } else {
     LOG("Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme,
-        ColorMap::inst()->defaultColorSchemeName());
+        ColorMap::instance().defaultColorSchemeName());
   }
 }
 
@@ -854,7 +854,7 @@ int openscad_main(int argc, char **argv)
   CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
   CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
 #endif
-  Builtins::instance()->initialize();
+  Builtins::initialize();
 
   auto original_path = fs::current_path();
 
@@ -920,9 +920,9 @@ int openscad_main(int argc, char **argv)
       "output summary information in JSON format to the given file, using '-' outputs to stdout")
     ("colorscheme", po::value<std::string>(),
           ("=colorscheme: " +
-           str_join(ColorMap::inst()->colorSchemeNames(), " | ",
+           str_join(ColorMap::instance().colorSchemeNames(), " | ",
                     [](const std::string& colorScheme) {
-                      return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") +
+                      return (colorScheme == ColorMap::instance().defaultColorSchemeName() ? "*" : "") +
                              colorScheme;
                     }) +
            "\n")
@@ -1273,8 +1273,6 @@ int openscad_main(int argc, char **argv)
     LOG("Requested GUI mode but can't open display!\n");
     return 1;
   }
-
-  Builtins::instance(true);
 
   return rc;
 }

@@ -532,8 +532,8 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 {
   auto node = std::make_shared<PolyhedronNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"points", "faces", "convexity"}, {"triangles"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"points", "faces", "convexity"});
 
   if (parameters["points"].type() != Value::Type::VECTOR) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
@@ -555,17 +555,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
     }
   }
 
-  const Value *faces = nullptr;
-  if (parameters["faces"].type() == Value::Type::UNDEFINED &&
-      parameters["triangles"].type() != Value::Type::UNDEFINED) {
-    // backwards compatible
-    LOG(
-      message_group::Deprecated, inst->location(), parameters.documentRoot(),
-      "polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
-    faces = &parameters["triangles"];
-  } else {
-    faces = &parameters["faces"];
-  }
+  const Value *faces = &parameters["faces"];
   if (faces->type() != Value::Type::VECTOR) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
         "Unable to convert faces = %1$s to a vector of vector of point indices",

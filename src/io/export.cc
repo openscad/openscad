@@ -188,7 +188,7 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
                             const std::string& filepath, const Camera *camera,
                             const CmdLineExportOptions& cmdLineOptions)
 {
-  const auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+  const auto colorScheme = ColorMap::instance().findColorScheme(RenderSettings::inst()->colorscheme);
   auto exportInfo = ExportInfo{
     .format = format,
     .info = info,

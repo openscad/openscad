@@ -103,6 +103,7 @@
 #include <utility>
 #include <vector>
 
+#include "openscad_gui.h"
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
@@ -132,6 +133,7 @@
 #include "gui/CGALWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
+#include "gui/ai/AIDock.h"
 #include "gui/Editor.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
@@ -143,6 +145,7 @@
 #include "gui/Measurement.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/Preferences.h"
+#include "Feature.h"
 #include "gui/PrintInitDialog.h"
 #include "gui/ProgressWidget.h"
 #include "gui/QGLView.h"
@@ -536,6 +539,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setupErrorLog();
   setupFontList();
   setupColorList();
+  setupAIDock();
   setupDocks();
 
   setup3DView();
@@ -948,6 +952,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     fontListDock->setFeatures(fontListDock->features() | QDockWidget::DockWidgetFloatable);
     colorListDock->setFeatures(colorListDock->features() | QDockWidget::DockWidgetFloatable);
     viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
+    aiDock->setFeatures(aiDock->features() | QDockWidget::DockWidgetFloatable);
   } else {
     if (editorDock->isFloating()) {
       editorDock->setFloating(false);
@@ -989,6 +994,11 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     viewportControlDock->setFeatures(viewportControlDock->features() &
                                      ~QDockWidget::DockWidgetFloatable);
+
+    if (aiDock->isFloating()) {
+      aiDock->setFloating(false);
+    }
+    aiDock->setFeatures(aiDock->features() & ~QDockWidget::DockWidgetFloatable);
   }
 }
 
@@ -3899,6 +3909,28 @@ void MainWindow::onParametersDockVisibilityChanged(bool isVisible)
   }
 }
 
+void MainWindow::onAIDockVisibilityChanged(bool isVisible)
+{
+}
+
+void MainWindow::onExperimentalChanged()
+{
+  bool aiEnabled = Feature::ExperimentalAiFeatures.is_enabled();
+  if (this->aiDock) {
+    this->aiDock->toggleViewAction()->setVisible(aiEnabled);
+    if (!aiEnabled) {
+      this->aiDock->hide();
+    }
+    if (this->navigationMenu) {
+      for (auto *action : this->navigationMenu->actions()) {
+        if (action->text() == _("&AI Chat")) {
+          action->setVisible(aiEnabled);
+        }
+      }
+    }
+  }
+}
+
 void MainWindow::onColorListColorSelected(const QString& selectedColor)
 {
   activeEditor->insertOrReplaceText(selectedColor);
@@ -4546,6 +4578,10 @@ void MainWindow::setupPreferences()
           Qt::UniqueConnection);
   connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
           InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
+
+  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this,
+          &MainWindow::onExperimentalChanged);
+  onExperimentalChanged();
 }
 
 /**
@@ -4705,6 +4741,18 @@ void MainWindow::setupViewportControl()
 }
 
 /**
+  Setup AIDock
+ */
+void MainWindow::setupAIDock()
+{
+  this->aiDock = new AIDock(this);
+  addDockWidget(Qt::RightDockWidgetArea, this->aiDock);
+  this->aiDock->hide();
+
+  QObject::connect(this->aiDock, &Dock::visibilityChanged, this, &MainWindow::onAIDockVisibilityChanged);
+}
+
+/**
   Set up resources related to the 3d View
  */
 void MainWindow::setup3DView()
@@ -4774,6 +4822,7 @@ void MainWindow::setupDocks()
     {fontListDock, _("&Font List")},
     {colorListDock, _("C&olor List")},
     {viewportControlDock, _("&Viewport-Control")},
+    {aiDock,_("&AI Chat")}
   };
   // clang-format off
 
@@ -5147,4 +5196,12 @@ void MainWindow::openRemainingFiles(const QStringList& filenames)
   }
 
   activeEditor->setFocus();
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ThemeChange) {
+    setGlobalTheme();
+  }
+  QMainWindow::changeEvent(event);
 }

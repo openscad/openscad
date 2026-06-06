@@ -30,7 +30,7 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
-  colorscheme = &ColorMap::inst()->defaultColorScheme();
+  colorscheme = &ColorMap::instance().defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
@@ -101,7 +101,7 @@ void GLView::setColorScheme(const ColorScheme& cs)
 
 void GLView::setColorScheme(const std::string& cs)
 {
-  const auto colorscheme = ColorMap::inst()->findColorScheme(cs);
+  const auto colorscheme = ColorMap::instance().findColorScheme(cs);
   if (colorscheme) {
     setColorScheme(*colorscheme);
   } else {
