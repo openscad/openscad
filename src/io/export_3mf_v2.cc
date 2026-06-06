@@ -64,7 +64,8 @@ struct ExportContext {
   Lib3MF::PColorGroup colorgroup;
   Lib3MF::PBaseMaterialGroup basematerialgroup;
   int modelcount;
-  ExportColorMap colors;
+  Lib3MF_uint32 defaultColorId;
+  ExportColorMap materialColors;
   Color4f selectedColor;
   const ExportInfo& info;
   const std::shared_ptr<const Export3mfOptions> options;
@@ -124,10 +125,10 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
   }
 
   const Color4f col = ps->colors[color_index];
-  const auto col_it = ctx.colors.find(col);
+  const auto col_it = ctx.materialColors.find(col);
 
   Lib3MF_uint32 col_idx = 0;
-  if (col_it == ctx.colors.end()) {
+  if (col_it == ctx.materialColors.end()) {
     Lib3MF::sColor materialcolor;
     if (!col.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue,
                      materialcolor.m_Alpha)) {
@@ -139,7 +140,7 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
     } else if (ctx.colorgroup) {
       col_idx = ctx.colorgroup->AddColor(materialcolor);
     }
-    ctx.colors[col] = col_idx;
+    ctx.materialColors[col] = col_idx;
   } else {
     col_idx = (*col_it).second;
   }
@@ -356,6 +357,8 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // use default color that ultimately should come from the color scheme
   Color4f color = exportInfo.defaultColor;
 
+  ExportColorMap materialColors;
+  Lib3MF_uint32 defaultColorId = 0;
   Lib3MF::PColorGroup colorgroup;
   Lib3MF::PBaseMaterialGroup basematerialgroup;
   if (options3mf->colorMode != Export3mfColorMode::none) {
@@ -371,7 +374,8 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         LOG(message_group::Warning, "Invalid color in 3MF export");
       }
       materialcolor.m_Alpha = 0xff;
-      basematerialgroup->AddMaterial("Default", materialcolor);
+      defaultColorId = basematerialgroup->AddMaterial("Default", materialcolor);
+      materialColors.insert(std::pair(color, defaultColorId));
     } else if (options3mf->materialType == Export3mfMaterialType::color) {
       colorgroup = model->AddColorGroup();
       Lib3MF::sColor groupcolor;
@@ -399,6 +403,8 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
                     .colorgroup = colorgroup,
                     .basematerialgroup = basematerialgroup,
                     .modelcount = 1,
+                    .defaultColorId = defaultColorId,
+                    .materialColors = materialColors,
                     .selectedColor = color,
                     .info = exportInfo,
                     .options = options3mf};

@@ -156,7 +156,7 @@ def get_normalized_lines(filename, replace_paths=False):
 
     if options.exclude_line_re is None:
         return text.splitlines()
-    
+
     def include_line(line):
         include = not options.exclude_line_re.search(line)
         if options.exclude_debug:
@@ -165,7 +165,7 @@ def get_normalized_lines(filename, replace_paths=False):
             else:
                 print(f"X: {line}", file=sys.stderr)
         return include
-    
+
     return [ line for line in text.splitlines() if include_line(line) ]
 
 def compare_default(resultfilename):
@@ -290,11 +290,10 @@ def post_process_3mf(filename):
     xml_content = re.sub(r'(<metadata[^>]*?)\s+preserve\s*=\s*"[^"]*"([^>]*>)', r'\1\2', xml_content)
     # lib3mf v1 does not allow setting the alpha channel of base material display colors
     xml_content = re.sub(r'(<base name="[^"]*" displaycolor="[^"]*).."', r'\1FF"', xml_content)
-    # lib3mf v2 has an additional <model> attribute compared to v1
-    sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"'
-    xml_content = xml_content.replace(sc, '')
-    # add tag end whitespace for lib3mf 2.0 output files
-    xml_content = re.sub('\"/>', '\" />', xml_content)
+    # lib3mf v2 has an additional namespace attributes compared to v1, remove all xmlsns:xxx attributes, keep only default ns
+    xml_content = re.sub(r'\s*xmlns:[a-z]+\s*=\s*"[^"]+"\s*', '', xml_content)
+    # Normalize end whitespaces of all self closing tags that have attributes
+    xml_content = re.sub(r'"\s*/>', r'" />', xml_content)
     with open(filename, 'wb') as xml_file:
         xml_file.write(xml_content.encode('utf-8'))
 
