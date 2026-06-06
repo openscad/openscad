@@ -10,24 +10,20 @@
 #include "core/function.h"
 #include "core/module.h"
 
-std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
+std::unordered_map<std::string, std::vector<std::string>> Builtins::keywordList;
 
-Builtins *Builtins::instance(bool erase)
+Builtins& Builtins::instance()
 {
-  static auto *builtins = new Builtins;
-  if (erase) {
-    delete builtins;
-    builtins = nullptr;
-  }
+  static Builtins builtins;
   return builtins;
 }
 
-void Builtins::init(const std::string& name, class AbstractModule *module)
+void Builtins::init(const std::string& name, AbstractModule *module)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
 #endif
-  Builtins::instance()->modules.emplace(name, module);
+  instance().modules.emplace(name, module);
 }
 
 void Builtins::init(const std::string& name, AbstractModule *module,
@@ -36,8 +32,8 @@ void Builtins::init(const std::string& name, AbstractModule *module,
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
 #endif
-  Builtins::instance()->modules.emplace(name, module);
-  Builtins::keywordList.insert({name, calltipList});
+  instance().modules.emplace(name, module);
+  keywordList.insert({name, calltipList});
 }
 
 void Builtins::init(const std::string& name, BuiltinFunction *function,
@@ -46,8 +42,8 @@ void Builtins::init(const std::string& name, BuiltinFunction *function,
 #ifndef ENABLE_EXPERIMENTAL
   if (function->is_experimental()) return;
 #endif
-  Builtins::instance()->functions.emplace(name, function);
-  Builtins::keywordList.insert({name, calltipList});
+  instance().functions.emplace(name, function);
+  keywordList.insert({name, calltipList});
 }
 
 extern void register_builtin_functions();
@@ -79,7 +75,7 @@ extern void initialize_builtin_dxf_dim();
  */
 void Builtins::initialize()
 {
-  Builtins::initKeywordList();
+  initKeywordList();
 
   register_builtin_functions();
   initialize_builtin_dxf_dim();
@@ -108,8 +104,9 @@ void Builtins::initialize()
 
 std::string Builtins::isDeprecated(const std::string& name) const
 {
-  if (this->deprecations.find(name) != this->deprecations.end()) {
-    return this->deprecations.at(name);
+  auto it = deprecations.find(name);
+  if (it != deprecations.end()) {
+    return it->second;
   }
   return {};
 }
@@ -138,13 +135,13 @@ Builtins::Builtins()
 
 void Builtins::initKeywordList()
 {
-  Builtins::keywordList.insert({"else", {}});
-  Builtins::keywordList.insert({"each", {}});
-  Builtins::keywordList.insert({"module", {}});
-  Builtins::keywordList.insert({"function", {}});
-  Builtins::keywordList.insert({"true", {}});
-  Builtins::keywordList.insert({"false", {}});
-  Builtins::keywordList.insert({"undef", {}});
-  Builtins::keywordList.insert({"use", {}});
-  Builtins::keywordList.insert({"include", {}});
+  keywordList.insert({"else", {}});
+  keywordList.insert({"each", {}});
+  keywordList.insert({"module", {}});
+  keywordList.insert({"function", {}});
+  keywordList.insert({"true", {}});
+  keywordList.insert({"false", {}});
+  keywordList.insert({"undef", {}});
+  keywordList.insert({"use", {}});
+  keywordList.insert({"include", {}});
 }

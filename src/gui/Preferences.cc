@@ -154,7 +154,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   }
 #endif
 
-  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+  std::list<std::string> names = ColorMap::instance().colorSchemeNames(true);
   QStringList renderColorSchemes;
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
