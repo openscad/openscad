@@ -1,3 +1,3 @@
 group() {
-	polyhedron(points = undef, triangles = undef, convexity = 1);
+	polyhedron(points = undef, faces = undef, convexity = 1);
 }
