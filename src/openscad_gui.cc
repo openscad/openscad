@@ -170,6 +170,7 @@ bool shouldOfferAutosaveRestore(const QString& autosavePath, const QString& sess
   const QFileInfo autosaveInfo(autosavePath);
   if (!autosaveInfo.exists()) return false;
 
+<<<<<<< HEAD
   const QFileInfo sessionInfo(sessionPath);
   if (!sessionInfo.exists()) return true;
 
@@ -693,6 +694,12 @@ void setupUnixSignalHandlers(OpenSCADApp *app)
   sigaction(SIGHUP, &action, nullptr);
 }
 #endif
+void setGlobalTheme()
+{
+  QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
+}
+
+namespace {
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
@@ -774,6 +781,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 {
   configureOpenGLContext();
   OpenSCADApp app(argc, argv);
+  setGlobalTheme();
 
   // set up groups for QSettings
   QCoreApplication::setOrganizationName("PythonSCAD");

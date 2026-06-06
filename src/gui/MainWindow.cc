@@ -103,6 +103,7 @@
 #include <utility>
 #include <vector>
 
+#include "openscad_gui.h"
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
 #include "core/Builtins.h"
@@ -5195,4 +5196,12 @@ void MainWindow::openRemainingFiles(const QStringList& filenames)
   }
 
   activeEditor->setFocus();
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ThemeChange) {
+    setGlobalTheme();
+  }
+  QMainWindow::changeEvent(event);
 }
