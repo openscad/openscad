@@ -29,12 +29,19 @@
 #include <QActionGroup>
 #include <QDialog>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QFont>
 #include <QFontComboBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QTableWidget>
+#include <QHeaderView>
+#include "json/json.hpp"
+#include <QFile>
+#include <QDir>
+#include "platform/PlatformUtils.h"
 #include <QMainWindow>
 #include <QMenu>
 #include <QMessageBox>
@@ -78,6 +85,43 @@
 #include "gui/SettingsWriter.h"
 
 static const char *featurePropertyName = "FeatureProperty";
+
+namespace {
+QString getAISettingsFilePath()
+{
+  QString configPath = QString::fromStdString(PlatformUtils::userConfigPath());
+  if (configPath.isEmpty()) {
+    configPath = QDir::homePath() + "/.openscad";
+  }
+  QDir().mkpath(configPath);
+  return configPath + "/ai_settings.json";
+}
+
+nlohmann::json readAISettings()
+{
+  QFile file(getAISettingsFilePath());
+  if (!file.open(QIODevice::ReadOnly)) {
+    return nlohmann::json::object();
+  }
+  QByteArray data = file.readAll();
+  file.close();
+  auto j = nlohmann::json::parse(data.constData(), nullptr, false);
+  if (j.is_discarded() || !j.is_object()) {
+    return nlohmann::json::object();
+  }
+  return j;
+}
+
+void writeAISettings(const nlohmann::json& j)
+{
+  QFile file(getAISettingsFilePath());
+  if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+    std::string s = j.dump(4);
+    file.write(s.c_str(), s.length());
+    file.close();
+  }
+}
+}  // namespace
 
 using S = Settings::Settings;
 
@@ -220,6 +264,7 @@ void Preferences::init()
   this->defaultmap["editor/autoCompleteIncludeFunctions"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
+  this->defaultmap["ai/activeProfile"] = "OpenAI GPT-4";
 
   // Toolbar
   auto *group = new QActionGroup(this);
@@ -242,6 +287,92 @@ void Preferences::init()
   addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
+  addPrefPage(group, prefsActionAI, pageAI);
+  this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
+
+  // Initialize AI parameters table
+  this->tableWidgetAIParams->setColumnCount(2);
+  this->tableWidgetAIParams->setHorizontalHeaderLabels({_("Parameter Key"), _("Parameter Value")});
+  this->tableWidgetAIParams->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  this->tableWidgetAIParams->setSelectionBehavior(QAbstractItemView::SelectRows);
+  this->tableWidgetAIParams->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  nlohmann::json aiSettings = readAISettings();
+  std::string activeProfile = aiSettings.value("activeProfile", "OpenAI GPT-4");
+  QString activeProfileQS = QString::fromStdString(activeProfile);
+
+  nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+  QStringList profiles;
+  for (auto it = profilesObj.begin(); it != profilesObj.end(); ++it) {
+    profiles.append(QString::fromStdString(it.key()));
+  }
+
+  if (profiles.isEmpty()) {
+    profiles =
+      QStringList{_("OpenAI GPT-4"), _("Anthropic Claude"), _("Ollama Local"), _("Custom / Local LLM")};
+    for (const auto& p : profiles) {
+      nlohmann::json prof = nlohmann::json::object();
+      nlohmann::json params = nlohmann::json::object();
+      std::string pStr = p.toStdString();
+      if (p == _("OpenAI GPT-4")) {
+        prof["endpoint"] = "https://api.openai.com/v1";
+        params["model"] = "gpt-4o";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+      } else if (p == _("Anthropic Claude")) {
+        prof["endpoint"] = "https://api.anthropic.com/v1";
+        params["model"] = "claude-3-5-sonnet-latest";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+        params["anthropic-version"] = "2023-06-01";
+      } else if (p == _("Ollama Local")) {
+        prof["endpoint"] = "http://localhost:11434/v1";
+        params["model"] = "deepseek-coder";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+      } else {
+        prof["endpoint"] = "http://localhost:8080/v1";
+        params["model"] = "custom";
+        params["temperature"] = 0.7;
+        params["max_tokens"] = 2048;
+        params["system_prompt"] =
+          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["context_limit"] = 10;
+      }
+      prof["params"] = params;
+      prof["apiKey"] = "";
+      profilesObj[pStr] = prof;
+    }
+    aiSettings["profiles"] = profilesObj;
+    aiSettings["activeProfile"] = activeProfile;
+    writeAISettings(aiSettings);
+  }
+
+  this->comboBoxAIProfile->clear();
+  this->comboBoxAIProfile->addItems(profiles);
+
+  // Connect table cell changes to slot
+  connect(this->tableWidgetAIParams, &QTableWidget::itemChanged, this,
+          &Preferences::on_tableWidgetAIParams_itemChanged);
+
+  // Set default active profile index
+  int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
+  if (activeIdx >= 0) {
+    this->comboBoxAIProfile->setCurrentIndex(activeIdx);
+    loadAIParams(activeProfileQS);
+  } else {
+    this->comboBoxAIProfile->setCurrentIndex(0);
+    loadAIParams(this->comboBoxAIProfile->itemText(0));
+  }
 
   connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
@@ -402,6 +533,7 @@ void Preferences::hidePasswords()
 {
   this->pushButtonOctoPrintApiKey->setChecked(false);
   this->lineEditOctoPrintApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
+  this->lineEditAIApiKey->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit);
 }
 
 void Preferences::on_stackedWidget_currentChanged(int)
@@ -433,6 +565,9 @@ void Preferences::featuresCheckBoxToggled(bool state)
   feature->enable(state);
   QSettingsCached settings;
   settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
+  if (feature == &Feature::ExperimentalAiFeatures) {
+    this->prefsActionAI->setVisible(state);
+  }
   emit ExperimentalChanged();
 }
 
@@ -1414,307 +1549,542 @@ void Preferences::updateSessionManagementWidgets()
   this->labelAutosaveSessionInterval->setEnabled(enabled);
   this->spinBoxAutosaveSessionInterval->setEnabled(enabled &&
                                                    this->checkBoxAutosaveSessionEnabled->isChecked());
-}
+  // ---- AI Config Slots ----
 
-void Preferences::writeSettings()
-{
-  Settings::Settings::visit(SettingsWriter());
-  fireEditorConfigChanged();
-}
+  void Preferences::on_comboBoxAIProfile_currentIndexChanged(int index)
+  {
+    if (index < 0) return;
+    const QString profileName = this->comboBoxAIProfile->itemText(index);
 
-void Preferences::fireEditorConfigChanged() const
-{
-  emit editorConfigChanged();
-}
+    nlohmann::json aiSettings = readAISettings();
+    aiSettings["activeProfile"] = profileName.toStdString();
+    writeAISettings(aiSettings);
 
-// Make sure Ctrl-W isn't passed up to MainWindow and only affects Preferences
-bool Preferences::event(QEvent *e)
-{
-  if (e->type() == QEvent::ShortcutOverride) {
-    QKeyEvent *ke = static_cast<QKeyEvent *>(e);
-    if (ke->matches(QKeySequence::Close) || ke->key() == Qt::Key_Escape) {
-      e->accept();
-      return true;
+    loadAIParams(profileName);
+  }
+
+  void Preferences::on_pushButtonAINewProfile_clicked()
+  {
+    bool ok = false;
+    const QString name =
+      QInputDialog::getText(this, _("New AI Profile"), _("Profile name:"), QLineEdit::Normal, "", &ok);
+    if (!ok || name.trimmed().isEmpty()) return;
+
+    const QString trimmed = name.trimmed();
+    if (this->comboBoxAIProfile->findText(trimmed) >= 0) {
+      QMessageBox::warning(this, _("Duplicate Profile"), _("A profile with that name already exists."));
+      return;
+    }
+
+    this->comboBoxAIProfile->addItem(trimmed);
+
+    nlohmann::json aiSettings = readAISettings();
+    nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+
+    nlohmann::json newProfile = nlohmann::json::object();
+    newProfile["endpoint"] = "http://localhost:8080/v1";
+    newProfile["apiKey"] = "";
+
+    nlohmann::json params = nlohmann::json::object();
+    params["model"] = "custom";
+    params["temperature"] = 0.7;
+    params["max_tokens"] = 2048;
+    params["system_prompt"] =
+      "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+    params["context_limit"] = 10;
+    newProfile["params"] = params;
+
+    profilesObj[trimmed.toStdString()] = newProfile;
+    aiSettings["profiles"] = profilesObj;
+    writeAISettings(aiSettings);
+
+    this->comboBoxAIProfile->setCurrentIndex(this->comboBoxAIProfile->count() - 1);
+  }
+
+  void Preferences::on_pushButtonAIDeleteProfile_clicked()
+  {
+    const int idx = this->comboBoxAIProfile->currentIndex();
+    if (idx < 0) return;
+
+    const QString profileName = this->comboBoxAIProfile->currentText();
+    const auto result = QMessageBox::question(this, _("Delete AI Profile"),
+                                              QString(_("Delete profile \"%1\"?")).arg(profileName),
+                                              QMessageBox::Yes | QMessageBox::No);
+    if (result != QMessageBox::Yes) return;
+
+    nlohmann::json aiSettings = readAISettings();
+    nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+    profilesObj.erase(profileName.toStdString());
+    aiSettings["profiles"] = profilesObj;
+    writeAISettings(aiSettings);
+
+    this->comboBoxAIProfile->removeItem(idx);
+  }
+
+  void Preferences::on_lineEditAIApiEndpoint_textChanged(const QString& text)
+  {
+    Q_UNUSED(text);
+    saveAIParams();
+  }
+
+  void Preferences::on_lineEditAIApiKey_textChanged(const QString& text)
+  {
+    Q_UNUSED(text);
+    saveAIParams();
+  }
+
+  void Preferences::on_pushButtonAIParamAdd_clicked()
+  {
+    this->tableWidgetAIParams->blockSignals(true);
+    int row = this->tableWidgetAIParams->rowCount();
+    this->tableWidgetAIParams->insertRow(row);
+
+    QTableWidgetItem *keyItem = new QTableWidgetItem("");
+    QTableWidgetItem *valItem = new QTableWidgetItem("");
+
+    this->tableWidgetAIParams->setItem(row, 0, keyItem);
+    this->tableWidgetAIParams->setItem(row, 1, valItem);
+    this->tableWidgetAIParams->blockSignals(false);
+
+    this->tableWidgetAIParams->setCurrentCell(row, 0);
+    this->tableWidgetAIParams->editItem(keyItem);
+  }
+
+  void Preferences::on_pushButtonAIParamRemove_clicked()
+  {
+    const int row = this->tableWidgetAIParams->currentRow();
+    if (row >= 0) {
+      this->tableWidgetAIParams->removeRow(row);
+      saveAIParams();
+    }
+  }
+
+  void Preferences::on_tableWidgetAIParams_itemChanged(QTableWidgetItem * item)
+  {
+    Q_UNUSED(item);
+    saveAIParams();
+  }
+
+  void Preferences::loadAIParams(const QString& profileName)
+  {
+    nlohmann::json aiSettings = readAISettings();
+    nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+    std::string profileNameStr = profileName.toStdString();
+    nlohmann::json profileObj = profilesObj.value(profileNameStr, nlohmann::json::object());
+
+    std::string endpoint = profileObj.value("endpoint", "");
+    std::string apiKey = profileObj.value("apiKey", "");
+    BlockSignals<QLineEdit *>(this->lineEditAIApiEndpoint)->setText(QString::fromStdString(endpoint));
+    BlockSignals<QLineEdit *>(this->lineEditAIApiKey)->setText(QString::fromStdString(apiKey));
+
+    this->tableWidgetAIParams->blockSignals(true);
+    this->tableWidgetAIParams->setRowCount(0);
+
+    nlohmann::json paramsObj = profileObj.value("params", nlohmann::json::object());
+    QStringList keys;
+    for (auto it = paramsObj.begin(); it != paramsObj.end(); ++it) {
+      keys.append(QString::fromStdString(it.key()));
+    }
+    keys.sort();
+
+    for (const auto& key : keys) {
+      int row = this->tableWidgetAIParams->rowCount();
+      this->tableWidgetAIParams->insertRow(row);
+
+      QTableWidgetItem *keyItem = new QTableWidgetItem(key);
+
+      nlohmann::json valJson = paramsObj.value(key.toStdString(), nlohmann::json(""));
+      QString valQS;
+      if (valJson.is_number_integer()) {
+        valQS = QString::number(valJson.get<int>());
+      } else if (valJson.is_number_float()) {
+        valQS = QString::number(valJson.get<double>());
+      } else if (valJson.is_boolean()) {
+        valQS = valJson.get<bool>() ? "true" : "false";
+      } else if (valJson.is_string()) {
+        valQS = QString::fromStdString(valJson.get<std::string>());
+      } else {
+        valQS = "";
+      }
+
+      QTableWidgetItem *valItem = new QTableWidgetItem(valQS);
+
+      this->tableWidgetAIParams->setItem(row, 0, keyItem);
+      this->tableWidgetAIParams->setItem(row, 1, valItem);
+    }
+
+    this->tableWidgetAIParams->blockSignals(false);
+  }
+
+  void Preferences::saveAIParams()
+  {
+    const int idx = this->comboBoxAIProfile->currentIndex();
+    if (idx < 0) return;
+    const QString profileName = this->comboBoxAIProfile->itemText(idx);
+    std::string profileNameStr = profileName.toStdString();
+
+    nlohmann::json aiSettings = readAISettings();
+    nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
+    nlohmann::json profileObj = profilesObj.value(profileNameStr, nlohmann::json::object());
+
+    profileObj["endpoint"] = this->lineEditAIApiEndpoint->text().toStdString();
+    profileObj["apiKey"] = this->lineEditAIApiKey->text().toStdString();
+
+    nlohmann::json paramsObj = nlohmann::json::object();
+    for (int row = 0; row < this->tableWidgetAIParams->rowCount(); ++row) {
+      QTableWidgetItem *keyItem = this->tableWidgetAIParams->item(row, 0);
+      QTableWidgetItem *valItem = this->tableWidgetAIParams->item(row, 1);
+      if (!keyItem) continue;
+
+      const QString key = keyItem->text().trimmed();
+      if (key.isEmpty()) continue;
+
+      const QString valText = valItem ? valItem->text().trimmed() : "";
+      std::string keyStr = key.toStdString();
+
+      bool okInt = false;
+      int valInt = valText.toInt(&okInt);
+
+      bool okDouble = false;
+      double valDouble = valText.toDouble(&okDouble);
+
+      if (okInt) {
+        paramsObj[keyStr] = valInt;
+      } else if (okDouble && valText.contains('.')) {
+        paramsObj[keyStr] = valDouble;
+      } else if (valText.toLower() == "true") {
+        paramsObj[keyStr] = true;
+      } else if (valText.toLower() == "false") {
+        paramsObj[keyStr] = false;
+      } else {
+        paramsObj[keyStr] = valText.toStdString();
+      }
+    }
+    profileObj["params"] = paramsObj;
+
+    profilesObj[profileNameStr] = profileObj;
+    aiSettings["profiles"] = profilesObj;
+    writeAISettings(aiSettings);
+>>>>>>> 9aed34f1c (feat(gui): AIDock preferences (#6836))
+  }
+
+  void Preferences::writeSettings()
+  {
+    Settings::Settings::visit(SettingsWriter());
+    fireEditorConfigChanged();
+  }
+
+  void Preferences::fireEditorConfigChanged() const
+  {
+    emit editorConfigChanged();
+  }
+
+  // Make sure Ctrl-W isn't passed up to MainWindow and only affects Preferences
+  bool Preferences::event(QEvent * e)
+  {
+    if (e->type() == QEvent::ShortcutOverride) {
+      QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+      if (ke->matches(QKeySequence::Close) || ke->key() == Qt::Key_Escape) {
+        e->accept();
+        return true;
+      }
+#ifdef Q_OS_MACOS
+      if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_Period) {
+        e->accept();
+        return true;
+      }
+#endif
+    }
+    return QMainWindow::event(e);
+  }
+
+  void Preferences::keyPressEvent(QKeyEvent * e)
+  {
+    if (e->matches(QKeySequence::Close) || e->key() == Qt::Key_Escape) {
+      close();
+      return;
     }
 #ifdef Q_OS_MACOS
-    if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_Period) {
-      e->accept();
-      return true;
+    if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
+      close();
+      return;
     }
 #endif
-  }
-  return QMainWindow::event(e);
-}
-
-void Preferences::keyPressEvent(QKeyEvent *e)
-{
-  if (e->matches(QKeySequence::Close) || e->key() == Qt::Key_Escape) {
-    close();
-    return;
-  }
-#ifdef Q_OS_MACOS
-  if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
-    close();
-    return;
-  }
-#endif
-  QMainWindow::keyPressEvent(e);
-}
-
-void Preferences::showEvent(QShowEvent *e)
-{
-  QMainWindow::showEvent(e);
-  hidePasswords();
-}
-
-void Preferences::closeEvent(QCloseEvent *e)
-{
-  hidePasswords();
-  QMainWindow::closeEvent(e);
-}
-
-/*!
-   Removes settings that are the same as the default settings to avoid
-   overwriting future changes to default settings.
- */
-void Preferences::removeDefaultSettings()
-{
-  QSettingsCached settings;
-  for (QSettings::SettingsMap::const_iterator iter = this->defaultmap.begin();
-       iter != this->defaultmap.end(); iter++) {
-    if (settings.value(iter.key()) == iter.value()) {
-      settings.remove(iter.key());
-    }
-  }
-}
-
-QVariant Preferences::getValue(const QString& key) const
-{
-  QSettingsCached settings;
-  assert(settings.contains(key) || this->defaultmap.contains(key));
-  return settings.value(key, this->defaultmap[key]);
-}
-
-void Preferences::updateGUI()
-{
-  const auto found =
-    this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(), Qt::MatchExactly);
-  if (!found.isEmpty())
-    BlockSignals<QListWidget *>(this->colorSchemeChooser)->setCurrentItem(found.first());
-
-  updateGUIFontFamily(fontChooser, "editor/fontfamily");
-  updateGUIFontSize(fontSize, "editor/fontsize");
-
-  const auto shighlight = getValue("editor/syntaxhighlight").toString();
-  const auto shidx = this->syntaxHighlight->findText(shighlight);
-  const auto sheffidx = shidx >= 0 ? shidx : this->syntaxHighlight->findText("Off");
-  if (sheffidx >= 0) {
-    BlockSignals<QComboBox *>(this->syntaxHighlight)->setCurrentIndex(sheffidx);
+    QMainWindow::keyPressEvent(e);
   }
 
-  BlockSignals<QCheckBox *>(this->mouseWheelZoomBox)
-    ->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
-  BlockSignals<QCheckBox *>(this->checkBoxUseGvim)->setChecked(getValue("editor/usegvim").toBool());
-
-  if (AutoUpdater *updater = AutoUpdater::updater()) {
-    BlockSignals<QCheckBox *>(this->updateCheckBox)
-      ->setChecked(updater->automaticallyChecksForUpdates());
-    BlockSignals<QCheckBox *>(this->snapshotCheckBox)->setChecked(updater->enableSnapshots());
-    BlockSignals<QLabel *>(this->lastCheckedLabel)->setText(updater->lastUpdateCheckDate());
+  void Preferences::showEvent(QShowEvent * e)
+  {
+    QMainWindow::showEvent(e);
+    hidePasswords();
   }
 
-  BlockSignals<QCheckBox *>(this->openCSGWarningBox)
-    ->setChecked(getValue("advanced/opencsg_show_warning").toBool());
-  BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)
-    ->setText(getValue("advanced/cgalCacheSizeMB").toString());
-  BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)
-    ->setText(getValue("advanced/polysetCacheSizeMB").toString());
-  BlockSignals<QLineEdit *>(this->opencsgLimitEdit)
-    ->setText(getValue("advanced/openCSGLimit").toString());
-  BlockSignals<QCheckBox *>(this->localizationCheckBox)
-    ->setChecked(getValue("advanced/localization").toBool());
-  BlockSignals<QCheckBox *>(this->autoReloadRaiseCheckBox)
-    ->setChecked(getValue("advanced/autoReloadRaise").toBool());
-  BlockSignals<QCheckBox *>(this->forceGoldfeatherBox)
-    ->setChecked(getValue("advanced/forceGoldfeather").toBool());
-  BlockSignals<QCheckBox *>(this->reorderCheckBox)
-    ->setChecked(getValue("advanced/reorderWindows").toBool());
-  BlockSignals<QCheckBox *>(this->undockCheckBox)
-    ->setChecked(getValue("advanced/undockableWindows").toBool());
-  BlockSignals<QCheckBox *>(this->launcherBox)->setChecked(getValue("launcher/showOnStartup").toBool());
-  BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)
-    ->setChecked(getValue("advanced/enableSoundNotification").toBool());
-  BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)
-    ->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
-  BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)
-    ->setChecked(getValue("advanced/consoleAutoClear").toBool());
-  BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)
-    ->setText(getValue("advanced/consoleMaxLines").toString());
+  void Preferences::closeEvent(QCloseEvent * e)
+  {
+    hidePasswords();
+    QMainWindow::closeEvent(e);
+  }
 
-  BlockSignals<QComboBox *>(this->comboBoxGuiTheme)
-    ->setCurrentIndex(guiThemeIndexFromValue(getValue("advanced/guiTheme").toString()));
-  updateGUIFontFamily(fontComboBoxApplicationFontFamily, "advanced/applicationFontFamily");
-  updateGUIFontSize(comboBoxApplicationFontSize, "advanced/applicationFontSize");
-
-  updateGUIFontFamily(consoleFontChooser, "advanced/consoleFontFamily");
-  updateGUIFontSize(consoleFontSize, "advanced/consoleFontSize");
-
-  updateGUIFontFamily(customizerFontChooser, "advanced/customizerFontFamily");
-  updateGUIFontSize(customizerFontSize, "advanced/customizerFontSize");
-
-  BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)
-    ->setChecked(getValue("advanced/enableHardwarnings").toBool());
-  BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
-  BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)
-    ->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
-  BlockSignals<QCheckBox *>(this->enableParameterCheckBox)
-    ->setChecked(getValue("advanced/enableParameterCheck").toBool());
-  BlockSignals<QCheckBox *>(this->enableRangeCheckBox)
-    ->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
-  updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
-  updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
-  updateComboBox(this->comboBoxSingleInstanceOpenMode, Settings::Settings::singleInstanceOpenMode);
-  initUpdateCheckBox(this->checkBoxSessionManagementEnabled,
-                     Settings::Settings::sessionManagementEnabled);
-  BlockSignals<QCheckBox *>(this->checkBoxAutosaveSessionEnabled)
-    ->setChecked(getValue("advanced/autosaveSessionEnabled").toBool());
-  updateIntSpinBox(this->spinBoxAutosaveSessionInterval,
-                   Settings::Settings::autosaveSessionIntervalSeconds);
-  updateSessionManagementWidgets();
-  // ^ must run after the session management checkbox and autosave checkbox are set
-
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)
-    ->setChecked(Settings::Settings::summaryCamera.value());
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryArea)
-    ->setChecked(Settings::Settings::summaryArea.value());
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryVolume)
-    ->setChecked(Settings::Settings::summaryVolume.value());
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryBoundingBox)
-    ->setChecked(Settings::Settings::summaryBoundingBox.value());
-
-  BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)
-    ->setChecked(Settings::Settings::inputEnableDriverHIDAPILog.value());
-  BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)
-    ->setChecked(getValue("editor/enableAutocomplete").toBool());
-  BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)
-    ->setText(getValue("editor/characterThreshold").toString());
-  BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeVariables)
-    ->setChecked(getValue("editor/autoCompleteIncludeVariables").toBool());
-  BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeModules)
-    ->setChecked(getValue("editor/autoCompleteIncludeModules").toBool());
-  BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeFunctions)
-    ->setChecked(getValue("editor/autoCompleteIncludeFunctions").toBool());
-
-  BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
-
-  this->secLabelOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
-  this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
-  this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(
-    getValue("advanced/enableSoundNotification").toBool());
-  this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(
-    getValue("advanced/enableSoundNotification").toBool());
-  this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
-  this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
-
-  this->checkBoxAutocompleteIncludeVariables->setEnabled(getValue("editor/enableAutocomplete").toBool());
-  this->checkBoxAutocompleteIncludeModules->setEnabled(getValue("editor/enableAutocomplete").toBool());
-  this->checkBoxAutocompleteIncludeFunctions->setEnabled(getValue("editor/enableAutocomplete").toBool());
-
-  this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
-
-  updateComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
-  updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
-  updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
-  updateComboBox(this->comboBoxLineWrapVisualizationStart,
-                 Settings::Settings::lineWrapVisualizationBegin);
-  updateComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
-  updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
-  updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
-  updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
-  updateComboBox(this->comboBoxModifierNumberScrollWheel, Settings::Settings::modifierNumberScrollWheel);
-  updateIntSpinBox(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
-  updateIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
-  updateIntSpinBox(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
-  updateIntSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
-  initUpdateCheckBox(this->checkBoxAutoIndent, Settings::Settings::autoIndent);
-  initUpdateCheckBox(this->checkBoxBackspaceUnindents, Settings::Settings::backspaceUnindents);
-  initUpdateCheckBox(this->checkBoxHighlightCurrentLine, Settings::Settings::highlightCurrentLine);
-  initUpdateCheckBox(this->checkBoxEnableBraceMatching, Settings::Settings::enableBraceMatching);
-  initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
-  initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
-  initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
-  initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
-
-  /* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from
-     LineWrapIndentationStyle Combo-box, just after launching the openscad application. Removing this
-     line will cause misbehaviour, and will not disable the Indent spin-box until you interact with the
-     LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled. For
-     normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()'
-     handles the disabling functionality.
+  /*!
+     Removes settings that are the same as the default settings to avoid
+     overwriting future changes to default settings.
    */
-  this->spinBoxLineWrapIndentationIndent->setDisabled(
-    comboBoxLineWrapIndentationStyle->currentData() == "Same" ||
-    comboBoxLineWrapIndentationStyle->currentData() == "Indented");
-  this->comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
-  BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)
-    ->setText(QString::fromStdString(Settings::Settings::octoPrintUrl.value()));
-  BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)
-    ->setText(QString::fromStdString(Settings::Settings::octoPrintApiKey.value()));
-  updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
-  updateComboBox(this->comboBoxOctoPrintSlicingEngine,
-                 Settings::Settings::octoPrintSlicerEngine.value());
-  updateComboBox(this->comboBoxOctoPrintSlicingProfile,
-                 Settings::Settings::octoPrintSlicerProfile.value());
-
-  updateComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);
-}
-
-void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
-                                Settings::SettingsEntryEnum<std::string>& entry)
-{
-  entry.setIndex(val);
-  writeSettings();
-}
-
-void Preferences::apply_win() const
-{
-  emit requestRedraw();
-  emit openCSGSettingsChanged();
-}
-
-void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
-{
-  const uint savedsize = getValue(setting).toUInt();
-  BlockSignals<QComboBox *> box{boxarg};
-  for (auto size : QFontDatabase::standardSizes()) {
-    box->addItem(QString::number(size));
-    if (static_cast<uint>(size) == savedsize) {
-      box->setCurrentIndex(box->count() - 1);
+  void Preferences::removeDefaultSettings()
+  {
+    QSettingsCached settings;
+    for (QSettings::SettingsMap::const_iterator iter = this->defaultmap.begin();
+         iter != this->defaultmap.end(); iter++) {
+      if (settings.value(iter.key()) == iter.value()) {
+        settings.remove(iter.key());
+      }
     }
   }
-  // reset GUI fontsize if fontSize->addItem emitted signals that changed it.
-  box->setEditText(QString("%1").arg(savedsize));
-}
 
-void Preferences::updateGUIFontFamily(QFontComboBox *ffSelector, const QString& setting)
-{
-  const auto fontfamily = getValue(setting).toString();
-  BlockSignals<QFontComboBox *>(ffSelector)->setCurrentFont(QFont(fontfamily));
-}
-
-void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString& setting)
-{
-  const auto fontsize = getValue(setting).toString();
-  const auto sidx = fsSelector->findText(fontsize);
-  if (sidx >= 0) {
-    BlockSignals<QComboBox *>(fsSelector)->setCurrentIndex(sidx);
-  } else {
-    BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
+  QVariant Preferences::getValue(const QString& key) const
+  {
+    QSettingsCached settings;
+    assert(settings.contains(key) || this->defaultmap.contains(key));
+    return settings.value(key, this->defaultmap[key]);
   }
-}
 
-Preferences *GlobalPreferences::inst()
-{
-  static auto *instance = new Preferences();
-  return instance;
-};
+  void Preferences::updateGUI()
+  {
+    const auto found =
+      this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(), Qt::MatchExactly);
+    if (!found.isEmpty())
+      BlockSignals<QListWidget *>(this->colorSchemeChooser)->setCurrentItem(found.first());
+
+    updateGUIFontFamily(fontChooser, "editor/fontfamily");
+    updateGUIFontSize(fontSize, "editor/fontsize");
+
+    const auto shighlight = getValue("editor/syntaxhighlight").toString();
+    const auto shidx = this->syntaxHighlight->findText(shighlight);
+    const auto sheffidx = shidx >= 0 ? shidx : this->syntaxHighlight->findText("Off");
+    if (sheffidx >= 0) {
+      BlockSignals<QComboBox *>(this->syntaxHighlight)->setCurrentIndex(sheffidx);
+    }
+
+    BlockSignals<QCheckBox *>(this->mouseWheelZoomBox)
+      ->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
+    BlockSignals<QCheckBox *>(this->checkBoxUseGvim)->setChecked(getValue("editor/usegvim").toBool());
+
+    if (AutoUpdater *updater = AutoUpdater::updater()) {
+      BlockSignals<QCheckBox *>(this->updateCheckBox)
+        ->setChecked(updater->automaticallyChecksForUpdates());
+      BlockSignals<QCheckBox *>(this->snapshotCheckBox)->setChecked(updater->enableSnapshots());
+      BlockSignals<QLabel *>(this->lastCheckedLabel)->setText(updater->lastUpdateCheckDate());
+    }
+
+    BlockSignals<QCheckBox *>(this->openCSGWarningBox)
+      ->setChecked(getValue("advanced/opencsg_show_warning").toBool());
+    BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)
+      ->setText(getValue("advanced/cgalCacheSizeMB").toString());
+    BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)
+      ->setText(getValue("advanced/polysetCacheSizeMB").toString());
+    BlockSignals<QLineEdit *>(this->opencsgLimitEdit)
+      ->setText(getValue("advanced/openCSGLimit").toString());
+    BlockSignals<QCheckBox *>(this->localizationCheckBox)
+      ->setChecked(getValue("advanced/localization").toBool());
+    BlockSignals<QCheckBox *>(this->autoReloadRaiseCheckBox)
+      ->setChecked(getValue("advanced/autoReloadRaise").toBool());
+    BlockSignals<QCheckBox *>(this->forceGoldfeatherBox)
+      ->setChecked(getValue("advanced/forceGoldfeather").toBool());
+    BlockSignals<QCheckBox *>(this->reorderCheckBox)
+      ->setChecked(getValue("advanced/reorderWindows").toBool());
+    BlockSignals<QCheckBox *>(this->undockCheckBox)
+      ->setChecked(getValue("advanced/undockableWindows").toBool());
+    BlockSignals<QCheckBox *>(this->launcherBox)
+      ->setChecked(getValue("launcher/showOnStartup").toBool());
+    BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)
+      ->setChecked(getValue("advanced/enableSoundNotification").toBool());
+    BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)
+      ->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
+    BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)
+      ->setChecked(getValue("advanced/consoleAutoClear").toBool());
+    BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)
+      ->setText(getValue("advanced/consoleMaxLines").toString());
+
+    BlockSignals<QComboBox *>(this->comboBoxGuiTheme)
+      ->setCurrentIndex(guiThemeIndexFromValue(getValue("advanced/guiTheme").toString()));
+    updateGUIFontFamily(fontComboBoxApplicationFontFamily, "advanced/applicationFontFamily");
+    updateGUIFontSize(comboBoxApplicationFontSize, "advanced/applicationFontSize");
+
+    updateGUIFontFamily(consoleFontChooser, "advanced/consoleFontFamily");
+    updateGUIFontSize(consoleFontSize, "advanced/consoleFontSize");
+
+    updateGUIFontFamily(customizerFontChooser, "advanced/customizerFontFamily");
+    updateGUIFontSize(customizerFontSize, "advanced/customizerFontSize");
+
+    BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)
+      ->setChecked(getValue("advanced/enableHardwarnings").toBool());
+    BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
+    BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)
+      ->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
+    BlockSignals<QCheckBox *>(this->enableParameterCheckBox)
+      ->setChecked(getValue("advanced/enableParameterCheck").toBool());
+    BlockSignals<QCheckBox *>(this->enableRangeCheckBox)
+      ->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+    updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
+    updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+    updateComboBox(this->comboBoxSingleInstanceOpenMode, Settings::Settings::singleInstanceOpenMode);
+    initUpdateCheckBox(this->checkBoxSessionManagementEnabled,
+                       Settings::Settings::sessionManagementEnabled);
+    BlockSignals<QCheckBox *>(this->checkBoxAutosaveSessionEnabled)
+      ->setChecked(getValue("advanced/autosaveSessionEnabled").toBool());
+    updateIntSpinBox(this->spinBoxAutosaveSessionInterval,
+                     Settings::Settings::autosaveSessionIntervalSeconds);
+    updateSessionManagementWidgets();
+    // ^ must run after the session management checkbox and autosave checkbox are set
+
+    BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)
+      ->setChecked(Settings::Settings::summaryCamera.value());
+    BlockSignals<QCheckBox *>(this->checkBoxSummaryArea)
+      ->setChecked(Settings::Settings::summaryArea.value());
+    BlockSignals<QCheckBox *>(this->checkBoxSummaryVolume)
+      ->setChecked(Settings::Settings::summaryVolume.value());
+    BlockSignals<QCheckBox *>(this->checkBoxSummaryBoundingBox)
+      ->setChecked(Settings::Settings::summaryBoundingBox.value());
+
+    BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)
+      ->setChecked(Settings::Settings::inputEnableDriverHIDAPILog.value());
+    BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)
+      ->setChecked(getValue("editor/enableAutocomplete").toBool());
+    BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)
+      ->setText(getValue("editor/characterThreshold").toString());
+    BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeVariables)
+      ->setChecked(getValue("editor/autoCompleteIncludeVariables").toBool());
+    BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeModules)
+      ->setChecked(getValue("editor/autoCompleteIncludeModules").toBool());
+    BlockSignals<QCheckBox *>(this->checkBoxAutocompleteIncludeFunctions)
+      ->setChecked(getValue("editor/autoCompleteIncludeFunctions").toBool());
+
+    BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
+
+    this->secLabelOnRenderCompleteSound->setEnabled(
+      getValue("advanced/enableSoundNotification").toBool());
+    this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
+    this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(
+      getValue("advanced/enableSoundNotification").toBool());
+    this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(
+      getValue("advanced/enableSoundNotification").toBool());
+    this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
+    this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
+
+    this->checkBoxAutocompleteIncludeVariables->setEnabled(
+      getValue("editor/enableAutocomplete").toBool());
+    this->checkBoxAutocompleteIncludeModules->setEnabled(getValue("editor/enableAutocomplete").toBool());
+    this->checkBoxAutocompleteIncludeFunctions->setEnabled(
+      getValue("editor/enableAutocomplete").toBool());
+
+    this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
+
+    updateComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
+    updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
+    updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
+    updateComboBox(this->comboBoxLineWrapVisualizationStart,
+                   Settings::Settings::lineWrapVisualizationBegin);
+    updateComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
+    updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
+    updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
+    updateComboBox(this->comboBoxTabKeyFunction, Settings::Settings::tabKeyFunction);
+    updateComboBox(this->comboBoxModifierNumberScrollWheel,
+                   Settings::Settings::modifierNumberScrollWheel);
+    updateIntSpinBox(this->spinBoxIndentationWidth, Settings::Settings::indentationWidth);
+    updateIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
+    updateIntSpinBox(this->spinBoxLineWrapIndentationIndent, Settings::Settings::lineWrapIndentation);
+    updateIntSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
+    initUpdateCheckBox(this->checkBoxAutoIndent, Settings::Settings::autoIndent);
+    initUpdateCheckBox(this->checkBoxBackspaceUnindents, Settings::Settings::backspaceUnindents);
+    initUpdateCheckBox(this->checkBoxHighlightCurrentLine, Settings::Settings::highlightCurrentLine);
+    initUpdateCheckBox(this->checkBoxEnableBraceMatching, Settings::Settings::enableBraceMatching);
+    initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel,
+                       Settings::Settings::enableNumberScrollWheel);
+    initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
+    initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
+    initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
+
+    /* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from
+       LineWrapIndentationStyle Combo-box, just after launching the openscad application. Removing this
+       line will cause misbehaviour, and will not disable the Indent spin-box until you interact with the
+       LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled. For
+       normal cases, a similar line, inside the function
+       'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
+     */
+    this->spinBoxLineWrapIndentationIndent->setDisabled(
+      comboBoxLineWrapIndentationStyle->currentData() == "Same" ||
+      comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+    this->comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
+    BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)
+      ->setText(QString::fromStdString(Settings::Settings::octoPrintUrl.value()));
+    BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)
+      ->setText(QString::fromStdString(Settings::Settings::octoPrintApiKey.value()));
+    updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
+    updateComboBox(this->comboBoxOctoPrintSlicingEngine,
+                   Settings::Settings::octoPrintSlicerEngine.value());
+    updateComboBox(this->comboBoxOctoPrintSlicingProfile,
+                   Settings::Settings::octoPrintSlicerProfile.value());
+
+    // AI tab: populate fields from current profile settings
+    nlohmann::json aiSettings = readAISettings();
+    std::string activeProfile = aiSettings.value("activeProfile", "OpenAI GPT-4");
+    QString activeProfileQS = QString::fromStdString(activeProfile);
+    int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
+    if (activeIdx >= 0) {
+      BlockSignals<QComboBox *>(this->comboBoxAIProfile)->setCurrentIndex(activeIdx);
+      loadAIParams(activeProfileQS);
+    } else {
+      loadAIParams("OpenAI GPT-4");
+    }
+    this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
+    updateComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);
+  }
+
+  void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
+                                  Settings::SettingsEntryEnum<std::string>& entry)
+  {
+    entry.setIndex(val);
+    writeSettings();
+  }
+
+  void Preferences::apply_win() const
+  {
+    emit requestRedraw();
+    emit openCSGSettingsChanged();
+  }
+
+  void Preferences::createFontSizeMenu(QComboBox * boxarg, const QString& setting)
+  {
+    const uint savedsize = getValue(setting).toUInt();
+    BlockSignals<QComboBox *> box{boxarg};
+    for (auto size : QFontDatabase::standardSizes()) {
+      box->addItem(QString::number(size));
+      if (static_cast<uint>(size) == savedsize) {
+        box->setCurrentIndex(box->count() - 1);
+      }
+    }
+    // reset GUI fontsize if fontSize->addItem emitted signals that changed it.
+    box->setEditText(QString("%1").arg(savedsize));
+  }
+
+  void Preferences::updateGUIFontFamily(QFontComboBox * ffSelector, const QString& setting)
+  {
+    const auto fontfamily = getValue(setting).toString();
+    BlockSignals<QFontComboBox *>(ffSelector)->setCurrentFont(QFont(fontfamily));
+  }
+
+  void Preferences::updateGUIFontSize(QComboBox * fsSelector, const QString& setting)
+  {
+    const auto fontsize = getValue(setting).toString();
+    const auto sidx = fsSelector->findText(fontsize);
+    if (sidx >= 0) {
+      BlockSignals<QComboBox *>(fsSelector)->setCurrentIndex(sidx);
+    } else {
+      BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
+    }
+  }
+
+  Preferences *GlobalPreferences::inst()
+  {
+    static auto *instance = new Preferences();
+    return instance;
+  };
