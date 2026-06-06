@@ -543,7 +543,7 @@ Outline2d CurveDiscretizer::splitOutline(const Outline2d& o, double twist, doubl
     if (fsOutline.vertices.size() >= fa_segs) {
       return splitOutlineByFn(o, twist, scale_x, scale_y, fa_segs, slices);
     } else {
-      return std::move(fsOutline);
+      return fsOutline;
     }
   }
 }

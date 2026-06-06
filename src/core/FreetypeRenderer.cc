@@ -357,7 +357,7 @@ FreetypeRenderer::Params::Params(Parameters& parameters)
 }
 
 FreetypeRenderer::Params::Params(const ParamsOptions& opts)
-  : discretizer(opts.curve_discretizer), loc(opts.loc), size(opts.size), spacing(opts.spacing)
+  : size(opts.size), spacing(opts.spacing), discretizer(opts.curve_discretizer), loc(opts.loc)
 {
   set_text(opts.text.value_or(""));
   set_font(opts.font.value_or(""));
