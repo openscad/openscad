@@ -36,6 +36,7 @@ const std::string line::name("line");
 
 void line::set_attrs(attr_map_t& attrs, void *context)
 {
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   shape::set_attrs(attrs, context);
   this->x = parse_double(attrs["x1"]);
   this->y = parse_double(attrs["y1"]);
@@ -45,7 +46,8 @@ void line::set_attrs(attr_map_t& attrs, void *context)
   path_t path;
   path.push_back(Eigen::Vector3d(x, y, 0));
   path.push_back(Eigen::Vector3d(x2, y2, 0));
-  offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
+  if (fValues->stroke) path_list.push_back(path);
+  else offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
 }
 
 const std::string line::dump() const
