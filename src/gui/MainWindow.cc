@@ -2274,9 +2274,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor,
       }
     }
 
-    customizer_parameters_finished =
-      (this->rootFile != nullptr ? this->rootFile->scope->assignments
-                                 : (sourceFile ? sourceFile->scope->assignments : AssignmentList()));
+    customizer_parameters_finished = (sourceFile ? sourceFile->scope->assignments : AssignmentList());
     customizer_parameters.clear();
     if (venv.empty()) {
       LOG("Running %1$s without venv.", python_version());
