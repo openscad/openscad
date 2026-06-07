@@ -46,7 +46,7 @@ void line::set_attrs(attr_map_t& attrs, void *context)
   path_t path;
   path.push_back(Eigen::Vector3d(x, y, 0));
   path.push_back(Eigen::Vector3d(x2, y2, 0));
-  if (!fValues->stroke) path_list.push_back(path);
+  if (fValues->stroke) path_list.push_back(path);
   else offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
 }
 
