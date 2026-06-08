@@ -64,6 +64,15 @@
 #define MANIFOLD_VERSION_STRING "<not enabled>"
 #endif
 
+#ifdef USE_MIMALLOC
+#include <mimalloc.h>
+const std::string mimalloc_version = std::to_string(MI_MALLOC_VERSION / 10000) + "." +
+                                     std::to_string((MI_MALLOC_VERSION / 100) % 100) + "." +
+                                     std::to_string(MI_MALLOC_VERSION % 100);
+#else
+const std::string mimalloc_version = "<not enabled>";
+#endif
+
 #include "Feature.h"
 #include "FontCache.h"
 #include "platform/PlatformUtils.h"
@@ -158,7 +167,7 @@ std::string LibraryInfo::info()
     << "\nfontconfig version: " << get_fontconfig_version()
     << "\nfreetype version: " << get_freetype_version()
     << "\nharfbuzz version: " << get_harfbuzz_version() << "\ncairo version: " << get_cairo_version()
-    << "\nlib3mf version: " << get_lib3mf_version()
+    << "\nlib3mf version: " << get_lib3mf_version() << "\nmi-malloc version: " << mimalloc_version
 #ifdef ENABLE_EXPERIMENTAL
     << "\nFeatures: " << Feature::features()
 #endif
