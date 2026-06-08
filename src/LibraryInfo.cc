@@ -66,8 +66,8 @@
 
 #ifdef USE_MIMALLOC
 #include <mimalloc.h>
-const std::string mimalloc_version = std::to_string(MI_MALLOC_VERSION / 10000) + "." +
-                                     std::to_string((MI_MALLOC_VERSION / 100) % 100) + "." +
+const std::string mimalloc_version = std::to_string(MI_MALLOC_VERSION / 1000) + "." +
+                                     std::to_string((MI_MALLOC_VERSION % 1000) / 100) + "." +
                                      std::to_string(MI_MALLOC_VERSION % 100);
 #else
 const std::string mimalloc_version = "<not enabled>";
