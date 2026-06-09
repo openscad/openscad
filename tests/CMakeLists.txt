@@ -575,6 +575,7 @@ list(APPEND LAZYUNION_3D_FILES
   ${TEST_SCAD_DIR}/experimental/lazyunion-difference-for.scad
   ${TEST_SCAD_DIR}/experimental/lazyunion-minkowski-for.scad
   ${TEST_SCAD_DIR}/experimental/lazyunion-transform-for.scad
+  ${TEST_SCAD_DIR}/experimental/lazyunion-color-cubes.scad
   ${TEST_SCAD_DIR}/3D/features/2d-3d.scad
 )
 list(APPEND LAZYUNION_2D_FILES
@@ -990,6 +991,8 @@ list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.s
 if (ENABLE_LIB3MF_TESTS)
   list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
 endif()
+list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
+list(APPEND EXPORT_3MF_LAZY_UNION_TEST_FILES ${TEST_SCAD_DIR}/experimental/lazyunion-color-cubes.scad)
 
 list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
@@ -1056,9 +1059,6 @@ add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES 
 add_cmdline_test(export-binstl-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --enable=predictible-output --render --export-format binstl --trust-python)
 
 add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output --trust-python)
-if (ENABLE_LIB3MF_TESTS)
-add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output --trust-python)
-endif()
 add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --trust-python)
 add_cmdline_test(export-pov-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140 --trust-python)
 add_cmdline_test(export-pov-translate-2  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=10,0,0,0,0,0,140 --trust-python)
@@ -1746,7 +1746,6 @@ disable_tests_safe(
   preview-manifold_3mf-import-centered
   preview-manifold_import_3mf-tests
   render-off-manifold_issue5216
-  export-3mf_3mf-export
   render-3mf-cgal_bad-stl-tardis
   render-3mf-cgal_bad-stl-wing
   render-3mf-manifold_issue5216
