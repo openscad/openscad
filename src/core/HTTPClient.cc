@@ -1,5 +1,7 @@
 #include "HTTPClient.h"
 
+#ifndef __EMSCRIPTEN__
+
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>
@@ -357,6 +359,12 @@ public:
       background_thread.join();
     }
   }
+
+  // Rule of 5
+  Impl(const Impl&) = delete;
+  Impl& operator=(const Impl&) = delete;
+  Impl(Impl&&) = delete;
+  Impl& operator=(Impl&&) = delete;
 };
 
 HTTPClient::HTTPClient() : impl(std::make_unique<Impl>())
@@ -500,3 +508,41 @@ void HTTPClient::asyncPostStream(const std::string& url, const Headers& headers,
     }
   }
 }
+
+#else  // __EMSCRIPTEN__
+
+class HTTPClient::Impl
+{
+};
+
+HTTPClient::HTTPClient() : impl(std::make_unique<Impl>())
+{
+}
+HTTPClient::~HTTPClient() = default;
+HTTPClient::HTTPClient(HTTPClient&&) noexcept = default;
+HTTPClient& HTTPClient::operator=(HTTPClient&&) noexcept = default;
+
+void HTTPClient::asyncGet(const std::string&, const Headers&, ResponseCallback, ErrorCallback on_error)
+{
+  if (on_error) {
+    on_error("Network client is not supported on WebAssembly.");
+  }
+}
+
+void HTTPClient::asyncPost(const std::string&, const Headers&, const std::string&, ResponseCallback,
+                           ErrorCallback on_error)
+{
+  if (on_error) {
+    on_error("Network client is not supported on WebAssembly.");
+  }
+}
+
+void HTTPClient::asyncPostStream(const std::string&, const Headers&, const std::string&, ChunkCallback,
+                                 ErrorCallback on_error, CompleteCallback)
+{
+  if (on_error) {
+    on_error("Network client is not supported on WebAssembly.");
+  }
+}
+
+#endif  // __EMSCRIPTEN__
