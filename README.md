@@ -235,6 +235,12 @@ https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 MSVC build support has been added to OpenSCAD. For instructions on how to build it,
 refer to [building with MSVC](doc/win-build.md).
 
+The `win-msvc-auto-build.bat` ### 
+🚀 Automatic Build Mode (with vcpkg)
+Simply run the following command:
+
+    script/win-msvc-auto-build.bat
+
 To cross-build, first make sure that you have all necessary dependencies
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
 MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`

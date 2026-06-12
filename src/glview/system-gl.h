@@ -3,6 +3,13 @@
 #ifndef NULLGL
 
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+
+#ifdef _MSC_VER
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <windows.h>
 #include <GL/glew.h>
 #endif
 #ifdef USE_GLAD

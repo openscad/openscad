@@ -337,6 +337,8 @@ struct LocalAppParameter {
   operator bool() const { return type != LocalAppParameterType::invalid; }
 };
 
+std::istream& operator>>(std::istream& stream, LocalAppParameter& param);
+
 template <typename item_type>
 class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
@@ -359,16 +361,28 @@ public:
   }
   const std::vector<item_type> decode(const std::string& encoded) const override
   {
+    /*
     std::vector<item_type> items;
     std::stringstream ss;
     ss << encoded;
     while (ss.good()) {
       item_type item;
-      ss >> item;
+      ss >> item; //failed on msvc must fix this with ovveride operator >>
+      if (item) {
+        items.push_back(item);
+      }
+    }*/
+
+    std::vector<item_type> items;
+    std::stringstream ss(encoded);
+    item_type item{};
+
+    while (ss >> item) {
       if (item) {
         items.push_back(item);
       }
     }
+
     return items;
   }
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
@@ -631,6 +645,12 @@ public:
   virtual ~SettingsVisitor() = default;
 
   virtual void handle(SettingsEntryBase& entry) const = 0;
+};
+
+class SettingsAutoCompletion
+{
+public:
+  static SettingsEntryEnum<std::string> autocompleteMode;
 };
 
 }  // namespace Settings

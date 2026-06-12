@@ -4,18 +4,35 @@
   "dependencies": [
     "boost-regex",
     "boost-program-options",
+	"boost-container",
+	"boost-assign",
+	"boost-nowide",
+	"boost-dll",
     "eigen3",
     "cgal",
     "cairo",
+	"glad",
+	"opencsg",
     "harfbuzz",
     "fontconfig",
     "double-conversion",
-    "opencsg",
     "libxml2",
     "libzip",
     "glib",
     "gperf",
-    "qscintilla",
-    "tbb"
+    "tbb",
+	"lib3mf",
+	"clipper2",
+	"mimalloc",
+	"manifold",
+	"catch2",
+    {
+      "name": "qtbase",
+      "features": ["opengl"]
+    },
+	"qt5compat",
+    "qtdeclarative",
+	"qtmultimedia",
+	"qscintilla"
   ]
 }

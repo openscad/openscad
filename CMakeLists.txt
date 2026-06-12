@@ -100,6 +100,21 @@ project(OpenSCAD
   LANGUAGES C CXX
 )
 
+#MSVC treate some warnings to errors ,need to disable this warnings
+if (MSVC)
+
+  add_compile_options(
+    /wd4146  # unary minus operator applied to unsigned type
+    /wd4244  # conversion from X to Y, possible loss of data
+    /wd4267  # conversion from size_t to X
+	/wd4101  # operator applied to unsigned type
+	/wd4018  # signed/unsigned mismatch
+	/wd4305  # truncation from 'double' to 'float'
+	/wd4804  # unsafe use of type 'bool' in operation
+  )
+   add_definitions(-D_CRT_SECURE_NO_WARNINGS) # disable deprecated CRT function warnings
+endif()
+
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
 
@@ -686,8 +701,7 @@ endif()
 if(ENABLE_CAIRO STREQUAL "AUTO")
   # AUTO: try to find, fallback gracefully if not found
   if (MSVC)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(CAIRO REQUIRED cairo)
+	find_package(Cairo 1.14 QUIET)
   else()
     find_package(Cairo 1.14 QUIET)
   endif()
@@ -702,8 +716,7 @@ if(ENABLE_CAIRO STREQUAL "AUTO")
 elseif(ENABLE_CAIRO)
   # Explicit ON: fail if not found
   if (MSVC)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(CAIRO REQUIRED cairo)
+	find_package(Cairo 1.14 REQUIRED)
   else()
     find_package(Cairo 1.14 REQUIRED)
   endif()
@@ -1344,6 +1357,9 @@ set(GUI_SOURCES
   src/gui/parameter/ParameterVector.cc
   src/gui/parameter/ParameterVirtualWidget.cc
   src/gui/parameter/ParameterWidget.cc
+  src/gui/ai/AIDock.cc
+  src/gui/ai/ChatWidget.cc
+  src/gui/ai/ChatInputEdit.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
@@ -1414,11 +1430,15 @@ set(GUI_HEADERS
     src/gui/parameter/ParameterVector.h
     src/gui/parameter/ParameterVirtualWidget.h
     src/gui/parameter/ParameterWidget.h
+    src/gui/ai/AIDock.h
+    src/gui/ai/ChatWidget.h
+    src/gui/ai/ChatInputEdit.h
 )
 
 # To be added in Source for QtCreator to show them in project tree
 set(GUI_UIS
     ${GUI_UIS}
+    src/gui/ai/ChatWidget.ui
     src/gui/AboutDialog.ui
     src/gui/Animate.ui
     src/gui/Console.ui
