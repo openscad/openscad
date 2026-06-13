@@ -22,7 +22,20 @@ rem for Ninja ,must have enveronments before this script ,like open this script 
 rem End Config---------------------------------------------------------------------------
 
 
-rem check Visual Studio Tool
+rem test if have ninja ,may be build unter Deleloper option mvsc-tools command-prompt
+where ninja >nul 2>nul
+set "TEST_NINJ_ELV=%errorlevel%"
+
+if "%CMAKE_VS_GENERATOR%" equ "" (
+  if %TEST_NINJ_ELV% equ 0 (
+      echo [INFO] Ninja is installed ,auto load to Ninja!
+      echo.
+      ninja --version
+      set "CMAKE_VS_GENERATOR=Ninja"
+  )
+)
+
+rem Check Visual Studio Version if still not set CMAKE_VS_GENERATOR 
 echo [INFO] Checking for Visual Studio (MSVC Compiler)...
 
 set "VS_STUDIO_VERSION="
@@ -39,16 +52,7 @@ if "%VS_STUDIO_VERSION%"=="18" (
     set "CMAKE_VS_GENERATOR=Visual Studio 17 2022"
 )
 
-rem if this Ninja then check if ninja ready to use or not
-if "%CMAKE_VS_GENERATOR%" equ "Ninja" (
-
-    where ninja >nul 2>nul || (
-        echo [ERROR] No Ninja tool found.
-        pause
-        exit /b 1
-    )
-)
-
+rem --------------------------------------------------------------
 if "%CMAKE_VS_GENERATOR%" equ "" (
     echo [ERROR] No build tools found!
     exit /b 1 
