@@ -22,6 +22,23 @@ rem for Ninja ,must have enveronments before this script ,like open this script 
 rem End Config---------------------------------------------------------------------------
 
 
+rem check python -------------------------------------------
+echo [INFO] Checking for Python environment...
+python --version >nul 2>nul
+
+if %errorlevel% neq 0 (
+    echo.
+    echo [ERROR] Python was NOT found in your system PATH!
+    echo [ERROR] vcpkg requires Python to build packages in Manifest Mode.
+    echo -----------------------------------------------------------
+    echo  Please:
+    echo  Install Python (3.14 or higher recommended)
+    echo  Make sure to check "Add python.exe to PATH" during setup.
+    echo -----------------------------------------------------------
+    exit /b 1
+)
+
+
 rem test if have ninja ,may be build unter Deleloper option mvsc-tools command-prompt
 where ninja >nul 2>nul
 set "TEST_NINJ_ELV=%errorlevel%"
