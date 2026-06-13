@@ -242,14 +242,14 @@ Automatic Build Mode `win-msvc-auto-build.bat`
   The initial run will take some time as vcpkg needs to download and install the required packages for the first time.
 2.Open Command Prompt (CMD) in that directory (e.g., D:\OpenSCAD\openscad) and run the following command:
         
-	.\script\win-msvc-auto-build.bat
+	.\scripts\win-msvc-auto-build.bat
 	
 To accelerate your builds using Ninja, either configure the Ninja environment variables or use the `x64 Native Tools Command Prompt for VS`.
 
 Example: 
         SET VCPKG_ROOT=C:\vcpkg
         CALL "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64 
-        .\script\win-msvc-auto-build.bat
+        .\scripts\win-msvc-auto-build.bat
 
 To cross-build, first make sure that you have all necessary dependencies
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
