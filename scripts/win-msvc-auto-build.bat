@@ -11,10 +11,10 @@ set "BUILD_TYPE=Release"
 set "MODE_MANIFEST=ON"
 set "VCPKG_TARGET_TRIPLET=x64-windows"
 
-set "CMAKE_VS_GENERATOR=Visual Studio 17 2022"
+rem set "CMAKE_VS_GENERATOR=Visual Studio 17 2022"
 rem set "CMAKE_VS_GENERATOR=Visual Studio 18 2026"
 rem set "CMAKE_VS_GENERATOR=Ninja"
-rem set "CMAKE_VS_GENERATOR="
+set "CMAKE_VS_GENERATOR="
 
 rem Note -----------------------------------------------------------
 rem if CMAKE_VS_GENERATOR is empty ,it will try auto-detct
