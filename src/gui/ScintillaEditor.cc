@@ -1471,8 +1471,13 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
       val <= hyperlinkIndicatorOffset + static_cast<int>(indicatorData.size())) {
     if (!indicatorsActive) {
       QTimer::singleShot(0, this, [this] {
+#ifdef Q_OS_MACOS
+        QToolTip::showText(QCursor::pos(), "Use <b>Cmd + Click</b> to open the file", this, rect(),
+                           toolTipDuration());
+#else
         QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(),
                            toolTipDuration());
+#endif
       });
     }
   }
@@ -1617,4 +1622,21 @@ void ScintillaEditor::clearSelectionIndicators(int lineFrom, int colFrom, int li
 
   qsci->clearIndicatorRange(lineFrom, colFrom, lineTo, colTo, selectionIndicatorIsActiveNumber);
   qsci->clearIndicatorRange(lineFrom, colFrom, lineTo, colTo, selectionIndicatorIsActiveNumber + 1);
+}
+
+void ScintillaEditor::correctUserVarNamesForCompletionFromSourceFile(
+  const SourceFile *sourceFile, bool flagAutoCompleteIncludeVariables,
+  bool flagAutoCompleteIncludeModules, bool flagAutoCompleteIncludeFunctions)
+{
+  api->correctUserVarNamesForCompletionFromSourceFile(sourceFile, flagAutoCompleteIncludeVariables,
+                                                      flagAutoCompleteIncludeModules,
+                                                      flagAutoCompleteIncludeFunctions);
+}
+
+void ScintillaEditor::correctUserVarNamesForCompletionFromInputText(
+  bool flagAutoCompleteIncludeVariables, bool flagAutoCompleteIncludeModules,
+  bool flagAutoCompleteIncludeFunctions)
+{
+  api->correctUserVarNamesForCompletionFromInputText(
+    flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules, flagAutoCompleteIncludeFunctions);
 }

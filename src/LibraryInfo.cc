@@ -64,6 +64,23 @@
 #define MANIFOLD_VERSION_STRING "<not enabled>"
 #endif
 
+#ifdef USE_MIMALLOC
+#include <mimalloc.h>
+// ¯\_(ツ)_/¯
+// https://github.com/openscad/openscad/pull/6861#issuecomment-4652995452
+const int mimv = MI_MALLOC_VERSION;
+const int mimalloc_major = mimv < 1000 ? mimv / 100 : mimv < 10000 ? mimv / 1000 : mimv / 10000;
+const int mimalloc_minor = mimv < 1000    ? (mimv / 10) % 10
+                           : mimv < 10000 ? (mimv % 1000) / 100
+                                          : (mimv % 10000) / 100;
+const int mimalloc_patch = mimv < 1000 ? mimv % 10 : mimv % 100;
+const std::string mimalloc_version = std::to_string(mimalloc_major) + "." +
+                                     std::to_string(mimalloc_minor) + "." +
+                                     std::to_string(mimalloc_patch);
+#else
+const std::string mimalloc_version = "<not enabled>";
+#endif
+
 #include "Feature.h"
 #include "FontCache.h"
 #include "platform/PlatformUtils.h"
@@ -158,7 +175,7 @@ std::string LibraryInfo::info()
     << "\nfontconfig version: " << get_fontconfig_version()
     << "\nfreetype version: " << get_freetype_version()
     << "\nharfbuzz version: " << get_harfbuzz_version() << "\ncairo version: " << get_cairo_version()
-    << "\nlib3mf version: " << get_lib3mf_version()
+    << "\nlib3mf version: " << get_lib3mf_version() << "\nmi-malloc version: " << mimalloc_version
 #ifdef ENABLE_EXPERIMENTAL
     << "\nFeatures: " << Feature::features()
 #endif

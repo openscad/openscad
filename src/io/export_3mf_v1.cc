@@ -68,7 +68,7 @@ struct ExportContext {
   int modelcount = 0;
   Color4f defaultColor;
   DWORD defaultColorId = 0;
-  std::vector<DWORD> materialids;
+  std::map<Color4f, DWORD> materialColors;
   const ExportInfo& info;
   const std::shared_ptr<const Export3mfOptions> options;
 };
@@ -117,7 +117,8 @@ int count_mesh_objects(PLib3MFModel *& model)
 }
 
 bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps,
-                           int triangle_index, int color_index, ExportContext& ctx)
+                           int triangle_index, int color_index, std::vector<DWORD>& materialMap,
+                           ExportContext& ctx)
 {
   if (color_index < 0) {
     return true;
@@ -133,10 +134,13 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
   }
 
   if (ctx.basematerial) {
-    if (lib3mf_propertyhandler_setbasematerial(propertyhandler, triangle_index, ctx.basematerialid,
-                                               ctx.materialids[color_index]) != LIB3MF_OK) {
-      export_3mf_error("Can't set triangle base material.", ctx.model);
-      return false;
+    const auto colId = materialMap[color_index];
+    if (colId != ctx.defaultColorId) {
+      if (lib3mf_propertyhandler_setbasematerial(propertyhandler, triangle_index, ctx.basematerialid,
+                                                 colId) != LIB3MF_OK) {
+        export_3mf_error("Can't set triangle base material.", ctx.model);
+        return false;
+      }
     }
   } else if (ctx.usecolors) {
     const auto& col = ps->colors[color_index];
@@ -185,16 +189,23 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
   };
 
-  auto materialFunc = [&](int idx, const Color4f& col) -> DWORD {
-    const auto colname = "Color " + std::to_string(idx);
+  auto materialFunc = [&](ExportContext& ctx, const Color4f& col) -> DWORD {
+    auto it = ctx.materialColors.find(col);
+    if (it == ctx.materialColors.end()) {
+      const size_t size = ctx.materialColors.size();
+      const auto colname = size == 0 ? "Default" : "Color " + std::to_string(size);
 
-    DWORD id = 0;
-    uint8_t r, g, b, a;
-    if (!col.getRgba(r, g, b, a)) {
-      LOG(message_group::Warning, "Invalid color in 3MF export");
+      DWORD id = 0;
+      uint8_t r = 0, g = 0, b = 0, a = 0;
+      if (!col.getRgba(r, g, b, a)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+      }
+      lib3mf_basematerial_addmaterialutf8(ctx.basematerial, colname.c_str(), r, g, b, &id);
+      ctx.materialColors.insert(std::pair{col, id});
+      return id;
+    } else {
+      return it->second;
     }
-    lib3mf_basematerial_addmaterialutf8(ctx.basematerial, colname.c_str(), r, g, b, &id);
-    return id;
   };
 
   auto sorted_ps = createSortedPolySet(*ps);
@@ -213,35 +224,15 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     }
   }
 
-  DWORD materials = 0;
+  std::vector<DWORD> materialMap;
   if (ctx.basematerial) {
-    PLib3MFModelResourceIterator *it;
-    if (lib3mf_model_getbasematerials(ctx.model, &it) == LIB3MF_OK) {
-      while (true) {
-        BOOL hasNext = false;
-        if (lib3mf_resourceiterator_movenext(it, &hasNext) != LIB3MF_OK) {
-          export_3mf_error("Can't move to next base material iterator value.", ctx.model);
-          return false;
-        }
-        if (!hasNext) {
-          break;
-        }
-
-        PLib3MFModelResource *resource = nullptr;
-        if (lib3mf_resourceiterator_getcurrent(it, &resource) != LIB3MF_OK) {
-          export_3mf_error("Can't get current value from base material iterator.", ctx.model);
-          return false;
-        } else {
-          DWORD count = 0;
-          lib3mf_basematerial_getcount(resource, &count);
-          materials = count;
-        }
-      }
-    }
-
-    ctx.materialids.reserve(sorted_ps->colors.size());
-    for (size_t i = 0; i < sorted_ps->colors.size(); i++) {
-      ctx.materialids.push_back(materialFunc(materials + i, sorted_ps->colors[i]));
+    // Initialze material 0 as default (color scheme) color.
+    ctx.defaultColorId = materialFunc(ctx, ctx.defaultColor);
+    // Generate the mesh specific material mapping into the global
+    // material table maintained in the export context.
+    materialMap.reserve(sorted_ps->colors.size());
+    for (const auto& color : sorted_ps->colors) {
+      materialMap.push_back(materialFunc(ctx, color));
     }
   }
 
@@ -253,7 +244,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 
   for (size_t i = 0; i < sorted_ps->color_indices.size(); ++i) {
     const int32_t idx = sorted_ps->color_indices[i];
-    if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, ctx)) {
+    if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, materialMap, ctx)) {
       return false;
     }
   }
@@ -417,15 +408,6 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       }
       if (lib3mf_resource_getresourceid(basematerial, &basematerialid) != LIB3MF_OK) {
         export_3mf_error("Can't get base material resource id.", model);
-        return;
-      }
-      uint8_t r, g, b, a;
-      if (!defaultColor.getRgba(r, g, b, a)) {
-        LOG(message_group::Warning, "Invalid color in 3MF export");
-      }
-      if (lib3mf_basematerial_addmaterialutf8(basematerial, "Default", r, g, b, &defaultColorId) !=
-          LIB3MF_OK) {
-        export_3mf_error("Can't add default material color.", model);
         return;
       }
     } else if (options3mf->materialType == Export3mfMaterialType::color) {
