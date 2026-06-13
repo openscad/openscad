@@ -299,8 +299,11 @@ if %errorlevel% neq 0 (
 
 echo [INFO] Build Done.
 
-
+if /i "%CMAKE_VS_GENERATOR%"=="Ninja" (
+set "TARGET_BUILD_APP_PATH=%BUILD_NAME%"
+) else (
 set "TARGET_BUILD_APP_PATH=%BUILD_NAME%\%BUILD_TYPE%"
+)
 
 echo ---------------------------------------------------------
 
