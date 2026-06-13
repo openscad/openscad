@@ -1552,15 +1552,6 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-  // OpenSCAD quits by closing all top-level windows. However, the order in which top-level are closed is
-  // not defined by Qt, so we may end up closing undocked dock widgets before we've had a chance to save
-  // their window state. This overrides close to proactively save the window state.
-  if (event->type() == QEvent::Close) {
-    if (qobject_cast<Dock *>(obj) && !static_cast<QCloseEvent *>(event)->spontaneous()) {
-      saveWindowStateOnClose();
-    }
-  }
-
   if (rubberBandManager.isVisible()) {
     if (event->type() == QEvent::KeyRelease) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -3295,9 +3286,6 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
 
 void MainWindow::saveWindowStateOnClose()
 {
-  if (windowStateSaved) return;
-  windowStateSaved = true;
-
   QSettingsCached settings;
   settings.setValue("window/geometry", saveGeometry());
   auto windowState = saveState();
@@ -3854,8 +3842,7 @@ void MainWindow::setupMenusAndActions()
   this->fileActionSave->setShortcuts(shortcuts);
 #endif
 
-
-  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
+  connect(this->fileActionQuit, &QAction::triggered, this, &MainWindow::close);
 
 #ifdef ENABLE_PYTHON
 #else
