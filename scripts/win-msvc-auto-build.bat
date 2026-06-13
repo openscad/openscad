@@ -24,17 +24,13 @@ rem End Config------------------------------------------------------------------
 
 rem check python -------------------------------------------
 echo [INFO] Checking for Python environment...
+
 python --version >nul 2>nul
 
 if %errorlevel% neq 0 (
     echo.
-    echo [ERROR] Python was NOT found in your system PATH!
-    echo [ERROR] vcpkg requires Python to build packages in Manifest Mode.
-    echo -----------------------------------------------------------
-    echo  Please:
-    echo  Install Python (3.14 or higher recommended)
-    echo  Make sure to check "Add python.exe to PATH" during setup.
-    echo -----------------------------------------------------------
+    echo [ERROR] No python found!
+    echo Don't forget to Disable Windows App Execution on Python
     exit /b 1
 )
 
@@ -122,9 +118,20 @@ if %errorlevel% neq 0 (
 rem Find Path ---------------------------------------------------------
 for %%i in ("%~dp0..") do set "OPENSCAD_PATH=%%~fi"
 for %%i in ("%~dp0..\..") do set "ROOT_PATH=%%~fi"
-set "VCPKG_PATH=%ROOT_PATH%\vcpkg"
 set "BUILD_PATH=%OPENSCAD_PATH%\%BUILD_NAME%"
 set "WINFLEXBISON_PATH=%ROOT_PATH%\winflexbison3"
+
+rem user already have vcpkg 
+if defined VCPKG_ROOT (
+    if exist "%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" (
+        echo [INFO] Found VCPKG_ROOT env variable.
+        set "VCPKG_PATH=%VCPKG_ROOT%"
+        pause
+    )
+) else (
+  echo [INFO] NO VCPKG_ROOT env variable ,try auto-install
+  set "VCPKG_PATH=%ROOT_PATH%\vcpkg"
+)
 
 echo Current Script Folder : %~dp0
 echo Openscad Root Location : %OPENSCAD_PATH%
@@ -148,10 +155,10 @@ echo ---------------------------------------------------------
 
 rem  Install VCPKG
 rem  ---------------------------------------------------------
-if exist "%VCPKG_PATH%\" (
-    echo [INFO] Found vcpkg directory. Skipping.
+if exist "%VCPKG_PATH%\scripts\buildsystems\vcpkg.cmake" (
+    echo [INFO] Found vcpkg. Skipping.
 ) else (
-    echo [WARN] vcpkg not found. Cloning repository...
+    echo [WARN] VCKPG Cloning repository...
     
     cd /d "%ROOT_PATH%"
     git clone https://github.com/microsoft/vcpkg.git

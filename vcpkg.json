@@ -27,6 +27,10 @@
     "manifold",
     "catch2",
     {
+      "name": "gettext",
+      "features": ["tools"]
+    },
+    {
       "name": "qtbase",
       "features": ["opengl"]
     },
