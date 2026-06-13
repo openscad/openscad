@@ -57,15 +57,16 @@ if "%has_win_flex%"=="0" if not exist "%WINFLEXBISON_PATH%\win_flex.exe" (
     mkdir "%WINFLEXBISON_PATH%" 2>nul    
     
     curl -L -o "%ROOT_PATH%\win_flex_bison.zip" "https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip"
-    if %errorlevel% neq 0 ( echo [ERROR] Failed to download winflexbison^! & exit /b 1 )
-    
     tar -xf "%ROOT_PATH%\win_flex_bison.zip" -C "%WINFLEXBISON_PATH%"
     del "%ROOT_PATH%\win_flex_bison.zip" 2>nul
+    
+    if not exist "%WINFLEXBISON_PATH%\win_flex.exe" (
+        echo [ERROR] win_flex.exe missing! Download failed or zip corrupted.
+        exit /b 1
+    )
+    
     echo [SUCCESS] winflexbison deployed.
-) else (
-    echo [SUCCESS] winflexbison found in deptools managed folder.
 )
-
 rem -------------------------------------------------------------------------
 rem  PortableGit
 rem -------------------------------------------------------------------------
@@ -77,21 +78,17 @@ if "%has_sed%"=="0" if not exist "%GIT_LINUX_PATH%\usr\bin\sed.exe" (
     curl -L -A "Mozilla/5.0" -o "%ROOT_PATH%\git-portable.exe" "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/PortableGit-2.45.2-64-bit.7z.exe"
     
     if not exist "%ROOT_PATH%\git-portable.exe" (
-        echo [ERROR] Download completely failed. Please check your internet connection.
+        echo [ERROR] git-portable.exe missing! Download failed or zip corrupted.
         exit /b 1
     )
     
-    echo [INFO] Extracting PortableGit silently into deptools...
+    echo [INFO] Extracting PortableGit into deptools...
     rem --- 
     "%ROOT_PATH%\git-portable.exe" -y -o"%GIT_LINUX_PATH%" >nul
-   
-    rem 
     del "%ROOT_PATH%\git-portable.exe" 2>nul
+     
     echo [SUCCESS] PortableGit core utilities deployed successfully.
-) else (
-    echo [SUCCESS] PortableGit tools found in deptools managed folder.
 )
-
 rem -------------------------------------------------------------------------
 rem  GetText
 rem -------------------------------------------------------------------------
@@ -104,6 +101,13 @@ if "%has_msgfmt%"=="0" if not exist "%GETTEXT_PATH%\bin\msgfmt.exe" (
     echo [INFO] Extracting Gettext...
     tar -xf "%ROOT_PATH%\gettext.zip" -C "%GETTEXT_PATH%"
     del "%ROOT_PATH%\gettext.zip" 2>nul
+    
+     if not exist "%GETTEXT_PATH%\bin\msgfmt.exe" (
+        echo [ERROR] msgfmt.exe missing! Download failed or zip corrupted.
+        exit /b 1
+    )
+    
+    echo [SUCCESS] Gettext utilities deployed successfully.
 )
 
 
