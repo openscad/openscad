@@ -126,7 +126,7 @@ if defined VCPKG_ROOT (
     if exist "%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" (
         echo [INFO] Found VCPKG_ROOT env variable.
         set "VCPKG_PATH=%VCPKG_ROOT%"
-        pause
+        rem pause
     )
 ) else (
   echo [INFO] NO VCPKG_ROOT env variable ,try auto-install
