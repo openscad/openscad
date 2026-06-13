@@ -39,6 +39,15 @@ if "%VS_STUDIO_VERSION%"=="18" (
     set "CMAKE_VS_GENERATOR=Visual Studio 17 2022"
 )
 
+rem if this Ninja then check if ninja ready to use or not
+if "%CMAKE_VS_GENERATOR%" equ "Ninja" (
+
+    where ninja >nul 2>nul || (
+        echo [ERROR] No Ninja tool found.
+        pause
+        exit /b 1
+    )
+)
 
 if "%CMAKE_VS_GENERATOR%" equ "" (
     echo [ERROR] No build tools found!

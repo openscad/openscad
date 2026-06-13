@@ -238,9 +238,11 @@ refer to [building with MSVC](doc/win-build.md).
 Automatic Build Mode `win-msvc-auto-build.bat` 
 1.Create an empty folder (e.g., D:\OpenSCAD) and clone the OpenSCAD repository into it.
 2.Open Command Prompt (CMD) in that directory (e.g., D:\OpenSCAD\openscad) and run the following command:
+	
+	.\script\win-msvc-auto-build.bat
 
-    .\script\win-msvc-auto-build.bat
-    
+To speed up builds using Ninja, open the `x64 Native Tools Command Prompt for VS` and set CMAKE_VS_GENERATOR=Ninja in win-msvc-auto-build.bat
+
 Note: The initial run will take some time as vcpkg needs to download and install the required packages for the first time.
 
 To cross-build, first make sure that you have all necessary dependencies
