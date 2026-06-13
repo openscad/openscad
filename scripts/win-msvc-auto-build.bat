@@ -160,6 +160,13 @@ if exist "%VCPKG_PATH%\" (
 
 echo ---------------------------------------------------------
 
+rem run integrate install 
+cd /d "%VCPKG_PATH%"
+vcpkg integrate install 
+
+rem 
+cd /d "%ROOT_PATH%"
+
 rem WebFlexBison Tools
 echo [INFO] Checking for existing win_flex and win_bison in system...
 
