@@ -129,7 +129,7 @@ if(CAIRO_FOUND AND NOT TARGET Cairo::Cairo)
     )
 	  	  
     #dependency for cario 
-	find_package(Freetype QUIET)
+    find_package(Freetype QUIET)
     find_package(PNG QUIET)    
     find_package(ZLIB QUIET) 
     find_package(fontconfig QUIET)

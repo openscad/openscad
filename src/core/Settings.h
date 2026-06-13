@@ -361,18 +361,6 @@ public:
   }
   const std::vector<item_type> decode(const std::string& encoded) const override
   {
-    /*
-    std::vector<item_type> items;
-    std::stringstream ss;
-    ss << encoded;
-    while (ss.good()) {
-      item_type item;
-      ss >> item; //failed on msvc must fix this with ovveride operator >>
-      if (item) {
-        items.push_back(item);
-      }
-    }*/
-
     std::vector<item_type> items;
     std::stringstream ss(encoded);
     item_type item{};

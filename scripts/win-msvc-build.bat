@@ -11,36 +11,3 @@ rem cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE
 rem Second step of build process, each build should take ~30 mins for a Headless build.
 cmake --build build --config Debug
 cmake --build build --config Release
-
-${CMAKE_BINARY_DIR}
-
-
-if(MSVC)
-  if(EXISTS "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/share/tbb")
-    # manifest
-    set(TBB_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/share/tbb")
-  elseif(DEFINED ENV{VCPKG_ROOT})
-    # classic
-    set(TBB_DIR "$ENV{VCPKG_ROOT}/installed/x64-windows/share/tbb")
-  endif()
-endif()
-
-if(MSVC AND NOT DEFINED TBB_DIR)
-  if(VCPKG_MANIFEST_MODE)
-    set(TBB_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/share/tbb")
-  elseif(DEFINED ENV{VCPKG_ROOT})
-    set(TBB_DIR "$ENV{VCPKG_ROOT}/installed/x64-windows/share/tbb")
-  endif()
-endif()
-
-
-if(MSVC)
-  if(NOT DEFINED TBB_DIR)
-    if(VCPKG_MANIFEST_MODE)
-      set(TBB_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/share/tbb")
-    elseif(DEFINED ENV{VCPKG_ROOT})
-      set(TBB_DIR "$ENV{VCPKG_ROOT}/installed/x64-windows/share/tbb")
-    endif()
-  endif()
-endif()
-
