@@ -237,7 +237,7 @@ refer to [building with MSVC](doc/win-build.md).
 
 Automatic Build Mode `win-msvc-auto-build.bat` 
 1.Create an empty folder (e.g., D:\OpenSCAD) and clone the OpenSCAD repository into it.
-2.Open Command Prompt (CMD) in that directory and run the following command:
+2.Open Command Prompt (CMD) in that directory (e.g., D:\OpenSCAD\openscad) and run the following command:
 
     .\script\win-msvc-auto-build.bat
     
