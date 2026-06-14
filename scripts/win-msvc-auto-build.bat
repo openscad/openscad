@@ -65,6 +65,15 @@ if "%has_win_flex%"=="0" if not exist "%WINFLEXBISON_PATH%\win_flex.exe" (
         exit /b 1
     )
     
+    rem aliase 
+    if not exist "%WINFLEXBISON_PATH%\flex.exe" (
+        copy "%WINFLEXBISON_PATH%\win_flex.exe" "%WINFLEXBISON_PATH%\flex.exe"
+    )
+    
+     if not exist "%WINFLEXBISON_PATH%\bison.exe" (
+        copy "%WINFLEXBISON_PATH%\win_bison.exe" "%WINFLEXBISON_PATH%\bison.exe"
+    )
+  
     echo [SUCCESS] winflexbison deployed.
 )
 rem -------------------------------------------------------------------------

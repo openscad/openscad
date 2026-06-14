@@ -27,10 +27,6 @@
     "manifold",
     "catch2",
     {
-      "name": "gettext",
-      "features": ["tools"]
-    },
-    {
       "name": "qtbase",
       "features": ["opengl"]
     },
@@ -38,5 +34,6 @@
     "qtdeclarative",
     "qtmultimedia",
     "qscintilla"
-  ]
+  ],
+  "builtin-baseline": "44819aa2a6c10e56065e2b0330e7d6c89d1d2574"
 }
