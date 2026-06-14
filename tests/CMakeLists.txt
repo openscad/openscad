@@ -2,7 +2,7 @@
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 # Explicitly use new include policy to avoid globally shadowing included modules
 # https://cmake.org/cmake/help/latest/policy/CMP0017.html
 cmake_policy(SET CMP0017 NEW)
@@ -60,7 +60,13 @@ else() # !PROJECT_IS_TOP_LEVEL
   if(APPLE)
     set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
   elseif (WIN32 OR MXECROSS)
-    set(OPENSCAD_BINPATH "${CBD}/openscad.com")
+    if(MSVC)
+      # Multi-config: path follows active configuration (Debug/Release/...)
+      set(OPENSCAD_BINPATH "$<TARGET_FILE:OpenSCADExe>")
+    else()
+      # MinGW/MSYS2 uses console version (.com)
+      set(OPENSCAD_BINPATH "${CBD}/openscad.com")
+    endif()
   elseif(EXISTS "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
     set(OPENSCAD_BINPATH "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
   else()
@@ -152,6 +158,38 @@ set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
+# Configure PATH for tests on Windows
+if(WIN32)
+  get_filename_component(Python3_DIR "${Python3_EXECUTABLE}" DIRECTORY)
+  file(TO_CMAKE_PATH "$ENV{PATH}" ORIGINAL_PATH)
+
+  if(MSVC)
+    # MSVC builds: Add vcpkg Python directory to PATH to ensure the correct python DLL is loaded
+    set(_WIN_TEST_PATH "${Python3_DIR};${ORIGINAL_PATH}")
+    string(REPLACE ";" "\\;" _WIN_TEST_PATH "${_WIN_TEST_PATH}")
+    list(APPEND CTEST_ENVIRONMENT "PATH=${_WIN_TEST_PATH}")
+    message(STATUS "Adding Python directory to test PATH: ${Python3_DIR}")
+  else()
+    # MinGW/MSYS2 builds: Put MSYS2 bin directory FIRST to ensure MinGW DLLs are found
+    # (Ghostscript and openscad.com itself need MinGW DLLs)
+    # Detect MSYS2 msystem (MINGW64, UCRT64, CLANG64, etc.)
+    if(DEFINED ENV{MSYSTEM_PREFIX})
+      set(MSYS2_BIN "$ENV{MSYSTEM_PREFIX}/bin")
+    elseif(DEFINED ENV{MSYSTEM})
+      # MSYSTEM is set (e.g., UCRT64), construct the path
+      string(TOLOWER "$ENV{MSYSTEM}" MSYSTEM_LOWER)
+      set(MSYS2_BIN "C:/msys64/${MSYSTEM_LOWER}/bin")
+    else()
+      # Fallback to MINGW64 if no MSYS2 environment is detected
+      set(MSYS2_BIN "C:/msys64/mingw64/bin")
+    endif()
+    set(_WIN_TEST_PATH "${MSYS2_BIN};${ORIGINAL_PATH}")
+    string(REPLACE ";" "\\;" _WIN_TEST_PATH "${_WIN_TEST_PATH}")
+    list(APPEND CTEST_ENVIRONMENT "PATH=${_WIN_TEST_PATH}")
+    message(STATUS "Adding MSYS2 bin directory to test PATH: ${MSYS2_BIN}")
+  endif()
+endif()
+
 include("cmake/ImageCompare.cmake")
 include("cmake/GalliumFixes.cmake")
 include("cmake/TestFunctions.cmake")
@@ -179,12 +217,12 @@ configure_file(${TEST_PYTHON_DIR}/gen_svg_viewbox_tests-template.py
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 add_custom_target(issue2342 ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
+  COMMAND "${Python3_EXECUTABLE}" ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
+  COMMAND "${Python3_EXECUTABLE}" ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -769,9 +807,6 @@ if(EXAMPLES_DIR)
   set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
 endif(EXAMPLES_DIR)
 
-# If ctest is run with no configuration specified, then force "Default"
-set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceConfig.cmake")
-
 #############
 # Add tests #
 #############
@@ -1288,8 +1323,13 @@ add_cmdline_test(dump-discretization-by-error EXPERIMENTAL OPENSCAD FILES ${EXPE
 function(add_output_file_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "FILE;FORMAT" "" ${ARGN})
 
-  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" CONFIGURATIONS Default COMMAND ${OPENSCAD_BINPATH} ${TESTCMD_FILE} -o ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
-  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" COMMAND "${OPENSCAD_BINPATH}" "${TESTCMD_FILE}" -o "${TESTCMD_BASENAME}.${TESTCMD_FORMAT}")
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" COMMAND "${CMAKE_COMMAND}" -E cat "${TESTCMD_BASENAME}.${TESTCMD_FORMAT}")
+  set_tests_properties(
+    "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run"
+    "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check"
+    PROPERTIES LABELS Default
+  )
   set_tests_properties("${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" PROPERTIES DEPENDS "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run")
 endfunction()
 

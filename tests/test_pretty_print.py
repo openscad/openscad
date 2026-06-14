@@ -26,7 +26,7 @@
 # 1. why is hash differing
 
 
-import pathlib, string, sys, re, os, hashlib, subprocess, time, platform, html, base64
+import pathlib, string, sys, re, os, hashlib, subprocess, time, platform, html, base64, argparse
 
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -184,7 +184,7 @@ def load_makefiles(builddir):
     filelist = []
     for root, dirs, files in os.walk(builddir):
         for fname in files: filelist += [ os.path.join(root, fname) ]
-    files = [file for file in filelist if 'build.make' in os.path.basename(file) 
+    files = [file for file in filelist if 'build.make' in os.path.basename(file)
              or 'flags.make' in os.path.basename(file)]
     files = [file for file in files if 'esting' not in file and 'emporary' not in file]
     result = {}
@@ -422,20 +422,23 @@ def main():
 
     # --- Command Line Parsing ---
 
-    if '--debug' in ' '.join(sys.argv):
-        debug_test_pp = True
+    argp = argparse.ArgumentParser(add_help=False)
+    argp.add_argument('--debug', action='store_true')
+    argp.add_argument('--include-passed', action='store_true')
+    argp.add_argument('--dryrun', action='store_true')
+    argp.add_argument('--suffix', default='')
+    argp.add_argument('--builddir', default=None)
+    args, _unknown = argp.parse_known_args()
+
+    debug_test_pp = args.debug
     maxretry = 10
 
-    if '--include-passed' in sys.argv:
-        include_passed = True
+    include_passed = args.include_passed
 
-    dry = False
+    dry = args.dryrun
     debug('running test_pretty_print')
-    if '--dryrun' in sys.argv:
-        dry = True
 
-    suffix = ezsearch(r'--suffix=(.*?) ', ' '.join(sys.argv) + ' ')
-    builddir = ezsearch(r'--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
+    builddir = args.builddir
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
         print('warning: could not find --builddir, trying to use current dir:', builddir)
