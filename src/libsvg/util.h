@@ -27,6 +27,10 @@
 #include <ostream>
 #include <string>
 
+#ifdef _MSC_VER
+#undef IN
+#endif
+
 namespace libsvg {
 
 // https://oreillymedia.github.io/Using_SVG/guide/units.html

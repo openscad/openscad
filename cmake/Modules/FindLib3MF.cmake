@@ -1,5 +1,24 @@
 include(FindPackageHandleStandardArgs)
 
+  unset (_MSVC_INCLUDE_HINTS)
+  unset (_MSVC_LIB_HINTS)
+
+  if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+    list(APPEND _MSVC_INCLUDE_HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+      "${CMAKE_PREFIX_PATH}/include"
+    )
+    list(APPEND _MSVC_LIB_HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib"
+      "${CMAKE_PREFIX_PATH}/lib"
+    )
+  endif()
+  
+  message(STATUS "${_MSVC_INCLUDE_HINTS}")
+  message(STATUS "${_MSVC_LIB_HINTS}")
+
+
 find_package(PkgConfig REQUIRED)
 
 unset (_Lib3MF_REQUIRED_VERSIONS)
@@ -36,13 +55,13 @@ foreach (_Lib3MF_VERSION_MAJOR IN LISTS _Lib3MF_REQUIRED_VERSIONS)
 
     find_path(Lib3MF_INCLUDE_DIRS
         NAMES "${FIND_HEADER}"
-        HINTS ${PC_LIB3MF_INCLUDE_DIRS} /usr/include
+        HINTS ${PC_LIB3MF_INCLUDE_DIRS} /usr/include ${_MSVC_INCLUDE_HINTS}
         PATH_SUFFIXES lib3mf Bindings/Cpp
     )
 
     find_library(Lib3MF_LIBRARY
         NAMES 3mf 3MF
-        HINTS ${PC_LIB3MF_LIBRARY_DIRS}
+        HINTS ${PC_LIB3MF_LIBRARY_DIRS} ${_MSVC_LIB_HINTS}
     )
 
     if (Lib3MF_LIBRARY AND Lib3MF_INCLUDE_DIRS)

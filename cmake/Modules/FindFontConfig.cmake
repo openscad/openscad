@@ -48,17 +48,36 @@ else (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
     set(FONTCONFIG_DEFINITIONS ${PC_FONTCONFIG_CFLAGS_OTHER})
   endif (NOT WIN32)
 
+  
+  unset (_MSVC_INCLUDE_HINTS)
+  unset (_MSVC_LIB_HINTS)
+
+  if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+    list(APPEND _MSVC_INCLUDE_HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+      "${CMAKE_PREFIX_PATH}/include"
+    )
+    list(APPEND _MSVC_LIB_HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib"
+      "${CMAKE_PREFIX_PATH}/lib"
+    )
+  endif()
+
+
   find_path(FONTCONFIG_INCLUDE_DIR fontconfig/fontconfig.h
     PATHS
     ${PC_FONTCONFIG_INCLUDEDIR}
     ${PC_FONTCONFIG_INCLUDE_DIRS}
     /usr/X11/include
+    HINTS ${_MSVC_INCLUDE_HINTS}
   )
 
   find_library(FONTCONFIG_LIBRARIES NAMES fontconfig
     PATHS
     ${PC_FONTCONFIG_LIBDIR}
     ${PC_FONTCONFIG_LIBRARY_DIRS}
+    HINTS ${_MSVC_LIB_HINTS}                                                                          
   )
 
   set(FONTCONFIG_VERSION ${PC_FONTCONFIG_VERSION})
@@ -69,3 +88,12 @@ else (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
   mark_as_advanced(FONTCONFIG_LIBRARIES FONTCONFIG_INCLUDE_DIR)
 
 endif (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
+
+
+if(FONTCONFIG_FOUND AND NOT TARGET Fontconfig::Fontconfig)         
+  add_library(Fontconfig::Fontconfig UNKNOWN IMPORTED)            
+  set_target_properties(Fontconfig::Fontconfig PROPERTIES        
+    IMPORTED_LOCATION "${FONTCONFIG_LIBRARIES}"                   
+    INTERFACE_INCLUDE_DIRECTORIES "${FONTCONFIG_INCLUDE_DIR}"     
+  )                                                             
+endif()                                                         

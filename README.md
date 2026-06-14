@@ -235,6 +235,17 @@ https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 MSVC build support has been added to OpenSCAD. For instructions on how to build it,
 refer to [building with MSVC](doc/win-build.md).
 
+Automatic Build Mode `win-msvc-auto-build.bat` 
+1.Create an empty folder (e.g., D:\OpenSCAD) and clone the OpenSCAD repository into it.
+  Note: If you already have vcpkg installed, please ensure the VCPKG_ROOT environment variable is set before run script(e.g. SET VCPKG_ROOT=C:\vcpkg ).
+  Otherwise, this script will automatically download and install a new instance.
+  The initial run will take some time as vcpkg needs to download and install the required packages for the first time.
+2.Open Command Prompt (CMD) in that directory (e.g., D:\OpenSCAD\openscad) and run the following command:
+        
+	.\scripts\win-msvc-auto-build.bat
+	
+To accelerate your builds using Ninja ,use the `x64 Native Tools Command Prompt for VS` the script will auto-detect and switch to Ninja
+
 To cross-build, first make sure that you have all necessary dependencies
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
 MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
