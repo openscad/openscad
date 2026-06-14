@@ -1050,6 +1050,8 @@ set(CORE_SOURCES
   src/core/builtin_functions.cc
   src/core/control.cc
   src/core/HTTPClient.cc
+  src/core/AIClient.cc
+  src/core/AIService.cc
   src/core/customizer/Annotation.cc
   src/core/customizer/CommentParser.cc
   src/core/customizer/ParameterObject.cc
