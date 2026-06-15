@@ -21,7 +21,6 @@ rem if CMAKE_VS_GENERATOR is empty ,it will try auto-detct
 rem for Ninja ,must have enveronments before this script ,like open this script in x64-msvc-developer-prompt 
 rem End Config---------------------------------------------------------------------------
 
-
 rem -------------------------------------------------------------------------
 rem  Initial Path
 rem -------------------------------------------------------------------------
@@ -36,6 +35,56 @@ set "GETTEXT_PATH=%DEPTOOLS%\gettext"
 set "BUILD_PATH=%OPENSCAD_PATH%\%BUILD_NAME%"
 
 if not exist "%DEPTOOLS%" mkdir "%DEPTOOLS%" 2>nul
+
+rem -------------------------------------------------------------------------
+rem VCPKG JSON FILE
+rem -------------------------------------------------------------------------
+echo [INFO] Create own vcpkg file
+
+SET "MANIFEST_DIR=%OPENSCAD_PATH%\tmp"
+if not exist "%MANIFEST_DIR%" mkdir "%MANIFEST_DIR%"
+
+(
+echo {
+echo  "name": "openscad",
+echo  "version-string": "1.0.0",
+echo  "dependencies": [
+echo    "boost-regex",
+echo    "boost-program-options",
+echo    "boost-container",
+echo    "boost-assign",
+echo    "boost-nowide",
+echo    "boost-dll",
+echo    "eigen3",
+echo    "cgal",
+echo    "cairo",
+echo    "glad",
+echo    "opencsg",
+echo    "harfbuzz",
+echo    "fontconfig",
+echo    "double-conversion",
+echo    "libxml2",
+echo    "libzip",
+echo    "glib",
+echo    "gperf",
+echo    "tbb",
+echo    "lib3mf",
+echo    "clipper2",
+echo    "mimalloc",
+echo    "manifold",
+echo    "catch2",
+echo    {
+echo      "name": "qtbase",
+echo      "features": ["opengl"]
+echo    },
+echo    "qt5compat",
+echo    "qtdeclarative",
+echo    "qtmultimedia",
+echo    "qscintilla"
+echo  ],
+echo  "builtin-baseline": "44819aa2a6c10e56065e2b0330e7d6c89d1d2574"
+echo }
+) > "%MANIFEST_DIR%\vcpkg.json"
 
 rem -------------------------------------------------------------------------
 rem Check Tool in System
@@ -354,6 +403,7 @@ cmake -B "%BUILD_NAME%" -G "%CMAKE_VS_GENERATOR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE
 -DUSE_BUILTIN_OPENCSG=ON -DUSE_BUILTIN_MANIFOLD=ON -DUSE_BUILTIN_CLIPPER2=ON ^
 -DCMAKE_TOOLCHAIN_FILE="%VCPKG_PATH%/scripts/buildsystems/vcpkg.cmake" ^
 -DCMAKE_EXE_LINKER_FLAGS="/manifest:no" -DCMAKE_MODULE_LINKER_FLAGS="/manifest:no" -DCMAKE_SHARED_LINKER_FLAGS="/manifest:no" ^
+-DVCPKG_MANIFEST_DIR="%MANIFEST_DIR%" ^
 -DVCPKG_MANIFEST_MODE=%MODE_MANIFEST%
 
 if %errorlevel% neq 0 (
