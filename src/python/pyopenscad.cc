@@ -1758,12 +1758,15 @@ static int PyModule_AddObjectRef(PyObject *mod, const char *name, PyObject *valu
 // including registering the `Openscad`, `ChildRef` and `ChildIterator`
 // type objects.
 // NOLINTNEXTLINE(bugprone-reserved-identifier)
+
+extern PyTypeObject PyOpenSCADVectorIterType;
 PyMODINIT_FUNC PyInit__openscad(void)
 {
   if (PyType_Ready(&PyOpenSCADType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADVectorType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADItemRefType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADObjectIterType) < 0) return nullptr;
+  if (PyType_Ready(&PyOpenSCADVectorIterType) < 0) return nullptr;
   if (PyType_Ready(&PyOpenSCADBoundMemberType) < 0) return nullptr;
 
   PyObject *m = PyModule_Create(&OpenSCADModule);

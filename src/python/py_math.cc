@@ -320,6 +320,69 @@ int PyOpenSCADVector__setitem__(PyObject *obj, PyObject *key, PyObject *v)
   return 0;
 }
 
+// ---------------------
+// PyOpenSCADVectorIter
+// ---------------------
+//
+
+typedef struct {
+  PyObject_HEAD PyObject *container;  // Referenz auf das Original-Objekt
+  Py_ssize_t index;                   // Aktueller Index
+} PyOpenSCADVectorIter;
+
+extern PyTypeObject PyOpenSCADVectorIterType;
+
+PyObject *PyOpenSCADVectorType_iter(PyObject *self)
+{
+  PyOpenSCADVectorIter *iter = reinterpret_cast<PyOpenSCADVectorIter *>(
+    PyObject_New(PyOpenSCADVectorIter, &PyOpenSCADVectorIterType));
+  if (iter == nullptr) {
+    return nullptr;
+  }
+  Py_INCREF(iter);
+
+  Py_INCREF(self);
+  iter->container = self;
+  iter->index = 0;
+
+  return (PyObject *)iter;
+}
+
+PyObject *PyOpenSCADVectorType_iternext(PyObject *self)
+{
+  PyOpenSCADVectorIter *iter = reinterpret_cast<PyOpenSCADVectorIter *>(self);
+  PyOpenSCADVectorObject *container = reinterpret_cast<PyOpenSCADVectorObject *>(iter->container);
+
+  // Prüfe ob noch Elemente vorhanden
+  Py_ssize_t size = 3;
+  if (iter->index >= size) {
+    PyErr_SetNone(PyExc_StopIteration);
+    return nullptr;
+  }
+
+  PyObject *result = PyFloat_FromDouble(container->v[iter->index]);
+  iter->index++;
+  return result;
+}
+
+// Iterator dealloc
+void PyOpenSCADVectorIter_dealloc(PyOpenSCADVectorIter *self)
+{
+  PyOpenSCADVectorIter *iter = reinterpret_cast<PyOpenSCADVectorIter *>(self);
+  Py_XDECREF(iter->container);
+  PyObject_Del(self);
+}
+
+// Iterator Type Definition
+PyTypeObject PyOpenSCADVectorIterType = {
+  PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "PyOpenSCADVectorType.Iterator",
+  .tp_basicsize = sizeof(PyOpenSCADVectorIter),
+  .tp_dealloc = (destructor)PyOpenSCADVectorIter_dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_iter = PyOpenSCADVectorType_iter,
+  .tp_iternext = PyOpenSCADVectorType_iternext,  // <-- __next__ Implementierung
+};
+
 PyMappingMethods PyOpenSCADVectorMapping = {0, PyOpenSCADVector__getitem__, PyOpenSCADVector__setitem__};
 
 PyTypeObject PyOpenSCADVectorType = {
@@ -330,6 +393,7 @@ PyTypeObject PyOpenSCADVectorType = {
   .tp_as_number = &PyOpenSCADVector_number_methods,
   .tp_as_mapping = &PyOpenSCADVectorMapping,
   .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_iter = PyOpenSCADVectorType_iter,
   .tp_methods = PyOpenSCADVectorMethods,
   .tp_init = (initproc)python_vector,
   .tp_new = PyOpenSCADVector_new,
