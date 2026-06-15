@@ -619,7 +619,7 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
   message(STATUS "OpenSSL: ${OPENSSL_VERSION}")
   target_link_libraries(OpenSCADLibInternal PUBLIC OpenSSL::SSL OpenSSL::Crypto)
   if(WIN32)
-    target_link_libraries(OpenSCADLibInternal PUBLIC crypt32)
+    target_link_libraries(OpenSCADLibInternal PUBLIC crypt32 ws2_32)
   endif()
 endif()
 
