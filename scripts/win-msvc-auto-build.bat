@@ -312,25 +312,17 @@ if exist "%VCPKG_PATH%\scripts\buildsystems\vcpkg.cmake" (
     cd /d "%ROOT_PATH%"
     git clone https://github.com/microsoft/vcpkg.git
     
-    if %errorlevel% equ 0 (
-        echo [SUCCESS] vcpkg cloned successfully.
-        
-        echo [INFO] Bootstrapping vcpkg...
-        cd /d "%VCPKG_PATH%"
-        call .\bootstrap-vcpkg.bat
-        
-        if %errorlevel% equ 0 (
-            echo [SUCCESS] vcpkg is ready to use.
-        ) else (
-            echo [ERROR] vcpkg bootstrap failed.
-            exit /b 1
-        )
-    ) else (
-        echo [ERROR] git clone failed.
-        exit /b 1
-    )
+    echo [INFO] Bootstrapping vcpkg...
+    cd /d "%VCPKG_PATH%"
+    call .\bootstrap-vcpkg.bat
 )
 
+if exist "%VCPKG_PATH%\vcpkg.exe" (
+    echo [INFO] Found vcpkg.exe
+) else (
+    echo [ERROR] No vcpkg.exe found : "%VCPKG_PATH%\vcpkg.exe"
+    exit /b 1
+)
 rem -------------------------------------------------------------------------
 rem Summary Info
 rem ------------------------------------------------------------------------- 
