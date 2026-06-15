@@ -59,10 +59,10 @@ echo    "eigen3",
 echo    "cgal",
 echo    "cairo",
 echo    "glad",
-echo    "opencsg",
 echo    "harfbuzz",
 echo    "fontconfig",
 echo    "double-conversion",
+echo    "opencsg",
 echo    "libxml2",
 echo    "libzip",
 echo    "glib",
@@ -73,14 +73,14 @@ echo    "clipper2",
 echo    "mimalloc",
 echo    "manifold",
 echo    "catch2",
+echo    "qscintilla",
 echo    {
 echo      "name": "qtbase",
 echo      "features": ["opengl"]
 echo    },
 echo    "qt5compat",
 echo    "qtdeclarative",
-echo    "qtmultimedia",
-echo    "qscintilla"
+echo    "qtmultimedia"
 echo  ],
 echo  "builtin-baseline": "44819aa2a6c10e56065e2b0330e7d6c89d1d2574"
 echo }
