@@ -243,7 +243,7 @@ void Preferences::init()
   this->defaultmap["editor/autoCompleteIncludeFunctions"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
-  this->defaultmap["ai/activeProfile"] = "OpenAI GPT-4";
+  this->defaultmap["ai/activeProfile"] = "Ollama Local";
 
   // Toolbar
   auto *group = new QActionGroup(this);
@@ -276,7 +276,7 @@ void Preferences::init()
   this->tableWidgetAIParams->setSelectionMode(QAbstractItemView::SingleSelection);
 
   nlohmann::json aiSettings = readAISettings();
-  std::string activeProfile = aiSettings.value("activeProfile", "OpenAI GPT-4");
+  std::string activeProfile = aiSettings.value("activeProfile", "Ollama Local");
   QString activeProfileQS = QString::fromStdString(activeProfile);
 
   nlohmann::json profilesObj = aiSettings.value("profiles", nlohmann::json::object());
@@ -286,44 +286,19 @@ void Preferences::init()
   }
 
   if (profiles.isEmpty()) {
-    profiles =
-      QStringList{_("OpenAI GPT-4"), _("Anthropic Claude"), _("Ollama Local"), _("Custom / Local LLM")};
+    profiles = QStringList{_("Ollama Local")};
     for (const auto& p : profiles) {
       nlohmann::json prof = nlohmann::json::object();
       nlohmann::json params = nlohmann::json::object();
       std::string pStr = p.toStdString();
-      if (p == _("OpenAI GPT-4")) {
-        prof["endpoint"] = "https://api.openai.com/v1";
-        params["model"] = "gpt-4o";
-        params["temperature"] = 0.7;
-        params["max_tokens"] = 2048;
-        params["system_prompt"] =
-          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
-        params["context_limit"] = 10;
-      } else if (p == _("Anthropic Claude")) {
-        prof["endpoint"] = "https://api.anthropic.com/v1";
-        params["model"] = "claude-3-5-sonnet-latest";
-        params["temperature"] = 0.7;
-        params["max_tokens"] = 2048;
-        params["system_prompt"] =
-          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
-        params["context_limit"] = 10;
-        params["anthropic-version"] = "2023-06-01";
-      } else if (p == _("Ollama Local")) {
+      if (p == _("Ollama Local")) {
         prof["endpoint"] = "http://localhost:11434/v1";
         params["model"] = "deepseek-coder";
         params["temperature"] = 0.7;
         params["max_tokens"] = 2048;
         params["system_prompt"] =
           "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
-        params["context_limit"] = 10;
-      } else {
-        prof["endpoint"] = "http://localhost:8080/v1";
-        params["model"] = "custom";
-        params["temperature"] = 0.7;
-        params["max_tokens"] = 2048;
-        params["system_prompt"] =
-          "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+        params["default_prompt"] = "Create a sphere with radius 10 and detail level $fn=50.";
         params["context_limit"] = 10;
       }
       prof["params"] = params;
@@ -341,6 +316,10 @@ void Preferences::init()
   // Connect table cell changes to slot
   connect(this->tableWidgetAIParams, &QTableWidget::itemChanged, this,
           &Preferences::on_tableWidgetAIParams_itemChanged);
+  connect(this->plainTextEditAISystemPrompt, &QPlainTextEdit::textChanged, this,
+          &Preferences::saveAIParams);
+  connect(this->plainTextEditAIDefaultPrompt, &QPlainTextEdit::textChanged, this,
+          &Preferences::saveAIParams);
 
   // Set default active profile index
   int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
@@ -1461,6 +1440,7 @@ void Preferences::on_pushButtonAINewProfile_clicked()
   params["max_tokens"] = 2048;
   params["system_prompt"] =
     "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
+  params["default_prompt"] = "Create a sphere with radius 10 and detail level $fn=50.";
   params["context_limit"] = 10;
   newProfile["params"] = params;
 
@@ -1551,6 +1531,18 @@ void Preferences::loadAIParams(const QString& profileName)
   this->tableWidgetAIParams->setRowCount(0);
 
   nlohmann::json paramsObj = profileObj.value("params", nlohmann::json::object());
+
+  std::string sysPrompt = paramsObj.value(
+    "system_prompt",
+    "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.");
+  BlockSignals<QPlainTextEdit *>(this->plainTextEditAISystemPrompt)
+    ->setPlainText(QString::fromStdString(sysPrompt));
+
+  std::string defPrompt =
+    paramsObj.value("default_prompt", "Create a sphere with radius 10 and detail level $fn=50.");
+  BlockSignals<QPlainTextEdit *>(this->plainTextEditAIDefaultPrompt)
+    ->setPlainText(QString::fromStdString(defPrompt));
+
   QStringList keys;
   for (auto it = paramsObj.begin(); it != paramsObj.end(); ++it) {
     keys.append(QString::fromStdString(it.key()));
@@ -1558,6 +1550,9 @@ void Preferences::loadAIParams(const QString& profileName)
   keys.sort();
 
   for (const auto& key : keys) {
+    if (key == "system_prompt" || key == "default_prompt") {
+      continue;
+    }
     int row = this->tableWidgetAIParams->rowCount();
     this->tableWidgetAIParams->insertRow(row);
 
@@ -1601,13 +1596,16 @@ void Preferences::saveAIParams()
   profileObj["apiKey"] = this->lineEditAIApiKey->text().toStdString();
 
   nlohmann::json paramsObj = nlohmann::json::object();
+  paramsObj["system_prompt"] = this->plainTextEditAISystemPrompt->toPlainText().toStdString();
+  paramsObj["default_prompt"] = this->plainTextEditAIDefaultPrompt->toPlainText().toStdString();
+
   for (int row = 0; row < this->tableWidgetAIParams->rowCount(); ++row) {
     QTableWidgetItem *keyItem = this->tableWidgetAIParams->item(row, 0);
     QTableWidgetItem *valItem = this->tableWidgetAIParams->item(row, 1);
     if (!keyItem) continue;
 
     const QString key = keyItem->text().trimmed();
-    if (key.isEmpty()) continue;
+    if (key.isEmpty() || key == "system_prompt" || key == "default_prompt") continue;
 
     const QString valText = valItem ? valItem->text().trimmed() : "";
     std::string keyStr = key.toStdString();
@@ -1875,14 +1873,14 @@ void Preferences::updateGUI()
 
   // AI tab: populate fields from current profile settings
   nlohmann::json aiSettings = readAISettings();
-  std::string activeProfile = aiSettings.value("activeProfile", "OpenAI GPT-4");
+  std::string activeProfile = aiSettings.value("activeProfile", "Ollama Local");
   QString activeProfileQS = QString::fromStdString(activeProfile);
   int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
   if (activeIdx >= 0) {
     BlockSignals<QComboBox *>(this->comboBoxAIProfile)->setCurrentIndex(activeIdx);
     loadAIParams(activeProfileQS);
   } else {
-    loadAIParams("OpenAI GPT-4");
+    loadAIParams("Ollama Local");
   }
   this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
   updateComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);

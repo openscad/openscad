@@ -138,6 +138,19 @@ void AIService::chatCompletionStream(const std::vector<ChatMessage>& history, Ch
   }
 
   std::vector<AIChatMessage> ai_history;
+  if (config.parameters.contains("system_prompt") && config.parameters["system_prompt"].is_string()) {
+    std::string sys_prompt = config.parameters["system_prompt"].get<std::string>();
+    if (!sys_prompt.empty()) {
+      bool already_has_system = false;
+      if (!history.empty() && history[0].role == "system") {
+        already_has_system = true;
+      }
+      if (!already_has_system) {
+        ai_history.push_back({"system", sys_prompt});
+      }
+    }
+  }
+
   for (const auto& msg : history) {
     ai_history.push_back({msg.role, msg.content});
   }
@@ -158,11 +171,37 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
   }
 
   std::vector<AIChatMessage> ai_history;
+  if (config.parameters.contains("system_prompt") && config.parameters["system_prompt"].is_string()) {
+    std::string sys_prompt = config.parameters["system_prompt"].get<std::string>();
+    if (!sys_prompt.empty()) {
+      bool already_has_system = false;
+      if (!history.empty() && history[0].role == "system") {
+        already_has_system = true;
+      }
+      if (!already_has_system) {
+        ai_history.push_back({"system", sys_prompt});
+      }
+    }
+  }
+
   for (const auto& msg : history) {
     ai_history.push_back({msg.role, msg.content});
   }
 
   impl->ai_client->sendChatCompletion(config, ai_history, on_response, on_error);
+}
+
+std::string AIService::getDefaultPrompt() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("default_prompt") &&
+        config.parameters["default_prompt"].is_string()) {
+      return config.parameters["default_prompt"].get<std::string>();
+    }
+  }
+  return "Create a sphere with radius 10 and detail level $fn=50.";
 }
 
 #else  // __EMSCRIPTEN__
@@ -192,6 +231,11 @@ void AIService::chatCompletion(const std::vector<ChatMessage>&, ResponseCallback
   if (on_error) {
     on_error("AI service is not supported on WebAssembly.");
   }
+}
+
+std::string AIService::getDefaultPrompt() const
+{
+  return "";
 }
 
 #endif  // __EMSCRIPTEN__

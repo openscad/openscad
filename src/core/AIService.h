@@ -36,6 +36,9 @@ public:
   void chatCompletion(const std::vector<ChatMessage>& history, ResponseCallback on_response,
                       ErrorCallback on_error);
 
+  // Get default user prompt configured in the active profile settings
+  std::string getDefaultPrompt() const;
+
 private:
   class Impl;
   std::unique_ptr<Impl> impl;

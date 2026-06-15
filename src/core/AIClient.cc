@@ -24,51 +24,104 @@ public:
     }
   }
 
+  void flush()
+  {
+    if (!buffer_.empty()) {
+      processLine(buffer_);
+      buffer_.clear();
+    }
+  }
+
 private:
   std::string buffer_;
   TextCallback callback_;
 
   void processLine(const std::string& line)
   {
+    std::string content = line;
     if (line.rfind("data: ", 0) == 0) {
-      std::string content = line.substr(6);
-      while (!content.empty() && std::isspace(static_cast<unsigned char>(content.front()))) {
-        content.erase(0, 1);
-      }
-      while (!content.empty() && std::isspace(static_cast<unsigned char>(content.back()))) {
-        content.pop_back();
-      }
+      content = line.substr(6);
+    }
 
-      if (content == "[DONE]") {
-        return;
-      }
+    while (!content.empty() && std::isspace(static_cast<unsigned char>(content.front()))) {
+      content.erase(0, 1);
+    }
+    while (!content.empty() && std::isspace(static_cast<unsigned char>(content.back()))) {
+      content.pop_back();
+    }
 
-      try {
-        auto json = nlohmann::json::parse(content);
-        if (json.contains("choices") && json["choices"].is_array() && !json["choices"].empty()) {
-          auto& choice = json["choices"][0];
-          if (choice.contains("delta") && choice["delta"].is_object() &&
-              choice["delta"].contains("content")) {
-            std::string text = choice["delta"]["content"].get<std::string>();
+    if (content.empty()) {
+      return;
+    }
+
+    if (content == "[DONE]") {
+      return;
+    }
+
+    try {
+      auto json = nlohmann::json::parse(content);
+      bool matched = false;
+
+      // OpenAI-compatible /v1/chat/completions format (content and reasoning_content)
+      if (json.contains("choices") && json["choices"].is_array() && !json["choices"].empty()) {
+        auto& choice = json["choices"][0];
+        if (choice.contains("delta") && choice["delta"].is_object()) {
+          auto& delta = choice["delta"];
+          if (delta.contains("content")) {
+            std::string text = delta["content"].get<std::string>();
             if (!text.empty()) {
               callback_(text);
+              matched = true;
             }
           }
-        } else if (json.contains("message") && json["message"].is_object() &&
-                   json["message"].contains("content")) {
-          std::string text = json["message"]["content"].get<std::string>();
-          if (!text.empty()) {
-            callback_(text);
-          }
-        } else if (json.contains("response")) {
-          std::string text = json["response"].get<std::string>();
-          if (!text.empty()) {
-            callback_(text);
+          if (delta.contains("reasoning_content")) {
+            std::string text = delta["reasoning_content"].get<std::string>();
+            if (!text.empty()) {
+              callback_(text);
+              matched = true;
+            }
           }
         }
-      } catch (...) {
-        // Ignore parsing errors on comments or partial/malformed JSON
       }
+
+      // Ollama /api/chat format (content and thinking)
+      if (!matched && json.contains("message") && json["message"].is_object()) {
+        auto& message = json["message"];
+        if (message.contains("content")) {
+          std::string text = message["content"].get<std::string>();
+          if (!text.empty()) {
+            callback_(text);
+            matched = true;
+          }
+        }
+        if (message.contains("thinking")) {
+          std::string text = message["thinking"].get<std::string>();
+          if (!text.empty()) {
+            callback_(text);
+            matched = true;
+          }
+        }
+      }
+
+      // Ollama /api/generate response format
+      if (!matched && json.contains("response")) {
+        std::string text = json["response"].get<std::string>();
+        if (!text.empty()) {
+          callback_(text);
+          matched = true;
+        }
+      }
+
+      // Ollama /api/generate thinking format
+      if (!matched && json.contains("thinking")) {
+        std::string text = json["thinking"].get<std::string>();
+        if (!text.empty()) {
+          callback_(text);
+          matched = true;
+        }
+      }
+    } catch (...) {
+      // Ignore parsing errors on comments or partial/malformed JSON
     }
   }
 };
@@ -239,5 +292,11 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
         }
       }
     },
-    on_error, on_complete);
+    on_error,
+    [parser, on_complete]() {
+      parser->flush();
+      if (on_complete) {
+        on_complete();
+      }
+    });
 }

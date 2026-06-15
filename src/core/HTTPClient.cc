@@ -134,7 +134,8 @@ public:
       on_response_(std::move(on_response)),
       on_chunk_(std::move(on_chunk)),
       on_error_(std::move(on_error)),
-      on_complete_(std::move(on_complete))
+      on_complete_(std::move(on_complete)),
+      body_offset_(0)
   {
   }
 
@@ -167,6 +168,7 @@ private:
   HTTPClient::ChunkCallback on_chunk_;
   HTTPClient::ErrorCallback on_error_;
   HTTPClient::CompleteCallback on_complete_;
+  std::size_t body_offset_;
 
   static StreamType create_stream(boost::asio::io_context& io_ctx, boost::asio::ssl::context *ssl_ctx)
   {
@@ -268,11 +270,12 @@ private:
 
     if (!ec) {
       auto& body = parser_.get().body();
-      if (!body.empty()) {
+      if (body.size() > body_offset_) {
+        std::string new_data = body.substr(body_offset_);
+        body_offset_ = body.size();
         if (on_chunk_) {
-          on_chunk_(parser_.get().result_int(), body);
+          on_chunk_(parser_.get().result_int(), new_data);
         }
-        body.clear();
       }
 
       if (parser_.is_done()) {
@@ -285,11 +288,12 @@ private:
       }
     } else if (ec == boost::beast::http::error::end_of_stream) {
       auto& body = parser_.get().body();
-      if (!body.empty()) {
+      if (body.size() > body_offset_) {
+        std::string new_data = body.substr(body_offset_);
+        body_offset_ = body.size();
         if (on_chunk_) {
-          on_chunk_(parser_.get().result_int(), body);
+          on_chunk_(parser_.get().result_int(), new_data);
         }
-        body.clear();
       }
       if (on_complete_) {
         on_complete_();
