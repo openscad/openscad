@@ -253,6 +253,19 @@ def build_commands(cfg: dict, distro: DistroInfo, packages: List[str], assume_ye
     elif mgr == "brew":
         if shutil.which("brew") is None:
             raise SystemExit("Homebrew not found. Install from https://brew.sh first.")
+        # Homebrew 6.0+ requires taps to be explicitly trusted before formulae
+        # from them can be installed. Insert `brew trust <tap>` after each
+        # `brew tap <tap>` pre-command; run_commands() skips these on older
+        # Homebrew versions where the trust subcommand doesn't exist.
+        trusted: List[List[str]] = []
+        for cmd in pre_cmds:
+            trusted.append(cmd)
+            if cmd[:2] == ["brew", "tap"] and len(cmd) >= 3:
+                # Use the last argument as the tap name so flags like
+                # --force-auto-update before the tap name are handled correctly.
+                trusted.append(["brew", "trust", cmd[-1]])
+        cmds.clear()
+        cmds.extend(trusted)
         cmds.append(["brew", "update"])
         cmds.append(["brew", "install", *packages])
     elif mgr == "zypper":
@@ -280,10 +293,25 @@ def build_commands(cfg: dict, distro: DistroInfo, packages: List[str], assume_ye
 
 
 def run_commands(cmds: List[List[str]], dry_run: bool):
+    # Lazily detected on the first `brew trust` command; None = not yet checked.
+    brew_has_trust: Optional[bool] = None
+
     for cmd in cmds:
         print("$", " ".join(cmd))
         if dry_run:
             continue
+
+        # `brew trust` was introduced in Homebrew 6.0. Skip silently on older
+        # versions; fail loudly if the subcommand exists but the trust fails.
+        if cmd[:2] == ["brew", "trust"]:
+            if brew_has_trust is None:
+                brew_has_trust = subprocess.run(
+                    ["brew", "help", "trust"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                ).returncode == 0
+            if not brew_has_trust:
+                print("$ # skipped (brew trust not available on this Homebrew version)")
+                continue
+
         # Use subprocess.run to get better error information
         result = subprocess.run(cmd, capture_output=False, text=True)
         if result.returncode != 0:
