@@ -47,14 +47,14 @@ if (APPLE)
   )
 
   set(CAIRO_INCLUDEDIR "${CAIRO_INCLUDE_DIRS}")
-elseif(WIN32)
-	
-  pkg_check_modules(PC_CAIRO QUIET cairo)
-    
-  unset (_MSVC_INCLUDE_HINTS)
-  unset (_MSVC_LIB_HINTS)
-
+else ()
+  pkg_check_modules(CAIRO QUIET cairo)
+  
   if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+    
+    unset (_MSVC_INCLUDE_HINTS)
+    unset (_MSVC_LIB_HINTS)
+  
     list(APPEND _MSVC_INCLUDE_HINTS
       "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
       "${CMAKE_PREFIX_PATH}/include"
@@ -64,30 +64,26 @@ elseif(WIN32)
       "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib"
       "${CMAKE_PREFIX_PATH}/lib"
     )
-  endif()
-
-
-  find_path(CAIRO_INCLUDE_DIRS
+    
+    find_path(CAIRO_INCLUDE_DIRS
     NAMES cairo.h
     HINTS ${PC_CAIRO_INCLUDEDIR}
           ${PC_CAIRO_INCLUDE_DIRS}
-		  ${_MSVC_INCLUDE_HINTS}
+           ${_MSVC_INCLUDE_HINTS}
     PATH_SUFFIXES cairo
-  )
-  find_library(CAIRO_LIBRARIES
+    )
+    find_library(CAIRO_LIBRARIES
     NAMES cairo
     HINTS ${PC_CAIRO_LIBDIR}
           ${PC_CAIRO_LIBRARY_DIRS}
-		  ${_MSVC_LIB_HINTS}  
-  )
-  
-  message(STATUS "CAIRO_INCLUDE_DIRS: ${CAIRO_INCLUDE_DIRS}")
-  message(STATUS "CAIRO_LIBRARIES: ${CAIRO_LIBRARIES}")
-  
+	  ${_MSVC_LIB_HINTS}  
+    )
+	
+  #message(STATUS "CAIRO_INCLUDE_DIRS: ${CAIRO_INCLUDE_DIRS}")
+  #message(STATUS "CAIRO_LIBRARIES: ${CAIRO_LIBRARIES}")
   set(CAIRO_INCLUDEDIR "${CAIRO_INCLUDE_DIRS}")
-  
-else ()
-  pkg_check_modules(CAIRO QUIET cairo)
+    
+  endif()
 endif ()
 
 #message(STATUS "CAIRO_INCLUDEDIR: ${CAIRO_INCLUDEDIR}")
@@ -114,13 +110,10 @@ if ("${Cairo_FIND_VERSION}" VERSION_GREATER "${CAIRO_VERSION}")
 endif ()
 
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Cairo
-			REQUIRED_VARS  CAIRO_INCLUDE_DIRS CAIRO_LIBRARIES
-			VERSION_VAR    CAIRO_VERSION
-)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Cairo REQUIRED_VARS CAIRO_INCLUDE_DIRS CAIRO_LIBRARIES VERSION_VAR CAIRO_VERSION)
 
-
-if(CAIRO_FOUND AND NOT TARGET Cairo::Cairo)
+if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+  if(CAIRO_FOUND AND NOT TARGET Cairo::Cairo)
 	  
     add_library(Cairo::Cairo UNKNOWN IMPORTED)
     set_target_properties(Cairo::Cairo PROPERTIES
@@ -128,76 +121,14 @@ if(CAIRO_FOUND AND NOT TARGET Cairo::Cairo)
             INTERFACE_INCLUDE_DIRECTORIES "${CAIRO_INCLUDE_DIRS}"
     )
 	  	  
-    #dependency for cario 
-    find_package(Freetype QUIET)
-    find_package(PNG QUIET)    
-    find_package(ZLIB QUIET) 
-    find_package(fontconfig QUIET)
-	
-    unset (_DEPS_FOR_CAIRO)
-    #Freetype 	
-	if(Freetype_FOUND OR FREETYPE_FOUND)
-		if(NOT TARGET Freetype::Freetype)
-        add_library(Freetype::Freetype INTERFACE IMPORTED)
-        set_target_properties(Freetype::Freetype PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${FREETYPE_INCLUDE_DIRS}"
-            INTERFACE_LINK_LIBRARIES "${FREETYPE_LIBRARIES}"
-        )
-    endif()
-		list(APPEND _DEPS_FOR_CAIRO Freetype::Freetype)
-	endif()
-
-    #Pixman
-    pkg_check_modules(PIXMAN REQUIRED pixman-1)
-    if (PIXMAN_FOUND AND NOT TARGET Pixman::Pixman)
-      add_library(Pixman::Pixman INTERFACE IMPORTED)
-      set_target_properties(Pixman::Pixman PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${PIXMAN_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${PIXMAN_LIBRARIES}"
-    )
-    endif()
-
-    #Zlib
-    if (ZLIB_FOUND AND NOT TARGET ZLIB::ZLIB)
-      add_library(ZLIB::ZLIB INTERFACE IMPORTED)
-      set_target_properties(ZLIB::ZLIB PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES "${ZLIB_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${ZLIB_LIBRARIES}"
-    )
-    endif()
-
-    #PNG 
-    if (PNG_FOUND AND NOT TARGET PNG::PNG)
-      add_library(PNG::PNG INTERFACE IMPORTED)
-      set_target_properties(PNG::PNG PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES "${PNG_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${PNG_LIBRARIES}"
-    )
-    endif()
-
-    #Fontconfig
-    pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
-    if (FONTCONFIG_FOUND AND NOT TARGET Fontconfig::Fontconfig)
-      add_library(Fontconfig::Fontconfig INTERFACE IMPORTED)
-      set_target_properties(Fontconfig::Fontconfig PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES "${FONTCONFIG_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${FONTCONFIG_LIBRARIES}"
-    )
-    endif()
-
-    if(_DEPS_FOR_CAIRO)
-        set_property(TARGET Cairo::Cairo APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${_DEPS_FOR_CAIRO}")
-    endif()
-
+  endif()
 endif()
-
 
 mark_as_advanced(
     CAIRO_INCLUDE_DIRS
     CAIRO_LIBRARIES
 )
 
-#message(STATUS "CAIRO_LIBRARIES: ${CAIRO_LIBRARIES}")
 #message(STATUS "CAIRO_INCLUDE_DIRS: ${CAIRO_INCLUDE_DIRS}")
-#message(STATUS "_DEPS_FOR_CAIRO: ${_DEPS_FOR_CAIRO}")
-#message(FATAL_ERROR "STOP HERE FOR DEBUG")
+#message(STATUS "CAIRO_LIBRARIES: ${CAIRO_LIBRARIES}")
+

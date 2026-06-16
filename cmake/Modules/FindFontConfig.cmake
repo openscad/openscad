@@ -47,12 +47,12 @@ else (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
 
     set(FONTCONFIG_DEFINITIONS ${PC_FONTCONFIG_CFLAGS_OTHER})
   endif (NOT WIN32)
-
   
   unset (_MSVC_INCLUDE_HINTS)
   unset (_MSVC_LIB_HINTS)
 
   if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+   
     list(APPEND _MSVC_INCLUDE_HINTS
       "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
       "${CMAKE_PREFIX_PATH}/include"
@@ -89,11 +89,12 @@ else (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
 
 endif (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
 
-
-if(FONTCONFIG_FOUND AND NOT TARGET Fontconfig::Fontconfig)         
-  add_library(Fontconfig::Fontconfig UNKNOWN IMPORTED)            
-  set_target_properties(Fontconfig::Fontconfig PROPERTIES        
-    IMPORTED_LOCATION "${FONTCONFIG_LIBRARIES}"                   
-    INTERFACE_INCLUDE_DIRECTORIES "${FONTCONFIG_INCLUDE_DIR}"     
-  )                                                             
+if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+  if(FONTCONFIG_FOUND AND NOT TARGET Fontconfig::Fontconfig)         
+    add_library(Fontconfig::Fontconfig UNKNOWN IMPORTED)            
+    set_target_properties(Fontconfig::Fontconfig PROPERTIES        
+      IMPORTED_LOCATION "${FONTCONFIG_LIBRARIES}"                   
+      INTERFACE_INCLUDE_DIRECTORIES "${FONTCONFIG_INCLUDE_DIR}"     
+    )                                                             
+  endif()
 endif()                                                         

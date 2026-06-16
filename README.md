@@ -244,16 +244,8 @@ Automatic Build Mode `win-msvc-auto-build.bat`
         
 	.\scripts\win-msvc-auto-build.bat
 	
-To accelerate your builds using Ninja ,use the `x64 Native Tools Command Prompt for VS` the script will auto-detect and switch to Ninja
-If you encounter errors while building packages with vcpkg on Ninja, it might be due to Windows path length limitations.
-To fix this, you need to enable Windows Long Paths.
-Command Prompt (CMD)
-
-	reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
-
-Or Use PowerShell
-
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1
+To accelerate your builds using Ninja ,use the msvc developer tools like `x64 Native Tools Command Prompt for VS` the script will auto-detect and switch to Ninja
+If you encounter errors while building vcpkg packages, it might be due to Windows path length limitations, so you need to enable Windows Long Paths.
 
 To cross-build, first make sure that you have all necessary dependencies
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install

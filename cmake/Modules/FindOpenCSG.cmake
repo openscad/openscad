@@ -24,13 +24,13 @@ if (NOT OPENCSG_INCLUDE_DIR)
   find_path(OPENCSG_INCLUDE_DIR
             opencsg.h
             HINTS ${OPENCSG_DIR}/include
-			      ${_MSVC_INCLUDE_HINTS}
+		  ${_MSVC_INCLUDE_HINTS}
   )
 				  
   find_library(OPENCSG_LIBRARY
                opencsg
                HINTS ${OPENCSG_DIR}/lib
-					 ${_MSVC_LIB_HINTS}
+		     ${_MSVC_LIB_HINTS}
   )
 			   
   if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
