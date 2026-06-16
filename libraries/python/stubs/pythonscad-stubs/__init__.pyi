@@ -23,7 +23,6 @@ from openscad import (  # noqa: F401
     Vector3,
 )
 
-
 class MultiToolExporter(list[tuple[str, _typing.Any]]):
     """List-based helper for exporting multi-tool / multi-color 3D models.
 
@@ -65,7 +64,9 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         """Append each validated ``(name, object)`` tuple from ``items``."""
         ...
 
-    def insert(self, index: _typing.SupportsIndex, item: tuple[str, _typing.Any]) -> None:
+    def insert(
+        self, index: _typing.SupportsIndex, item: tuple[str, _typing.Any]
+    ) -> None:
         """Insert a validated ``(name, object)`` tuple at ``index``."""
         ...
 
@@ -87,3 +88,37 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
     def show(self) -> None:
         """Display each part in the PythonSCAD preview."""
         ...
+
+@_typing.overload
+def rounded_cube(
+    size: float | Vector3,
+    r: float,
+    *,
+    fn: float | None = ...,
+    fa: float | None = ...,
+    fs: float | None = ...,
+) -> PyOpenSCAD: ...
+@_typing.overload
+def rounded_cube(
+    size: float | Vector3,
+    *,
+    d: float,
+    fn: float | None = ...,
+    fa: float | None = ...,
+    fs: float | None = ...,
+) -> PyOpenSCAD: ...
+def rounded_cube(
+    size: float | Vector3,
+    r: float | None = ...,
+    *,
+    d: float | None = ...,
+    fn: float | None = ...,
+    fa: float | None = ...,
+    fs: float | None = ...,
+) -> PyOpenSCAD:
+    """Create a cube or box with uniformly rounded edges and corners.
+
+    Specify exactly one of ``r`` (radius) or ``d`` (diameter). Optional
+    ``fn``, ``fa``, and ``fs`` control rounding-sphere tessellation.
+    """
+    ...

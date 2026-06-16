@@ -1,8 +1,6 @@
 """PythonSCAD public API.
 
-Strict superset of :mod:`openscad`. Currently a 1:1 re-export; future
-PythonSCAD-only additions (new classes, helper APIs) will land here as
-either symbols in this package or as submodules.
+Strict superset of :mod:`openscad`.
 
 This package re-exports :mod:`openscad` rather than :mod:`_openscad`
 directly, so any pure-Python implementation or override added in
@@ -189,7 +187,9 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         validated = [self._validate_item(item) for item in items]
         super().extend(validated)
 
-    def insert(self, index: _typing.SupportsIndex, item: tuple[str, _typing.Any]) -> None:
+    def insert(
+        self, index: _typing.SupportsIndex, item: tuple[str, _typing.Any]
+    ) -> None:
         """Insert a validated ``(name, object)`` tuple at ``index``."""
         super().insert(index, self._validate_item(item))
 
@@ -304,3 +304,100 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         """
         for _name, geometry in self.parts():
             show(geometry)  # noqa: F405
+
+
+@_typing.overload
+def rounded_cube(
+    size: _typing.Union[float, _typing.List[float]],
+    r: float,
+    *,
+    fn: _typing.Optional[float] = None,
+    fa: _typing.Optional[float] = None,
+    fs: _typing.Optional[float] = None,
+) -> _typing.Any: ...
+
+
+@_typing.overload
+def rounded_cube(
+    size: _typing.Union[float, _typing.List[float]],
+    *,
+    d: float,
+    fn: _typing.Optional[float] = None,
+    fa: _typing.Optional[float] = None,
+    fs: _typing.Optional[float] = None,
+) -> _typing.Any: ...
+
+
+def rounded_cube(
+    size: _typing.Union[float, _typing.List[float]],
+    r: _typing.Optional[float] = None,
+    *,
+    d: _typing.Optional[float] = None,
+    fn: _typing.Optional[float] = None,
+    fa: _typing.Optional[float] = None,
+    fs: _typing.Optional[float] = None,
+) -> _typing.Any:
+    """Create a cube or box with uniformly rounded edges and corners.
+
+    The outer ``size`` includes the rounding. Specify the corner radius with
+    exactly one of ``r`` (radius) or ``d`` (diameter); both or neither raise
+    :class:`TypeError`.
+
+    Args:
+        size: Edge length for a uniform cube, or ``[x, y, z]`` for a box.
+        r: Rounding radius. Must be positive. Cannot be used with ``d``.
+        d: Rounding diameter. Must be positive. Cannot be used with ``r``.
+        fn: Number of fragments for the rounding sphere approximation.
+        fa: Minimum angle for each rounding-sphere fragment.
+        fs: Minimum size for each rounding-sphere fragment.
+
+    Returns:
+        A 3D geometric object.
+
+    Raises:
+        TypeError: If neither or both of ``r`` and ``d`` are given, or if
+            ``size`` is not a number or a 3-element list.
+        ValueError: If ``r``/``d`` is not positive, or any outer dimension
+            is not greater than ``2 * radius``.
+
+    Example:
+        >>> rounded_cube(20, 2).show()
+        >>> rounded_cube([30, 20, 10], d=4).show()
+        >>> rounded_cube(20, r=2, fn=100).show()
+    """
+    if r is not None and d is not None:
+        raise TypeError("rounded_cube: specify exactly one of r or d, not both")
+    if r is None and d is None:
+        raise TypeError("rounded_cube: specify exactly one of r or d")
+    if r is not None:
+        radius = r
+    else:
+        assert d is not None
+        radius = d / 2
+
+    if radius <= 0:
+        raise ValueError("rounded_cube: r and d must be positive")
+
+    if isinstance(size, list):
+        if len(size) != 3:
+            raise TypeError(
+                "rounded_cube: size list must have exactly 3 elements [x, y, z]"
+            )
+        if any(s <= 2 * radius for s in size):
+            raise ValueError(
+                "rounded_cube: each size dimension must be greater than 2*radius"
+            )
+        inner_size = [s - (2 * radius) for s in size]
+    elif isinstance(size, (int, float)):
+        if size <= 2 * radius:
+            raise ValueError("rounded_cube: size must be greater than 2*radius")
+        inner_size = size - (2 * radius)
+    else:
+        raise TypeError(
+            f"rounded_cube: size must be a number or [x, y, z] list, "
+            f"got {type(size).__name__}"
+        )
+
+    return minkowski(cube(inner_size), sphere(r=radius, fn=fn, fa=fa, fs=fs)).translate(
+        [radius, radius, radius]
+    )

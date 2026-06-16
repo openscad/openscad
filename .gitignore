@@ -2,6 +2,7 @@ dist/
 /build*
 .venv
 .uuid
+.autoenv.zsh
 
 # Debian packaging build artifacts
 obj-x86_64-linux-gnu/
