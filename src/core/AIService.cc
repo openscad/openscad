@@ -138,17 +138,21 @@ void AIService::chatCompletionStream(const std::vector<ChatMessage>& history, Ch
   }
 
   std::vector<AIChatMessage> ai_history;
+  std::string sys_prompt =
+    "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
   if (config.parameters.contains("system_prompt") && config.parameters["system_prompt"].is_string()) {
-    std::string sys_prompt = config.parameters["system_prompt"].get<std::string>();
-    if (!sys_prompt.empty()) {
-      bool already_has_system = false;
-      if (!history.empty() && history[0].role == "system") {
-        already_has_system = true;
-      }
-      if (!already_has_system) {
-        ai_history.push_back({"system", sys_prompt});
-      }
+    std::string temp = config.parameters["system_prompt"].get<std::string>();
+    if (!temp.empty()) {
+      sys_prompt = temp;
     }
+  }
+
+  bool already_has_system = false;
+  if (!history.empty() && history[0].role == "system") {
+    already_has_system = true;
+  }
+  if (!already_has_system) {
+    ai_history.push_back({"system", sys_prompt});
   }
 
   for (const auto& msg : history) {
@@ -171,17 +175,21 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
   }
 
   std::vector<AIChatMessage> ai_history;
+  std::string sys_prompt =
+    "You are an expert OpenSCAD designer. Write clean, elegant, and efficient OpenSCAD code.";
   if (config.parameters.contains("system_prompt") && config.parameters["system_prompt"].is_string()) {
-    std::string sys_prompt = config.parameters["system_prompt"].get<std::string>();
-    if (!sys_prompt.empty()) {
-      bool already_has_system = false;
-      if (!history.empty() && history[0].role == "system") {
-        already_has_system = true;
-      }
-      if (!already_has_system) {
-        ai_history.push_back({"system", sys_prompt});
-      }
+    std::string temp = config.parameters["system_prompt"].get<std::string>();
+    if (!temp.empty()) {
+      sys_prompt = temp;
     }
+  }
+
+  bool already_has_system = false;
+  if (!history.empty() && history[0].role == "system") {
+    already_has_system = true;
+  }
+  if (!already_has_system) {
+    ai_history.push_back({"system", sys_prompt});
   }
 
   for (const auto& msg : history) {
@@ -198,7 +206,10 @@ std::string AIService::getDefaultPrompt() const
   if (loadActiveProfile(config, error_msg)) {
     if (config.parameters.contains("default_prompt") &&
         config.parameters["default_prompt"].is_string()) {
-      return config.parameters["default_prompt"].get<std::string>();
+      std::string prompt = config.parameters["default_prompt"].get<std::string>();
+      if (!prompt.empty()) {
+        return prompt;
+      }
     }
   }
   return "Create a sphere with radius 10 and detail level $fn=50.";
