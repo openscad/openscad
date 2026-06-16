@@ -87,7 +87,7 @@ echo }
 ) > "%MANIFEST_DIR%\vcpkg.json"
 
 rem -------------------------------------------------------------------------
-rem Check Tool in System
+rem Prepare Build Tools 
 rem -------------------------------------------------------------------------
 set "has_win_flex=0"
 set "has_sed=0"
@@ -292,6 +292,7 @@ if "%CMAKE_VS_GENERATOR%" equ "" (
 rem -------------------------------------------------------------------------
 rem VCPKG
 rem ------------------------------------------------------------------------- 
+rem 
 rem user already have vcpkg 
 if defined VCPKG_ROOT (
     if exist "%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" (
@@ -301,6 +302,14 @@ if defined VCPKG_ROOT (
 ) else (
   echo [INFO] NO VCPKG_ROOT env variable ,try auto-install
   set "VCPKG_PATH=%ROOT_PATH%\vcpkg"
+)
+
+rem --- prevent Defined from Microsoft ,it will bug when building because limit lenght path
+echo "%VCPKG_PATH%" | findstr /I /C:"Microsoft Visual Studio" >nul
+
+if %errorlevel% equ 0 (
+    echo [WARNING] Override VCPKG Root From Microsoft, preventing errors.
+    set "VCPKG_PATH=%ROOT_PATH%\vcpkg"
 )
 
 rem  ---------------------------------------------------------
