@@ -89,7 +89,7 @@ else (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
 
 endif (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
 
-if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+if(MSVC)
   if(FONTCONFIG_FOUND AND NOT TARGET Fontconfig::Fontconfig)         
     add_library(Fontconfig::Fontconfig UNKNOWN IMPORTED)            
     set_target_properties(Fontconfig::Fontconfig PROPERTIES        
