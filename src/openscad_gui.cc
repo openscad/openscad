@@ -770,9 +770,9 @@ void registerDefaultIcon(const QString&)
 }  // namespace
 
 #ifdef OPENSCAD_SUFFIX
-#define DESKTOP_FILENAME "pythonscad" OPENSCAD_SUFFIX
+#define DESKTOP_FILENAME "org.pythonscad.pythonscad" OPENSCAD_SUFFIX
 #else
-#define DESKTOP_FILENAME "pythonscad"
+#define DESKTOP_FILENAME "org.pythonscad.pythonscad"
 #endif
 
 int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
