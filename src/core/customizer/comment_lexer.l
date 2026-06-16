@@ -63,14 +63,14 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 [^\\\n\"]		{ stringcon += yytext; }
 \" 			{ BEGIN(INITIAL);
 			comment_parserlval.text = strdup(stringcon.c_str());
-			return COMMENT_WORD; }
+			return WORD; }
 <<EOF>> {   BEGIN(INITIAL);
 			comment_parserlval.text = strdup(stringcon.c_str());
-			return COMMENT_WORD; }
+			return WORD; }
 }
 
    
-[^(\[ \] \, \" \:)]* { comment_parserlval.text=strdup(yytext); return COMMENT_WORD;}
+[^(\[ \] \, \" \:)]* { comment_parserlval.text=strdup(yytext); return WORD;}
 
 . { }
 

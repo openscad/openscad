@@ -27,7 +27,7 @@
 
 
 %token<num> NUM
-%token<text> COMMENT_WORD
+%token<text> WORD
 
 %type <text> word
 %type <expr> expr
@@ -143,7 +143,7 @@ wordexpr:
     ;
 
 word:
-    COMMENT_WORD
+    WORD
     {
         $$=$1;    
     }
@@ -161,7 +161,7 @@ word:
         $$ = strdup(strs.str().c_str());
         free($2);
     }
-    | word COMMENT_WORD
+    | word WORD
     {
         std::ostringstream strs;
         strs << $1 << " " << $2;
