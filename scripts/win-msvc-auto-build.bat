@@ -93,7 +93,6 @@ set "has_win_flex=0"
 set "has_sed=0"
 set "has_msgfmt=0"
 
-
 where win_flex >nul 2>nul && set "has_win_flex=1"
 where sed      >nul 2>nul && set "has_sed=1"
 where msgfmt   >nul 2>nul && set "has_msgfmt=1"
@@ -114,15 +113,6 @@ if "%has_win_flex%"=="0" if not exist "%WINFLEXBISON_PATH%\win_flex.exe" (
         exit /b 1
     )
     
-    rem aliase 
-    if not exist "%WINFLEXBISON_PATH%\flex.exe" (
-        copy "%WINFLEXBISON_PATH%\win_flex.exe" "%WINFLEXBISON_PATH%\flex.exe"
-    )
-    
-     if not exist "%WINFLEXBISON_PATH%\bison.exe" (
-        copy "%WINFLEXBISON_PATH%\win_bison.exe" "%WINFLEXBISON_PATH%\bison.exe"
-    )
-  
     echo [SUCCESS] winflexbison deployed.
 )
 rem -------------------------------------------------------------------------
@@ -172,7 +162,7 @@ if "%has_msgfmt%"=="0" if not exist "%GETTEXT_PATH%\bin\msgfmt.exe" (
 rem -------------------------------------------------------------------------
 rem Set Path 
 rem -------------------------------------------------------------------------
-set "PATH=%PATH%;%GETTEXT_PATH%\bin;%GIT_LINUX_PATH%\usr\bin;%WINFLEXBISON_PATH%"
+set "PATH=%WINFLEXBISON_PATH%;%GETTEXT_PATH%\bin;%PATH%;%GIT_LINUX_PATH%\usr\bin"
 echo -------------------------------------------------------------------------
 
 
@@ -235,14 +225,6 @@ if %errorlevel% neq 0 (
     echo Don't forget to Disable Windows App Execution on Python
     exit /b 1
 )
-
-rem check win_flex
-where win_flex.exe >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [ERROR] No win_flex found.
-    exit /b 1
-)
-
 
 rem -------------------------------------------------------------------------
 rem Check Ninja
