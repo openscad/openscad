@@ -45,6 +45,7 @@ jobs:
               'Build and upload macOS build',
               'Build RPM packages',
               'Build Windows Native Package',
+              'Build WebAssembly',
             ];
 
             const MAX_WAIT_MS = 90 * 60 * 1000; // 90 minutes

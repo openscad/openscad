@@ -311,10 +311,31 @@ make -j$(sysctl -n hw.ncpu)
 
 ### WebAssembly Build
 
+PythonSCAD ships a Python-enabled WASM build. Two variants: `node` (NODERAWFS,
+for smoke testing) and `web` (MEMFS + preloaded stdlib, for browser distribution).
+
 ```bash
-./scripts/wasm-base-docker-run.sh emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Debug
-./scripts/wasm-base-docker-run.sh cmake --build build-web -j2
+# Build the Docker base image once (~30 min, CPython cross-compile)
+docker build -f Dockerfile.wasm-python-base -t pythonscad-wasm-python-base:local .
+
+# Node variant (fast smoke test)
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-wasm-node \
+  -DWASM_BUILD_TYPE=node -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-wasm-node -j$(nproc)
+
+# Web variant (browser distribution)
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-wasm-web \
+  -DWASM_BUILD_TYPE=web -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-wasm-web -j$(nproc)
+
+# Test in browser
+cp wasm-test/test.html build-wasm-web/
+python3 wasm-test/serve.py 8080 build-wasm-web/
+# Open http://localhost:8080/test.html
 ```
+
+See `doc/wasm-build.md` for the full guide including architecture rationale,
+smoke testing, JavaScript API, and known gotchas.
 
 ## Common Debugging Workflows
 

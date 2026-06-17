@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PythonSCAD WASM — Browser Smoke Test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: monospace; max-width: 860px; margin: 2em auto; padding: 0 1em; }
+    h1 { font-size: 1.3em; }
+    textarea { width: 100%; height: 120px; font-family: monospace; font-size: 0.95em; }
+    button { margin: 0.5em 0; padding: 0.5em 1.2em; cursor: pointer; font-size: 1em; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    pre { background: #f4f4f4; padding: 1em; white-space: pre-wrap; word-break: break-all;
+          max-height: 300px; overflow-y: auto; border: 1px solid #ddd; }
+    .ok  { color: #1a7f37; }
+    .err { color: #cf222e; }
+    #download { display: none; margin-left: 1em; }
+  </style>
+</head>
+<body>
+  <h1>PythonSCAD WASM — Smoke Test</h1>
+  <p>Renders a Python script using PythonSCAD compiled to WebAssembly.
+     First run downloads the WASM + stdlib data (~10 MB).</p>
+
+  <textarea id="code">from openscad import *
+show(difference(cube([20, 20, 20], center=True), cylinder(h=25, r=5, center=True)))
+</textarea>
+  <br>
+  <button id="run">&#9654; Render</button>
+  <a id="download">&#8595; Download STL</a>
+
+  <pre id="output">Click Render to run.</pre>
+
+  <script type="module">
+    import OpenSCAD from './pythonscad.js';
+
+    const outputEl  = document.getElementById('output');
+    const runBtn    = document.getElementById('run');
+    const dlLink    = document.getElementById('download');
+    let lastBlobUrl = null;
+
+    function log(msg, cls) {
+      outputEl.textContent = msg;
+      outputEl.className   = cls || '';
+    }
+
+    runBtn.addEventListener('click', async () => {
+      runBtn.disabled = true;
+      dlLink.style.display = 'none';
+      log('Initialising WASM module — first run downloads ~10 MB…');
+
+      const stdout = [], stderr = [];
+
+      let mod;
+      try {
+        mod = await OpenSCAD({
+          print:    (s) => { stdout.push(s); console.log('[stdout]', s); },
+          printErr: (s) => { stderr.push(s); console.warn('[stderr]', s); },
+        });
+      } catch (e) {
+        log('Module init failed:\n' + e, 'err');
+        runBtn.disabled = false;
+        return;
+      }
+
+      const code = document.getElementById('code').value;
+      mod.FS.writeFile('/input.py', code);
+
+      let exitCode = 0;
+      try {
+        mod.callMain(['-o', '/output.stl', '--trust-python', '/input.py']);
+      } catch (e) {
+        // Emscripten throws ExitStatus when the process calls exit()
+        if (e && typeof e.status === 'number') {
+          exitCode = e.status;
+        } else {
+          exitCode = 1;
+          const detail = e?.stack || e?.message || String(e);
+          stderr.push(detail);
+          console.error('[exception]', e);
+        }
+      }
+
+      const allOutput = [...stdout, ...stderr].join('\n');
+
+      if (exitCode === 0) {
+        let stl;
+        try { stl = mod.FS.readFile('/output.stl'); } catch (_) { /* no file */ }
+
+        if (stl && stl.length > 0) {
+          if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+          const blob = new Blob([stl], { type: 'model/stl' });
+          const url  = URL.createObjectURL(blob);
+          lastBlobUrl = url;
+          dlLink.href     = url;
+          dlLink.download = 'output.stl';
+          dlLink.style.display = 'inline';
+          dlLink.textContent   = `↓ Download STL (${stl.length} bytes)`;
+          log(`✓ Success — ${stl.length} bytes\n\n${allOutput}`, 'ok');
+        } else {
+          log(`Exit 0 but no STL produced.\n\n${allOutput}`, 'err');
+        }
+      } else {
+        log(`✗ Exit code ${exitCode}\n\n${allOutput}`, 'err');
+      }
+
+      runBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>

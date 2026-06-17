@@ -7,7 +7,7 @@
 <script>
 (function() {
     const REPO = "pythonscad/pythonscad";
-    const PLATFORM_ORDER = ["windows", "linux-debian", "linux-fedora", "linux-appimage", "linux", "macos", "other"];
+    const PLATFORM_ORDER = ["windows", "linux-debian", "linux-fedora", "linux-appimage", "linux", "macos", "wasm", "other"];
 
     function getPlatform(assetName) {
         const n = assetName.toLowerCase();
@@ -17,6 +17,7 @@
         if (n.endsWith(".deb") || /debian|ubuntu|apt/.test(n)) return "linux-debian";
         if (n.endsWith(".rpm") || /fedora|redhat|rhel|centos|yum|dnf/.test(n)) return "linux-fedora";
         if (/linux/.test(n)) return "linux";
+        if (n.endsWith(".zip") && /wasm|webassembly/.test(n)) return "wasm";
         return "other";
     }
 
@@ -44,7 +45,7 @@
             const mainAssets = assets.filter(a => !isChecksumOrMeta(a.name));
             const byPlatform = {
                 windows: [], "linux-debian": [], "linux-fedora": [], "linux-appimage": [],
-                linux: [], macos: [], other: []
+                linux: [], macos: [], wasm: [], other: []
             };
             mainAssets.forEach(a => {
                 const platform = getPlatform(a.name);
@@ -64,9 +65,21 @@
                     "linux-appimage": "Linux (AppImage)",
                     linux: "Linux (other)",
                     macos: "macOS",
+                    wasm: "WebAssembly / Browser",
                     other: "Other"
                 };
                 const sectionBlurbs = {
+                    wasm:
+                        "Run PythonSCAD entirely in your browser — no installation required. "
+                        + "The ZIP contains <code>pythonscad.js</code>, <code>pythonscad.wasm</code>, "
+                        + "<code>pythonscad.data</code>, and <code>test.html</code>. "
+                        + "Serve the extracted folder with the bundled dev server "
+                        + "(<code>python3 wasm-test/serve.py 8080 .</code>) and open "
+                        + "<code>test.html</code>. A plain <code>python3 -m http.server</code> "
+                        + "will not work — browsers require correct MIME types for "
+                        + "<code>.wasm</code> and <code>.data</code> files. "
+                        + "A browser with WASM support (Chrome, Firefox, "
+                        + "Edge, Safari 16+) is required.",
                     windows:
                         "Windows binaries are not yet code-signed. See the "
                         + "<a href=\"../installation/#windows\">Windows installation instructions</a> "

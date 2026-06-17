@@ -306,7 +306,12 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(MANIFOLD_PAR OFF CACHE BOOL "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
+  set(ENABLE_LIBFIVE OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
+
+  # CPython compiled for wasm32-emscripten (see Dockerfile.wasm-python-base)
+  set(CPYTHON_WASM_PREFIX "/cpython-wasm" CACHE PATH "CPython compiled for wasm32-emscripten")
+  set(CPYTHON_WASM_PYVER "3.14" CACHE STRING "Python version in CPYTHON_WASM_PREFIX")
   target_compile_definitions(OpenSCADLibInternal PUBLIC CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCADLibInternal PUBLIC /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
 
@@ -332,8 +337,11 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       -sEXPORT_ES6=1
       -sEXPORT_NAME=OpenSCAD
       -sMODULARIZE=1
+      -sINVOKE_RUN=0
     )
   elseif (WASM_BUILD_TYPE STREQUAL "node")
+    # Node build uses NODERAWFS (real filesystem); CPython found at its build prefix /cpython-wasm
+    target_compile_definitions(OpenSCADLibInternal PUBLIC WASM_NODE_BUILD)
     target_link_options(OpenSCADExe PUBLIC
       -sENVIRONMENT=node,worker
       -sNODEJS_CATCH_EXIT
@@ -666,6 +674,9 @@ if(ENABLE_PYTHON)
   add_library(OpenSCADPy ${PYTHON_SOURCES} )
   # _USE_MATH_DEFINES must be defined before cmath is included for M_PI on Windows
   target_compile_definitions(OpenSCADPy PRIVATE _USE_MATH_DEFINES)
+  if (CMAKE_SYSTEM_NAME STREQUAL Emscripten AND WASM_BUILD_TYPE STREQUAL "node")
+    target_compile_definitions(OpenSCADPy PRIVATE WASM_NODE_BUILD)
+  endif()
   if(ENABLE_LIBFIVE)
     target_compile_definitions(OpenSCADLibInternal PRIVATE ENABLE_LIBFIVE)
     target_compile_definitions(OpenSCADPy PRIVATE ENABLE_LIBFIVE)
@@ -834,7 +845,14 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
   else() #MXE
-	  if (MXECROSS)
+    if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
+      # WASM cross-compile: use pre-built CPython artifacts from Dockerfile.wasm-python-base.
+      # find_package(Python3) cannot run the target interpreter, so we set paths directly.
+      # Nettle is GUI-only; HEADLESS=ON (forced by NULLGL) excludes that code path.
+      set(Python_Eff_LIBRARIES "${CPYTHON_WASM_PREFIX}/lib/libpython${CPYTHON_WASM_PYVER}.a")
+      set(Python_Eff_INCLUDE_DIRS "${CPYTHON_WASM_PREFIX}/include/python${CPYTHON_WASM_PYVER}")
+      set(Python3_FOUND TRUE)
+    elseif (MXECROSS)
       # Cross builds only need the host interpreter for tooling; avoid pulling host dev libs
       find_package(Python3 REQUIRED COMPONENTS Interpreter)
       set(Python_Eff_LIBRARIES "")
@@ -848,7 +866,7 @@ if(ENABLE_PYTHON)
       SET(Python_Eff_LIBRARIES ${Python3_LIBRARIES} )
       SET(Python_Eff_INCLUDE_DIRS ${Python3_INCLUDE_DIRS} )
     endif()
-    if(NOT Nettle_FOUND)
+    if(NOT Nettle_FOUND AND NOT CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       message(WARNING "Nettle not found, disabling python support.")
       set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
     endif()
@@ -888,10 +906,12 @@ if(ENABLE_PYTHON)
     target_link_libraries(OpenSCADPy PRIVATE libfive)
   endif()
 
-  target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
-  target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
-  # OpenSCADExe also needs nettle (used in MainWindow.cc)
-  target_link_libraries(OpenSCADExe PRIVATE ${Nettle_LIBRARIES})
+  if(Nettle_FOUND)
+    target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
+    # OpenSCADExe also needs nettle (used in MainWindow.cc)
+    target_link_libraries(OpenSCADExe PRIVATE ${Nettle_LIBRARIES})
+  endif()
   # Create pythonscad-python symlink
   # On macOS bundles, this will be created via POST_BUILD command
   # On other platforms, create it in the build directory
@@ -951,6 +971,22 @@ if(ENABLE_PYTHON)
     "src/utils"
   )
   target_link_libraries(OpenSCADLibInternal PRIVATE OpenSCADPy)
+
+  # Preload CPython stdlib and PythonSCAD libraries into WASM virtual filesystem.
+  # SHELL: prevents CMake from deduplicating the --preload-file flag name across
+  # the two invocations (deduplication would drop one path, leaving the other as
+  # a dangling input-file argument that em++ rejects).
+  # Node builds use NODERAWFS (real filesystem), so --preload-file is incompatible.
+  if (CMAKE_SYSTEM_NAME STREQUAL Emscripten AND WASM_BUILD_TYPE STREQUAL "web")
+    target_link_options(OpenSCADExe PUBLIC
+      "SHELL:--preload-file ${CPYTHON_WASM_PREFIX}/lib/python${CPYTHON_WASM_PYVER}@/usr/lib/python${CPYTHON_WASM_PYVER}"
+    )
+    if (EXISTS ${CMAKE_SOURCE_DIR}/libraries/python)
+      target_link_options(OpenSCADExe PUBLIC
+        "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/libraries/python@/usr/lib/pythonscad/libraries/python"
+      )
+    endif()
+  endif()
 endif()
 if(NOT HEADLESS)
   if(MXECROSS OR WIN32)
@@ -1090,8 +1126,10 @@ endif()
 find_package(FLEX REQUIRED)
 message(STATUS "Flex: ${FLEX_VERSION}")
 
-find_package(CURL REQUIRED)
-message(STATUS "curl: found in ${CURL_INCLUDE_DIRS}")
+if(NOT HEADLESS)
+  find_package(CURL REQUIRED)
+  message(STATUS "curl: found in ${CURL_INCLUDE_DIRS}")
+endif()
 
 find_package(BISON REQUIRED)
 message(STATUS "Bison: ${BISON_VERSION}")

@@ -25,21 +25,32 @@ set -euo pipefail
 CCACHE_DIR=${CCACHE_DIR:-$HOME/.ccache/}
 mkdir -p "$CCACHE_DIR"
 
-# TODO: remove this once the base image has ccache installed
+# Build the PythonSCAD WASM base image (CPython for wasm32-emscripten) if not already present.
+# This is slow on first run (~20 min) because it compiles CPython; subsequent runs are instant.
+# To force a rebuild: docker rmi pythonscad-wasm-python-base:local
+if ! docker image inspect pythonscad-wasm-python-base:local &>/dev/null; then
+  echo "Building pythonscad-wasm-python-base:local (compiling CPython for Emscripten — first run only)..."
+  docker build \
+    --platform=linux/amd64 \
+    -f Dockerfile.wasm-python-base \
+    -t pythonscad-wasm-python-base:local \
+    .
+fi
+
 echo "
-  FROM openscad/wasm-base:latest
+  FROM pythonscad-wasm-python-base:local
   RUN apt update && \
       apt install -y ccache && \
       apt clean
 " | docker build \
   --platform=linux/amd64 \
-  -t openscad-wasm-ccache:local \
+  -t pythonscad-wasm-ccache:local \
   -f - .
 
-docker run --rm -it \
+docker run --rm -i \
   --platform=linux/amd64 \
   -w /src \
   -v "$PWD:/src:rw" \
-  -v $CCACHE_DIR:/root/.ccache:rw \
-  openscad-wasm-ccache:local \
+  -v "$CCACHE_DIR:/root/.ccache:rw" \
+  pythonscad-wasm-ccache:local \
   "$@"

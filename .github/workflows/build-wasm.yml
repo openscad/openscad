@@ -1,0 +1,145 @@
+name: Build WebAssembly
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: 'Release tag to upload artifacts to (leave empty for CI-only build)'
+        required: false
+        default: ''
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled'
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-wasm:
+    name: Build and test WebAssembly
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # for release asset upload
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          submodules: 'recursive'
+          persist-credentials: false
+
+      - name: Fetch tags for version detection
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
+
+      - name: Setup tmate session (debug)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
+        with:
+          detached: true
+          limit-access-to-actor: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build wasm-python-base Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.wasm-python-base
+          tags: pythonscad-wasm-python-base:local
+          load: true
+          # GitHub Actions cache keeps the CPython cross-compile layer warm
+          # across runs so subsequent builds take ~2 min instead of ~30 min.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build WASM node variant
+        run: |
+          docker run --rm -i \
+            -v "$PWD:/src:rw" \
+            -w /src \
+            pythonscad-wasm-python-base:local \
+            bash -c "
+              set -euo pipefail
+              emcmake cmake -B build-wasm-node \
+                -DWASM_BUILD_TYPE=node \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DEXPERIMENTAL=1 \
+                -Wno-dev 2>&1 | tail -10
+              cmake --build build-wasm-node -j\$(nproc) 2>&1 | tail -5
+            "
+
+      - name: Smoke test (node)
+        run: |
+          docker run --rm -i \
+            -v "$PWD:/src:rw" \
+            -v "$PWD/libraries/python:/cpython-wasm/lib/pythonscad/libraries/python:ro" \
+            -w /src/build-wasm-node \
+            pythonscad-wasm-python-base:local \
+            bash -c "
+              printf 'from openscad import *\nshow(difference(cube([20,20,20], center=True), cylinder(h=25, r=5, center=True)))\n' > /tmp/test.py
+              node pythonscad.js -o /tmp/out.stl --trust-python /tmp/test.py
+              SIZE=\$(wc -c < /tmp/out.stl)
+              echo \"STL output: \${SIZE} bytes\"
+              [ \"\${SIZE}\" -gt 1000 ] || { echo 'FAIL: STL too small or missing'; exit 1; }
+              echo 'PASS'
+            "
+
+      - name: Build WASM web variant
+        if: >
+          github.event_name == 'release' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
+        run: |
+          docker run --rm -i \
+            -v "$PWD:/src:rw" \
+            -w /src \
+            pythonscad-wasm-python-base:local \
+            bash -c "
+              set -euo pipefail
+              emcmake cmake -B build-wasm-web \
+                -DWASM_BUILD_TYPE=web \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DEXPERIMENTAL=1 \
+                -Wno-dev 2>&1 | tail -10
+              cmake --build build-wasm-web -j\$(nproc) 2>&1 | tail -5
+            "
+
+      - name: Package web artifacts
+        if: >
+          github.event_name == 'release' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
+        run: |
+          VERSION=$(git describe --tags --always)
+          mkdir -p dist-wasm/wasm-test
+          cp build-wasm-web/pythonscad.js \
+             build-wasm-web/pythonscad.wasm \
+             build-wasm-web/pythonscad.data \
+             wasm-test/test.html \
+             dist-wasm/
+          cp wasm-test/serve.py dist-wasm/wasm-test/
+          cd dist-wasm
+          zip -r "../pythonscad-${VERSION}-wasm.zip" .
+          echo "WASM_ZIP=pythonscad-${VERSION}-wasm.zip" >> "$GITHUB_ENV"
+
+      - name: Upload WASM artifacts to release
+        if: >
+          github.event_name == 'release' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release upload "$RELEASE_TAG" "$WASM_ZIP" \
+            -R "$GH_REPO" --clobber
