@@ -1,0 +1,19 @@
+{
+  "name": "pythonscad-pip",
+  "version-string": "1.0.0",
+  "builtin-baseline": "2025.04.09",
+  "dependencies": [
+    "boost-regex",
+    "boost-program-options",
+    "eigen3",
+    "cgal",
+    "cairo",
+    "harfbuzz",
+    "fontconfig",
+    "double-conversion",
+    "libxml2",
+    "glib",
+    "winflexbison",
+    "pkgconf"
+  ]
+}

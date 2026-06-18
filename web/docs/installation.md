@@ -103,13 +103,25 @@ permission for a single unsigned app.
 ## Installing via Python (pip / pipx)
 
 PythonSCAD is available on [PyPI](https://pypi.org/project/pythonscad/).
-Installing via pip compiles the C++ extension from source, so you
-will need the build dependencies listed below.
+Pre-built binary wheels are published for Linux (x86_64 and aarch64), macOS
+(Intel and Apple Silicon), and Windows, covering Python 3.10 through 3.14.
+On supported platforms, installation is fast and does not require a C++
+compiler or geometry libraries on your system.
 
-### Build dependencies
+### Install from PyPI
 
-A C++17 compiler, `pkg-config`, `bison`, `flex`, and the following
-libraries must be installed before running `pip install`:
+```shell
+pip install pythonscad
+```
+
+If no compatible wheel exists for your platform or Python version, pip falls
+back to building from the source distribution. In that case you will need the
+build dependencies listed below.
+
+### Build dependencies (source fallback only)
+
+When pip must compile from source, you need a C++17 compiler, `pkg-config`,
+`bison`, `flex`, and the following libraries:
 
 - Eigen3, CGAL, GMP, MPFR
 - Freetype2, Fontconfig, HarfBuzz
@@ -119,13 +131,7 @@ libraries must be installed before running `pip install`:
 On Debian/Ubuntu you can install them with:
 
 ```shell
-sudo ./scripts/get-dependencies.py --yes --profile pythonscad-qt5
-```
-
-### Install from PyPI
-
-```shell
-pip install pythonscad
+sudo ./scripts/get-dependencies.py --yes --profile pythonscad-pip
 ```
 
 After installing, you can choose between two equivalent imports:

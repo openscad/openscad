@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "notes":
+    "Minimal build dependencies for the pip/_openscad extension (no Qt/GUI). Used by cibuildwheel macOS hooks and documented for local wheel builds.",
+  "distros": {
+    "debian": {
+      "manager": "apt",
+      "pre_commands": [
+        "apt-get update"
+      ],
+      "post_commands": [],
+      "packages": [
+        "bison",
+        "build-essential",
+        "flex",
+        "libboost-program-options-dev",
+        "libboost-regex-dev",
+        "libcairo2-dev",
+        "libcgal-dev",
+        "libdouble-conversion-dev",
+        "libeigen3-dev",
+        "libfontconfig-dev",
+        "libfreetype-dev",
+        "libglib2.0-dev",
+        "libgmp-dev",
+        "libharfbuzz-dev",
+        "libmpfr-dev",
+        "libxml2-dev",
+        "pkg-config"
+      ]
+    },
+    "ubuntu": {
+      "extends": "debian",
+      "packages": []
+    },
+    "fedora": {
+      "manager": "dnf",
+      "pre_commands": [],
+      "post_commands": [],
+      "packages": [
+        "bison",
+        "boost-devel",
+        "cairo-devel",
+        "CGAL-devel",
+        "double-conversion-devel",
+        "eigen3-devel",
+        "flex",
+        "fontconfig-devel",
+        "freetype-devel",
+        "gcc",
+        "gcc-c++",
+        "glib2-devel",
+        "gmp-devel",
+        "harfbuzz-devel",
+        "libxml2-devel",
+        "mpfr-devel",
+        "pkgconfig"
+      ]
+    },
+    "macos": {
+      "manager": "brew",
+      "pre_commands": [],
+      "post_commands": [],
+      "packages": [
+        "bison",
+        "boost",
+        "cgal",
+        "cairo",
+        "double-conversion",
+        "eigen",
+        "flex",
+        "fontconfig",
+        "freetype",
+        "glib",
+        "gmp",
+        "harfbuzz",
+        "libxml2",
+        "mpfr",
+        "pkg-config"
+      ]
+    },
+    "msys2": {
+      "manager": "pacboy",
+      "pre_commands": [],
+      "post_commands": [],
+      "packages": [
+        "bison:",
+        "boost:p",
+        "cgal:p",
+        "cairo:p",
+        "double-conversion:p",
+        "eigen3:p",
+        "flex:",
+        "fontconfig:p",
+        "freetype:p",
+        "gcc:p",
+        "glib2:p",
+        "gmp:p",
+        "harfbuzz:p",
+        "libxml2:p",
+        "mpfr:p",
+        "pkgconf:p",
+        "toolchain:p"
+      ]
+    }
+  }
+}

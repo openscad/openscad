@@ -21,12 +21,14 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Multimedia :: Graphics :: 3D Modeling",
     "Topic :: Scientific/Engineering",
 ]
@@ -50,3 +52,26 @@ Documentation = "https://pythonscad.org/tutorial/site/index.html"
 Repository = "https://github.com/pythonscad/pythonscad"
 Issues = "https://github.com/pythonscad/pythonscad/issues"
 Changelog = "https://github.com/pythonscad/pythonscad/blob/master/CHANGELOG.md"
+
+[tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
+skip = ["*-musllinux*", "*-win32*", "*-win_arm64*", "cp*t-*", "pp*"]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+build-frontend = "build"
+test-requires = ["ipython>=8,<9"]
+test-command = "python {project}/scripts/smoke-test-pip.py"
+
+[tool.cibuildwheel.linux]
+before-all = "bash scripts/cibuildwheel/install-deps-manylinux.sh"
+before-build = "bash -c 'echo \"cibuildwheel CXX=$CXX\"; \"$CXX\" --version'"
+environment = { CC = "/opt/rh/gcc-toolset-12/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-12/root/usr/bin/g++", CXXFLAGS = "-std=c++17" }
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+before-all = "bash scripts/cibuildwheel/install-deps-macos.sh"
+
+[tool.cibuildwheel.windows]
+environment = { VCPKG_DEFAULT_TRIPLET = "x64-windows" }
+before-all = "pwsh scripts/cibuildwheel/install-deps-windows.ps1"
+repair-wheel-command = "pwsh scripts/cibuildwheel/repair-wheel-windows.ps1 -Wheel {wheel} -DestDir {dest_dir}"

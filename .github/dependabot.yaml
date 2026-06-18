@@ -28,7 +28,14 @@ updates:
     groups:
       runtime-python-deps:
         patterns:
-          - "*"
+          - "ipython"
+      python-wheel-build:
+        patterns:
+          - "build"
+          - "cibuildwheel"
+          - "auditwheel"
+          - "delocate"
+          - "delvewheel"
     labels:
       - "dependencies"
       - "python-runtime-bundle"

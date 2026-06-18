@@ -1,0 +1,67 @@
+# Build a representative PyPI wheel on pull requests to catch packaging regressions
+# before release. The full multi-platform matrix runs in publish-to-pypi.yml.
+name: Build PyPI wheels
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "setup.py"
+      - "pyproject.toml"
+      - "MANIFEST.in"
+      - "scripts/cibuildwheel/**"
+      - "scripts/smoke-test-pip.py"
+      - "scripts/deps/profiles/pythonscad-pip.json"
+      - "requirements/build-pypi.txt"
+      - ".github/workflows/build-pypi-wheels.yml"
+  pull_request:
+    paths:
+      - "setup.py"
+      - "pyproject.toml"
+      - "MANIFEST.in"
+      - "scripts/cibuildwheel/**"
+      - "scripts/smoke-test-pip.py"
+      - "scripts/deps/profiles/pythonscad-pip.json"
+      - "requirements/build-pypi.txt"
+      - ".github/workflows/build-pypi-wheels.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-pypi-wheels-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-wheel-smoke:
+    name: cp312 manylinux x86_64 wheel + smoke test
+    runs-on: ubuntu-24.04
+    env:
+      CIBW_BUILD: cp312-manylinux_x86_64
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Fetch tags for version detection
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: pip install -r requirements/build-pypi.txt
+
+      - name: Build wheel
+        uses: pypa/cibuildwheel@a0a973acdc9e7b7f8b04ac5c80e6883a5a102615 # v4.1.0
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pypi-wheel-smoke
+          path: wheelhouse/*.whl
