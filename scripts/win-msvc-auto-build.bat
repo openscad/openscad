@@ -336,10 +336,6 @@ rem -------------------------------------------------------------------------
 echo [INFO] Begin Process
 echo ---------------------------------------------------------
 
-rem run integrate install 
-cd /d "%VCPKG_PATH%"
-vcpkg integrate install 
-
 echo [INFO] Updating git submodules in openscad...
 cd /d "%OPENSCAD_PATH%"
 git submodule update --init --recursive
@@ -383,11 +379,13 @@ cmake -B "%BUILD_NAME%" -G "%CMAKE_VS_GENERATOR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE
 -DHEADLESS=%EN_HEADLESS% -DUSE_QT6=%EN_QT% -DENABLE_TESTS=%BUILD_TEST% ^
 -DENABLE_MANIFOLD=ON ^
 -DENABLE_CAIRO=ON ^
--DUSE_BUILTIN_OPENCSG=ON -DUSE_BUILTIN_MANIFOLD=ON -DUSE_BUILTIN_CLIPPER2=ON ^
+-DUSE_BUILTIN_OPENCSG=ON -DUSE_BUILTIN_MANIFOLD=OFF -DUSE_BUILTIN_CLIPPER2=OFF ^
 -DCMAKE_TOOLCHAIN_FILE="%VCPKG_PATH%/scripts/buildsystems/vcpkg.cmake" ^
 -DCMAKE_EXE_LINKER_FLAGS="/manifest:no" -DCMAKE_MODULE_LINKER_FLAGS="/manifest:no" -DCMAKE_SHARED_LINKER_FLAGS="/manifest:no" ^
 -DVCPKG_MANIFEST_DIR="%MANIFEST_DIR%" ^
 -DVCPKG_MANIFEST_MODE=%MODE_MANIFEST%
+
+rem -DVCPKG_BINARY_SOURCES="clear;default,writable" -DVCPKG_INSTALL_OPTIONS="--clean-after-build"
 
 if %errorlevel% neq 0 (
     echo [ERROR] CMake configuration failed.
