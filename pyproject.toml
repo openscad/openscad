@@ -38,12 +38,15 @@ classifiers = [
 # installer) consume requirements/runtime.txt directly via
 # `pip install --target=...`.
 #
-# IPython is capped at <9 to avoid IPython 9.x's hard `psutil>=7`
-# dependency, which has no prebuilt MSYS2/UCRT64 wheel and fails to
-# build from source against MSYS2's `winternl.h`. See the longer
-# rationale in requirements/runtime.txt.
+# IPython 9.x requires `psutil>=7`. Windows native bundles vend
+# psutil from MSYS2 pacman; see requirements/runtime.txt.
+#
+# IPython 9.x itself requires Python 3.11+. Binary bundles always
+# ship IPython 9 (see requirements/runtime.txt). The pip wheel keeps
+# IPython 8.x on Python 3.10 via environment markers below.
 dependencies = [
-    "ipython>=8,<9",
+    "ipython>=9,<10; python_version>='3.11'",
+    "ipython>=8,<9; python_version<'3.11'",
 ]
 
 [project.urls]
@@ -59,8 +62,14 @@ skip = ["*-musllinux*", "*-win32*", "*-win_arm64*", "cp*t-*", "pp*"]
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 build-frontend = "build"
-test-requires = ["ipython>=8,<9"]
+# cibuildwheel splits test-requires on ';', so PEP 508 markers must
+# use [[tool.cibuildwheel.overrides]] instead of inline markers here.
+test-requires = ["ipython>=9,<10"]
 test-command = "python {project}/scripts/smoke-test-pip.py"
+
+[[tool.cibuildwheel.overrides]]
+select = "cp310-*"
+test-requires = ["ipython>=8,<9"]
 
 [tool.cibuildwheel.linux]
 before-all = "bash scripts/cibuildwheel/install-deps-manylinux.sh"

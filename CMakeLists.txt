@@ -2203,7 +2203,7 @@ if(NOT APPLE OR APPLE_UNIX)
       install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pythonscad-python DESTINATION "${OPENSCAD_BINDIR}")
     endif()
 
-    # On Windows, the runtime Python deps (currently: IPython 8.x and its
+    # On Windows, the runtime Python deps (currently: IPython 9.x and its
     # transitive deps) are populated into ${CMAKE_BINARY_DIR}/pythonscad-bundled-py
     # by scripts/bundle-runtime-python.sh, invoked from the Windows build
     # workflow ahead of `cmake --install`. CPack then picks the directory

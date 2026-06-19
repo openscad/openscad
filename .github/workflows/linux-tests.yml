@@ -52,14 +52,22 @@ jobs:
         # standard PEP 668 escape hatch on Ubuntu 24.04+; pre-PEP-668
         # runners just ignore it and install normally.
         #
-        # `ipython<9` matches the cap in `requirements/runtime.txt`
-        # and `pyproject.toml`. We deliberately exercise the same
-        # major version that binary bundles (AppImage / .app /
-        # Windows installer) and the published pip wheel ship, so
-        # CI catches regressions in the version users actually run.
-        # See requirements/runtime.txt for the rationale on why <9.
-        python3 -m pip install --break-system-packages --upgrade 'ipython<9' pexpect \
-          || python3 -m pip install --upgrade 'ipython<9' pexpect
+        # IPython 9.x requires Python 3.11+. ubuntu-22.04 runners
+        # still ship Python 3.10, so skip the IPython install there; the
+        # --ipython smoke tests exercise the fallback REPL on that leg.
+        # pexpect is installed unconditionally so ipython-pty can run.
+        python3 -m pip install --break-system-packages --upgrade pip \
+          || python3 -m pip install --upgrade pip
+        if python3 -c 'import sys; sys.exit(0 if sys.version_info < (3, 11) else 1)'; then
+          py_ver=$(python3 -c 'import sys; print("%d.%d" % (sys.version_info.major, sys.version_info.minor))')
+          echo "SKIP: IPython 9.x requires Python 3.11+; this runner has ${py_ver}."
+          echo "Installing pexpect only; --ipython tests will exercise the fallback REPL path."
+          python3 -m pip install --break-system-packages --upgrade pexpect \
+            || python3 -m pip install --upgrade pexpect
+          exit 0
+        fi
+        python3 -m pip install --break-system-packages --upgrade 'ipython>=9,<10' pexpect \
+          || python3 -m pip install --upgrade 'ipython>=9,<10' pexpect
     - name: Build and test
       run: ./scripts/github-ci.sh experimental enable_python enable_libfive ${{ matrix.qt }} build test coverage
     - name: Upload Test Result Report

@@ -198,13 +198,32 @@ cleanup_staging() {
 }
 trap cleanup_staging EXIT
 
-info "Running pip install --target=${STAGING_DEST} -r ${REQUIREMENTS}"
-"${PYTHON_BIN}" -m pip install \
-    --target "${STAGING_DEST}" \
-    --upgrade \
-    --no-compile \
-    -r "${REQUIREMENTS}" \
-    || die "pip install into ${STAGING_DEST} failed"
+is_msys2_python() {
+    # Key off the interpreter's platform tag (mingw_* on MSYS2 builds),
+    # not MSYSTEM, so a python.org CPython invoked inside an MSYS2 shell
+    # still takes the normal pip install path.
+    "${PYTHON_BIN}" -c '
+import sys, sysconfig
+raise SystemExit(0 if sys.platform == "win32" and "mingw" in sysconfig.get_platform() else 1)
+' 2>/dev/null
+}
+
+if is_msys2_python; then
+    info "MSYS2 detected; using pacman-vendored psutil path for IPython 9+"
+    "${PYTHON_BIN}" "${SCRIPT_DIR}/bundle-ipython-msys2.py" \
+        --python "${PYTHON_BIN}" \
+        --target "${STAGING_DEST}" \
+        --requirements "${REQUIREMENTS}" \
+        || die "MSYS2 IPython bundle install into ${STAGING_DEST} failed"
+else
+    info "Running pip install --target=${STAGING_DEST} -r ${REQUIREMENTS}"
+    "${PYTHON_BIN}" -m pip install \
+        --target "${STAGING_DEST}" \
+        --upgrade \
+        --no-compile \
+        -r "${REQUIREMENTS}" \
+        || die "pip install into ${STAGING_DEST} failed"
+fi
 
 # Prune jedi's bundled third-party type stubs.
 #
@@ -440,12 +459,14 @@ fi
 # PYTHONPATH uses `:` as the separator on POSIX and `;` on Windows
 # native Python; doing the path-mutation in Python makes the call
 # site cross-platform without any per-host quoting tricks.
-info "Smoke-checking bundle (import IPython)"
+info "Smoke-checking bundle (import IPython, psutil)"
 "${PYTHON_BIN}" - "${DEST}" <<'PY' || die "bundle smoke check failed"
 import sys
 sys.path.insert(0, sys.argv[1])
 import IPython
+import psutil
 print("[bundle-py] bundled IPython:", IPython.__version__, "from", IPython.__file__)
+print("[bundle-py] bundled psutil:", psutil.__version__, "from", psutil.__file__)
 PY
 
 info "Bundle complete: $(du -sh "${DEST}" | cut -f1) at ${DEST}"
