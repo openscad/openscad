@@ -25,6 +25,7 @@
  */
 
 #include "genlang/genlang.h"
+#include <climits>
 #include <Python.h>
 #include "pyopenscad.h"
 #include <TransformNode.h>
@@ -683,6 +684,88 @@ PyObject *python_fill(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_csg_adv_sub(self, args, kwargs, CgalAdvType::FILL);
 }
 
+static int python_resize_disambiguate_convexity(PyObject *args, PyObject *kwargs, PyObject **autosize,
+                                                int *convexity, Py_ssize_t ambiguous_positional_count)
+{
+  PyObject *auto_arg = *autosize;
+  if (auto_arg == nullptr || PyBool_Check(auto_arg) || !PyIndex_Check(auto_arg)) return 0;
+
+  if (kwargs != nullptr) {
+    if (PyDict_GetItemString(kwargs, "auto") != nullptr) return 0;
+    if (PyDict_GetItemString(kwargs, "convexity") != nullptr) return 0;
+  }
+
+  if (args == nullptr || PyTuple_Size(args) != ambiguous_positional_count) return 0;
+
+  PyObject *index = PyNumber_Index(auto_arg);
+  if (index == nullptr) return 1;
+  int overflow = 0;
+  const long c = PyLong_AsLongAndOverflow(index, &overflow);
+  Py_DECREF(index);
+  if (PyErr_Occurred()) return 1;
+  if (overflow != 0 || c < INT_MIN || c > INT_MAX) {
+    PyErr_SetString(PyExc_OverflowError, "convexity value out of range");
+    return 1;
+  }
+  *convexity = (int)c;
+  *autosize = nullptr;
+  return 0;
+}
+
+static int python_resize_newsize(PyObject *newsize, double *x, double *y, double *z)
+{
+  *x = *y = *z = 0;
+  if (newsize == nullptr) return 0;
+
+  if (PySequence_Check(newsize) && !PyBytes_Check(newsize) && !PyUnicode_Check(newsize)) {
+    const Py_ssize_t n = PySequence_Size(newsize);
+    if (n < 1 || n > 3) return 1;
+    for (Py_ssize_t i = 0; i < n; ++i) {
+      PyObject *item = PySequence_GetItem(newsize, i);
+      if (item == nullptr) return 1;
+      double *target = (i == 0) ? x : (i == 1) ? y : z;
+      const int err = python_numberval(item, target, nullptr, 0);
+      Py_DECREF(item);
+      if (err) return 1;
+    }
+    return 0;
+  }
+
+  return python_vectorval(newsize, 1, 3, x, y, z);
+}
+
+static int python_parse_autosize(PyObject *autosize, Eigen::Matrix<bool, 3, 1>& out)
+{
+  out << false, false, false;
+  if (autosize == nullptr) return 0;
+  if (PyBool_Check(autosize)) {
+    const bool enabled = PyObject_IsTrue(autosize);
+    out << enabled, enabled, enabled;
+    return 0;
+  }
+  if (PySequence_Check(autosize) && !PyBytes_Check(autosize) && !PyUnicode_Check(autosize)) {
+    const Py_ssize_t n = PySequence_Size(autosize);
+    if (n < 1 || n > 3) return 1;
+    for (Py_ssize_t i = 0; i < n; ++i) {
+      PyObject *item = PySequence_GetItem(autosize, i);
+      if (item == nullptr) return 1;
+      if (PyBool_Check(item)) {
+        out[i] = PyObject_IsTrue(item);
+      } else {
+        double val = 0;
+        if (python_numberval(item, &val, nullptr, 0)) {
+          Py_DECREF(item);
+          return 1;
+        }
+        out[i] = val != 0;
+      }
+      Py_DECREF(item);
+    }
+    return 0;
+  }
+  return 1;
+}
+
 PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosize, int convexity)
 {
   DECLARE_INSTANCE();
@@ -695,11 +778,14 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
   auto child_dict = py_owned(child_dict_raw);
   if (child == NULL) return propagate_or_typeerror("Invalid type for Object in resize");
 
-  node->autosize << false, false, false;
+  node->newsize << 0, 0, 0;
   if (newsize != NULL) {
-    double x, y, z;
-    if (python_vectorval(newsize, 3, 3, &x, &y, &z)) {
-      PyErr_SetString(PyExc_TypeError, "Invalid resize dimensions");
+    double x = 0, y = 0, z = 0;
+    if (python_resize_newsize(newsize, &x, &y, &z)) {
+      if (!PyErr_Occurred()) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid resize dimensions: expected scalar or 1-3 element sequence");
+      }
       return NULL;
     }
     node->newsize[0] = x;
@@ -707,15 +793,13 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
     node->newsize[2] = z;
   }
 
-  if (autosize != NULL) {
-    double x, y, z;
-    if (python_vectorval(newsize, 3, 3, &x, &y, &z)) {
-      PyErr_SetString(PyExc_TypeError, "Invalid autosize dimensions");
-      return NULL;
+  if (python_parse_autosize(autosize, node->autosize)) {
+    if (!PyErr_Occurred()) {
+      PyErr_SetString(PyExc_TypeError,
+                      "Invalid auto argument: expected bool or 1-3 element sequence of bools or "
+                      "numbers");
     }
-    node->autosize[0] = x;
-    node->autosize[1] = y;
-    node->autosize[2] = z;
+    return NULL;
   }
 
   node->children.push_back(child);
@@ -747,11 +831,13 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *autosize = NULL;
   int convexity = 2;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O!O!i", kwlist, &obj, &PyList_Type, &newsize,
-                                   &PyList_Type, &autosize, &convexity)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing resize(object,vec3)");
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOi", kwlist, &obj, &newsize, &autosize,
+                                   &convexity)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Error during parsing resize(object, newsize[, auto[, convexity]])");
     return NULL;
   }
+  if (python_resize_disambiguate_convexity(args, kwargs, &autosize, &convexity, 3)) return NULL;
   return python_resize_core(obj, newsize, autosize, convexity);
 }
 
@@ -762,10 +848,10 @@ PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
   PyObject *autosize = NULL;
   int convexity = 2;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!O!i", kwlist, &PyList_Type, &newsize, &PyList_Type,
-                                   &autosize, &convexity)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing resize(object,vec3)");
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOi", kwlist, &newsize, &autosize, &convexity)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing resize(newsize[, auto[, convexity]])");
     return NULL;
   }
+  if (python_resize_disambiguate_convexity(args, kwargs, &autosize, &convexity, 2)) return NULL;
   return python_resize_core(obj, newsize, autosize, convexity);
 }

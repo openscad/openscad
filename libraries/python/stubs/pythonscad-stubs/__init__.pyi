@@ -19,6 +19,7 @@ from openscad import (  # noqa: F401
     PyLibFive,
     PyOpenSCAD,
     PyOpenSCADs,
+    Vector1,
     Vector2,
     Vector3,
 )
