@@ -27,7 +27,7 @@ jobs:
       app-name: ${{ steps.appname.outputs.app_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
           persist-credentials: false
@@ -179,7 +179,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
           persist-credentials: false
@@ -334,7 +334,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
         # No submodules needed, only for scripts

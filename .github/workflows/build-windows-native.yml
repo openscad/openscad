@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
           # Build from the release tag when uploading to a release (avoids -dirty in filenames)

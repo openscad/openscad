@@ -41,7 +41,7 @@ jobs:
     env:
       CIBW_BUILD: cp312-manylinux_x86_64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           persist-credentials: false
@@ -59,7 +59,7 @@ jobs:
         run: pip install -r requirements/build-pypi.txt
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@a0a973acdc9e7b7f8b04ac5c80e6883a5a102615 # v4.1.0
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
 
       - uses: actions/upload-artifact@v7
         with:

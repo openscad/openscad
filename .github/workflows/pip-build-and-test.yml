@@ -20,7 +20,7 @@ jobs:
     name: pip install -e . and smoke test
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
         persist-credentials: false
