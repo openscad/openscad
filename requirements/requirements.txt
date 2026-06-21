@@ -1,0 +1,3 @@
+# Dependabot dependency-graph updates expect a requirements.txt in this
+# directory. Runtime pins live in runtime.txt; keep both in sync.
+-r runtime.txt

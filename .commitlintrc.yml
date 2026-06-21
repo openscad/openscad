@@ -47,6 +47,11 @@ rules:
     - always
     - 100
 
+  # Dependabot commit bodies contain long URLs/metadata; disabling this
+  # rule avoids false failures on machine-generated dependency bumps.
+  body-max-line-length:
+    - 0
+
   # Body should have blank line after subject
   body-leading-blank:
     - 1  # level: warning
