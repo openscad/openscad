@@ -9,12 +9,13 @@ Script-based 3D modeling app which lets you use Python as its native language.
 [![Website](https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white)](https://pythonscad.org)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pythonscad/pythonscad)
 
-PythonSCAD is a programmatic 3D modeling application. It allows you to
-turn simple code into 3D models suitable for 3D printing.
+PythonSCAD is a script-based 3D modeling application with a full GUI. Write
+parametric, engineering-oriented models in Python, preview them live, and export
+to STL and other formats for 3D printing and manufacturing.
 
-It is a fork of [OpenSCAD](https://openscad.org) which not only adds
-support for using Python as a native language, but also adds new
-features and improves existing ones.
+It is built on [OpenSCAD](https://openscad.org)'s geometry engine and adds native
+Python support plus PythonSCAD-specific features. New to programming? Immediate
+visual feedback and printable output make PythonSCAD a rewarding way to learn.
 
 - [PythonSCAD](#pythonscad)
   - [When to not use PythonSCAD](#when-to-not-use-pythonscad)
@@ -177,7 +178,7 @@ show(c)
 
 ### Documentation
 
-Have a look at the [PythonSCAD Homepage](https://pythonscad.org/tutorial/site/index.html) for a small tutorial.
+Have a look at the [PythonSCAD documentation](https://pythonscad.org/tutorial/getting_started/) for a hands-on tutorial.
 
 ### Building PythonSCAD from source
 

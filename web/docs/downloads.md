@@ -2,122 +2,30 @@
 
 <!-- markdownlint-disable MD033 -->
 
-<div id="download-links">Loading latest version...</div>
-
-<script>
-(function() {
-    const REPO = "pythonscad/pythonscad";
-    const PLATFORM_ORDER = ["windows", "linux-debian", "linux-fedora", "linux-appimage", "linux", "macos", "wasm", "other"];
-
-    function getPlatform(assetName) {
-        const n = assetName.toLowerCase();
-        if (n.endsWith(".exe") || n.endsWith(".msix") || /windows|win-|win_|-win\.|-win_/.test(n)) return "windows";
-        if (n.endsWith(".dmg") || /macos|darwin|osx|-mac\.|-mac_/.test(n)) return "macos";
-        if (n.endsWith(".appimage") || /appimage/.test(n)) return "linux-appimage";
-        if (n.endsWith(".deb") || /debian|ubuntu|apt/.test(n)) return "linux-debian";
-        if (n.endsWith(".rpm") || /fedora|redhat|rhel|centos|yum|dnf/.test(n)) return "linux-fedora";
-        if (/linux/.test(n)) return "linux";
-        if (n.endsWith(".zip") && /wasm|webassembly/.test(n)) return "wasm";
-        return "other";
-    }
-
-    function isChecksumOrMeta(name) {
-        return name.endsWith(".sha256") || name.endsWith(".sha512") ||
-            name.endsWith(".asc") || name === "checksums.txt";
-    }
-
-    function formatSize(bytes) {
-        if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB";
-        if (bytes >= 1024) return (bytes / 1024).toFixed(0) + " KB";
-        return bytes + " B";
-    }
-
-    async function getLatestRelease() {
-        const el = document.getElementById("download-links");
-        try {
-            const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
-            const data = await response.json();
-            const assets = data.assets || [];
-
-            const byName = {};
-            assets.forEach(a => { byName[a.name] = a; });
-
-            const mainAssets = assets.filter(a => !isChecksumOrMeta(a.name));
-            const byPlatform = {
-                windows: [], "linux-debian": [], "linux-fedora": [], "linux-appimage": [],
-                linux: [], macos: [], wasm: [], other: []
-            };
-            mainAssets.forEach(a => {
-                const platform = getPlatform(a.name);
-                byPlatform[platform].push(a);
-            });
-
-            let html = `<h3>Latest version: ${data.tag_name}</h3>`;
-
-            for (const platform of PLATFORM_ORDER) {
-                const list = byPlatform[platform];
-                if (list.length === 0) continue;
-
-                const titles = {
-                    windows: "Windows",
-                    "linux-debian": "Linux (Debian / Ubuntu)",
-                    "linux-fedora": "Linux (Fedora / RHEL)",
-                    "linux-appimage": "Linux (AppImage)",
-                    linux: "Linux (other)",
-                    macos: "macOS",
-                    wasm: "WebAssembly / Browser",
-                    other: "Other"
-                };
-                const sectionBlurbs = {
-                    wasm:
-                        "Run PythonSCAD entirely in your browser — no installation required. "
-                        + "The ZIP contains <code>pythonscad.js</code>, <code>pythonscad.wasm</code>, "
-                        + "<code>pythonscad.data</code>, and <code>test.html</code>. "
-                        + "Serve the extracted folder with the bundled dev server "
-                        + "(<code>python3 wasm-test/serve.py 8080 .</code>) and open "
-                        + "<code>test.html</code>. A plain <code>python3 -m http.server</code> "
-                        + "will not work — browsers require correct MIME types for "
-                        + "<code>.wasm</code> and <code>.data</code> files. "
-                        + "A browser with WASM support (Chrome, Firefox, "
-                        + "Edge, Safari 16+) is required.",
-                    windows:
-                        "Windows binaries are not yet code-signed. See the "
-                        + "<a href=\"../installation/#windows\">Windows installation instructions</a> "
-                        + "for workarounds.",
-                    "linux-debian":
-                        "The <a href=\"https://repos.pythonscad.org/apt/\">APT repository</a> is the "
-                        + "preferred way to install PythonSCAD on Debian and Ubuntu.",
-                    "linux-fedora":
-                        "The <a href=\"https://repos.pythonscad.org/yum/\">YUM/DNF repository</a> is the "
-                        + "preferred way to install PythonSCAD on Fedora and RHEL-based systems."
-                };
-                html += `<h4>${titles[platform]}</h4>`;
-                if (sectionBlurbs[platform]) {
-                    html += `<p class="downloads-repo-note">${sectionBlurbs[platform]}</p>`;
-                }
-                html += `<table class="downloads-table"><thead><tr><th>File</th><th>Size</th><th>SHA256</th><th>SHA512</th></tr></thead><tbody>`;
-
-                list.forEach(asset => {
-                    const sha256Asset = byName[asset.name + ".sha256"];
-                    const sha512Asset = byName[asset.name + ".sha512"];
-                    html += "<tr>";
-                    html += `<td><a href="${asset.browser_download_url}">${asset.name}</a></td>`;
-                    html += `<td>${formatSize(asset.size)}</td>`;
-                    html += `<td>${sha256Asset ? `<a href="${sha256Asset.browser_download_url}">checksum</a>` : "—"}</td>`;
-                    html += `<td>${sha512Asset ? `<a href="${sha512Asset.browser_download_url}">checksum</a>` : "—"}</td>`;
-                    html += "</tr>";
-                });
-                html += "</tbody></table>";
-            }
-
-            el.innerHTML = html;
-        } catch (e) {
-            el.innerHTML = `<p>Failed to load release info: ${e.message}</p>`;
-        }
-    }
-
-    getLatestRelease();
-})();
-</script>
+<div id="download-links" class="download-links">
+  <div class="download-links-fallback">
+    <p>
+      Download the latest release from
+      <a href="https://github.com/pythonscad/pythonscad/releases/latest">GitHub Releases</a>.
+    </p>
+    <p>
+      On Debian/Ubuntu or Fedora/RHEL, the
+      <a href="../installation/#linux-debian-ubuntu-apt">APT</a> or
+      <a href="../installation/#linux-fedora-centos-rhel-yum-dnf">YUM/DNF</a>
+      repositories are the preferred install method — see
+      <a href="../installation/">Installation</a>.
+    </p>
+  </div>
+  <p class="download-links-loading" hidden aria-live="polite">Loading latest version…</p>
+  <noscript>
+    <p class="download-noscript-note">
+      JavaScript is not required to use this website. If you enable it though,
+      this page builds a full list of release files for every platform, with download
+      links, file sizes, and SHA256/SHA512 checksums — updated automatically when we
+      publish a new release.
+    </p>
+  </noscript>
+  <div class="download-links-enhanced" hidden></div>
+</div>
 
 <!-- markdownlint-enable MD033 -->

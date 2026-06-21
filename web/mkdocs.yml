@@ -3,6 +3,7 @@ site_url: https://www.pythonscad.org/
 repo_url: https://github.com/pythonscad/pythonscad/
 repo_name: pythonscad/pythonscad
 theme:
+  custom_dir: overrides
   logo: pictures/pythonscad-128.png
   name: material
   highlightjs: true
@@ -36,6 +37,11 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - javascript/downloads-common.js
+  - javascript/downloads-hero.js
+  - javascript/downloads-page.js
+
 nav:
   - Home: index.md
   - Get started: get_started.md
@@ -46,6 +52,7 @@ nav:
   - Building: building.md
   - Tutorial:
       - Getting Started: tutorial/getting_started.md
+      - Coming from OpenSCAD: tutorial/from_openscad.md
       - Combining Objects: tutorial/combining_objects.md
       - Positioning Objects: tutorial/positioning_objects.md
       - Python Specialities: tutorial/python_specialities.md

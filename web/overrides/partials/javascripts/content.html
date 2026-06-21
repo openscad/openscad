@@ -1,0 +1,9 @@
+{#-
+  Override Material's content.js partial: upstream calls
+  getElementById(location.hash.slice(1)) even when the hash is empty,
+  which Firefox reports as "Empty string passed to getElementById()".
+-#}
+{% if "content.tabs.link" in features %}
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");if(!labels)continue;for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);if(input)input.checked=!0;continue e}}</script>
+  <script>var hash=location.hash.slice(1);if(hash){var target=document.getElementById(hash);if(target&&target.name&&target.name.startsWith("__tabbed_"))target.checked=!0}</script>
+{% endif %}

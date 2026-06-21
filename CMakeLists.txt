@@ -2183,17 +2183,6 @@ set(_CONFIGURED_SOURCE_FILES
   ${RESOURCE_DIR}/icons/pythonscad.desktop
   ${RESOURCE_DIR}/common.qrc
 )
-foreach(_configured_file IN LISTS _CONFIGURED_SOURCE_FILES)
-  if(EXISTS "${_configured_file}")
-    file(IS_WRITABLE "${_configured_file}" _is_writable)
-    if(NOT _is_writable)
-      message(FATAL_ERROR
-        "Cannot update generated file: ${_configured_file}\n"
-        "This usually means the file is owned by root from a previous privileged build.\n"
-        "Remove it and re-run cmake: rm -f ${_configured_file}")
-    endif()
-  endif()
-endforeach()
 
 configure_file(doc/pythonscad.1.in doc/pythonscad.1)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in2)

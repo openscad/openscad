@@ -53,23 +53,29 @@ We provide three distribution formats for Windows:
 
 ### Code signing
 
-PythonSCAD Windows binaries are not yet signed with a Microsoft Authenticode
-certificate. Each format requires a slightly different workaround.
+The **NSIS installer** and **MSIX package** are Authenticode-signed. The **ZIP
+archive** (portable `.exe`) is not signed.
 
 #### MSIX package
 
 Open PowerShell **as Administrator** and run:
 
 ```powershell
-Add-AppxPackage -Path "C:\Users\You\Downloads\PythonSCAD-1.0.0-windows-x86-64.msix" -AllowUnsigned
+Add-AppxPackage -Path "C:\Users\You\Downloads\PythonSCAD-1.0.0-windows-x86-64.msix"
 ```
 
 Replace the filename with the actual name of the downloaded `.msix` file.
 
-#### NSIS installer and ZIP
+#### NSIS installer
 
-When you run the installer or the extracted `.exe`, Windows SmartScreen may
-show a blue dialog titled **"Windows protected your PC"**:
+The signed installer should show the PythonSCAD publisher in SmartScreen. If
+Windows still warns about an unrecognized app, click **More info**, then **Run
+anyway**.
+
+#### ZIP archive
+
+When you run the extracted `.exe`, Windows SmartScreen may show a blue dialog
+titled **"Windows protected your PC"**:
 
 1. Click **More info**.
 2. Click **Run anyway**.
