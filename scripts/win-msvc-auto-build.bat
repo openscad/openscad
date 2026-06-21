@@ -408,18 +408,20 @@ rem  Build
 rem  ---------------------------------------------------------
 cmake --build %BUILD_NAME% --config %BUILD_TYPE%
 
-if %errorlevel% neq 0 (
-    echo [ERROR] Build failed.
-    exit /b 1
-)
-
-echo [INFO] Build Done.
-
 if /i "%CMAKE_VS_GENERATOR%"=="Ninja" (
 set "TARGET_BUILD_APP_PATH=%BUILD_NAME%"
 ) else (
 set "TARGET_BUILD_APP_PATH=%BUILD_NAME%\%BUILD_TYPE%"
 )
+
+if not exist "%TARGET_BUILD_APP_PATH%\openscad.exe" (
+    echo [ERROR] Build failed - openscad.exe not found.
+    exit /b 1
+) else (
+echo [INFO] Build Done.
+)
+
+timeout /t 5
 
 echo ---------------------------------------------------------
 
@@ -430,12 +432,6 @@ set "QT_PLUGINS_SRC=%MY_INSTALLED_VCPKG_PATH%\Qt6\plugins"
 if exist "%QT_PLUGINS_SRC%\" (
     echo [INFO] Copying contents of Qt6 plugins directly into build directory...
     xcopy "%QT_PLUGINS_SRC%" "%TARGET_BUILD_APP_PATH%" /e /i /h /y /d
-    
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to copy Qt6 plugins contents.
-        exit /b 1
-    )
-    echo [SUCCESS] Qt6 plugins contents copied successfully.
 ) else (
     echo [WARN] Qt6 plugins source folder not found: %QT_PLUGINS_SRC%
 )
@@ -448,14 +444,8 @@ set "VCPKG_BIN_PATH=%MY_INSTALLED_VCPKG_PATH%\bin"
 
 if exist "%VCPKG_BIN_PATH%\" (
     xcopy "%VCPKG_BIN_PATH%\Qt*.dll" "%TARGET_BUILD_APP_PATH%\" /i /h /y /d
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to copy Qt dll dependencies.
-        exit /b 1
-    )
-    echo [SUCCESS] Copied Qt dll dependencies.
 ) else (
     echo [WARN] VCPKG-bin folder not found: %VCPKG_BIN_PATH%
-    exit /b 1
 )
 
 echo ---------------------------------------------------------
@@ -464,14 +454,23 @@ echo ---------------------------------------------------------
 if exist "%OPENSCAD_PATH%\shaders" (
     echo [INFO] Copying shaders folder into build directory...
     xcopy "%OPENSCAD_PATH%\shaders" "%TARGET_BUILD_APP_PATH%\shaders" /e /i /h /y /d
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to copy shaders folder.
-        exit /b 1
-    )
-    echo [SUCCESS] Shaders deployed successfully.
 ) else (
     echo [WARN] Shaders source folder not found at: %SHADER_SRC%
 )
 
-echo [SUCCESS] All done. Have a nice day with MSVC-Openscad
+if exist "%OPENSCAD_PATH%\fonts" (
+    echo [INFO] Copying fonts folder into build directory...
+    xcopy "%OPENSCAD_PATH%\fonts" "%TARGET_BUILD_APP_PATH%\fonts" /e /i /h /y /d
+) else (
+    echo [WARN] fonts source folder not found at: %SHADER_SRC%
+)
+
+if exist "%TARGET_BUILD_APP_PATH%\winconsole\openscad.com" (
+    echo [INFO] Copying winconsole-openscad.com into build directory...
+    copy "%TARGET_BUILD_APP_PATH%\winconsole\openscad.com" "%TARGET_BUILD_APP_PATH%\openscad.com"
+) else (
+    echo [WARN] openscad.com source folder not found at: %SHADER_SRC%
+)
+
+echo [INFO] Done. Have a nice day with MSVC-Openscad
 
