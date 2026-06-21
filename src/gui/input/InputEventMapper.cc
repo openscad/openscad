@@ -84,11 +84,21 @@ InputEventMapper *InputEventMapper::instance()
   return self;
 }
 
-/*
-    -1 -> 0.196
-    0 -> 0
-    1 ->  10.72
- */
+// Exponential response for axis deflection.  (Seems like maybe this should be configurable.)
+//
+// Input  Maps to
+// -1.0   -10.72
+// -0.8    -4.71
+// -0.6    -2.00
+// -0.4    -0.79
+// -0.2    -0.25
+//  0.0     0.00
+//  0.2     0.25
+//  0.4     0.79
+//  0.6     2.00
+//  0.8     4.71
+//  1.0    10.72
+
 double InputEventMapper::scale(double val)
 {
   double x = 4 * val;
@@ -132,7 +142,7 @@ bool InputEventMapper::generateDeferredEvents()
   double tyVPRel = getAxisValue(translate[4]) * translationVPRelGain;
   double tzVPRel = getAxisValue(translate[5]) * translationVPRelGain;
   if ((fabs(txVPRel) > threshold) || (fabs(tyVPRel) > threshold) || (fabs(tzVPRel) > threshold)) {
-    InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true, false);
+    InputEvent *inputEvent = new InputEventTranslate(txVPRel, tyVPRel, tzVPRel, true, true);
     InputDriverManager::instance()->postEvent(inputEvent);
     any = true;
   }
@@ -217,7 +227,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
 
     std::string action = actions[event->button].toStdString();
     if (!action.empty()) {
-      InputEvent *inputEvent = new InputEventAction(action, false);
+      InputEvent *inputEvent = new InputEventAction(action, event->activeOnly);
       InputDriverManager::instance()->postEvent(inputEvent);
     }
   }
