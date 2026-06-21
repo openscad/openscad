@@ -2,10 +2,14 @@ a = 3;
 b = 6;
 
 assert(true);
+
+assert(true, abort=true);
 //trailing comma test
 assert("t1",);
 
 assert(a*b,);
+
+assert(b*a, "t", false,);
 
 assert(a*b);
 //trailing comma test
@@ -17,6 +21,10 @@ c = 2;
 translate([0, 20, 0])
 assert(condition = 2)
 sphere(5);
+
+assert(false, abort = false);
+
+assert(1 < 0, "test", abort = false);
 
 d = c + 9;
 //trailing comma test
