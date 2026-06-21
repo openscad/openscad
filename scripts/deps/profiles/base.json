@@ -76,7 +76,9 @@
       "extends": "debian",
       "version_overrides": {
         "24": {
-          "add": [],
+          "add": [
+            "catch2"
+          ],
           "remove": []
         }
       }
