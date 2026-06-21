@@ -34,4 +34,4 @@
 # therefore vendors psutil from the MSYS2 pacman package
 # (`pacboy -S --noconfirm python-psutil:p`) on that platform; see
 # scripts/bundle-ipython-msys2.py.
-ipython>=9,<10
+ipython>=9.14.1,<10
