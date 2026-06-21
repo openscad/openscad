@@ -478,6 +478,7 @@ public slots:
   void on_helpActionPythonCheatSheet_triggered();
   void on_helpActionOfflineCheatSheet_triggered();
   void on_helpActionLibraryInfo_triggered();
+  void on_helpActionReportIssue_triggered();
   void checkAutoReload();
   void waitAfterReload();
   void on_designActionAutoReload_toggled(bool);

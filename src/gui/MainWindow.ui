@@ -394,6 +394,8 @@
     <addaction name="helpActionPythonCheatSheet"/>
     <addaction name="helpActionOfflineCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
+    <addaction name="separator"/>
+    <addaction name="helpActionReportIssue"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -1527,6 +1529,11 @@
   <action name="helpActionLibraryInfo">
    <property name="text">
     <string>&amp;Library info</string>
+   </property>
+  </action>
+  <action name="helpActionReportIssue">
+   <property name="text">
+    <string>Report issue...</string>
    </property>
   </action>
   <action name="fileShowLibraryFolder">

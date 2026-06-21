@@ -26,6 +26,8 @@
 
 #include "gui/UIUtils.h"
 
+#include <QApplication>
+#include <QClipboard>
 #include <QColor>
 #include <QDataStream>
 #include <QDesktopServices>
@@ -36,23 +38,25 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QList>
+#include <QMessageBox>
 #include <QRegularExpression>
 #include <QRect>
 #include <QSize>
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <QUrlQuery>
 #include <QWidget>
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <string>
+#include "LibraryInfo.h"
+#include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
-#include <utility>
+#include "version.h"
 
 #include "gui/QSettingsCached.h"
-#include "platform/PlatformUtils.h"
-#include "version.h"
 
 namespace {
 
@@ -301,6 +305,91 @@ void UIUtils::openOfflineCheatSheet()
   if (UIUtils::hasOfflineCheatSheet()) {
     QString docPath = QString::fromStdString(fullPath.string());
     QDesktopServices::openUrl(QUrl(docPath));
+  }
+}
+
+namespace {
+
+QString buildEnvironmentVersionInfo()
+{
+#if defined(__x86_64__) || defined(_M_X64)
+  const QString bits = QStringLiteral("64-bit");
+#elif defined(__i386) || defined(_M_IX86)
+  const QString bits = QStringLiteral("32-bit");
+#else
+  const QString bits;
+#endif
+
+  const std::string base = PlatformUtils::sysinfo(false);
+  const std::string full = PlatformUtils::sysinfo(true);
+  const QString remainder =
+    QString::fromStdString(full.size() > base.size() ? full.substr(base.size()) : std::string{})
+      .trimmed();
+
+  QString os;
+  QString system;
+
+#ifdef Q_OS_WIN
+  os = QString::fromStdString(base);
+  system = remainder.isEmpty() ? bits : remainder;
+#else
+  const QString baseQ = QString::fromStdString(base);
+  const QString machine = baseQ.section(' ', -1);
+
+  static const QRegularExpression cpuMarker(R"(\d+\s+CPUs?)");
+  const QRegularExpressionMatch match = cpuMarker.match(remainder);
+  QString distro;
+  QString hwDetails;
+  if (match.hasMatch()) {
+    distro = remainder.left(match.capturedStart()).trimmed();
+    hwDetails = remainder.mid(match.capturedStart()).trimmed();
+  } else {
+    distro = remainder;
+  }
+
+  os = distro.isEmpty() ? baseQ : distro;
+  system = machine;
+  if (!bits.isEmpty()) {
+    system += QStringLiteral(" ") + bits;
+  }
+  if (!hwDetails.isEmpty()) {
+    system += QStringLiteral(", ") + hwDetails;
+  }
+#endif
+
+  return QStringLiteral("- OS: %1\n- System: %2\n- PythonSCAD Version: %3\n")
+    .arg(os, system,
+         QString::fromUtf8(openscad_detailedversionnumber.data(),
+                           static_cast<int>(openscad_detailedversionnumber.size())));
+}
+
+QString buildLibraryGraphicsInfo(const QString& rendererInfo)
+{
+  return QString::fromStdString(LibraryInfo::info()) + rendererInfo;
+}
+
+}  // namespace
+
+void UIUtils::openReportIssueURL(const QString& rendererInfo, QWidget *parent)
+{
+  // Library info is several KB; browsers reject URLs that long (Chrome ~8 KiB).
+  // Pre-fill the short environment block via query params and copy library info
+  // to the clipboard for pasting into the issue form.
+  QApplication::clipboard()->setText(buildLibraryGraphicsInfo(rendererInfo));
+
+  QUrl url(QStringLiteral("https://github.com/pythonscad/pythonscad/issues/new"));
+  QUrlQuery query;
+  query.addQueryItem(QStringLiteral("template"), QStringLiteral("bug_report.yml"));
+  query.addQueryItem(QStringLiteral("environment-version"), buildEnvironmentVersionInfo());
+  url.setQuery(query);
+  QDesktopServices::openUrl(url);
+
+  if (parent != nullptr) {
+    QMessageBox::information(parent, _("Report issue"),
+                             _("Your browser has been opened to create a bug report.\n\n"
+                               "Environment information was added to the form automatically.\n"
+                               "Library and graphics information was copied to your clipboard — "
+                               "paste it into the \"Library & Graphics card information\" field."));
   }
 }
 
