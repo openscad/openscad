@@ -288,6 +288,8 @@
     <addaction name="editActionUnindent"/>
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
+    <addaction name="editActionMoveLineUp"/>
+    <addaction name="editActionMoveLineDown"/>
     <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="editActionToggleBookmark"/>
     <addaction name="editActionNextBookmark"/>
@@ -894,6 +896,23 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+D</string>
+   </property>
+  </action>
+  <action name="editActionMoveLineUp">
+   <property name="text">
+    <string>Move Line U&amp;p</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Up</string>
+
+   </property>
+  </action>
+  <action name="editActionMoveLineDown">
+   <property name="text">
+    <string>Move Line Dow&amp;n</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Down</string>
    </property>
   </action>
   <action name="editActionNextTab">
