@@ -92,7 +92,7 @@ PACKAGES=(
     "libzip 1.11.4"
 
     # https://www.freedesktop.org/wiki/Software/fontconfig/
-    "fontconfig 2.16.0"
+    "fontconfig 2.18.1"
 
     # https://github.com/libusb/hidapi/releases
     "hidapi 0.15.0"
@@ -930,23 +930,19 @@ build_fontconfig()
   version=$1
   cd "$BASEDIR"/src
   rm -rf "fontconfig-$version"
-  if [ ! -f "fontconfig-$version.tar.xz" ]; then
-    curl -LO "https://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.xz"
+  if [ ! -f "fontconfig-$version.tar.gz" ]; then
+    curl -LO "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/$version/fontconfig-$version.tar.gz"
   fi
-  tar xzf "fontconfig-$version.tar.xz"
+  tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
 #  patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
 
   # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
-    # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2  --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_func_mkostemp=no
-    make -j"$NUMCPU" install DESTDIR=$PWD/install/
-    cd ..
+  for arch in ${ARCHS[*]}; do
+    sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dtests=disabled -Dnls=disabled build-$arch
+    meson compile -C build-$arch
+    DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
