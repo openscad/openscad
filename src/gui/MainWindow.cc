@@ -314,8 +314,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   GlobalPreferences::inst()->shortcutConfigurator->applyConfigFile(allActions);
   GlobalPreferences::inst()->shortcutConfigurator->initGUI(allActions);
   GlobalPreferences::inst()->shortcutConfigurator->searchBox->setText("");
-  connect(GlobalPreferences::inst(), SIGNAL(regenerateSc(MainWindow *)), this,
-          SLOT(onRegenerateSc(MainWindow *)));
 
   show();
   openRemainingFiles(filenames);
@@ -360,17 +358,6 @@ void MainWindow::setAllMouseViewActions()
   this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK,
                                  MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
                                    Settings::Settings::inputMouseCtrlShiftRightClick.value())));
-}
-
-void MainWindow::onRegenerateSc(MainWindow *mw)
-{
-  if (mw == this) return;
-  QList<QAction *> allActions = this->findChildren<QAction *>();
-  GlobalPreferences::inst()->shortcutConfigurator->resetClass();
-  GlobalPreferences::inst()->shortcutConfigurator->collectDefaults(allActions);
-  GlobalPreferences::inst()->shortcutConfigurator->applyConfigFile(allActions);
-  GlobalPreferences::inst()->shortcutConfigurator->initGUI(allActions);
-  GlobalPreferences::inst()->shortcutConfigurator->searchBox->setText("");
 }
 
 void MainWindow::onNavigationOpenContextMenu()
@@ -634,9 +621,6 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  GlobalPreferences::inst()->shortcutConfigurator->searchBox->setText("");
-  emit regenerateScOnWindowClose(this);
-
   delete this->cgalworker;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {

@@ -1,8 +1,6 @@
 #pragma once
 #include "qtgettext.h"
 #include "ui_ShortcutConfigurator.h"
-#include "platform/PlatformUtils.h"
-#include "utils/printutils.h"
 #include <QAction>
 #include <QObject>
 #include <QStandardItemModel>
@@ -18,7 +16,7 @@ class ShortcutConfigurator : public QWidget, public Ui::ShortcutConfigurator
 {
   Q_OBJECT
 public:
-  ShortcutConfigurator(QWidget *parent = 0);
+  ShortcutConfigurator(QWidget *parent = nullptr);
   ShortcutConfigurator(const ShortcutConfigurator& source) = delete;
   ShortcutConfigurator(ShortcutConfigurator&& source) = delete;
   ShortcutConfigurator& operator=(const ShortcutConfigurator& source) = delete;
@@ -27,17 +25,17 @@ public:
   void collectDefaults(const QList<QAction *>& allActions);
   void initGUI(const QList<QAction *>& allActions);
   void applyConfigFile(const QList<QAction *>& actions);
-  void updateShortcut(QAction *changedAction, QString updatedShortcut, const QModelIndex& index);
+  void updateShortcut(QAction *changedAction, const QString& updatedShortcut, const QModelIndex& index);
   void resetClass();
 
 private:
   bool handleKeyPressEvent(const QKeyEvent *);
-  void createModel(QObject *parent, const QList<QAction *>& actions);
-  void readConfigFile(QJsonObject *object);
-  bool writeToConfigFile(QJsonObject *object);
-  void raiseError(const QString errorMsg);
+  void createModel(const QList<QAction *>& actions);
+  QJsonObject readConfigFile();
+  bool writeToConfigFile(const QJsonObject& object);
+  void raiseError(const QString& errorMsg);
   QString getData(int row, int col);
-  void putData(QModelIndex indexA, QString data);
+  void putData(QModelIndex indexA, const QString& data);
   std::string configFileLoc;
   QMultiHash<QString, QAction *> shortcutsMap;
   QHash<QString, QString> shortcutOccupied;
@@ -54,6 +52,6 @@ protected:
 
 private slots:
   void onTableCellClicked(const QModelIndex& index);
-  void on_searchBox_textChanged(const QString& arg1);
+  void on_searchBox_textChanged(const QString& text);
   void on_reset_clicked();
 };

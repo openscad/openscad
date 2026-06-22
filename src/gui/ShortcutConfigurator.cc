@@ -3,9 +3,11 @@
 #include <QVariant>
 #include <QAbstractItemModel>
 #include <QHeaderView>
+#include <QJsonObject>
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <QEvent>
+#include "platform/PlatformUtils.h"
 
 ShortcutConfigurator::ShortcutConfigurator(QWidget *parent) : QWidget(parent)
 {
@@ -58,7 +60,7 @@ bool ShortcutConfigurator::handleKeyPressEvent(const QKeyEvent *keyEvent)
   }
 
   const auto info =
-    QString("You Pressed: %1").arg(pressedKeySequence.toString(QKeySequence::NativeText));
+    QString(_("You Pressed: %1")).arg(pressedKeySequence.toString(QKeySequence::NativeText));
   shortcutCatcher->setInformativeText(info);
   return true;
 }
@@ -91,21 +93,21 @@ void ShortcutConfigurator::collectDefaults(const QList<QAction *>& allActions)
   }
 }
 
-void ShortcutConfigurator::createModel(QObject *parent, const QList<QAction *>& actions)
+void ShortcutConfigurator::createModel(const QList<QAction *>& actions)
 {
   QList<QString> alreadyInGUI;
   int row = 0;
   model->removeRows(0, model->rowCount());
   model->removeColumns(0, 3);
-  QList<QString> labels = QList<QString>()
-                          << QString("Action") << QString("Shortcut") << QString("Alternative-1");
+  QList<QString> labels = QList<QString>() << QString(_("Action")) << QString(_("Shortcut"))
+                                           << QString(_("Alternative-1"));
   model->setHorizontalHeaderLabels(labels);
   for (auto& action : actions) {
     QString actionName = action->objectName();
     if (!actionName.isEmpty()) {
       if (alreadyInGUI.contains(actionName)) continue;
       else alreadyInGUI.push_back(actionName);
-      QStandardItem *actionNameItem = new QStandardItem(actionName);
+      auto *actionNameItem = new QStandardItem(actionName);
       model->setRowCount(row + 1);
       model->setItem(row, 0, actionNameItem);
       actionNameItem->setFlags(actionNameItem->flags() & ~Qt::ItemIsEditable & ~Qt::ItemIsSelectable);
@@ -114,10 +116,10 @@ void ShortcutConfigurator::createModel(QObject *parent, const QList<QAction *>& 
       int index = 1;
       for (auto& shortcutSeq : shortcutsList) {
         const QString shortcut = shortcutSeq.toString(QKeySequence::NativeText);
-        QStandardItem *shortcutItem = new QStandardItem(shortcut);
+        auto *shortcutItem = new QStandardItem(shortcut);
         if (index > 2) {
           model->setColumnCount(index + 1);
-          QString label = QStringLiteral("Alternative-%1").arg(index - 1);
+          QString label = QString(_("Alternative-%1")).arg(index - 1);
           labels.push_back(label);
           model->setHorizontalHeaderLabels(labels);
         }
@@ -136,25 +138,26 @@ void ShortcutConfigurator::initGUI(const QList<QAction *>& allActions)
   shortcutsTable->setSelectionBehavior(QAbstractItemView::SelectItems);
   shortcutsTable->setSelectionMode(QAbstractItemView::SingleSelection);
   shortcutsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  createModel(this, allActions);
+  createModel(allActions);
   shortcutsTable->setModel(proxyModel);
 }
 
-void ShortcutConfigurator::readConfigFile(QJsonObject *object)
+QJsonObject ShortcutConfigurator::readConfigFile()
 {
   QFile jsonFile(QString::fromStdString(configFileLoc.c_str()));
 
   // check if a User-Defined Shortcuts file exists or not
   if (!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    return;
+    return {};
   }
 
   QByteArray jsonData = jsonFile.readAll();
   QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-  *object = doc.object();
+  QJsonObject object = doc.object();
+  return object;
 }
 
-bool ShortcutConfigurator::writeToConfigFile(QJsonObject *object)
+bool ShortcutConfigurator::writeToConfigFile(const QJsonObject& object)
 {
   QFile jsonFile(QString::fromStdString(configFileLoc.c_str()));
 
@@ -162,7 +165,7 @@ bool ShortcutConfigurator::writeToConfigFile(QJsonObject *object)
     return false;
   }
 
-  QJsonDocument doc(*object);
+  QJsonDocument doc(object);
   jsonFile.write(doc.toJson());
   jsonFile.close();
   return true;
@@ -170,8 +173,7 @@ bool ShortcutConfigurator::writeToConfigFile(QJsonObject *object)
 
 void ShortcutConfigurator::applyConfigFile(const QList<QAction *>& actions)
 {
-  QJsonObject object;
-  readConfigFile(&object);
+  QJsonObject object = readConfigFile();
   for (auto& action : actions) {
     QString actionName = action->objectName();
     if (!actionName.isEmpty()) {
@@ -234,19 +236,19 @@ QString ShortcutConfigurator::getData(int row, int col)
   return shortcutsTable->model()->index(row, col).data().toString();
 }
 
-void ShortcutConfigurator::putData(QModelIndex indexA, QString data)
+void ShortcutConfigurator::putData(QModelIndex indexA, const QString& data)
 {
   shortcutsTable->model()->setData(indexA, data);
 }
 
-void ShortcutConfigurator::raiseError(const QString errorMsg)
+void ShortcutConfigurator::raiseError(const QString& errorMsg)
 {
   QMessageBox messageBox;
   messageBox.critical(0, "Error", errorMsg);
   messageBox.setFixedSize(500, 200);
 }
 
-void ShortcutConfigurator::updateShortcut(QAction *changedAction, QString updatedShortcut,
+void ShortcutConfigurator::updateShortcut(QAction *changedAction, const QString& updatedShortcut,
                                           const QModelIndex& index)
 {
   QList<QKeySequence> shortcutsListFinal;
@@ -283,8 +285,8 @@ void ShortcutConfigurator::updateShortcut(QAction *changedAction, QString update
 
     } else {
       // append the new shortcut
-      for (int i = 0; i < assignedShortcuts.size(); i++) {
-        shortcutsListFinal.append(assignedShortcuts[i]);
+      for (const auto& assignedShortcut : assignedShortcuts) {
+        shortcutsListFinal.append(assignedShortcut);
       }
       shortcutsListFinal.append(updatedShortcut);
     }
@@ -295,8 +297,7 @@ void ShortcutConfigurator::updateShortcut(QAction *changedAction, QString update
     shortcutOccupied.insert(updatedShortcut, changedAction->objectName());
   putData(index, updatedShortcut);
   // write into the file
-  QJsonObject object;
-  readConfigFile(&object);
+  QJsonObject object = readConfigFile();
 
   if (singleShortcutUpdate) {
     object.insert(changedAction->objectName(), updatedShortcut);
@@ -307,7 +308,7 @@ void ShortcutConfigurator::updateShortcut(QAction *changedAction, QString update
     QJsonValue newValue = QJsonValue(array);
     object.insert(changedAction->objectName(), newValue);
   }
-  writeToConfigFile(&object);
+  writeToConfigFile(object);
 }
 
 void ShortcutConfigurator::onTableCellClicked(const QModelIndex& index)
@@ -322,9 +323,9 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex& index)
     shortcutCatcher->raise();
     shortcutCatcher->setStyleSheet("QLabel{min-width: 400px;}");
     shortcutCatcher->setInformativeText(QString());
-    shortcutCatcher->setWindowTitle(QString("Set Shortcut for: ") + updatedAction);
+    shortcutCatcher->setWindowTitle(QString(_("Set Shortcut for %1")).arg(updatedAction));
     shortcutCatcher->installEventFilter(this);
-    shortcutCatcher->setText("Press the Key Sequence");
+    shortcutCatcher->setText(_("Press the Key Sequence"));
     shortcutCatcher->setStandardButtons(QMessageBox::Apply | QMessageBox::Reset | QMessageBox::Cancel);
     shortcutCatcher->setDefaultButton(QMessageBox::Apply);
     shortcutCatcher->setWindowModality(Qt::WindowModal);
@@ -344,7 +345,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex& index)
       updatedShortcut = QString();
       shortcutCatcher->close();
       break;
-    case QMessageBox::Cancel: shortcutCatcher->close(); return;
+    default: shortcutCatcher->close(); return;
     }
 
     if (shortcutOccupied.contains(updatedShortcut)) {
@@ -373,24 +374,19 @@ void ShortcutConfigurator::on_reset_clicked()
   QJsonObject object;
 
   QMessageBox msgBox;
-  msgBox.setText("Choosing 'Yes' will restore all the shortcuts!");
-  msgBox.setInformativeText("Do you want to continue?");
+  msgBox.setText(_("Choosing 'Yes' will restore all the shortcuts!"));
+  msgBox.setInformativeText(_("Do you want to continue?"));
   msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
   msgBox.setDefaultButton(QMessageBox::Yes);
-  int ret = msgBox.exec();
 
-  switch (ret) {
-  case QMessageBox::Yes:
+  if (msgBox.exec() == QMessageBox::Yes) {
     for (i = defaultShortcuts.begin(); i != defaultShortcuts.end(); ++i) {
       QAction *actionKey = i.key();
       actionKey->setShortcuts(i.value());
     }
     initGUI(actionsList);
     shortcutOccupied.clear();
-    writeToConfigFile(&object);
-    break;
-  case QMessageBox::No: break;
-  default:              break;
+    writeToConfigFile(object);
   }
 }
 
