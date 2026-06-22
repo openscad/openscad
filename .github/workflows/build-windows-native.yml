@@ -140,8 +140,9 @@ jobs:
             "${EXTRA_CMAKE[@]}"
           cmake --build . -j4
 
-      - name: Install MSYS2 psutil for IPython 9 bundle
-        run: pacboy -S --noconfirm --needed python-psutil:p
+      - name: Install MSYS2 psutil and uv for IPython 9 bundle
+        run: |
+          pacboy -S --noconfirm --needed python-psutil:p uv:p
 
       - name: Bundle runtime Python deps (IPython) into build tree
         run: |

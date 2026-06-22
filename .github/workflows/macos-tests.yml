@@ -61,8 +61,8 @@ jobs:
         # need to be importable by the *system* python3 because that
         # is what the embedded interpreter resolves at runtime.
         #
-        # `ipython>=9,<10` matches the pin in `requirements/runtime.txt`
-        # and `pyproject.toml`. We deliberately exercise the same
+        # `ipython>=9,<10` matches the bundle dependency group in
+        # `pyproject.toml`. We deliberately exercise the same
         # major version that binary bundles (AppImage / .app /
         # Windows installer) and the published pip wheel ship, so
         # CI catches regressions in the version users actually run.

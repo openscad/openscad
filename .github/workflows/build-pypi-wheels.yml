@@ -13,7 +13,7 @@ on:
       - "scripts/cibuildwheel/**"
       - "scripts/smoke-test-pip.py"
       - "scripts/deps/profiles/pythonscad-pip.json"
-      - "requirements/build-pypi.txt"
+      - "uv.lock"
       - ".github/workflows/build-pypi-wheels.yml"
   pull_request:
     paths:
@@ -23,7 +23,7 @@ on:
       - "scripts/cibuildwheel/**"
       - "scripts/smoke-test-pip.py"
       - "scripts/deps/profiles/pythonscad-pip.json"
-      - "requirements/build-pypi.txt"
+      - "uv.lock"
       - ".github/workflows/build-pypi-wheels.yml"
   workflow_dispatch:
 
@@ -55,8 +55,22 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+
+      - name: Verify lockfile is up to date
+        run: uv lock --check
+
       - name: Install build tooling
-        run: pip install -r requirements/build-pypi.txt
+        run: uv sync --frozen --only-group build --no-install-project
+
+      - name: Add build tools to PATH
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            echo "${GITHUB_WORKSPACE}/.venv/Scripts" >> "$GITHUB_PATH"
+          else
+            echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
+          fi
 
       - name: Build wheel
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0

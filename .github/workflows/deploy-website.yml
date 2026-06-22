@@ -84,18 +84,14 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Create virtual environment and install dependencies
-        run: |
-          cd web
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install -r requirements.txt
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+
+      - name: Install docs dependencies
+        run: uv sync --frozen --only-group docs --no-install-project
 
       - name: Build mkdocs site
-        run: |
-          cd web
-          source .venv/bin/activate
-          mkdocs build --strict
+        working-directory: web
+        run: uv run --project .. --no-sync mkdocs build --strict
 
       - name: Setup SSH key and known_hosts for SFTP
         run: |

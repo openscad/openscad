@@ -1,5 +1,0 @@
-click==8.4.1
-mkdocs
-mkdocs-material
-pymdown-extensions
-Pygments

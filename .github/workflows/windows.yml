@@ -86,7 +86,7 @@ jobs:
 
       - name: Smoke test runtime Python bundle (IPython 9 + MSYS2 psutil)
         run: |
-          pacboy -S --noconfirm --needed python-psutil:p
+          pacboy -S --noconfirm --needed python-psutil:p uv:p
           chmod +x ./scripts/bundle-runtime-python.sh
           BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
             ./scripts/bundle-runtime-python.sh /tmp/pythonscad-bundled-py-test --python python

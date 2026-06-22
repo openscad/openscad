@@ -32,13 +32,13 @@ Ubuntu, Fedora, RHEL/Rocky, etc.) that meet the `manylinux_2_28` baseline.
 Install pinned build tooling:
 
 ```shell
-pip install -r requirements/build-pypi.txt
+uv sync --frozen --only-group build --no-install-project
 ```
 
 Build one wheel locally (example: Python 3.12 on Linux x86_64):
 
 ```shell
-CIBW_BUILD=cp312-manylinux_x86_64 cibuildwheel --platform linux
+CIBW_BUILD=cp312-manylinux_x86_64 uv run --no-sync cibuildwheel --platform linux
 ```
 
 Install native build dependencies first:
@@ -53,8 +53,10 @@ Install native build dependencies first:
 
 ## Pinning and dependency updates
 
-Wheel build tooling is pinned in [`requirements/build-pypi.txt`](../requirements/build-pypi.txt)
-and bumped by Dependabot. Windows native libraries are pinned via
+Wheel build tooling is pinned in `pyproject.toml` (`[dependency-groups] build`)
+and locked in [`uv.lock`](../uv.lock). Dependabot bumps via the uv ecosystem.
+Windows native libraries are pinned via
 [`scripts/cibuildwheel/vcpkg.json`](../scripts/cibuildwheel/vcpkg.json)
-(`builtin-baseline`). The `pypa/cibuildwheel` action is hash-pinned in
-workflows; Dependabot's monthly GitHub Actions group covers tag bumps.
+(`builtin-baseline`). cibuildwheel is pinned in `pyproject.toml`
+(`[dependency-groups] build`) and invoked via `uv run cibuildwheel`.
+Dependabot's monthly GitHub Actions group covers other action tag bumps.

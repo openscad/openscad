@@ -12,19 +12,15 @@ system site-packages into the bundle, then installs IPython itself with
 from __future__ import annotations
 
 import argparse
-import email
 import pathlib
 import shutil
 import subprocess
 import tempfile
-import zipfile
 
 try:
-    from packaging.markers import default_environment
     from packaging.requirements import Requirement
     from packaging.utils import parse_wheel_filename
 except ModuleNotFoundError:  # minimal/MSYS2 build Pythons may lack packaging
-    from pip._vendor.packaging.markers import default_environment
     from pip._vendor.packaging.requirements import Requirement
     from pip._vendor.packaging.utils import parse_wheel_filename
 
@@ -32,6 +28,43 @@ except ModuleNotFoundError:  # minimal/MSYS2 build Pythons may lack packaging
 def _run(cmd: list[str]) -> None:
     print(f"[bundle-ipython-msys2] running: {' '.join(cmd)}", flush=True)
     subprocess.run(cmd, check=True)
+
+
+def _export_bundle_requirements(project_root: pathlib.Path) -> pathlib.Path:
+    """Materialize the bundle dependency group as a flat requirements file."""
+    if not (project_root / "pyproject.toml").is_file():
+        raise SystemExit(f"pyproject.toml not found in {project_root}")
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        prefix="pythonscad-bundle-reqs.",
+        delete=False,
+        encoding="utf-8",
+    )
+    tmp.close()
+    req_path = pathlib.Path(tmp.name)
+    try:
+        _run(
+            [
+                "uv",
+                "export",
+                "--project",
+                str(project_root),
+                "--only-group",
+                "bundle",
+                "--format",
+                "requirements-txt",
+                "--no-header",
+                "--no-annotate",
+                "--no-hashes",
+                "-o",
+                str(req_path),
+            ]
+        )
+    except subprocess.CalledProcessError:
+        req_path.unlink(missing_ok=True)
+        raise
+    return req_path
 
 
 def _parse_runtime_requirements(requirements_file: pathlib.Path) -> tuple[list[str], list[str]]:
@@ -74,29 +107,6 @@ def _download_ipython_wheel(
     if not wheels:
         raise SystemExit(f"no ipython wheel downloaded to {dest_dir}")
     return max(wheels, key=lambda path: parse_wheel_filename(path.name)[1])
-
-
-def _read_requires_dist(wheel_path: pathlib.Path) -> list[Requirement]:
-    with zipfile.ZipFile(wheel_path) as zf:
-        meta_name = next(n for n in zf.namelist() if n.endswith(".dist-info/METADATA"))
-        meta_text = zf.read(meta_name).decode("utf-8")
-    msg = email.message_from_string(meta_text)
-    return [Requirement(val) for key, val in msg.items() if key.lower() == "requires-dist"]
-
-
-def _filter_requirements(
-    requires_dist: list[Requirement], exclude_names: set[str]
-) -> list[str]:
-    env = default_environment()
-    exclude = {name.lower() for name in exclude_names}
-    selected: list[str] = []
-    for req in requires_dist:
-        if req.name.lower() in exclude:
-            continue
-        if req.marker is not None and not req.marker.evaluate(env):
-            continue
-        selected.append(str(req).split(";", 1)[0].strip())
-    return selected
 
 
 def _install_deps(python: str, target: pathlib.Path, req_strings: list[str]) -> None:
@@ -162,9 +172,17 @@ def main() -> None:
     parser.add_argument("--python", required=True, help="Python interpreter to drive pip")
     parser.add_argument("--target", required=True, type=pathlib.Path, help="Bundle staging dir")
     parser.add_argument(
-        "--requirements", required=True, type=pathlib.Path, help="requirements/runtime.txt"
+        "--project",
+        required=True,
+        type=pathlib.Path,
+        help="Project root containing pyproject.toml (bundle dependency group)",
     )
     args = parser.parse_args()
+
+    if shutil.which("uv") is None:
+        raise SystemExit(
+            "uv is not on PATH. On MSYS2 UCRT64, run: pacboy -S --noconfirm uv:p"
+        )
 
     try:
         subprocess.run([args.python, "-c", "import psutil"], check=True, capture_output=True)
@@ -176,16 +194,18 @@ def main() -> None:
 
     args.target.mkdir(parents=True, exist_ok=True)
 
-    ipython_specs, other_specs = _parse_runtime_requirements(args.requirements)
-    _install_deps(args.python, args.target, other_specs)
+    requirements_file = _export_bundle_requirements(args.project.resolve())
+    try:
+        ipython_specs, other_specs = _parse_runtime_requirements(requirements_file)
+        _install_deps(args.python, args.target, other_specs)
 
-    with tempfile.TemporaryDirectory(prefix="ipython-wheel.") as tmp:
-        wheel_dir = pathlib.Path(tmp)
-        wheel = _download_ipython_wheel(args.python, ipython_specs, wheel_dir)
-        deps = _filter_requirements(_read_requires_dist(wheel), exclude_names={"psutil"})
-        _install_deps(args.python, args.target, deps)
-        _vend_psutil_from_system(args.target)
-        _install_ipython_wheel(args.python, args.target, wheel)
+        with tempfile.TemporaryDirectory(prefix="ipython-wheel.") as tmp:
+            wheel_dir = pathlib.Path(tmp)
+            wheel = _download_ipython_wheel(args.python, ipython_specs, wheel_dir)
+            _vend_psutil_from_system(args.target)
+            _install_ipython_wheel(args.python, args.target, wheel)
+    finally:
+        requirements_file.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

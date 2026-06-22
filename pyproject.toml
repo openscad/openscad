@@ -32,21 +32,39 @@ classifiers = [
     "Topic :: Multimedia :: Graphics :: 3D Modeling",
     "Topic :: Scientific/Engineering",
 ]
-# Keep in sync with requirements/runtime.txt. The pip wheel
-# automatically resolves these transitively, so we never have to vendor
-# the source. Bundle-producing scripts (AppImage, macOS .app, Windows
-# installer) consume requirements/runtime.txt directly via
-# `pip install --target=...`.
+# The pip wheel automatically resolves these transitively. Binary
+# bundles (AppImage, macOS .app, Windows installer) install the
+# [dependency-groups] bundle group via `uv pip install --group bundle`.
 #
 # IPython 9.x requires `psutil>=7`. Windows native bundles vend
-# psutil from MSYS2 pacman; see requirements/runtime.txt.
+# psutil from MSYS2 pacman; see scripts/bundle-ipython-msys2.py.
 #
 # IPython 9.x itself requires Python 3.11+. Binary bundles always
-# ship IPython 9 (see requirements/runtime.txt). The pip wheel keeps
+# ship IPython 9 (see dependency-groups.bundle). The pip wheel keeps
 # IPython 8.x on Python 3.10 via environment markers below.
 dependencies = [
     "ipython>=9,<10; python_version>='3.11'",
     "ipython>=8,<9; python_version<'3.11'",
+]
+
+[dependency-groups]
+# Runtime deps for self-contained binary releases (embedded CPython 3.11+).
+bundle = ["ipython>=9,<10; python_version>='3.11'"]
+# Pinned tooling for PyPI wheel builds (CI + local cibuildwheel runs).
+build = [
+    "build==1.5.0; python_version>='3.11'",
+    "cibuildwheel==4.1.0; python_version>='3.11'",
+    "auditwheel==6.7.0; python_version>='3.11'",
+    "delocate==0.13.0; python_version>='3.11'",
+    "delvewheel==1.13.0; python_version>='3.11'",
+]
+# MkDocs site build (deploy-website workflow).
+docs = [
+    "click==8.4.1",
+    "mkdocs",
+    "mkdocs-material",
+    "pymdown-extensions",
+    "Pygments",
 ]
 
 [project.urls]

@@ -341,11 +341,9 @@ if [ "${BUNDLE_RUNTIME_PYTHON:-yes}" = "yes" ]; then
     # `create_appimage.sh` is a release-pipeline tool: it's invoked
     # by the AppImage CI workflow and by maintainers cutting a build
     # locally, both of whom expect the bundling step to "just work".
-    # We therefore default BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES to 1
-    # (auto-install pip-licenses if missing) and only let the caller
-    # opt out by setting the env var to 0 explicitly. This keeps the
-    # AppImage build self-contained and matches the CI workflows for
-    # macOS / Windows which set the same flag.
+    # AppImage builds auto-install uv and pip-licenses when missing so
+    # maintainers and CI do not need a pre-configured Python toolchain.
+    BUNDLE_PY_AUTO_INSTALL_UV="${BUNDLE_PY_AUTO_INSTALL_UV:-1}" \
     BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES="${BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES:-1}" \
         "${SCRIPT_DIR}/bundle-runtime-python.sh" "${BUNDLE_DEST}" \
         --python python3 \

@@ -1,7 +1,0 @@
-# Pinned tooling for PyPI wheel builds (CI + local cibuildwheel runs).
-# Dependabot watches /requirements/ and opens weekly bump PRs.
-build==1.5.0
-cibuildwheel==4.1.0
-auditwheel==6.7.0
-delocate==0.13.0
-delvewheel==1.13.0
