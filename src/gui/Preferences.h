@@ -23,8 +23,10 @@
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
+#include "json/json.hpp"
 
 class GlobalPreferences;
+class QTimer;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
   Q_OBJECT;
@@ -239,6 +241,9 @@ private:
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
+  nlohmann::json inMemoryAISettings;
+  QTimer *aiSaveTimer = nullptr;
+  QString currentLoadedProfileName;
 };
 
 class GlobalPreferences

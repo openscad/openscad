@@ -652,6 +652,15 @@ configure_file(
 
 target_link_libraries(svg PUBLIC LibXml2::LibXml2)
 
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  find_package(OpenSSL REQUIRED)
+  message(STATUS "OpenSSL: ${OPENSSL_VERSION}")
+  target_link_libraries(OpenSCADLibInternal PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+  if(WIN32)
+    target_link_libraries(OpenSCADLibInternal PUBLIC crypt32 ws2_32)
+  endif()
+endif()
+
 if(ENABLE_PYTHON)
   SET(PYTHON_SOURCES
     src/python/pyopenscad.cc
@@ -1469,6 +1478,9 @@ set(CORE_SOURCES
   src/core/Value.cc
   src/core/builtin_functions.cc
   src/core/control.cc
+  src/core/HTTPClient.cc
+  src/core/AIClient.cc
+  src/core/AIService.cc
   src/core/customizer/Annotation.cc
   src/core/customizer/CommentParser.cc
   src/core/customizer/ParameterObject.cc
