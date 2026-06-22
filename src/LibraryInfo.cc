@@ -66,9 +66,17 @@
 
 #ifdef USE_MIMALLOC
 #include <mimalloc.h>
-const std::string mimalloc_version = std::to_string(MI_MALLOC_VERSION / 10000) + "." +
-                                     std::to_string((MI_MALLOC_VERSION / 100) % 100) + "." +
-                                     std::to_string(MI_MALLOC_VERSION % 100);
+// ¯\_(ツ)_/¯
+// https://github.com/openscad/openscad/pull/6861#issuecomment-4652995452
+const int mimv = MI_MALLOC_VERSION;
+const int mimalloc_major = mimv < 1000 ? mimv / 100 : mimv < 10000 ? mimv / 1000 : mimv / 10000;
+const int mimalloc_minor = mimv < 1000    ? (mimv / 10) % 10
+                           : mimv < 10000 ? (mimv % 1000) / 100
+                                          : (mimv % 10000) / 100;
+const int mimalloc_patch = mimv < 1000 ? mimv % 10 : mimv % 100;
+const std::string mimalloc_version = std::to_string(mimalloc_major) + "." +
+                                     std::to_string(mimalloc_minor) + "." +
+                                     std::to_string(mimalloc_patch);
 #else
 const std::string mimalloc_version = "<not enabled>";
 #endif

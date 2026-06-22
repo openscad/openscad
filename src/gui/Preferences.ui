@@ -3166,7 +3166,7 @@
         <item>
          <widget class="QLabel" name="labelAIUnderDevWarning">
           <property name="text">
-           <string>Note: AI integration is currently under active development. Storing preferences is supported, but API connection is not yet active.</string>
+           <string>AI assistant integration is active. Configure your connection profiles and parameters below.</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -3254,6 +3254,44 @@
                 <widget class="QLineEdit" name="lineEditAIApiKey">
                  <property name="echoMode">
                   <enum>QLineEdit::Password</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxAISystemPrompt">
+              <property name="title">
+               <string>System Prompt / Instructions</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayoutAISystemPrompt">
+               <item>
+                <widget class="QPlainTextEdit" name="plainTextEditAISystemPrompt">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>80</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxAIDefaultPrompt">
+              <property name="title">
+               <string>Default User Prompt</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayoutAIDefaultPrompt">
+               <item>
+                <widget class="QPlainTextEdit" name="plainTextEditAIDefaultPrompt">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>60</height>
+                  </size>
                  </property>
                 </widget>
                </item>

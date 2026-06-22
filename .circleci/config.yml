@@ -368,6 +368,7 @@ jobs:
       - run:
           name: Install Homebrew packages
           command: |
+            export HOMEBREW_NO_ASK=1
             brew analytics off
             brew tap
             brew uninstall -f --cask temurin17
