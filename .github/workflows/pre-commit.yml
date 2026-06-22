@@ -63,8 +63,7 @@ jobs:
           # `pre-commit run --from-ref/--to-ref` above only runs
           # hooks against files in the PR diff. That has a known
           # gap: a PR whose only change is hook configuration (e.g.
-          # the weekly autoupdate PRs from
-          # `pre-commit-autoupdate.yml`, or a PR tweaking
+          # Dependabot pre-commit PRs, or a PR tweaking
           # `.github/zizmor.yml`'s allowlist or `.clang-format`'s
           # rules) has an empty target file set for every
           # file-scoped hook, so rev/arg/policy changes would never

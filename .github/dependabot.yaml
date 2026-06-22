@@ -14,6 +14,24 @@ updates:
       - dependency-name: "takanome-dev/assign-issue-action"
         versions: ["<2.4"]
 
+  # Bump hook revs in `.pre-commit-config.yaml` (and any hook
+  # `additional_dependencies`, e.g. commitlint's npm packages).
+  # Replaces the former `pre-commit-autoupdate.yml` scheduled
+  # workflow now that Dependabot supports the `pre-commit` ecosystem.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build(deps)"
+      include: "scope"
+
   # Track upstream releases of the Python packages we bundle inside
   # AppImage / macOS .app / Windows installer (currently: IPython).
   # Dependabot watches `requirements/runtime.txt` and opens a PR
