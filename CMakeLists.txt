@@ -2178,11 +2178,132 @@ else()
 endif()
 
 # Configure icon-related files, for release vs nightly
-set(_CONFIGURED_SOURCE_FILES
+set(_CONFIGURED_SOURCE_TREE_FILES
   ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in2
   ${RESOURCE_DIR}/icons/pythonscad.desktop
   ${RESOURCE_DIR}/common.qrc
+  ${RESOURCE_DIR}/mac.qrc
 )
+set(_UNWRITABLE_CONFIGURED_FILES "")
+set(_UNWRITABLE_CONFIGURED_RM_FILES "")
+foreach(_configured_file IN LISTS _CONFIGURED_SOURCE_TREE_FILES)
+  if(EXISTS "${_configured_file}")
+    set(_check_path "${_configured_file}")
+    set(_check_is_directory FALSE)
+  else()
+    get_filename_component(_check_path "${_configured_file}" DIRECTORY)
+    set(_check_is_directory TRUE)
+  endif()
+  set(_is_writable TRUE)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.29)
+    if(NOT IS_WRITABLE "${_check_path}")
+      set(_is_writable FALSE)
+    endif()
+  elseif(UNIX)
+    if(_check_is_directory)
+      execute_process(COMMAND test -w "${_check_path}" -a -x "${_check_path}" RESULT_VARIABLE _write_test ERROR_QUIET)
+    else()
+      execute_process(COMMAND test -w "${_check_path}" RESULT_VARIABLE _write_test ERROR_QUIET)
+    endif()
+    if(NOT _write_test EQUAL 0)
+      set(_is_writable FALSE)
+    endif()
+  elseif(WIN32)
+    if(_check_is_directory)
+      set(_writability_probe "${_check_path}/.pythonscad_writable_probe")
+      execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f "${_writability_probe}" ERROR_QUIET)
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E touch "${_writability_probe}"
+        RESULT_VARIABLE _write_test
+        ERROR_QUIET
+      )
+      if(NOT _write_test EQUAL 0)
+        set(_is_writable FALSE)
+      else()
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f "${_writability_probe}" ERROR_QUIET)
+      endif()
+    else()
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E touch "${_configured_file}"
+        RESULT_VARIABLE _write_test
+        ERROR_QUIET
+      )
+      if(NOT _write_test EQUAL 0)
+        set(_is_writable FALSE)
+      endif()
+    endif()
+  endif()
+  if(_is_writable AND _check_is_directory AND UNIX AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.29)
+    execute_process(COMMAND test -x "${_check_path}" RESULT_VARIABLE _exec_test ERROR_QUIET)
+    if(NOT _exec_test EQUAL 0)
+      set(_is_writable FALSE)
+    endif()
+  endif()
+  if(NOT _is_writable)
+    if(EXISTS "${_configured_file}")
+      set(_detail "${_configured_file}")
+      if(UNIX)
+        execute_process(
+          COMMAND stat -c " (owner: %U)" "${_configured_file}"
+          OUTPUT_VARIABLE _owner_detail
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+          ERROR_QUIET
+        )
+        if(NOT _owner_detail)
+          execute_process(
+            COMMAND stat -f " (owner: %Su)" "${_configured_file}"
+            OUTPUT_VARIABLE _owner_detail
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+          )
+        endif()
+        if(_owner_detail)
+          string(APPEND _detail "${_owner_detail}")
+        endif()
+      endif()
+      list(APPEND _UNWRITABLE_CONFIGURED_FILES "${_detail}")
+      list(APPEND _UNWRITABLE_CONFIGURED_RM_FILES "${_configured_file}")
+    else()
+      list(APPEND _UNWRITABLE_CONFIGURED_FILES
+        "${_configured_file} (cannot create: directory not writable: ${_check_path})")
+    endif()
+  endif()
+endforeach()
+if(_UNWRITABLE_CONFIGURED_FILES)
+  set(_rm_cmd "")
+  foreach(_file IN LISTS _UNWRITABLE_CONFIGURED_RM_FILES)
+    string(REPLACE "'" "'\\''" _shell_quoted "${_file}")
+    string(PREPEND _shell_quoted "'")
+    string(APPEND _shell_quoted "'")
+    if(_rm_cmd)
+      string(APPEND _rm_cmd " ")
+    endif()
+    string(APPEND _rm_cmd "${_shell_quoted}")
+  endforeach()
+  list(JOIN _UNWRITABLE_CONFIGURED_FILES "\n  - " _unwritable_list)
+  if(WIN32)
+    message(FATAL_ERROR
+      "Cannot update generated file(s) in the source tree:\n"
+      "  - ${_unwritable_list}\n"
+      "Check file permissions or remove read-only attributes and re-run cmake.")
+  else()
+    if(_UNWRITABLE_CONFIGURED_RM_FILES)
+      message(FATAL_ERROR
+        "Cannot update generated file(s) in the source tree:\n"
+        "  - ${_unwritable_list}\n"
+        "This usually means the file(s) are owned by root from a previous privileged build.\n"
+        "Remove them and re-run cmake:\n"
+        "  rm -f ${_rm_cmd}\n"
+        "Avoid running sudo cmake or sudo make in the source tree; use a user-writable build/ directory.")
+    else()
+      message(FATAL_ERROR
+        "Cannot update generated file(s) in the source tree:\n"
+        "  - ${_unwritable_list}\n"
+        "Fix directory permissions for the paths listed above and re-run cmake.\n"
+        "Avoid running sudo cmake or sudo make in the source tree; use a user-writable build/ directory.")
+    endif()
+  endif()
+endif()
 
 configure_file(doc/pythonscad.1.in doc/pythonscad.1)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in2)

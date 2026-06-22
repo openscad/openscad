@@ -71,6 +71,27 @@ PythonSCAD requires the following tools for development:
    Follow the platform-specific build instructions in
    [README.md](README.md).
 
+### Troubleshooting
+
+#### CMake fails to update generated files in the source tree
+
+If `cmake` fails with a permission error on files such as
+`resources/common.qrc`, `pythonscad.appdata.xml.in2`, or
+`resources/icons/pythonscad.desktop`, those files were likely
+left behind by a previous privileged build (`sudo cmake` or
+`sudo make`) and are now owned by root.
+
+Remove the generated files and reconfigure:
+
+```bash
+rm -f pythonscad.appdata.xml.in2 resources/common.qrc resources/icons/pythonscad.desktop resources/mac.qrc
+cmake -S . -B build
+```
+
+To avoid this, do not run `sudo cmake` or `sudo make` in the
+source tree. Use a separate, user-writable `build/` directory
+for out-of-source builds.
+
 ### Local Development Tools
 
 The pre-commit hooks will automatically validate your commit
