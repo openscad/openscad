@@ -510,7 +510,14 @@ Response GeometryEvaluator::visit(State& state, const AbstractNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
+      std::shared_ptr<Geometry> mutableGeom = applyToChildren(node, OpenSCADOperator::UNION).asMutableGeometry();
+      if (mutableGeom != nullptr) {
+        if (!node.model_name().empty()) {
+          std::cout << "Setting model name: " << node.model_name() << std::endl;
+        }
+        mutableGeom->setModelName(node.model_name());
+      }
+      geom = std::static_pointer_cast<const Geometry>(mutableGeom);
     } else {
       geom = smartCacheGet(node, state.preferNef());
     }
