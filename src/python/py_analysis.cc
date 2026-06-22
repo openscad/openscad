@@ -55,7 +55,6 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate, bool color)
       PyObject *coord = PyList_New(3);
       for (int j = 0; j < 3; j++) PyList_SetItem(coord, j, PyFloat_FromDouble(ps->vertices[i][j]));
       PyList_SetItem(ptarr, i, coord);
-      Py_XINCREF(coord);
     }
     Py_XINCREF(ptarr);
     // Now create Python Point array
@@ -65,14 +64,36 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate, bool color)
       for (unsigned int j = 0; j < ps->indices[i].size(); j++)
         PyList_SetItem(face, j, PyLong_FromLong(ps->indices[i][j]));
       PyList_SetItem(polarr, i, face);
-      Py_XINCREF(face);
     }
     Py_XINCREF(polarr);
+    if (color) {
+      // Now create Python Color array
+      PyObject *colorarr = PyList_New(ps->colors.size());
+      for (unsigned int i = 0; i < ps->colors.size(); i++) {
+        PyObject *color = PyList_New(4);
+        PyList_SetItem(color, 0, PyFloat_FromDouble(ps->colors[i].r()));
+        PyList_SetItem(color, 1, PyFloat_FromDouble(ps->colors[i].g()));
+        PyList_SetItem(color, 2, PyFloat_FromDouble(ps->colors[i].b()));
+        PyList_SetItem(color, 3, PyFloat_FromDouble(ps->colors[i].a()));
+        PyList_SetItem(colorarr, i, color);
+      }
+
+      // Now create Python Color indices array
+      PyObject *colorindarr = PyList_New(ps->color_indices.size());
+      for (unsigned int i = 0; i < ps->color_indices.size(); i++) {
+        PyList_SetItem(colorindarr, i, PyLong_FromLong(ps->color_indices[i]));
+      }
+      PyObject *result = PyTuple_New(4);
+      PyTuple_SetItem(result, 0, ptarr);
+      PyTuple_SetItem(result, 1, polarr);
+      PyTuple_SetItem(result, 2, colorarr);
+      PyTuple_SetItem(result, 3, colorindarr);
+      return result;
+    }
 
     PyObject *result = PyTuple_New(2);
     PyTuple_SetItem(result, 0, ptarr);
     PyTuple_SetItem(result, 1, polarr);
-
     return result;
   }
   if (auto polygon2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
