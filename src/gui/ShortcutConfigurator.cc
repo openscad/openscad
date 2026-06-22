@@ -13,7 +13,10 @@ ShortcutConfigurator::ShortcutConfigurator(QWidget *parent) : QWidget(parent)
   const int numColumns = 3;
   setupUi(this);
   configFileLoc = PlatformUtils::userConfigPath() + "/shortcuts.json";
-  model = new QStandardItemModel(numRows, numColumns, shortcutsTable);
+  model = new QStandardItemModel(numRows, numColumns, this);
+  proxyModel = new QSortFilterProxyModel(this);
+  proxyModel->setSourceModel(model);
+  proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
   shortcutCatcher = nullptr;
 
   connect(shortcutsTable, &QTableView::clicked, this, &ShortcutConfigurator::onTableCellClicked);
@@ -23,9 +26,6 @@ ShortcutConfigurator::~ShortcutConfigurator()
 {
   if (shortcutCatcher) {
     delete shortcutCatcher;
-  }
-  if (model) {
-    delete model;
   }
 }
 
@@ -136,8 +136,8 @@ void ShortcutConfigurator::initGUI(const QList<QAction *>& allActions)
   shortcutsTable->setSelectionBehavior(QAbstractItemView::SelectItems);
   shortcutsTable->setSelectionMode(QAbstractItemView::SingleSelection);
   shortcutsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  createModel(shortcutsTable, allActions);
-  shortcutsTable->setModel(model);
+  createModel(this, allActions);
+  shortcutsTable->setModel(proxyModel);
 }
 
 void ShortcutConfigurator::readConfigFile(QJsonObject *object)
@@ -364,18 +364,7 @@ void ShortcutConfigurator::onTableCellClicked(const QModelIndex& index)
 
 void ShortcutConfigurator::on_searchBox_textChanged(const QString& text)
 {
-  auto qr = QRegularExpression::wildcardToRegularExpression(QString("*%1*").arg(text));
-  QList<QString> filteredListTmp = actionsName.filter(qr);
-  QSet<QString> filteredSet{filteredListTmp.begin(), filteredListTmp.end()};
-  QList<QString> filteredList{filteredSet.values()};
-
-  QList<QAction *> newList;
-  for (const auto& entry : filteredList) {
-    for (auto val : shortcutsMap.values(entry)) {
-      newList.push_back(val);
-    }
-  }
-  initGUI(newList);
+  proxyModel->setFilterFixedString(text.trimmed());
 }
 
 void ShortcutConfigurator::on_reset_clicked()

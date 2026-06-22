@@ -6,6 +6,7 @@
 #include <QAction>
 #include <QObject>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -46,6 +47,7 @@ private:
   QKeySequence pressedKeySequence;
   QMessageBox *shortcutCatcher;
   QStandardItemModel *model;
+  QSortFilterProxyModel *proxyModel;
 
 protected:
   bool eventFilter(QObject *obj, QEvent *event) override;
