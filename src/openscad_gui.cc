@@ -651,10 +651,13 @@ int shutdownSignalPipe[2] = {-1, -1};
 
 void shutdownSignalHandler(int)
 {
+  const int savedErrno = errno;
   const char signalByte = 1;
   if (shutdownSignalPipe[1] != -1) {
-    (void)::write(shutdownSignalPipe[1], &signalByte, sizeof(signalByte));
+    const ssize_t writeResult = ::write(shutdownSignalPipe[1], &signalByte, sizeof(signalByte));
+    (void)writeResult;  // best-effort wake of GUI thread; pipe is non-blocking
   }
+  errno = savedErrno;
 }
 
 void setupUnixSignalHandlers(OpenSCADApp *app)
