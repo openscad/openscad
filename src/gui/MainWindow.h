@@ -258,6 +258,7 @@ public slots:
   void updateRecentFiles(const QString& FileSavedOrOpened);
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
+  void onRegenerateSc(MainWindow *mw);
 
 private slots:
   void on_fileActionOpen_triggered();
@@ -487,6 +488,7 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  void regenerateScOnWindowClose(MainWindow *mw);
 
 #ifdef ENABLE_GUI_TESTS
 public:

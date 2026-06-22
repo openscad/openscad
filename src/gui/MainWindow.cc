@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -171,6 +171,7 @@
 #ifdef OPENSCAD_UPDATER
 #include "gui/AutoUpdater.h"
 #endif
+#include "gui/ShortcutConfigurator.h"
 
 #ifdef ENABLE_PYTHON
 #include "nettle/base64.h"
@@ -306,6 +307,16 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   restoreWindowState();
 
   this->hideFind();
+
+  // init shortcut-config
+  QList<QAction *> allActions = this->findChildren<QAction *>();
+  GlobalPreferences::inst()->shortcutConfigurator->collectDefaults(allActions);
+  GlobalPreferences::inst()->shortcutConfigurator->applyConfigFile(allActions);
+  GlobalPreferences::inst()->shortcutConfigurator->initGUI(allActions);
+  GlobalPreferences::inst()->shortcutConfigurator->searchBox->setText("");
+  connect(GlobalPreferences::inst(), SIGNAL(regenerateSc(MainWindow *)), this,
+          SLOT(onRegenerateSc(MainWindow *)));
+
   show();
   openRemainingFiles(filenames);
 }
@@ -349,6 +360,17 @@ void MainWindow::setAllMouseViewActions()
   this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK,
                                  MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
                                    Settings::Settings::inputMouseCtrlShiftRightClick.value())));
+}
+
+void MainWindow::onRegenerateSc(MainWindow *mw)
+{
+  if (mw == this) return;
+  QList<QAction *> allActions = this->findChildren<QAction *>();
+  GlobalPreferences::inst()->shortcutConfigurator->resetClass();
+  GlobalPreferences::inst()->shortcutConfigurator->collectDefaults(allActions);
+  GlobalPreferences::inst()->shortcutConfigurator->applyConfigFile(allActions);
+  GlobalPreferences::inst()->shortcutConfigurator->initGUI(allActions);
+  GlobalPreferences::inst()->shortcutConfigurator->searchBox->setText("");
 }
 
 void MainWindow::onNavigationOpenContextMenu()
@@ -612,6 +634,9 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
+  GlobalPreferences::inst()->shortcutConfigurator->searchBox->setText("");
+  emit regenerateScOnWindowClose(this);
+
   delete this->cgalworker;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
@@ -3993,10 +4018,6 @@ void MainWindow::setupMenusAndActions()
 void MainWindow::restoreWindowState()
 {
   const QSettingsCached settings;
-  // fetch window states to be restored after restoreState() call
-  const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
-  const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
-
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
   // Log to stdout
