@@ -2476,6 +2476,7 @@ if(NOT APPLE OR APPLE_UNIX)
             "${MSYS2_BIN_DIR}"
             "${CMAKE_BINARY_DIR}"
             "${CMAKE_BINARY_DIR}/submodules/libfive/libfive/src"
+            "${CMAKE_CURRENT_SOURCE_DIR}/python_embed"
           DESTINATION "."
         )
         message(STATUS "Native MSYS2 build: Runtime DLLs will be bundled from ${MSYS2_BIN_DIR}")
@@ -2511,14 +2512,21 @@ if(NOT APPLE OR APPLE_UNIX)
             message(STATUS \"no .pyd files in \${_lib_dynload}; skipping dep scan\")
             return()
           endif()
+          if(POLICY CMP0207)
+            cmake_policy(PUSH)
+            cmake_policy(SET CMP0207 NEW)
+          endif()
           file(GET_RUNTIME_DEPENDENCIES
             MODULES \${_pyd_files}
             RESOLVED_DEPENDENCIES_VAR _resolved
             UNRESOLVED_DEPENDENCIES_VAR _unresolved
             PRE_EXCLUDE_REGEXES \"api-ms-.*\" \"ext-ms-.*\"
             POST_EXCLUDE_REGEXES \".*[Ss]ystem32.*\" \".*[Ww]indows.*\"
-            DIRECTORIES \"\${_msys2_bindir}\"
+            DIRECTORIES \"\${_msys2_bindir}\" \"${CMAKE_CURRENT_SOURCE_DIR}/python_embed\"
           )
+          if(POLICY CMP0207)
+            cmake_policy(POP)
+          endif()
           foreach(_dep IN LISTS _resolved)
             get_filename_component(_dep_name \"\${_dep}\" NAME)
             if(EXISTS \"\${CMAKE_INSTALL_PREFIX}/\${_dep_name}\")
