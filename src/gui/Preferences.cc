@@ -83,6 +83,7 @@
 #include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
+#include "gui/ShortcutConfigurator.h"
 
 static const char *featurePropertyName = "FeatureProperty";
 
@@ -266,6 +267,7 @@ void Preferences::init()
   addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
+  addPrefPage(group, prefsActionShortcuts, pageShortcuts);
   addPrefPage(group, prefsActionAI, pageAI);
   this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
 
