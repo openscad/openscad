@@ -25,6 +25,19 @@ set -euo pipefail
 CCACHE_DIR=${CCACHE_DIR:-$HOME/.ccache/}
 mkdir -p "$CCACHE_DIR"
 
+# Build the WASM sysroot (third-party libs on Emscripten 6.0) if not already present.
+# Slow on first run (~45 min); cached by Docker layer cache afterwards.
+# To force a rebuild: docker rmi pythonscad-wasm-sysroot:local
+if ! docker image inspect pythonscad-wasm-sysroot:local &>/dev/null; then
+  echo "Building pythonscad-wasm-sysroot:local (cross-compiling WASM dependencies — first run only)..."
+  docker build \
+    --platform=linux/amd64 \
+    -f docker/wasm/sysroot.dockerfile \
+    --target wasm-sysroot \
+    -t pythonscad-wasm-sysroot:local \
+    .
+fi
+
 # Build the PythonSCAD WASM base image (CPython for wasm32-emscripten) if not already present.
 # This is slow on first run (~20 min) because it compiles CPython; subsequent runs are instant.
 # To force a rebuild: docker rmi pythonscad-wasm-python-base:local

@@ -56,6 +56,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
+      - name: Build WASM sysroot Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/wasm/sysroot.dockerfile
+          target: wasm-sysroot
+          tags: pythonscad-wasm-sysroot:local
+          load: true
+          cache-from: type=gha,scope=wasm-sysroot
+          cache-to: type=gha,mode=max,scope=wasm-sysroot
+
       - name: Build wasm-python-base Docker image
         uses: docker/build-push-action@v7
         with:
@@ -63,10 +74,8 @@ jobs:
           file: Dockerfile.wasm-python-base
           tags: pythonscad-wasm-python-base:local
           load: true
-          # GitHub Actions cache keeps the CPython cross-compile layer warm
-          # across runs so subsequent builds take ~2 min instead of ~30 min.
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=wasm-python-base
+          cache-to: type=gha,mode=max,scope=wasm-python-base
 
       - name: Build WASM node variant
         run: |

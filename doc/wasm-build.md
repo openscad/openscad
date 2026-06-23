@@ -30,18 +30,29 @@ absent from the WASM sysroot.
 
 ### Docker base image
 
-The WASM build requires a Docker image with CPython 3.14 cross-compiled for
-`wasm32-emscripten`. The Dockerfile uses a multi-stage build: CPython is
-cross-compiled with a current Emscripten SDK (3.14 needs clang `-mgc` / wasm-gc),
-then the artifacts are copied into `openscad/wasm-base` so PythonSCAD keeps that
-image's pre-populated Emscripten sysroot (Eigen, Boost, CGAL, …). Build it once:
+The WASM build uses two Docker images, both on **Emscripten 6.0** (required for
+CPython 3.14 browser support):
+
+1. **`pythonscad-wasm-sysroot:local`** — cross-compiles third-party libraries
+   (Eigen, Boost, CGAL, …) using the
+   [openscad-wasm](https://github.com/openscad/openscad-wasm) recipe in
+   `docker/wasm/sysroot.dockerfile`. No dependency on `openscad/wasm-base`.
+2. **`pythonscad-wasm-python-base:local`** — adds CPython 3.14 on top of the sysroot.
+
+`scripts/wasm-base-docker-run.sh` builds both images automatically if missing.
+Build the sysroot once (~45 min first time):
+
+```bash
+docker build -f docker/wasm/sysroot.dockerfile --target wasm-sysroot \
+  -t pythonscad-wasm-sysroot:local .
+```
+
+Then build the Python layer (~20 min first time for CPython cross-compile):
 
 ```bash
 docker build -f Dockerfile.wasm-python-base \
   -t pythonscad-wasm-python-base:local .
 ```
-
-This takes approximately 30 minutes on first build. The result contains:
 
 - `/cpython-wasm/lib/libpython3.14.a` — static library
 - `/cpython-wasm/include/python3.14/` — C headers

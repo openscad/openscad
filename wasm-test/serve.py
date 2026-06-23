@@ -33,5 +33,5 @@ if __name__ == '__main__':
     abs_directory = os.path.abspath(directory)
     os.chdir(abs_directory)
     print(f'Serving {abs_directory} on http://localhost:{port}/')
-    print('Open http://localhost:{}/test.html in your browser.'.format(port))
+    print('Open http://localhost:{}/test.html or http://localhost:{}/notebook.html'.format(port, port))
     http.server.test(HandlerClass=WasmHandler, port=port, bind='localhost')

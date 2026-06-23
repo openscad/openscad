@@ -312,19 +312,22 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   # CPython compiled for wasm32-emscripten (see Dockerfile.wasm-python-base)
   set(CPYTHON_WASM_PREFIX "/cpython-wasm" CACHE PATH "CPython compiled for wasm32-emscripten")
   set(CPYTHON_WASM_PYVER "3.14" CACHE STRING "Python version in CPYTHON_WASM_PREFIX")
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   target_compile_definitions(OpenSCADLibInternal PUBLIC CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCADLibInternal PUBLIC /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
 
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
-  target_compile_options(OpenSCADLibInternal PUBLIC -fexceptions)
+  target_compile_options(OpenSCADLibInternal PUBLIC -fexceptions -fPIC)
   target_link_options(OpenSCADExe PUBLIC
     -fexceptions
     -sABORT_ON_WASM_EXCEPTIONS
     -sALLOW_MEMORY_GROWTH=1
     -sDISABLE_EXCEPTION_CATCHING=0
     -sEXIT_RUNTIME=1
-    -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
+    "-sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain','ccall','cwrap']"
+    "-sEXPORTED_FUNCTIONS=['_EmsInitPython','_EmsEvaluatePython','_EmsFinishPython','_malloc','_free','_main']"
+    -sSTACK_SIZE=8388608
     -sMAXIMUM_MEMORY=4GB
 
     # -g produces DWARF debug info, which is quite large and may need debugger extensions.
@@ -338,20 +341,20 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       -sEXPORT_NAME=OpenSCAD
       -sMODULARIZE=1
       -sINVOKE_RUN=0
+      # CPython 3.14 promising-main needs resolveGlobalSymbol from libdylink.js
+      # (included when MAIN_MODULE is set). Required for Chromium; Firefox skips
+      # the WebAssembly.promising code path.
+      -sMAIN_MODULE=2
+      "-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['emscripten_exit_with_live_runtime']"
     )
   elseif (WASM_BUILD_TYPE STREQUAL "node")
     # Node build uses NODERAWFS (real filesystem); CPython found at its build prefix /cpython-wasm
     target_compile_definitions(OpenSCADLibInternal PUBLIC WASM_NODE_BUILD)
     target_link_options(OpenSCADExe PUBLIC
       -sENVIRONMENT=node,worker
-      -sNODEJS_CATCH_EXIT
       -sNODERAWFS
 
-      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
-      $<$<CONFIG:Release>:-sSINGLE_FILE>
-
-      # Alternatively to single-file mode, code caching could make repeated runs faster:
-      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
+      # SINGLE_FILE disabled: Emscripten 6.0 embed can produce invalid JS for large builds.
     )
 
     # Ensure the resulting .js file is executable on Unix:
