@@ -32,9 +32,12 @@ public:
     }
   }
 
+  const std::vector<AIToolCall>& toolCalls() const { return tool_calls_; }
+
 private:
   std::string buffer_;
   TextCallback callback_;
+  std::vector<AIToolCall> tool_calls_;
 
   void processLine(const std::string& line)
   {
@@ -81,6 +84,32 @@ private:
               matched = true;
             }
           }
+          if (delta.contains("tool_calls") && delta["tool_calls"].is_array()) {
+            for (auto& tc : delta["tool_calls"]) {
+              if (tc.is_object()) {
+                size_t index = tc.value("index", 0);
+                if (tool_calls_.size() <= index) {
+                  tool_calls_.resize(index + 1);
+                }
+                auto& dest = tool_calls_[index];
+                if (tc.contains("id")) {
+                  dest.id = tc["id"].get<std::string>();
+                }
+                if (tc.contains("type")) {
+                  dest.type = tc["type"].get<std::string>();
+                }
+                if (tc.contains("function") && tc["function"].is_object()) {
+                  auto& fn = tc["function"];
+                  if (fn.contains("name")) {
+                    dest.name = fn["name"].get<std::string>();
+                  }
+                  if (fn.contains("arguments")) {
+                    dest.arguments += fn["arguments"].get<std::string>();
+                  }
+                }
+              }
+            }
+          }
         }
       }
 
@@ -99,6 +128,31 @@ private:
           if (!text.empty()) {
             callback_(text);
             matched = true;
+          }
+        }
+        if (message.contains("tool_calls") && message["tool_calls"].is_array()) {
+          for (auto& tc : message["tool_calls"]) {
+            AIToolCall tool_call;
+            if (tc.contains("id")) {
+              tool_call.id = tc["id"].get<std::string>();
+            }
+            if (tc.contains("type")) {
+              tool_call.type = tc["type"].get<std::string>();
+            }
+            if (tc.contains("function") && tc["function"].is_object()) {
+              auto& fn = tc["function"];
+              if (fn.contains("name")) {
+                tool_call.name = fn["name"].get<std::string>();
+              }
+              if (fn.contains("arguments")) {
+                if (fn["arguments"].is_string()) {
+                  tool_call.arguments = fn["arguments"].get<std::string>();
+                } else {
+                  tool_call.arguments = fn["arguments"].dump();
+                }
+              }
+            }
+            tool_calls_.push_back(tool_call);
           }
         }
       }
@@ -150,6 +204,57 @@ AIClient::~AIClient() = default;
 AIClient::AIClient(AIClient&&) noexcept = default;
 AIClient& AIClient::operator=(AIClient&&) noexcept = default;
 
+nlohmann::json getOpenSCADTools()
+{
+  nlohmann::json tools = nlohmann::json::array();
+
+  nlohmann::json set_editor_code = nlohmann::json::object();
+  set_editor_code["type"] = "function";
+  nlohmann::json sec_fn = nlohmann::json::object();
+  sec_fn["name"] = "set_editor_code";
+  sec_fn["description"] =
+    "Propose changes to the current script in the editor. Use this to update the script.";
+  nlohmann::json sec_params = nlohmann::json::object();
+  sec_params["type"] = "object";
+  nlohmann::json sec_props = nlohmann::json::object();
+  nlohmann::json sec_code = nlohmann::json::object();
+  sec_code["type"] = "string";
+  sec_code["description"] = "The complete new code or content to put in the editor.";
+  sec_props["code"] = sec_code;
+  sec_params["properties"] = sec_props;
+  sec_params["required"] = nlohmann::json::array({"code"});
+  sec_fn["parameters"] = sec_params;
+  set_editor_code["function"] = sec_fn;
+  tools.push_back(set_editor_code);
+
+  nlohmann::json get_editor_code = nlohmann::json::object();
+  get_editor_code["type"] = "function";
+  nlohmann::json gec_fn = nlohmann::json::object();
+  gec_fn["name"] = "get_editor_code";
+  gec_fn["description"] = "Retrieve the current source code present in the editor to inspect it.";
+  nlohmann::json gec_params = nlohmann::json::object();
+  gec_params["type"] = "object";
+  gec_params["properties"] = nlohmann::json::object();
+  gec_fn["parameters"] = gec_params;
+  get_editor_code["function"] = gec_fn;
+  tools.push_back(get_editor_code);
+
+  nlohmann::json trigger_preview = nlohmann::json::object();
+  trigger_preview["type"] = "function";
+  nlohmann::json tp_fn = nlohmann::json::object();
+  tp_fn["name"] = "trigger_preview";
+  tp_fn["description"] =
+    "Compile the current script and render a preview in the 3D viewport to validate the result.";
+  nlohmann::json tp_params = nlohmann::json::object();
+  tp_params["type"] = "object";
+  tp_params["properties"] = nlohmann::json::object();
+  tp_fn["parameters"] = tp_params;
+  trigger_preview["function"] = tp_fn;
+  tools.push_back(trigger_preview);
+
+  return tools;
+}
+
 void AIClient::sendChatCompletion(const AIProfileConfig& config,
                                   const std::vector<AIChatMessage>& history,
                                   ResponseCallback on_response, ErrorCallback on_error)
@@ -162,15 +267,37 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
   for (const auto& msg : history) {
     nlohmann::json m = nlohmann::json::object();
     m["role"] = msg.role;
-    m["content"] = msg.content;
+    if (!msg.content.empty() || msg.tool_calls.empty()) {
+      m["content"] = msg.content;
+    } else {
+      m["content"] = nullptr;
+    }
+    if (msg.role == "tool") {
+      m["tool_call_id"] = msg.tool_call_id;
+    }
+    if (!msg.tool_calls.empty()) {
+      nlohmann::json tcs = nlohmann::json::array();
+      for (const auto& tc : msg.tool_calls) {
+        nlohmann::json t = nlohmann::json::object();
+        t["id"] = tc.id;
+        t["type"] = "function";
+        nlohmann::json fn = nlohmann::json::object();
+        fn["name"] = tc.name;
+        fn["arguments"] = tc.arguments;
+        t["function"] = fn;
+        tcs.push_back(t);
+      }
+      m["tool_calls"] = tcs;
+    }
     messages.push_back(m);
   }
   payload["messages"] = messages;
+  payload["tools"] = getOpenSCADTools();
 
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
         continue;
       }
       payload[key] = el.value();
@@ -204,24 +331,54 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
           auto json = nlohmann::json::parse(response_body);
           if (json.contains("choices") && json["choices"].is_array() && !json["choices"].empty()) {
             auto& choice = json["choices"][0];
-            if (choice.contains("message") && choice["message"].is_object() &&
-                choice["message"].contains("content")) {
-              on_response(choice["message"]["content"].get<std::string>());
-              return;
+            std::string content = "";
+            std::vector<AIToolCall> parsed_tool_calls;
+            if (choice.contains("message") && choice["message"].is_object()) {
+              auto& msg = choice["message"];
+              if (msg.contains("content") && !msg["content"].is_null()) {
+                content = msg["content"].get<std::string>();
+              }
+              if (msg.contains("tool_calls") && msg["tool_calls"].is_array()) {
+                for (auto& tc : msg["tool_calls"]) {
+                  AIToolCall tool_call;
+                  if (tc.contains("id")) {
+                    tool_call.id = tc["id"].get<std::string>();
+                  }
+                  if (tc.contains("type")) {
+                    tool_call.type = tc["type"].get<std::string>();
+                  }
+                  if (tc.contains("function") && tc["function"].is_object()) {
+                    auto& fn = tc["function"];
+                    if (fn.contains("name")) {
+                      tool_call.name = fn["name"].get<std::string>();
+                    }
+                    if (fn.contains("arguments")) {
+                      if (fn["arguments"].is_string()) {
+                        tool_call.arguments = fn["arguments"].get<std::string>();
+                      } else {
+                        tool_call.arguments = fn["arguments"].dump();
+                      }
+                    }
+                  }
+                  parsed_tool_calls.push_back(tool_call);
+                }
+              }
             }
+            on_response(content, parsed_tool_calls);
+            return;
           }
           if (json.contains("message") && json["message"].is_object() &&
               json["message"].contains("content")) {
-            on_response(json["message"]["content"].get<std::string>());
+            on_response(json["message"]["content"].get<std::string>(), {});
             return;
           }
           if (json.contains("response")) {
-            on_response(json["response"].get<std::string>());
+            on_response(json["response"].get<std::string>(), {});
             return;
           }
-          on_response(response_body);
+          on_response(response_body, {});
         } catch (...) {
-          on_response(response_body);
+          on_response(response_body, {});
         }
       } else {
         if (on_error) {
@@ -245,15 +402,37 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
   for (const auto& msg : history) {
     nlohmann::json m = nlohmann::json::object();
     m["role"] = msg.role;
-    m["content"] = msg.content;
+    if (!msg.content.empty() || msg.tool_calls.empty()) {
+      m["content"] = msg.content;
+    } else {
+      m["content"] = nullptr;
+    }
+    if (msg.role == "tool") {
+      m["tool_call_id"] = msg.tool_call_id;
+    }
+    if (!msg.tool_calls.empty()) {
+      nlohmann::json tcs = nlohmann::json::array();
+      for (const auto& tc : msg.tool_calls) {
+        nlohmann::json t = nlohmann::json::object();
+        t["id"] = tc.id;
+        t["type"] = "function";
+        nlohmann::json fn = nlohmann::json::object();
+        fn["name"] = tc.name;
+        fn["arguments"] = tc.arguments;
+        t["function"] = fn;
+        tcs.push_back(t);
+      }
+      m["tool_calls"] = tcs;
+    }
     messages.push_back(m);
   }
   payload["messages"] = messages;
+  payload["tools"] = getOpenSCADTools();
 
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
         continue;
       }
       payload[key] = el.value();
@@ -296,7 +475,7 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
     [parser, on_complete]() {
       parser->flush();
       if (on_complete) {
-        on_complete();
+        on_complete(parser->toolCalls());
       }
     });
 }

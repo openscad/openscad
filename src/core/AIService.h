@@ -9,6 +9,8 @@
 struct ChatMessage {
   std::string role;
   std::string content;
+  std::string tool_call_id;
+  std::string tool_calls;  // Serialized JSON representation
 };
 
 class AIService
@@ -29,7 +31,7 @@ public:
   AIService& operator=(AIService&&) noexcept;
 
   // Async chat completion with streaming output
-  void chatCompletionStream(const std::vector<ChatMessage>& history, ChunkCallback on_chunk,
+  void chatCompletionStream(std::vector<ChatMessage>& history, ChunkCallback on_chunk,
                             ErrorCallback on_error, CompleteCallback on_complete);
 
   // Async chat completion with full non-streaming response
