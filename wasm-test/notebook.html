@@ -114,6 +114,7 @@
 
   .cell-gutter:hover { cursor: pointer; }
   .cell-wrap-selected .editor-wrapper { box-shadow: 0 0 0 1px var(--accent2); }
+  .cell-output {
     margin-top: 0; border-radius: 8px; border: 1px solid var(--border);
     background: #0a0a18; overflow: hidden; display: none;
   }
@@ -1265,7 +1266,8 @@ function updateMeta() {
 }
 function escHTML(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function mdToHtml(md) {
-  return md
+  const escaped = escHTML(md);
+  return escaped
     .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/`(.+?)`/g,'<code>$1</code>').replace(/\n/g,'<br>');

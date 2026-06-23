@@ -7,13 +7,17 @@
 #     -t pythonscad-wasm-sysroot:local .
 
 ARG EMSCRIPTEN_SDK_TAG=emscripten/emsdk:6.0.0
+# Pin openscad-wasm for reproducible sysroot builds; bump OPENSCAD_WASM_COMMIT when
+# intentionally syncing upstream recipe/patches.
+ARG OPENSCAD_WASM_COMMIT=ac5cf9b129bdb243fef3862883bd5d64e54fffcb
 
 FROM ${EMSCRIPTEN_SDK_TAG} AS libs-fetch
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates git make patch wget xz-utils \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /ow
-RUN git clone --depth 1 https://github.com/openscad/openscad-wasm.git .
+RUN git clone --filter=blob:none --no-checkout https://github.com/openscad/openscad-wasm.git . \
+    && git checkout ${OPENSCAD_WASM_COMMIT}
 # Tarball targets from openscad-wasm Makefile; use mirrors (gmplib.org is often unreachable).
 RUN mkdir -p libs \
     && wget -q https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz \
