@@ -31,7 +31,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: build-pypi-wheels-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
