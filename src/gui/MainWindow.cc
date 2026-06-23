@@ -52,6 +52,7 @@
 #include <QMimeData>
 #include <QMutexLocker>
 #include <QPoint>
+#include <QPointer>
 #include <QProcess>
 #include <QProgressDialog>
 #include <QScreen>
@@ -770,6 +771,8 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     compileDone(didcompile | forcedone);
+  } catch (const ProgressCancelException&) {
+    compileEnded();
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
@@ -852,6 +855,8 @@ void MainWindow::compileDone(bool didchange)
 
     this->procevents = false;
     QMetaObject::invokeMethod(this, callslot);
+  } catch (const ProgressCancelException&) {
+    compileEnded();
   } catch (const HardWarningException&) {
     exceptionCleanup();
   }
@@ -887,6 +892,10 @@ void MainWindow::compileEnded()
 {
   clearCurrentOutput();
   GuiLocker::unlock();
+  if (isClosing) {
+    QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+    return;
+  }
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 #ifdef ENABLE_GUI_TESTS
   emit compilationDone(this->rootFile.get());
@@ -3307,12 +3316,12 @@ void MainWindow::saveWindowStateOnClose()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-  if (tabManager->shouldClose()) {
+  const auto finalizeClose = [this, event]() {
     isClosing = true;
     saveWindowStateOnClose();
     progress_report_fin();
 
-    // Log to stdout from now on
+    // Log to stderr from now on
     clearCurrentOutput();
 
     if (this->tempFile) {
@@ -3320,10 +3329,27 @@ void MainWindow::closeEvent(QCloseEvent *event)
       this->tempFile = nullptr;
     }
 
-    // Disable invokeMethod calls for consoleOutput during shutdown,
-    // otherwise will segfault if echos are in progress.
+    // Disable invokeMethod calls for consoleOutput during shutdown.
     hideCurrentOutput();
     event->accept();
+  };
+
+  // If close was already requested during compile and compile lock is gone, close without asking again.
+  if (isClosing && !GuiLocker::isLocked()) {
+    finalizeClose();
+    return;
+  }
+
+  if (tabManager->shouldClose()) {
+    // If compile/render is in progress, request cancellation and defer actual close.
+    if (GuiLocker::isLocked()) {
+      isClosing = true;
+      if (this->progresswidget) this->progresswidget->cancel();
+      hideCurrentOutput();
+      event->ignore();
+      return;
+    }
+    finalizeClose();
   } else {
     event->ignore();
   }
@@ -3359,11 +3385,14 @@ void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
   // Invoke the method in the main thread in case the output
   // originates in a worker thread.
   auto thisp = static_cast<MainWindow *>(userdata);
+  if (!thisp || thisp->isClosing) return;
   QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(Message, msgObj));
 }
 
 void MainWindow::consoleOutput(const Message& msgObj)
 {
+  if (this->isClosing) return;
+
   this->console->addMessage(msgObj);
   if (msgObj.group == message_group::Warning || msgObj.group == message_group::Deprecated) {
     ++this->compileWarnings;
@@ -3372,9 +3401,12 @@ void MainWindow::consoleOutput(const Message& msgObj)
   }
   // FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
   // Then processEvents should no longer be needed here.
+  QPointer<MainWindow> self(this);
   this->processEvents();
-  if (consoleUpdater && !consoleUpdater->isActive()) {
-    consoleUpdater->start(50);  // Limit console updates to 20 FPS
+  if (!self || self->isClosing) return;
+
+  if (self->consoleUpdater && !self->consoleUpdater->isActive()) {
+    self->consoleUpdater->start(50);  // Limit console updates to 20 FPS
   }
 }
 
@@ -3422,7 +3454,10 @@ void MainWindow::openCSGSettingsChanged()
 
 void MainWindow::processEvents()
 {
-  if (this->procevents) QApplication::processEvents();
+  if (!this->procevents) return;
+
+  QApplication::processEvents();
+  if (isClosing && GuiLocker::isLocked()) throw ProgressCancelException();
 }
 
 QString MainWindow::exportPath(const QString& suffix)
