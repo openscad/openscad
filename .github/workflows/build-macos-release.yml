@@ -802,6 +802,7 @@ jobs:
           echo "Apple code signing certificate installed."
 
       - name: Fix app bundle for macOS distribution
+        shell: bash
         env:
           SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
           STEPS_MERGE_OUTPUTS_APP_BUNDLE: ${{ steps.merge.outputs.app_bundle }}
@@ -816,6 +817,16 @@ jobs:
             SIGN_ID="-"
             CODESIGN_EXTRA=()
           fi
+
+          sign_target() {
+            if ! codesign_output=$(codesign "$@" 2>&1); then
+              echo "$codesign_output"
+              exit 1
+            fi
+            if [ -n "$codesign_output" ]; then
+              echo "$codesign_output" | grep -v "replacing existing signature" || true
+            fi
+          }
 
           echo "=== Fixing executable permissions ==="
           chmod +x "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
@@ -838,46 +849,68 @@ jobs:
           done
 
           echo "=== Signing all binaries (inside-out approach) ==="
-          # Step 1: Sign all standalone dylibs (not in frameworks)
-          find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" {} \; 2>&1 | grep -v "replacing existing signature" || true
-          find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -exec codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" {} \; 2>&1 | grep -v "replacing existing signature" || true
+          # Step 1: Sign dylibs under Contents/Frameworks (includes nested framework dylibs)
+          while IFS= read -r -d '' f; do
+            sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$f"
+          done < <(find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -print0)
+          if [ -d "$APP_BUNDLE/Contents/PlugIns" ]; then
+            while IFS= read -r -d '' f; do
+              sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$f"
+            done < <(find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -print0)
+          fi
 
           # Step 2: Sign Python framework components (innermost first)
           if [ -d "$APP_BUNDLE/Contents/Frameworks/Python.framework" ]; then
             echo "=== Signing Python framework ==="
             PY_FW="$APP_BUNDLE/Contents/Frameworks/Python.framework"
-            PY_VER=$(find "$PY_FW/Versions/" -maxdepth 1 -mindepth 1 -type d -exec basename {} \; 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+            PY_VER=
+            candidate=$(find "$PY_FW/Versions" -maxdepth 1 -mindepth 1 -type d ! -name 'Current' -print -quit)
+            if [ -n "$candidate" ]; then
+              ver=$(basename "$candidate")
+              if [[ "$ver" =~ ^[0-9]+\.[0-9]+$ ]]; then
+                PY_VER=$ver
+              fi
+            fi
             if [ -n "$PY_VER" ]; then
               PY_ROOT="$PY_FW/Versions/$PY_VER"
               # Sign all .so extension modules (lib-dynload and any other Mach-O)
               echo "Signing Python .so modules..."
-              find "$PY_ROOT" -name "*.so" -type f 2>/dev/null | while IFS= read -r f; do
-                if file "$f" | grep -q Mach-O; then
-                  codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$f" 2>&1 | grep -v "replacing existing signature" || true
-                fi
-              done
+              while IFS= read -r -d '' f; do
+                file "$f" | grep -q Mach-O || continue
+                sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$f"
+              done < <(find "$PY_ROOT" -name "*.so" -type f -print0)
               # Sign bin/python3.x and any other Mach-O in bin
               echo "Signing Python binaries..."
               for bin in "$PY_ROOT/bin"/*; do
                 if [ -f "$bin" ] && file "$bin" | grep -q Mach-O; then
-                  codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$bin" 2>&1 | grep -v "replacing existing signature" || true
+                  sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$bin"
                 fi
               done
               # Sign nested Python.app: executable first, then the app bundle
               if [ -f "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" ]; then
                 echo "Signing nested Python.app..."
-                codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python" 2>&1 | grep -v "replacing existing signature" || true
-                codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Resources/Python.app" 2>&1 | grep -v "replacing existing signature" || true
+                sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Resources/Python.app/Contents/MacOS/Python"
+                sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Resources/Python.app"
               fi
               # Sign main Python framework binary
               if [ -f "$PY_ROOT/Python" ]; then
                 echo "Signing Python framework binary..."
-                codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Python" 2>&1 | grep -v "replacing existing signature" || true
+                sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_ROOT/Python"
               fi
               # Sign the Python framework itself as a bundle
               echo "Signing Python.framework as a bundle..."
-              codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_FW" 2>&1 | grep -v "replacing existing signature" || true
+              sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$PY_FW"
             fi
+          fi
+
+          # Step 2b: Sign bundled runtime Python deps (e.g. psutil .so from IPython)
+          BUNDLE_PY="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          if [ -d "$BUNDLE_PY" ]; then
+            echo "=== Signing bundled runtime Python deps ==="
+            while IFS= read -r -d '' f; do
+              file "$f" | grep -q Mach-O || continue
+              sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$f"
+            done < <(find "$BUNDLE_PY" -type f \( -name "*.so" -o -name "*.dylib" \) -print0)
           fi
 
           # Step 3: Sign Qt frameworks (each framework as a bundle)
@@ -889,24 +922,27 @@ jobs:
 
             # Find the actual version directory (usually 'A')
             if [ -d "$fw/Versions" ]; then
-              ACTUAL_VERSION=$(find "$fw/Versions/" -maxdepth 1 -mindepth 1 -type d ! -name "Current" -exec basename {} \; 2>/dev/null | head -1)
+              ACTUAL_VERSION=
+              candidate=$(find "$fw/Versions" -maxdepth 1 -mindepth 1 -type d ! -name 'Current' -print -quit)
+              if [ -n "$candidate" ]; then
+                ACTUAL_VERSION=$(basename "$candidate")
+              fi
               if [ -n "$ACTUAL_VERSION" ]; then
                 # Sign any dylibs within the framework version
-                find "$fw/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while IFS= read -r lib; do
-                  if file "$lib" | grep -q "Mach-O"; then
-                    codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$lib" 2>&1 | grep -v "replacing existing signature" || true
-                  fi
-                done
+                while IFS= read -r -d '' lib; do
+                  file "$lib" | grep -q Mach-O || continue
+                  sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$lib"
+                done < <(find "$fw/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f -print0)
 
                 # Sign the main framework binary if it exists
                 if [ -f "$fw/Versions/$ACTUAL_VERSION/$fw_name" ]; then
-                  codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$fw/Versions/$ACTUAL_VERSION/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
+                  sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$fw/Versions/$ACTUAL_VERSION/$fw_name"
                 fi
               fi
             fi
 
             # Sign the framework itself as a bundle (this is critical for spctl validation)
-            codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$fw" 2>&1 | grep -v "replacing existing signature" || true
+            sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$fw"
           done
 
           # Diagnose framework structure before signing
@@ -940,14 +976,14 @@ jobs:
           # Step 4: Sign the main executable
           echo "=== Signing main executable ==="
           if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" ]; then
-            codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME" 2>&1 | grep -v "replacing existing signature" || true
+            sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
           fi
 
           # Step 5: Sign the app bundle itself (NOT with --deep, since we already signed components)
           # This is the proper way to sign bundles according to Apple's guidelines
           # CODESIGN_EXTRA adds --timestamp --options runtime for notarization when using Developer ID
           echo "=== Signing app bundle ==="
-          codesign --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" --verbose=4 "$APP_BUNDLE" 2>&1 || true
+          sign_target --force --sign "$SIGN_ID" "${CODESIGN_EXTRA[@]}" --verbose=4 "$APP_BUNDLE"
 
           # Remove quarantine attributes
           xattr -cr "$APP_BUNDLE" 2>/dev/null || true
