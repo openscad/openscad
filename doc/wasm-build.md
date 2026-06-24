@@ -30,18 +30,40 @@ absent from the WASM sysroot.
 
 ### Docker base image
 
-The WASM build requires a Docker image with CPython 3.14 cross-compiled for
-`wasm32-emscripten`. The Dockerfile uses a multi-stage build: CPython is
-cross-compiled with a current Emscripten SDK (3.14 needs clang `-mgc` / wasm-gc),
-then the artifacts are copied into `openscad/wasm-base` so PythonSCAD keeps that
-image's pre-populated Emscripten sysroot (Eigen, Boost, CGAL, …). Build it once:
+The WASM build uses two Docker images, both on **Emscripten 6.0** (required for
+CPython 3.14 browser support):
+
+1. **`pythonscad-wasm-sysroot:local`** — cross-compiles third-party libraries
+   (Eigen, Boost, CGAL, …) using the
+   [openscad-wasm](https://github.com/openscad/openscad-wasm) recipe in
+   `docker/wasm/sysroot.dockerfile`. No dependency on `openscad/wasm-base`.
+2. **`pythonscad-wasm-python-base:local`** — adds CPython 3.14 on top of the sysroot.
+
+`scripts/wasm-base-docker-run.sh` builds `pythonscad-wasm-python-base:local`
+(sysroot + CPython in one multi-stage build) automatically if missing. It does
+not tag a separate `pythonscad-wasm-sysroot:local` image.
+
+Build the full image (sysroot + CPython; ~60 min first time, cached afterwards):
 
 ```bash
-docker build -f Dockerfile.wasm-python-base \
+docker build -f docker/wasm/sysroot.dockerfile --target wasm-python-base \
   -t pythonscad-wasm-python-base:local .
 ```
 
-This takes approximately 30 minutes on first build. The result contains:
+To build or tag the sysroot stage only (no CPython):
+
+```bash
+docker build -f docker/wasm/sysroot.dockerfile --target wasm-sysroot \
+  -t pythonscad-wasm-sysroot:local .
+```
+
+Legacy two-step build (requires sysroot image tag first):
+
+```bash
+docker build \
+  -f Dockerfile.wasm-python-base \
+  -t pythonscad-wasm-python-base:local .
+```
 
 - `/cpython-wasm/lib/libpython3.14.a` — static library
 - `/cpython-wasm/include/python3.14/` — C headers
@@ -106,10 +128,16 @@ A successful run writes a binary STL of roughly 15 KB (80 triangular facets).
 ### Web variant (browser)
 
 ```bash
-cp wasm-test/test.html build-wasm-web/
+cp wasm-test/test.html wasm-test/notebook.html build-wasm-web/
+mkdir -p build-wasm-web/vendor
+cp wasm-test/vendor/three.min.js build-wasm-web/vendor/
 python3 wasm-test/serve.py 8080 build-wasm-web/
-# Open http://localhost:8080/test.html in Chrome or Firefox
+# Open http://localhost:8080/test.html or /notebook.html
 ```
+
+The notebook page uses a vendored `three.min.js` (see `wasm-test/package.json`;
+run `npm ci` in `wasm-test/` after Dependabot bumps three.js). Fonts fall back to
+system UI stacks — no external CDN at runtime.
 
 The `wasm-test/serve.py` server sets `.wasm → application/wasm` and
 `.data → application/octet-stream` MIME types, which browsers require.

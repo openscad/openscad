@@ -83,3 +83,36 @@ updates:
     commit-message:
       prefix: "build(deps)"
       include: "scope"
+
+  # WASM sysroot: Emscripten base image (FROM/ARG tags) in docker/wasm/sysroot.dockerfile.
+  - package-ecosystem: "docker"
+    directory: "/docker/wasm"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build(deps)"
+      include: "scope"
+
+  # WASM sysroot: pinned pip build tools copied into sysroot.dockerfile.
+  - package-ecosystem: "pip"
+    directory: "/docker/wasm"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build(deps)"
+      include: "scope"
+
+  # wasm-test notebook: vendored three.js (vendor/three.min.js via npm postinstall).
+  - package-ecosystem: "npm"
+    directory: "/wasm-test"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build(deps)"
+      include: "scope"

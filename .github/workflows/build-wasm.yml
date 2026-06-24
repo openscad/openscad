@@ -60,13 +60,12 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Dockerfile.wasm-python-base
+          file: docker/wasm/sysroot.dockerfile
+          target: wasm-python-base
           tags: pythonscad-wasm-python-base:local
           load: true
-          # GitHub Actions cache keeps the CPython cross-compile layer warm
-          # across runs so subsequent builds take ~2 min instead of ~30 min.
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=wasm-docker
+          cache-to: type=gha,mode=max,scope=wasm-docker
 
       - name: Build WASM node variant
         run: |
@@ -101,9 +100,6 @@ jobs:
             "
 
       - name: Build WASM web variant
-        if: >
-          github.event_name == 'release' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
         run: |
           docker run --rm -i \
             -v "$PWD:/src:rw" \
@@ -120,21 +116,27 @@ jobs:
             "
 
       - name: Package web artifacts
-        if: >
-          github.event_name == 'release' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
         run: |
           VERSION=$(git describe --tags --always)
-          mkdir -p dist-wasm/wasm-test
+          mkdir -p dist-wasm/wasm-test dist-wasm/vendor
           cp build-wasm-web/pythonscad.js \
              build-wasm-web/pythonscad.wasm \
              build-wasm-web/pythonscad.data \
              wasm-test/test.html \
+             wasm-test/notebook.html \
              dist-wasm/
+          cp wasm-test/vendor/three.min.js dist-wasm/vendor/
           cp wasm-test/serve.py dist-wasm/wasm-test/
           cd dist-wasm
           zip -r "../pythonscad-${VERSION}-wasm.zip" .
           echo "WASM_ZIP=pythonscad-${VERSION}-wasm.zip" >> "$GITHUB_ENV"
+
+      - name: Upload WASM browser bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: pythonscad-wasm-web
+          path: dist-wasm/
+          if-no-files-found: error
 
       - name: Upload WASM artifacts to release
         if: >

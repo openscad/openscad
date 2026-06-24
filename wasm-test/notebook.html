@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PythonSCAD Notebook</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #14202e;
+    --surface: #1a2c40;
+    --border: #2d4156;
+    --border-active: #ffd43b;
+    --text: #e8eef4;
+    --text-muted: #8aa0b5;
+    --accent: #ffd43b;
+    --accent2: #4b8bbe;
+    --danger: #ff6b6b;
+    --warning: #ffd43b;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  html, body { height: 100%; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); display: flex; flex-direction: column; overflow: hidden; }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem; height: 52px; display: flex; align-items: center;
+    gap: 1rem; position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: var(--mono); font-size: 15px; color: var(--accent2); font-weight: 500; }
+  .logo span { color: var(--accent); }
+  .header-sep { flex: 1; }
+  .toolbar { display: flex; gap: 6px; align-items: center; }
+  .toolbar button {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--sans);
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .toolbar button:hover { border-color: var(--accent); color: var(--text); background: rgba(108,99,255,0.1); }
+  .toolbar button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+  .toolbar button.primary:hover { background: #5a52e0; }
+  .toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .kernel-badge {
+    font-size: 11px; border: 1px solid; padding: 3px 8px; border-radius: 12px; font-family: var(--mono);
+    color: var(--warning); border-color: var(--warning); transition: color 0.3s, border-color 0.3s;
+  }
+  .kernel-badge.ready { color: var(--accent2); border-color: var(--accent2); }
+  .kernel-badge.busy  { color: var(--warning); border-color: var(--warning); }
+  .kernel-badge.error { color: var(--danger);  border-color: var(--danger); }
+
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  .sidebar {
+    width: 210px; flex-shrink: 0; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex;
+    flex-direction: column; overflow-y: auto; height: 100%;
+    min-height: 0;
+  }
+  .sidebar-section {
+    padding: 0.6rem 1rem; font-size: 11px; font-weight: 600;
+    color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; border-bottom: 1px solid var(--border);
+  }
+  .snippet-list { padding: 0.4rem 0; }
+  .snippet-item {
+    padding: 6px 1rem; font-size: 12px; color: var(--text-muted);
+    cursor: pointer; border-left: 2px solid transparent; transition: all 0.1s;
+  }
+  .snippet-item:hover { background: rgba(108,99,255,0.08); color: var(--text); border-left-color: var(--accent); }
+  .snippet-item .snip-title { font-weight: 500; color: var(--text); font-size: 12px; margin-bottom: 1px; }
+  .snippet-item .snip-sub { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+
+  .notebook {
+    flex: 1; overflow-y: auto; padding: 1.5rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    max-width: 920px; margin: 0 auto; width: 100%;
+  }
+
+  .cell { display: flex; gap: 0.75rem; }
+  .cell-gutter {
+    width: 52px; flex-shrink: 0; display: flex; flex-direction: column;
+    align-items: flex-end; padding-top: 10px; gap: 4px;
+  }
+  .cell-counter { font-family: var(--mono); font-size: 11px; color: var(--accent); white-space: nowrap; }
+  .cell-run-btn {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border);
+    background: transparent; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--text-muted); transition: all 0.15s; padding: 0;
+  }
+  .cell-run-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(108,99,255,0.1); }
+  .cell-body { flex: 1; min-width: 0; }
+  .editor-wrapper {
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); overflow: hidden;
+    transition: border-color 0.15s; position: relative;
+  }
+  .editor-wrapper:focus-within { border-color: var(--border-active); }
+  .editor-wrapper:focus-within::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--accent); border-radius: 8px 0 0 8px;
+  }
+  .cell-editor {
+    width: 100%; min-height: 80px; background: transparent; border: none;
+    outline: none; resize: vertical; color: var(--text); font-family: var(--mono);
+    font-size: 13px; line-height: 1.65; padding: 12px 14px; tab-size: 4;
+    caret-color: var(--accent2);
+  }
+  .cell-editor::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+  .cell-gutter:hover { cursor: pointer; }
+  .cell-wrap-selected .editor-wrapper { box-shadow: 0 0 0 1px var(--accent2); }
+  .cell-output {
+    margin-top: 0; border-radius: 8px; border: 1px solid var(--border);
+    background: #0a0a18; overflow: hidden; display: none;
+  }
+  .cell-output.visible { display: block; }
+  .cell-output-row { margin-top: -0.4rem; }
+  .out-counter { padding-top: 0; }
+  .output-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 12px; border-bottom: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted); font-family: var(--mono);
+  }
+  .status-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent2); margin-right: 6px;
+  }
+  .status-dot.running { background: var(--warning); animation: pulse 0.9s infinite; }
+  .status-dot.error   { background: var(--danger); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+  .output-body { padding: 10px 14px; }
+  .output-log {
+    font-family: var(--mono); font-size: 12px; color: var(--accent2);
+    white-space: pre-wrap; line-height: 1.7;
+  }
+  .output-log.error { color: var(--danger); }
+  .output-log.warn  { color: var(--warning); }
+
+  .stl-viewer-wrap { background: #06060f; }
+  .stl-viewer-wrap canvas { display: block; width: 100%; height: 360px; cursor: grab; }
+  .stl-viewer-wrap canvas:active { cursor: grabbing; }
+  .stl-bar {
+    padding: 7px 12px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; background: var(--surface);
+  }
+  .stl-info { font-size: 11px; font-family: var(--mono); color: var(--text-muted); margin-left: auto; }
+
+  .md-cell .editor-wrapper { background: rgba(0,212,170,0.03); border-color: rgba(0,212,170,0.18); }
+  .md-cell-label {
+    font-size: 10px; font-family: var(--mono); color: var(--accent2);
+    padding: 3px 10px; border-bottom: 1px solid rgba(0,212,170,0.12);
+    background: rgba(0,212,170,0.04);
+  }
+  .md-output { padding: 10px 14px; font-size: 14px; line-height: 1.7; }
+  .md-output h1 { font-size: 18px; color: var(--accent); margin-bottom: 0.4rem; font-weight: 500; }
+  .md-output h2 { font-size: 16px; color: var(--accent); margin-bottom: 0.3rem; font-weight: 500; }
+  .md-output h3 { font-size: 14px; color: var(--accent2); margin-bottom: 0.3rem; font-weight: 500; }
+  .md-output p { margin-bottom: 0.5rem; }
+  .md-output code { font-family: var(--mono); background: rgba(108,99,255,0.15); padding: 1px 5px; border-radius: 3px; font-size: 12px; color: var(--accent); }
+
+  .add-cell-row {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 2px 0; opacity: 0; transition: opacity 0.2s;
+  }
+  .notebook:hover .add-cell-row { opacity: 0.5; }
+  .add-cell-row:hover { opacity: 1 !important; }
+  .add-cell-gutter {
+    width: 52px; flex-shrink: 0; display: flex; flex-direction: column;
+    align-items: flex-end; gap: 3px;
+  }
+  .add-cell-btn {
+    font-size: 10px; color: var(--text-muted); border: 1px dashed var(--border);
+    background: transparent; padding: 2px 7px; border-radius: 9px;
+    cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: var(--sans);
+  }
+  .add-cell-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .status-bar {
+    height: 24px; background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 1rem; gap: 1rem;
+    font-size: 11px; color: var(--text-muted); font-family: var(--mono); flex-shrink: 0;
+  }
+  .status-bar .sep { opacity: 0.3; }
+  #status-msg { color: var(--accent2); }
+
+  #dbg {
+    position: fixed; bottom: 0; right: 0; width: 480px; height: 220px;
+    overflow-y: scroll; background: #0a0a18; border: 2px solid var(--accent);
+    font: 11px var(--mono); z-index: 9999; padding: 6px; box-sizing: border-box;
+    line-height: 1.5; resize: both;
+  }
+  #dbg .dbg-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px; color: var(--text-muted);
+  }
+  #dbg .dbg-head button {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    font-size: 10px; padding: 1px 6px; border-radius: 4px; cursor: pointer;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>Python</span>SCAD <span style="color:var(--text-muted);font-weight:400">notebook</span></div>
+  <div class="header-sep"></div>
+  <div class="toolbar">
+    <button id="btn-run-all" onclick="runAllCells()" disabled>▶ Run all</button>
+    <button id="btn-add-code" onclick="addCell('code')" disabled>+ Code</button>
+    <button id="btn-add-md"   onclick="addCell('markdown')" disabled>+ Text</button>
+    <button onclick="clearAllOutputs()">Clear</button>
+    <button id="btn-download-stl" onclick="downloadLastModel(document.getElementById('export-format').value)" disabled>↓ Download Model</button>
+    <select id="export-format" style="background:var(--surface);border:1px solid var(--border);color:var(--text-muted);border-radius:6px;font-size:12px;padding:4px 6px;">
+      <option value="stl">STL</option>
+      <option value="3mf">3MF</option>
+      <option value="obj">OBJ</option>
+      <option value="off">OFF</option>
+      <option value="step">STEP</option>
+    </select>
+    <button class="primary" onclick="saveNotebook()">Save JSON</button>
+    <button onclick="document.getElementById('load-json-input').click()">Load JSON</button>
+    <input type="file" id="load-json-input" accept=".json" style="display:none" onchange="loadNotebookFromFile(this)">
+    <div class="kernel-badge" id="kernel-badge">Loading WASM…</div>
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sidebar-section">Snippets</div>
+    <div class="snippet-list" id="snippet-list"></div>
+    <div class="sidebar-section" style="margin-top:auto">Cells</div>
+    <div class="snippet-list" id="toc"></div>
+  </aside>
+  <div class="notebook" id="notebook"></div>
+</div>
+
+<div class="status-bar">
+  <span id="status-msg">Initialising…</span>
+  <span class="sep">│</span>
+  <span id="cell-count">0 cells</span>
+  <span class="sep">│</span>
+  <span>PythonSCAD/WASM (EmsEvaluatePython)</span>
+</div>
+
+<script src="vendor/three.min.js"></script>
+
+<script type="module">
+const _dbgPanel = document.createElement('div');
+_dbgPanel.id = 'dbg';
+_dbgPanel.innerHTML = '<div class="dbg-head"><span>debug</span><button id="dbg-clear">clear</button></div><div id="dbg-body"></div>';
+document.body.appendChild(_dbgPanel);
+document.getElementById('dbg-clear').onclick = () => {
+  document.getElementById('dbg-body').innerHTML = '';
+};
+
+function errMsg(e) {
+  if (e == null) return 'unknown error';
+  if (typeof e === 'string') return e;
+  if (e instanceof Error) return e.message || String(e);
+  try { return String(e.message ?? e); } catch (_) { return String(e); }
+}
+
+function dbg(msg, type) {
+  const color = type === 'error' ? '#ff6b6b' : type === 'info' ? '#ffd166' : '#00d4aa';
+  const body = document.getElementById('dbg-body');
+  body.insertAdjacentHTML('beforeend',
+    '<div style="color:' + color + '">' + escHTML(msg) + '</div>');
+  _dbgPanel.scrollTop = _dbgPanel.scrollHeight;
+}
+
+let mod          = null;
+let evalPython    = null;
+let pythonInited  = false;
+let wasmReady     = false;
+const stdoutBuf  = [];
+const stderrBuf  = [];
+
+const REPL_PRELUDE = [
+  "import json as _json",
+  "import pythonscad as _pyscad",
+  "from pythonscad import *",
+  "_orig_show = _pyscad.show",
+  "_last_shown_obj = None",
+  "def _emit_geometry(obj):",
+  "    global _last_shown_obj",
+  "    _last_shown_obj = obj",
+  "    try:",
+  "        result = obj.mesh()",
+  "        if len(result) > 0 and len(result[0]) > 0 and len(result[0][0]) == 2:",
+  "            # 2D object: result is a list of outlines, each a list of [x,y] points",
+  "            outlines_list = [[[float(p[0]), float(p[1])] for p in outline] for outline in result]",
+  "            print('@@MIME_START@@' + _json.dumps({'type': '2d', 'outlines': outlines_list}) + '@@MIME_END@@')",
+  "        else:",
+  "            verts, faces, colors, color_indices = obj.mesh(color=True)",
+  "            verts_list  = [[float(c) for c in v] for v in verts]",
+  "            faces_list  = [[int(i) for i in f] for f in faces]",
+  "            colors_list = [[float(x) for x in col] for col in colors]",
+  "            cidx_list   = [int(i) for i in color_indices]",
+  "            print('@@MIME_START@@' + _json.dumps({",
+  "                'type': '3d',",
+  "                'vertices': verts_list,",
+  "                'faces': faces_list,",
+  "                'colors': colors_list,",
+  "                'color_indices': cidx_list",
+  "            }) + '@@MIME_END@@')",
+  "    except Exception as _e:",
+  "        print('GEOMETRY_ERROR: ' + repr(_e))",
+  "def show(obj, *a, **kw):",
+  "    r = _orig_show(obj, *a, **kw)",
+  "    _emit_geometry(obj)",
+  "    return r",
+  "_probe_base_class = type(cube(1))",
+  "try:",
+  "    class _NotebookGeom(_probe_base_class):",
+  "        def show(self, *a, **kw):",
+  "            r = super().show(*a, **kw)",
+  "            _emit_geometry(self)",
+  "            return r",
+  "    _NotebookGeom.__name__ = _probe_base_class.__name__",
+  "    import builtins as _bi",
+  "    def _wrap_ctor(orig_fn):",
+  "        def wrapped(*a, **kw):",
+  "            r = orig_fn(*a, **kw)",
+  "            try:",
+  "                r.__class__ = _NotebookGeom",
+  "            except Exception:",
+  "                pass",
+  "            return r",
+  "        return wrapped",
+  "    for _name in ('cube','sphere','cylinder','polyhedron','square','circle','polygon',",
+  "                  'text','union','difference','intersection','linear_extrude',",
+  "                  'rotate_extrude','translate','rotate','scale','mirror','color',",
+  "                  'hull','minkowski','offset'):",
+  "        if _name in globals() and callable(globals()[_name]):",
+  "            globals()[_name] = _wrap_ctor(globals()[_name])",
+  "    _test_obj = cube(1)",
+  "    print('TEST_CLASS_AFTER_PATCH: ' + str(type(_test_obj)))",
+  "    print('TEST_IS_NOTEBOOKGEOM: ' + str(type(_test_obj) is _NotebookGeom))",
+  "    print('SUBCLASS_PATCH_OK')",
+  "except Exception as _e:",
+  "    print('SUBCLASS_PATCH_ERROR: ' + repr(_e))",
+  "print('PRELUDE_LOADED_OK')",
+].join('\n');
+
+async function reloadWasmAfterCrash() {
+  dbg('Reloading WASM module after crash…', 'info');
+  mod = null;
+  evalPython = null;
+  pythonInited = false;
+  await initWasm();
+}
+
+async function initWasm() {  setStatus('Loading pythonscad.js…');
+  setBadge('busy', 'Loading…');
+  try {
+    const { default: factory } = await import('./pythonscad.js');
+    mod = await factory({
+      noInitialRun: true,
+      print:    (t) => { stdoutBuf.push(t); dbg('stdout: ' + t); },
+      printErr: (t) => { stderrBuf.push(t); dbg('stderr: ' + t, 'error'); },
+    });
+
+    evalPython = {
+      init:     mod.cwrap('EmsInitPython',     null,     []),
+      evaluate: mod.cwrap('EmsEvaluatePython', 'string', ['string', 'number']),
+      finish:   mod.cwrap('EmsFinishPython',   null,     []),
+    };
+
+    evalPython.init();
+    pythonInited = true;
+    dbg('EmsInitPython() done', 'info');
+
+    const preludeResult = evalPython.evaluate(REPL_PRELUDE, false);
+    dbg('prelude result: ' + JSON.stringify(preludeResult), 'info');
+    stdoutBuf.length = 0; stderrBuf.length = 0;  // discard prelude's own output
+
+    wasmReady = true;
+    setBadge('ready', 'PySCAD/WASM');
+    setStatus('Kernel ready');
+    enableUI();
+  } catch(e) {
+    const msg = errMsg(e);
+    setBadge('error', 'Load failed');
+    setStatus('Load error: ' + msg);
+    dbg('initWasm ERROR: ' + msg, 'error');
+    console.error(e);
+  }
+}
+
+function autoShowLastLine(code) {
+  const lines = code.split('\n');
+  let lastIdx = lines.length - 1;
+  while (lastIdx >= 0 && lines[lastIdx].trim() === '') lastIdx--;
+  if (lastIdx < 0) return code;
+
+  const originalLine = lines[lastIdx];
+  const indent = originalLine.match(/^(\s*)/)[1];
+  const lastLine = originalLine.trim();
+  const isBareIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/.test(lastLine);
+  const RESERVED = new Set(['pass','break','continue','return','else','elif','try','except','finally']);
+  if (isBareIdentifier && !RESERVED.has(lastLine)) {
+    lines[lastIdx] = indent + 'show(' + lastLine + ')';
+    return lines.join('\n');
+  }
+
+  // Pattern: <expr>.show(...)  — e.g. "cube(5).show()" or "mymodel.show()"
+  // Fallback for when patching .show() on the C-extension class doesn't take
+  // effect: evaluate the receiver once into a temp var, call .show() on it,
+  // then explicitly emit its geometry via our own _emit_geometry hook.
+  const showCallMatch = lastLine.match(/^(.*)\.show\((.*)\)\s*$/);
+  if (showCallMatch) {
+    const receiverExpr = showCallMatch[1];
+    const showArgs      = showCallMatch[2];
+    lines[lastIdx] =
+      indent + '_nb_tmp = ' + receiverExpr + '\n' +
+      indent + '_nb_tmp.show(' + showArgs + ')\n' +
+      indent + '_emit_geometry(_nb_tmp)';
+    return lines.join('\n');
+  }
+  return lines.join('\n');
+}
+
+function renderPython(code) {
+  stdoutBuf.length = 0;
+  stderrBuf.length = 0;
+  const finalCode = autoShowLastLine(code);
+  dbg('evaluate() <- ' + JSON.stringify(finalCode.slice(0,120)), 'info');
+  const returnValue = evalPython.evaluate(finalCode, false);
+  dbg('evaluate() return value -> ' + JSON.stringify(String(returnValue).slice(0,300)), 'info');
+  dbg('stdoutBuf after call -> ' + JSON.stringify(stdoutBuf), 'info');
+  dbg('stderrBuf after call -> ' + JSON.stringify(stderrBuf), 'info');
+  // Combine print()/stderr captured via callbacks with whatever
+  // evaluate() returns directly (some builds return '', others echo it back).
+  const fromBuffers = stdoutBuf.join('\n');
+  const fromStderr   = stderrBuf.join('\n');
+  const combined = [fromBuffers, String(returnValue || '').trim(), fromStderr]
+    .filter(s => s && s.trim())
+    .join('\n');
+  dbg('renderPython combined -> ' + JSON.stringify(combined.slice(0,200)), 'info');
+  return combined;
+}
+
+function extractGeometry(output) {
+  const text = String(output ?? '');
+  const MARK_START = '@@MIME_START@@';
+  const MARK_END   = '@@MIME_END@@';
+  const start = text.indexOf(MARK_START);
+  if (start === -1) return { geometry: null, text };
+  const end = text.indexOf(MARK_END, start);
+  if (end === -1) return { geometry: null, text };
+  const jsonStr = text.slice(start + MARK_START.length, end);
+  const rest = (text.slice(0, start) + text.slice(end + MARK_END.length)).trim();
+  try {
+    const parsed = JSON.parse(jsonStr);
+    // Normalize 2D outline geometry into the same {vertices, faces} shape
+    // the 3D viewer already understands, by triangulating onto the Z=0 plane.
+    if (parsed && parsed.type === '2d') {
+      return { geometry: outlinesTo3D(parsed.outlines), text: rest };
+    }
+    return { geometry: parsed, text: rest };
+  } catch(e) {
+    return { geometry: null, text };
+  }
+}
+
+// Convert a list of 2D outlines (each a list of [x,y] points) into a flat
+// {vertices, faces} mesh on the Z=0 plane, via simple ear-clipping
+// triangulation. Each outline is triangulated independently (holes are not
+// subtracted); multi-outline cases may not match OpenSCAD's 2D fill rules.
+function outlinesTo3D(outlines) {
+  if (!outlines || outlines.length === 0) return { vertices: [], faces: [] };
+
+  // Flatten all outline points into a single vertex list (Z=0)
+  const vertices = [];
+  const outlineIndexRanges = [];
+  for (const outline of outlines) {
+    const startIdx = vertices.length;
+    for (const [x, y] of outline) vertices.push([x, y, 0]);
+    outlineIndexRanges.push([startIdx, vertices.length]);
+  }
+
+  // Ear-clipping triangulation on each outline independently.
+  const faces = [];
+  for (const [rangeStart, rangeEnd] of outlineIndexRanges) {
+    const ring = [];
+    for (let i = rangeStart; i < rangeEnd; i++) ring.push(i);
+    const tris = earClipTriangulate(vertices, ring);
+    faces.push(...tris);
+  }
+
+  return { vertices, faces };
+}
+
+function polygonArea2D(vertices, ring) {
+  let area = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const [x1, y1] = vertices[ring[i]];
+    const [x2, y2] = vertices[ring[(i + 1) % ring.length]];
+    area += x1 * y2 - x2 * y1;
+  }
+  return area / 2;
+}
+
+function earClipTriangulate(vertices, ringIn) {
+  let ring = ringIn.slice();
+  // Ensure counter-clockwise winding for consistent ear-clipping
+  if (polygonArea2D(vertices, ring) < 0) ring.reverse();
+
+  const faces = [];
+  const isConvex = (a, b, c) => {
+    const [ax, ay] = vertices[a], [bx, by] = vertices[b], [cx, cy] = vertices[c];
+    return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax) > 0;
+  };
+  const pointInTriangle = (p, a, b, c) => {
+    const [px, py] = vertices[p], [ax, ay] = vertices[a], [bx, by] = vertices[b], [cx, cy] = vertices[c];
+    const d1 = (bx-ax)*(py-ay) - (by-ay)*(px-ax);
+    const d2 = (cx-bx)*(py-by) - (cy-by)*(px-bx);
+    const d3 = (ax-cx)*(py-cy) - (ay-cy)*(px-cx);
+    const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+    const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
+    return !(hasNeg && hasPos);
+  };
+
+  let guard = 0;
+  while (ring.length > 3 && guard++ < 10000) {
+    let earFound = false;
+    for (let i = 0; i < ring.length; i++) {
+      const a = ring[(i - 1 + ring.length) % ring.length];
+      const b = ring[i];
+      const c = ring[(i + 1) % ring.length];
+      if (!isConvex(a, b, c)) continue;
+      let containsOther = false;
+      for (const p of ring) {
+        if (p === a || p === b || p === c) continue;
+        if (pointInTriangle(p, a, b, c)) { containsOther = true; break; }
+      }
+      if (containsOther) continue;
+      faces.push([a, b, c]);
+      ring.splice(i, 1);
+      earFound = true;
+      break;
+    }
+    if (!earFound) break;  // degenerate polygon — stop rather than infinite-loop
+  }
+  if (ring.length === 3) faces.push([ring[0], ring[1], ring[2]]);
+  return faces;
+}
+
+let cells       = [];
+let cellCounter = 0;
+let runCounter  = 0;
+
+const SNIPPETS = {
+  'Cube':             'show(cube([20, 20, 20], center=True))',
+  'Cylinder':         'show(cylinder(h=30, r=10, center=True))',
+  'Sphere':           'show(sphere(r=15))',
+  'Difference':       'show(difference(\n    cube([20, 20, 20], center=True),\n    cylinder(h=25, r=5, center=True)\n))',
+  'Union':            'show(union(\n    cube([20, 20, 20], center=True),\n    sphere(r=14)\n))',
+  'Intersection':     'show(intersection(\n    cube([22, 22, 22], center=True),\n    sphere(r=14)\n))',
+  'Translate':        'show(union(\n    cube([10, 10, 10]),\n    sphere(r=7).translate([15, 0, 0])\n))',
+  'Rotate':           'show(cube([20, 20, 5], center=True).rotate([45, 0, 30]))',
+  'Linear extrude':   'show(square([20, 30]).linear_extrude(height=10))',
+  'For loop':         'parts = [sphere(r=8).translate([i*25, 0, 0]) for i in range(4)]\nshow(union(*parts))',
+  'Just a variable':  'mymodel = cube([15, 15, 15], center=True)\nmymodel',
+  'Path extrude':     'show(path_extrude(square(1), [\n    [0, 0, 0], [0, 0, 10, 3],\n    [10, 0, 10, 3], [10, 10, 10]\n]))',
+  'Fillet':           'show(cube(10).fillet(r=2, fn=10))',
+  'Spline curve':      'pts = [[0, 6], [10, -5], [20, 10], [0, 19]]\nshow(spline(pts, fn=20).linear_extrude(height=1))',
+  'Sphere r-callback': 'def rfunc(v):\n    cf = abs(v[0]) + abs(v[1]) + abs(v[2]) + 3\n    return 10 / cf\nsphere(rfunc, fs=0.5, fn=10).show()',
+  'Helix (rotate_extrude)': 'circle(3).right(10).rotate_extrude(v=[0, 0, 20], angle=600).show()',
+  'Sheet (parametric)': 'from math import *\ndef sheetfunc(j, i):\n    x = 2.5 + 2*cos(i)\n    y = 1.0*2*sin(i) + 1.1*sin(3*i)\n    return [x*cos(j), x*sin(j), y]\n\ns = sheet(sheetfunc, -3.10, 3.1, -2.8, 2.8, 0.3, iclose=True, jclose=True)\ns -= cube(10).down(5)\ns.show()',
+  'Wrap':             'rR = 3\nfn = 13\ng = square([20, 2]).linear_extrude(0.5).rotate([90, 0, 0]).roty(-6)\ng = g.wrap(rR, fn=10).rotz(210)\ng.show()',
+};
+
+function buildSnippetList() {
+  const el = document.getElementById('snippet-list');
+  el.innerHTML = Object.entries(SNIPPETS).map(([name, code]) =>
+    '<div class="snippet-item" onclick="insertSnippet(' + JSON.stringify(name).replace(/"/g,'&quot;') + ')">' +
+      '<div class="snip-title">' + name + '</div>' +
+      '<div class="snip-sub">' + escHTML(code.split('\n')[1] || code.split('\n')[0] || '') + '</div>' +
+    '</div>').join('');
+}
+
+function createCell(type, code) {
+  type = type || 'code'; code = code || '';
+  const id = ++cellCounter;
+  const execNum = (type === 'code') ? ++runCounter : null;
+  return { id, type, code, executionCount: execNum };
+}
+
+function renderCellDOM(cell) {
+  const nb = document.getElementById('notebook');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'cell' + (cell.type === 'markdown' ? ' md-cell' : '');
+  wrap.id = 'cell-wrap-' + cell.id;
+  wrap.innerHTML = cellInnerHTML(cell);
+  nb.appendChild(wrap);
+
+  // Code cells get a sibling output row (markdown cells render output inline)
+  if (cell.type === 'code') {
+    nb.insertAdjacentHTML('beforeend', outputRowHTML(cell));
+  }
+
+  const div = document.createElement('div');
+  div.className = 'add-cell-row';
+  div.id = 'div-' + cell.id;
+  div.innerHTML =
+    '<div class="add-cell-gutter">' +
+      '<button class="add-cell-btn" onclick="addCellAfter(' + cell.id + ',\'code\')">+ code</button>' +
+      '<button class="add-cell-btn" onclick="addCellAfter(' + cell.id + ',\'markdown\')">+ text</button>' +
+    '</div>';
+  nb.appendChild(div);
+
+  updateMeta();
+  setTimeout(() => { const ta = document.getElementById('ed-' + cell.id); if(ta){ ta.focus(); autoH(ta); } }, 30);
+}
+
+function cellInnerHTML(c) {
+  if (c.type === 'markdown') return (
+    '<div class="cell-gutter" onclick="selectCell(' + c.id + ')">' +
+      '<span class="cell-counter">M</span>' +
+      '<button class="cell-run-btn" onclick="event.stopPropagation();runCell(' + c.id + ')" title="Render (Shift+Enter)">▶</button>' +
+    '</div>' +
+    '<div class="cell-body">' +
+      '<div class="editor-wrapper">' +
+        '<div class="md-cell-label">markdown</div>' +
+        '<textarea class="cell-editor" id="ed-' + c.id + '" ' +
+          'placeholder="# Title&#10;**bold**, *italic*, `code`" ' +
+          'onkeydown="kbd(event,' + c.id + ')" oninput="autoH(this)" onfocus="selectCell(' + c.id + ')">' + escHTML(c.code) + '</textarea>' +
+      '</div>' +
+      '<div class="cell-output" id="out-' + c.id + '">' +
+        '<div class="output-header"><span>text</span></div>' +
+        '<div class="output-body"><div class="md-output" id="md-' + c.id + '"></div></div>' +
+      '</div>' +
+    '</div>');
+
+  return (
+    '<div class="cell-gutter" onclick="selectCell(' + c.id + ')">' +
+      '<span class="cell-counter" id="ctr-' + c.id + '">[' + c.executionCount + ']</span>' +
+      '<button class="cell-run-btn" onclick="event.stopPropagation();runCell(' + c.id + ')" title="Run (Shift+Enter)">▶</button>' +
+    '</div>' +
+    '<div class="cell-body">' +
+      '<div class="editor-wrapper">' +
+        '<textarea class="cell-editor" id="ed-' + c.id + '" spellcheck="false" ' +
+          'placeholder="from pythonscad import *&#10;show(cube([20, 20, 20], center=True))" ' +
+          'onkeydown="kbd(event,' + c.id + ')" oninput="autoH(this)" onfocus="selectCell(' + c.id + ')">' + escHTML(c.code) + '</textarea>' +
+      '</div>' +
+    '</div>');
+}
+
+// Output row HTML — rendered as a SIBLING of the cell div (not nested inside
+// cell-body) so its gutter column lines up flush with the input gutter above.
+function outputRowHTML(c) {
+  return (
+    '<div class="cell cell-output-row" id="outrow-' + c.id + '" style="display:none">' +
+      '<div class="cell-gutter">' +
+        '<span class="cell-counter out-counter" id="outctr-' + c.id + '">[' + c.executionCount + ']</span>' +
+      '</div>' +
+      '<div class="cell-body">' +
+        '<div class="cell-output visible" id="out-' + c.id + '">' +
+          '<div class="output-header">' +
+            '<span id="lbl-' + c.id + '">waiting…</span>' +
+            '<span id="tim-' + c.id + '" style="font-size:10px;color:var(--text-muted)"></span>' +
+          '</div>' +
+          '<div id="body-' + c.id + '"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>');
+}
+
+function runCell(id) {
+  const cell = cells.find(c => c.id === id);
+  if (!cell) return Promise.resolve();
+  const ta = document.getElementById('ed-' + id);
+  if (ta) cell.code = ta.value;
+
+  if (cell.type === 'markdown') { runMarkdown(cell); return Promise.resolve(); }
+  if (!wasmReady) { alert('Kernel not ready yet.'); return Promise.resolve(); }
+
+  const outRow = document.getElementById('outrow-' + id);
+  const outCtr = document.getElementById('outctr-' + id);
+  const lblEl  = document.getElementById('lbl-' + id);
+  const bodyEl = document.getElementById('body-' + id);
+  const ctrEl  = document.getElementById('ctr-' + id);
+  const timEl  = document.getElementById('tim-' + id);
+
+  outRow.style.display = 'flex';
+  outCtr.textContent = '[*]';
+  lblEl.textContent = 'running…';
+  bodyEl.innerHTML = '<div class="output-body"><div class="output-log">⏳ Evaluating…</div></div>';
+  ctrEl.textContent = '[*]';
+  timEl.textContent = '';
+  setBadge('busy', 'Running…');
+  setStatus('Running cell ' + id + '…');
+
+  const t0 = Date.now();
+
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => {
+    let rawOutput;
+    let crashed = false;
+    try {
+      rawOutput = renderPython(cell.code);
+    } catch(e) {
+      crashed = true;
+      const msg = errMsg(e);
+      rawOutput = 'ERROR: ' + msg;
+      dbg('runCell ' + id + ' CRASHED: ' + msg, 'error');
+      // A WASM-level crash (e.g. "memory access out of bounds") corrupts
+      // the entire WASM heap — re-calling EmsInitPython on the same module
+      // instance won't help. Reload the whole module from scratch.
+      wasmReady = false;
+      setBadge('error', 'Kernel crashed — reloading…');
+      reloadWasmAfterCrash();
+    }
+
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+    timEl.textContent = elapsed + 's';
+    // Restore the cell's own stable execution number (assigned at creation)
+    ctrEl.textContent = '[' + cell.executionCount + ']';
+    outCtr.textContent = '[' + cell.executionCount + ']';
+    if (!crashed) setBadge('ready', 'PySCAD/WASM');
+
+    const r = extractGeometry(rawOutput);
+    const geometry = r.geometry, text = r.text;
+
+    dbg('runCell ' + id + ' -> geometry=' + (geometry ? 'yes' : 'no') + ' text=' + JSON.stringify(text), 'info');
+
+    if (crashed) {
+      lblEl.textContent = 'error';
+      bodyEl.innerHTML = '<div class="output-body"><div class="output-log error">' + escHTML(text) + '</div></div>';
+      setStatus('Error in cell ' + id);
+    } else if (geometry) {
+      lblEl.textContent = '3D model';
+      bodyEl.innerHTML = '';
+      if (text) {
+        const d = document.createElement('div');
+        d.className = 'output-body';
+        d.innerHTML = '<div class="output-log warn">' + escHTML(text) + '</div>';
+        bodyEl.appendChild(d);
+      }
+      const wrap = document.createElement('div');
+      wrap.className = 'stl-viewer-wrap';
+      const canvas = document.createElement('canvas');
+      wrap.appendChild(canvas);
+      const bar = document.createElement('div');
+      bar.className = 'stl-bar';
+      bar.innerHTML = '<span class="stl-info">' + geometry.faces.length + ' faces &middot; ' + elapsed + 's</span>';
+      wrap.appendChild(bar);
+      bodyEl.appendChild(wrap);
+      initViewerGeometry(canvas, geometry);
+      setStatus('Render complete (' + elapsed + 's)');
+    } else if (text) {
+      // Heuristic: PythonSCAD error/traceback text usually contains these markers
+      const looksLikeError = /Traceback|Error:|SyntaxError|NameError|TypeError|ValueError/.test(text);
+      lblEl.textContent = looksLikeError ? 'error' : 'output';
+      bodyEl.innerHTML = '<div class="output-body"><div class="output-log' +
+        (looksLikeError ? ' error' : '') + '">' + escHTML(text) + '</div></div>';
+      setStatus('Done (' + elapsed + 's)');
+    } else {
+      lblEl.textContent = 'done';
+      bodyEl.innerHTML = '<div class="output-body"><div class="output-log" style="opacity:0.5">(no output)</div></div>';
+      setStatus('Done (' + elapsed + 's)');
+    }
+    resolve();
+  })));
+}
+
+function runMarkdown(cell) {
+  const outEl = document.getElementById('out-' + cell.id);
+  const mdEl  = document.getElementById('md-' + cell.id);
+  outEl.classList.add('visible');
+  mdEl.innerHTML = mdToHtml(cell.code);
+}
+
+async function runAllCells() {
+  for (const c of cells) await runCell(c.id);
+}
+
+function clearAllOutputs() {
+  cells.forEach(c => {
+    const row = document.getElementById('outrow-' + c.id);
+    if (row) row.style.display = 'none';
+    if (c.type === 'markdown') {
+      const outEl = document.getElementById('out-' + c.id);
+      const mdEl = document.getElementById('md-' + c.id);
+      if (outEl) outEl.classList.remove('visible');
+      if (mdEl) mdEl.innerHTML = '';
+    }
+  });
+  setStatus('Outputs cleared');
+}
+
+function initViewerGeometry(canvas, geom) {
+  const W = canvas.parentElement.clientWidth || 800;
+  const H = 360;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const scene    = new THREE.Scene();
+  const camera   = new THREE.PerspectiveCamera(45, W / H, 0.1, 10000);
+  camera.up.set(0, 0, 1);  // Z points up (PythonSCAD convention, not Three.js default Y-up)
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x06060f, 1);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+  dl.position.set(1, 2, 1.5);
+  scene.add(dl);
+  const dl2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+  dl2.position.set(-1, -1, -1);
+  scene.add(dl2);
+
+  const verts = Array.isArray(geom.vertices) ? geom.vertices : [];
+  const faces = Array.isArray(geom.faces) ? geom.faces : [];
+  const colors      = Array.isArray(geom.colors) ? geom.colors : [];
+  const colorIdx    = Array.isArray(geom.color_indices) ? geom.color_indices : [];
+  const DEFAULT_COL = [0x6c/255, 0x63/255, 0xff/255, 1.0];  // fallback purple
+
+  dbg('initViewerGeometry: verts=' + verts.length + ' faces=' + faces.length +
+      ' colors=' + colors.length + ' cidx=' + colorIdx.length, 'info');
+  if (faces.length > 0) dbg('first face: ' + JSON.stringify(faces[0]), 'info');
+  if (verts.length > 0) dbg('first vert: ' + JSON.stringify(verts[0]), 'info');
+
+  const useColors = colors.length > 0;
+
+  // Fan-triangulate each face (handles triangles, quads, n-gons alike),
+  // with defensive bounds checking against malformed/out-of-range indices.
+  // Each triangle also gets its face color from the palette.
+  const triCount = faces.reduce((sum, f) => {
+    if (!Array.isArray(f) || f.length < 3) return sum;
+    return sum + f.length - 2;
+  }, 0);
+  const pos    = new Float32Array(triCount * 9);
+  const colBuf = useColors ? new Float32Array(triCount * 9) : null;  // RGB per vertex
+  let o = 0, oc = 0;
+  let skipped = 0;
+  for (let fi = 0; fi < faces.length; fi++) {
+    const f = faces[fi];
+    if (!Array.isArray(f) || f.length < 3) { skipped++; continue; }
+
+    // Look up face color from palette; fall back to default if out of range
+    let col = DEFAULT_COL;
+    if (useColors && fi < colorIdx.length) {
+      const ci = colorIdx[fi];
+      if (ci >= 0 && ci < colors.length) col = colors[ci];
+    }
+    const [r, g, b] = col;
+
+    for (let k = 1; k < f.length - 1; k++) {
+      const ia = f[0], ib = f[k], ic = f[k + 1];
+      if (ia < 0 || ia >= verts.length || ib < 0 || ib >= verts.length || ic < 0 || ic >= verts.length) {
+        skipped++;
+        dbg('OOB face indices: ' + ia + ',' + ib + ',' + ic + ' (verts.length=' + verts.length + ')', 'error');
+        continue;
+      }
+      const va = verts[ia], vb = verts[ib], vc = verts[ic];
+      pos[o++] = va[0]; pos[o++] = va[1]; pos[o++] = va[2];
+      pos[o++] = vb[0]; pos[o++] = vb[1]; pos[o++] = vb[2];
+      pos[o++] = vc[0]; pos[o++] = vc[1]; pos[o++] = vc[2];
+      if (useColors) {
+        // All 3 vertices of this triangle get the same face color
+        colBuf[oc++] = r; colBuf[oc++] = g; colBuf[oc++] = b;
+        colBuf[oc++] = r; colBuf[oc++] = g; colBuf[oc++] = b;
+        colBuf[oc++] = r; colBuf[oc++] = g; colBuf[oc++] = b;
+      }
+    }
+  }
+  if (skipped > 0) dbg('Skipped ' + skipped + ' malformed/OOB face(s)', 'error');
+  const posTrimmed = pos.subarray(0, o);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(posTrimmed, 3));
+  if (useColors && colBuf) {
+    geo.setAttribute('color', new THREE.BufferAttribute(colBuf.subarray(0, oc), 3));
+  }
+  let maxDim = 1;
+  if (o > 0) {
+    geo.computeVertexNormals();
+    geo.computeBoundingBox();
+    const center = new THREE.Vector3();
+    geo.boundingBox.getCenter(center);
+    geo.translate(-center.x, -center.y, -center.z);
+    const size = new THREE.Vector3();
+    geo.boundingBox.getSize(size);
+    maxDim = Math.max(size.x, size.y, size.z) || 1;
+  }
+
+  // Crosshair / axes helper at the origin, scaled to the model's size
+  const axesLen = maxDim * 0.75;
+  const axes = new THREE.AxesHelper(axesLen);
+  // AxesHelper uses vertex colors X=red, Y=green, Z=blue by default — matches
+  // the standard PythonSCAD/OpenSCAD axis color convention.
+  scene.add(axes);
+
+  // Faint ground grid on the XY plane for spatial reference (Z still up)
+  const grid = new THREE.GridHelper(maxDim * 3, 10, 0x444466, 0x222244);
+  grid.rotation.x = Math.PI / 2;  // GridHelper defaults to XZ plane; rotate to XY since Z is up
+  scene.add(grid);
+
+  // Numeric tick labels along each axis (e.g. "10", "20", ...) so the
+  // crosshair doubles as a scale reference, not just a direction indicator.
+  function makeTextSprite(text, color) {
+    const canvasEl = document.createElement('canvas');
+    canvasEl.width = 64; canvasEl.height = 32;
+    const ctx = canvasEl.getContext('2d');
+    ctx.font = '20px monospace';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 32, 16);
+    const tex = new THREE.CanvasTexture(canvasEl);
+    const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true });
+    const sprite = new THREE.Sprite(mat);
+    const labelScale = maxDim * 0.09;
+    sprite.scale.set(labelScale * 2, labelScale, 1);
+    return sprite;
+  }
+
+  const tickStep = niceTickStep(axesLen);
+  const axisDefs = [
+    { dir: [1, 0, 0], color: '#ff6666' },  // X red
+    { dir: [0, 1, 0], color: '#66ff66' },  // Y green
+    { dir: [0, 0, 1], color: '#6699ff' },  // Z blue
+  ];
+  for (const { dir, color } of axisDefs) {
+    for (let v = tickStep; v <= axesLen; v += tickStep) {
+      const label = makeTextSprite(String(Math.round(v)), color);
+      label.position.set(dir[0] * v, dir[1] * v, dir[2] * v);
+      scene.add(label);
+    }
+  }
+
+  // Pick a "nice" round tick spacing (1/2/5 × 10^n) based on axis length
+  function niceTickStep(length) {
+    const raw = length / 5;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    const nice = norm < 1.5 ? 1 : norm < 3.5 ? 2 : norm < 7.5 ? 5 : 10;
+    return nice * mag;
+  }
+
+  camera.position.set(maxDim * 1.5, maxDim * 1.2, maxDim * 1.8);
+  camera.lookAt(0, 0, 0);
+
+  const mat = useColors
+    ? new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 40, side: THREE.DoubleSide })
+    : new THREE.MeshPhongMaterial({ color: 0x6c63ff, shininess: 50, specular: 0x333366, side: THREE.DoubleSide });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+
+  // Orbit camera: model, grid, and axes stay fixed in the scene; only the
+  // camera moves around the origin on a sphere — so the whole "room" turns
+  // together, not just the model.
+  let theta = Math.atan2(camera.position.y, camera.position.x);  // azimuth
+  let phi   = Math.acos(camera.position.z / camera.position.length()); // polar
+  let radius = camera.position.length();
+
+  function updateCameraPosition() {
+    camera.position.set(
+      radius * Math.sin(phi) * Math.cos(theta),
+      radius * Math.sin(phi) * Math.sin(theta),
+      radius * Math.cos(phi)
+    );
+    camera.lookAt(0, 0, 0);
+  }
+
+  let drag = false, lastX = 0, lastY = 0;
+  canvas.addEventListener('mousedown',  e => { drag = true;  lastX = e.clientX; lastY = e.clientY; });
+  canvas.addEventListener('mouseup',    () => drag = false);
+  canvas.addEventListener('mouseleave', () => drag = false);
+  canvas.addEventListener('mousemove',  e => {
+    if (!drag) return;
+    theta -= (e.clientX - lastX) * 0.008;
+    phi   -= (e.clientY - lastY) * 0.008;
+    phi = Math.max(0.05, Math.min(Math.PI - 0.05, phi));  // avoid flipping over the poles
+    updateCameraPosition();
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  canvas.addEventListener('wheel', e => {
+    radius *= (1 + e.deltaY * 0.001);
+    radius = Math.max(maxDim * 0.3, Math.min(maxDim * 20, radius));
+    updateCameraPosition();
+    e.preventDefault();
+  }, { passive: false });
+
+  let animId;
+  let autoRotate = true;
+  const animate = () => {
+    animId = requestAnimationFrame(animate);
+    if (!drag && autoRotate) {
+      theta += 0.004;
+      updateCameraPosition();
+    }
+    renderer.render(scene, camera);
+  };
+  animate();
+  // Stop auto-rotation once the user starts interacting
+  canvas.addEventListener('mousedown', () => { autoRotate = false; }, { once: true });
+
+  const obs = new MutationObserver(() => {
+    if (!document.contains(canvas)) { cancelAnimationFrame(animId); obs.disconnect(); }
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+}
+
+let _addCellInFlight = false;
+
+let selectedCellId = null;
+
+window.selectCell = function(id) {
+  selectedCellId = id;
+  document.querySelectorAll('.cell-wrap-selected').forEach(el => el.classList.remove('cell-wrap-selected'));
+  const wrap = document.getElementById('cell-wrap-' + id);
+  if (wrap) wrap.classList.add('cell-wrap-selected');
+};
+
+function htmlToEl(html) {
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+window.insertCellBefore = function(beforeId) {
+  const cell = createCell('code', '');
+  const idx  = cells.findIndex(c => c.id === beforeId);
+  cells.splice(idx, 0, cell);
+  const nb = document.getElementById('notebook');
+  const beforeWrap = document.getElementById('cell-wrap-' + beforeId);
+  const wrap = document.createElement('div');
+  wrap.className = 'cell';
+  wrap.id = 'cell-wrap-' + cell.id;
+  wrap.innerHTML = cellInnerHTML(cell);
+  nb.insertBefore(wrap, beforeWrap);
+  nb.insertBefore(htmlToEl(outputRowHTML(cell)), beforeWrap);
+  const div = document.createElement('div');
+  div.className = 'add-cell-row'; div.id = 'div-' + cell.id;
+  div.innerHTML =
+    '<div class="add-cell-gutter">' +
+      '<button class="add-cell-btn" onclick="addCellAfter(' + cell.id + ',\'code\')">+ code</button>' +
+      '<button class="add-cell-btn" onclick="addCellAfter(' + cell.id + ',\'markdown\')">+ text</button>' +
+    '</div>';
+  nb.insertBefore(div, beforeWrap);
+  updateMeta();
+  selectCell(cell.id);
+};
+
+window.deleteCell = function(id) {
+  if (cells.length <= 1) return;  // keep at least one cell
+  const idx = cells.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  cells.splice(idx, 1);
+  ['cell-wrap-' + id, 'outrow-' + id, 'div-' + id].forEach(elId => {
+    const el = document.getElementById(elId);
+    if (el) el.remove();
+  });
+  selectedCellId = null;
+  updateMeta();
+};
+
+// Jupyter-style command-mode shortcuts: only active when a cell is selected
+// (via gutter click / textarea focus) AND the user isn't actively typing.
+document.addEventListener('keydown', (e) => {
+  if (selectedCellId === null) return;
+  const active = document.activeElement;
+  const isTyping = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
+  if (isTyping) return;
+  if (e.key === 'a') { e.preventDefault(); insertCellBefore(selectedCellId); }
+  if (e.key === 'b') { e.preventDefault(); addCellAfter(selectedCellId, 'code'); }
+  if (e.key === 'x') { e.preventDefault(); deleteCell(selectedCellId); }
+});
+
+window.addCell = function(type, code) {
+  if (_addCellInFlight) return;
+  _addCellInFlight = true;
+  code = code || '';
+  const cell = createCell(type, code);
+  cells.push(cell);
+  renderCellDOM(cell);
+  setTimeout(() => { _addCellInFlight = false; }, 50);
+};
+
+window.addCellAfter = function(afterId, type) {
+  if (_addCellInFlight) return;
+  _addCellInFlight = true;
+  const cell = createCell(type, '');
+  const idx  = cells.findIndex(c => c.id === afterId);
+  cells.splice(idx + 1, 0, cell);
+  const nb = document.getElementById('notebook');
+  const afterDiv = document.getElementById('div-' + afterId);
+  const wrap = document.createElement('div');
+  wrap.className = 'cell' + (type === 'markdown' ? ' md-cell' : '');
+  wrap.id = 'cell-wrap-' + cell.id;
+  wrap.innerHTML = cellInnerHTML(cell);
+  const div = document.createElement('div');
+  div.className = 'add-cell-row'; div.id = 'div-' + cell.id;
+  div.innerHTML =
+    '<div class="add-cell-gutter">' +
+      '<button class="add-cell-btn" onclick="addCellAfter(' + cell.id + ',\'code\')">+ code</button>' +
+      '<button class="add-cell-btn" onclick="addCellAfter(' + cell.id + ',\'markdown\')">+ text</button>' +
+    '</div>';
+  nb.insertBefore(wrap, afterDiv.nextSibling);
+  let insertAfter = wrap;
+  if (type === 'code') {
+    const outRowFrag = document.createElement('template');
+    outRowFrag.innerHTML = outputRowHTML(cell);
+    const outRowEl = outRowFrag.content.firstElementChild;
+    nb.insertBefore(outRowEl, wrap.nextSibling);
+    insertAfter = outRowEl;
+  }
+  nb.insertBefore(div, insertAfter.nextSibling);
+  updateMeta();
+  setTimeout(() => { const ta = document.getElementById('ed-' + cell.id); if(ta){ ta.focus(); autoH(ta); }}, 30);
+  setTimeout(() => { _addCellInFlight = false; }, 50);
+};
+
+window.runCell        = runCell;
+window.runAllCells    = runAllCells;
+window.clearAllOutputs= clearAllOutputs;
+
+window.insertSnippet = function(name) {
+  const code = SNIPPETS[name] || '';
+  const focused = document.activeElement;
+  const m = focused && focused.id && focused.id.match(/^ed-(\d+)$/);
+  if (m) {
+    focused.value = code; autoH(focused);
+    const cell = cells.find(c => c.id === +m[1]);
+    if (cell) cell.code = code;
+  } else {
+    addCell('code', code);
+  }
+};
+
+window.loadNotebookFromFile = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let nb;
+    try {
+      nb = JSON.parse(e.target.result);
+    } catch(err) {
+      alert('Invalid JSON file: ' + err.message);
+      return;
+    }
+    if (!nb || !Array.isArray(nb.cells)) {
+      alert('File does not look like a saved notebook (missing "cells" array).');
+      return;
+    }
+
+    // Clear current notebook DOM and state
+    const nbEl = document.getElementById('notebook');
+    nbEl.innerHTML = '';
+    cells = [];
+    cellCounter = 0;
+    runCounter = 0;
+    selectedCellId = null;
+
+    nb.cells.forEach(saved => {
+      const type = saved.type === 'markdown' ? 'markdown' : 'code';
+      const code = typeof saved.code === 'string' ? saved.code : String(saved.code ?? '');
+      const cell = createCell(type, code);
+      cells.push(cell);
+      renderCellDOM(cell);
+    });
+
+    setStatus('Notebook loaded from ' + file.name);
+  };
+  reader.readAsText(file);
+  input.value = '';  // allow re-selecting the same file later
+};
+
+window.downloadLastModel = function(format) {
+  format = format || 'stl';
+  if (!wasmReady) { alert('Kernel not ready yet.'); return; }
+  const path = '/tmp/download.' + format;
+  try {
+    mod.FS.mkdir('/tmp');
+  } catch(_) { /* already exists — fine */ }
+  try {
+    mod.FS.unlink(path);
+  } catch(_) { /* file may not exist yet — fine */ }
+
+  stdoutBuf.length = 0;
+  stderrBuf.length = 0;
+  const exportCode =
+    'if _last_shown_obj is None:\n' +
+    '    print("NO_MODEL_SHOWN_YET")\n' +
+    'else:\n' +
+    '    export(_last_shown_obj, "' + path + '")\n' +
+    '    print("EXPORT_OK")\n';
+
+  let ret;
+  try {
+    ret = evalPython.evaluate(exportCode, false);
+  } catch(e) {
+    const msg = errMsg(e);
+    dbg('downloadLastModel evaluate() CRASHED: ' + msg, 'error');
+    alert('Export crashed the kernel: ' + msg + '\nReloading WASM module…');
+    wasmReady = false;
+    setBadge('error', 'Kernel crashed — reloading…');
+    reloadWasmAfterCrash();
+    return;
+  }
+  dbg('downloadLastModel evaluate() -> ' + JSON.stringify(ret) + ' stdout=' + JSON.stringify(stdoutBuf) + ' stderr=' + JSON.stringify(stderrBuf), 'info');
+
+  const combinedOut = stdoutBuf.join('\n');
+  if (combinedOut.includes('NO_MODEL_SHOWN_YET')) {
+    alert('No model has been shown yet — run a cell with show(...) first.');
+    return;
+  }
+
+  let fileBytes;
+  try {
+    fileBytes = mod.FS.readFile(path);
+  } catch(e) {
+    const msg = errMsg(e);
+    dbg('downloadLastModel FS.readFile failed: ' + msg, 'error');
+    alert('Export did not produce a file: ' + msg);
+    return;
+  }
+
+  const blob = new Blob([fileBytes], { type: 'application/octet-stream' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'model.' + format;
+  a.click();
+  setStatus(format.toUpperCase() + ' downloaded (' + fileBytes.byteLength + ' bytes)');
+};
+
+window.saveNotebook = function() {
+  cells.forEach(c => { const ta = document.getElementById('ed-' + c.id); if(ta) c.code = ta.value; });
+  const nb = { version: 3, cells: cells.map(c => ({ type: c.type, code: c.code })) };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(nb, null, 2)], { type: 'application/json' }));
+  a.download = 'notebook.pyscad.json';
+  a.click();
+  setStatus('Notebook saved');
+};
+
+window.kbd = function(e, id) {
+  if (e.key === 'Enter' && e.shiftKey) {
+    e.preventDefault();
+    runCell(id);
+    // Jupyter-style: if this was the last cell, append a fresh empty one
+    const isLast = cells.length > 0 && cells[cells.length - 1].id === id;
+    if (isLast) {
+      addCellAfter(id, 'code');
+    }
+  }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target, s = ta.selectionStart;
+    ta.value = ta.value.slice(0, s) + '    ' + ta.value.slice(ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = s + 4;
+    autoH(ta);
+  }
+};
+
+window.autoH = function(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = Math.max(80, ta.scrollHeight) + 'px';
+};
+
+function enableUI() {
+  ['btn-run-all','btn-add-code','btn-add-md','btn-download-stl','export-format'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.disabled = false;
+  });
+}
+function setBadge(state, text) {
+  const b = document.getElementById('kernel-badge');
+  b.className = 'kernel-badge ' + state;
+  b.textContent = text;
+}
+function setStatus(msg) { document.getElementById('status-msg').textContent = msg; }
+function updateMeta() {
+  document.getElementById('cell-count').textContent = cells.length + ' cell' + (cells.length===1?'':'s');
+  const toc = document.getElementById('toc');
+  toc.innerHTML = cells.map((c,i) =>
+    '<div class="snippet-item" onclick="document.getElementById(\'cell-wrap-' + c.id + '\').scrollIntoView({behavior:\'smooth\'})">' +
+      '<div class="snip-title">' + (c.type==='markdown'?'📝':'⬡') + ' Cell ' + (i+1) + '</div>' +
+      '<div class="snip-sub">' + (escHTML((c.code||'').slice(0,30))||'(empty)') + '</div>' +
+    '</div>').join('');
+}
+function escHTML(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function mdToHtml(md) {
+  const escaped = escHTML(md);
+  return escaped
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>').replace(/\n/g,'<br>');
+}
+
+buildSnippetList();
+addCell('code', 'show(difference(\n    cube([20, 20, 20], center=True),\n    cylinder(h=25, r=5, center=True)\n))');
+initWasm();
+</script>
+</body>
+</html>

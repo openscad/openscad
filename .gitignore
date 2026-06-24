@@ -30,6 +30,7 @@ pythonscad-*.tar.gz
 # Python virtual environments and caches
 __pycache__/
 .venv/
+wasm-test/node_modules/
 
 # IDEs and editors
 .vs/

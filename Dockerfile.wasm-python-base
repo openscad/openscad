@@ -1,18 +1,22 @@
-# Extends openscad/wasm-base with CPython compiled for wasm32-emscripten.
+# PythonSCAD WASM Docker image: Emscripten 6.0 sysroot + CPython 3.14.
 #
-# The resulting image provides:
-#   /cpython-wasm/lib/libpython3.14.a       — static library for linking
-#   /cpython-wasm/include/python3.14/        — C headers
-#   /cpython-wasm/lib/python3.14/            — stdlib (preloaded into MEMFS at cmake time)
+# Legacy two-step build: requires a pre-tagged sysroot image. Build the sysroot
+# first, then run this file:
 #
-# Build:
-#   docker build -f Dockerfile.wasm-python-base -t pythonscad-wasm-python-base:local .
+#   docker build -f docker/wasm/sysroot.dockerfile --target wasm-sysroot \
+#     -t pythonscad-wasm-sysroot:local .
+#   docker build -f Dockerfile.wasm-python-base \
+#     -t pythonscad-wasm-python-base:local .
 #
-# CPython 3.14 cross-compilation needs clang -mgc (wasm-gc), which is absent from the
-# Emscripten 4.0.10 toolchain baked into openscad/wasm-base. We compile CPython in a
-# separate stage with a current emsdk, then copy the artifacts into the OpenSCAD wasm
-# base image so PythonSCAD keeps the pre-populated Emscripten sysroot (Eigen, Boost, …).
-FROM emscripten/emsdk:6.0.0 AS cpython-builder
+# Prefer the unified single-step target instead:
+#
+#   docker build -f docker/wasm/sysroot.dockerfile --target wasm-python-base \
+#     -t pythonscad-wasm-python-base:local .
+
+FROM pythonscad-wasm-sysroot:local AS wasm-sysroot
+
+# Keep in sync with EMSCRIPTEN_SDK_TAG in docker/wasm/sysroot.dockerfile.
+FROM emscripten/emsdk@sha256:9eed2e47b4206928b22f99d2917013ad5462d777bb24cb546a652729896badd8 AS cpython-builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -34,18 +38,11 @@ RUN wget -q "https://www.python.org/ftp/python/${CPYTHON_VERSION}/Python-${CPYTH
     && tar -xf Python-${CPYTHON_VERSION}.tar.xz \
     && rm Python-${CPYTHON_VERSION}.tar.xz
 
-# Native host interpreter (CPython cross-compilation requires a matching-version python).
 RUN cd Python-${CPYTHON_VERSION} \
     && ./configure --prefix=/usr/local/cpython-native --quiet \
     && make -j$(nproc) \
     && make install
 
-# Cross-compile CPython for Emscripten (wasm32-unknown-emscripten).
-#
-# We build only libpython3.14.a (the core interpreter static library), not the
-# standalone python.js binary. The standalone binary links ALL extension modules
-# (sha2, _decimal, etc.) which need C libraries not available in the WASM sysroot.
-# libpython3.14.a itself contains only the interpreter core, not those modules.
 RUN cd Python-${CPYTHON_VERSION} \
     && printf 'ac_cv_func_pthread_kill=no\n' >> Platforms/emscripten/config.site-wasm32-emscripten \
     && CONFIG_SITE=./Platforms/emscripten/config.site-wasm32-emscripten \
@@ -56,7 +53,7 @@ RUN cd Python-${CPYTHON_VERSION} \
          --with-build-python=/usr/local/cpython-native/bin/python3 \
          --disable-shared \
          --without-ensurepip \
-         "CFLAGS=-fexceptions -O2" \
+         "CFLAGS=-fexceptions -O2 -fPIC" \
          "LDFLAGS=-fexceptions" \
     && printf '*disabled*\n_decimal\n_bz2\n_sha2\n_md5\n_sha1\n_sha3\n_blake2\n_elementtree\npyexpat\n_ctypes\n_sqlite3\n' > Modules/Setup.local \
     && emmake make -j$(nproc) libpython3.14.a \
@@ -75,7 +72,7 @@ RUN cd Python-${CPYTHON_VERSION} \
          ${CPYTHON_PREFIX}/lib/python3.14/idlelib \
          ${CPYTHON_PREFIX}/lib/python3.14/turtledemo
 
-FROM openscad/wasm-base@sha256:f73d33d5f2fd4c7ae4d3aaacb1e2e2deb193b878b38bb80c8235c933ac340c66
+FROM wasm-sysroot
 
 COPY --from=cpython-builder /cpython-wasm /cpython-wasm
 

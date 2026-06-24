@@ -311,31 +311,44 @@ make -j$(sysctl -n hw.ncpu)
 
 ### WebAssembly Build
 
-PythonSCAD ships a Python-enabled WASM build. Two variants: `node` (NODERAWFS,
-for smoke testing) and `web` (MEMFS + preloaded stdlib, for browser distribution).
+PythonSCAD ships a Python-enabled WASM build on **Emscripten 6.0** with **CPython
+3.14**. Two variants: `node` (NODERAWFS, for smoke testing) and `web` (MEMFS +
+preloaded stdlib, for browser distribution).
+
+Docker uses two local images (no `openscad/wasm-base` dependency):
+
+1. **`pythonscad-wasm-sysroot:local`** — third-party WASM libraries (Boost, CGAL, …)
+2. **`pythonscad-wasm-python-base:local`** — sysroot + cross-compiled CPython 3.14
+
+`scripts/wasm-base-docker-run.sh` builds the `wasm-python-base` image automatically if missing.
 
 ```bash
-# Build the Docker base image once (~30 min, CPython cross-compile)
-docker build -f Dockerfile.wasm-python-base -t pythonscad-wasm-python-base:local .
+# Unified build (sysroot + CPython, ~60 min first time)
+docker build -f docker/wasm/sysroot.dockerfile --target wasm-python-base \
+  -t pythonscad-wasm-python-base:local .
 
 # Node variant (fast smoke test)
 ./scripts/wasm-base-docker-run.sh emcmake cmake -B build-wasm-node \
   -DWASM_BUILD_TYPE=node -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=1
 ./scripts/wasm-base-docker-run.sh cmake --build build-wasm-node -j$(nproc)
+node build-wasm-node/pythonscad.js -o out.stl --trust-python script.py
 
-# Web variant (browser distribution)
+# Web variant (browser distribution; MAIN_MODULE=2 for Chromium JSPI)
 ./scripts/wasm-base-docker-run.sh emcmake cmake -B build-wasm-web \
   -DWASM_BUILD_TYPE=web -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=1
 ./scripts/wasm-base-docker-run.sh cmake --build build-wasm-web -j$(nproc)
 
-# Test in browser
-cp wasm-test/test.html build-wasm-web/
+# Test in browser (copy pages via docker if build dir is docker-owned)
+docker run --rm -v "$PWD:/src" -w /src pythonscad-wasm-python-base:local \
+  bash -c 'mkdir -p build-wasm-web/vendor \
+    && cp wasm-test/test.html wasm-test/notebook.html build-wasm-web/ \
+    && cp wasm-test/vendor/three.min.js build-wasm-web/vendor/'
 python3 wasm-test/serve.py 8080 build-wasm-web/
-# Open http://localhost:8080/test.html
+# http://localhost:8080/test.html  or  /notebook.html
 ```
 
 See `doc/wasm-build.md` for the full guide including architecture rationale,
-smoke testing, JavaScript API, and known gotchas.
+smoke testing, JavaScript API (`EmsInitPython` / `EmsEvaluatePython`), and known gotchas.
 
 ## Common Debugging Workflows
 

@@ -31,6 +31,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <glview/RenderSettings.h>
 #ifdef _WIN32
 // AttachConsole / GetStdHandle / _wfreopen for the --repl/--ipython
 // console reattach dance (see windows_reattach_console_for_repl below).
@@ -1448,12 +1449,11 @@ stderr_bak = None\n\
   result.reset(PyRun_String(code.c_str(), Py_file_input, pythonInitDict.get(),
                             pythonInitDict.get())); /* actual code is run here */
 
-#ifndef OPENSCAD_NOGUI
   if (result == nullptr) {
     error = "";
     python_catch_error(error);
-    PyErr_Print();
   }
+#ifndef OPENSCAD_NOGUI
   for (int i = 0; i < 2; i++) {
     PyObjectUniquePtr catcher(nullptr, &PyObjectDeleter);
     catcher.reset(
@@ -1495,6 +1495,35 @@ stderr_bak = None\n\
 #endif
   return error;
 }
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+extern "C" {
+
+EMSCRIPTEN_KEEPALIVE
+void EmsInitPython(void)
+{
+  RenderSettings::inst()->backend3D = RenderBackend3D::ManifoldBackend;
+  initPython(PlatformUtils::applicationPath(), "", nullptr);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void EmsFinishPython(void)
+{
+  finishPython();
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char *EmsEvaluatePython(const char *code, bool dry_run)
+{
+  static std::string result;
+  result = evaluatePython(code ? std::string(code) : std::string(), dry_run);
+  return result.c_str();
+}
+}
+#endif
+
 /*
  * the magical Python Type descriptor for an OpenSCAD Object. Adding more fields makes the type more
  * powerful
