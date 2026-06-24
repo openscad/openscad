@@ -57,6 +57,8 @@ jobs:
           ./scripts/get-dependencies.py --yes --profile pythonscad-qt6
 
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: false
 
       - name: Build x86_64 Application
         env:
@@ -211,6 +213,8 @@ jobs:
           ./scripts/get-dependencies.py --yes --profile pythonscad-qt6
 
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: false
 
       - name: Build arm64 Application
         env:
@@ -762,6 +766,8 @@ jobs:
           otool -L "$FRAMEWORKS_DIR/QtCore.framework/Versions/A/QtCore" | grep -E "icu|brotli" || echo "No ICU or brotli references found"
 
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: false
 
       - name: Bundle runtime Python deps (IPython) into merged .app
         env:

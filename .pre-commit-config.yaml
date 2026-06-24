@@ -105,7 +105,7 @@ repos:
             args: ["--severity=warning"]
             exclude: ^(submodules|tests/data)/
     - repo: https://github.com/zizmorcore/zizmor-pre-commit
-      rev: v1.24.1
+      rev: v1.26.1
       hooks:
           # Security audits for GitHub Actions workflows and composite
           # actions. Catches template/expression injection from

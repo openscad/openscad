@@ -90,7 +90,9 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     # Note: Don't use container field for ARM64 - it pulls amd64 images
     # ARM64 builds use explicit docker run with --platform flag
-    container: ${{ matrix.arch == 'amd64' && matrix.docker_image || null }}
+    # Images are digest-pinned in supported-distributions.json; zizmor
+    # cannot see through the matrix indirection.
+    container: ${{ matrix.arch == 'amd64' && matrix.docker_image || null }} # zizmor: ignore[unpinned-images]
 
     steps:
       - name: Ensure git and gh CLI are available (amd64 container)
