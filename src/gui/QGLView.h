@@ -22,6 +22,9 @@
 #include "glview/GLView.h"
 #include "../core/MouseConfig.h"
 
+// Forward declare Qt OpenGL classes
+class QOpenGLFunctions;
+
 class QGLView : public QOpenGLWidget, public GLView
 {
   Q_OBJECT
@@ -83,6 +86,9 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
+  bool glad_available = true;  // Track GLAD availability for Qt6/macOS
+  std::unique_ptr<QOpenGLFunctions> gl_functions;  // Qt6 OpenGL functions
+  std::string cached_renderer_info;  // Cached renderer info from initialization
   // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
   // zoom 2-vector.
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
