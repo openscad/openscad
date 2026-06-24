@@ -48,7 +48,7 @@ jobs:
       run: ninja -C build CMakeFiles/OpenSCADLibInternal_autogen
 
     - name: Restore cached results
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@v6
       with:
         path: /home/runner/.cache/clang-tidy
         key: clang-tidy-${{ hashFiles('.clang-tidy') }}-v18-${{ github.run_id }}
@@ -91,7 +91,7 @@ jobs:
 
     - name: Save cached results
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@v6
       with:
         path: /home/runner/.cache/clang-tidy
         key: clang-tidy-${{ hashFiles('.clang-tidy') }}-v18-${{ github.run_id }}
