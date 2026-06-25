@@ -58,6 +58,9 @@ public:
                                 ChunkCallback on_chunk, ErrorCallback on_error,
                                 CompleteCallback on_complete);
 
+  // Cancel all pending HTTP requests
+  void cancelPendingRequests();
+
 private:
   class Impl;
   std::unique_ptr<Impl> impl;

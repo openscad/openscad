@@ -399,6 +399,11 @@ std::string AIService::getDefaultPrompt() const
   return "Create a sphere with radius 10 and detail level $fn=50.";
 }
 
+void AIService::cancelPendingRequests()
+{
+  impl->ai_client->cancelPendingRequests();
+}
+
 #else  // __EMSCRIPTEN__
 
 class AIService::Impl
@@ -431,6 +436,10 @@ void AIService::chatCompletion(const std::vector<ChatMessage>&, ResponseCallback
 std::string AIService::getDefaultPrompt() const
 {
   return "";
+}
+
+void AIService::cancelPendingRequests()
+{
 }
 
 #endif  // __EMSCRIPTEN__

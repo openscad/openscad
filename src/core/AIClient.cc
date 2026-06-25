@@ -479,3 +479,8 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
       }
     });
 }
+
+void AIClient::cancelPendingRequests()
+{
+  impl->http_client->cancelPendingRequests();
+}

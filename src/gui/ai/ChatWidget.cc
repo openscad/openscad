@@ -124,10 +124,28 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
 ChatWidget::~ChatWidget()
 {
   *aliveState = false;
+  aiService->cancelPendingRequests();
 }
 
 void ChatWidget::onSendPressed()
 {
+  if (sendButton->text() == _("Stop")) {
+    aiService->cancelPendingRequests();
+    if (activeAIBubble) {
+      std::string stop_msg = activeResponseText ? *activeResponseText : "";
+      stop_msg += "\n\n*[Request Stopped by User]*";
+      activeAIBubble->updateText(QString::fromStdString(stop_msg));
+      if (activeResponseText && !activeResponseText->empty()) {
+        this->history.push_back({"assistant", *activeResponseText});
+      }
+    }
+    isRequestRunning = false;
+    activeAIBubble = nullptr;
+    activeResponseText = nullptr;
+    enableInput(true);
+    return;
+  }
+
   QString prompt = inputField->toPlainText().trimmed();
   if (prompt.isEmpty()) {
     return;
@@ -139,43 +157,50 @@ void ChatWidget::onSendPressed()
   // Save to history
   history.push_back({"user", prompt.toStdString()});
 
-  // Add the AI message bubble initialized to "Thinking..."
-  MessageBubble *aiBubble = addMessage(_("Thinking..."), false);
+  // Set active request states
+  isRequestRunning = true;
+  activeResponseText = std::make_shared<std::string>();
+  activeAIBubble = addMessage(_("Thinking..."), false);
 
   // Disable input during streaming
   enableInput(false);
 
   auto alive = this->aliveState;
-  auto responseText = std::make_shared<std::string>();
 
   aiService->chatCompletionStream(
     history,
-    [this, alive, responseText, aiBubble](const std::string& chunk) {
-      QMetaObject::invokeMethod(qApp, [this, alive, responseText, aiBubble, chunk]() {
-        if (!*alive) return;
-        *responseText += chunk;
-        aiBubble->updateText(QString::fromStdString(*responseText));
+    [this, alive](const std::string& chunk) {
+      QMetaObject::invokeMethod(qApp, [this, alive, chunk]() {
+        if (!*alive || !isRequestRunning) return;
+        *activeResponseText += chunk;
+        activeAIBubble->updateText(QString::fromStdString(*activeResponseText));
         // Auto-scroll to bottom
         this->scrollArea->verticalScrollBar()->setValue(
           this->scrollArea->verticalScrollBar()->maximum());
       });
     },
-    [this, alive, responseText, aiBubble](const std::string& error_msg) {
-      QMetaObject::invokeMethod(qApp, [this, alive, responseText, aiBubble, error_msg]() {
-        if (!*alive) return;
+    [this, alive](const std::string& error_msg) {
+      QMetaObject::invokeMethod(qApp, [this, alive, error_msg]() {
+        if (!*alive || !isRequestRunning) return;
         std::string display_err = "Error: " + error_msg;
-        if (responseText->empty()) {
-          aiBubble->updateText(QString::fromStdString(display_err));
+        if (activeResponseText->empty()) {
+          activeAIBubble->updateText(QString::fromStdString(display_err));
         } else {
           this->addMessage(QString::fromStdString(display_err), false);
         }
+        isRequestRunning = false;
+        activeAIBubble = nullptr;
+        activeResponseText = nullptr;
         this->enableInput(true);
       });
     },
-    [this, alive, responseText]() {
-      QMetaObject::invokeMethod(qApp, [this, alive, responseText]() {
-        if (!*alive) return;
-        this->history.push_back({"assistant", *responseText});
+    [this, alive]() {
+      QMetaObject::invokeMethod(qApp, [this, alive]() {
+        if (!*alive || !isRequestRunning) return;
+        this->history.push_back({"assistant", *activeResponseText});
+        isRequestRunning = false;
+        activeAIBubble = nullptr;
+        activeResponseText = nullptr;
         this->enableInput(true);
       });
     });
@@ -222,10 +247,12 @@ void ChatWidget::onClearPressed()
 void ChatWidget::enableInput(bool enabled)
 {
   inputField->setEnabled(enabled);
-  sendButton->setEnabled(enabled);
   clearButton->setEnabled(enabled);
   if (enabled) {
+    sendButton->setText(_("Send"));
     inputField->setFocus();
+  } else {
+    sendButton->setText(_("Stop"));
   }
 }
 

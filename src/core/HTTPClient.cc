@@ -11,6 +11,8 @@
 #include <boost/asio/ssl/error.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <thread>
+#include <mutex>
+#include <set>
 #include <cctype>
 #include <algorithm>
 #include <chrono>
@@ -112,14 +114,29 @@ static void load_system_certificates(boost::asio::ssl::context& ctx)
 #endif
 
 // A session representing a single HTTP/HTTPS request/response lifetime
+class CancelableSession
+{
+public:
+  virtual ~CancelableSession() = default;
+  virtual void cancel() = 0;
+};
+
+class SessionRegistry
+{
+public:
+  virtual ~SessionRegistry() = default;
+  virtual void register_session(std::shared_ptr<CancelableSession> session) = 0;
+  virtual void unregister_session(std::shared_ptr<CancelableSession> session) = 0;
+};
+
 template <bool IsSSL>
-class Session : public std::enable_shared_from_this<Session<IsSSL>>
+class Session : public CancelableSession, public std::enable_shared_from_this<Session<IsSSL>>
 {
 public:
   using StreamType = typename std::conditional<IsSSL, boost::asio::ssl::stream<boost::beast::tcp_stream>,
                                                boost::beast::tcp_stream>::type;
 
-  Session(boost::asio::io_context& io_ctx,
+  Session(boost::asio::io_context& io_ctx, SessionRegistry *registry,
           boost::asio::ssl::context *ssl_ctx,  // null if !IsSSL
           const std::string& host, const std::string& port, const std::string& target,
           boost::beast::http::request<boost::beast::http::string_body> req,
@@ -127,6 +144,7 @@ public:
           HTTPClient::ErrorCallback on_error, HTTPClient::CompleteCallback on_complete)
     : resolver_(boost::asio::make_strand(io_ctx)),
       stream_(create_stream(io_ctx, ssl_ctx)),
+      registry_(registry),
       host_(host),
       port_(port),
       target_(target),
@@ -141,6 +159,10 @@ public:
 
   void run()
   {
+    if (registry_) {
+      registry_->register_session(this->shared_from_this());
+    }
+
     if constexpr (IsSSL) {
       if (!SSL_set_tlsext_host_name(stream_.native_handle(), host_.c_str())) {
         boost::beast::error_code ec{static_cast<int>(::ERR_get_error()),
@@ -154,7 +176,15 @@ public:
       host_, port_, boost::beast::bind_front_handler(&Session::on_resolve, this->shared_from_this()));
   }
 
+  void cancel() override
+  {
+    auto self = this->shared_from_this();
+    boost::asio::post(resolver_.get_executor(),
+                      [this, self]() { boost::beast::get_lowest_layer(stream_).close(); });
+  }
+
 private:
+  SessionRegistry *registry_;
   boost::asio::ip::tcp::resolver resolver_;
   StreamType stream_;
   std::string host_;
@@ -176,6 +206,13 @@ private:
       return StreamType(boost::asio::make_strand(io_ctx), *ssl_ctx);
     } else {
       return StreamType(boost::asio::make_strand(io_ctx));
+    }
+  }
+
+  void remove_self()
+  {
+    if (registry_) {
+      registry_->unregister_session(this->shared_from_this());
     }
   }
 
@@ -306,6 +343,7 @@ private:
 
   void close_connection()
   {
+    remove_self();
     if constexpr (IsSSL) {
       boost::beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(5));
       stream_.async_shutdown(
@@ -326,6 +364,7 @@ private:
 
   void fail(boost::beast::error_code ec, const char *what)
   {
+    remove_self();
     if (ec == boost::asio::error::operation_aborted) {
       return;
     }
@@ -338,13 +377,28 @@ private:
 };
 
 // Private implementation structure
-class HTTPClient::Impl
+class HTTPClient::Impl : public SessionRegistry
 {
 public:
   boost::asio::io_context io_ctx;
   boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard;
   boost::asio::ssl::context ssl_ctx;
   std::thread background_thread;
+
+  std::mutex sessions_mutex;
+  std::set<std::shared_ptr<CancelableSession>> active_sessions;
+
+  void register_session(std::shared_ptr<CancelableSession> session) override
+  {
+    std::lock_guard<std::mutex> lock(sessions_mutex);
+    active_sessions.insert(session);
+  }
+
+  void unregister_session(std::shared_ptr<CancelableSession> session) override
+  {
+    std::lock_guard<std::mutex> lock(sessions_mutex);
+    active_sessions.erase(session);
+  }
 
   Impl()
     : work_guard(boost::asio::make_work_guard(io_ctx)), ssl_ctx(boost::asio::ssl::context::tlsv12_client)
@@ -355,12 +409,27 @@ public:
     background_thread = std::thread([this]() { io_ctx.run(); });
   }
 
-  ~Impl()
+  ~Impl() override
   {
+    cancelPendingRequests();
     work_guard.reset();
     io_ctx.stop();
     if (background_thread.joinable()) {
       background_thread.join();
+    }
+  }
+
+  void cancelPendingRequests()
+  {
+    std::vector<std::shared_ptr<CancelableSession>> to_cancel;
+    {
+      std::lock_guard<std::mutex> lock(sessions_mutex);
+      for (const auto& s : active_sessions) {
+        to_cancel.push_back(s);
+      }
+    }
+    for (const auto& s : to_cancel) {
+      s->cancel();
     }
   }
 
@@ -379,6 +448,11 @@ HTTPClient::~HTTPClient() = default;
 
 HTTPClient::HTTPClient(HTTPClient&&) noexcept = default;
 HTTPClient& HTTPClient::operator=(HTTPClient&&) noexcept = default;
+
+void HTTPClient::cancelPendingRequests()
+{
+  impl->cancelPendingRequests();
+}
 
 void HTTPClient::asyncGet(const std::string& url, const Headers& headers, ResponseCallback on_response,
                           ErrorCallback on_error)
@@ -407,12 +481,12 @@ void HTTPClient::asyncGet(const std::string& url, const Headers& headers, Respon
 
   if (parsed.scheme == "https") {
     auto session = std::make_shared<Session<true>>(
-      impl->io_ctx, &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
+      impl->io_ctx, impl.get(), &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
       std::move(on_response), nullptr, std::move(on_error), nullptr);
     session->run();
   } else if (parsed.scheme == "http") {
     auto session = std::make_shared<Session<false>>(
-      impl->io_ctx, nullptr, parsed.host, parsed.port, parsed.target, std::move(req),
+      impl->io_ctx, impl.get(), nullptr, parsed.host, parsed.port, parsed.target, std::move(req),
       std::move(on_response), nullptr, std::move(on_error), nullptr);
     session->run();
   } else {
@@ -452,12 +526,12 @@ void HTTPClient::asyncPost(const std::string& url, const Headers& headers, const
 
   if (parsed.scheme == "https") {
     auto session = std::make_shared<Session<true>>(
-      impl->io_ctx, &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
+      impl->io_ctx, impl.get(), &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
       std::move(on_response), nullptr, std::move(on_error), nullptr);
     session->run();
   } else if (parsed.scheme == "http") {
     auto session = std::make_shared<Session<false>>(
-      impl->io_ctx, nullptr, parsed.host, parsed.port, parsed.target, std::move(req),
+      impl->io_ctx, impl.get(), nullptr, parsed.host, parsed.port, parsed.target, std::move(req),
       std::move(on_response), nullptr, std::move(on_error), nullptr);
     session->run();
   } else {
@@ -498,13 +572,13 @@ void HTTPClient::asyncPostStream(const std::string& url, const Headers& headers,
 
   if (parsed.scheme == "https") {
     auto session = std::make_shared<Session<true>>(
-      impl->io_ctx, &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req), nullptr,
-      std::move(on_chunk), std::move(on_error), std::move(on_complete));
+      impl->io_ctx, impl.get(), &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
+      nullptr, std::move(on_chunk), std::move(on_error), std::move(on_complete));
     session->run();
   } else if (parsed.scheme == "http") {
     auto session = std::make_shared<Session<false>>(
-      impl->io_ctx, nullptr, parsed.host, parsed.port, parsed.target, std::move(req), nullptr,
-      std::move(on_chunk), std::move(on_error), std::move(on_complete));
+      impl->io_ctx, impl.get(), nullptr, parsed.host, parsed.port, parsed.target, std::move(req),
+      nullptr, std::move(on_chunk), std::move(on_error), std::move(on_complete));
     session->run();
   } else {
     if (on_error) {

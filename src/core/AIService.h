@@ -41,6 +41,9 @@ public:
   // Get default user prompt configured in the active profile settings
   std::string getDefaultPrompt() const;
 
+  // Cancel any active AI completion requests
+  void cancelPendingRequests();
+
 private:
   class Impl;
   std::unique_ptr<Impl> impl;
