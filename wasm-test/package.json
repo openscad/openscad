@@ -8,6 +8,6 @@
       "node -e \"require('fs').mkdirSync('vendor',{recursive:true});require('fs').copyFileSync('node_modules/three/build/three.min.js','vendor/three.min.js')\""
   },
   "dependencies": {
-    "three": "0.128.0"
+    "three": "0.184.0"
   }
 }
