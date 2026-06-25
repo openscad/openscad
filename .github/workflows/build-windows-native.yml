@@ -143,6 +143,7 @@ jobs:
       - name: Install MSYS2 psutil and uv for IPython 9 bundle
         run: |
           pacboy -S --noconfirm --needed python-psutil:p uv:p
+          python -m pip install --quiet pip-licenses
 
       - name: Bundle runtime Python deps (IPython) into build tree
         run: |
@@ -159,8 +160,7 @@ jobs:
           # so the bundle silently failed to ship in the artifact.
           BUNDLE_DEST="build/pythonscad-bundled-py"
           chmod +x ./scripts/bundle-runtime-python.sh
-          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
-            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python
+          ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python
 
       - name: Install to staging directory
         run: |

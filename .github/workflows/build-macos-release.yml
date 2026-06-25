@@ -154,9 +154,10 @@ jobs:
           # `*.dist-info` metadata directories.
           APP_BUNDLE="${STEPS_APPNAME_OUTPUTS_APP_BUNDLE}"
           BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          python3 -m pip install --break-system-packages --quiet pip-licenses \
+            || python3 -m pip install --quiet pip-licenses
           chmod +x ./scripts/bundle-runtime-python.sh
-          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
-            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
+          ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
 
       - name: Create x86_64 app archive
         run: |
@@ -310,9 +311,10 @@ jobs:
           # `*.dist-info` metadata directories.
           APP_BUNDLE="${STEPS_APPNAME_OUTPUTS_APP_BUNDLE}"
           BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          python3 -m pip install --break-system-packages --quiet pip-licenses \
+            || python3 -m pip install --quiet pip-licenses
           chmod +x ./scripts/bundle-runtime-python.sh
-          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
-            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
+          ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
 
       - name: Create arm64 app archive
         run: |
@@ -779,9 +781,10 @@ jobs:
           # installed by the per-arch jobs gets overwritten by --upgrade.
           APP_BUNDLE="${STEPS_MERGE_OUTPUTS_APP_BUNDLE}"
           BUNDLE_DEST="${APP_BUNDLE}/Contents/Resources/pythonscad-bundled-py"
+          python3 -m pip install --break-system-packages --quiet pip-licenses \
+            || python3 -m pip install --quiet pip-licenses
           chmod +x ./scripts/bundle-runtime-python.sh
-          BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
-            ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
+          ./scripts/bundle-runtime-python.sh "${BUNDLE_DEST}" --python python3
 
       - name: Install Apple code signing certificate
         id: install_cert
