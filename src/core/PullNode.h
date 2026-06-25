@@ -8,7 +8,7 @@ class PullNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  PullNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
+  PullNode(std::shared_ptr<const ModuleInstantiation> mi) : AbstractPolyNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "pull"; }
   Vector3d anchor;

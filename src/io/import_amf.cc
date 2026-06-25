@@ -262,8 +262,8 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
 
   std::string instance_name;
   AssignmentList inst_asslist;
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
-  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+  auto instance = std::make_shared<ModuleInstantiation>(instance_name, inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(std::move(instance), OpenSCADOperator::UNION);
 
   if (polySets.empty()) {
     return PolySet::createEmpty();

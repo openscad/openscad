@@ -16,8 +16,8 @@ class TextNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  TextNode(const ModuleInstantiation *mi, FreetypeRenderer::Params&& p)
-    : AbstractPolyNode(mi), params(std::move(p))
+  TextNode(std::shared_ptr<const ModuleInstantiation> mi, FreetypeRenderer::Params&& p)
+    : AbstractPolyNode(std::move(mi)), params(std::move(p))
   {
   }
 

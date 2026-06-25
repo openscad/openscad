@@ -39,7 +39,7 @@ class SurfaceNode : public LeafNode
 {
 public:
   VISITABLE();
-  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SurfaceNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "surface"; }
 

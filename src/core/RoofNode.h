@@ -16,8 +16,8 @@ class RoofNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RoofNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : AbstractPolyNode(mi), discretizer(std::move(discretizer))
+  RoofNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : AbstractPolyNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;

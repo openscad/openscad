@@ -7,7 +7,7 @@ class SkinNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  SkinNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { convexity = 0; }
+  SkinNode(std::shared_ptr<const ModuleInstantiation> mi) : AbstractPolyNode(mi) { convexity = 0; }
   std::string toString() const override;
   std::string name() const override { return "skin"; }
 

@@ -11,7 +11,7 @@ class PathExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  PathExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
+  PathExtrudeNode(std::shared_ptr<const ModuleInstantiation> mi) : AbstractPolyNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "linear_extrude"; }
 

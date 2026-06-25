@@ -8,7 +8,7 @@
 class FilletNode : public LeafNode
 {
 public:
-  FilletNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  FilletNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(mi) {}
   std::string toString() const override
   {
     std::ostringstream stream;

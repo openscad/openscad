@@ -43,7 +43,8 @@
 #include "core/node.h"
 #include "utils/printutils.h"
 
-static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
+static std::shared_ptr<AbstractNode> lazyUnionNode(
+  const std::shared_ptr<const ModuleInstantiation>& inst)
 {
   if (Feature::ExperimentalLazyUnion.is_enabled()) {
     return std::make_shared<ListNode>(inst);
@@ -53,7 +54,7 @@ static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *in
 }
 
 static boost::optional<size_t> validChildIndex(int n, const Children *children,
-                                               const ModuleInstantiation *inst,
+                                               const std::shared_ptr<const ModuleInstantiation>& inst,
                                                const std::shared_ptr<const Context>& context)
 {
   if (n < 0 || n >= static_cast<int>(children->size())) {
@@ -65,7 +66,7 @@ static boost::optional<size_t> validChildIndex(int n, const Children *children,
 }
 
 static boost::optional<size_t> validChildIndex(const Value& value, const Children *children,
-                                               const ModuleInstantiation *inst,
+                                               const std::shared_ptr<const ModuleInstantiation>& inst,
                                                const std::shared_ptr<const Context>& context)
 {
   if (value.type() != Value::Type::NUMBER) {
@@ -77,8 +78,8 @@ static boost::optional<size_t> validChildIndex(const Value& value, const Childre
   return validChildIndex(static_cast<int>(value.toDouble()), children, inst, context);
 }
 
-static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation *inst,
-                                                      const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_children(
+  const std::shared_ptr<const ModuleInstantiation>& inst, const std::shared_ptr<const Context>& context)
 {
   Arguments arguments{inst->arguments, context};
 
@@ -138,8 +139,8 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
   }
 }
 
-static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments,
-                                                  const Children& children)
+static std::shared_ptr<AbstractNode> builtin_echo(const std::shared_ptr<const ModuleInstantiation>& inst,
+                                                  Arguments arguments, const Children& children)
 {
   LOG(message_group::Echo, "%1$s", STR(arguments));
 
@@ -151,8 +152,8 @@ static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *ins
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *inst,
-                                                    const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_assert(
+  const std::shared_ptr<const ModuleInstantiation>& inst, const std::shared_ptr<const Context>& context)
 {
   Assert::performAssert(inst->arguments, inst->location(), context);
 
@@ -164,7 +165,7 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst,
+static std::shared_ptr<AbstractNode> builtin_let(const std::shared_ptr<const ModuleInstantiation>& inst,
                                                  const std::shared_ptr<const Context>& context)
 {
   return Children(inst->scope,
@@ -172,7 +173,7 @@ static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst
     .instantiate(lazyUnionNode(inst));
 }
 
-static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst,
+static std::shared_ptr<AbstractNode> builtin_for(const std::shared_ptr<const ModuleInstantiation>& inst,
                                                  const std::shared_ptr<const Context>& context)
 {
   auto node = lazyUnionNode(inst);
@@ -194,7 +195,7 @@ static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst
 }
 
 static std::shared_ptr<AbstractNode> builtin_intersection_for(
-  const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+  const std::shared_ptr<const ModuleInstantiation>& inst, const std::shared_ptr<const Context>& context)
 {
   auto node = std::make_shared<AbstractIntersectionNode>(inst);
   if (!inst->arguments.empty()) {
@@ -206,11 +207,11 @@ static std::shared_ptr<AbstractNode> builtin_intersection_for(
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst,
+static std::shared_ptr<AbstractNode> builtin_if(const std::shared_ptr<const ModuleInstantiation>& inst,
                                                 const std::shared_ptr<const Context>& context)
 {
   Arguments arguments{inst->arguments, context};
-  const auto *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
+  const auto *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst.get());
   if (arguments.size() > 0 && arguments[0]->toBool()) {
     return Children(inst->scope, context).instantiate(lazyUnionNode(inst));
   } else if (ifelse->getElseScope()) {

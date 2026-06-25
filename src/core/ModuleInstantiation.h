@@ -12,7 +12,7 @@
 
 using ModuleInstantiationList = std::vector<class ModuleInstantiation *>;
 
-class ModuleInstantiation : public ASTNode
+class ModuleInstantiation : public ASTNode, public std::enable_shared_from_this<ModuleInstantiation>
 {
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(),

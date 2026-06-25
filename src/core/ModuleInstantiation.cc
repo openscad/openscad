@@ -129,7 +129,8 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
     std::shared_ptr<AbstractNode> result = nullptr;
     std::string error;
 #ifdef ENABLE_PYTHON
-    result = python_modulefunc(this, context, error);
+    result = python_modulefunc(std::const_pointer_cast<const ModuleInstantiation>(shared_from_this()),
+                               context, error);
     if (!error.empty() && result == nullptr) {
       LOG(message_group::Warning, loc, context->documentRoot(), "Python: '%1$s'", error);
       return nullptr;
@@ -142,7 +143,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   }
 
   try {
-    auto node = module->module->instantiate(module->defining_context, this, context);
+    auto node = module->module->instantiate(module->defining_context, shared_from_this(), context);
     return node;
   } catch (EvaluationException& e) {
     print_trace(e, this, context);

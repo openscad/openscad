@@ -16,8 +16,8 @@
 #include "core/module.h"
 #include "utils/printutils.h"
 
-static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments,
-                                                  const Children& children)
+static std::shared_ptr<AbstractNode> builtin_roof(const std::shared_ptr<const ModuleInstantiation>& inst,
+                                                  Arguments arguments, const Children& children)
 {
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"method"}, {"convexity"});

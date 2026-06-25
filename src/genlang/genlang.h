@@ -10,10 +10,10 @@
 #include "core/UserModule.h"
 #include "core/CsgOpNode.h"
 
-#define DECLARE_INSTANCE()                                                                              \
-  std::string instance_name;                                                                            \
-  AssignmentList inst_asslist;                                                                          \
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE); \
+#define DECLARE_INSTANCE()                                                                            \
+  std::string instance_name;                                                                          \
+  AssignmentList inst_asslist;                                                                        \
+  auto instance = std::make_shared<ModuleInstantiation>(instance_name, inst_asslist, Location::NONE); \
   modinsts_list.push_back(instance);
 
 extern std::vector<std::string> mapping_name;

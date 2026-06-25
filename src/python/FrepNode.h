@@ -69,7 +69,7 @@ protected:
 class FrepNode : public LeafNode
 {
 public:
-  explicit FrepNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  explicit FrepNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "sdf"; }
   std::unique_ptr<const Geometry> createGeometry() const override;

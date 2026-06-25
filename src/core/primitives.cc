@@ -84,7 +84,8 @@ static void generate_circle(InsertIterator iter, double r, double z, double angl
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
-static Value lookup_radius(const Parameters& parameters, const ModuleInstantiation *inst,
+static Value lookup_radius(const Parameters& parameters,
+                           const std::shared_ptr<const ModuleInstantiation>& inst,
                            const std::string& diameter_var, const std::string& radius_var)
 {
   const auto& d = parameters[diameter_var];
@@ -177,7 +178,8 @@ std::shared_ptr<const Geometry> CubeNode::dragPoint(const Vector3d& pt, const Ve
   return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }
 
-static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_cube(const std::shared_ptr<const ModuleInstantiation>& inst,
+                                                  Arguments arguments)
 {
   auto node = std::make_shared<CubeNode>(inst);
 
@@ -288,7 +290,8 @@ std::shared_ptr<const Geometry> SphereNode::dragPoint(const Vector3d& pt, const 
   return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }
 
-static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_sphere(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
@@ -392,8 +395,8 @@ std::shared_ptr<const Geometry> CylinderNode::dragPoint(const Vector3d& pt, cons
   return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }
 
-static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst,
-                                                      Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_cylinder(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"h", "r1", "r2", "center", "angle"},
@@ -527,8 +530,8 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst,
-                                                        Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_polyhedron(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   auto node = std::make_shared<PolyhedronNode>(inst);
 
@@ -642,7 +645,8 @@ std::unique_ptr<const Geometry> SquareNode::createGeometry() const
   return std::make_unique<Polygon2d>(o);
 }
 
-static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_square(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   auto node = std::make_shared<SquareNode>(inst);
 
@@ -706,7 +710,8 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
   return std::make_unique<Polygon2d>(o);
 }
 
-static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_circle(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d", "angle"});
@@ -987,8 +992,8 @@ std::unique_ptr<const Geometry> SplineNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst,
-                                                     Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_polygon(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   auto node = std::make_shared<PolygonNode>(inst, CurveDiscretizer(3));
 

@@ -128,7 +128,7 @@ public:
 class OversampleNode : public LeafNode
 {
 public:
-  OversampleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  OversampleNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(mi) {}
   std::string toString() const override
   {
     std::ostringstream stream;

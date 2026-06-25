@@ -42,8 +42,8 @@
 #include "utils/printutils.h"
 
 namespace {
-std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst,
-                                                     Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_linear_extrude(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(
     std::move(arguments), inst->location(),

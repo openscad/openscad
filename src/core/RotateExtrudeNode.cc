@@ -44,8 +44,8 @@
 
 namespace {
 
-std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst,
-                                                     Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_rotate_extrude(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   const Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"angle", "start", "origin", "scale"},

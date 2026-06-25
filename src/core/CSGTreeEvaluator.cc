@@ -252,8 +252,8 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(Polygon2d p2d)
 }
 
 std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
-  State& state, const std::shared_ptr<const Geometry>& geom, const ModuleInstantiation *modinst,
-  const AbstractNode& node)
+  State& state, const std::shared_ptr<const Geometry>& geom,
+  const std::shared_ptr<const ModuleInstantiation>& modinst, const AbstractNode& node)
 {
   assert(geom);
   bool is_2d = false;

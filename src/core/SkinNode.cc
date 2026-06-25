@@ -41,8 +41,8 @@
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 namespace {
-std::shared_ptr<AbstractNode> builtin_skin(const ModuleInstantiation *inst, Arguments arguments,
-                                           const Children& children)
+std::shared_ptr<AbstractNode> builtin_skin(const std::shared_ptr<const ModuleInstantiation>& inst,
+                                           Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<SkinNode>(inst);
 

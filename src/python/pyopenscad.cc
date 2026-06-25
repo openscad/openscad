@@ -778,9 +778,9 @@ PyObject *python_callfunction(const std::shared_ptr<const Context>& cxt, const s
  * Actually trying use python to evaluate a OpenSCAD Module
  */
 
-std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_module,
-                                                const std::shared_ptr<const Context>& cxt,
-                                                std::string& error)  // null & error: error, else: None
+std::shared_ptr<AbstractNode> python_modulefunc(
+  const std::shared_ptr<const ModuleInstantiation>& op_module, const std::shared_ptr<const Context>& cxt,
+  std::string& error)  // null & error: error, else: None
 {
   std::shared_ptr<AbstractNode> result = nullptr;
   std::string errorstr = "";
@@ -1376,10 +1376,7 @@ std::string evaluatePython(const std::string& code, bool dry_run)
   PyObjectUniquePtr pyExcTraceback(nullptr, &PyObjectDeleter);
   /* special python code to catch errors from stdout and stderr and make them available in OpenSCAD
    * console */
-  for (ModuleInstantiation *mi : modinsts_list) {
-    delete mi;  // best time to delete it
-  }
-  modinsts_list.clear();
+  modinsts_list.clear();  // shared_ptrs auto-free
   pythonDryRun = dry_run;
   if (!pythonMainModuleInitialized) return "Python not initialized";
   struct EvaluatePythonGil {

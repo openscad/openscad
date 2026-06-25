@@ -61,8 +61,8 @@ using namespace boost::assign;  // bring 'operator+=()' into scope
 #include <filesystem>
 namespace fs = std::filesystem;
 
-static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst,
-                                                     Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_surface(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   auto node = std::make_shared<SurfaceNode>(inst);
 

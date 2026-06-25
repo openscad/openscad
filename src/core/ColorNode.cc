@@ -46,8 +46,8 @@
 
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments,
-                                                   const Children& children)
+static std::shared_ptr<AbstractNode> builtin_color(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<ColorNode>(inst);
 
