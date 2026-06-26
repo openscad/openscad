@@ -48,15 +48,18 @@ do_build() {
 
 do_test_examples() {
 	echo "do_test_examples()"
-	CTEST_ARGS="-C Examples"
+	CTEST_ARGS="-L Examples"
 }
 
 do_test() {
 	echo "do_test()"
 
+	# Test groups use ctest -L (not -C). Default to Default suite when unset.
+	ctest_args="${CTEST_ARGS:--L Default}"
+
 	(
 		cd "$BUILDDIR"
-		ctest $PARALLEL_CTEST $CTEST_ARGS
+		ctest $PARALLEL_CTEST $ctest_args
 	)
 	if [[ $? != 0 ]]; then
 		echo "Test failure"
