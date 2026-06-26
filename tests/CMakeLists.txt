@@ -60,7 +60,13 @@ else() # !PROJECT_IS_TOP_LEVEL
   if(APPLE)
     set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
   elseif (WIN32 OR MXECROSS)
-    set(OPENSCAD_BINPATH "${CBD}/openscad.com")
+    if(MSVC)
+      # MSVC uses multi-config generators, executable is in Release/Debug subdirectory
+      set(OPENSCAD_BINPATH "${CBD}/Release/openscad.exe")
+    else()
+      # MinGW/MSYS2 uses console version (.com)
+      set(OPENSCAD_BINPATH "${CBD}/openscad.com")
+    endif()
   elseif(EXISTS "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
     set(OPENSCAD_BINPATH "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
   else()
@@ -151,6 +157,34 @@ set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 
 find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
+
+# Configure PATH for tests on Windows
+if(WIN32)
+  get_filename_component(Python3_DIR "${Python3_EXECUTABLE}" DIRECTORY)
+  file(TO_CMAKE_PATH "$ENV{PATH}" ORIGINAL_PATH)
+
+  if(MSVC)
+    # MSVC builds: Add vcpkg Python directory to PATH to ensure the correct python DLL is loaded
+    list(APPEND CTEST_ENVIRONMENT "PATH=${Python3_DIR};${ORIGINAL_PATH}")
+    message(STATUS "Adding Python directory to test PATH: ${Python3_DIR}")
+  else()
+    # MinGW/MSYS2 builds: Put MSYS2 bin directory FIRST to ensure MinGW DLLs are found
+    # (Ghostscript and openscad.com itself need MinGW DLLs)
+    # Detect MSYS2 msystem (MINGW64, UCRT64, CLANG64, etc.)
+    if(DEFINED ENV{MSYSTEM_PREFIX})
+      set(MSYS2_BIN "$ENV{MSYSTEM_PREFIX}/bin")
+    elseif(DEFINED ENV{MSYSTEM})
+      # MSYSTEM is set (e.g., UCRT64), construct the path
+      string(TOLOWER "$ENV{MSYSTEM}" MSYSTEM_LOWER)
+      set(MSYS2_BIN "C:/msys64/${MSYSTEM_LOWER}/bin")
+    else()
+      # Fallback to MINGW64 if no MSYS2 environment is detected
+      set(MSYS2_BIN "C:/msys64/mingw64/bin")
+    endif()
+    list(APPEND CTEST_ENVIRONMENT "PATH=${MSYS2_BIN};${ORIGINAL_PATH}")
+    message(STATUS "Adding MSYS2 bin directory to test PATH: ${MSYS2_BIN}")
+  endif()
+endif()
 
 include("cmake/ImageCompare.cmake")
 include("cmake/GalliumFixes.cmake")

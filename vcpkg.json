@@ -1,21 +1,32 @@
 {
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "openscad",
   "version-string": "1.0.0",
+  "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9",
   "dependencies": [
     "boost-regex",
     "boost-program-options",
+    "boost-dll",
+    "boost-assign",
+    "boost-nowide",
     "eigen3",
     "cgal",
-    "cairo",
     "harfbuzz",
+    "freetype",
     "fontconfig",
     "double-conversion",
-    "opencsg",
     "libxml2",
     "libzip",
     "glib",
-    "gperf",
-    "qscintilla",
-    "tbb"
+    "tbb",
+    "glew",
+    "curl",
+    "nettle",
+    "python3",
+    "cairo",
+    "pkgconf",
+    "lib3mf",
+    "catch2",
+    "opencsg"
   ]
 }
