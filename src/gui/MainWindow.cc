@@ -3993,13 +3993,7 @@ void MainWindow::setupMenusAndActions()
 void MainWindow::restoreWindowState()
 {
   const QSettingsCached settings;
-  // fetch window states to be restored after restoreState() call
-  const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
-  const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
-
-  // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
-  // Log to stdout
   clearCurrentOutput();
   UIUtils::dumpSaveState(windowState);
   setCurrentOutput();
