@@ -841,10 +841,17 @@ int openscad_main(int argc, char **argv)
 
 #ifdef ENABLE_PYTHON
   // The original name as called, not resolving links and so on. This will
-  // just forward everything to the python main.
-  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  // just forward everything to the python main. On Windows the Python shim is
+  // a ".exe" copy (e.g. pythonscad-python.exe), so drop that extension before
+  // matching; only ".exe" is stripped, preserving e.g. "python3.14" naming.
+  auto applicationPathName = fs::path(argv[0]).filename();
+  if (boost::iequals(applicationPathName.extension().string(), ".exe")) {
+    applicationPathName.replace_extension();
+  }
+  const auto applicationName = applicationPathName.generic_string();
   if (applicationName == "python" || applicationName == "python3" ||
-      applicationName.rfind("python3.", 0) == 0 || applicationName == "openscad-python") {
+      applicationName.rfind("python3.", 0) == 0 || applicationName == "openscad-python" ||
+      applicationName == PYTHON_EXECUTABLE_NAME) {
     return pythonRunArgs(argc, argv);
   }
 #endif
