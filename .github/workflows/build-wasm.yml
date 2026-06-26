@@ -27,11 +27,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-wasm:
+  build-test:
     name: Build and test WebAssembly
     runs-on: ubuntu-latest
+    # Keep least-privilege here: this job builds and executes untrusted
+    # contributor code on pull_request runs, so it must never hold a
+    # write-capable token. Release upload happens in the separate
+    # upload-release job below.
     permissions:
-      contents: write  # for release asset upload
+      contents: read
+    outputs:
+      wasm_zip: ${{ steps.package.outputs.wasm_zip }}
 
     steps:
       - name: Checkout code
@@ -116,6 +122,7 @@ jobs:
             "
 
       - name: Package web artifacts
+        id: package
         run: |
           VERSION=$(git describe --tags --always)
           mkdir -p dist-wasm/wasm-test dist-wasm/vendor
@@ -129,7 +136,7 @@ jobs:
           cp wasm-test/serve.py dist-wasm/wasm-test/
           cd dist-wasm
           zip -r "../pythonscad-${VERSION}-wasm.zip" .
-          echo "WASM_ZIP=pythonscad-${VERSION}-wasm.zip" >> "$GITHUB_ENV"
+          echo "wasm_zip=pythonscad-${VERSION}-wasm.zip" >> "$GITHUB_OUTPUT"
 
       - name: Upload WASM browser bundle
         uses: actions/upload-artifact@v7
@@ -138,14 +145,37 @@ jobs:
           path: dist-wasm/
           if-no-files-found: error
 
+      - name: Upload WASM release zip
+        uses: actions/upload-artifact@v7
+        with:
+          name: pythonscad-wasm-release-zip
+          path: ${{ steps.package.outputs.wasm_zip }}
+          if-no-files-found: error
+
+  upload-release:
+    name: Upload WASM bundle to release
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: >
+      github.event_name == 'release' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
+    # The write-capable token only lives in this job, which never runs on
+    # pull_request events and does not build or execute repository code.
+    permissions:
+      contents: write  # for release asset upload
+
+    steps:
+      - name: Download WASM release zip
+        uses: actions/download-artifact@v7
+        with:
+          name: pythonscad-wasm-release-zip
+
       - name: Upload WASM artifacts to release
-        if: >
-          github.event_name == 'release' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
           GH_REPO: ${{ github.repository }}
+          WASM_ZIP: ${{ needs.build-test.outputs.wasm_zip }}
         run: |
           gh release upload "$RELEASE_TAG" "$WASM_ZIP" \
             -R "$GH_REPO" --clobber
