@@ -88,7 +88,8 @@ static void NOINLINE print_trace(EvaluationException& e, const UserModule *mod,
 }
 
 std::shared_ptr<AbstractNode> UserModule::instantiate(
-  const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst,
+  const std::shared_ptr<const Context>& defining_context,
+  const std::shared_ptr<const ModuleInstantiation>& inst,
   const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {

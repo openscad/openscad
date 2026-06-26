@@ -19,8 +19,8 @@ class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RotateExtrudeNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : AbstractPolyNode(mi), discretizer(std::move(discretizer))
+  RotateExtrudeNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : AbstractPolyNode(std::move(mi)), discretizer(std::move(discretizer))
   {
     convexity = 0;
     origin_x = origin_y = scale = offset_x = offset_y = 0;

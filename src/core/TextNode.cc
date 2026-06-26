@@ -39,7 +39,8 @@
 #include "core/module.h"
 #include "utils/printutils.h"
 
-static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_text(const std::shared_ptr<const ModuleInstantiation>& inst,
+                                                  Arguments arguments)
 {
   auto *session = arguments.session();
   Parameters parameters =

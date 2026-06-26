@@ -43,8 +43,8 @@
 #include "utils/printutils.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments,
-                                                    const Children& children)
+static std::shared_ptr<AbstractNode> builtin_offset(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});

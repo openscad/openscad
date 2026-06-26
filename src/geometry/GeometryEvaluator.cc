@@ -1543,8 +1543,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   case OpenSCADOperator::OFFSET: {
     std::string instance_name;
     AssignmentList inst_asslist;
-    ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
-    auto node1 = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+    auto instance = std::make_shared<ModuleInstantiation>(instance_name, inst_asslist, Location::NONE);
+    auto node1 = std::make_shared<CsgOpNode>(std::move(instance), OpenSCADOperator::UNION);
 
     Geometry::Geometries actualchildren;
     for (const auto& item : children) {

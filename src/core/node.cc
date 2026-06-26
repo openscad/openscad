@@ -41,7 +41,8 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi) : modinst(mi), idx(idx_counter++)
+AbstractNode::AbstractNode(std::shared_ptr<const ModuleInstantiation> mi)
+  : modinst(std::move(mi)), idx(idx_counter++)
 {
 }
 
@@ -117,7 +118,7 @@ void AbstractNode::getCodeLocation(int currentLevel, int includeLevel, int *firs
 void AbstractNode::findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& node_mod,
                                         std::vector<std::shared_ptr<const AbstractNode>>& nodes) const
 {
-  if (node_mod->modinst == modinst) {
+  if (node_mod->modinst.get() == modinst.get()) {
     nodes.push_back(shared_from_this());
   }
   for (const auto& step : children) {
@@ -194,7 +195,7 @@ std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>&
             rootTag = child;
             // shortcut if we're not interested in further root modifiers
             if (!nextLocation) return;
-          } else if (nextLocation && rootTag->modinst != child->modinst) {
+          } else if (nextLocation && rootTag->modinst.get() != child->modinst.get()) {
             // Throw if we have more than one root modifier in the source
             *nextLocation = &child->modinst->location();
             return;

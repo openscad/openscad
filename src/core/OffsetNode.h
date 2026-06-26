@@ -13,8 +13,8 @@ class OffsetNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  OffsetNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : AbstractPolyNode(mi), discretizer(std::move(discretizer))
+  OffsetNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : AbstractPolyNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
 

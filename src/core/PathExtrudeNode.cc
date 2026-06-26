@@ -65,8 +65,8 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
     {"origin", "scale", "closed", "allow_intersect", "twist", "slices", "segments"}, {"convexity"});
 }
 
-static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiation *inst,
-                                                          Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_path_extrude(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<PathExtrudeNode>(inst);
 

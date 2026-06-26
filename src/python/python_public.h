@@ -43,9 +43,9 @@ int ipython(const std::vector<std::string>& args);
 // propagate (0 on clean exit, non-zero on init failure).
 int repl(void);
 
-std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_module,
-                                                const std::shared_ptr<const Context>& cxt,
-                                                std::string& error);
+std::shared_ptr<AbstractNode> python_modulefunc(
+  const std::shared_ptr<const ModuleInstantiation>& op_module, const std::shared_ptr<const Context>& cxt,
+  std::string& error);
 
 Value python_functionfunc(const FunctionCall *call, const std::shared_ptr<const Context>& cxt,
                           int& error);

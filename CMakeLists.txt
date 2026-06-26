@@ -679,7 +679,15 @@ if(ENABLE_PYTHON)
     src/python/py_analysis.cc
     src/python/py_ops.cc
     src/python/py_io.cc
-    src/python/pyconversion.cc)
+    src/python/pyconversion.cc
+    src/core/node_clone.cc
+    src/core/PullNode.cc
+    src/core/WrapNode.cc
+    src/core/SheetNode.cc
+    src/core/DebugNode.cc
+    src/core/RepairNode.cc
+    src/core/OversampleNode.cc
+)
   if(ENABLE_LIBFIVE)
     list(APPEND PYTHON_SOURCES
       src/python/FrepNode.cc)
@@ -1432,8 +1440,6 @@ set(CORE_SOURCES
   src/core/CgalAdvNode.cc
   src/core/Children.cc
   src/core/ColorNode.cc
-  src/core/PullNode.cc
-  src/core/WrapNode.cc
   src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
@@ -1450,12 +1456,8 @@ set(CORE_SOURCES
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/PathExtrudeNode.cc
-  src/core/OversampleNode.cc
-  src/core/DebugNode.cc
-  src/core/RepairNode.cc
   src/core/FilletNode.cc
   src/core/LocalScope.cc
-  src/core/node_clone.cc
   src/core/ModuleInstantiation.cc
   src/core/NodeDumper.cc
   src/core/NodeVisitor.cc
@@ -1473,7 +1475,6 @@ set(CORE_SOURCES
   src/core/StatCache.cc
   src/utils/png_util.cc
   src/core/SurfaceNode.cc
-  src/core/SheetNode.cc
   src/core/TextNode.cc
   src/core/TransformNode.cc
   src/core/Tree.cc

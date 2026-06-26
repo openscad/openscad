@@ -16,8 +16,8 @@ class LinearExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  LinearExtrudeNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : AbstractPolyNode(mi), discretizer(std::move(discretizer))
+  LinearExtrudeNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : AbstractPolyNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;

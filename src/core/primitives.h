@@ -41,7 +41,7 @@
 class CubeNode : public LeafNode
 {
 public:
-  CubeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  CubeNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
   std::string toString() const override
   {
     std::ostringstream stream;
@@ -76,8 +76,8 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : LeafNode(mi), discretizer(std::move(discretizer))
+  SphereNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : LeafNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
@@ -97,8 +97,8 @@ public:
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : LeafNode(mi), discretizer(std::move(discretizer))
+  CylinderNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : LeafNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
@@ -117,7 +117,7 @@ public:
 class PolyhedronNode : public LeafNode
 {
 public:
-  PolyhedronNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  PolyhedronNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
   std::string toString() const override;
   std::string name() const override { return "polyhedron"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
@@ -132,7 +132,7 @@ public:
 class EdgeNode : public LeafNode
 {
 public:
-  EdgeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  EdgeNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
   std::string toString() const override
   {
     std::ostringstream stream;
@@ -149,7 +149,7 @@ public:
 class SquareNode : public LeafNode
 {
 public:
-  SquareNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SquareNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
   std::string toString() const override
   {
     std::ostringstream stream;
@@ -167,8 +167,8 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : LeafNode(mi), discretizer(std::move(discretizer))
+  CircleNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : LeafNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
@@ -183,8 +183,8 @@ public:
 class PolygonNode : public LeafNode
 {
 public:
-  PolygonNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : LeafNode(mi), discretizer(std::move(discretizer))
+  PolygonNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : LeafNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
@@ -202,8 +202,8 @@ public:
 class PolylineNode : public LeafNode
 {
 public:
-  PolylineNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
-    : LeafNode(mi), discretizer(std::move(discretizer))
+  PolylineNode(std::shared_ptr<const ModuleInstantiation> mi, CurveDiscretizer discretizer)
+    : LeafNode(std::move(mi)), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
@@ -217,7 +217,7 @@ public:
 class SplineNode : public LeafNode
 {
 public:
-  SplineNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SplineNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
   std::string toString() const override;
   std::string name() const override { return "spline"; }
   std::vector<Vector2d> draw_arc(int fn, const Vector2d& tang1, double l1, const Vector2d& tang2,
@@ -232,7 +232,7 @@ class SheetNode : public LeafNode
 {
 public:
   VISITABLE();
-  SheetNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SheetNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
   std::string toString() const override;
   std::string name() const override { return "sheet"; }
 #ifdef ENABLE_PYTHON

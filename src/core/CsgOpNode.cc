@@ -39,22 +39,22 @@
 #include "core/enums.h"
 #include "core/module.h"
 
-static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments,
-                                                   const Children& children)
+static std::shared_ptr<AbstractNode> builtin_union(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::UNION));
 }
 
-static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiation *inst,
-                                                        Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_difference(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::DIFFERENCE));
 }
 
-static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst,
-                                                          Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_intersection(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));

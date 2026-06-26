@@ -38,8 +38,8 @@
 #include "core/module.h"
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiation *inst,
-                                                        Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_projection(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<ProjectionNode>(inst);
 

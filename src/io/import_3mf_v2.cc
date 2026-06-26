@@ -337,8 +337,8 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   Lib3MF::PWrapper wrapper;
   std::string instance_name;
   AssignmentList inst_asslist;
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
-  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+  auto instance = std::make_shared<ModuleInstantiation>(instance_name, inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(std::move(instance), OpenSCADOperator::UNION);
 
   try {
     wrapper = Lib3MF::CWrapper::loadLibrary();

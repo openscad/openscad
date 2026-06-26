@@ -62,8 +62,8 @@ namespace fs = std::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments,
-                                               ImportType type)
+static std::shared_ptr<AbstractNode> do_import(const std::shared_ptr<const ModuleInstantiation>& inst,
+                                               Arguments arguments, ImportType type)
 {
   Parameters parameters = Parameters::parse(
     std::move(arguments), inst->location(), {"file", "layer", "convexity", "origin", "scale"},
@@ -163,7 +163,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_import(
+  const std::shared_ptr<const ModuleInstantiation>& inst, Arguments arguments)
 {
   return do_import(inst, std::move(arguments), ImportType::UNKNOWN);
 }

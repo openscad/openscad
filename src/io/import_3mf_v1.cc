@@ -431,8 +431,8 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
     lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   std::string instance_name;
   AssignmentList inst_asslist;
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
-  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+  auto instance = std::make_shared<ModuleInstantiation>(instance_name, inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(std::move(instance), OpenSCADOperator::UNION);
   if (result != LIB3MF_OK) {
     LOG(message_group::Error, "Error reading 3MF library version");
     return PolySet::createEmpty();

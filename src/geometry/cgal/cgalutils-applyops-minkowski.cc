@@ -25,8 +25,8 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
   t_tot.start();
   AssignmentList inst_asslist;
   std::string instance_name;
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
-  CsgOpNode node(instance, OpenSCADOperator::UNION);
+  auto instance = std::make_shared<ModuleInstantiation>(instance_name, inst_asslist, Location::NONE);
+  CsgOpNode node(std::move(instance), OpenSCADOperator::UNION);
 
   auto it = children.begin();
   std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
