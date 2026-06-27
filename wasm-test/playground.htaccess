@@ -1,0 +1,15 @@
+# Shipped as /playground/.htaccess on the (Apache) pythonscad.org host.
+#
+# The in-browser PythonSCAD notebook will not load unless the WASM module and
+# its preloaded data package are served with the correct Content-Type:
+#   - WebAssembly.instantiateStreaming() rejects pythonscad.wasm unless it is
+#     served as application/wasm.
+#   - The ES module loader needs a JavaScript MIME type for pythonscad.js.
+#
+# Requires "AllowOverride FileInfo" (or All) on this directory in the server
+# config so AddType directives in .htaccess take effect.
+
+AddType application/wasm            .wasm
+AddType application/octet-stream    .data
+AddType text/javascript             .js
+AddType font/woff2                  .woff2

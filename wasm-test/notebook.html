@@ -7,18 +7,31 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Code font shared with the main pythonscad.org website (Material theme uses
+     Intel One Mono for code). Falls back gracefully if the woff2 is absent. */
+  @font-face {
+    font-family: 'Intel One Mono';
+    src: url('./fonts/IntelOneMono-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* Palette aligned with the pythonscad.org Material theme: slate dark
+     surfaces with the indigo accent used for links/buttons site-wide. */
   :root {
-    --bg: #14202e;
-    --surface: #1a2c40;
-    --border: #2d4156;
-    --border-active: #ffd43b;
-    --text: #e8eef4;
-    --text-muted: #8aa0b5;
-    --accent: #ffd43b;
-    --accent2: #4b8bbe;
+    --bg: #1f2129;
+    --surface: #2a2c38;
+    --bg-deep: #15161c;
+    --border: #3a3c4a;
+    --border-active: #526cfe;
+    --text: #e9eaee;
+    --text-muted: #9aa0b0;
+    --accent: #526cfe;
+    --accent2: #7c8cff;
     --danger: #ff6b6b;
-    --warning: #ffd43b;
-    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --warning: #ffb454;
+    --mono: 'Intel One Mono', 'JetBrains Mono', 'Fira Code', monospace;
     --sans: 'Inter', system-ui, sans-serif;
   }
 
@@ -42,7 +55,7 @@
   }
   .toolbar button:hover { border-color: var(--accent); color: var(--text); background: rgba(108,99,255,0.1); }
   .toolbar button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
-  .toolbar button.primary:hover { background: #5a52e0; }
+  .toolbar button.primary:hover { background: #3f51b5; }
   .toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
   .kernel-badge {
     font-size: 11px; border: 1px solid; padding: 3px 8px; border-radius: 12px; font-family: var(--mono);
@@ -115,7 +128,7 @@
   .cell-wrap-selected .editor-wrapper { box-shadow: 0 0 0 1px var(--accent2); }
   .cell-output {
     margin-top: 0; border-radius: 8px; border: 1px solid var(--border);
-    background: #0a0a18; overflow: hidden; display: none;
+    background: var(--bg-deep); overflow: hidden; display: none;
   }
   .cell-output.visible { display: block; }
   .cell-output-row { margin-top: -0.4rem; }
@@ -140,7 +153,7 @@
   .output-log.error { color: var(--danger); }
   .output-log.warn  { color: var(--warning); }
 
-  .stl-viewer-wrap { background: #06060f; }
+  .stl-viewer-wrap { background: var(--bg-deep); }
   .stl-viewer-wrap canvas { display: block; width: 100%; height: 360px; cursor: grab; }
   .stl-viewer-wrap canvas:active { cursor: grabbing; }
   .stl-bar {
@@ -189,13 +202,20 @@
 
   #dbg {
     position: fixed; bottom: 0; right: 0; width: 480px; height: 220px;
-    overflow-y: scroll; background: #0a0a18; border: 2px solid var(--accent);
-    font: 11px var(--mono); z-index: 9999; padding: 6px; box-sizing: border-box;
+    background: var(--bg-deep); border: 2px solid var(--accent);
+    font: 11px var(--mono); z-index: 9999; box-sizing: border-box;
     line-height: 1.5; resize: both;
+    /* Flex column so the head stays put and only the body scrolls. */
+    display: flex; flex-direction: column; overflow: hidden;
   }
   #dbg .dbg-head {
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 4px; color: var(--text-muted);
+    color: var(--text-muted); flex-shrink: 0;
+    padding: 6px 6px 4px; border-bottom: 1px solid var(--border);
+    background: var(--bg-deep);
+  }
+  #dbg #dbg-body {
+    flex: 1; min-height: 0; overflow-y: auto; padding: 4px 6px 6px;
   }
   #dbg .dbg-head button {
     background: transparent; border: 1px solid var(--border); color: var(--text-muted);
@@ -206,11 +226,83 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* --- delete-cell button (lives in the cell gutter) --- */
+  .cell-del-btn {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid transparent;
+    background: transparent; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--text-muted); transition: all 0.15s;
+    padding: 0; font-size: 12px; line-height: 1; opacity: 0.5;
+  }
+  .cell-del-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,107,107,0.12); opacity: 1; }
+
+  /* --- WASM load progress bar (sits just under the header) --- */
+  #load-progress {
+    position: fixed; left: 0; right: 0; top: 52px; height: 3px;
+    background: rgba(255,255,255,0.07); z-index: 200; overflow: hidden;
+    transition: opacity 0.4s;
+  }
+  #load-progress.done { opacity: 0; pointer-events: none; }
+  #load-progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s ease; }
+  #load-progress.indeterminate #load-progress-bar { width: 35%; animation: indet 1.1s ease-in-out infinite; }
+  @keyframes indet { 0% { margin-left: -35%; } 100% { margin-left: 100%; } }
+
+  /* --- mobile menu toggle (hamburger) + drawer backdrop --- */
+  .menu-toggle {
+    display: none; background: transparent; border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; cursor: pointer; font-size: 16px;
+    width: 34px; height: 32px; align-items: center; justify-content: center; padding: 0; flex-shrink: 0;
+  }
+  .menu-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .sidebar-backdrop { display: none; position: fixed; inset: 52px 0 0 0; background: rgba(0,0,0,0.5); z-index: 149; }
+  .sidebar-backdrop.show { display: block; }
+
+  #dbg.collapsed { height: auto !important; resize: none; }
+  #dbg.collapsed #dbg-body { display: none; }
+  #dbg .dbg-head span:last-child { display: flex; gap: 4px; }
+
+  /* --- responsive layout for small screens / phones --- */
+  @media (max-width: 760px) {
+    header { padding: 0 0.6rem; gap: 0.5rem; }
+    .logo { font-size: 13px; }
+    .menu-toggle { display: flex; }
+    .header-sep { display: none; }
+    .toolbar {
+      flex: 1; min-width: 0; gap: 5px; flex-wrap: nowrap;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px;
+    }
+    .toolbar button, .toolbar select { flex-shrink: 0; }
+    .toolbar button { padding: 6px 9px; }
+
+    .sidebar {
+      position: fixed; left: 0; top: 52px; bottom: 0; width: 78%; max-width: 280px;
+      z-index: 150; transform: translateX(-100%); transition: transform 0.25s ease;
+      box-shadow: 2px 0 18px rgba(0,0,0,0.45);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar .sidebar-section[style] { margin-top: 0 !important; }
+
+    .notebook { padding: 0.75rem 0.6rem; }
+    .cell { gap: 0.4rem; }
+    .cell-gutter, .add-cell-gutter { width: 30px; }
+    .cell-counter { font-size: 10px; }
+    .cell-run-btn, .cell-del-btn { width: 20px; height: 20px; }
+    .cell-editor { font-size: 12.5px; padding: 10px 11px; }
+
+    #dbg { width: 100vw; left: 0; right: auto; height: 150px; font-size: 10px; }
+    .status-bar { font-size: 10px; gap: 0.5rem; padding: 0 0.6rem; }
+    .status-bar span:last-child, .status-bar .sep:last-of-type { display: none; }
+  }
+
+  @media (max-width: 420px) {
+    .logo span:last-child { display: none; }
+  }
 </style>
 </head>
 <body>
 
 <header>
+  <button class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar" onclick="toggleSidebar()">☰</button>
   <div class="logo"><span>Python</span>SCAD <span style="color:var(--text-muted);font-weight:400">notebook</span></div>
   <div class="header-sep"></div>
   <div class="toolbar">
@@ -233,13 +325,18 @@
   </div>
 </header>
 
+<div id="load-progress" class="indeterminate"><div id="load-progress-bar"></div></div>
+
 <div class="main">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-section">Snippets</div>
     <div class="snippet-list" id="snippet-list"></div>
+    <div class="sidebar-section">Examples</div>
+    <div class="snippet-list" id="example-list"></div>
     <div class="sidebar-section" style="margin-top:auto">Cells</div>
     <div class="snippet-list" id="toc"></div>
   </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
   <div class="notebook" id="notebook"></div>
 </div>
 
@@ -251,16 +348,21 @@
   <span>PythonSCAD/WASM (EmsEvaluatePython)</span>
 </div>
 
-<script src="vendor/three.min.js"></script>
-
 <script type="module">
+import * as THREE from './vendor/three.module.min.js';
+
 const _dbgPanel = document.createElement('div');
 _dbgPanel.id = 'dbg';
-_dbgPanel.innerHTML = '<div class="dbg-head"><span>debug</span><button id="dbg-clear">clear</button></div><div id="dbg-body"></div>';
+_dbgPanel.innerHTML = '<div class="dbg-head"><span>debug</span><span><button id="dbg-collapse" title="Collapse/expand">_</button><button id="dbg-clear">clear</button></span></div><div id="dbg-body"></div>';
 document.body.appendChild(_dbgPanel);
 document.getElementById('dbg-clear').onclick = () => {
   document.getElementById('dbg-body').innerHTML = '';
 };
+document.getElementById('dbg-collapse').onclick = () => {
+  _dbgPanel.classList.toggle('collapsed');
+};
+// Start collapsed on small screens so the debug box doesn't cover the UI.
+if (window.matchMedia('(max-width: 760px)').matches) _dbgPanel.classList.add('collapsed');
 
 function errMsg(e) {
   if (e == null) return 'unknown error';
@@ -274,7 +376,7 @@ function dbg(msg, type) {
   const body = document.getElementById('dbg-body');
   body.insertAdjacentHTML('beforeend',
     '<div style="color:' + color + '">' + escHTML(msg) + '</div>');
-  _dbgPanel.scrollTop = _dbgPanel.scrollHeight;
+  body.scrollTop = body.scrollHeight;
 }
 
 let mod          = null;
@@ -287,6 +389,7 @@ const stderrBuf  = [];
 const REPL_PRELUDE = [
   "import json as _json",
   "import pythonscad as _pyscad",
+  "import openscad as _oscad",
   "from pythonscad import *",
   "_orig_show = _pyscad.show",
   "_last_shown_obj = None",
@@ -318,6 +421,11 @@ const REPL_PRELUDE = [
   "    r = _orig_show(obj, *a, **kw)",
   "    _emit_geometry(obj)",
   "    return r",
+  "# Re-export the instrumented show onto the modules so a user cell that runs",
+  "# 'from pythonscad import *' (or 'from openscad import *') re-binds THIS show",
+  "# instead of clobbering it with the original (which emits no notebook geometry).",
+  "_pyscad.show = show",
+  "_oscad.show = show",
   "_probe_base_class = type(cube(1))",
   "try:",
   "    class _NotebookGeom(_probe_base_class):",
@@ -340,8 +448,14 @@ const REPL_PRELUDE = [
   "                  'text','union','difference','intersection','linear_extrude',",
   "                  'rotate_extrude','translate','rotate','scale','mirror','color',",
   "                  'hull','minkowski','offset'):",
-  "        if _name in globals() and callable(globals()[_name]):",
-  "            globals()[_name] = _wrap_ctor(globals()[_name])",
+  "        _orig_ctor = getattr(_pyscad, _name, None)",
+  "        if callable(_orig_ctor):",
+  "            _wrapped_ctor = _wrap_ctor(_orig_ctor)",
+  "            globals()[_name] = _wrapped_ctor",
+  "            # Patch the modules too, so 'from pythonscad/openscad import *' in a",
+  "            # user cell re-imports the instrumented constructors.",
+  "            setattr(_pyscad, _name, _wrapped_ctor)",
+  "            setattr(_oscad, _name, _wrapped_ctor)",
   "    _test_obj = cube(1)",
   "    print('TEST_CLASS_AFTER_PATCH: ' + str(type(_test_obj)))",
   "    print('TEST_IS_NOTEBOOKGEOM: ' + str(type(_test_obj) is _NotebookGeom))",
@@ -359,15 +473,136 @@ async function reloadWasmAfterCrash() {
   await initWasm();
 }
 
-async function initWasm() {  setStatus('Loading pythonscad.js…');
+function fmtBytes(n) {
+  if (!n) return '0\u00A0B';
+  const u = ['B', 'KB', 'MB', 'GB'];
+  let i = 0, v = n;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return (i === 0 ? v : v.toFixed(1)) + '\u00A0' + u[i];
+}
+
+// Stream a URL into an ArrayBuffer while reporting download progress.
+// Falls back to a single buffered read if the body isn't streamable.
+async function fetchWithProgress(url, onProgress) {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(url + ' \u2192 HTTP ' + resp.status);
+  const total = parseInt(resp.headers.get('Content-Length') || '0', 10);
+  if (!resp.body || !resp.body.getReader) {
+    const buf = await resp.arrayBuffer();
+    onProgress(buf.byteLength, total || buf.byteLength);
+    return buf;
+  }
+  const reader = resp.body.getReader();
+  let loaded = 0;
+  // When the size is known, fill one preallocated buffer instead of holding
+  // every chunk and then copying into a second contiguous buffer. That avoids
+  // ~2x peak memory + an extra copy for the ~18 MB .wasm/.data (matters on
+  // mobile). A wrong Content-Length falls back to exact-size stitching below.
+  if (total > 0) {
+    const out = new Uint8Array(total);
+    const overflow = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (loaded < total) {
+        // Copy the part that still fits, carry only the remainder of a chunk
+        // that straddles the advertised length (so no zero-gap is left).
+        const fit = Math.min(value.byteLength, total - loaded);
+        out.set(value.subarray(0, fit), loaded);
+        if (fit < value.byteLength) overflow.push(value.subarray(fit));
+      } else {
+        overflow.push(value);
+      }
+      loaded += value.byteLength;
+      onProgress(loaded, total);
+    }
+    if (overflow.length === 0 && loaded === total) return out.buffer;
+    // Content-Length was wrong: stitch the exact bytes actually received.
+    const stitched = new Uint8Array(loaded);
+    const kept = Math.min(loaded, total);
+    stitched.set(out.subarray(0, kept), 0);
+    let off = kept;
+    for (const c of overflow) { stitched.set(c, off); off += c.byteLength; }
+    return stitched.buffer;
+  }
+  // Unknown length: collect chunks and concatenate once at the end.
+  const chunks = [];
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.byteLength;
+    onProgress(loaded, total);
+  }
+  const out = new Uint8Array(loaded);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.byteLength; }
+  return out.buffer;
+}
+
+function setLoadProgress(pct, label) {
+  const wrap = document.getElementById('load-progress');
+  const bar  = document.getElementById('load-progress-bar');
+  if (wrap) wrap.classList.remove('done');
+  if (pct == null) {
+    if (wrap) wrap.classList.add('indeterminate');
+    if (bar) bar.style.width = '';
+  } else {
+    if (wrap) wrap.classList.remove('indeterminate');
+    if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+  if (label) { setBadge('busy', label.length > 22 ? 'Loading…' : label); setStatus(label); }
+}
+
+function finishLoadProgress() {
+  const wrap = document.getElementById('load-progress');
+  if (!wrap) return;
+  wrap.classList.remove('indeterminate');
+  document.getElementById('load-progress-bar').style.width = '100%';
+  setTimeout(() => wrap.classList.add('done'), 350);
+}
+
+async function initWasm() {
   setBadge('busy', 'Loading…');
+  setStatus('Loading PythonSCAD/WASM…');
   try {
-    const { default: factory } = await import('./pythonscad.js');
-    mod = await factory({
+    const factoryOpts = {
       noInitialRun: true,
       print:    (t) => { stdoutBuf.push(t); dbg('stdout: ' + t); },
       printErr: (t) => { stderrBuf.push(t); dbg('stderr: ' + t, 'error'); },
-    });
+    };
+
+    // Pre-download the two large assets ourselves so we can show real
+    // progress. pythonscad.wasm (engine + CPython) and pythonscad.data
+    // (stdlib + libraries) are ~18 MB each and are the long pole on slow
+    // links. If anything here fails we fall back to Emscripten's own loader.
+    try {
+      const prog = { wasm: { loaded: 0, total: 0 }, data: { loaded: 0, total: 0 } };
+      const report = () => {
+        const loaded = prog.wasm.loaded + prog.data.loaded;
+        const total  = prog.wasm.total + prog.data.total;
+        if (total > 0) {
+          const pct = Math.min(100, Math.round(loaded / total * 100));
+          setLoadProgress(pct, 'Downloading ' + pct + '%  ' + fmtBytes(loaded) + ' / ' + fmtBytes(total));
+        } else {
+          setLoadProgress(null, 'Downloading ' + fmtBytes(loaded) + '…');
+        }
+      };
+      setLoadProgress(null, 'Downloading…');
+      const [wasmBuf, dataBuf] = await Promise.all([
+        fetchWithProgress('./pythonscad.wasm', (l, t) => { prog.wasm = { loaded: l, total: t }; report(); }),
+        fetchWithProgress('./pythonscad.data', (l, t) => { prog.data = { loaded: l, total: t }; report(); }),
+      ]);
+      factoryOpts.wasmBinary = wasmBuf;
+      factoryOpts.getPreloadedPackage = () => dataBuf;
+      setLoadProgress(100, 'Initialising kernel…');
+    } catch (preErr) {
+      dbg('asset prefetch failed, using default loader: ' + errMsg(preErr), 'error');
+      setLoadProgress(null, 'Initialising kernel…');
+    }
+
+    const { default: factory } = await import('./pythonscad.js');
+    mod = await factory(factoryOpts);
 
     evalPython = {
       init:     mod.cwrap('EmsInitPython',     null,     []),
@@ -386,11 +621,15 @@ async function initWasm() {  setStatus('Loading pythonscad.js…');
     wasmReady = true;
     setBadge('ready', 'PySCAD/WASM');
     setStatus('Kernel ready');
+    finishLoadProgress();
     enableUI();
   } catch(e) {
     const msg = errMsg(e);
     setBadge('error', 'Load failed');
     setStatus('Load error: ' + msg);
+    setLoadProgress(0);
+    const wrap = document.getElementById('load-progress');
+    if (wrap) wrap.classList.add('done');
     dbg('initWasm ERROR: ' + msg, 'error');
     console.error(e);
   }
@@ -584,10 +823,170 @@ function buildSnippetList() {
   const el = document.getElementById('snippet-list');
   el.innerHTML = Object.entries(SNIPPETS).map(([name, code]) =>
     '<div class="snippet-item" onclick="insertSnippet(' + JSON.stringify(name).replace(/"/g,'&quot;') + ')">' +
-      '<div class="snip-title">' + name + '</div>' +
+      '<div class="snip-title">' + escHTML(name) + '</div>' +
       '<div class="snip-sub">' + escHTML(code.split('\n')[1] || code.split('\n')[0] || '') + '</div>' +
     '</div>').join('');
 }
+
+// Full example scripts shipped with PythonSCAD (examples/Python/*.py).
+// sdf.py is intentionally omitted: it needs libfive, which is disabled in the
+// WASM build. Each example is loaded into a new code cell when clicked.
+const EXAMPLES = {
+  'Simple cube': `# getting pythonscad functions into namespace
+from pythonscad import *
+
+# Create the cube object, and store it in variable "c"
+c = cube(5)
+# Or, more explicitly
+c = cube([5, 5, 5])
+
+# Display the cube
+show(c)`,
+
+  'CSG operators': `from pythonscad import *
+
+# Create a cube and a cylinder
+cu = cube([5, 5, 5])
+cy = cylinder(r=5, h=2)
+
+# | for union
+# - for difference
+# & for intersection
+fusion = cu | cy
+
+fusion.show()`,
+
+  'Transformations': `from pythonscad import *
+
+c = cube([1, 2, 2]) + [10, 0, 1]  # 10 to the right, 1 up
+
+s = sphere(r=3) * [1, 1, 0.1]  # squeeze it to 10% in z
+
+cyl = cylinder(r=1, h=5)
+
+show(
+    [  # several objects at once
+        s.rotx(45),  # rot on the x axis
+        c + [4, 0, 1],  # 4 to the right, 1 up
+        cyl.translate([0, 10, 0]).color("green"),
+    ]
+)`,
+
+  'Offset (fillet)': `from pythonscad import *
+
+c = cube(10) + [[0, 0, 0], [5, 5, 5]]  # multiple translation
+
+# Fillets can easily be created by downsizing concave edges
+c = c.offset(-2, fa=5)
+c.show()`,
+
+  'Path extrude': `from pythonscad import *
+
+p = path_extrude(square(1), [[0, 0, 0], [0, 0, 10, 3], [10, 0, 10, 3], [10, 10, 10]])
+# arguments are cross-section and points in space
+p.show()`,
+
+  'Mesh manipulation': `from pythonscad import *
+
+u = sphere(r=10, fn=30)
+
+pts, tris = u.mesh()
+# Now you could use the pts for further processing or even manipulate them and do this ...
+
+for pt in pts:
+    if pt[0] > 0:
+        pt[0] = pt[0] * pt[0] / 10  # alter in place
+
+v = polyhedron(pts, tris)
+v.show()`,
+
+  'Object handles': `from pythonscad import *
+
+c = cube([10, 10, 10])
+
+# translate the origin with an offset, so top_center sits on top of the cube
+c.top_center = translate(c.origin, [5, 5, 10])
+
+# This one even points to the right side
+c.right_center = translate(roty(c.origin, 90), [10, 5, 5])
+
+# The handles can be used with align
+cyl = cylinder(d=3, h=5, fn=10)
+
+# This places cyl onto the top and right side of the cube
+#    obj       source handle  dest handle
+c |= cyl.align(c.top_center, cyl.origin)
+c |= cyl.align(c.right_center, cyl.origin)
+
+c.show()`,
+
+  'PythonSCAD logo': `##########################
+# PythonSCAD Logo        #
+##########################
+# inspired by python logo
+##########################
+
+from pythonscad import *
+
+fn = 80
+body = cube(12, center=True) % sphere(r=4)
+mask = hull(cylinder(r=3, h=40).rotx(90) ^ [[2.5, 30], 20, [0, -20]])
+
+part1 = body - ((cube([10, 20, 2]) + [-10, -10, -3]))
+part1 -= cylinder(r=2, h=20).rotx(90) + [-4, 10, 5]
+
+part2 = body - mask
+final = part1.up(10.5) | (part2 + [-10, 0, -2.5])
+
+final.color("#346e9d").show()
+final.rotx(180).mirror([1, 0, 0]).color("#ffe468").show()`,
+};
+
+// First meaningful (non-comment, non-import) line, used as the list subtitle.
+function snippetPreview(code) {
+  for (const ln of String(code || '').split('\n')) {
+    const t = ln.trim();
+    if (!t || t.startsWith('#') || t.startsWith('from ') || t.startsWith('import ')) continue;
+    return t;
+  }
+  return (String(code || '').split('\n').find(l => l.trim()) || '').trim();
+}
+
+function buildExampleList() {
+  const el = document.getElementById('example-list');
+  if (!el) return;
+  el.innerHTML = Object.entries(EXAMPLES).map(([name, code]) =>
+    '<div class="snippet-item" onclick="loadExample(' + JSON.stringify(name).replace(/"/g,'&quot;') + ')">' +
+      '<div class="snip-title">' + escHTML(name) + '</div>' +
+      '<div class="snip-sub">' + escHTML(snippetPreview(code)) + '</div>' +
+    '</div>').join('');
+}
+
+window.loadExample = function(name) {
+  const code = EXAMPLES[name];
+  if (code == null) return;
+  addCell('code', code);
+  closeDrawerOnMobile();
+  const last = cells[cells.length - 1];
+  if (last) {
+    const w = document.getElementById('cell-wrap-' + last.id);
+    if (w) w.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+};
+
+// Mobile off-canvas sidebar (drawer) toggle.
+window.toggleSidebar = function(force) {
+  const sb = document.getElementById('sidebar');
+  const bd = document.getElementById('sidebar-backdrop');
+  if (!sb) return;
+  const open = (typeof force === 'boolean') ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  if (bd) bd.classList.toggle('show', open);
+};
+function closeDrawerOnMobile() {
+  if (window.matchMedia('(max-width: 760px)').matches) window.toggleSidebar(false);
+}
+window.closeDrawerOnMobile = closeDrawerOnMobile;
 
 function createCell(type, code) {
   type = type || 'code'; code = code || '';
@@ -629,6 +1028,7 @@ function cellInnerHTML(c) {
     '<div class="cell-gutter" onclick="selectCell(' + c.id + ')">' +
       '<span class="cell-counter">M</span>' +
       '<button class="cell-run-btn" onclick="event.stopPropagation();runCell(' + c.id + ')" title="Render (Shift+Enter)">▶</button>' +
+      '<button class="cell-del-btn" onclick="event.stopPropagation();deleteCell(' + c.id + ')" title="Delete cell (or press x)">✕</button>' +
     '</div>' +
     '<div class="cell-body">' +
       '<div class="editor-wrapper">' +
@@ -647,6 +1047,7 @@ function cellInnerHTML(c) {
     '<div class="cell-gutter" onclick="selectCell(' + c.id + ')">' +
       '<span class="cell-counter" id="ctr-' + c.id + '">[' + c.executionCount + ']</span>' +
       '<button class="cell-run-btn" onclick="event.stopPropagation();runCell(' + c.id + ')" title="Run (Shift+Enter)">▶</button>' +
+      '<button class="cell-del-btn" onclick="event.stopPropagation();deleteCell(' + c.id + ')" title="Delete cell (or press x)">✕</button>' +
     '</div>' +
     '<div class="cell-body">' +
       '<div class="editor-wrapper">' +
@@ -801,7 +1202,7 @@ function clearAllOutputs() {
 
 function initViewerGeometry(canvas, geom) {
   const W = canvas.parentElement.clientWidth || 800;
-  const H = 360;
+  const H = window.matchMedia('(max-width: 760px)').matches ? 280 : 360;
   canvas.width  = W;
   canvas.height = H;
 
@@ -810,13 +1211,13 @@ function initViewerGeometry(canvas, geom) {
   camera.up.set(0, 0, 1);  // Z points up (PythonSCAD convention, not Three.js default Y-up)
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(W, H);
-  renderer.setClearColor(0x06060f, 1);
+  renderer.setClearColor(0x15161c, 1);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.45));
-  const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const dl = new THREE.DirectionalLight(0xffffff, 2.5);
   dl.position.set(1, 2, 1.5);
   scene.add(dl);
-  const dl2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+  const dl2 = new THREE.DirectionalLight(0x8888ff, 0.95);
   dl2.position.set(-1, -1, -1);
   scene.add(dl2);
 
@@ -992,6 +1393,52 @@ function initViewerGeometry(canvas, geom) {
     e.preventDefault();
   }, { passive: false });
 
+  // Touch controls for phones/tablets: one finger orbits, two fingers pinch-zoom.
+  let pinchDist = 0;
+  const touchDist = (e) => {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    return Math.hypot(dx, dy);
+  };
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      drag = true; autoRotate = false;
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      drag = false; autoRotate = false; pinchDist = touchDist(e);
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && drag) {
+      theta -= (e.touches[0].clientX - lastX) * 0.008;
+      phi   -= (e.touches[0].clientY - lastY) * 0.008;
+      phi = Math.max(0.05, Math.min(Math.PI - 0.05, phi));
+      updateCameraPosition();
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+      e.preventDefault();
+    } else if (e.touches.length === 2) {
+      const d = touchDist(e);
+      if (pinchDist > 0 && d > 0) {
+        radius *= pinchDist / d;
+        radius = Math.max(maxDim * 0.3, Math.min(maxDim * 20, radius));
+        updateCameraPosition();
+      }
+      pinchDist = d;
+      e.preventDefault();
+    }
+  }, { passive: false });
+  canvas.addEventListener('touchend', e => { if (e.touches.length === 0) drag = false; });
+
+  // Keep the canvas fitted to its container on resize / orientation change.
+  function resizeRenderer() {
+    const w = canvas.parentElement.clientWidth || W;
+    const h = window.matchMedia('(max-width: 760px)').matches ? 280 : 360;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeRenderer);
+
   let animId;
   let autoRotate = true;
   const animate = () => {
@@ -1007,7 +1454,11 @@ function initViewerGeometry(canvas, geom) {
   canvas.addEventListener('mousedown', () => { autoRotate = false; }, { once: true });
 
   const obs = new MutationObserver(() => {
-    if (!document.contains(canvas)) { cancelAnimationFrame(animId); obs.disconnect(); }
+    if (!document.contains(canvas)) {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resizeRenderer);
+      obs.disconnect();
+    }
   });
   obs.observe(document.body, { childList: true, subtree: true });
 }
@@ -1137,6 +1588,7 @@ window.insertSnippet = function(name) {
   } else {
     addCell('code', code);
   }
+  closeDrawerOnMobile();
 };
 
 window.loadNotebookFromFile = function(input) {
@@ -1285,7 +1737,7 @@ function updateMeta() {
   document.getElementById('cell-count').textContent = cells.length + ' cell' + (cells.length===1?'':'s');
   const toc = document.getElementById('toc');
   toc.innerHTML = cells.map((c,i) =>
-    '<div class="snippet-item" onclick="document.getElementById(\'cell-wrap-' + c.id + '\').scrollIntoView({behavior:\'smooth\'})">' +
+    '<div class="snippet-item" onclick="closeDrawerOnMobile();document.getElementById(\'cell-wrap-' + c.id + '\').scrollIntoView({behavior:\'smooth\'})">' +
       '<div class="snip-title">' + (c.type==='markdown'?'📝':'⬡') + ' Cell ' + (i+1) + '</div>' +
       '<div class="snip-sub">' + (escHTML((c.code||'').slice(0,30))||'(empty)') + '</div>' +
     '</div>').join('');
@@ -1300,6 +1752,7 @@ function mdToHtml(md) {
 }
 
 buildSnippetList();
+buildExampleList();
 addCell('code', 'show(difference(\n    cube([20, 20, 20], center=True),\n    cylinder(h=25, r=5, center=True)\n))');
 initWasm();
 </script>

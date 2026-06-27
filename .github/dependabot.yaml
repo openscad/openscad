@@ -106,7 +106,8 @@ updates:
       prefix: "build(deps)"
       include: "scope"
 
-  # wasm-test notebook: vendored three.js (vendor/three.min.js via npm postinstall).
+  # wasm-test notebook: vendored three.js ES modules (vendor/three.module.min.js
+  # + vendor/three.core.min.js via npm postinstall).
   - package-ecosystem: "npm"
     directory: "/wasm-test"
     schedule:

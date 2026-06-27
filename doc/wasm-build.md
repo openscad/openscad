@@ -130,14 +130,16 @@ A successful run writes a binary STL of roughly 15 KB (80 triangular facets).
 ```bash
 cp wasm-test/test.html wasm-test/notebook.html build-wasm-web/
 mkdir -p build-wasm-web/vendor
-cp wasm-test/vendor/three.min.js build-wasm-web/vendor/
+cp wasm-test/vendor/three.module.min.js wasm-test/vendor/three.core.min.js build-wasm-web/vendor/
 python3 wasm-test/serve.py 8080 build-wasm-web/
 # Open http://localhost:8080/test.html or /notebook.html
 ```
 
-The notebook page uses a vendored `three.min.js` (see `wasm-test/package.json`;
-run `npm ci` in `wasm-test/` after Dependabot bumps three.js). Fonts fall back to
-system UI stacks — no external CDN at runtime.
+The notebook page imports a vendored ES-module build of three.js
+(`three.module.min.js`, which pulls in `three.core.min.js` from the same
+`vendor/` dir — see `wasm-test/package.json`; run `npm ci` in `wasm-test/`
+after Dependabot bumps three.js). Fonts fall back to system UI stacks — no
+external CDN at runtime.
 
 The `wasm-test/serve.py` server sets `.wasm → application/wasm` and
 `.data → application/octet-stream` MIME types, which browsers require.

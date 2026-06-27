@@ -7,6 +7,7 @@ Script-based 3D modeling app which lets you use Python as its native language.
 [![Google Groups](https://img.shields.io/badge/Google%20Groups-4285F4?logo=Google&logoColor=white)](https://groups.google.com/g/pythonscad)
 [![Reddit](https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white)](https://www.reddit.com/r/OpenPythonSCAD/)
 [![Website](https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white)](https://pythonscad.org)
+[![Try in browser](https://img.shields.io/badge/Try%20in%20browser-Playground-526cfe?logo=webassembly&logoColor=white)](https://www.pythonscad.org/playground/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pythonscad/pythonscad)
 
 PythonSCAD is a script-based 3D modeling application with a full GUI. Write
@@ -16,6 +17,9 @@ to STL and other formats for 3D printing and manufacturing.
 It is built on [OpenSCAD](https://openscad.org)'s geometry engine and adds native
 Python support plus PythonSCAD-specific features. New to programming? Immediate
 visual feedback and printable output make PythonSCAD a rewarding way to learn.
+
+**Try it now, no install required:** run PythonSCAD directly in your browser at
+the [Playground](https://www.pythonscad.org/playground/) (powered by WebAssembly).
 
 - [PythonSCAD](#pythonscad)
   - [When to not use PythonSCAD](#when-to-not-use-pythonscad)
@@ -39,7 +43,6 @@ visual feedback and printable output make PythonSCAD a rewarding way to learn.
   - [Building for Windows](#building-for-windows)
   - [Windows SmartScreen certificate](#windows-smartscreen-certificate)
   - [Building for WebAssembly](#building-for-webassembly)
-    - [Browser](#browser)
 
 ## When to not use PythonSCAD
 
@@ -401,16 +404,21 @@ The code signing certificate for Windows is kindly provided by nomike aka Michae
 
 ## Building for WebAssembly
 
-We support building PythonSCAD headless for WebAssembly w/ Emscripten, using a
-premade Docker image built in
-[openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which
-also has usage examples).
+PythonSCAD builds headless for WebAssembly with Emscripten (CPython is
+cross-compiled into the bundle), so the full kernel runs in the browser. You can
+try the result without building anything at the
+[Playground](https://www.pythonscad.org/playground/).
 
-### Browser
-
-The following command creates `build-web/openscad.wasm` & `build-web/openscad.js`:
+The build runs inside Docker (no host Emscripten toolchain needed). The web
+variant produces `build-wasm-web/pythonscad.{js,wasm,data}`:
 
 ```bash
-./scripts/wasm-base-docker-run.sh emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
-./scripts/wasm-base-docker-run.sh cmake --build build-web -j2
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-wasm-web \
+  -DWASM_BUILD_TYPE=web -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-wasm-web -j"$(nproc)"
 ```
+
+See [`doc/wasm-build.md`](doc/wasm-build.md) for the full guide (node vs web
+variants, local testing with `wasm-test/serve.py`, and the JavaScript API), and
+the website's [Building for WebAssembly](https://www.pythonscad.org/building-wasm/)
+page for a user-facing overview.

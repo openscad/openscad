@@ -153,7 +153,11 @@ jobs:
           # would silently accept any key that happens to answer
           # on the deploy host's address — i.e. defeat the entire
           # point of pinning.
-          rsync -avz --delete \
+          # Protect the WASM Playground subtree: it is deployed separately by
+          # the "Build WebAssembly" workflow (deploy-playground job) and is not
+          # part of the mkdocs `web/site/` output. Without this exclude,
+          # `--delete` would wipe /playground/ on every website deploy.
+          rsync -avz --delete --exclude='/playground/' \
             -e "ssh -i ~/.ssh/deploy_key -p $PORT" \
             web/site/ \
             "${VARS_WEB_SFTP_USER}@${VARS_WEB_SFTP_HOST}:${VARS_WEB_SFTP_PATH}/"

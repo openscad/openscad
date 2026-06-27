@@ -46,10 +46,14 @@ nav:
   - Home: index.md
   - Get started: get_started.md
   - Downloads: downloads.md
+  - Playground: https://www.pythonscad.org/playground/
   - Installation: installation.md
   - Development:
       - Upstream Sync: development/upstream-sync.md
   - Building: building.md
+  - WebAssembly:
+      - Building for WebAssembly: building-wasm.md
+      - Browser API: reference/wasm-api.md
   - Tutorial:
       - Getting Started: tutorial/getting_started.md
       - Coming from OpenSCAD: tutorial/from_openscad.md

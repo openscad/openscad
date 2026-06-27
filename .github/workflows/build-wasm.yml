@@ -132,7 +132,9 @@ jobs:
              wasm-test/test.html \
              wasm-test/notebook.html \
              dist-wasm/
-          cp wasm-test/vendor/three.min.js dist-wasm/vendor/
+          cp wasm-test/vendor/three.module.min.js \
+             wasm-test/vendor/three.core.min.js \
+             dist-wasm/vendor/
           cp wasm-test/serve.py dist-wasm/wasm-test/
           cd dist-wasm
           zip -r "../pythonscad-${VERSION}-wasm.zip" .
@@ -179,3 +181,107 @@ jobs:
         run: |
           gh release upload "$RELEASE_TAG" "$WASM_ZIP" \
             -R "$GH_REPO" --clobber
+
+  deploy-playground:
+    name: Deploy WASM playground to website
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: >
+      github.event_name == 'release' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release != '')
+    # No write-capable GitHub token here. Deployment is over SFTP using the same
+    # pinned-host-key credentials as the website deploy. Never runs on
+    # pull_request, so fork PRs cannot reach the secrets.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate deploy configuration
+        env:
+          WEB_SFTP_SSH_KEY: ${{ secrets.WEB_SFTP_SSH_KEY }}
+          WEB_SFTP_HOST_KEY: ${{ vars.WEB_SFTP_HOST_KEY }}
+          WEB_SFTP_HOST: ${{ vars.WEB_SFTP_HOST }}
+          WEB_SFTP_USER: ${{ vars.WEB_SFTP_USER }}
+          WEB_SFTP_PATH: ${{ vars.WEB_SFTP_PATH }}
+        run: |
+          missing=""
+          for var in WEB_SFTP_SSH_KEY WEB_SFTP_HOST_KEY \
+                     WEB_SFTP_HOST WEB_SFTP_USER WEB_SFTP_PATH; do
+            if [ -z "${!var}" ]; then
+              missing="${missing} ${var}"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "Error: required deploy configuration is missing:${missing}" >&2
+            echo "Populate them under Settings -> Secrets and variables -> Actions." >&2
+            exit 1
+          fi
+
+      - name: Download WASM web bundle
+        uses: actions/download-artifact@v7
+        with:
+          name: pythonscad-wasm-web
+          path: wasm-bundle
+
+      - name: Assemble playground directory
+        run: |
+          set -euo pipefail
+          mkdir -p playground/vendor playground/fonts
+          # WASM binaries + runtime from the freshly built web bundle.
+          cp wasm-bundle/pythonscad.js \
+             wasm-bundle/pythonscad.wasm \
+             wasm-bundle/pythonscad.data \
+             playground/
+          cp wasm-bundle/vendor/three.module.min.js \
+             wasm-bundle/vendor/three.core.min.js \
+             playground/vendor/
+          # The notebook is the playground's landing page.
+          cp wasm-bundle/notebook.html playground/index.html
+          # Site code font (matches the rest of pythonscad.org) + Apache MIME
+          # config so .wasm/.data are served with the right Content-Type.
+          cp web/docs/fonts/IntelOneMono/IntelOneMono-Regular.woff2 playground/fonts/
+          cp wasm-test/playground.htaccess playground/.htaccess
+          ls -la playground playground/vendor playground/fonts
+
+      - name: Setup SSH key and known_hosts for SFTP
+        env:
+          WEB_SFTP_SSH_KEY: ${{ secrets.WEB_SFTP_SSH_KEY }}
+          WEB_SFTP_HOST_KEY: ${{ vars.WEB_SFTP_HOST_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "$WEB_SFTP_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the deploy server's host key from the trusted repository
+          # variable instead of TOFU-ing whatever answers at deploy time.
+          if [ -z "$WEB_SFTP_HOST_KEY" ]; then
+            echo "Error: WEB_SFTP_HOST_KEY repository variable is unset." >&2
+            exit 1
+          fi
+          printf '%s\n' "$WEB_SFTP_HOST_KEY" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy playground to SFTP server
+        env:
+          WEB_SFTP_PORT: ${{ vars.WEB_SFTP_PORT }}
+          VARS_WEB_SFTP_USER: ${{ vars.WEB_SFTP_USER }}
+          VARS_WEB_SFTP_HOST: ${{ vars.WEB_SFTP_HOST }}
+          VARS_WEB_SFTP_PATH: ${{ vars.WEB_SFTP_PATH }}
+        run: |
+          PORT="${WEB_SFTP_PORT:-22}"
+          # --delete is scoped to the /playground/ subtree only (we sync into
+          # .../playground/), so it cleans stale playground files without
+          # touching the rest of the site. The website deploy in turn excludes
+          # /playground/ from its own --delete.
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $PORT" \
+            playground/ \
+            "${VARS_WEB_SFTP_USER}@${VARS_WEB_SFTP_HOST}:${VARS_WEB_SFTP_PATH}/playground/"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

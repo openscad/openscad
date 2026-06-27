@@ -381,7 +381,7 @@ node build-wasm-node/pythonscad.js -o out.stl --trust-python script.py
 docker run --rm -v "$PWD:/src" -w /src pythonscad-wasm-python-base:local \
   bash -c 'mkdir -p build-wasm-web/vendor \
     && cp wasm-test/test.html wasm-test/notebook.html build-wasm-web/ \
-    && cp wasm-test/vendor/three.min.js build-wasm-web/vendor/'
+    && cp wasm-test/vendor/three.module.min.js wasm-test/vendor/three.core.min.js build-wasm-web/vendor/'
 python3 wasm-test/serve.py 8080 build-wasm-web/
 # http://localhost:8080/test.html  or  /notebook.html
 ```

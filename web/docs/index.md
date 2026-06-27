@@ -32,9 +32,13 @@ to STL, 3MF, and other formats for 3D printing and manufacturing.
   <div class="hero-download-enhanced" hidden></div>
 </div>
 
+[Try in browser](https://www.pythonscad.org/playground/){ .md-button .md-button--primary }
 [Get started](get_started.md){ .md-button }
-[Tutorial](tutorial/getting_started.md){ .md-button .md-button--primary }
+[Tutorial](tutorial/getting_started.md){ .md-button }
 [All downloads](downloads.md)
+
+No install required — the [in-browser Playground](https://www.pythonscad.org/playground/)
+runs the full PythonSCAD kernel via WebAssembly.
 
 ![Step-by-step: building a camera housing in the PythonSCAD GUI](pictures/box_anim.gif)
 
