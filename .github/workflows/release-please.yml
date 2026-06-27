@@ -23,6 +23,39 @@ jobs:
           # Use bot account PAT to allow release events to trigger other workflows
           token: ${{ secrets.RELEASE_TOKEN }}
 
+      # When a release PR is open, regenerate the AppStream release list from
+      # the CHANGELOG.md that release-please just wrote and commit it onto the
+      # PR branch. That way the new <release> entry is already part of the
+      # source tree the moment the PR is merged (and tagged/released).
+      #
+      # release-please force-pushes its branch on every update, so this step
+      # re-applies deterministically after each run; the generator is
+      # idempotent and derives everything from CHANGELOG.md.
+      - name: Checkout release PR branch
+        if: ${{ steps.release.outputs.pr }}
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+          persist-credentials: false
+
+      - name: Sync AppStream release list onto release PR
+        if: ${{ steps.release.outputs.pr }}
+        env:
+          RELEASE_PR_BRANCH: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 scripts/update-appdata-releases.py
+          if git diff --quiet -- pythonscad.appdata.xml.in; then
+            echo "AppStream release list already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pythonscad.appdata.xml.in
+          git commit -m "chore: sync appdata release list"
+          git push "https://x-access-token:${RELEASE_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${RELEASE_PR_BRANCH}"
+
       - name: Checkout code
         if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v7

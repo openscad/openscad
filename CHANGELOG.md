@@ -12,11 +12,11 @@
 * **chore:** add pythonscad logo source ([#710](https://github.com/pythonscad/pythonscad/issues/710)) ([bd017d2](https://github.com/pythonscad/pythonscad/commit/bd017d25e3d965856592f042c969c3df6a966ec3))
 * **ci:** add MSIX packaging as reusable composite action ([#638](https://github.com/pythonscad/pythonscad/issues/638)) ([422b28a](https://github.com/pythonscad/pythonscad/commit/422b28a15f9070e547df1696a3b434584f096521))
 * **distributions:** add support for Fedora 44 and Ubuntu 26.04 LTS ([#624](https://github.com/pythonscad/pythonscad/issues/624)) ([5a78c77](https://github.com/pythonscad/pythonscad/commit/5a78c77f73d0f662884c312ddd41f2d670b23a4c))
-* **gui:** display abosolute filepath in the title bar ([#576](https://github.com/pythonscad/pythonscad/issues/576)) ([41c6552](https://github.com/pythonscad/pythonscad/commit/41c6552d2a658a7be824864623a7f4e3a23d1a6a))
+* **gui:** display absolute filepath in the title bar ([#576](https://github.com/pythonscad/pythonscad/issues/576)) ([41c6552](https://github.com/pythonscad/pythonscad/commit/41c6552d2a658a7be824864623a7f4e3a23d1a6a))
 * **gui:** replace Python trust dialog with inline trust bar ([#667](https://github.com/pythonscad/pythonscad/issues/667)) ([1382dd7](https://github.com/pythonscad/pythonscad/commit/1382dd7515c91cc18593e0b5f1ca5281a90ba1e0))
 * **install:** per-user Windows installer with on-demand UAC elevation ([#696](https://github.com/pythonscad/pythonscad/issues/696)) ([20a4f18](https://github.com/pythonscad/pythonscad/commit/20a4f186df15c53e939385522c05bb2faf453291))
 * native vector operations for addition, subtraction, scaling, dot and cross product ([#588](https://github.com/pythonscad/pythonscad/issues/588)) ([267c753](https://github.com/pythonscad/pythonscad/commit/267c7535f6daccbf76a3499c8442738983d7ae71))
-* **polyline:** polylines work work difference and intersection now ([#572](https://github.com/pythonscad/pythonscad/issues/572)) ([6f0ee76](https://github.com/pythonscad/pythonscad/commit/6f0ee76f29ca90151cfecea36b1dcd9306bbc51a))
+* **polyline:** polylines work with difference and intersection now ([#572](https://github.com/pythonscad/pythonscad/issues/572)) ([6f0ee76](https://github.com/pythonscad/pythonscad/commit/6f0ee76f29ca90151cfecea36b1dcd9306bbc51a))
 * **python:** add MultiToolExporter helper to pythonscad module ([#585](https://github.com/pythonscad/pythonscad/issues/585)) ([e15e0cf](https://github.com/pythonscad/pythonscad/commit/e15e0cfd5542572c9fef52720e5b04d602d718db))
 * **python:** expose root ColorNode RGBA as solid property `c` ([#562](https://github.com/pythonscad/pythonscad/issues/562)) ([0da296a](https://github.com/pythonscad/pythonscad/commit/0da296abcae4d4762226de22c95e66d7e15ee2c8))
 * **python:** introduce _openscad / openscad / pythonscad three-module layout ([#579](https://github.com/pythonscad/pythonscad/issues/579)) ([542c89e](https://github.com/pythonscad/pythonscad/commit/542c89eaac1e9bdcac3115e3a9f1370076be1234))
@@ -42,7 +42,7 @@
 * **ci:** use CERTUM_CERTIFICATE_CN secret for MSIX publisher DN ([#704](https://github.com/pythonscad/pythonscad/issues/704)) ([f4c3d15](https://github.com/pythonscad/pythonscad/commit/f4c3d15ac96c323dca56ce93790300582f36ad75))
 * **ci:** use PAT when promoting release so PyPI workflow gets triggered ([#582](https://github.com/pythonscad/pythonscad/issues/582)) ([05c1508](https://github.com/pythonscad/pythonscad/commit/05c1508a67bd29d4746a57a0a6e44e5d838bf291))
 * **csg:** handle missing CONCAT case in CSGTreeEvaluator switch ([#653](https://github.com/pythonscad/pythonscad/issues/653)) ([2814b29](https://github.com/pythonscad/pythonscad/commit/2814b2901527081947b698a909c1a25545de3ba9))
-* **debug:** udpated pythonscad logo on mac ([#655](https://github.com/pythonscad/pythonscad/issues/655)) ([4954ff0](https://github.com/pythonscad/pythonscad/commit/4954ff0b554932fd1c0857410a6d805f46be4660))
+* **debug:** updated pythonscad logo on mac ([#655](https://github.com/pythonscad/pythonscad/issues/655)) ([4954ff0](https://github.com/pythonscad/pythonscad/commit/4954ff0b554932fd1c0857410a6d805f46be4660))
 * **docs:** proof of project ownership for certum.pl to get proper Windows SmartScreen certificates ([#692](https://github.com/pythonscad/pythonscad/issues/692)) ([e9142c0](https://github.com/pythonscad/pythonscad/commit/e9142c0817ec4816628884eaf2f0fb1f90c00a8d))
 * **gui:** defer editorContentChanged signal until activeEditor is set ([#694](https://github.com/pythonscad/pythonscad/issues/694)) ([0331363](https://github.com/pythonscad/pythonscad/commit/03313630b0bf8bcea942b800298fd16e35169373)), closes [#690](https://github.com/pythonscad/pythonscad/issues/690)
 * **gui:** don't mark windows as quitting on session-manager checkpoint ([#581](https://github.com/pythonscad/pythonscad/issues/581)) ([7da0c96](https://github.com/pythonscad/pythonscad/commit/7da0c967265a2433ed3f014dc9329ad8970b8668)), closes [#580](https://github.com/pythonscad/pythonscad/issues/580)
@@ -99,7 +99,7 @@
 * **gui:** log terminal notice on single-instance IPC handoff ([#552](https://github.com/pythonscad/pythonscad/issues/552)) ([b27aca0](https://github.com/pythonscad/pythonscad/commit/b27aca05e0611a8242ba0201392c5fc2b984fd7f))
 * **gui:** session restore, customizer params without F5, dry-run safety ([#415](https://github.com/pythonscad/pythonscad/issues/415)) ([0078525](https://github.com/pythonscad/pythonscad/commit/0078525cc47653afb0f5f220ade97c4f3107a3b0))
 * **oversample:** add dynamic method ([61a25c7](https://github.com/pythonscad/pythonscad/commit/61a25c71feb0f2f08b01c2ac1b70ec5e3d73d7aa))
-* **oversmaple:** more work ([681be5a](https://github.com/pythonscad/pythonscad/commit/681be5a48f060573ecc8ee0ed191d1af8bb8266b))
+* **oversample:** more work ([681be5a](https://github.com/pythonscad/pythonscad/commit/681be5a48f060573ecc8ee0ed191d1af8bb8266b))
 
 
 ### Bug Fixes
@@ -107,7 +107,7 @@
 * **chore:** undo wrong files ([48f8cc7](https://github.com/pythonscad/pythonscad/commit/48f8cc728a435247116bdca7525bb8d458158ee2))
 * **crash:** right Click works better ([7130b80](https://github.com/pythonscad/pythonscad/commit/7130b803bc0d5288145b23ade34d55fdf839409e))
 * **crash:** right Click works better ([e89716b](https://github.com/pythonscad/pythonscad/commit/e89716b78185fac6fcc137dc2d7d24988b1e177b))
-* fix typo / terminlogy in code comments ([74b0cf2](https://github.com/pythonscad/pythonscad/commit/74b0cf2317be5e0fe0582e03f392f59de126e66a))
+* fix typo / terminology in code comments ([74b0cf2](https://github.com/pythonscad/pythonscad/commit/74b0cf2317be5e0fe0582e03f392f59de126e66a))
 * **gui:** align save-as path, filters, and untitled names with editor language ([#541](https://github.com/pythonscad/pythonscad/issues/541)) ([cd2ba3e](https://github.com/pythonscad/pythonscad/commit/cd2ba3e8511de7e74c64b087a9f0d11d179610c9))
 * **gui:** session restore and CLI prompt for missing design files ([#548](https://github.com/pythonscad/pythonscad/issues/548)) ([8477ee3](https://github.com/pythonscad/pythonscad/commit/8477ee3d8825888a8d894d2d96a1046b278e436e))
 * **gui:** skip stale-path session dialog for default Untitled files ([#546](https://github.com/pythonscad/pythonscad/issues/546)) ([b3c27f3](https://github.com/pythonscad/pythonscad/commit/b3c27f3af64cdd6d0783bb5a711b46e31118afc6))
@@ -376,7 +376,7 @@
 
 ### Bug Fixes
 
-* udpated tests ([0efb4a3](https://github.com/pythonscad/pythonscad/commit/0efb4a35102d0cee37a37b6b94e656a710bde685))
+* updated tests ([0efb4a3](https://github.com/pythonscad/pythonscad/commit/0efb4a35102d0cee37a37b6b94e656a710bde685))
 
 ## [0.8.31](https://github.com/pythonscad/pythonscad/compare/v0.8.30...v0.8.31) (2026-01-16)
 

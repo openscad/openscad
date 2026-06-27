@@ -1,0 +1,48 @@
+name: Validate AppStream Metadata
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - pythonscad.appdata.xml.in
+      - .github/workflows/validate-appdata.yml
+  pull_request:
+    paths:
+      - pythonscad.appdata.xml.in
+      - .github/workflows/validate-appdata.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install appstreamcli
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends appstream
+
+      - name: Render template and validate
+        run: |
+          set -euo pipefail
+          # pythonscad.appdata.xml.in is a CMake configure_file template;
+          # strip the ${...} placeholders to get a valid metainfo document.
+          rendered="$(mktemp --suffix=.metainfo.xml)"
+          sed "s/\${SUFFIX_WITH_DASH}//g; s/\${SNAPSHOT_SUFFIX}//g" \
+            pythonscad.appdata.xml.in > "$rendered"
+          # --no-net: skip URL/screenshot reachability checks (flaky in CI,
+          # they only warn) and validate schema/structure instead.
+          appstreamcli validate --no-net "$rendered"

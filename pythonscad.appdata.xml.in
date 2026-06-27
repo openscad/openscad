@@ -35,15 +35,288 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
-    <release date="2021-01-31" version="2021.01"/>
-    <release date="2019-05-16" version="2019.05"/>
-    <release date="2016-02-22" version="2015.03-3"/>
-    <release date="2015-11-15" version="2015.03-2"/>
-    <release date="2015-04-21" version="2015.03-1"/>
-    <release date="2015-03-10" version="2015.03"/>
-    <release date="2014-03-09" version="2014.03"/>
-    <release date="2013-06-18" version="2013.06"/>
-    <release date="2013-01-17" version="2013.01"/>
-    <release date="2011-12-29" version="2011.12"/>
+    <release version="1.0.0" date="2026-06-02">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.0.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>chore: add pythonscad logo source</li>
+          <li>ci: add MSIX packaging as reusable composite action</li>
+          <li>distributions: add support for Fedora 44 and Ubuntu 26.04 LTS</li>
+          <li>gui: display absolute filepath in the title bar</li>
+          <li>gui: replace Python trust dialog with inline trust bar</li>
+          <li>install: per-user Windows installer with on-demand UAC elevation</li>
+          <li>native vector operations for addition, subtraction, scaling, dot and cross product</li>
+          <li>polyline: polylines work with difference and intersection now</li>
+          <li>python: add MultiToolExporter helper to pythonscad module</li>
+          <li>python: expose root ColorNode RGBA as solid property <code>c</code></li>
+          <li>python: introduce _openscad / openscad / pythonscad three-module layout</li>
+          <li>python: launch real IPython via --ipython, add --repl for legacy prompt</li>
+          <li>and more</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>3mf: scope per-mesh material IDs to append_polyset (lib3mf v1)</li>
+          <li>appstream: align &lt;id&gt; and desktop filename to reverse-DNS convention</li>
+          <li>build: add hidapi and libspnav dependencies across all platforms</li>
+          <li>build: guard sha256_digest call for nettle 4.0 API change</li>
+          <li>chore: accept defines on command line also during animation</li>
+          <li>chore: improved GUI performance</li>
+          <li>chore: make it compilable</li>
+          <li>chore: rebrand remaining OpenSCAD references to PythonSCAD</li>
+          <li>chore: replace more openscad links</li>
+          <li>chore: update Homepage URL</li>
+          <li>ci: bind-mount output dir in arm64 Docker builds for deb and rpm</li>
+          <li>ci: digest-pin all container images in supported-distributions.json</li>
+          <li>and more</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.20.0" date="2026-04-13">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.20.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>gui: enable session management by default</li>
+          <li>gui: log terminal notice on single-instance IPC handoff</li>
+          <li>gui: session restore, customizer params without F5, dry-run safety</li>
+          <li>oversample: add dynamic method</li>
+          <li>oversample: more work</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>chore: undo wrong files</li>
+          <li>crash: right Click works better</li>
+          <li>fix typo / terminology in code comments</li>
+          <li>gui: align save-as path, filters, and untitled names with editor language</li>
+          <li>gui: session restore and CLI prompt for missing design files</li>
+          <li>gui: skip stale-path session dialog for default Untitled files</li>
+          <li>gui: use QStandardPaths for session/lock file directory on all platforms</li>
+          <li>measure: show correct vertex indexes again</li>
+          <li>remove duplicate definition of <code>GeometryEvaluator::applyHull3D(const Geometry::Geometries&amp;)</code> from src/geometry/GeometryEvaluator.cc</li>
+          <li>sync: undo wrong color</li>
+          <li>update application icon in Windows resource file</li>
+          <li>update nightly icon references in Windows resource file</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.19.0" date="2026-03-31">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.19.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>add polyline primitive</li>
+          <li>add support for importing corel-draw images</li>
+          <li>add: update icons-svg-default.scad source for gc, ps, stp icons (previous effort was manually hacked using Inkscape)</li>
+          <li>gcode: optimize object order</li>
+          <li>gui: add icons for GC, PS, STP</li>
+          <li>gui: add icons for GC, PS, STP (fix typo, edit filename, not extension)</li>
+          <li>gui: add icons for GC, PS, STP updating icons-chokusen and icons-chokusen-dark .qrc files</li>
+          <li>gui: update MainWindow.ui for GC, PS, and STP icons</li>
+          <li>polyline: add 3D support</li>
+          <li>svg,gcode: SVG class and &lt;style&gt; rules; G-code outlines sorted by area</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>2d: improve cleanUnion function</li>
+          <li>add feedAdd property</li>
+          <li>crash and various and issues/bugfixes with polyline/gcode</li>
+          <li>gui: guard against null modinst and path in right-click context menu</li>
+          <li>lazy collider is not used anymore</li>
+          <li>polygon: add discretizer as cache key</li>
+          <li>prevent font family prefix-matching bug in QFontComboBox</li>
+          <li>python: parse Python from editor buffer, not lastCompiledDoc</li>
+          <li>python: trust dialog once; reopen and menu to trust</li>
+          <li>rectified transform</li>
+          <li>removed debug stuff</li>
+          <li>small bug in pylaser which resulted in short plugs</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.18.0" date="2026-03-09">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.18.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>prepare project for PyPI publishing</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>build: add PORTABLE_BINARY=ON to Windows and macOS release builds</li>
+          <li>gui: prevent dialog flickering on Qt5 caused by resize oscillation</li>
+          <li>resolve Qt6 deprecation warnings in GUI code</li>
+          <li>use Fusion style with explicit palettes for reliable cross-platform theming</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.17.0" date="2026-03-06">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.17.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>setrender: allow python code to set vieweing perspective</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>open New Window with Untitled.py tab instead of Untitled.scad</li>
+          <li>resolve cppcheck findings in src/python/</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.16.0" date="2026-02-28">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.16.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>python: add .size, .position, and .bbox properties for 2D objects</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.15.0" date="2026-02-16">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.15.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>release: AppImage signing, release checksums, downloads page improvements</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.14.0" date="2026-02-13">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.14.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>macos: add code signing and notarization for release builds</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>added missing include</li>
+          <li>additional sync to upstream/master</li>
+          <li>compiles</li>
+          <li>pip: add minkowski.cpp to manifold sources for pip build</li>
+          <li>sync all in src/core</li>
+          <li>sync in src/geometry</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.13.0" date="2026-02-10">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.13.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>add hasattr, getattr, setattr</li>
+          <li>added gcode init and exit code</li>
+          <li>enable libfive across all platforms and fix Python module path</li>
+          <li>solids are iteratble</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>cleaned 7 tests</li>
+          <li>filter git describe to match only PythonSCAD version tags</li>
+          <li>fixed plan script</li>
+          <li>Merge commit '030f55de832cd024c64c489a440180d7c3725303' into sync/openscad-2026-02-03</li>
+          <li>minor sync</li>
+          <li>switch clang-tidy to install qt6 dependencies as that's the new default</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.12.0" date="2026-01-28">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.12.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>add GUI theme preference (light/dark/auto) with native look for light mode</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.11.0" date="2026-01-27">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.11.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>macos: improve DMG install experience and fix release build</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.10.0" date="2026-01-21">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.10.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>better lasercutter support</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>use PythonSCAD icon in application overview</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.0" date="2026-01-20">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.9.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>ci: add native Windows packaging workflow</li>
+          <li>python: extend add_parameter() with customizer options</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>updated tests</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.8.0" date="2025-12-30">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.8.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>add macOS build and upload workflow</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.7.0" date="2025-12-28">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.7.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>add Windows binary distribution packaging</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.6.0" date="2025-12-23">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v0.6.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>add AUTO option for Qt5Gamepad with Qt6 compatibility check</li>
+          <li>add icons to language selection menu in status bar</li>
+          <li>add language selector to status bar with manual override support</li>
+          <li>add language-specific icons to editor tabs</li>
+          <li>add position property to Python object interface</li>
+          <li>add Python wrapper module with operator overloads and install support</li>
+          <li>add PythonSCAD application icons for stable and nightly builds</li>
+          <li>enable calling OpenSCAD functions from PythonSCAD via osuse()</li>
+          <li>implement three-state CMake options for dependency handling</li>
+          <li>macos: bundle Python framework for portable distribution</li>
+          <li>modernize AppImage build script and add automated workflow</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>68 and #69</li>
+          <li>Adapt GitHub issue template for PythonSCAD</li>
+          <li>add conditional install for lib3mf-dev and libqt5gamepad5-dev</li>
+          <li>Add ellipsis to python venv menu entries as user action is required after clicking them</li>
+          <li>add libfuse2 dependency and explicitly specify desktop file</li>
+          <li>add missing functions to Python stub</li>
+          <li>automatically download linuxdeploy in case it is not found</li>
+          <li>cmake: Correctly handle REQUIRED in FindLib3MF.cmake</li>
+          <li>cmake: define EXECUTABLE_NAME before winconsole subdirectory</li>
+          <li>Corrected gvim startup problems and setting to use gvim in preferences</li>
+          <li>Disable manifold tests when ENABLE_MANIFOLD is OFF</li>
+          <li>do not run tests requiring lib3mf if OpenSCAD was compiled without lib3mf</li>
+          <li>and more</li>
+        </ul>
+      </description>
+    </release>
   </releases>
 </component>
