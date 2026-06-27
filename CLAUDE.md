@@ -107,6 +107,45 @@ fix(python): resolve memory leak in pyopenscad module
 docs: update build instructions for Ubuntu 24.04
 ```
 
+### Issue and PR Conventions
+
+**CRITICAL:** Every new issue and pull request MUST be properly categorized.
+When creating an issue or PR (whether by hand or via `gh`), always set:
+
+- **Labels** — apply at least one descriptive label that matches the change
+  (e.g. `bug`, `enhancement`, `build`, `ci`, `docs`, `refactor`, `perf`,
+  `test`, `dependencies`, `security`, `UI/UX`). Never leave an issue or PR
+  unlabeled.
+- **Assignee** — by default, assign the issue/PR to the person actually
+  working on it (the author). Do not leave work items unassigned.
+- **Issue type** (issues only) — set the correct GitHub issue type. The
+  available types are:
+  - `Bug` — an unexpected problem or behavior.
+  - `Feature` — a request, idea, or new functionality.
+  - `Task` — a specific piece of work that is neither a bug nor a feature.
+
+Set a milestone when the work is targeted at a specific release.
+
+Examples:
+
+```bash
+# Create a labeled, typed, assigned, milestoned issue
+gh issue create \
+  --title "fix(wasm): svg target not compiled with -fPIC" \
+  --label bug --label build \
+  --assignee @me \
+  --milestone "Prominentio v1.1.0" \
+  --body "..."
+# Issue type is org-level; set it via the API or the web UI after creation.
+
+# Create a labeled, assigned PR
+gh pr create --title "..." --label bug --label build --assignee @me --body "..."
+```
+
+GitHub issue *types* are an organization-level field separate from labels and
+are not settable with `gh issue create` flags; set the type through the issue's
+web UI or the GraphQL/REST API after the issue exists.
+
 ### Pre-commit Hooks
 
 The project uses pre-commit hooks that run automatically:

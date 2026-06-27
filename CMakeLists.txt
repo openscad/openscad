@@ -319,6 +319,13 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
   target_compile_options(OpenSCADLibInternal PUBLIC -fexceptions -fPIC)
+  # Both svg and OpenSCADLibInternal were created before
+  # CMAKE_POSITION_INDEPENDENT_CODE is set above, so neither inherits PIC from
+  # it. OpenSCADLibInternal gets -fPIC from the explicit option on the line
+  # above; svg had no such line, so under the web build's -sMAIN_MODULE=2 (a PIC
+  # main module) its non-PIC exception relocations fail to link. Give svg the
+  # same flags explicitly.
+  target_compile_options(svg PUBLIC -fexceptions -fPIC)
   target_link_options(OpenSCADExe PUBLIC
     -fexceptions
     -sABORT_ON_WASM_EXCEPTIONS
