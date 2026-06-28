@@ -32,6 +32,9 @@ public:
   ChatWidget(QWidget *parent = nullptr);
   virtual ~ChatWidget();
 
+  void proposeCodeChange(const std::string& code);
+  bool hasPendingCodeChanges() const;
+
 private slots:
   void onSendPressed();
   void onClearPressed();
@@ -48,4 +51,8 @@ private:
   MessageBubble *activeAIBubble = nullptr;
   std::shared_ptr<std::string> activeResponseText;
   bool isRequestRunning = false;
+
+  std::string proposedCode;
+  std::string originalCode;
+  QWidget *diffBannerWidget = nullptr;
 };

@@ -12,6 +12,7 @@
 #include <QApplication>
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
+#include "gui/ai/ChatWidget.h"
 
 static std::string getAISettingsPath()
 {
@@ -105,18 +106,37 @@ static std::string executeToolOnMainThread(const std::string& name, const std::s
             return;
           }
           std::string code = args["code"].get<std::string>();
-          if (mw && mw->activeEditor) {
-            mw->activeEditor->setText(QString::fromStdString(code));
-            promise->set_value("Success: Code set in the editor.");
+          ChatWidget *chatWidget = nullptr;
+          if (mw) {
+            chatWidget = mw->findChild<ChatWidget *>();
+          }
+          if (chatWidget) {
+            chatWidget->proposeCodeChange(code);
+            promise->set_value(
+              "Success: Code change proposed to the user for review. The user will review and choose "
+              "whether to apply it.");
           } else {
-            promise->set_value("Error: No active editor found.");
+            if (mw && mw->activeEditor) {
+              mw->activeEditor->setText(QString::fromStdString(code));
+              promise->set_value("Success: Code set in the editor.");
+            } else {
+              promise->set_value("Error: No active editor found.");
+            }
           }
         } else if (name == "trigger_preview") {
+          ChatWidget *chatWidget = nullptr;
           if (mw) {
-            mw->actionRenderPreview();
-            promise->set_value("Success: Preview triggered.");
+            chatWidget = mw->findChild<ChatWidget *>();
+          }
+          if (chatWidget && chatWidget->hasPendingCodeChanges()) {
+            promise->set_value("Info: Preview postponed because code changes are pending user review.");
           } else {
-            promise->set_value("Error: No active MainWindow found.");
+            if (mw) {
+              mw->actionRenderPreview();
+              promise->set_value("Success: Preview triggered.");
+            } else {
+              promise->set_value("Error: No active MainWindow found.");
+            }
           }
         } else {
           promise->set_value("Error: Unknown tool name '" + name + "'.");
@@ -253,9 +273,6 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       return;
     }
 
-    std::string tool_indicator = "\n\n*[Executing assistant tools...]*\n";
-    on_chunk(tool_indicator);
-
     ChatMessage assistant_msg;
     assistant_msg.role = "assistant";
     assistant_msg.content = "";
@@ -281,7 +298,19 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       tool_msg.tool_call_id = tc.id;
       history.push_back(tool_msg);
 
-      on_chunk("- **" + tc.name + "**: " + result + "\n");
+      if (tc.name == "get_editor_code") {
+        on_chunk("\n*AI inspected current code*\n");
+      } else if (tc.name == "set_editor_code") {
+        on_chunk("\n*AI proposed code changes*\n");
+      } else if (tc.name == "trigger_preview") {
+        if (result.find("postponed") != std::string::npos) {
+          on_chunk("\n*Render preview postponed pending review*\n");
+        } else {
+          on_chunk("\n*AI triggered render preview*\n");
+        }
+      } else {
+        on_chunk("\n*AI executed tool: " + tc.name + "*\n");
+      }
     }
 
     chatCompletionStream(history, on_chunk, on_error, on_complete);

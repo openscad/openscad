@@ -9,6 +9,9 @@
 #include <QKeyEvent>
 #include <QApplication>
 #include <QPalette>
+#include "gui/MainWindow.h"
+#include "gui/ai/DiffDialog.h"
+#include "gui/OpenSCADApp.h"
 
 // MessageBubble implementation
 MessageBubble::MessageBubble(const QString& text, bool isUser, QWidget *parent) : QWidget(parent)
@@ -119,6 +122,74 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   if (!defPrompt.empty()) {
     inputField->setPlainText(QString::fromStdString(defPrompt));
   }
+
+  // Initialize diff proposal banner
+  diffBannerWidget = new QWidget(this);
+  QHBoxLayout *bannerLayout = new QHBoxLayout(diffBannerWidget);
+  bannerLayout->setContentsMargins(8, 4, 8, 4);
+  bannerLayout->setSpacing(8);
+
+  QLabel *bannerLabel = new QLabel(_("AI proposed code changes:"), diffBannerWidget);
+  bannerLayout->addWidget(bannerLabel);
+
+  QPushButton *reviewBtn = new QPushButton(_("Review & Apply"), diffBannerWidget);
+  reviewBtn->setStyleSheet(
+    "background-color: #2563eb; color: white; border-radius: 4px; padding: 4px 8px; font-weight: bold;");
+  bannerLayout->addWidget(reviewBtn);
+
+  QPushButton *discardBtn = new QPushButton(_("Discard"), diffBannerWidget);
+  discardBtn->setStyleSheet(
+    "background-color: #ef4444; color: white; border-radius: 4px; padding: 4px 8px; font-weight: bold;");
+  bannerLayout->addWidget(discardBtn);
+
+  bool dark = isDarkTheme();
+  if (dark) {
+    bannerLabel->setStyleSheet("font-weight: bold; color: #93c5fd;");
+    diffBannerWidget->setStyleSheet(
+      "background-color: #1e293b; border-top: 1px solid #334155; border-bottom: 1px solid #334155;");
+  } else {
+    bannerLabel->setStyleSheet("font-weight: bold; color: #1e3a8a;");
+    diffBannerWidget->setStyleSheet(
+      "background-color: #eff6ff; border-top: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe;");
+  }
+
+  diffBannerWidget->hide();
+
+  // Insert banner above the input field (index 2 in mainLayout)
+  mainLayout->insertWidget(2, diffBannerWidget);
+
+  // Connect banner actions
+  connect(discardBtn, &QPushButton::clicked, this, [this]() {
+    proposedCode = "";
+    originalCode = "";
+    diffBannerWidget->hide();
+  });
+
+  connect(reviewBtn, &QPushButton::clicked, this, [this]() {
+    MainWindow *mw = nullptr;
+    for (auto *win : scadApp->windowManager.getWindows()) {
+      mw = win;
+      break;
+    }
+
+    DiffDialog dlg(originalCode, proposedCode, isDarkTheme(), this);
+    int result = dlg.exec();
+    if (result == QDialog::Accepted) {
+      if (mw && mw->activeEditor) {
+        mw->activeEditor->setText(QString::fromStdString(proposedCode));
+        if (dlg.shouldTriggerPreview()) {
+          mw->actionRenderPreview();
+        }
+      }
+      proposedCode = "";
+      originalCode = "";
+      diffBannerWidget->hide();
+    } else if (result == 2) {  // Discarded Changes
+      proposedCode = "";
+      originalCode = "";
+      diffBannerWidget->hide();
+    }
+  });
 }
 
 ChatWidget::~ChatWidget()
@@ -260,4 +331,27 @@ bool ChatWidget::isDarkTheme() const
 {
   QPalette pal = QApplication::palette();
   return pal.color(QPalette::Window).lightness() < 128;
+}
+
+void ChatWidget::proposeCodeChange(const std::string& code)
+{
+  proposedCode = code;
+
+  // Retrieve current active editor code
+  originalCode = "";
+  MainWindow *mw = nullptr;
+  for (auto *win : scadApp->windowManager.getWindows()) {
+    mw = win;
+    break;
+  }
+  if (mw && mw->activeEditor) {
+    originalCode = mw->activeEditor->toPlainText().toStdString();
+  }
+
+  diffBannerWidget->show();
+}
+
+bool ChatWidget::hasPendingCodeChanges() const
+{
+  return diffBannerWidget && diffBannerWidget->isVisible();
 }
