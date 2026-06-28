@@ -1,56 +1,99 @@
-﻿{
+{
   "configurations": [
-		{
-			"name": "x86-Debug",
-			"generator": "Ninja",
-			"configurationType": "Debug",
-			"inheritEnvironments": [
-				"msvc_x86"
-			],
-			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\installDebug\\${name}",
-			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": ""
-		},
-		{
-			"name": "x86-Release",
-			"generator": "Ninja",
-			"configurationType": "Release",
-			"inheritEnvironments": [
-				"msvc_x86"
-			],
-			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\installRelease\\${name}",
-			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": ""
-		},
-		{
-			"name": "x64-Debug",
-			"generator": "Ninja",
-			"configurationType": "Debug",
-			"inheritEnvironments": [
-				"msvc_x64_x64"
-			],
-			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": ""
-		},
-		{
-			"name": "x64-Release",
-			"generator": "Ninja",
-			"configurationType": "Release",
-			"inheritEnvironments": [
-				"msvc_x64_x64"
-			],
-			"buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-			"installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-			"cmakeCommandArgs": "--no-warn-unused-cli -DCMAKE_TOOLCHAIN_FILE=${env.VCPKG_PATH}\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CXX_FLAGS=\"/we4316 /EHsc\"",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": ""
-		}
+    {
+      "name": "linux-Debug",
+      "description":
+        "Linux native Qt6 developer build using Unix Makefiles; Qt5 is legacy support for older Ubuntu/Debian releases.",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${workspaceRoot}/build/cmake-settings/${name}",
+      "installRoot": "${workspaceRoot}/build/cmake-settings/${name}/install",
+      "cmakeCommandArgs":
+        "--no-warn-unused-cli -DEXPERIMENTAL=ON -DENABLE_PYTHON=ON -DUSE_QT6=ON -DENABLE_LIBFIVE=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "linux-Release",
+      "description":
+        "Linux native Qt6 release-style build using Unix Makefiles; Qt5 is legacy support for older Ubuntu/Debian releases.",
+      "generator": "Unix Makefiles",
+      "configurationType": "Release",
+      "buildRoot": "${workspaceRoot}/build/cmake-settings/${name}",
+      "installRoot": "${workspaceRoot}/build/cmake-settings/${name}/install",
+      "cmakeCommandArgs":
+        "--no-warn-unused-cli -DEXPERIMENTAL=ON -DENABLE_PYTHON=ON -DUSE_QT6=ON -DENABLE_LIBFIVE=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "macos-Debug",
+      "description": "macOS native developer build using CMake's Unix Makefiles generator.",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${workspaceRoot}/build/cmake-settings/${name}",
+      "installRoot": "${workspaceRoot}/build/cmake-settings/${name}/install",
+      "cmakeCommandArgs":
+        "--no-warn-unused-cli -DEXPERIMENTAL=ON -DENABLE_PYTHON=ON -DUSE_QT6=ON -DENABLE_LIBFIVE=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "macos-Release",
+      "description": "macOS native release-style build using CMake's Unix Makefiles generator.",
+      "generator": "Unix Makefiles",
+      "configurationType": "Release",
+      "buildRoot": "${workspaceRoot}/build/cmake-settings/${name}",
+      "installRoot": "${workspaceRoot}/build/cmake-settings/${name}/install",
+      "cmakeCommandArgs":
+        "--no-warn-unused-cli -DEXPERIMENTAL=ON -DENABLE_PYTHON=ON -DUSE_QT6=ON -DENABLE_LIBFIVE=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "windows-ninja-Release",
+      "description": "Windows release-style build using Ninja and the active compiler environment.",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${workspaceRoot}\\build\\cmake-settings\\${name}",
+      "installRoot": "${workspaceRoot}\\build\\cmake-settings\\${name}\\install",
+      "cmakeCommandArgs":
+        "--no-warn-unused-cli -DEXPERIMENTAL=ON -DENABLE_PYTHON=ON -DENABLE_LIBFIVE=ON -DUSE_QT6=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "windows-x86_64-msvc-Headless-Debug",
+      "description": "Windows x86_64 native MSVC headless build using Visual Studio 2022 and vcpkg.",
+      "generator": "Visual Studio 17 2022",
+      "configurationType": "Debug",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${workspaceRoot}\\build\\cmake-settings\\${name}",
+      "installRoot": "${workspaceRoot}\\build\\cmake-settings\\${name}\\install",
+      "cmakeToolchain": "${env.VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake",
+      "cmakeCommandArgs":
+        "-A x64 --no-warn-unused-cli -DHEADLESS=ON -DUSE_BUILTIN_OPENCSG=TRUE -DENABLE_PYTHON=ON -DEXPERIMENTAL=ON",
+      "buildCommandArgs": "/m:8 /v:minimal /p:PreferredToolArchitecture=x64",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "windows-x86_64-msvc-Headless-Release",
+      "description":
+        "Windows x86_64 native MSVC headless release build using Visual Studio 2022 and vcpkg.",
+      "generator": "Visual Studio 17 2022",
+      "configurationType": "Release",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${workspaceRoot}\\build\\cmake-settings\\${name}",
+      "installRoot": "${workspaceRoot}\\build\\cmake-settings\\${name}\\install",
+      "cmakeToolchain": "${env.VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake",
+      "cmakeCommandArgs":
+        "-A x64 --no-warn-unused-cli -DHEADLESS=ON -DUSE_BUILTIN_OPENCSG=TRUE -DENABLE_PYTHON=ON -DEXPERIMENTAL=ON",
+      "buildCommandArgs": "/m:8 /v:minimal /p:PreferredToolArchitecture=x64",
+      "ctestCommandArgs": ""
+    }
   ]
 }
