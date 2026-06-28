@@ -777,7 +777,7 @@
               <item row="3" column="1">
                <widget class="QCheckBox" name="checkBoxUseGvim">
                 <property name="text">
-                 <string>Use gvim as editor</string>
+                 <string>Use gvim as editor (requires restart)</string>
                 </property>
                 <property name="checked">
                  <bool>false</bool>

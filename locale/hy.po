@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2020.02.01\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-21 14:57+0200\n"
+"POT-Creation-Date: 2026-06-28 04:45+0200\n"
 "PO-Revision-Date: 2020-04-20 17:00+0400\n"
 "Last-Translator: Sargis Malkonyan <melkonyansarg@gmail.com>\n"
 "Language-Team: Agarak Armath Engineering Laboratories\n"
@@ -102,7 +102,7 @@ msgstr "Թափոն նկարները"
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:852
 #: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:362
 #: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:214
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2547
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2580
 msgid "Preferences"
 msgstr "Կարգավորումներ"
 
@@ -256,7 +256,7 @@ msgid "TextLabel"
 msgstr "Տեքստ"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:901
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2551
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2584
 msgid "Update"
 msgstr "Թարմացնել"
 
@@ -369,23 +369,23 @@ msgid "AI Chat"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:135
-#: src/gui/ai/ChatWidget.cc:75
+#: src/gui/ai/ChatWidget.cc:99
 msgid "AI Assistant"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:137
-#: src/gui/ai/ChatWidget.cc:77
+#: src/gui/ai/ChatWidget.cc:101
 msgid "Clear chat history"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:139
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:42
-#: src/gui/ai/ChatWidget.cc:76
+#: src/gui/ai/ChatWidget.cc:100
 msgid "Clear"
 msgstr "Մաքրել"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:140
-#: src/gui/ai/ChatWidget.cc:78
+#: src/gui/ai/ChatWidget.cc:102
 msgid "Send"
 msgstr ""
 
@@ -427,7 +427,7 @@ msgstr "Գունային համակարգ։"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:418
 #: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:309
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2609
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2642
 #: src/core/Settings.cc:161 src/core/Settings.cc:517
 msgid "Fixed"
 msgstr "Ֆիքսված"
@@ -505,8 +505,8 @@ msgstr ""
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:217
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:220
 #: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:177
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2684
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2691
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2717
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2724
 msgid "..."
 msgstr ""
 
@@ -552,7 +552,7 @@ msgid "Clear console"
 msgstr "Մաքրել հրամանների վահանակը"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:46
-#: src/gui/TabManager.cc:1839
+#: src/gui/TabManager.cc:1843
 #, fuzzy
 msgid "Save As..."
 msgstr "Պահել &որպես..."
@@ -809,7 +809,7 @@ msgstr ""
 #: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:109
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:185
 #: src/gui/UnsavedChangesDialog.cc:60 src/openscad_gui.cc:196
-#: src/openscad_gui.cc:857
+#: src/openscad_gui.cc:860
 msgid "Cancel"
 msgstr "Չեղարկել"
 
@@ -1190,7 +1190,7 @@ msgid "Font path"
 msgstr "Տառատեսակ"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:319
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2608
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2641
 msgid "Style"
 msgstr "Ոճ"
 
@@ -2046,7 +2046,7 @@ msgid "E&xport"
 msgstr "&Արտահանել"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1369
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2562
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2595
 #: src/gui/Editor.cc:206 src/gui/Editor.cc:211 examples
 msgid "Python"
 msgstr ""
@@ -2164,7 +2164,7 @@ msgid "OctoPrint API Key Request"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:108
-#: src/openscad_gui.cc:855
+#: src/openscad_gui.cc:858
 msgid "Retry"
 msgstr ""
 
@@ -2216,7 +2216,7 @@ msgid "Form"
 msgstr "Ձև"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:99
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2685
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2718
 msgid "Parameter"
 msgstr "Պարամետր"
 
@@ -2274,755 +2274,764 @@ msgstr "-"
 msgid "More actions"
 msgstr "Պտտում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2548
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2581
 msgid "3D View"
 msgstr "3D տեսք"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2549
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2582
 msgctxt "preferences"
 msgid "Advanced"
 msgstr "Առաջատար"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2550
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2583
 msgid "Editor"
 msgstr "Խմբագիր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2552
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2658
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2585
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2691
 msgid "Features"
 msgstr "Հնարավորություններ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2554
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2587
 msgid "Enable/Disable experimental features"
 msgstr "Միացնել/Անջատել փորձնական հնարավորությունները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2556
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2589
 msgid "Axes"
 msgstr "Առանցքներ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2558
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2591
 msgid "Input driver configuration and Axis mapping"
 msgstr "Ներմուծել driver֊ի կարգաբերումը և առանցքների տեղորոշումը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2560
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2593
 msgid "Buttons"
 msgstr "Կոճակներ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2561
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2594
 msgid "Mouse"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2564
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2597
 msgid "Python Settings"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2566
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2599
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:178
 msgid "3D Print"
 msgstr "Եռաչափ տպագրություն"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2568
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2601
 msgid "3D Printing Services"
 msgstr "Եռաչափ տպագրության ծառայություններ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2570
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2603
 msgid "Dialogs"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2571
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2604
 msgid "AI"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2573
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2606
 msgid "AI and LLM configurations"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2575
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2608
 msgid "Directory of the output file"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2576
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2609
 msgid "Extension of the output file without leading dot"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2577
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2610
 msgid "Full path to the main source file"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2578
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2611
 msgid "Directory of the main source file"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2579
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2612
 msgid "Full path to the output file"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2580
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2613
 msgid "Color scheme:"
 msgstr "Գունային համակարգ։"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2581
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2614
 msgid "Show Warnings and Errors in 3D View"
 msgstr "Ցուցադրել զգուշացումները և սխալները 3D տեսքով"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2582
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2615
 msgid "mouse centric zoom"
 msgstr "մկնիկի կենտրոնային խոշորացում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2583
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2616
 msgid "Number Scroll"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2584
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2617
 #: src/core/Settings.cc:198
 #, fuzzy
 msgid "Alt"
 msgstr "Ամբողջը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2585
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2618
 #: src/core/Settings.cc:199
 msgid "Left Mouse Button"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2586
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2619
 #: src/core/Settings.cc:200
 msgid "Either"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2588
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2621
 #, fuzzy
 msgid "Step Size"
 msgstr "Չափս"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2589
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2622
 msgid "Number Scroll Via Mouse Wheel"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2590
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2623
 msgid "Modifier For Wheel Scroll "
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2591
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2624
 msgid "Autocomplete"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2592
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2625
 msgid " Include defined modules"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2593
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2626
 msgid "Character Threshold"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2594
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2627
 msgid " Include defined functions"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2595
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2628
 msgid "Enable Autocompletion"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2596
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2629
 msgid " Include defined variables"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2597
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2630
 msgid "Mode"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2598
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2631
 #: src/core/Settings.cc:538
 msgid "Parsed File Mode"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2599
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2632
 #: src/core/Settings.cc:539
 msgid "Regex Input Text Mode"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2601
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2626
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2634
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2659
 msgid "Line wrap"
 msgstr "Գծի փաթաթում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2602
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2615
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2621
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2635
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2648
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2654
 #: src/core/Settings.cc:45 src/core/Settings.cc:155 src/core/Settings.cc:166
 #: src/core/Settings.cc:172 src/gui/input/ButtonConfigWidget.cc:248
 msgid "None"
 msgstr "Ոչ մեկը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2603
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2636
 #: src/core/Settings.cc:156
 msgid "Wrap at character boundaries"
 msgstr "Փաթեավորել կերպարի սահմանները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2604
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2637
 #: src/core/Settings.cc:157
 msgid "Wrap at word boundaries"
 msgstr "Պահել բառի սահմաններում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2606
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2639
 msgid "Line wrap indentation"
 msgstr "Կտրել գծի սահմանում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2607
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2640
 msgid "Line wrap visualization"
 msgstr "Գծի փաթեթավորման վիզուալիզացիա"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2610
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2643
 #: src/core/Settings.cc:161
 msgid "Same"
 msgstr "Նույնությամբ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2611
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2644
 #: src/core/Settings.cc:161
 msgid "Indented"
 msgstr "Ատամնավոր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2613
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2645
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2646
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2678
 #: src/core/Settings.cc:189
 msgid "Indent"
 msgstr "Կտրվածք"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2614
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2647
 msgid "Start"
 msgstr "Մեկնարկ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2616
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2622
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2649
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2655
 #: src/core/Settings.cc:167 src/core/Settings.cc:173
 msgid "Text"
 msgstr "Տեքստ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2617
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2623
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2650
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2656
 #: src/core/Settings.cc:168 src/core/Settings.cc:174
 msgid "Border"
 msgstr "Սահման"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2618
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2624
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2651
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2657
 #: src/core/Settings.cc:169 src/core/Settings.cc:175
 msgid "Margin"
 msgstr "Եզրեր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2620
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2653
 msgid "End"
 msgstr "Վերջ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2627
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2660
 msgid "Display"
 msgstr "Ցուցադրել"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2628
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2661
 msgid "Highlight current line"
 msgstr "Ընդգծել այս գիծը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2629
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2662
 msgid "Display Line Numbers"
 msgstr "Ցուցադրել գծի համարները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2630
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2663
 msgid "Enable brace matching"
 msgstr "Միացնել փակագծի համընկնումը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2631
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2709
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2726
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2728
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2664
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2742
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2759
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2761
 msgid "Font"
 msgstr "Տառատեսակ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2632
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2665
 msgid "Color syntax highlighting"
 msgstr "Գունային այլագրի առանձնացում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2633
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2666
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
 msgstr "Ctrl/Cmd-Mouse-wheel zooms text"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2634
-msgid "Use gvim as editor"
-msgstr ""
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2667
+#, fuzzy
+msgid "Use gvim as editor (requires restart)"
+msgstr "(Անհրաժեշտ է վերագործարկել)"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2635
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2668
 msgid "Indentation"
 msgstr "Կտրվածքների պատրաստում"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2636
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2669
 msgid "Auto Indent"
 msgstr "Ավտոմատ կտրվածք"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2637
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2670
 msgid "Backspace unindents"
 msgstr "Backspace unindents"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2638
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2671
 msgid "Indent using"
 msgstr "Օգտագործել կտրվածքը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2639
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2672
 #: src/core/Settings.cc:187
 msgid "Spaces"
 msgstr "Տարածքներ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2640
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2673
 #: src/core/Settings.cc:187
 msgid "Tabs"
 msgstr "Ներդիրներ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2642
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2675
 msgid "Indentation width"
 msgstr "Կտրվածքի հաստություն"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2643
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2676
 msgid "Tab width"
 msgstr "Ներդիրի հաստություն"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2644
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2677
 msgid "Tab key function"
 msgstr "Ներդիրի ստեղնի գործառույթ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2646
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2679
 #: src/core/Settings.cc:190
 msgid "Insert Tab"
 msgstr "Տեղադրել ներդիր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2648
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2681
 msgid "Show whitespace"
 msgstr "Ցուցադրել դատարկ տարածքները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2649
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2682
 #: src/core/Settings.cc:178
 msgid "Never"
 msgstr "Երբեք"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2650
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2683
 #: src/core/Settings.cc:179
 msgid "Always"
 msgstr "Մշտապես"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2651
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2684
 msgid "Only after indentation"
 msgstr "Միայն կտրատումից հետո"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2653
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2686
 msgid "Size"
 msgstr "Չափս"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2654
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2687
 msgid "Automatically check for updates"
 msgstr "Ինքնուրույն ստուգել թարմացումները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2655
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2688
 msgid "Include development snapshots"
 msgstr "Ներառել ծրագրավորման դրվագները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2656
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2689
 msgid "Check Now"
 msgstr "Ստուգել հիմա"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2657
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2690
 msgid "Last checked: "
 msgstr "Վերջին ստուգումը:"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2659
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2692
 msgid "General"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2660
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2693
 #, fuzzy
 msgid "Default Print Service"
 msgstr "Եռաչափ տպագրության ծառայություններ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2661
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2694
 msgid "Enable remote print services"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2662
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2695
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:181
-#: src/gui/Preferences.cc:630
+#: src/gui/Preferences.cc:617
 msgid "OctoPrint"
 msgstr "OctoPrint"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2663
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2696
 msgid "URL"
 msgstr "URL"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2664
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2765
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2697
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2798
 msgid "API Key"
 msgstr "API Key"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2665
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2666
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2698
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2699
 msgid "Load"
 msgstr "Բեռնել"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2668
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2701
 msgid "Check"
 msgstr "Ստուգել"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2669
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2702
 msgid "Slicing Profile"
 msgstr "Շերտավորել պրոֆիլը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2670
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2703
 msgid "Slicing Engine"
 msgstr "Շերտավորել գործիքը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2671
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2677
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2704
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2710
 msgid "File Format"
 msgstr "Նիշքի ձևաչափը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2672
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2705
 msgid "Action"
 msgstr "Գործողություն"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2673
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2706
 msgid "Request"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2674
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2707
 msgid "Show"
 msgstr "Ցույց տալ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2675
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2708
 msgid "Note: The API key is stored unencrypted in the application settings."
 msgstr "Նշում:  API֊ի կոճակը գաղտնագրով պահված է հավելվածի կարգաբերումներում."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2676
-#: src/gui/Preferences.cc:631
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2709
+#: src/gui/Preferences.cc:618
 #, fuzzy
 msgid "Local Application"
 msgstr "Ծրագիր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2678
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2711
 #, fuzzy
 msgid "File"
 msgstr "&Նիշք"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2683
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2716
 msgid "Executable"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2687
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2720
 msgid ""
 "Directory for storing the exported file, leave empty to use the default "
 "system location."
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2690
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2723
 msgid "Temp Dir"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2692
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2725
 msgid "3D Preview (OpenCSG)"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2693
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2726
 msgid "Show capability warning"
 msgstr "Ցուցադրել հնարավոր զգուշացումները"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2694
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2727
 msgid "Turn off rendering at "
 msgstr "Անջատել տարածումը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2695
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2728
 msgid "elements"
 msgstr "տարրեր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2696
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2729
 msgid "Force Goldfeather"
 msgstr "Ստիպել Goldfeather"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2697
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2730
 #, fuzzy
 msgid "3D Rendering"
 msgstr "Հրապարակել"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2698
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2731
 msgid "Backend"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2699
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2732
 msgid "CGAL Cache size"
 msgstr "CGAL֊ի «քեշ»- ի չափը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2700
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2702
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2733
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2735
 msgid "MB"
 msgstr "ՄԲ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2701
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2734
 msgid "PolySet Cache size"
 msgstr "PolySet֊ի «քեշ»- ի չափը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2703
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2736
 msgid "User Interface"
 msgstr "Միջերես"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2704
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2737
 msgid "GUI theme"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2705
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2738
 #, fuzzy
 msgid "Light"
 msgstr "&Աջ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2706
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2739
 msgid "Dark"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2707
-msgid "Auto (follow system)"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2710
-#, fuzzy
-msgid "Enable docking helper widgets in different places"
-msgstr "Միացնել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր տեղերում"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2711
-#, fuzzy
-msgid "Enable undocking of helper widgets to separate windows"
-msgstr "Անջատել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր պատուհաններում"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2712
-msgid "Show Welcome Screen"
-msgstr "Ցույց տալ ԲԱՐԻ ԳԱԼՈՒՍՏ֊ը"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2713
-msgid "Enable user interface localization (requires restart of PythonSCAD)"
-msgstr ""
-"Միացնել միջերեսի տեղայնացումը (պահանջում է PythonSCAD֊ի վերագործարկում)"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2714
-msgid "Bring window to front after automatic reload"
-msgstr "Բերել պատուհանը առջևի մաս  ավտոմատ բեռնումից հետո"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2715
-msgid "Play sound notification on render complete"
-msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2716
-#, fuzzy
-msgid "Play sound when render completion time is at least"
-msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2717
-msgid "sec"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2718
-#: src/gui/Preferences.cc:433
-msgid "When launching another instance with files:"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2719
-#: src/gui/Preferences.cc:435
-msgid "Enable session management (save/restore tabs on quit, requires restart)"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2720
-#: src/gui/Preferences.cc:437
-msgid "Autosave session in background for crash recovery"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2721
-#: src/gui/Preferences.cc:438
-msgid "Autosave interval:"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2722
-msgid "Console"
-msgstr "Վահանակ"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2723
-msgid "Clear console before Preview/Render"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2724
-msgid "Maximum lines for Console to keep:"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2725
-msgid "(0 for unlimited)"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2727
-msgid "Customizer"
-msgstr "Անհատական հարմարեցում"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2729
-msgid "OpenSCAD Language Features"
-msgstr "OpenSCAD լեզվային հատկություններ"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2730
-#, fuzzy
-msgid "Warnings"
-msgstr "OpenGL զգուշացում"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2731
-msgid "Stop on the first warning"
-msgstr "Կանգնեցնել առաջին զգուշացումից"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2732
-#, fuzzy
-msgid "Check the parameter range for builtin modules"
-msgstr "ստուգել պարամետրերի միջակայքը ներքին մոդուլների համար"
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2733
-msgid "Warn when there is a parameter mismatch in user module calls"
-msgstr "Շգուշացնել, երբ օգտատերը կանչել է սխալ պարամետրեր "
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2734
-msgid "Trace"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2735
-msgid "Trace depth:"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2736
-msgid "(max. number or trace messages)"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2737
-msgid "Show parameters of usermodule calls in trace"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2738
-msgid "Render Summary"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2739
-msgid "Camera"
-msgstr ""
-
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2740
-msgid "Bounding Box"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2741
-msgid "Measurements: Area"
-msgstr ""
-
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2742
-msgid "Measurements: Volume"
+msgid "Auto (follow system)"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2743
 #, fuzzy
-msgid "Export Features"
-msgstr "Հնարավորություններ"
+msgid "Enable docking helper widgets in different places"
+msgstr "Միացնել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր տեղերում"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2744
-msgid "Toolbar Export 3D"
-msgstr ""
+#, fuzzy
+msgid "Enable undocking of helper widgets to separate windows"
+msgstr "Անջատել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր պատուհաններում"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2745
-msgid "Toolbar Export 2D"
-msgstr ""
+msgid "Show Welcome Screen"
+msgstr "Ցույց տալ ԲԱՐԻ ԳԱԼՈՒՍՏ֊ը"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2746
-msgid "Debugging"
+msgid "Enable user interface localization (requires restart of PythonSCAD)"
 msgstr ""
+"Միացնել միջերեսի տեղայնացումը (պահանջում է PythonSCAD֊ի վերագործարկում)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2747
-msgid "Enable tracing of HIDAPI events (requires restart of PythonSCAD)"
-msgstr ""
+msgid "Bring window to front after automatic reload"
+msgstr "Բերել պատուհանը առջևի մաս  ավտոմատ բեռնումից հետո"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2748
-msgid "Network Import List"
-msgstr ""
+msgid "Play sound notification on render complete"
+msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2749
-msgid "Globally trust Python designs"
-msgstr ""
+#, fuzzy
+msgid "Play sound when render completion time is at least"
+msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2750
-msgid "Really (very dangerous)"
+msgid "sec"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2751
-msgid "Dialog visibility"
+#: src/gui/Preferences.cc:419
+msgid "When launching another instance with files:"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2752
-msgid "Always show PDF export dialog"
+#: src/gui/Preferences.cc:421
+msgid "Enable session management (save/restore tabs on quit, requires restart)"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2753
-msgid "Always show 3MF export dialog"
+#: src/gui/Preferences.cc:423
+msgid "Autosave session in background for crash recovery"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2754
-msgid "Always show SVF export dialog"
+#: src/gui/Preferences.cc:424
+msgid "Autosave interval:"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2755
-msgid "Always show GCODE export dialog"
-msgstr ""
+msgid "Console"
+msgstr "Վահանակ"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2756
-msgid "Always show Print Service dialog"
+msgid "Clear console before Preview/Render"
 msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2757
+msgid "Maximum lines for Console to keep:"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2758
+msgid "(0 for unlimited)"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2760
+msgid "Customizer"
+msgstr "Անհատական հարմարեցում"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2762
+msgid "OpenSCAD Language Features"
+msgstr "OpenSCAD լեզվային հատկություններ"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2763
+#, fuzzy
+msgid "Warnings"
+msgstr "OpenGL զգուշացում"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2764
+msgid "Stop on the first warning"
+msgstr "Կանգնեցնել առաջին զգուշացումից"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2765
+#, fuzzy
+msgid "Check the parameter range for builtin modules"
+msgstr "ստուգել պարամետրերի միջակայքը ներքին մոդուլների համար"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2766
+msgid "Warn when there is a parameter mismatch in user module calls"
+msgstr "Շգուշացնել, երբ օգտատերը կանչել է սխալ պարամետրեր "
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2767
+msgid "Trace"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2768
+msgid "Trace depth:"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2769
+msgid "(max. number or trace messages)"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2770
+msgid "Show parameters of usermodule calls in trace"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2771
+msgid "Render Summary"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2772
+msgid "Camera"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2773
+msgid "Bounding Box"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2774
+msgid "Measurements: Area"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2775
+msgid "Measurements: Volume"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2776
+#, fuzzy
+msgid "Export Features"
+msgstr "Հնարավորություններ"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2777
+msgid "Toolbar Export 3D"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2778
+msgid "Toolbar Export 2D"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2779
+msgid "Debugging"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2780
+msgid "Enable tracing of HIDAPI events (requires restart of PythonSCAD)"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2781
+msgid "Network Import List"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2782
+msgid "Globally trust Python designs"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2783
+msgid "Really (very dangerous)"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2784
+msgid "Dialog visibility"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2785
+msgid "Always show PDF export dialog"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2786
+msgid "Always show 3MF export dialog"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2787
+msgid "Always show SVF export dialog"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2788
+msgid "Always show GCODE export dialog"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2789
+msgid "Always show Print Service dialog"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2790
 #, fuzzy
 msgid "AI Preferences"
 msgstr "Կարգավորումներ"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2758
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2791
 msgid ""
-"Note: AI integration is currently under active development. Storing "
-"preferences is supported, but API connection is not yet active."
+"AI assistant integration is active. Configure your connection profiles and "
+"parameters below."
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2759
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2792
 #, fuzzy
 msgid "Profiles"
 msgstr "Շերտավորել պրոֆիլը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2760
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2793
 #, fuzzy
 msgid "Active Profile"
 msgstr "Շերտավորել պրոֆիլը"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2761
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2794
 #, fuzzy
 msgid "New Profile"
 msgstr "&Նիշք"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2762
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2795
 msgid "Delete"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2763
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2796
 msgid "API Configuration"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2764
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2797
 msgid "API Endpoint"
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2766
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2799
+msgid "System Prompt / Instructions"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2800
+msgid "Default User Prompt"
+msgstr ""
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2801
 #, fuzzy
 msgid "API Parameters"
 msgstr "Պարամետր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2767
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2802
 #, fuzzy
 msgid "Add Parameter"
 msgstr "Պարամետր"
 
-#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2768
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2803
 #, fuzzy
 msgid "Remove Parameter"
 msgstr "Պարամետր"
@@ -3187,55 +3196,18 @@ msgstr ""
 "Տեսաշերտ՝ թարգմանել = [ %.2f %.2f %.2f ], պտտել = [ %.2f %.2f %.2f ], "
 "հեռավորություն = %.2f"
 
-#: src/gui/ai/ChatWidget.cc:86 src/gui/ai/ChatWidget.cc:169
-msgid ""
-"Hello! I am your OpenSCAD AI assistant. Note: AI connection is under "
-"development and is not yet active. I currently only simulate responses.\n"
-"\n"
-"Ask me to write some code, e.g. \"draw a sphere\" or \"create a box with a "
-"hole\"."
+#: src/gui/ai/ChatWidget.cc:62 src/gui/ai/ChatWidget.cc:143
+msgid "Thinking..."
 msgstr ""
 
-#: src/gui/ai/ChatWidget.cc:107
-msgid "AI is thinking..."
+#: src/gui/ai/ChatWidget.cc:71
+msgid "Thinking"
 msgstr ""
 
-#: src/gui/ai/ChatWidget.cc:126
+#: src/gui/ai/ChatWidget.cc:114 src/gui/ai/ChatWidget.cc:210
 msgid ""
-"Here is how you can create a sphere in OpenSCAD:\n"
-"\n"
-"```openscad\n"
-"// Sphere with radius 10 and smooth details\n"
-"sphere(r = 10, $fn = 100);\n"
-"```"
-msgstr ""
-
-#: src/gui/ai/ChatWidget.cc:130
-msgid ""
-"Here is how you can create a cube in OpenSCAD:\n"
-"\n"
-"```openscad\n"
-"// Cube centered at the origin\n"
-"cube(size = [10, 20, 15], center = true);\n"
-"```"
-msgstr ""
-
-#: src/gui/ai/ChatWidget.cc:134
-msgid ""
-"Here is how you can create a cylinder in OpenSCAD:\n"
-"\n"
-"```openscad\n"
-"// Cylinder with height 20 and radius 5\n"
-"cylinder(h = 20, r = 5, center = true, $fn = 50);\n"
-"```"
-msgstr ""
-
-#: src/gui/ai/ChatWidget.cc:137
-msgid ""
-"I received your prompt: \"%1\".\n"
-"\n"
-"I can help you build 3D models using OpenSCAD! Try asking me to create a "
-"shape like a 'sphere' or a 'cube'."
+"Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
+"\"draw a sphere\" or \"create a box with a hole\"."
 msgstr ""
 
 #: src/gui/Animate.cc:207
@@ -3573,79 +3545,67 @@ msgstr "Մուտքագրեք պարամետրերի հավաքածուի անո�
 msgid "New set "
 msgstr ""
 
-#: src/gui/Preferences.cc:295
+#: src/gui/Preferences.cc:296
 #, fuzzy
 msgid "Parameter Key"
 msgstr "Պարամետր"
 
-#: src/gui/Preferences.cc:295
+#: src/gui/Preferences.cc:296
 #, fuzzy
 msgid "Parameter Value"
 msgstr "Պարամետր"
 
 #: src/gui/Preferences.cc:312 src/gui/Preferences.cc:317
-msgid "OpenAI GPT-4"
-msgstr ""
-
-#: src/gui/Preferences.cc:312 src/gui/Preferences.cc:325
-msgid "Anthropic Claude"
-msgstr ""
-
-#: src/gui/Preferences.cc:312 src/gui/Preferences.cc:334
 msgid "Ollama Local"
 msgstr ""
 
-#: src/gui/Preferences.cc:312
-msgid "Custom / Local LLM"
-msgstr ""
-
-#: src/gui/Preferences.cc:439
+#: src/gui/Preferences.cc:425
 msgid " seconds"
 msgstr ""
 
-#: src/gui/Preferences.cc:466 src/gui/Preferences.cc:471
-#: src/gui/Preferences.cc:1446 src/gui/Preferences.cc:1485
+#: src/gui/Preferences.cc:452 src/gui/Preferences.cc:457
+#: src/gui/Preferences.cc:1433 src/gui/Preferences.cc:1472
 msgid "<Default>"
 msgstr "<Default>"
 
-#: src/gui/Preferences.cc:629
+#: src/gui/Preferences.cc:616
 msgid "NONE"
 msgstr ""
 
-#: src/gui/Preferences.cc:1429
+#: src/gui/Preferences.cc:1416
 msgid "Success: Server Version = %2, API Version = %1"
 msgstr "Հաջողված ՝ Server-ի տարբերակը = %2, API-ի տարբերակը = %1"
 
-#: src/gui/Preferences.cc:1431 src/gui/Preferences.cc:1456
-#: src/gui/Preferences.cc:1495
+#: src/gui/Preferences.cc:1418 src/gui/Preferences.cc:1443
+#: src/gui/Preferences.cc:1482
 msgid "Error"
 msgstr "Սխալմունք"
 
-#: src/gui/Preferences.cc:1571
+#: src/gui/Preferences.cc:1559
 #, fuzzy
 msgid "New AI Profile"
 msgstr "&Նիշք"
 
-#: src/gui/Preferences.cc:1571
+#: src/gui/Preferences.cc:1559
 #, fuzzy
 msgid "Profile name:"
 msgstr "&Նիշք"
 
-#: src/gui/Preferences.cc:1576
+#: src/gui/Preferences.cc:1564
 #, fuzzy
 msgid "Duplicate Profile"
 msgstr "Շերտավորել պրոֆիլը"
 
-#: src/gui/Preferences.cc:1576
+#: src/gui/Preferences.cc:1564
 #, fuzzy
 msgid "A profile with that name already exists."
 msgstr "Անուն %1-ը արդեն գոյություն ունի"
 
-#: src/gui/Preferences.cc:1611
+#: src/gui/Preferences.cc:1599
 msgid "Delete AI Profile"
 msgstr ""
 
-#: src/gui/Preferences.cc:1612
+#: src/gui/Preferences.cc:1600
 msgid "Delete profile \"%1\"?"
 msgstr ""
 
@@ -3749,55 +3709,55 @@ msgstr ""
 "%1 արդեն գոյություն ունի.\n"
 "Ցանկանո՞ւմ եք փոխարինել այն։"
 
-#: src/gui/TabManager.cc:796
+#: src/gui/TabManager.cc:800
 msgid "Copy file name"
 msgstr ""
 
-#: src/gui/TabManager.cc:802
+#: src/gui/TabManager.cc:806
 msgid "Copy full path"
 msgstr ""
 
-#: src/gui/TabManager.cc:808
+#: src/gui/TabManager.cc:812
 #, fuzzy
 msgid "Open Folder"
 msgstr "&Նիշք"
 
-#: src/gui/TabManager.cc:813
+#: src/gui/TabManager.cc:817
 #, fuzzy
 msgid "Close Tab"
 msgstr "Փակել"
 
-#: src/gui/TabManager.cc:818
+#: src/gui/TabManager.cc:822
 msgid "Close All But This Tab"
 msgstr ""
 
-#: src/gui/TabManager.cc:1114
+#: src/gui/TabManager.cc:1118
 #, fuzzy
 msgid "Do you want to save the changes you made to %1?"
 msgstr "Ցանկանում եք պահպանել կատարած փոփոխությունները?"
 
-#: src/gui/TabManager.cc:1115
+#: src/gui/TabManager.cc:1119
 msgid "Your changes will be lost if you don't save them."
 msgstr ""
 
-#: src/gui/TabManager.cc:1120
+#: src/gui/TabManager.cc:1124
 #, fuzzy
 msgid "Don't save"
 msgstr "Այլևս չցուցադրել"
 
-#: src/gui/TabManager.cc:1582 src/gui/TabManager.cc:1611
-#: src/gui/TabManager.cc:1618 src/gui/TabManager.cc:1646
-#: src/gui/TabManager.cc:1834
+#: src/gui/TabManager.cc:1586 src/gui/TabManager.cc:1615
+#: src/gui/TabManager.cc:1622 src/gui/TabManager.cc:1650
+#: src/gui/TabManager.cc:1838
 msgid "Session Restore"
 msgstr ""
 
-#: src/gui/TabManager.cc:1583
+#: src/gui/TabManager.cc:1587
 msgid ""
 "The session file was created by a newer version of PythonSCAD (session "
 "version %1, but this build only supports up to version %2)."
 msgstr ""
 
-#: src/gui/TabManager.cc:1588
+#: src/gui/TabManager.cc:1592
 msgid ""
 "Exit to keep the session file for use with a newer PythonSCAD, or discard it "
 "to start fresh here.\n"
@@ -3806,15 +3766,15 @@ msgid ""
 "%1"
 msgstr ""
 
-#: src/gui/TabManager.cc:1591
+#: src/gui/TabManager.cc:1595
 msgid "Exit"
 msgstr ""
 
-#: src/gui/TabManager.cc:1592
+#: src/gui/TabManager.cc:1596
 msgid "Discard session"
 msgstr ""
 
-#: src/gui/TabManager.cc:1612
+#: src/gui/TabManager.cc:1616
 msgid ""
 "Could not open the session file for reading:\n"
 "%1\n"
@@ -3824,7 +3784,7 @@ msgid ""
 "Starting with a fresh session."
 msgstr ""
 
-#: src/gui/TabManager.cc:1619
+#: src/gui/TabManager.cc:1623
 msgid ""
 "The session file is corrupt or unreadable:\n"
 "%1\n"
@@ -3833,39 +3793,39 @@ msgid ""
 "Starting with a fresh session."
 msgstr ""
 
-#: src/gui/TabManager.cc:1647
+#: src/gui/TabManager.cc:1651
 msgid ""
 "The session file uses an old format (version %1) that cannot be migrated to "
 "the current format (version %2). Starting with a fresh session."
 msgstr ""
 
-#: src/gui/TabManager.cc:1835
+#: src/gui/TabManager.cc:1839
 msgid "%1 file(s) could not be found on disk."
 msgstr ""
 
-#: src/gui/TabManager.cc:1837
+#: src/gui/TabManager.cc:1841
 msgid ""
 "The session contents were restored, but the file paths are stale.\n"
 "Use Save As to pick a new location."
 msgstr ""
 
-#: src/gui/TabManager.cc:1840
+#: src/gui/TabManager.cc:1844
 msgid "Dismiss"
 msgstr ""
 
-#: src/gui/TabManager.cc:1953 src/gui/TabManager.cc:2105
+#: src/gui/TabManager.cc:1957 src/gui/TabManager.cc:2109
 msgid "Failed to open file for writing"
 msgstr "Չհաջողվեց բացել նիշքը խմբագրելու համար"
 
-#: src/gui/TabManager.cc:1993 src/gui/TabManager.cc:2119
+#: src/gui/TabManager.cc:1997 src/gui/TabManager.cc:2123
 msgid "Error saving design"
 msgstr "Էսքիզը չհաջողվեց պահպանել"
 
-#: src/gui/TabManager.cc:2005
+#: src/gui/TabManager.cc:2009
 msgid "Save File"
 msgstr "Պահպանել նիշքը"
 
-#: src/gui/TabManager.cc:2082
+#: src/gui/TabManager.cc:2086
 #, fuzzy
 msgid "Save A Copy"
 msgstr "Պահպանել որպես՝"
@@ -3941,7 +3901,7 @@ msgstr "Նիշքը բացել հնարավոր չէ\"%1$s\" տարածման հ�
 msgid "\"%1$s\" write error. (Disk full?)"
 msgstr "ՍԽԱԼՄՈՒՆՔ: \"%1$s\" չստացվեց պահել/գրել (Սկավառակը լցված է?)"
 
-#: src/openscad_gui.cc:193 src/openscad_gui.cc:819 src/openscad_gui.cc:849
+#: src/openscad_gui.cc:193 src/openscad_gui.cc:822 src/openscad_gui.cc:852
 #, fuzzy
 msgid "PythonSCAD"
 msgstr "PythonSCAD-ի մասին"
@@ -3968,19 +3928,19 @@ msgstr "Մեկնարկ"
 msgid "Show File"
 msgstr "Ցուցադրել մասշատբի նշումները"
 
-#: src/openscad_gui.cc:719
+#: src/openscad_gui.cc:722
 msgid ""
 "PythonSCAD is already running. The existing window was brought to the front; "
 "this process exits."
 msgstr ""
 
-#: src/openscad_gui.cc:723
+#: src/openscad_gui.cc:726
 msgid ""
 "PythonSCAD is already running. An open request for the requested design "
 "file(s) was sent to that instance; this process exits."
 msgstr ""
 
-#: src/openscad_gui.cc:820
+#: src/openscad_gui.cc:823
 msgid ""
 "Could not create the application configuration directory required for "
 "session data and single-instance locking:\n"
@@ -3988,19 +3948,19 @@ msgid ""
 "%1"
 msgstr ""
 
-#: src/openscad_gui.cc:851
+#: src/openscad_gui.cc:854
 msgid ""
 "PythonSCAD is already running but is not responding. The old PythonSCAD "
 "process must be closed to open a new window."
 msgstr ""
 
-#: src/openscad_gui.cc:854
+#: src/openscad_gui.cc:857
 msgid ""
 "Try again if the running instance may have recovered, or close it to start a "
 "new one."
 msgstr ""
 
-#: src/openscad_gui.cc:856
+#: src/openscad_gui.cc:859
 msgid "Close PythonSCAD"
 msgstr ""
 
@@ -4327,9 +4287,6 @@ msgstr ""
 
 #~ msgid "&Open..."
 #~ msgstr "&Բացել..."
-
-#~ msgid "(requires restart)"
-#~ msgstr "(Անհրաժեշտ է վերագործարկել)"
 
 #~ msgid "/"
 #~ msgstr "/"

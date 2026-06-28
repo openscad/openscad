@@ -201,6 +201,22 @@ void warnDesignPathIsDirectory(QWidget *dialogParent, const QString& absPath)
                          .arg(QDir::toNativeSeparators(absPath)));
 }
 
+void launchGvimForFile(const QString& filepath)
+{
+  if (filepath.isEmpty()) return;
+
+  QString escapedFilename = filepath;
+  escapedFilename.replace("'", "'\\''");
+
+  const QString editorcmd = "GDK_BACKEND=x11 gvim --servername PYTHONSCAD --remote-tab-silent '" +
+                            escapedFilename +
+                            "' 2>/dev/null || "
+                            "GDK_BACKEND=x11 gvim --servername PYTHONSCAD '" +
+                            escapedFilename + "' &";
+  const int gvimRc = system(editorcmd.toUtf8().constData());
+  (void)gvimRc;
+}
+
 void initEmptyUntitledTab(EditorInterface *editor)
 {
 #ifdef ENABLE_PYTHON
@@ -391,18 +407,10 @@ void TabManager::tabSwitched(int x)
 
   parent->editActionUndo->setEnabled(editor->canUndo());
   parent->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
-  if (use_gvim) {
-    // **MCH*
-    auto *tabEditor = (EditorInterface *)tabWidget->widget(x);
-    std::string filename = tabEditor->filepath.toUtf8().constData();
-    QString editorcmd = "gvim --remote-send '<esc>:sb " + QString::fromStdString(filename) +
-                        "<cr>' || (gvim '" + QString::fromStdString(filename) + "' &)";
-    //   LOG("1. Opening file '%1$s'",editorcmd.toUtf8().constData());
-    const int gvimRc = system(editorcmd.toUtf8().constData());
-    (void)gvimRc;
-    // **MCH*
-  }
 
+  if (use_gvim) {
+    launchGvimForFile(editor->filepath);
+  }
   auto numberOfOpenTabs = tabWidget->count();
   // Hides all the closing button except the one on the currently focused editor
   for (int idx = 0; idx < numberOfOpenTabs; ++idx) {
@@ -477,14 +485,10 @@ void TabManager::open(const QString& filename)
 {
   assert(!filename.isEmpty());
 
-  if (use_gvim) {
-    QString editorcmd =
-      "gvim --remote-tab-silent '" + filename.toUtf8() + "' || gvim '" + filename.toUtf8() + "' &";
-    editorcmd += filename.toUtf8();
-    //    LOG("2. Opening file '%1$s'",editorcmd.toUtf8().constData());
-    const int gvimRc = system(editorcmd.toUtf8().constData());
-    (void)gvimRc;
-  }
+  // Note: gvim is intentionally NOT called here.
+  // tabSwitched() is triggered by setCurrentWidget() or createTab() below,
+  // and handles opening/switching the file in gvim — calling it here too
+  // would result in gvim being invoked twice per tab switch.
   for (auto edt : editorList) {
     if (filename == edt->filepath) {
       tabWidget->setCurrentWidget(edt);
@@ -498,6 +502,9 @@ void TabManager::open(const QString& filename)
     // so recomputeLanguageActive() follows the opened file's extension (.scad vs .py).
     editor->resetLanguageDetection();
     openTabFile(filename);
+    if (use_gvim) {
+      launchGvimForFile(editor->filepath);
+    }
     editor->recomputeLanguageActive();
     parent->onLanguageActiveChanged(editor->language);
     updateTabIcon(editor);
