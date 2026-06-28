@@ -168,7 +168,7 @@ jobs:
 
     steps:
       - name: Download WASM release zip
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: pythonscad-wasm-release-zip
 
@@ -223,7 +223,7 @@ jobs:
           fi
 
       - name: Download WASM web bundle
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: pythonscad-wasm-web
           path: wasm-bundle
