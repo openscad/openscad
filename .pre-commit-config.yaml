@@ -67,7 +67,7 @@ repos:
           - id: markdownlint-cli2
             exclude: ^CHANGELOG\.md$
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.15.19
+      rev: v0.15.20
       hooks:
           # Validate Python stub files programmatically instead of
           # eyeballing them. Scoped to the stubs tree so that the rest of
