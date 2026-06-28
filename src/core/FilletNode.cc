@@ -149,6 +149,55 @@ void debug_pt(const char *msg, Vector3d pt)
   printf("%s %g/%g/%g\n", msg, pt[0], pt[1], pt[2]);
 }
 
+namespace {
+
+struct FilletEdgePair {
+  int facea = -1;
+  int faceb = -1;
+};
+
+bool validateFilletEdgePairs(const std::vector<IndexedFace>& indices, EdgeKey& failedEdge)
+{
+  std::unordered_map<EdgeKey, FilletEdgePair, boost::hash<EdgeKey>> edge_db;
+
+  for (size_t faceIndex = 0; faceIndex < indices.size(); faceIndex++) {
+    const auto& face = indices[faceIndex];
+    int n = face.size();
+    for (int pos = 0; pos < n; pos++) {
+      int ind1 = face[pos];
+      int ind2 = face[(pos + 1) % n];
+      if (ind1 == ind2) continue;
+
+      EdgeKey edge(ind1, ind2);
+      auto edgeIt = edge_db.emplace(edge, FilletEdgePair{}).first;
+      FilletEdgePair& value = edgeIt->second;
+      if (ind2 > ind1) {
+        if (value.facea != -1) {
+          failedEdge = edge;
+          return false;
+        }
+        value.facea = faceIndex;
+      } else {
+        if (value.faceb != -1) {
+          failedEdge = edge;
+          return false;
+        }
+        value.faceb = faceIndex;
+      }
+    }
+  }
+
+  for (const auto& edge : edge_db) {
+    if (edge.second.facea == -1 || edge.second.faceb == -1) {
+      failedEdge = edge.first;
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
 std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> ps,
                                                 std::vector<bool> corner_selected, double r_, int bn,
                                                 double minang)
@@ -159,6 +208,16 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
   normals = calcTriangleNormals(ps->vertices, ps->indices);
   std::vector<IndexedFace> merged =
     mergeTriangles(ps->indices, normals, newnormals, faceParents, ps->vertices);
+
+  EdgeKey failedEdge;
+  if (!validateFilletEdgePairs(merged, failedEdge)) {
+    LOG(message_group::Error,
+        "fillet() cannot process the selected object: edge %1$d-%2$d is not shared by exactly two "
+        "oppositely-oriented faces. This can happen when the fillet radius collides with nearby "
+        "geometry; try reducing the fillet radius or applying fillet() before unioning adjacent solids.",
+        failedEdge.ind1, failedEdge.ind2);
+    return PolySet::createEmpty();
+  }
 
   if (bn < 2) bn = 2;
   // Create vertex2face db
@@ -744,7 +803,6 @@ std::unique_ptr<const Geometry> FilletNode::createGeometry() const
     ps_merged->indices = mergeTriangles(ps->indices, normals, newnormals, faceParents, ps->vertices);
 
   } else return std::unique_ptr<PolySet>();
-
   if (this->children.size() >= 2) {
     std::shared_ptr<const PolySet> sel = childToPolySet(this->children[1]);
     if (sel != nullptr) {
