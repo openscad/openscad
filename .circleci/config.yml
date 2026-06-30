@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  macos: circleci/macos@2.5.1
+  macos: circleci/macos@2.5.4
 
 executors:
   mxe-executor:
