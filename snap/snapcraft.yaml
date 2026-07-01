@@ -44,7 +44,7 @@ apps:
 
 parts:
   cgal:
-    source: https://github.com/CGAL/cgal/releases/download/v6.1.1/CGAL-6.1.1-library.tar.xz
+    source: https://github.com/CGAL/cgal/releases/download/v6.2/CGAL-6.2-library.tar.xz
     plugin: cmake
     cmake-parameters: [
       "-DCMAKE_BUILD_TYPE=Release",
