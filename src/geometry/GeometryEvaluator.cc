@@ -54,6 +54,8 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 #include "core/ColorUtil.h"
+#include <unordered_map>
+#include <unordered_set>
 #ifdef ENABLE_CGAL
 #include <CGAL/Point_2.h>
 #include <CGAL/convex_hull_2.h>
@@ -216,7 +218,7 @@ int operator==(const EdgeKey& t1, const EdgeKey& t2)
 }
 
 std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> createEdgeDb(
-  const std::vector<IndexedFace>& indices)
+  const std::vector<IndexedFace>& indices, int& error)
 {
   std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> edge_db;
   EdgeKey edge;
@@ -239,18 +241,34 @@ std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> createEdgeDb(
         edge.ind1 = ind1;
         edge.ind2 = ind2;
         if (edge_db.count(edge) == 0) edge_db[edge] = val;
+        if (edge_db[edge].facea != -1 && edge_db[edge].facea != (int)i) {
+          printf(
+            "createEdgeDb: facea fuer Kante %d-%d bereits durch Face %d belegt, "
+            "wird jetzt durch Face %zu ueberschrieben! Non-manifold edge oder "
+            "doppelte Kante.\n",
+            edge.ind1, edge.ind2, edge_db[edge].facea, i);
+          error = 1;
+        }
         edge_db[edge].facea = i;
         edge_db[edge].posa = j;
       } else {
         edge.ind1 = ind2;
         edge.ind2 = ind1;
         if (edge_db.count(edge) == 0) edge_db[edge] = val;
+        if (edge_db[edge].faceb != -1 && edge_db[edge].faceb != (int)i) {
+          printf(
+            "createEdgeDb: faceb fuer Kante %d-%d bereits durch Face %d belegt, "
+            "wird jetzt durch Face %zu ueberschrieben! Non-manifold edge oder "
+            "doppelte Kante.\n",
+            edge.ind1, edge.ind2, edge_db[edge].faceb, i);
+          error = 1;
+        }
         edge_db[edge].faceb = i;
         edge_db[edge].posb = j;
       }
     }
   }
-  int error = 0;
+  error = 0;
   for (auto& e : edge_db) {
     if (e.second.facea == -1 || e.second.faceb == -1) {
       printf("Mismatched EdgeDB ind1=%d ind2=%d facea=%d faceb=%d\n", e.first.ind1, e.first.ind2,
@@ -266,7 +284,6 @@ std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> createEdgeDb(
       }
       printf("\n");
     }
-    assert(0);
   }
   return edge_db;
 }
@@ -361,50 +378,30 @@ static indexedFaceList mergeTrianglesSub(const std::vector<IndexedFace>& triangl
     }
   }
 
-  // now chain everything
-  std::unordered_map<int, int> stubs_chain;
-  std::vector<TriCombineStub> stubs;
-  std::vector<TriCombineStub> stubs_bak;
-  for (const auto& stubs : stubs_pos) {
-    if (stubs_chain.count(stubs.ind1) > 0) {
-      stubs_bak.push_back(stubs);
-    } else stubs_chain[stubs.ind1] = stubs.ind2;
-  }
+  std::unordered_map<int, std::vector<int>> stubs_chain;
 
-  for (const auto& stubs : stubs_neg) {
-    if (stubs_chain.count(stubs.ind2) > 0) {
-      TriCombineStub ts;
-      ts.ind1 = stubs.ind2;
-      ts.ind2 = stubs.ind1;
-      stubs_bak.push_back(ts);
-    } else stubs_chain[stubs.ind2] = stubs.ind1;
-  }
+  for (const auto& s : stubs_pos) stubs_chain[s.ind1].push_back(s.ind2);
+
+  for (const auto& s : stubs_neg) stubs_chain[s.ind2].push_back(s.ind1);
+
   std::vector<IndexedFace> result;
 
-  while (stubs_chain.size() > 0) {
-    int ind, ind_new;
-    auto [ind_start, dummy] = *(stubs_chain.begin());
-    ind = ind_start;
+  while (!stubs_chain.empty()) {
+    int ind_start = stubs_chain.begin()->first;
+    int ind = ind_start;
     IndexedFace poly;
-    while (1) {
-      if (stubs_chain.count(ind) > 0) {
-        ind_new = stubs_chain[ind];
-        stubs_chain.erase(ind);
-      } else {
-        ind_new = -1;
-        for (i = 0; ind_new == -1 && i < stubs_bak.size(); i++) {
-          if (stubs_bak[i].ind1 == ind) {
-            ind_new = stubs_bak[i].ind2;
-            std::vector<TriCombineStub>::iterator it = stubs_bak.begin();
-            std::advance(it, i);
-            stubs_bak.erase(it);
-            break;
-          }
-        }
-        if (ind_new == -1) break;
-      }
+
+    while (true) {
+      auto it = stubs_chain.find(ind);
+      if (it == stubs_chain.end() || it->second.empty()) break;
+
+      // Ersten verfügbaren Nachfolger nehmen und verbrauchen (O(1) mit pop_back)
+      int ind_new = it->second.back();
+      it->second.pop_back();
+      if (it->second.empty()) stubs_chain.erase(it);
+
       poly.push_back(ind_new);
-      if (ind_new == ind_start) break;  // chain closed
+      if (ind_new == ind_start) break;  // Kette geschlossen
       ind = ind_new;
     }
 
@@ -469,28 +466,77 @@ static indexedFaceList mergeTrianglesSub(const std::vector<IndexedFace>& triangl
         repeat = 1;
       }
     } while (repeat);
-    if (vert.size() != 0) {
-      // Reduce colinear points
-      int n = poly.size();
-      IndexedFace poly_new;
-      int last = poly[n - 1], cur = poly[0], next;
-      for (int i = 0; i < n; i++) {
-        next = poly[(i + 1) % n];
-        Vector3d d1 = (vert[next] - vert[cur]).normalized();
-        Vector3d d2 = (vert[cur] - vert[last]).normalized();
-        if (d1.cross(d2).norm() > 0.00001) {
-          poly_new.push_back(cur);
-        }
-        last = cur;
-        cur = next;
-      }
 
-      if (poly_new.size() > 2) result.push_back(poly_new);
-    } else result.push_back(poly);
+    result.push_back(poly);
   }
   return result;
 }
 
+std::unordered_map<int, std::unordered_set<int>> buildVertexAdjacency(
+  const std::vector<IndexedFace>& indices)
+{
+  std::unordered_map<int, std::unordered_set<int>> adj;
+  for (const auto& face : indices) {
+    int n = face.size();
+    for (int j = 0; j < n; j++) {
+      int a = face[j];
+      int b = face[(j + 1) % n];
+      if (a == b) continue;
+      adj[a].insert(b);
+      adj[b].insert(a);
+    }
+  }
+  return adj;
+}
+
+std::unordered_set<int> findRemovableVertices(const std::vector<IndexedFace>& indices,
+                                              const std::vector<Vector3d>& vert, double eps = 1e-5)
+{
+  std::unordered_set<int> removable;
+  if (vert.empty()) return removable;
+
+  auto adj = buildVertexAdjacency(indices);
+
+  for (const auto& kv : adj) {
+    int v = kv.first;
+    const auto& neighbors = kv.second;
+
+    if (neighbors.size() != 2) continue;
+
+    auto it = neighbors.begin();
+    int a = *it;
+    ++it;
+    int b = *it;
+
+    // Bedingung 2: die beiden Kanten v-a und v-b sind kollinear
+    // (zeigen in entgegengesetzte Richtungen entlang derselben Geraden).
+    Vector3d d1 = (vert[a] - vert[v]);
+    Vector3d d2 = (vert[v] - vert[b]);
+    if (d1.norm() < eps || d2.norm() < eps) continue;  // degenerierte Kante, nicht anfassen
+    d1.normalize();
+    d2.normalize();
+    if (d1.cross(d2).norm() <= eps) {
+      removable.insert(v);
+    }
+  }
+  return removable;
+}
+
+void reduceColinearPointsGlobal(std::vector<IndexedFace>& indices, const std::vector<Vector3d>& vert)
+{
+  if (vert.empty()) return;
+
+  std::unordered_set<int> removable = findRemovableVertices(indices, vert);
+  if (removable.empty()) return;
+
+  for (auto& face : indices) {
+    IndexedFace face_new;
+    for (int v : face) {
+      if (removable.count(v) == 0) face_new.push_back(v);
+    }
+    if (face_new.size() >= 3) face = face_new;
+  }
+}
 std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,
                                         const std::vector<Vector4d> normals,
                                         std::vector<Vector4d>& newNormals, std::vector<int>& faceParents,
@@ -584,6 +630,7 @@ std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,
       }
     }
   }
+  reduceColinearPointsGlobal(indices, vert);
 
   return indices;
 }
@@ -1122,7 +1169,12 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet>& p
   // create edge_db
   std::unordered_map<EdgeKey, std::vector<Vector3d>, boost::hash<EdgeKey>> edge_startarc;
   std::unordered_map<EdgeKey, std::vector<Vector3d>, boost::hash<EdgeKey>> edge_endarc;
-  auto edge_db = createEdgeDb(indicesNew);
+  int error;
+  auto edge_db = createEdgeDb(indicesNew, error);
+  if (error)
+    LOG(message_group::Warning,
+        "Resulting 3D offset is not manifold anymore, further processing might be inaccurate");
+
   int abs_eff_fn = 0;
   for (auto& e : edge_db) {
     Vector3d p1 = ps->vertices[e.first.ind1];
@@ -3322,6 +3374,9 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
 {
   auto psx = std::make_unique<PolySet>(ps->getDimension(), ps->convexValue());
   *psx = *ps;
+
+  int error;
+  auto edge_db = createEdgeDb(ps->indices, error);
 
   int color_ind = -1;
   if (node.color.isValid()) {

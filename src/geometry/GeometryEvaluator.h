@@ -108,7 +108,7 @@ std::vector<IndexedColorFace> mergeTriangles(const std::vector<IndexedColorFace>
                                              std::vector<int>& faceParents,
                                              const std::vector<Vector3d>& vert);
 std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> createEdgeDb(
-  const std::vector<IndexedFace>& indices);
+  const std::vector<IndexedFace>& indices, int& error);
 
 VectorOfVector2d alterprofile(VectorOfVector2d vertices, double scalex, double scaley, double origin_x,
                               double origin_y, double offset_x, double offset_y, double rot);

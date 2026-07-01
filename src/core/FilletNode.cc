@@ -248,8 +248,11 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
     }
 
     // create Edge DB
-
-    edge_db = createEdgeDb(merged);
+    int error;
+    edge_db = createEdgeDb(merged, error);
+    if (error)
+      LOG(message_group::Warning,
+          "Resulting fillet is not manifold anymore, further processing might be inaccurate");
 
     // which rounded edges in a corner coner_rounds[vert]=[other_verts]
     corner_rounds.clear();

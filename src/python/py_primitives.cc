@@ -393,7 +393,11 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
   round = 0;
   do {
     done = 0;
-    auto edge_db = createEdgeDb(ps->indices);
+    int error;
+    auto edge_db = createEdgeDb(ps->indices, error);
+    if (error)
+      LOG(message_group::Warning,
+          "Resulting sphere is not manifold anymore, further processing might be inaccurate");
     for (size_t i = 0; i < ps->indices.size(); i++) {
       auto& tri = ps->indices[i];
       if (tri[0] == tri[1] || tri[0] == tri[2] || tri[1] == tri[2]) continue;

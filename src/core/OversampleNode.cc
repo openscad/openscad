@@ -444,7 +444,12 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry_sub(
 
     // now check which edges can be flipped
     std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey>> edgeDb;
-    edgeDb = createEdgeDb(ps_work->indices);
+    int error;
+    edgeDb = createEdgeDb(ps_work->indices, error);
+    if (error)
+      LOG(message_group::Warning,
+          "Resulting oversampling is not  manifold anymore, further processing might be inaccurate");
+
     for (auto it = edgeDb.begin(); it != edgeDb.end(); it++) {
       const EdgeKey& key = it->first;
       const EdgeVal& val = it->second;

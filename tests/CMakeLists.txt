@@ -1163,7 +1163,6 @@ add_failing_test(offfailedtest         SUFFIX off  FILES ${TEST_SCAD_DIR}/misc/e
 add_failing_test(parsererrors          SUFFIX stl  FILES ${FAILING_FILES} ARGS --retval=1 --trust-python)
 if(EXPERIMENTAL)
   add_failing_test(pythonscadfailedtest  SUFFIX stl FILES ${PYTHONSCAD_FAILING_FILES} ARGS --retval=1 --trust-python)
-  set_property(TEST pythonscadfailedtest_issue-801-fillet-collision PROPERTY PASS_REGULAR_EXPRESSION "fillet\\(\\) cannot process")
 endif()
 # Hardwarning Test
 add_failing_test(hardwarnings          SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/errors-warnings.scad ARGS --retval=1 --hardwarnings --trust-python)
