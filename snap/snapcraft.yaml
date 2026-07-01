@@ -74,7 +74,7 @@ parts:
     - ziptool
 
   harfbuzz:
-    source: https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz
+    source: https://github.com/harfbuzz/harfbuzz/releases/download/14.2.1/harfbuzz-14.2.1.tar.xz
     plugin: meson
     build-packages:
       - meson
