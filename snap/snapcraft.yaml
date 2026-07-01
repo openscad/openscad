@@ -57,7 +57,7 @@ parts:
     - libboost-thread-dev
 
   lib3mf2:
-    source: https://github.com/3MFConsortium/lib3mf/archive/refs/tags/v2.4.1.tar.gz
+    source: https://github.com/3MFConsortium/lib3mf/archive/refs/tags/v2.5.0.tar.gz
     plugin: cmake
     cmake-parameters: [
       "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
@@ -66,8 +66,12 @@ parts:
       "-DLIB3MF_TESTS=OFF",
       "-DUSE_INCLUDED_ZLIB=OFF",
       "-DUSE_INCLUDED_LIBZIP=OFF",
-      "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
     ]
+    build-packages:
+    - libfast-float-dev
+    - zipcmp
+    - zipmerge
+    - ziptool
 
   harfbuzz:
     source: https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz
