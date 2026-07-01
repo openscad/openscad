@@ -8,6 +8,6 @@
       "node -e \"const fs=require('fs');fs.mkdirSync('vendor',{recursive:true});for(const f of ['three.module.min.js','three.core.min.js'])fs.copyFileSync('node_modules/three/build/'+f,'vendor/'+f)\""
   },
   "dependencies": {
-    "three": "0.185.0"
+    "three": "0.185.1"
   }
 }
