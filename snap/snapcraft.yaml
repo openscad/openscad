@@ -146,6 +146,7 @@ parts:
     - pkg-config
     - imagemagick
     - libtbb-dev
+    - libssl-dev
     - libzip-dev
     - libgl-dev
     - libxml2-dev
@@ -178,6 +179,7 @@ parts:
     - libvorbis0a
     - libvorbisenc2
     - libzip4t64
+    - libssl3t64
     - libtbb12
     - libatomic1
     - libproxy1v5
