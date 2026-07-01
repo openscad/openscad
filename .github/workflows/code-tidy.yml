@@ -50,6 +50,16 @@ jobs:
     - name: Restore cached results
       uses: actions/cache/restore@v6
       with:
+<<<<<<< HEAD
+=======
+        format: 'YYYY-MM-DD-HH-mm-ss'
+
+    - name: Retrieve cached results
+      uses: actions/cache@v6
+      with:
+        # TODO: maybe cache based on time in push but based on some PR
+        # identifier in pull requests ?
+>>>>>>> aae3f34af (Bump the github-actions group with 2 updates)
         path: /home/runner/.cache/clang-tidy
         key: clang-tidy-${{ hashFiles('.clang-tidy') }}-v18-${{ github.run_id }}
         restore-keys: |
