@@ -138,12 +138,7 @@
         "tbb-devel",
         "xorg-x11-server-Xvfb"
       ],
-      "version_overrides": {
-        "42": {
-          "add": [],
-          "remove": []
-        }
-      }
+      "version_overrides": {}
     },
     "arch": {
       "manager": "pacman",

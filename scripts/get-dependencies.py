@@ -24,7 +24,7 @@ Usage examples:
   scripts/get-dependencies.py --profile base --profile qt5        # multiple profiles combined in order
   scripts/get-dependencies.py --yes                               # auto-install without prompt
   scripts/get-dependencies.py --dry-run                           # show commands only
-  scripts/get-dependencies.py --distro fedora --version 42 --yes
+  scripts/get-dependencies.py --distro fedora --version 43 --yes
 
 Config schema (profiles/*.json):
   distros: {

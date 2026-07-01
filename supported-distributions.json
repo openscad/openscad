@@ -99,19 +99,6 @@
     {
       "family": "fedora",
       "name": "Fedora",
-      "version": "42",
-      "codename": "42",
-      "lts": false,
-      "eol_date": "2026-05",
-      "runner": "ubuntu-24.04",
-      "docker_image": "fedora@sha256:7c63468daf71fdc5bda3699cd483b169bb995b5137265d5ffe8f04e2ce87fbb8",
-      "architectures": [
-        "amd64"
-      ]
-    },
-    {
-      "family": "fedora",
-      "name": "Fedora",
       "version": "43",
       "codename": "43",
       "lts": false,
