@@ -746,12 +746,10 @@ static VectorType search(const str_utf8_wrapper& find, const VectorType& table,
       const auto& entry = entryVec[index_col_num];
       if (entry.type() != Value::Type::STRING) {
         LOG(message_group::Warning, loc, session->documentRoot(),
-            "Invalid entry in search vector at index %1$d column %2$d, not a string", j,
-            index_col_num);
+            "Invalid entry in search vector at index %1$d column %2$d, not a string", j, index_col_num);
         continue;
       }
-      if (!ft.empty() &&
-          ft.get_utf8_char() == entry.toStrUtf8Wrapper().get_utf8_char()) {
+      if (!ft.empty() && ft.get_utf8_char() == entry.toStrUtf8Wrapper().get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
