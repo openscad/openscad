@@ -743,8 +743,13 @@ static VectorType search(const str_utf8_wrapper& find, const VectorType& table,
             j, (index_col_num + 1), table[j].toEchoStringNoThrow());
         return {session};
       }
-      if (!ft.empty() &&
-          ft.get_utf8_char() == entryVec[index_col_num].toStrUtf8Wrapper().get_utf8_char()) {
+      const auto& entry = entryVec[index_col_num];
+      if (entry.type() != Value::Type::STRING) {
+        // Just as "==" silently treats a type mismatch as not-equal, we treat a type mismatch
+        // as not matching.
+        continue;
+      }
+      if (!ft.empty() && ft.get_utf8_char() == entry.toStrUtf8Wrapper().get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
