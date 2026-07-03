@@ -24,6 +24,8 @@ private:
   int thinkingStep = 0;
 };
 
+class CollapsibleBubble;
+
 class ChatWidget : public QWidget, public Ui::ChatWidget
 {
   Q_OBJECT
@@ -34,6 +36,7 @@ public:
 
   void proposeCodeChange(const std::string& code);
   bool hasPendingCodeChanges() const;
+  void logToolExecution(const std::string& name, const std::string& result);
 
 private slots:
   void onSendPressed();
@@ -55,4 +58,5 @@ private:
   std::string proposedCode;
   std::string originalCode;
   QWidget *diffBannerWidget = nullptr;
+  CollapsibleBubble *activeToolBubble = nullptr;
 };

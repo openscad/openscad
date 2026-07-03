@@ -12,6 +12,7 @@
 #include "gui/MainWindow.h"
 #include "gui/ai/DiffDialog.h"
 #include "gui/OpenSCADApp.h"
+#include "gui/ai/CollapsibleBubble.h"
 
 // MessageBubble implementation
 MessageBubble::MessageBubble(const QString& text, bool isUser, QWidget *parent) : QWidget(parent)
@@ -302,6 +303,7 @@ void ChatWidget::onClearPressed()
   }
 
   history.clear();
+  activeToolBubble = nullptr;
 
   addMessage(_("Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
                "\"draw a sphere\" or \"create a box with a hole\"."),
@@ -322,6 +324,7 @@ void ChatWidget::enableInput(bool enabled)
   if (enabled) {
     sendButton->setText(_("Send"));
     inputField->setFocus();
+    activeToolBubble = nullptr;
   } else {
     sendButton->setText(_("Stop"));
   }
@@ -354,4 +357,36 @@ void ChatWidget::proposeCodeChange(const std::string& code)
 bool ChatWidget::hasPendingCodeChanges() const
 {
   return diffBannerWidget && diffBannerWidget->isVisible();
+}
+
+void ChatWidget::logToolExecution(const std::string& name, const std::string& result)
+{
+  QString summary;
+  QString detail;
+
+  if (name == "get_editor_code") {
+    summary = tr("Inspected current code");
+    detail = tr("Tool: get_editor_code\nResult: Read %1 lines.")
+               .arg(QString::fromStdString(result).count('\n'));
+  } else if (name == "set_editor_code") {
+    summary = tr("Proposed code changes");
+    detail = tr("Tool: set_editor_code\nResult: Proposed changes to the active editor.");
+  } else if (name == "trigger_preview") {
+    summary = tr("Triggered render preview");
+    detail = QString::fromStdString("Tool: trigger_preview\nResult: " + result);
+  } else {
+    summary = tr("Executed tool: %1").arg(QString::fromStdString(name));
+    detail = QString::fromStdString("Tool: " + name + "\nResult: " + result);
+  }
+
+  // Find or create the active collapsible tool bubble
+  if (!activeToolBubble || !isRequestRunning) {
+    activeToolBubble = new CollapsibleBubble(summary, detail, this);
+    scrollLayout->insertWidget(scrollLayout->count() - 1, activeToolBubble);
+  } else {
+    activeToolBubble->addToolCall(summary, detail);
+  }
+
+  // Scroll to bottom
+  scrollArea->verticalScrollBar()->setValue(scrollArea->verticalScrollBar()->maximum());
 }

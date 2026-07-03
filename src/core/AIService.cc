@@ -92,17 +92,19 @@ static std::string executeToolOnMainThread(const std::string& name, const std::s
           break;
         }
 
+        std::string result_val;
+
         if (name == "get_editor_code") {
           if (mw && mw->activeEditor) {
-            std::string code = mw->activeEditor->toPlainText().toStdString();
-            promise->set_value(code);
+            result_val = mw->activeEditor->toPlainText().toStdString();
           } else {
-            promise->set_value("Error: No active editor found.");
+            result_val = "Error: No active editor found.";
           }
         } else if (name == "set_editor_code") {
           auto args = nlohmann::json::parse(arguments_json);
           if (!args.contains("code")) {
-            promise->set_value("Error: Missing required argument 'code'.");
+            result_val = "Error: Missing required argument 'code'.";
+            promise->set_value(result_val);
             return;
           }
           std::string code = args["code"].get<std::string>();
@@ -112,15 +114,15 @@ static std::string executeToolOnMainThread(const std::string& name, const std::s
           }
           if (chatWidget) {
             chatWidget->proposeCodeChange(code);
-            promise->set_value(
+            result_val =
               "Success: Code change proposed to the user for review. The user will review and choose "
-              "whether to apply it.");
+              "whether to apply it.";
           } else {
             if (mw && mw->activeEditor) {
               mw->activeEditor->setText(QString::fromStdString(code));
-              promise->set_value("Success: Code set in the editor.");
+              result_val = "Success: Code set in the editor.";
             } else {
-              promise->set_value("Error: No active editor found.");
+              result_val = "Error: No active editor found.";
             }
           }
         } else if (name == "trigger_preview") {
@@ -129,22 +131,62 @@ static std::string executeToolOnMainThread(const std::string& name, const std::s
             chatWidget = mw->findChild<ChatWidget *>();
           }
           if (chatWidget && chatWidget->hasPendingCodeChanges()) {
-            promise->set_value("Info: Preview postponed because code changes are pending user review.");
+            result_val = "Info: Preview postponed because code changes are pending user review.";
           } else {
             if (mw) {
               mw->actionRenderPreview();
-              promise->set_value("Success: Preview triggered.");
+              result_val = "Success: Preview triggered.";
             } else {
-              promise->set_value("Error: No active MainWindow found.");
+              result_val = "Error: No active MainWindow found.";
             }
           }
         } else {
-          promise->set_value("Error: Unknown tool name '" + name + "'.");
+          result_val = "Error: Unknown tool name '" + name + "'.";
         }
+
+        promise->set_value(result_val);
+
+        // Log the tool execution in the ChatWidget
+        ChatWidget *chatWidget = nullptr;
+        if (mw) {
+          chatWidget = mw->findChild<ChatWidget *>();
+        }
+        if (chatWidget) {
+          chatWidget->logToolExecution(name, result_val);
+        }
+
       } catch (const std::exception& e) {
-        promise->set_value(std::string("Error parsing/executing tool: ") + e.what());
+        std::string err = std::string("Error parsing/executing tool: ") + e.what();
+        promise->set_value(err);
+
+        MainWindow *mw = nullptr;
+        for (auto *win : scadApp->windowManager.getWindows()) {
+          mw = win;
+          break;
+        }
+        ChatWidget *chatWidget = nullptr;
+        if (mw) {
+          chatWidget = mw->findChild<ChatWidget *>();
+        }
+        if (chatWidget) {
+          chatWidget->logToolExecution(name, err);
+        }
       } catch (...) {
-        promise->set_value("Error: Unknown exception occurred during tool execution.");
+        std::string err = "Error: Unknown exception occurred during tool execution.";
+        promise->set_value(err);
+
+        MainWindow *mw = nullptr;
+        for (auto *win : scadApp->windowManager.getWindows()) {
+          mw = win;
+          break;
+        }
+        ChatWidget *chatWidget = nullptr;
+        if (mw) {
+          chatWidget = mw->findChild<ChatWidget *>();
+        }
+        if (chatWidget) {
+          chatWidget->logToolExecution(name, err);
+        }
       }
     },
     Qt::QueuedConnection);
@@ -208,9 +250,10 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     "`cube(10);`) MUST end with a semicolon. Semicolons are NOT used after module definitions `module "
     "name() { ... }` or after blocks `{ ... }`.\n"
     "3. **Tool Workflow**:\n"
-    "   - YOU MUST USE `set_editor_code` TO PROPOSE ANY CODE CHANGES.\n"
-    "   - NEVER output OpenSCAD code in markdown block format. ALWAYS use the `set_editor_code` tool so "
-    "the user can apply it.\n"
+    "   - YOU MUST USE `set_editor_code` to propose any code changes so they are set for user review.\n"
+    "   - You can output code blocks in markdown format in the chat for explanation, but you MUST also "
+    "call the `set_editor_code` tool so the changes are set for review and can be applied "
+    "automatically.\n"
     "   - Use `get_editor_code()` if you need to see the latest script state.\n"
     "   - Use `trigger_preview()` once after setting the code to validate the result.\n"
     "4. **Response and Engagement**: Explain the reasoning behind your proposed code changes. Output "
@@ -297,20 +340,6 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       tool_msg.content = result;
       tool_msg.tool_call_id = tc.id;
       history.push_back(tool_msg);
-
-      if (tc.name == "get_editor_code") {
-        on_chunk("\n*AI inspected current code*\n");
-      } else if (tc.name == "set_editor_code") {
-        on_chunk("\n*AI proposed code changes*\n");
-      } else if (tc.name == "trigger_preview") {
-        if (result.find("postponed") != std::string::npos) {
-          on_chunk("\n*Render preview postponed pending review*\n");
-        } else {
-          on_chunk("\n*AI triggered render preview*\n");
-        }
-      } else {
-        on_chunk("\n*AI executed tool: " + tc.name + "*\n");
-      }
     }
 
     chatCompletionStream(history, on_chunk, on_error, on_complete);
@@ -347,9 +376,10 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     "`cube(10);`) MUST end with a semicolon. Semicolons are NOT used after module definitions `module "
     "name() { ... }` or after blocks `{ ... }`.\n"
     "3. **Tool Workflow**:\n"
-    "   - YOU MUST USE `set_editor_code` TO PROPOSE ANY CODE CHANGES.\n"
-    "   - NEVER output OpenSCAD code in markdown block format. ALWAYS use the `set_editor_code` tool so "
-    "the user can apply it.\n"
+    "   - YOU MUST USE `set_editor_code` to propose any code changes so they are set for user review.\n"
+    "   - You can output code blocks in markdown format in the chat for explanation, but you MUST also "
+    "call the `set_editor_code` tool so the changes are set for review and can be applied "
+    "automatically.\n"
     "   - Use `get_editor_code()` if you need to see the latest script state.\n"
     "   - Use `trigger_preview()` once after setting the code to validate the result.\n"
     "4. **Response and Engagement**: Explain the reasoning behind your proposed code changes. Output "
