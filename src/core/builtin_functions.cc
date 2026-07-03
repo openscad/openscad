@@ -1032,6 +1032,29 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   return std::move(font_metrics);
 }
 
+Value builtin_fn(Arguments arguments, const Location& loc)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"r"}, {"d"});
+  parameters.set_caller("fn");
+
+  auto name = parameters.exactlyOneOf({"r", "d"});
+  if (!name) {
+    return Value::undefined.clone();
+  }
+
+  double v;
+  if (!parameters.validate_number(*name, v)) {
+    return Value::undefined.clone();
+  }
+
+  if (*name == "d") {
+    v = v / 2;
+  }
+
+  CurveDiscretizer discretizer(parameters, loc);
+  return discretizer.getCircularSegmentCount(v).value_or(3);
+}
+
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
   if (call->arguments.size() != 1) {
@@ -1336,5 +1359,9 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
                  {
                    "import(file) -> object",
+                 });
+  Builtins::init("fn", new BuiltinFunction(&builtin_fn, &Feature::ExperimentalFnFunction),
+                 {
+                   "fn(r|d) -> number",
                  });
 }
