@@ -972,6 +972,7 @@ add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES 
 if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_LAZY_UNION_TEST_FILES} ARGS --enable=predictible-output --enable=lazy-union)
+add_cmdline_test(export-3mf-stdio        EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} STDIO ARGS --enable=predictible-output --export-format 3mf)
 endif()
 add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
 add_cmdline_test(export-pov-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140)
