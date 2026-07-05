@@ -264,6 +264,9 @@ exporter.append(("blue", background))  # blue: rectangle minus the star area
 exporter.append(("red",  star))        # red: the star itself (later wins)
 exporter.export()
 # writes out/flag-blue.stl and out/flag-red.stl
+
+# Or write one 3MF file with "blue" and "red" as separate named objects.
+exporter.export(single_file="out/flag.3mf")
 ```
 
 `exporter.show()` previews the same split inside the GUI without writing
