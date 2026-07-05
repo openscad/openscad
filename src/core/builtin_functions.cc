@@ -836,11 +836,9 @@ Value builtin_search(Arguments arguments, const Location& loc)
 Value builtin_version(Arguments arguments, const Location& /*loc*/)
 {
   VectorType vec(arguments.session());
-  vec.emplace_back(double(OPENSCAD_YEAR));
-  vec.emplace_back(double(OPENSCAD_MONTH));
-#ifdef OPENSCAD_DAY
-  vec.emplace_back(double(OPENSCAD_DAY));
-#endif
+  vec.emplace_back(double(OPENSCAD_MAJOR));
+  vec.emplace_back(double(OPENSCAD_MINOR));
+  vec.emplace_back(double(OPENSCAD_PATCH));
   return std::move(vec);
 }
 
@@ -848,11 +846,16 @@ Value builtin_version_num(Arguments arguments, const Location& loc)
 {
   Value val =
     (arguments.size() == 0) ? builtin_version(std::move(arguments), loc) : std::move(arguments[0].value);
-  double y, m, d;
-  if (!val.getVec3(y, m, d, 0)) {
+  double major, minor, patch;
+  if (!val.getVec3(major, minor, patch, 0)) {
     return Value::undefined.clone();
   }
-  return {y * 10000 + m * 100 + d};
+  return {major * 1000000 + minor * 1000 + patch};
+}
+
+Value builtin_version_string(Arguments /*arguments*/, const Location& /*loc*/)
+{
+  return {std::string(openscad_versionnumber)};
 }
 
 Value builtin_parent_module(Arguments arguments, const Location& loc)
@@ -1270,6 +1273,11 @@ void register_builtin_functions()
   Builtins::init("version_num", new BuiltinFunction(&builtin_version_num),
                  {
                    "version_num() -> number",
+                 });
+
+  Builtins::init("version_string", new BuiltinFunction(&builtin_version_string),
+                 {
+                   "version_string() -> string",
                  });
 
   Builtins::init("norm", new BuiltinFunction(&builtin_norm),

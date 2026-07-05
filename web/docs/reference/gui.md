@@ -115,7 +115,7 @@ Return the absolute file path of the current script.
 
 ## version
 
-Return the PythonSCAD version as a list.
+Return the PythonSCAD semantic version as a list.
 
 **Syntax:**
 
@@ -125,7 +125,7 @@ Return the PythonSCAD version as a list.
     v = version()
     ```
 
-**Returns:** A list like `[year, month, day]`.
+**Returns:** A list like `[major, minor, patch]`.
 
 **Examples:**
 
@@ -134,7 +134,7 @@ Return the PythonSCAD version as a list.
     ```python
     from pythonscad import *
 
-    print(version())
+    print(version())  # [1, 0, 0]
     ```
 
 **OpenSCAD reference:** [version](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features#OpenSCAD_Version)
@@ -143,7 +143,7 @@ Return the PythonSCAD version as a list.
 
 ## version_num
 
-Return the PythonSCAD version as a single number.
+Return the PythonSCAD semantic version as a single number.
 
 **Syntax:**
 
@@ -153,7 +153,28 @@ Return the PythonSCAD version as a single number.
     n = version_num()
     ```
 
-**Returns:** An integer encoding the version.
+**Returns:** An integer encoding the version as
+`major * 1000000 + minor * 1000 + patch`.
+
+For example, PythonSCAD `1.0.0` returns `1000000`, and `1.1.0` returns
+`1001000`.
+
+---
+
+## version_string
+
+Return the full PythonSCAD version string.
+
+**Syntax:**
+
+=== "Python"
+
+    ```python
+    s = version_string()
+    ```
+
+**Returns:** A string such as `"1.0.0"` or `"1.1.0-beta.1"`. Snapshot builds
+may include additional prerelease information from the build's Git revision.
 
 ---
 

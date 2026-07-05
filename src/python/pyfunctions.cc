@@ -30,6 +30,7 @@
 #include "core/TransformNode.h"
 #include "core/primitives.h"
 #include "python/pyconversion.h"
+#include "version.h"
 PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std::string& keystr,
                                   PyObject *v, int hier)
 {
@@ -204,13 +205,9 @@ PyObject *python_osversion(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   PyObject *version = PyList_New(3);
-  PyList_SetItem(version, 0, PyFloat_FromDouble(OPENSCAD_YEAR));
-  PyList_SetItem(version, 1, PyFloat_FromDouble(OPENSCAD_MONTH));
-#ifdef OPENSCAD_DAY
-  PyList_SetItem(version, 2, PyFloat_FromDouble(OPENSCAD_DAY));
-#else
-  PyList_SetItem(version, 2, PyFloat_FromDouble(0));
-#endif
+  PyList_SetItem(version, 0, PyLong_FromLong(OPENSCAD_MAJOR));
+  PyList_SetItem(version, 1, PyLong_FromLong(OPENSCAD_MINOR));
+  PyList_SetItem(version, 2, PyLong_FromLong(OPENSCAD_PATCH));
 
   return version;
 }
@@ -223,11 +220,20 @@ PyObject *python_osversion_num(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  double version = OPENSCAD_YEAR * 10000 + OPENSCAD_MONTH * 100;
-#ifdef OPENSCAD_DAY
-  version += OPENSCAD_DAY;
-#endif
-  return PyFloat_FromDouble(version);
+  long long version = OPENSCAD_MAJOR * 1000000LL + OPENSCAD_MINOR * 1000LL + OPENSCAD_PATCH;
+  return PyLong_FromLongLong(version);
+}
+
+PyObject *python_osversion_string(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing version_string()");
+    return NULL;
+  }
+
+  const auto version = std::string(openscad_versionnumber);
+  return PyUnicode_FromString(version.c_str());
 }
 
 PyObject *python_oo_hasattr(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -690,9 +696,12 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"osuse", (PyCFunction)python_osuse, METH_VARARGS | METH_KEYWORDS, "Use OpenSCAD Library."},
   {"osinclude", (PyCFunction)python_osinclude, METH_VARARGS | METH_KEYWORDS,
    "Include OpenSCAD Library."},
-  {"version", (PyCFunction)python_osversion, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
+  {"version", (PyCFunction)python_osversion, METH_VARARGS | METH_KEYWORDS,
+   "Output PythonSCAD semantic version components."},
   {"version_num", (PyCFunction)python_osversion_num, METH_VARARGS | METH_KEYWORDS,
-   "Output openscad Version."},
+   "Output PythonSCAD semantic version number."},
+  {"version_string", (PyCFunction)python_osversion_string, METH_VARARGS | METH_KEYWORDS,
+   "Output PythonSCAD version string."},
   {"add_parameter", (PyCFunction)python_add_parameter, METH_VARARGS | METH_KEYWORDS,
    "Add Parameter for Customizer."},
   {"scad", (PyCFunction)python_scad, METH_VARARGS | METH_KEYWORDS, "Source OpenSCAD code."},

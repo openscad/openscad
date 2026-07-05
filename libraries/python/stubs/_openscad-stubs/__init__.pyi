@@ -1404,12 +1404,16 @@ def osuse(path: str) -> PyOpenSCAD:
     """
     ...
 
-def version() -> List[float]:
-    """Outputs pythonscad Version"""
+def version() -> List[int]:
+    """Outputs PythonSCAD semantic version components."""
     ...
 
-def version_num() -> List[float]:
-    """Outputs pythoncad Version"""
+def version_num() -> int:
+    """Outputs PythonSCAD semantic version as major * 1000000 + minor * 1000 + patch."""
+    ...
+
+def version_string() -> str:
+    """Outputs the full PythonSCAD version string."""
     ...
 
 def add_parameter(name: str, default) -> None:

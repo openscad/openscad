@@ -2,6 +2,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import subprocess
 import os
+import re
 import shutil
 import sys
 
@@ -35,6 +36,18 @@ def get_version():
     here = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(here, "VERSION.txt")) as f:
         return f.read().strip()
+
+
+def get_version_parts():
+    version = get_version()
+    match = re.match(r"^(([0-9]+)\.([0-9]+)(?:\.([0-9]+))?)(?:-([^+]+))?(?:\+(.*))?$", version)
+    if not match:
+        raise RuntimeError(f"Version string '{version}' doesn't match expected semantic version format")
+
+    major = str(int(match.group(2)))
+    minor = str(int(match.group(3)))
+    patch = str(int(match.group(4) or "0"))
+    return version, match.group(1), major, minor, patch
 
 
 def pkg_config_cmd():
@@ -667,6 +680,7 @@ def main():
     all_sources = (root + python + geometry + ext + io + lib3mf_sources +
                    libsvg + core + manifold + clipper + utils + platform +
                    glview + lex_yacc + lodepng + libfive_sources)
+    version, shortversion, version_major, version_minor, version_patch = get_version_parts()
 
     all_defines = [
         ("ENABLE_PYTHON", "1"),
@@ -676,8 +690,14 @@ def main():
         ("OPENSCAD_NOGUI", "1"),
         ("PYTHON_EXECUTABLE_NAME", '"pythonscad"'),
         ("MANIFOLD_PAR", "-1"),
-        ("OPENSCAD_YEAR", "2025"),
-        ("OPENSCAD_MONTH", "2"),
+        ("OPENSCAD_VERSION", version),
+        ("OPENSCAD_SHORTVERSION", shortversion),
+        ("OPENSCAD_MAJOR", version_major),
+        ("OPENSCAD_MINOR", version_minor),
+        ("OPENSCAD_PATCH", version_patch),
+        ("OPENSCAD_YEAR", version_major),
+        ("OPENSCAD_MONTH", version_minor),
+        ("OPENSCAD_DAY", version_patch),
         ("STACKSIZE", "524288"),
     ] + lib3mf_defines + libfive_defines + get_extra_defines()
 
