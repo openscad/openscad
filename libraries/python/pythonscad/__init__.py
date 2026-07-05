@@ -117,6 +117,7 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         >>> exporter.append(("base", base_geometry))
         >>> exporter.append(("overlay", overlay_geometry))
         >>> exporter.export()  # writes out/flag-base.stl and out/flag-overlay.stl
+        >>> exporter.export(single_file="out/flag.3mf")  # writes one multi-object 3MF
     """
 
     def __init__(
@@ -217,6 +218,14 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         """Return the output filename for part ``i``."""
         return f"{self.prefix}{self[i][0]}{self.suffix}"
 
+    def _ensure_parent_dir(self, filename: str) -> None:
+        """Create ``filename``'s parent directory if ``mkdir`` is enabled."""
+        if not self.mkdir:
+            return
+        directory = _os.path.dirname(filename)
+        if directory:
+            _os.makedirs(directory, exist_ok=True)
+
     def _part(self, i: int):
         """Return the geometry for part ``i``: ``self[i]``'s object minus all later parts.
 
@@ -252,6 +261,17 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
                 )
             seen[key] = (name, filename)
 
+    def _check_unique_part_names(self) -> None:
+        """Raise :class:`ValueError` if part names would collide in a dict export."""
+        seen: set[str] = set()
+        for name, _geometry in self:
+            if name in seen:
+                raise ValueError(
+                    f"MultiToolExporter items must have unique names for "
+                    f"single-file export: {name!r}"
+                )
+            seen.add(name)
+
     def parts(self) -> list[tuple[str, _typing.Any]]:
         """Return the computed ``(name, geometry)`` pairs in declaration order.
 
@@ -271,11 +291,13 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         """
         return [(self[i][0], self._part(i)) for i in range(len(self))]
 
-    def export(self) -> None:
-        """Export each part to a file via PythonSCAD.
+    def export(self, single_file: _typing.Optional[str] = None) -> None:
+        """Export parts to per-part files or a single multi-object 3MF.
 
-        For each item, exports the result of :meth:`parts` to
-        ``f"{prefix}{name}{suffix}"``.
+        By default, exports each result of :meth:`parts` to
+        ``f"{prefix}{name}{suffix}"``. If ``single_file`` is given, exports
+        all parts into that one 3MF file using PythonSCAD's multi-object
+        ``export({"part": geometry}, "out.3mf")`` form.
 
         If :attr:`mkdir` is ``True``, the parent directory of each output
         file is created beforehand (filenames without a directory component
@@ -284,16 +306,36 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         Raises:
             ValueError: If two or more items would write to the same
                 output path (raw duplicate names, path aliases, or, on
-                Windows/macOS, case-only collisions).
+                Windows/macOS, case-only collisions). Also raised when
+                ``single_file`` is not a ``.3mf`` path, or when duplicate
+                part names would collide in the single-file export dict.
         """
+        if single_file is not None:
+            if _os.path.splitext(single_file)[1].casefold() != ".3mf":
+                raise ValueError(
+                    f"MultiToolExporter single-file export only supports .3mf: "
+                    f"{single_file!r}"
+                )
+            if not self:
+                return
+            self._check_unique_part_names()
+            self._ensure_parent_dir(single_file)
+            export_multi = _typing.cast(
+                _typing.Callable[[_typing.Mapping[str, _typing.Any], str], None],
+                globals()["export"],
+            )
+            export_multi(dict(self.parts()), single_file)
+            return
+
         self._check_unique_filenames()
+        export_one = _typing.cast(
+            _typing.Callable[[_typing.Any, str], None],
+            globals()["export"],
+        )
         for name, geometry in self.parts():
             filename = f"{self.prefix}{name}{self.suffix}"
-            if self.mkdir:
-                directory = _os.path.dirname(filename)
-                if directory:
-                    _os.makedirs(directory, exist_ok=True)
-            export(geometry, filename)  # noqa: F405
+            self._ensure_parent_dir(filename)
+            export_one(geometry, filename)
 
     def show(self) -> None:
         """Display each part in the PythonSCAD preview.
