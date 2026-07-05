@@ -10,6 +10,8 @@ Exercises:
   * ``mkdir=True`` with a directory-less filename (must not raise)
   * end-to-end ``export()`` calling the underlying ``pythonscad.export``
     once per part with the expected filename
+  * ``export(single_file=...)`` calling the underlying ``pythonscad.export``
+    once with the expected dict of named parts
 
 The underlying ``pythonscad.export`` is monkey-patched to a deterministic
 recorder so the test does not depend on a render backend, file system
@@ -78,12 +80,28 @@ print("len after failed extend:", len(exp))
 # --- 4. Duplicate-name detection at export time ------------------------
 dup = MultiToolExporter("p-", ".stl", items=[("x", red), ("x", blue)])
 expect("export duplicate names", dup.export, ValueError)
+expect(
+    "single-file duplicate names",
+    lambda: dup.export(single_file="assembly.3mf"),
+    ValueError,
+)
+expect(
+    "single-file non-3mf",
+    lambda: exp.export(single_file="assembly.stl"),
+    ValueError,
+)
+empty = MultiToolExporter("p-", ".stl")
+empty.export(single_file="empty.3mf")
+print("single-file empty no-op: ok")
 
 # --- 5. End-to-end export(), with monkey-patched underlying export -----
 calls = []
 real_export = pythonscad.export
 def recording_export(obj, filename):
-    calls.append((obj is not None, filename))
+    if isinstance(obj, dict):
+        calls.append((list(obj.keys()), filename))
+    else:
+        calls.append((obj is not None, filename))
 pythonscad.export = recording_export
 try:
     # 5a. Two parts, no directory in prefix, mkdir=True -- must not crash
@@ -102,12 +120,18 @@ try:
         )
         e2.export()
         print("created nested dir:", os.path.isdir(os.path.join(tmp, "nested")))
+    # 5c. Single-file 3MF export -- one call with a dict of named parts
+    with tempfile.TemporaryDirectory() as tmp:
+        out_file = os.path.join(tmp, "assembly", "parts.3mf")
+        e3 = MultiToolExporter("", ".stl", mkdir=True, items=[("r", red), ("b", blue)])
+        e3.export(single_file=out_file)
+        print("created assembly dir:", os.path.isdir(os.path.join(tmp, "assembly")))
 finally:
     pythonscad.export = real_export
 
 # Print the recorded export calls (last filename only -- temp paths vary).
-for has_obj, filename in calls:
+for obj_info, filename in calls:
     if filename.startswith("nodir-"):
-        print("export call:", has_obj, filename)
+        print("export call:", obj_info, filename)
     else:
-        print("export call:", has_obj, "tmp/.../" + os.path.basename(filename))
+        print("export call:", obj_info, "tmp/.../" + os.path.basename(filename))

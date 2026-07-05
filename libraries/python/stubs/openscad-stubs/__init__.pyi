@@ -16,4 +16,5 @@ from _openscad import (  # noqa: F401
     Vector1,
     Vector2,
     Vector3,
+    export,
 )

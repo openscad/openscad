@@ -18,9 +18,15 @@ iadd mid-bad item: TypeError
 constructor bad item: ValueError
 len after failed extend: 2
 export duplicate names: ValueError
+single-file duplicate names: ValueError
+single-file non-3mf: ValueError
+single-file empty no-op: ok
 created nested dir: True
+created assembly dir: True
 export call: True nodir-red.stl
 export call: True nodir-blue.stl
 export call: True nodir-green.stl
 export call: True tmp/.../x-a.3mf
 export call: True tmp/.../x-b.3mf
+export call: ['r', 'b'] tmp/.../parts.3mf
+

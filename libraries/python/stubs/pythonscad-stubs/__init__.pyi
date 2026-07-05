@@ -30,12 +30,12 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
     Each item is a ``(name, object)`` 2-tuple (matching :func:`dict.items`
     and the multi-object form of :func:`export`). For each index ``i``,
     :meth:`export` writes the geometry obtained by subtracting every later
-    item's object from ``self[i]``'s object into the file
-    ``f"{prefix}{name}{suffix}"``. The last entry is emitted as-is (no
-    degenerate one-child ``difference`` node). Output paths must be
-    unique; collisions (raw duplicate names, path aliases, or - on
-    Windows/macOS - case-only collisions) raise :class:`ValueError` at
-    export time.
+    item's object from ``self[i]``'s object into either per-part files
+    named ``f"{prefix}{name}{suffix}"`` or one multi-object 3MF file when
+    ``single_file`` is provided. The last entry is emitted as-is (no
+    degenerate one-child ``difference`` node). Output paths and
+    single-file part names must be unique; collisions raise
+    :class:`ValueError` at export time.
     """
 
     prefix: str
@@ -82,8 +82,8 @@ class MultiToolExporter(list[tuple[str, _typing.Any]]):
         """Return computed ``(name, geometry)`` pairs in declaration order."""
         ...
 
-    def export(self) -> None:
-        """Export each part to a file via PythonSCAD."""
+    def export(self, single_file: str | None = ...) -> None:
+        """Export each part separately, or all parts into one 3MF file."""
         ...
 
     def show(self) -> None:

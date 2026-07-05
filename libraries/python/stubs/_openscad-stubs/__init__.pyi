@@ -1,6 +1,6 @@
 """ PythonSCAD Stub File for use in editors like Visual Studio Code """
 from enum import Enum
-from typing import List, Optional, Self, Sequence, Union, overload
+from typing import List, Mapping, Optional, Self, Sequence, Union, overload
 
 PyOpenSCADs = Union["PyOpenSCAD", list["PyOpenSCAD"]]
 """Type for functions that accept either a single OpenSCAD object or a list of objects."""
@@ -1245,7 +1245,15 @@ def pull(obj: PyOpenSCAD, src: List[float], dst: List[float]) -> PyOpenSCAD:
     ...
 
 
+@overload
 def export(obj: PyOpenSCAD, file: str) -> None:
+    """Export the result to a file
+    file:  output file name, format is automatically detected from suffix
+    """
+    ...
+
+@overload
+def export(obj: Mapping[str, PyOpenSCADs], file: str) -> None:
     """Export the result to a file
     file:  output file name, format is automatically detected from suffix
     when obj is a dictionary, it allows 3mf export to export several paths
