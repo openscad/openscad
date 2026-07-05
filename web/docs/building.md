@@ -55,7 +55,7 @@ with the `-D` flag:
 | `HEADLESS`         | OFF     | Build without GUI (for servers/CI)|
 | `EXPERIMENTAL`     | ON      | Enable experimental features      |
 | `ENABLE_PYTHON`    | ON      | Enable Python support             |
-| `USE_QT6`          | OFF     | Use Qt6 instead of Qt5            |
+| `USE_QT6`          | ON      | Use Qt6 instead of Qt5            |
 | `ENABLE_CGAL`      | ON      | Enable CGAL geometry backend      |
 | `ENABLE_MANIFOLD`  | ON      | Enable Manifold geometry backend  |
 
