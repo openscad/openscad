@@ -1552,6 +1552,13 @@ if(ENABLE_PYTHON)
   )
   set_property(TEST version-helpers PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
 
+  add_test(NAME python-sibling-import-cli CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_python_sibling_import_cli.py
+      ${OPENSCAD_BINPATH}
+  )
+  set_property(TEST python-sibling-import-cli PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+
   # Layer-2: drive `pythonscad --ipython` through a real PTY (pexpect)
   # so we exercise the actual interactive prompt, not just the
   # non-interactive piped-stdin path covered by `ipython-smoke`. This
