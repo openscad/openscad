@@ -3,7 +3,7 @@
 PythonSCAD ships a small helper, `MultiToolExporter`, for the common
 multi-tool / multi-color workflow where a single model is split into several
 parts (typically one per filament color or print head) and each part is
-exported to its own file.
+exported either to its own file or into one multi-object 3MF file.
 
 The class lives in the `pythonscad` package (a strict superset of `openscad`),
 so it is available under either of these imports:
@@ -76,8 +76,9 @@ is created and no error is raised.
 | `append(item)`    | Append a single `(name, object)` 2-tuple. Validates the shape.                                                           |
 | `extend(items)`   | Append each `(name, object)` from an iterable.                                                                           |
 | `insert(i, item)` | Insert a single `(name, object)` 2-tuple at position `i`.                                                                |
-| `parts()`         | Return the computed `(name, geometry)` pairs in declaration order. Used internally by `export`/`show` and as input for `dict(exporter.parts())` to feed multi-object 3MF export. |
-| `export()`        | Write each part to its file. Raises `ValueError` if any two items would write to the same output path.                  |
+| `parts()`         | Return computed `(name, geometry)` pairs in declaration order. Useful for lower-level `dict(exporter.parts())` 3MF export. |
+| `export()`        | Write each part to its own file. Raises `ValueError` if any two items would write to the same output path.              |
+| `export(single_file="out/model.3mf")` | Write all computed parts into one multi-object 3MF file. Raises `ValueError` for non-`.3mf` paths or duplicate part names. |
 | `show()`          | Render each part into the preview viewport (same cumulative-difference semantics as `export`).                           |
 
 **Validation:**
@@ -146,13 +147,11 @@ Previewing the same split inside the GUI without writing files:
     exporter.show()
     ```
 
-### Combining with multi-object 3MF export
+### Single-file 3MF export
 
-`MultiToolExporter` writes one file per part. To combine its
-cumulative-difference split with the
-[multi-object 3MF form](display.md#multi-object-3mf-export) of
-`export()` (one 3MF file containing every part as a named object),
-run the parts through `parts()` and feed the result into a `dict`:
+Pass `single_file` to write one 3MF file containing every computed part as a
+named object. This is useful for slicers such as PrusaSlicer, where each 3MF
+object can be assigned to a different tool or filament color:
 
 === "Python"
 
@@ -166,16 +165,15 @@ run the parts through `parts()` and feed the result into a `dict`:
     exporter.append(("blue", background))
     exporter.append(("red",  star))
 
-    # Cumulative-difference split, then a single 3MF with two named parts.
-    export(dict(exporter.parts()), "flag.3mf")
+    # Cumulative-difference split, then one 3MF with two named objects.
+    exporter.export(single_file="flag.3mf")
     ```
 
-The dict-form `export()` accepts only `.3mf` when, after filtering,
-two or more recognised values remain. The filter is *not* a uniform
-silent drop: `None` and `False` resolve to the built-in empty object
-and `True` to the full universe (they pass through as named parts),
-while truly unrelated values like numbers or strings are dropped, and
-if nothing converts at all you get `TypeError: Object not recognized`.
-Keys must be `str` (they become 3MF part names). See
-[Multi-object 3MF export](display.md#multi-object-3mf-export) for the
-full contract.
+For single-file export, item names become 3MF object names and must be unique.
+`single_file` currently supports only `.3mf`; use plain `export()` when you
+want one output file per part.
+
+The lower-level `export(dict(exporter.parts()), "flag.3mf")` form is still
+available if you want to build the part dictionary yourself. See
+[Multi-object 3MF export](display.md#multi-object-3mf-export) for the full
+dict-export contract.
