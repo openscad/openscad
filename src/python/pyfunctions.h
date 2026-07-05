@@ -239,6 +239,7 @@ PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs);
 PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_osversion(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_osversion_num(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_osversion_string(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_osuse(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_osinclude(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type);

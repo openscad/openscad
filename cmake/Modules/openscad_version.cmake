@@ -58,7 +58,7 @@ endif()
 # Split OPENSCAD_VERSION into components
 # Supports both semantic versioning (X.Y.Z) and old date format (YYYY.MM.DD)
 # Format: MAJOR.MINOR[.PATCH][-PRERELEASE][+BUILD]
-string(REGEX MATCH "^(([0-9]+)\\.([0-9]+)(\\.([0-9]+))?)(-([^\\.\\+]+))?(\\+(.*))?$" MATCH "${OPENSCAD_VERSION}")
+string(REGEX MATCH "^(([0-9]+)\\.([0-9]+)(\\.([0-9]+))?)(-([^\\+]+))?(\\+(.*))?$" MATCH "${OPENSCAD_VERSION}")
 
 set(OPENSCAD_SHORTVERSION ${CMAKE_MATCH_1})
 set(OPENSCAD_MAJOR ${CMAKE_MATCH_2})
@@ -73,17 +73,31 @@ if ("${OPENSCAD_SHORTVERSION}" STREQUAL "")
   message(FATAL_ERROR "Version string '${OPENSCAD_VERSION}' doesn't match expected format. Please ensure git tags are fetched or VERSION.txt contains a valid version.")
 endif()
 
-# For backward compatibility, also set YEAR/MONTH/DAY
-# If using semantic versioning (e.g., 0.6.0), these will be the version components
-# If using date format (e.g., 2025.12.02), these will be the date components
+string(REGEX REPLACE "^0+" "" OPENSCAD_MAJOR "${OPENSCAD_MAJOR}")
+if ("${OPENSCAD_MAJOR}" STREQUAL "")
+  set(OPENSCAD_MAJOR 0)
+endif()
+
+string(REGEX REPLACE "^0+" "" OPENSCAD_MINOR "${OPENSCAD_MINOR}")
+if ("${OPENSCAD_MINOR}" STREQUAL "")
+  set(OPENSCAD_MINOR 0)
+endif()
+
+if (NOT DEFINED OPENSCAD_PATCH OR "${OPENSCAD_PATCH}" STREQUAL "")
+  # Patch version is optional (e.g., 0.6 instead of 0.6.0).
+  set(OPENSCAD_PATCH 0)
+endif()
+
+string(REGEX REPLACE "^0+" "" OPENSCAD_PATCH "${OPENSCAD_PATCH}")
+if ("${OPENSCAD_PATCH}" STREQUAL "")
+  set(OPENSCAD_PATCH 0)
+endif()
+
+# For backward compatibility, also set YEAR/MONTH/DAY. With semantic
+# versions these names still carry major/minor/patch components.
 set(OPENSCAD_YEAR ${OPENSCAD_MAJOR})
 set(OPENSCAD_MONTH ${OPENSCAD_MINOR})
-if (DEFINED OPENSCAD_PATCH AND NOT "${OPENSCAD_PATCH}" STREQUAL "")
-  set(OPENSCAD_DAY ${OPENSCAD_PATCH})
-else()
-  # Patch version is optional (e.g., 0.6 instead of 0.6.0)
-  set(OPENSCAD_DAY 0)
-endif()
+set(OPENSCAD_DAY ${OPENSCAD_PATCH})
 
 set(PROJECT_VERSION ${OPENSCAD_SHORTVERSION})
 
