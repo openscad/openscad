@@ -24,7 +24,7 @@ ParameterText::ParameterText(QWidget *parent, StringParameter *parameter,
 
 void ParameterText::valueApplied()
 {
-  lastApplied = lastSent;
+  lastApplied = parameter->value;
 }
 
 void ParameterText::onEdit(const QString& text)
@@ -34,8 +34,7 @@ void ParameterText::onEdit(const QString& text)
 #endif
   std::string value = text.toStdString();
   if (lastSent != value) {
-    lastSent = parameter->value = value;
-    emit changed(false);
+    lastSent = value;
   }
 }
 
@@ -44,8 +43,9 @@ void ParameterText::onEditingFinished()
 #ifdef DEBUG
   PRINTD("editing finished");
 #endif
-  if (lastApplied != parameter->value) {
-    lastSent = parameter->value = lineEdit->text().toStdString();
+  std::string value = lineEdit->text().toStdString();
+  if (lastApplied != value) {
+    lastSent = parameter->value = value;
     emit changed(true);
   }
 }
