@@ -31,17 +31,38 @@ jobs:
       # release-please force-pushes its branch on every update, so this step
       # re-applies deterministically after each run; the generator is
       # idempotent and derives everything from CHANGELOG.md.
+      - name: Extract release PR branch
+        id: release_pr_branch
+        if: ${{ steps.release.outputs.pr != '' }}
+        env:
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+
+          pr = json.loads(os.environ["RELEASE_PR"])
+          branch = pr.get("headBranchName") if isinstance(pr, dict) else None
+          if not isinstance(branch, str) or not branch:
+              print("No release PR branch found; skipping AppStream release sync")
+              raise SystemExit(0)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"branch={branch}\n")
+          PY
+
       - name: Checkout release PR branch
-        if: ${{ steps.release.outputs.pr }}
+        if: ${{ steps.release_pr_branch.outputs.branch != '' }}
         uses: actions/checkout@v7
         with:
-          ref: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+          ref: ${{ steps.release_pr_branch.outputs.branch }}
           persist-credentials: false
 
       - name: Sync AppStream release list onto release PR
-        if: ${{ steps.release.outputs.pr }}
+        if: ${{ steps.release_pr_branch.outputs.branch != '' }}
         env:
-          RELEASE_PR_BRANCH: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+          RELEASE_PR_BRANCH: ${{ steps.release_pr_branch.outputs.branch }}
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -euo pipefail
