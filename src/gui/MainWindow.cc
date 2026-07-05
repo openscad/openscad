@@ -4027,8 +4027,14 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, colorListDock);
     tabifyDockWidget(colorListDock, animateDock);
-    tabifyDockWidget(animateDock, aiDock);
+    tabifyDockWidget(animateDock, viewportControlDock);
+    tabifyDockWidget(parameterDock, aiDock);
     parameterDock->hide();
+    aiDock->hide();
+    errorLogDock->hide();
+    fontListDock->hide();
+    colorListDock->hide();
+    animateDock->hide();
     viewportControlDock->hide();
     consoleDock->show();
     consoleDock->raise();
