@@ -162,8 +162,10 @@ jobs:
             lintian \
             dpkg-dev \
             fakeroot
-          # Install Build-Depends from debian/control
-          sudo apt-get install -y libboost-all-dev
+          # Install package Build-Depends not covered by get-dependencies.
+          sudo apt-get install -y \
+            libboost-all-dev \
+            libssl-dev
 
       - name: Install build dependencies (amd64 Docker container)
         if: matrix.arch == 'amd64' && matrix.docker_image
@@ -194,8 +196,10 @@ jobs:
             lintian \
             dpkg-dev \
             fakeroot
-          # Install Build-Depends from debian/control
-          apt-get install -y libboost-all-dev
+          # Install package Build-Depends not covered by get-dependencies.
+          apt-get install -y \
+            libboost-all-dev \
+            libssl-dev
 
       - name: Import GPG signing key (amd64)
         if: matrix.arch == 'amd64' && (github.event_name == 'release' || github.event.inputs.upload_to_release != '')
@@ -286,7 +290,14 @@ jobs:
 
               # Install build dependencies
               ./scripts/get-dependencies.py --yes --profile "$QT_PROFILE"
-              apt-get install -y debhelper devscripts lintian dpkg-dev fakeroot libboost-all-dev
+              apt-get install -y \
+                debhelper \
+                devscripts \
+                lintian \
+                dpkg-dev \
+                fakeroot \
+                libboost-all-dev \
+                libssl-dev
 
               # Build package
               mkdir -p "$OUTPUT_DIR"
