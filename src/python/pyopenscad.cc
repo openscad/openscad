@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <string>
+#include <system_error>
 #include <vector>
 #include <glview/RenderSettings.h>
 #ifdef _WIN32
@@ -1204,7 +1205,16 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
 #if defined(_WIN32)
     char sepchar = ';';
     sep = sepchar;
-    stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
+    // Windows installer places pythonscad.exe at the install root (not in a
+    // bin/ subdirectory), so paths must be relative to applicationPath()
+    // directly — no "../" prefix.
+    const auto applicationPath = fs::path(PlatformUtils::applicationPath());
+    stream << (applicationPath / "libraries" / "python").generic_string();
+    // Also add the bundled CPython stdlib so Py_InitializeFromConfig can find
+    // the platform-independent libraries without needing a real python.exe.
+    const auto pythonXY =
+      "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
+    stream << sepchar << (applicationPath / "lib" / pythonXY).generic_string();
 #else
     char sepchar = ':';
     const auto pythonXY =
@@ -1246,7 +1256,28 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
 
 #ifndef __EMSCRIPTEN__
     if (!binDir.empty()) {
+#if defined(_WIN32)
+      // On Windows the shim is named pythonscad-python.exe; "python.exe" does
+      // not exist in the install tree.  Setting config.executable to a
+      // nonexistent path causes CPython's path-probing to fail with "Could not
+      // find platform independent libraries", so only set it when the file
+      // actually exists.
+      const auto binPath = fs::path(binDir);
+      const auto pythonExePath = binPath / "python.exe";
+      const auto pythonScadExePath = binPath / "pythonscad-python.exe";
+      std::error_code ec;
+      if (fs::exists(pythonExePath, ec)) {
+        const auto pythonExe = pythonExePath.generic_string();
+        PyConfig_SetBytesString(&config, &config.executable, pythonExe.c_str());
+      } else if (fs::exists(pythonScadExePath, ec)) {
+        const auto pythonScadExe = pythonScadExePath.generic_string();
+        PyConfig_SetBytesString(&config, &config.executable, pythonScadExe.c_str());
+      }
+      // If neither exists, leave config.executable unset — CPython will probe
+      // using its own heuristics, guided by pythonpath_env set above.
+#else
       PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
+#endif
     }
 #endif
 
