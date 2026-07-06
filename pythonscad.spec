@@ -41,6 +41,7 @@ BuildRequires:  double-conversion-devel
 BuildRequires:  lib3mf-devel
 BuildRequires:  libzip-devel
 BuildRequires:  libcurl-devel
+BuildRequires:  openssl-devel
 BuildRequires:  cairo-devel
 BuildRequires:  hidapi-devel
 BuildRequires:  libspnav-devel
