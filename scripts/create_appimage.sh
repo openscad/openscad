@@ -299,6 +299,12 @@ else
     die "linuxdeploy not found"
 fi
 
+if [ "${QT_VERSION}" = "6" ]; then
+    # Avoid GTK native dialogs in the Qt6 AppImage: they pull in
+    # host gdk-pixbuf loaders and can crash against bundled librsvg.
+    rm -f "${APPDIR}/usr/plugins/platformthemes/libqgtk3.so"
+fi
+
 # Bundle Python runtime and libraries
 info "Bundling Python runtime..."
 
