@@ -58,6 +58,9 @@
 #include "core/primitives.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
+#if defined(ENABLE_LIBFIVE)
+#include "python/FrepNode.h"
+#endif
 
 #define NodeCloneFunc(T)                                                                               \
   std::shared_ptr<T> clone_what(const T *node)                                                         \
@@ -89,8 +92,11 @@ NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
                         NodeCloneFunc(RoofNode)
 #endif
+#if defined(ENABLE_LIBFIVE)
+                          NodeCloneFunc(FrepNode)
+#endif
 
-                          std::shared_ptr<AbstractNode> AbstractNode::clone(void)
+                            std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 {
   std::shared_ptr<AbstractNode> clone = nullptr;
   NodeCloneUse(CubeNode) NodeCloneUse(SphereNode) NodeCloneUse(CylinderNode) NodeCloneUse(PolyhedronNode)
@@ -107,7 +113,10 @@ NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
                         NodeCloneUse(RoofNode)
 #endif
-                          if (clone != nullptr)
+#if defined(ENABLE_LIBFIVE)
+                          NodeCloneUse(FrepNode)
+#endif
+                            if (clone != nullptr)
   {
     clone->idx = idx_counter++;
     clone->children.clear();
