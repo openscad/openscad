@@ -37,6 +37,7 @@ public:
   void proposeCodeChange(const std::string& code);
   bool hasPendingCodeChanges() const;
   void logToolExecution(const std::string& name, const std::string& result);
+  void startNewResponseTurn();
 
 private slots:
   void onSendPressed();

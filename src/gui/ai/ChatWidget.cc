@@ -205,10 +205,15 @@ void ChatWidget::onSendPressed()
     aiService->cancelPendingRequests();
     if (activeAIBubble) {
       std::string stop_msg = activeResponseText ? *activeResponseText : "";
-      stop_msg += "\n\n*[Request Stopped by User]*";
-      activeAIBubble->updateText(QString::fromStdString(stop_msg));
-      if (activeResponseText && !activeResponseText->empty()) {
-        this->history.push_back({"assistant", *activeResponseText});
+      if (stop_msg.empty()) {
+        scrollLayout->removeWidget(activeAIBubble);
+        delete activeAIBubble;
+      } else {
+        stop_msg += "\n\n*[Request Stopped by User]*";
+        activeAIBubble->updateText(QString::fromStdString(stop_msg));
+        if (activeResponseText && !activeResponseText->empty()) {
+          this->history.push_back({"assistant", *activeResponseText});
+        }
       }
     }
     isRequestRunning = false;
@@ -231,8 +236,7 @@ void ChatWidget::onSendPressed()
 
   // Set active request states
   isRequestRunning = true;
-  activeResponseText = std::make_shared<std::string>();
-  activeAIBubble = addMessage(_("Thinking..."), false);
+  startNewResponseTurn();
 
   // Disable input during streaming
   enableInput(false);
@@ -255,7 +259,7 @@ void ChatWidget::onSendPressed()
       QMetaObject::invokeMethod(qApp, [this, alive, error_msg]() {
         if (!*alive || !isRequestRunning) return;
         std::string display_err = "Error: " + error_msg;
-        if (activeResponseText->empty()) {
+        if (activeResponseText && activeResponseText->empty()) {
           activeAIBubble->updateText(QString::fromStdString(display_err));
         } else {
           this->addMessage(QString::fromStdString(display_err), false);
@@ -269,13 +273,28 @@ void ChatWidget::onSendPressed()
     [this, alive]() {
       QMetaObject::invokeMethod(qApp, [this, alive]() {
         if (!*alive || !isRequestRunning) return;
-        this->history.push_back({"assistant", *activeResponseText});
+        if (activeResponseText && activeResponseText->empty()) {
+          if (activeAIBubble) {
+            scrollLayout->removeWidget(activeAIBubble);
+            delete activeAIBubble;
+            activeAIBubble = nullptr;
+          }
+        } else if (activeResponseText) {
+          this->history.push_back({"assistant", *activeResponseText});
+        }
         isRequestRunning = false;
         activeAIBubble = nullptr;
         activeResponseText = nullptr;
         this->enableInput(true);
       });
     });
+}
+
+void ChatWidget::startNewResponseTurn()
+{
+  activeResponseText = std::make_shared<std::string>();
+  activeAIBubble = addMessage(_("Thinking..."), false);
+  activeToolBubble = nullptr;
 }
 
 MessageBubble *ChatWidget::addMessage(const QString& text, bool isUser)
@@ -382,7 +401,12 @@ void ChatWidget::logToolExecution(const std::string& name, const std::string& re
   // Find or create the active collapsible tool bubble
   if (!activeToolBubble || !isRequestRunning) {
     activeToolBubble = new CollapsibleBubble(summary, detail, this);
-    scrollLayout->insertWidget(scrollLayout->count() - 1, activeToolBubble);
+    int idx = scrollLayout->indexOf(activeAIBubble);
+    if (idx != -1) {
+      scrollLayout->insertWidget(idx, activeToolBubble);
+    } else {
+      scrollLayout->insertWidget(scrollLayout->count() - 1, activeToolBubble);
+    }
   } else {
     activeToolBubble->addToolCall(summary, detail);
   }
