@@ -2925,6 +2925,32 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageShortcuts">
+       <layout class="QVBoxLayout" name="verticalLayout_21">
+        <item>
+         <widget class="QScrollArea" name="scrollAreaShortcuts">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContentsShortCuts">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>693</width>
+             <height>528</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_20">
+            <item>
+             <widget class="ShortcutConfigurator" name="shortcutConfigurator" native="true"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="pageAI">
        <layout class="QVBoxLayout" name="verticalLayoutAI">
         <property name="leftMargin">
@@ -3192,6 +3218,7 @@
    <addaction name="prefsActionInputButton"/>
    <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
+   <addaction name="prefsActionShortcuts"/>
    <addaction name="prefsActionAI"/>
   </widget>
   <action name="prefsAction3DView">
@@ -3378,6 +3405,18 @@
     <string>Full path to the output file</string>
    </property>
   </action>
+  <action name="prefsActionShortcuts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsShortcuts.png</normaloff>:/icons/prefsShortcuts.png</iconset>
+   </property>
+   <property name="text">
+    <string>Shortcuts</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -3396,6 +3435,12 @@
    <class>MouseConfigWidget</class>
    <extends>QWidget</extends>
    <header>gui/input/MouseConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ShortcutConfigurator</class>
+   <extends>QWidget</extends>
+   <header>gui/ShortcutConfigurator.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
