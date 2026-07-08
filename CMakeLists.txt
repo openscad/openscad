@@ -2417,6 +2417,16 @@ if(NOT APPLE OR APPLE_UNIX)
 	              PATTERN "tests" EXCLUDE
 	              PATTERN "*.pyc" EXCLUDE)
 
+	      # The executable is linked to the python.org embeddable DLL name
+	      # (pythonXY.dll). Ship the matching embeddable extension modules too;
+	      # MSYS2's lib-dynload modules use a different extension suffix and are
+	      # invisible to that runtime for imports such as socket -> _socket.
+	      install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/"
+	              DESTINATION "."
+	              FILES_MATCHING
+	              PATTERN "*.pyd"
+	              PATTERN "python*.zip")
+
 	      message(STATUS "Native MSYS2 build: Python stdlib will be installed from ${_MSYS2_PYTHON_PREFIX}/lib/python${PYTHON_MINGW_VERSION}")
 	    endif()
     endif()
