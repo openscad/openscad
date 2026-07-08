@@ -32,7 +32,7 @@
 ;General
 
   ;Name and file
-  Name "@CPACK_NSIS_PACKAGE_NAME@"
+  Name "@CPACK_NSIS_PACKAGE_NAME@ @CPACK_PACKAGE_VERSION@"
   OutFile "@CPACK_TOPLEVEL_DIRECTORY@/@CPACK_OUTPUT_FILE_NAME@"
 
   ;Set compression
@@ -59,6 +59,9 @@
   Var InstallMode
   Var InitialInstallMode
   Var AllUsersRadio
+  ; Set to 1 in un.onInit when /frominstaller is on the command line, so the
+  ; uninstall-confirm page can be skipped (user already confirmed in the installer).
+  Var UninstalledByInstaller
 
   ; Use distinct uninstall-subkey names per install scope so Windows Settings
   ; can surface both entries when per-user and all-users installs coexist.
@@ -627,7 +630,11 @@ FunctionEnd
   @CPACK_NSIS_INSTALLER_FINISH_TITLE_3LINES_CODE@
   !insertmacro MUI_PAGE_FINISH
 
+  ; Skip the "are you sure?" confirm page when the uninstaller was launched by
+  ; a newer PythonSCAD installer (the user already confirmed there).
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE un.SkipConfirmIfCalledByInstaller
   !insertmacro MUI_UNPAGE_CONFIRM
+  !undef MUI_PAGE_CUSTOMFUNCTION_PRE
   !insertmacro MUI_UNPAGE_INSTFILES
 
 ;--------------------------------
@@ -1018,10 +1025,11 @@ interactive_uninst:
   StrCmp $2 "$\"" 0 +2
   StrCpy $0 $0 -1
 
-  StrLen $2 "\@CPACK_NSIS_UNINSTALL_NAME@.exe"
-  StrCpy $3 $0 -$2
+  ; Run the old uninstaller WITHOUT /S and WITHOUT _?= — see the .onInit uninst
+  ; block for the full explanation.  Pass /frominstaller so PythonSCAD
+  ; uninstallers built from this template skip their own confirm page.
   ClearErrors
-  ExecWait '"$0" /S _?="$3"' $1
+  ExecWait '"$0" /frominstaller' $1
   IfErrors interactive_uninst_failed
   ${If} $1 != 0
     Goto interactive_uninst_failed
@@ -1055,6 +1063,14 @@ Function InstallOptionsPage
   !insertmacro MUI_INSTALLOPTIONS_DISPLAY "NSIS.InstallOptions.ini"
 FunctionEnd
 
+; Called as MUI_UNPAGE_CONFIRM PRE function: skip the confirmation page when
+; the uninstaller was launched by a PythonSCAD installer (user already confirmed).
+Function un.SkipConfirmIfCalledByInstaller
+  ${If} $UninstalledByInstaller = 1
+    Abort
+  ${EndIf}
+FunctionEnd
+
 ;--------------------------------
 ; Uninstall init: read the InstallMode value written to the ARP key at install
 ; time to determine scope. Both InstallMode and InstallLocation are read from
@@ -1064,6 +1080,16 @@ FunctionEnd
 Function un.onInit
   StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" 0 +2
     SetRegView 64
+
+  ; Detect /frominstaller flag: set by a PythonSCAD installer running us as part
+  ; of uninstall-before-upgrade.  The user already confirmed the uninstall there,
+  ; so we skip our own confirm page.
+  StrCpy $UninstalledByInstaller 0
+  ClearErrors
+  ${GetOptions} $CMDLINE "/frominstaller" $R0
+  ${IfNot} ${Errors}
+    StrCpy $UninstalledByInstaller 1
+  ${EndIf}
 
   ; Check HKCU first. Verify InstallLocation matches $INSTDIR so the all-users
   ; uninstaller doesn't accidentally match a per-user entry.
@@ -1400,9 +1426,18 @@ uninst:
   StrCmp $2 "$\"" 0 +2  # if char is quote
   StrCpy $0 $0 -1       # remove last char
 
-  StrLen $2 "\@CPACK_NSIS_UNINSTALL_NAME@.exe"
-  StrCpy $3 $0 -$2 # remove "\@CPACK_NSIS_UNINSTALL_NAME@.exe" from UninstallString to get path
-  ExecWait '"$0" /S _?="$3"' $1 ;Do not copy the uninstaller to a temp file
+  ; Run the old uninstaller WITHOUT /S and WITHOUT _?=.
+  ; - No /S: the uninstaller shows its own UI (progress bar) so the user has
+  ;   visual feedback during the ~10 second removal.  The user already confirmed
+  ;   the uninstall by clicking Yes in this installer, so the extra confirm page
+  ;   in the old uninstaller is a minor redundancy, not a problem.
+  ;   PythonSCAD uninstallers built from this template recognise /frominstaller
+  ;   and automatically skip their own confirm page.
+  ; - No _?=: using _?= (in-place execution) causes some NSIS uninstallers to
+  ;   return exit code 2 and abort without doing anything, because their
+  ;   un.onInit path-comparison logic behaves differently when $INSTDIR is set
+  ;   from the _?= parameter versus the default temp-copy behaviour.
+  ExecWait '"$0" /frominstaller' $1
 
   IfErrors uninst_failed
   ${If} $1 != 0
