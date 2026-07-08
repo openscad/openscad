@@ -31,6 +31,7 @@
 #include <cctype>
 #include <cstdio>
 #include <filesystem>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -1214,7 +1215,21 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
     // the platform-independent libraries without needing a real python.exe.
     const auto pythonXY =
       "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
-    stream << sepchar << (applicationPath / "lib" / pythonXY).generic_string();
+    const auto windowsPythonLib = applicationPath / "lib" / pythonXY;
+    const std::array<fs::path, 2> windowsPythonRuntimePaths = {
+      windowsPythonLib,
+      windowsPythonLib / "lib-dynload",
+    };
+    for (const auto& path : windowsPythonRuntimePaths) {
+      if (fs::is_directory(path)) {
+        stream << sepchar << fs::absolute(path).generic_string();
+      }
+    }
+    stream << sepchar << applicationPath.generic_string();
+    const auto windowsPythonDlls = applicationPath / "DLLs";
+    if (fs::is_directory(windowsPythonDlls)) {
+      stream << sepchar << fs::absolute(windowsPythonDlls).generic_string();
+    }
 #else
     char sepchar = ':';
     const auto pythonXY =
@@ -1251,6 +1266,10 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
     stream << sepchar << ".";
 #endif
 #ifndef __EMSCRIPTEN__
+#if defined(_WIN32)
+    const auto applicationPathString = applicationPath.generic_string();
+    PyConfig_SetBytesString(&config, &config.home, applicationPathString.c_str());
+#endif
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
 #endif
 
