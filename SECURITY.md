@@ -8,7 +8,7 @@ Reports about security issues should be sent to security[@]openscad.org.
 
 Fully automated reports will be binned directly.
 
-There is no bouty program active for reporting security issues.
+There is no bounty program active for reporting security issues.
 
 ## The report
 
