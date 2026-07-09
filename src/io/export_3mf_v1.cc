@@ -139,6 +139,25 @@ int count_mesh_objects(PLib3MFModel *& model)
   return count;
 }
 
+std::string quote_xml(const std::string& value)
+{
+  std::string quoted;
+  quoted.reserve(value.size());
+
+  for (const char c : value) {
+    switch (c) {
+    case '&':  quoted += "&amp;"; break;
+    case '<':  quoted += "&lt;"; break;
+    case '>':  quoted += "&gt;"; break;
+    case '"':  quoted += "&quot;"; break;
+    case '\'': quoted += "&apos;"; break;
+    default:   quoted += c; break;
+    }
+  }
+
+  return quoted;
+}
+
 bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps,
                            int triangle_index, int color_index, std::vector<DWORD>& materialMap,
                            ExportContext& ctx)
@@ -404,7 +423,8 @@ void add_meta_data(PLib3MFModelMeshObject *& model, const std::string& name, con
     return;
   }
 
-  lib3mf_model_addmetadatautf8(model, name.c_str(), v.c_str());
+  const std::string quoted = quote_xml(v);
+  lib3mf_model_addmetadatautf8(model, name.c_str(), quoted.c_str());
 }
 
 }  // namespace

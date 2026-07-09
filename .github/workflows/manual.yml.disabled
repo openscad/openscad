@@ -128,7 +128,7 @@ jobs:
         for OUTPUT in "${OUTPUTS[@]}";do
           echo "${OUTPUT}"
         done
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
     - name: Install dependencies
