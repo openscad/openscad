@@ -28,6 +28,10 @@ import tempfile
 # would either no-op or trip IPython's "Use exit()..." advisory message,
 # both of which make the test less deterministic.
 #
+# The leading `import ctypes, sysconfig` line exercises CPython's
+# Windows sysconfig path, which used to fail in packaged MSYS2 builds
+# when `sys._is_mingw` was missing.
+#
 # The trailing `import IPython; print('IPYTHON_VERSION ...')` line is
 # the deterministic IPython fingerprint we assert on below. Earlier
 # revisions of this test relied on IPython's auto-banner / `In [N]:`
@@ -41,6 +45,7 @@ import tempfile
 # REPL fallback - in which case the existing fallback diagnostic on
 # stderr still drives us down the SKIP-fingerprint branch instead.
 SCRIPT = (
+    "import ctypes, sysconfig\n"
     "from pythonscad import cube\n"
     "c = cube([1, 1, 1])\n"
     "print('OK', type(c).__name__)\n"
@@ -107,6 +112,14 @@ def main() -> int:
     if "OK" not in proc.stdout:
         print(
             "FAIL: piped script did not run (missing 'OK' marker on stdout)",
+            file=sys.stderr,
+        )
+        return 1
+
+    hook_msg = "Failed calling sys.__interactivehook__"
+    if hook_msg in proc.stderr or hook_msg in proc.stdout:
+        print(
+            "FAIL: --ipython emitted the sys.__interactivehook__ startup warning.",
             file=sys.stderr,
         )
         return 1

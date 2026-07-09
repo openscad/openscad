@@ -2399,35 +2399,16 @@ if(NOT APPLE OR APPLE_UNIX)
 	      install(DIRECTORY "${PYTHON_MINGW_DEVPATH}/${PYTHON_MINGW_REPODIR}/lib/"
 	              DESTINATION "lib")
 	    else()
-	      # For native MSYS2 Windows builds, install from system MSYS2 Python
-	      # This ensures ABI compatibility since the executable is linked against MSYS2 Python
-	      # (The python.org embed package uses a different DLL name and structure)
-	      if(DEFINED ENV{MSYSTEM_PREFIX})
-	        set(_MSYS2_PYTHON_PREFIX "$ENV{MSYSTEM_PREFIX}")
-	      else()
-	        set(_MSYS2_PYTHON_PREFIX "/ucrt64")
-	      endif()
-
-	      # Install Python standard library and extension modules
-	      # Python will search for lib/python3.x/ relative to the DLL location
-	      install(DIRECTORY "${_MSYS2_PYTHON_PREFIX}/lib/python${PYTHON_MINGW_VERSION}/"
-	              DESTINATION "lib/python${PYTHON_MINGW_VERSION}"
-	              PATTERN "__pycache__" EXCLUDE
-	              PATTERN "test" EXCLUDE
-	              PATTERN "tests" EXCLUDE
-	              PATTERN "*.pyc" EXCLUDE)
-
-	      # The executable is linked to the python.org embeddable DLL name
-	      # (pythonXY.dll). Ship the matching embeddable extension modules too;
-	      # MSYS2's lib-dynload modules use a different extension suffix and are
-	      # invisible to that runtime for imports such as socket -> _socket.
+	      # For native MSYS2 Windows builds, the patched MSYS2 import
+	      # library links PythonSCAD against python.org's embeddable
+	      # runtime DLL (python3XY.dll). Ship the matching embeddable
+	      # stdlib zip and extension modules, not MSYS2's
+	      # lib/python3.X tree whose extension suffixes target
+	      # libpython3.X.dll.
 	      install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/"
-	              DESTINATION "."
-	              FILES_MATCHING
-	              PATTERN "*.pyd"
-	              PATTERN "python*.zip")
+	              DESTINATION ".")
 
-	      message(STATUS "Native MSYS2 build: Python stdlib will be installed from ${_MSYS2_PYTHON_PREFIX}/lib/python${PYTHON_MINGW_VERSION}")
+	      message(STATUS "Native MSYS2 build: Python runtime will be installed from ${PYTHON_EMBED_DEVPATH}")
 	    endif()
     endif()
     if(USE_MIMALLOC AND MI_LINK_SHARED)
@@ -2511,10 +2492,10 @@ if(NOT APPLE OR APPLE_UNIX)
         )
         message(STATUS "Native MSYS2 build: Runtime DLLs will be bundled from ${MSYS2_BIN_DIR}")
 
-        # Resolve DLL dependencies of Python's own lib-dynload extension
+        # Resolve DLL dependencies of Python's embeddable extension
         # modules (_ctypes.pyd, _ssl.pyd, _sqlite3.pyd, ...). The base
         # RUNTIME_DEPENDENCY_SET above only walks OpenSCADExe's import
-        # table, which transitively reaches libpython3.x.dll but NOT
+        # table, which transitively reaches python3xx.dll but NOT
         # libffi-8.dll / libsqlite3-0.dll / libssl-3-x64.dll / etc. --
         # those are loaded by Python at `import ctypes` / `import ssl`
         # / ... time and so are invisible to a static walk of the main
@@ -2524,53 +2505,48 @@ if(NOT APPLE OR APPLE_UNIX)
         # Windows installs that lack MSYS2 globally on PATH.
         #
         # Use an install(CODE) hook so the scan happens AFTER the
-        # python stdlib `install(DIRECTORY)` rule above has copied
-        # lib-dynload into the staging tree. file(GET_RUNTIME_DEPENDENCIES)
-        # then sees the actual .pyd set that's about to be shipped
-        # (robust to Python minor-version upgrades and to the MSYS2
-        # python package shedding/adding extension modules).
+        # python.org embeddable distribution has been copied into the
+        # staging tree. The embedded interpreter recognizes python.org
+        # suffixes such as `.cp314-win_amd64.pyd` / `.pyd`, not MSYS2's
+        # ABI-tagged lib-dynload suffixes, so scan the extension modules
+        # from the same embeddable distribution that provides the runtime
+        # DLL.
         install(CODE "
           set(_msys2_bindir \"${MSYS2_BIN_DIR}\")
-          set(_pyver \"${PYTHON_MINGW_VERSION}\")
-          set(_lib_dynload \"\${CMAKE_INSTALL_PREFIX}/lib/python\${_pyver}/lib-dynload\")
-          if(NOT IS_DIRECTORY \"\${_lib_dynload}\")
-            message(STATUS \"lib-dynload not found at \${_lib_dynload}; skipping .pyd dep scan\")
-            return()
-          endif()
-          file(GLOB _pyd_files \"\${_lib_dynload}/*.pyd\")
+          file(GLOB _pyd_files \"\${CMAKE_INSTALL_PREFIX}/*.pyd\")
           if(NOT _pyd_files)
-            message(STATUS \"no .pyd files in \${_lib_dynload}; skipping dep scan\")
-            return()
-          endif()
-          if(POLICY CMP0207)
-            cmake_policy(PUSH)
-            cmake_policy(SET CMP0207 NEW)
-          endif()
-          file(GET_RUNTIME_DEPENDENCIES
-            MODULES \${_pyd_files}
-            RESOLVED_DEPENDENCIES_VAR _resolved
-            UNRESOLVED_DEPENDENCIES_VAR _unresolved
-            PRE_EXCLUDE_REGEXES \"api-ms-.*\" \"ext-ms-.*\"
-            POST_EXCLUDE_REGEXES \".*[Ss]ystem32.*\" \".*[Ww]indows.*\"
-            DIRECTORIES \"\${_msys2_bindir}\" \"${CMAKE_CURRENT_SOURCE_DIR}/python_embed\"
-          )
-          if(POLICY CMP0207)
-            cmake_policy(POP)
-          endif()
-          foreach(_dep IN LISTS _resolved)
-            get_filename_component(_dep_name \"\${_dep}\" NAME)
-            if(EXISTS \"\${CMAKE_INSTALL_PREFIX}/\${_dep_name}\")
-              # Already shipped by the OpenSCADExe scan -- skip.
-              continue()
+            message(STATUS \"no Python extension modules in \${CMAKE_INSTALL_PREFIX}; skipping dep scan\")
+          else()
+            if(POLICY CMP0207)
+              cmake_policy(PUSH)
+              cmake_policy(SET CMP0207 NEW)
             endif()
-            message(STATUS \"Installing Python lib-dynload dep: \${_dep_name}\")
-            file(INSTALL \"\${_dep}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}\")
-          endforeach()
-          if(_unresolved)
-            message(WARNING \"Unresolved lib-dynload deps: \${_unresolved}\")
+            file(GET_RUNTIME_DEPENDENCIES
+              MODULES \${_pyd_files}
+              RESOLVED_DEPENDENCIES_VAR _resolved
+              UNRESOLVED_DEPENDENCIES_VAR _unresolved
+              PRE_EXCLUDE_REGEXES \"api-ms-.*\" \"ext-ms-.*\"
+              POST_EXCLUDE_REGEXES \".*[Ss]ystem32.*\" \".*[Ww]indows.*\"
+              DIRECTORIES \"\${_msys2_bindir}\" \"${CMAKE_CURRENT_SOURCE_DIR}/python_embed\"
+            )
+            if(POLICY CMP0207)
+              cmake_policy(POP)
+            endif()
+            foreach(_dep IN LISTS _resolved)
+              get_filename_component(_dep_name \"\${_dep}\" NAME)
+              if(EXISTS \"\${CMAKE_INSTALL_PREFIX}/\${_dep_name}\")
+                # Already shipped by the embed package or OpenSCADExe scan -- skip.
+                continue()
+              endif()
+              message(STATUS \"Installing Python extension dependency: \${_dep_name}\")
+              file(INSTALL \"\${_dep}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}\")
+            endforeach()
+            if(_unresolved)
+              message(WARNING \"Unresolved Python extension deps: \${_unresolved}\")
+            endif()
           endif()
         ")
-        message(STATUS "Native MSYS2 build: lib-dynload .pyd DLL deps will be bundled at install time")
+        message(STATUS "Native MSYS2 build: Python extension modules and DLL deps will be bundled at install time")
       endif()
     endif()
   else()

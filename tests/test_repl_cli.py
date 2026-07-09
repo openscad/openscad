@@ -20,11 +20,11 @@ import sys
 
 # --repl drops the user into an empty `__main__` namespace; the user
 # is responsible for importing whatever they need. The explicit
-# `from pythonscad import cube` line below is the contract under test
-# (i.e. the basic REPL must successfully import the embedded
-# `pythonscad` module). If the import regresses, the script raises
-# ImportError / ModuleNotFoundError and the smoke test fails.
+# `from pythonscad import cube` line below is the contract under test.
+# Importing `ctypes` exercises CPython's Windows sysconfig path, which
+# used to fail in packaged MSYS2 builds when `sys._is_mingw` was missing.
 SCRIPT = (
+    "import ctypes, sysconfig\n"
     "from pythonscad import cube\n"
     "c = cube([1, 1, 1])\n"
     "print('OK', type(c).__name__)\n"
@@ -79,6 +79,14 @@ def main() -> int:
         print(
             "FAIL: --repl emitted the IPython fallback diagnostic; the "
             "explicit --repl path must never advertise IPython.",
+            file=sys.stderr,
+        )
+        return 1
+
+    hook_msg = "Failed calling sys.__interactivehook__"
+    if hook_msg in proc.stderr or hook_msg in proc.stdout:
+        print(
+            "FAIL: --repl emitted the sys.__interactivehook__ startup warning.",
             file=sys.stderr,
         )
         return 1

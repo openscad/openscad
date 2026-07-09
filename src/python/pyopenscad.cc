@@ -103,6 +103,44 @@ void PyObjectDeleter(PyObject *pObject)
 PyObjectUniquePtr pythonInitDict(nullptr, &PyObjectDeleter);
 PyObjectUniquePtr pythonMainModule(nullptr, &PyObjectDeleter);
 
+#ifdef _WIN32
+static void python_configure_windows_sys_compat(void)
+{
+  PyObject *sys = PyImport_ImportModule("sys");
+  if (sys == nullptr) {
+    PyErr_Clear();
+    return;
+  }
+
+  PyObject *sysdict = PyModule_GetDict(sys);
+  PyObject *isMingw = sysdict == nullptr ? nullptr : PyDict_GetItemString(sysdict, "_is_mingw");
+  if (isMingw == nullptr && PyErr_Occurred()) {
+    PyErr_Clear();
+  } else if (sysdict != nullptr && isMingw == nullptr) {
+    const char *compiler = Py_GetCompiler();
+    const bool runtimeIsMingw = compiler != nullptr && (strstr(compiler, "MINGW") != nullptr ||
+                                                        strstr(compiler, "GCC") != nullptr);
+    PyObject *value = runtimeIsMingw ? Py_True : Py_False;
+    if (PyDict_SetItemString(sysdict, "_is_mingw", value) != 0) {
+      PyErr_Clear();
+    }
+  }
+  PyObject *abiflags = sysdict == nullptr ? nullptr : PyDict_GetItemString(sysdict, "abiflags");
+  if (abiflags == nullptr && PyErr_Occurred()) {
+    PyErr_Clear();
+  } else if (sysdict != nullptr && abiflags == nullptr) {
+    PyObject *value = PyUnicode_FromString("");
+    if (value == nullptr) {
+      PyErr_Clear();
+    } else if (PyDict_SetItemString(sysdict, "abiflags", value) != 0) {
+      PyErr_Clear();
+    }
+    Py_XDECREF(value);
+  }
+  Py_DECREF(sys);
+}
+#endif
+
 bool python_pyobject_to_utf8(PyObject *obj, std::string& out, const char *context)
 {
   if (obj == nullptr || !PyUnicode_Check(obj)) {
@@ -1308,6 +1346,13 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
       return;
     }
     PyConfig_Clear(&config);
+
+#ifdef _WIN32
+    // CPython 3.14's Windows sysconfig expects this interpreter-private
+    // attribute. Normal MSYS2/python.org startup sets it, but our embedded
+    // PyConfig path can otherwise leave it absent in packaged builds.
+    python_configure_windows_sys_compat();
+#endif
 
 #ifdef __EMSCRIPTEN__
     // config.pythonpath_env is unreliable in cross-compiled WASM builds.
