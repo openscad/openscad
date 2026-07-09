@@ -352,10 +352,12 @@ jobs:
           retention-days: 7
 
       - name: Upload package artifacts
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: pythonscad-${{ matrix.family }}-${{ matrix.distro }}-${{ matrix.arch }}-deb
           path: /tmp/debs/*.deb
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Upload to GitHub Release
