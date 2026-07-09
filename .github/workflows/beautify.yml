@@ -22,11 +22,8 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v7
-<<<<<<< HEAD
       with:
         persist-credentials: false
-=======
->>>>>>> aae3f34af (Bump the github-actions group with 2 updates)
 
     - name: Install dependencies
       env:
