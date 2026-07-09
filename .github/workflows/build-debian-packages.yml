@@ -351,6 +351,13 @@ jobs:
           path: /tmp/debs/*.log.txt
           retention-days: 7
 
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: pythonscad-${{ matrix.family }}-${{ matrix.distro }}-${{ matrix.arch }}-deb
+          path: /tmp/debs/*.deb
+          retention-days: 30
+
       - name: Upload to GitHub Release
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
         env:
