@@ -55,6 +55,7 @@
 
 #include "pyopenscad.h"
 #include "pydata.h"
+#include "python_runtime.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
 #ifndef PYTHON_EXECUTABLE_NAME
@@ -102,44 +103,6 @@ void PyObjectDeleter(PyObject *pObject)
 
 PyObjectUniquePtr pythonInitDict(nullptr, &PyObjectDeleter);
 PyObjectUniquePtr pythonMainModule(nullptr, &PyObjectDeleter);
-
-#ifdef _WIN32
-static void python_configure_windows_sys_compat(void)
-{
-  PyObject *sys = PyImport_ImportModule("sys");
-  if (sys == nullptr) {
-    PyErr_Clear();
-    return;
-  }
-
-  PyObject *sysdict = PyModule_GetDict(sys);
-  PyObject *isMingw = sysdict == nullptr ? nullptr : PyDict_GetItemString(sysdict, "_is_mingw");
-  if (isMingw == nullptr && PyErr_Occurred()) {
-    PyErr_Clear();
-  } else if (sysdict != nullptr && isMingw == nullptr) {
-    const char *compiler = Py_GetCompiler();
-    const bool runtimeIsMingw = compiler != nullptr && (strstr(compiler, "MINGW") != nullptr ||
-                                                        strstr(compiler, "GCC") != nullptr);
-    PyObject *value = runtimeIsMingw ? Py_True : Py_False;
-    if (PyDict_SetItemString(sysdict, "_is_mingw", value) != 0) {
-      PyErr_Clear();
-    }
-  }
-  PyObject *abiflags = sysdict == nullptr ? nullptr : PyDict_GetItemString(sysdict, "abiflags");
-  if (abiflags == nullptr && PyErr_Occurred()) {
-    PyErr_Clear();
-  } else if (sysdict != nullptr && abiflags == nullptr) {
-    PyObject *value = PyUnicode_FromString("");
-    if (value == nullptr) {
-      PyErr_Clear();
-    } else if (PyDict_SetItemString(sysdict, "abiflags", value) != 0) {
-      PyErr_Clear();
-    }
-    Py_XDECREF(value);
-  }
-  Py_DECREF(sys);
-}
-#endif
 
 bool python_pyobject_to_utf8(PyObject *obj, std::string& out, const char *context)
 {
@@ -1226,6 +1189,27 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
     PyImport_AppendInittab("libfive", &PyInit_data);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
+    PyStatus status;
+
+#ifndef __EMSCRIPTEN__
+    {
+      const auto baseExecutable = pythonShimExecutablePath();
+      std::error_code ec;
+      if (fs::exists(baseExecutable, ec)) {
+        status = PyConfig_SetBytesString(&config, &config.base_executable, baseExecutable.c_str());
+        if (PyStatus_Exception(status)) {
+          alreadyTried = true;
+          PyConfig_Clear(&config);
+          LOG(message_group::Error, "Failed to configure Python base executable '%1$s': %2$s",
+              baseExecutable, status.err_msg != nullptr ? status.err_msg : "unknown error");
+          return;
+        }
+      } else if (ec) {
+        LOG(message_group::Error, "Failed to inspect Python base executable '%1$s': %2$s",
+            baseExecutable, ec.message());
+      }
+    }
+#endif
 
 #ifdef __EMSCRIPTEN__
 #ifdef WASM_NODE_BUILD
@@ -1338,7 +1322,7 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
     }
 #endif
 
-    PyStatus status = Py_InitializeFromConfig(&config);
+    status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
       alreadyTried = true;
       LOG(message_group::Error, "Python %1$lu.%2$lu.%3$lu not found. Is it installed ?",

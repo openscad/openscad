@@ -1855,7 +1855,16 @@ void MainWindow::on_fileActionPythonCreateVenv_triggered()
 
   const auto& path = venvDir.absolutePath().toStdString();
   LOG("Creating Python virtual environment in '%1$s'...", path);
+  QProgressDialog progress(_("Creating Python virtual environment. Please wait..."), QString(), 0, 0,
+                           this);
+  progress.setWindowTitle(_("Create Virtual Environment"));
+  progress.setCancelButton(nullptr);
+  progress.setWindowModality(Qt::ApplicationModal);
+  progress.setMinimumDuration(0);
+  progress.show();
+  QApplication::processEvents();
   int result = pythonCreateVenv(path);
+  progress.close();
 
   if (result == 0) {
     Settings::SettingsPython::pythonVirtualEnv.setValue(path);

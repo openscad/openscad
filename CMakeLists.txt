@@ -687,6 +687,7 @@ if(ENABLE_PYTHON)
     src/python/py_ops.cc
     src/python/py_io.cc
     src/python/pyconversion.cc
+    src/python/python_runtime.cc
     src/core/node_clone.cc
     src/core/PullNode.cc
     src/core/WrapNode.cc
@@ -945,10 +946,16 @@ if(ENABLE_PYTHON)
   # On other platforms, create it in the build directory
   if(NOT (APPLE AND NOT APPLE_UNIX))
     if(WIN32)
-      # On Windows, copy the executable instead of symlinking (symlinks are problematic)
+      # On Windows, copy the executable instead of symlinking (symlinks are problematic).
+      # CPython's venv launcher also probes <home>/python.exe, so provide that
+      # conventional name alongside PythonSCAD's explicit shim name.
       add_custom_target(OpenSCADPython ALL
-	      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenSCADLibInternal> ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_EXECUTABLE_NAME}.exe
-	      DEPENDS OpenSCADLibInternal
+	      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenSCADExe> ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_EXECUTABLE_NAME}.exe
+	      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenSCADExe> ${CMAKE_CURRENT_BINARY_DIR}/python.exe
+	      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_EMBED_DEVPATH}/libssl-3.dll ${CMAKE_CURRENT_BINARY_DIR}/libssl-3.dll
+	      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_EMBED_DEVPATH}/libcrypto-3.dll ${CMAKE_CURRENT_BINARY_DIR}/libcrypto-3.dll
+	      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PYTHON_EMBED_DEVPATH}/sqlite3.dll ${CMAKE_CURRENT_BINARY_DIR}/sqlite3.dll
+	      DEPENDS OpenSCADExe tgt_python_embed
       )
       else()
         add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME})
@@ -2358,6 +2365,7 @@ if(NOT APPLE OR APPLE_UNIX)
   if(ENABLE_PYTHON)
     if(WIN32)
       install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_EXECUTABLE_NAME}.exe DESTINATION "${OPENSCAD_BINDIR}")
+      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/python.exe DESTINATION "${OPENSCAD_BINDIR}")
     else()
       install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pythonscad-python DESTINATION "${OPENSCAD_BINDIR}")
     endif()
