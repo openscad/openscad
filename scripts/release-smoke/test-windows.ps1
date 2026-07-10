@@ -229,8 +229,9 @@ try {
         Write-SmokeLog "Using existing Windows artifacts in $artifactDir"
     }
 
-    $zip = Get-ChildItem -LiteralPath $artifactDir -Recurse -File -Filter '*.zip' |
+    $zip = Get-ChildItem -LiteralPath $artifactDir -Recurse -File -Filter 'PythonSCAD-*.zip' |
         Where-Object { $_.Name -notlike '*Installer*' } |
+        Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
     if (-not $zip) {
         throw "No ZIP deployable found in $artifactDir"
@@ -247,6 +248,7 @@ try {
         Write-SmokeLog 'Skipping NSIS installer smoke test'
     } else {
         $installer = Get-ChildItem -LiteralPath $artifactDir -Recurse -File -Filter '*-Installer.exe' |
+            Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
         if (-not $installer) {
             throw "No NSIS installer found in $artifactDir"
@@ -262,9 +264,12 @@ try {
         }
         New-Item -ItemType Directory -Force -Path $installDir | Out-Null
         Write-SmokeLog "Installing NSIS package $($installer.Name)"
-        & $installer.FullName /S "/D=$installDir"
-        if ($LASTEXITCODE -ne 0) {
-            throw "NSIS installer failed with exit code $LASTEXITCODE"
+        $installProcess = Start-Process -FilePath $installer.FullName `
+            -ArgumentList @('/S', "/D=$installDir") `
+            -Wait `
+            -PassThru
+        if ($installProcess.ExitCode -ne 0) {
+            throw "NSIS installer failed with exit code $($installProcess.ExitCode)"
         }
         $nsisExecutable = Find-PythonSCADExecutable -Root $installDir
         Invoke-SmokeTest -ExecutablePath $nsisExecutable -Label "NSIS $($installer.Name)" -Workdir $workdir
