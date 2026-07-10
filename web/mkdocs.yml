@@ -49,6 +49,7 @@ nav:
   - Playground: https://www.pythonscad.org/playground/
   - Installation: installation.md
   - Development:
+      - Release Smoke Tests: development/release-smoke-tests.md
       - Upstream Sync: development/upstream-sync.md
   - Building: building.md
   - WebAssembly:

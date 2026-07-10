@@ -56,6 +56,8 @@
   ; $InitialInstallMode: snapshot of $InstallMode taken at the end of .onInit,
   ; used by InstallModePage_Leave to detect when the user switched modes after
   ; the .onInit existing-install check ran, so we can re-check the *other* hive.
+  ; $IS_DEFAULT_INSTALLDIR: 1 when $INSTDIR still has the template default from
+  ; InstallDir, 0 when NSIS already applied an explicit command-line /D= path.
   Var InstallMode
   Var InitialInstallMode
   Var AllUsersRadio
@@ -938,7 +940,9 @@ Function InstallModePage_Leave
     ; Just for me
     StrCpy $InstallMode 0
     Call SetArpRegKeyFromInstallMode
-    StrCpy $INSTDIR "$LOCALAPPDATA\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+    ${If} $IS_DEFAULT_INSTALLDIR = 1
+      StrCpy $INSTDIR "$LOCALAPPDATA\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+    ${EndIf}
     SetShellVarContext current
     ; Clear the shield from the Next button
     GetDlgItem $0 $HWNDParent 1
@@ -956,9 +960,11 @@ Function InstallModePage_Leave
       ; Already elevated: just update mode and continue
       StrCpy $InstallMode 1
       Call SetArpRegKeyFromInstallMode
-      StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
-      StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
-        StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      ${If} $IS_DEFAULT_INSTALLDIR = 1
+        StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+        StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
+          StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      ${EndIf}
       SetShellVarContext all
       ; No UAC prompt will occur in this path, so clear any stale shield.
       GetDlgItem $0 $HWNDParent 1
@@ -1307,6 +1313,13 @@ Function .onInit
   StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" 0 +2
     SetRegView 64
 
+  ; NSIS applies /D=<dir> before .onInit. Preserve that explicit directory when
+  ; applying our per-user/all-users defaults below; otherwise silent installs
+  ; cannot choose a temporary install root.
+  StrCpy $IS_DEFAULT_INSTALLDIR 0
+  StrCmp $INSTDIR "@CPACK_NSIS_INSTALL_ROOT@\@CPACK_PACKAGE_INSTALL_DIRECTORY@" 0 +2
+    StrCpy $IS_DEFAULT_INSTALLDIR 1
+
   ; Plugin warmup with user feedback. Without this, the first nsDialogs::Create
   ; (in InstallModePage_Create after the License page) freezes the UI for ~10s
   ; while Windows AppCompat / Defender scans the freshly-extracted nsDialogs.dll.
@@ -1342,9 +1355,11 @@ Function .onInit
     ${If} $R1 = 1
       StrCpy $InstallMode 1
       Call SetArpRegKeyFromInstallMode
-      StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
-      StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
-        StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      ${If} $IS_DEFAULT_INSTALLDIR = 1
+        StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+        StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
+          StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      ${EndIf}
       SetShellVarContext all
       Goto done_init_mode
     ${EndIf}
@@ -1375,14 +1390,18 @@ Function .onInit
   ${If} $0 = 1
     StrCpy $InstallMode 1
     Call SetArpRegKeyFromInstallMode
-    StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
-    StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
-      StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+    ${If} $IS_DEFAULT_INSTALLDIR = 1
+      StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      StrCmp "@CPACK_SYSTEM_NAME@" "windows-x86-64" +2
+        StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+    ${EndIf}
     SetShellVarContext all
   ${Else}
     StrCpy $InstallMode 0
     Call SetArpRegKeyFromInstallMode
-    StrCpy $INSTDIR "$LOCALAPPDATA\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+    ${If} $IS_DEFAULT_INSTALLDIR = 1
+      StrCpy $INSTDIR "$LOCALAPPDATA\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+    ${EndIf}
     SetShellVarContext current
   ${EndIf}
 
