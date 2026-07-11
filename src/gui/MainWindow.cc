@@ -623,9 +623,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
   }
   event->accept();
 
-  // Only save when this is the last MainWindow (or there are none left,
-  // which covers the edge case where closeEvent fires after another
-  // MainWindow has already been destroyed).
+  // Only save when this is the last MainWindow.
   if (scadApp->windowManager.getWindows().size() == 1) {
     saveWindowState();
   }
@@ -643,6 +641,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
   // Disable invokeMethod calls for consoleOutput during shutdown,
   // otherwise will segfault if echos are in progress.
   hideCurrentOutput();
+
+  // Make sure all the floating docks are closed too as those
+  // would stick around otherwise if the application keeps
+  // running (after closing just a single window, or when
+  // aborting the close process because of user cancellation).
   for (auto& [dock, title] : docks) {
     if (dock->isFloating()) {
       dock->close();
