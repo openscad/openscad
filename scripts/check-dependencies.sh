@@ -505,6 +505,7 @@ find_min_version()
   # items not included in README.md
   if [ $fmvdep = "git" ]; then fmvtmp=1.5 ; fi
   if [ $fmvdep = "curl" ]; then fmvtmp=6 ; fi
+  if [ "$fmvdep" = "make" ]; then fmvtmp=3 ; fi
   if [ $fmvdep = "python" ]; then fmvtmp=2 ; fi
 
   find_min_version_result=$fmvtmp
