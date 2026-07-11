@@ -39,8 +39,13 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
+#include <random>
+#include <sstream>
 #include <string>
+#include <system_error>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #ifdef _WIN32
@@ -228,11 +233,143 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   }
 }
 
+namespace {
+
+struct TemporaryExportPath {
+  std::filesystem::path dir;
+  std::filesystem::path file;
+
+  TemporaryExportPath() = default;
+  TemporaryExportPath(std::filesystem::path dir, std::filesystem::path file)
+    : dir(std::move(dir)), file(std::move(file))
+  {
+  }
+
+  TemporaryExportPath(const TemporaryExportPath&) = delete;
+  TemporaryExportPath& operator=(const TemporaryExportPath&) = delete;
+
+  TemporaryExportPath(TemporaryExportPath&& other) noexcept
+    : dir(std::move(other.dir)), file(std::move(other.file))
+  {
+    other.dir.clear();
+    other.file.clear();
+  }
+
+  TemporaryExportPath& operator=(TemporaryExportPath&& other) noexcept
+  {
+    if (this != &other) {
+      cleanup();
+      dir = std::move(other.dir);
+      file = std::move(other.file);
+      other.dir.clear();
+      other.file.clear();
+    }
+    return *this;
+  }
+
+  ~TemporaryExportPath()
+  {
+    cleanup();
+  }
+
+private:
+  void cleanup()
+  {
+    // Best-effort cleanup; export/copy failures are reported before destruction.
+    std::error_code ec;
+    if (!file.empty()) std::filesystem::remove(file, ec);
+    if (!dir.empty()) std::filesystem::remove(dir, ec);
+  }
+};
+
+std::string randomHexSuffix()
+{
+  std::random_device random;
+  std::ostringstream stream;
+  stream << std::hex << std::setfill('0');
+  for (int i = 0; i < 4; ++i) {
+    stream << std::setw(8) << static_cast<uint32_t>(random());
+  }
+  return stream.str();
+}
+
+std::optional<TemporaryExportPath> createTemporaryExportPath()
+{
+  std::error_code ec;
+  const auto base = std::filesystem::temp_directory_path(ec);
+  if (ec) {
+    LOG(message_group::Error, _("Could not find temporary directory: %1$s"), ec.message());
+    return std::nullopt;
+  }
+
+  for (int i = 0; i < 100; ++i) {
+    const auto dir = base / ("openscad-export-" + randomHexSuffix());
+    ec.clear();
+    if (std::filesystem::create_directory(dir, ec)) {
+      return TemporaryExportPath(dir, dir / "stdout.3mf");
+    }
+
+    std::error_code existsEc;
+    const bool collision = std::filesystem::exists(dir, existsEc);
+    if (ec && !collision) {
+      LOG(message_group::Error, _("Could not create temporary export directory \"%1$s\": %2$s"),
+          dir.string(), ec.message());
+      return std::nullopt;
+    }
+  }
+
+  LOG(message_group::Error, _("Could not create unique temporary export directory."));
+  return std::nullopt;
+}
+
+bool exportRequiresSeekableOutput(FileFormat format)
+{
+  return format == FileFormat::_3MF;
+}
+
+bool exportFileStdOutViaTempFile(const std::shared_ptr<const Geometry>& root_geom,
+                                 const ExportInfo& exportInfo)
+{
+  auto temp = createTemporaryExportPath();
+  if (!temp) return false;
+
+  if (!exportFileByName(root_geom, temp->file.string(), exportInfo)) {
+    return false;
+  }
+
+  std::ifstream input(temp->file, std::ios::binary);
+  if (!input.is_open()) {
+    LOG(message_group::Error, _("Can't open temporary export file \"%1$s\""), temp->file.string());
+    return false;
+  }
+
+  std::cout << input.rdbuf();
+  std::cout.flush();
+
+  // The stdout state is the primary signal for copy failures; this catches local temp-file read errors.
+  if (!input.eof() && input.fail()) {
+    LOG(message_group::Error, _("Error reading temporary export file \"%1$s\""), temp->file.string());
+    return false;
+  }
+  if (!std::cout) {
+    LOG(message_group::Error, _("Error writing export to stdout."));
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
 bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
+  // Preserve binary stdout for both direct binary exporters and temp-file copy fallback.
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
+  if (exportRequiresSeekableOutput(exportInfo.format)) {
+    return exportFileStdOutViaTempFile(root_geom, exportInfo);
+  }
   exportFile(root_geom, std::cout, exportInfo);
   return true;
 }
