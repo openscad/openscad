@@ -37,6 +37,13 @@
 #include "io/export.h"
 #include "utils/printutils.h"
 
+// https://en.wikipedia.org/wiki/OFF_(file_format)
+//
+// https://segeval.cs.princeton.edu/public/off_format.html
+// Note: OFF header is supposed to be the only content on the
+// first line, the docs above show that wrong in the first
+// example.
+
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   auto ps = PolySetUtils::getGeometryAsPolySet(geom);
@@ -46,7 +53,7 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   const auto& v = ps->vertices;
   const size_t numverts = v.size();
 
-  output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
+  output << "OFF\n" << numverts << " " << ps->indices.size() << " 0\n";
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
