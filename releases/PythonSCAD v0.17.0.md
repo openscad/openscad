@@ -21,7 +21,7 @@ All OpenSCAD render variables are now accessible in PythonSCAD as well. This inc
 You can now programmatically control the 3D viewport from Python code. The new `setrender()` function allows you to
 set the camera's viewing perspective directly from your scripts, making it easier to create reproducible views of your
 models.
-This is literally the opposite of above function. just type e.g. setrender(vpd=100)
+This is literally the opposite of the above function. For example, use `setrender(vpd=100)`.
 
 ## New Window Opens with Python Tab
 
@@ -53,7 +53,7 @@ manifold bumps, subtraction color for nefs, and Python GC improvements.
 
 The next release is already taking shape. It will add proper documentation for the new `setrender()` function, which
 didn't make it in this one yet. There will be some fixes in regards to the light/dark themes and we're working on
-making PythonSCAD available on PyPi as well (which will allow you to use `pythonscad` as a dependency in your projects
+making PythonSCAD available on PyPI as well (which will allow you to use `pythonscad` as a dependency in your projects
 or just install it in a virtual env using `pip`). So stay tuned for more updates.
 
 ## Downloads

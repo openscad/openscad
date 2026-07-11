@@ -3,7 +3,7 @@
 Hi everyone,
 
 We’re happy to announce **PythonSCAD v0.20.0**. The headline change is **session management**: the app can remember how
-you left off and bring that workspace back on the next launch. This is similar to what applications like NotedPad++ and
+you left off and bring that workspace back on the next launch. This is similar to what applications like Notepad++ and
 Visual Studio Code are doing. We’ve also improved reliability in a few places, rounded out Python API documentation,
 and made small quality-of-life updates. Full technical notes are in the changelog on the
 [release PR](https://github.com/pythonscad/pythonscad/pull/536).

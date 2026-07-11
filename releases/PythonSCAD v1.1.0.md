@@ -10,8 +10,9 @@ smoke tests, and many packaging, CI, Windows, macOS, Linux, and GUI fixes.
 
 ## Release name
 
-As you might have noticed we we started to introduce release code names for major and minor releases with the previous
-release (v1.0.0). We use those during development as the next version number is not always clear due to semantic versioning.
+As you might have noticed, we started to introduce release code names for major and minor releases with the previous
+release (v1.0.0). We use those during development as the next version number is not always clear due to semantic
+versioning.
 
 As a general theme for that, we chose terms in relation to 3D printing but loosely or directly translated to Latin.
 
