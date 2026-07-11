@@ -19,6 +19,7 @@
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
 #include "io/export_enums.h"
+#include "io/export_dxf.h"
 
 using SPDF = Settings::SettingsExportPdf;
 using S3MF = Settings::SettingsExport3mf;
@@ -285,6 +286,27 @@ struct ExportSvgOptions {
   }
 };
 
+// =====================================================================
+// DXF EXPORT OPTIONS
+// =====================================================================
+//
+// Mirrors the pattern used by ExportPdfOptions, Export3mfOptions, and
+// ExportSvgOptions.  Populated from -O export-dxf/version=<R10|R12|R14>
+// on the command line, or from the GUI settings store via fromSettings().
+//
+// Command-line usage:
+//   openscad -o out.dxf -O export-dxf/version=R14 input.scad
+//
+// =====================================================================
+
+struct ExportDxfOptions {
+  DxfVersion version = DxfVersion::Legacy;
+
+  static std::shared_ptr<const ExportDxfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions);
+
+  static std::shared_ptr<const ExportDxfOptions> fromSettings();
+};
+
 struct ExportInfo {
   FileFormat format;
   FileFormatInfo info;
@@ -297,6 +319,7 @@ struct ExportInfo {
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
   std::shared_ptr<const ExportSvgOptions> optionsSvg;
+  std::shared_ptr<const ExportDxfOptions> optionsDxf;
 };
 
 ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,
@@ -315,7 +338,6 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
