@@ -267,10 +267,7 @@ struct TemporaryExportPath {
     return *this;
   }
 
-  ~TemporaryExportPath()
-  {
-    cleanup();
-  }
+  ~TemporaryExportPath() { cleanup(); }
 
 private:
   void cleanup()
