@@ -97,7 +97,12 @@ rs_require_command find
 rs_require_command python3
 rs_require_command realpath
 
-workdir=$(rs_make_workdir "$workdir_arg")
+if [[ -n "$workdir_arg" ]]; then
+  workdir=$(rs_make_workdir "$workdir_arg")
+else
+  mkdir -p "$PROJECT_ROOT/tmp"
+  workdir=$(mktemp -d "$PROJECT_ROOT/tmp/pythonscad-release-smoke.XXXXXX")
+fi
 trap 'rs_cleanup_workdir "$workdir" "$keep_workdir" "$?"' EXIT
 
 if [[ -z "$artifact_dir" ]]; then
