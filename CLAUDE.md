@@ -344,9 +344,58 @@ make -j$(sysctl -n hw.ncpu)
 
 ### Windows Build
 
-- Typically cross-compiled from Linux using MXE
-- See `doc/win-build.md` for MSVC build instructions
-- Cross-build: `./scripts/mingw-x-build-dependencies.sh 64`
+The release packaging path is a native MSYS2 UCRT64 build. Start commands from
+the repo root with:
+
+```powershell
+C:/msys64/msys2_shell.cmd -defterm -here -no-start -ucrt64 -shell bash
+```
+
+Inside that shell, install/update the package set used by CI:
+
+```bash
+PACBOY_PACKAGES=$(python3 ./scripts/get-dependencies.py --distro msys2 \
+  --profile pythonscad-qt6 --list | tr '\n' ' ')
+pacboy -S --noconfirm --needed $PACBOY_PACKAGES nsis:p python-psutil:p uv:p
+```
+
+Configure and build the native package target:
+
+```bash
+cmake -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DEXPERIMENTAL=ON \
+  -DSNAPSHOT=ON \
+  -DUSE_QT6=ON \
+  -DENABLE_PYTHON=ON \
+  -DENABLE_LIBFIVE=ON \
+  -DPORTABLE_BINARY=ON \
+  -DENABLE_TESTS=OFF \
+  -DPACKAGE_ARCH=windows-x86-64
+cmake --build build -j4
+```
+
+Before packaging, refresh the bundled runtime Python dependencies and staging
+tree, then generate ZIP and NSIS artifacts:
+
+```bash
+BUNDLE_PY_AUTO_INSTALL_PIP_LICENSES=1 \
+  ./scripts/bundle-runtime-python.sh build/pythonscad-bundled-py --python python
+cmake --install build --prefix build/staging
+cd build
+cpack -G ZIP
+cpack -G NSIS
+```
+
+Smoke-test local artifacts from PowerShell with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\release-smoke\test-windows.ps1 `
+  --skip-download --artifact-dir build --keep-workdir
+```
+
+See `doc/win-build.md` for the older MSVC/vcpkg build notes. The historical MXE
+cross-build path is `./scripts/mingw-x-build-dependencies.sh 64`.
 
 ### WebAssembly Build
 

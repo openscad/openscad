@@ -55,6 +55,7 @@
 
 #include "pyopenscad.h"
 #include "pydata.h"
+#include "python_runtime.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
 #ifndef PYTHON_EXECUTABLE_NAME
@@ -1188,6 +1189,27 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
     PyImport_AppendInittab("libfive", &PyInit_data);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
+    PyStatus status;
+
+#ifndef __EMSCRIPTEN__
+    {
+      const auto baseExecutable = pythonShimExecutablePath();
+      std::error_code ec;
+      if (fs::exists(baseExecutable, ec)) {
+        status = PyConfig_SetBytesString(&config, &config.base_executable, baseExecutable.c_str());
+        if (PyStatus_Exception(status)) {
+          alreadyTried = true;
+          PyConfig_Clear(&config);
+          LOG(message_group::Error, "Failed to configure Python base executable '%1$s': %2$s",
+              baseExecutable, status.err_msg != nullptr ? status.err_msg : "unknown error");
+          return;
+        }
+      } else if (ec) {
+        LOG(message_group::Error, "Failed to inspect Python base executable '%1$s': %2$s",
+            baseExecutable, ec.message());
+      }
+    }
+#endif
 
 #ifdef __EMSCRIPTEN__
 #ifdef WASM_NODE_BUILD
@@ -1300,7 +1322,7 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
     }
 #endif
 
-    PyStatus status = Py_InitializeFromConfig(&config);
+    status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
       alreadyTried = true;
       LOG(message_group::Error, "Python %1$lu.%2$lu.%3$lu not found. Is it installed ?",
@@ -1308,6 +1330,13 @@ void initPython(const std::string& binDir, const std::string& scriptpath, const 
       return;
     }
     PyConfig_Clear(&config);
+
+#ifdef _WIN32
+    // CPython 3.14's Windows sysconfig expects this interpreter-private
+    // attribute. Normal MSYS2/python.org startup sets it, but our embedded
+    // PyConfig path can otherwise leave it absent in packaged builds.
+    python_configure_windows_sys_compat();
+#endif
 
 #ifdef __EMSCRIPTEN__
     // config.pythonpath_env is unreliable in cross-compiled WASM builds.

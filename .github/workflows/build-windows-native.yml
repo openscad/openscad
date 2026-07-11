@@ -237,6 +237,29 @@ jobs:
           fi
           echo "Bundled IPython landed at ${BUNDLE_DIR}/IPython"
 
+      - name: Sanity test - verify packaged Python REPLs
+        run: |
+          cd build/staging
+
+          printf '%s\n' \
+            'import ctypes, _socket, sysconfig' \
+            'from pythonscad import cube' \
+            "print('REPL_PACKAGED_OK', type(cube(1)).__name__)" \
+            | ./pythonscad.com --repl > repl.log 2>&1
+          cat repl.log
+          grep -q "REPL_PACKAGED_OK" repl.log
+          ! grep -q "Failed calling sys.__interactivehook__" repl.log
+
+          printf '%s\n' \
+            'import ctypes, _socket, sysconfig' \
+            'from pythonscad import cube' \
+            "print('IPYTHON_PACKAGED_OK', type(cube(1)).__name__)" \
+            | ./pythonscad.com --ipython > ipython.log 2>&1
+          cat ipython.log
+          grep -q "IPYTHON_PACKAGED_OK" ipython.log
+          ! grep -q "falling back to the basic Python prompt" ipython.log
+          ! grep -q "Failed calling sys.__interactivehook__" ipython.log
+
       - name: Prepare artifacts
         id: artifacts
         run: |

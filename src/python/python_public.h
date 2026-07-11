@@ -63,4 +63,5 @@ int pythonRunArgs(int argc, char **argv);
 int pythonCreateVenv(const std::string& path);
 int pythonRunModule(const std::string& appPath, const std::string& module,
                     const std::vector<std::string>& args);
+std::string pythonShimExecutablePath();
 std::string venvBinDirFromSettings();
