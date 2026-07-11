@@ -35,6 +35,43 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.1.0" date="2026-07-11">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.1.0</url>
+      <description>
+        <p>Features:</p>
+        <ul>
+          <li>appdata: replace inherited OpenSCAD releases with PythonSCAD history</li>
+          <li>gui: add form-based bug report template and Help menu action</li>
+          <li>gui: AIDock preferences</li>
+          <li>mesh: add ability for mesh to output color</li>
+          <li>packaging: bundle IPython 9.x with MSYS2 psutil vendoring</li>
+          <li>pip: add binary wheels for PyPI distribution</li>
+          <li>python: add rounded_cube helper with r or d rounding</li>
+          <li>python: support single-file multitool 3MF export</li>
+          <li>release: add automated release smoke tooling</li>
+          <li>release: add release-announcement for v0.16.0</li>
+          <li>release: add release-announcement for v0.17.0</li>
+          <li>release: add release-announcement for v0.18.0</li>
+          <li>and more</li>
+        </ul>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>appimage: bundle GMP runtime library</li>
+          <li>appimage: disable GTK platform theme for Qt6</li>
+          <li>appimage: isolate GIO modules from host runtime</li>
+          <li>assert: issue warning instead of hard assert</li>
+          <li>build: add OpenSSL package build dependencies</li>
+          <li>building: enable USE_QT6 option in building documentation</li>
+          <li>build: restore configure_file writability check with clearer diagnostics</li>
+          <li>chore: add missed FrepNode</li>
+          <li>chore: compiles again</li>
+          <li>chore: customizer delevers recent values</li>
+          <li>chore: fixed meaning of stroke parameter</li>
+          <li>chore: get negation correct</li>
+          <li>and more</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-06-02">
       <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.0.0</url>
       <description>
