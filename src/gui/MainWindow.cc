@@ -613,12 +613,60 @@ void MainWindow::updateReorderMode(bool reorderMode)
 MainWindow::~MainWindow()
 {
   delete this->cgalworker;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+  if (!tabManager->shouldClose()) {
+    event->ignore();
+    return;
+  }
+  event->accept();
+
+  // Only save when this is the last MainWindow.
+  if (scadApp->windowManager.getWindows().size() == 1) {
+    saveWindowState();
+  }
+
+  isClosing = true;
+  progress_report_fin();
+
+  if (this->tempFile) {
+    delete this->tempFile;
+    this->tempFile = nullptr;
+  }
+
+  // Log to stdout from now on
+  clearCurrentOutput();
+  // Disable invokeMethod calls for consoleOutput during shutdown,
+  // otherwise will segfault if echos are in progress.
+  hideCurrentOutput();
+
+  // Make sure all the floating docks are closed too as those
+  // would stick around otherwise if the application keeps
+  // running (after closing just a single window, or when
+  // aborting the close process because of user cancellation).
+  for (auto& [dock, title] : docks) {
+    if (dock->isFloating()) {
+      dock->close();
+    }
+  }
+
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    scadApp->quit();
+    QApplication::quit();
   }
+}
+
+void MainWindow::saveWindowState()
+{
+  QSettingsCached settings;
+  settings.setValue("window/geometry", saveGeometry());
+  auto windowState = saveState();
+  UIUtils::dumpSaveState(windowState);
+  settings.setValue("window/state", windowState);
 }
 
 void MainWindow::showProgress()
@@ -1552,15 +1600,6 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-  // OpenSCAD quits by closing all top-level windows. However, the order in which top-level are closed is
-  // not defined by Qt, so we may end up closing undocked dock widgets before we've had a chance to save
-  // their window state. This overrides close to proactively save the window state.
-  if (event->type() == QEvent::Close) {
-    if (qobject_cast<Dock *>(obj) && !static_cast<QCloseEvent *>(event)->spontaneous()) {
-      saveWindowStateOnClose();
-    }
-  }
-
   if (rubberBandManager.isVisible()) {
     if (event->type() == QEvent::KeyRelease) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -3293,42 +3332,6 @@ void MainWindow::on_helpActionLibraryInfo_triggered()
   this->libraryInfoDialog->show();
 }
 
-void MainWindow::saveWindowStateOnClose()
-{
-  if (windowStateSaved) return;
-  windowStateSaved = true;
-
-  QSettingsCached settings;
-  settings.setValue("window/geometry", saveGeometry());
-  auto windowState = saveState();
-  UIUtils::dumpSaveState(windowState);
-  settings.setValue("window/state", windowState);
-}
-
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-  if (tabManager->shouldClose()) {
-    isClosing = true;
-    saveWindowStateOnClose();
-    progress_report_fin();
-
-    // Log to stdout from now on
-    clearCurrentOutput();
-
-    if (this->tempFile) {
-      delete this->tempFile;
-      this->tempFile = nullptr;
-    }
-
-    // Disable invokeMethod calls for consoleOutput during shutdown,
-    // otherwise will segfault if echos are in progress.
-    hideCurrentOutput();
-    event->accept();
-  } else {
-    event->ignore();
-  }
-}
-
 void MainWindow::on_editActionPreferences_triggered()
 {
   GlobalPreferences::inst()->update();
@@ -3855,7 +3858,7 @@ void MainWindow::setupMenusAndActions()
 #endif
 
 
-  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
+  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::closeApp, Qt::QueuedConnection);
 
 #ifdef ENABLE_PYTHON
 #else
@@ -3993,13 +3996,7 @@ void MainWindow::setupMenusAndActions()
 void MainWindow::restoreWindowState()
 {
   const QSettingsCached settings;
-  // fetch window states to be restored after restoreState() call
-  const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
-  const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
-
-  // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
-  // Log to stdout
   clearCurrentOutput();
   UIUtils::dumpSaveState(windowState);
   setCurrentOutput();
@@ -4033,7 +4030,14 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, colorListDock);
     tabifyDockWidget(colorListDock, animateDock);
+    tabifyDockWidget(animateDock, viewportControlDock);
+    tabifyDockWidget(parameterDock, aiDock);
     parameterDock->hide();
+    aiDock->hide();
+    errorLogDock->hide();
+    fontListDock->hide();
+    colorListDock->hide();
+    animateDock->hide();
     viewportControlDock->hide();
     consoleDock->show();
     consoleDock->raise();

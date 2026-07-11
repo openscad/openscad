@@ -4,6 +4,7 @@
 
 AIDock::AIDock(QWidget *parent) : Dock(parent)
 {
+  this->setObjectName("aiDock");
   this->chatWidget = new ChatWidget(this);
   setWidget(this->chatWidget);
 }
