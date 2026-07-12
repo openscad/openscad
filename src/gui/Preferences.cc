@@ -623,6 +623,7 @@ void Preferences::setup3DPrintPage()
   if (it != services.end()) {
     comboBoxDefaultPrintService->setCurrentText(it->second);
   }
+  this->printPageSetupDone = true;
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -1810,7 +1811,6 @@ void Preferences::showEvent(QShowEvent *e)
 {
   if (!this->printPageSetupDone) {
     setup3DPrintPage();
-    this->printPageSetupDone = true;
   }
   QMainWindow::showEvent(e);
   hidePasswords();
