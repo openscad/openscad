@@ -163,7 +163,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   init();
   AxisConfig->init();
   setupFeaturesPage();
-  setup3DPrintPage();
   updateGUI();
 }
 
@@ -1102,6 +1101,7 @@ void Preferences::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
 {
   S::enableRemotePrintServices.setValue(checked);
   writeSettings();
+  setup3DPrintPage();
 }
 
 void Preferences::on_comboBoxDefaultPrintService_activated(int)
@@ -1808,6 +1808,10 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 
 void Preferences::showEvent(QShowEvent *e)
 {
+  if (!this->printPageSetupDone) {
+    setup3DPrintPage();
+    this->printPageSetupDone = true;
+  }
   QMainWindow::showEvent(e);
   hidePasswords();
 }
