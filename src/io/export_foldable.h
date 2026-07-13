@@ -1,4 +1,13 @@
 
+#pragma once
+
+#include <memory>
+#include <vector>
+
+#include "geometry/linalg.h"
+
+class PolySet;
+
 struct lineS {
   Vector2d p1;
   Vector2d p2;
@@ -27,10 +36,10 @@ struct plotSettingsS {
 };
 
 struct plateS {
-  std::vector<Vector2d> pt;     // actual points
-  std::vector<Vector2d> pt_l1;  // leap starts
-  std::vector<Vector2d> pt_l2;  // leap ends
-  std::vector<Vector2d> bnd;    // Complete boundary representing points and leps
+  VectorOfVector2d pt;     // actual points
+  VectorOfVector2d pt_l1;  // leap starts
+  VectorOfVector2d pt_l2;  // leap ends
+  VectorOfVector2d bnd;    // Complete boundary representing points and leps
   int done;
 };
 

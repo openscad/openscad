@@ -1820,14 +1820,17 @@ static PyGetSetDef PyOpenSCADItemRef_getset[] = {
    NULL},
   {NULL}};
 
-static PyTypeObject PyOpenSCADItemRefType = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pyopenscad.ChildRef",
-  .tp_basicsize = sizeof(PyOpenSCADItemRef),
-  .tp_dealloc = (destructor)PyOpenSCADItemRef_dealloc,
-  .tp_getattro = PyOpenSCADItemRef_getattro,
-  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-  .tp_getset = PyOpenSCADItemRef_getset,
-  .tp_new = PyType_GenericNew};
+static PyTypeObject PyOpenSCADItemRefType = [] {
+  PyTypeObject type = {PyVarObject_HEAD_INIT(NULL, 0)};
+  type.tp_name = "pyopenscad.ChildRef";
+  type.tp_basicsize = sizeof(PyOpenSCADItemRef);
+  type.tp_dealloc = (destructor)PyOpenSCADItemRef_dealloc;
+  type.tp_getattro = PyOpenSCADItemRef_getattro;
+  type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+  type.tp_getset = PyOpenSCADItemRef_getset;
+  type.tp_new = PyType_GenericNew;
+  return type;
+}();
 
 // ---------------------
 // PyOpenSCADObjectIter
@@ -1886,14 +1889,16 @@ void PyOpenSCADObjectIter_dealloc(PyOpenSCADObjectIter *self)
 }
 
 // Iterator Type Definition
-PyTypeObject PyOpenSCADObjectIterType = {
-  PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "PyOpenSCADType.Iterator",
-  .tp_basicsize = sizeof(PyOpenSCADObjectIter),
-  .tp_dealloc = (destructor)PyOpenSCADObjectIter_dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_iter = PyOpenSCADType_iter,
-  .tp_iternext = PyOpenSCADType_iternext,  // <-- __next__ Implementierung
-};
+PyTypeObject PyOpenSCADObjectIterType = [] {
+  PyTypeObject type = {PyVarObject_HEAD_INIT(nullptr, 0)};
+  type.tp_name = "PyOpenSCADType.Iterator";
+  type.tp_basicsize = sizeof(PyOpenSCADObjectIter);
+  type.tp_dealloc = (destructor)PyOpenSCADObjectIter_dealloc;
+  type.tp_flags = Py_TPFLAGS_DEFAULT;
+  type.tp_iter = PyOpenSCADType_iter;
+  type.tp_iternext = PyOpenSCADType_iternext;  // <-- __next__ Implementierung
+  return type;
+}();
 
 // ---------------------------
 // PythonSCAD Sequence methods
@@ -2211,7 +2216,7 @@ static void windows_reattach_console_for_repl(void)
 static void run_basic_python_repl(void)
 {
   pymain_run_interactive_hook();
-  PyCompilerFlags cf = _PyCompilerFlags_INIT;
+  PyCompilerFlags cf = {};
   PyRun_AnyFileFlags(stdin, "<stdin>", &cf);
 }
 

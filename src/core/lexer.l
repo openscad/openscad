@@ -27,6 +27,7 @@
 %option prefix="lexer"
 %option nounput
 %option noinput
+%option nounistd
 
 %{
 
