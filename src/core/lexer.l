@@ -46,6 +46,8 @@ namespace fs = std::filesystem;
 #ifdef _MSC_VER
 #include <io.h>
 #define isatty _isatty
+#elif defined(__MINGW32__)
+#include <unistd.h>
 #endif
 std::string stringcontents;
 int lexerget_lineno(void);
