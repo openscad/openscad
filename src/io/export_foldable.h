@@ -39,7 +39,7 @@ struct plateS {
   VectorOfVector2d pt;     // actual points
   VectorOfVector2d pt_l1;  // leap starts
   VectorOfVector2d pt_l2;  // leap ends
-  VectorOfVector2d bnd;    // Complete boundary representing points and leps
+  VectorOfVector2d bnd;    // Complete boundary representing points and leaps
   int done;
 };
 
