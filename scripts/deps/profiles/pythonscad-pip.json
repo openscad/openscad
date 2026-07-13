@@ -21,6 +21,7 @@
         "libeigen3-dev",
         "libfontconfig-dev",
         "libfreetype-dev",
+        "lib3mf-dev",
         "libglib2.0-dev",
         "libgmp-dev",
         "libharfbuzz-dev",
@@ -52,6 +53,7 @@
         "glib2-devel",
         "gmp-devel",
         "harfbuzz-devel",
+        "lib3mf-devel",
         "libxml2-devel",
         "mpfr-devel",
         "pkgconfig"
@@ -74,6 +76,7 @@
         "glib",
         "gmp",
         "harfbuzz",
+        "lib3mf",
         "libxml2",
         "mpfr",
         "pkg-config"
@@ -97,6 +100,7 @@
         "glib2:p",
         "gmp:p",
         "harfbuzz:p",
+        "lib3mf:p",
         "libxml2:p",
         "mpfr:p",
         "pkgconf:p",

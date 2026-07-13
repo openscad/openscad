@@ -33,6 +33,7 @@ $PKG_MGR install -y \
     glib2-devel \
     gmp-devel \
     harfbuzz-devel \
+    lib3mf-devel \
     libxml2-devel \
     mpfr-devel \
     pkgconfig
