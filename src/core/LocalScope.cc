@@ -10,6 +10,7 @@
 
 #include "core/Assignment.h"
 #include "core/ModuleInstantiation.h"
+#include "core/RemoveNodeRewriter.h"
 #include "core/UserModule.h"
 #include "core/function.h"
 #include "core/node.h"
@@ -88,6 +89,7 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(
       target->children.push_back(node);
     }
   }
+  rewriteRemoveNodes(*target);
   return target;
 }
 
