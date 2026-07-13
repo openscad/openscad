@@ -76,7 +76,7 @@ Changelog = "https://github.com/pythonscad/pythonscad/blob/master/CHANGELOG.md"
 
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
-skip = ["*-musllinux*", "*-win32*", "*-win_arm64*", "cp*t-*", "pp*"]
+skip = ["*-musllinux*", "*-win32*", "*-win_arm64*", "cp*t-*"]
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 build-frontend = "build"

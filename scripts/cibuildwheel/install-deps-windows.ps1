@@ -26,7 +26,8 @@ function Remove-Msys2PathEntries {
     $MsysRoot = "C:\msys64\"
     $Separator = [IO.Path]::PathSeparator
     (($PathValue -split [Regex]::Escape($Separator)) | Where-Object {
-        $_ -and -not $_.StartsWith($MsysRoot, [StringComparison]::OrdinalIgnoreCase)
+        $Normalized = $_.Replace("/", "\")
+        $_ -and -not $Normalized.StartsWith($MsysRoot, [StringComparison]::OrdinalIgnoreCase)
     }) -join $Separator
 }
 
