@@ -56,6 +56,7 @@ if ! $PKG_MGR install -y lib3mf-devel; then
         -o "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
     tar -C /tmp -xzf "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
     cd "$LIB3MF_SRC"
+    # The patch removes non-portable compiler/linker assumptions and applies to manylinux too.
     patch -p1 < /project/patches/lib3mf-macos.patch
     cmake -S . -B build \
         -DLIB3MF_TESTS=OFF \

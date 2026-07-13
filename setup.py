@@ -456,7 +456,12 @@ class BuildExtWithLexYacc(build_ext):
         super().finalize_options()
         build_parallel = os.environ.get("PYTHONSCAD_BUILD_PARALLEL")
         if build_parallel and not self.parallel:
-            self.parallel = int(build_parallel)
+            try:
+                self.parallel = int(build_parallel)
+            except ValueError as exc:
+                raise RuntimeError(
+                    "PYTHONSCAD_BUILD_PARALLEL must be an integer when set"
+                ) from exc
 
     def run(self):
         yacc_src = "src/core/parser.y"
