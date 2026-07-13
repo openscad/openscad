@@ -246,9 +246,10 @@ def normalize_windows_link_libraries(libs, library_dirs):
                 break
 
             if lib.startswith("boost_"):
-                prefix = f"{lib}-".lower()
+                prefixes = (f"{lib}-".lower(), f"lib{lib}-".lower())
                 for name in os.listdir(libdir):
-                    if name.lower().startswith(prefix) and name.lower().endswith(".lib"):
+                    lowered = name.lower()
+                    if lowered.endswith(".lib") and lowered.startswith(prefixes):
                         resolved = os.path.splitext(name)[0]
                         break
             if resolved:
