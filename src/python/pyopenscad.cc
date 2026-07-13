@@ -2217,6 +2217,9 @@ static void run_basic_python_repl(void)
 {
   pymain_run_interactive_hook();
   PyCompilerFlags cf = {};
+#if PY_VERSION_HEX >= 0x030B0000
+  cf.cf_feature_version = PY_MINOR_VERSION;
+#endif
   PyRun_AnyFileFlags(stdin, "<stdin>", &cf);
 }
 
