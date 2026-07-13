@@ -68,17 +68,13 @@ $VcpkgVersion = "2025.04.09"
 $VcpkgRoot = Join-Path $ProjectRoot ".wheel-vcpkg"
 
 if (-not (Test-Path $VcpkgRoot)) {
-    git clone --branch $VcpkgVersion `
+    git clone --depth 1 --branch $VcpkgVersion `
         https://github.com/microsoft/vcpkg.git $VcpkgRoot
     Assert-NativeCommandSucceeded "git clone vcpkg"
 } else {
     Push-Location $VcpkgRoot
     try {
-        if (Test-Path ".git/shallow") {
-            git fetch --unshallow origin
-            Assert-NativeCommandSucceeded "git unshallow vcpkg"
-        }
-        git fetch origin "refs/tags/${VcpkgVersion}:refs/tags/${VcpkgVersion}"
+        git fetch --depth 1 origin "refs/tags/${VcpkgVersion}:refs/tags/${VcpkgVersion}"
         Assert-NativeCommandSucceeded "git fetch vcpkg tag"
         git checkout $VcpkgVersion
         Assert-NativeCommandSucceeded "git checkout vcpkg tag"

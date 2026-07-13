@@ -32,7 +32,7 @@ def apply_wheel_build_env():
         os.environ["PATH"] = winflex + os.pathsep + os.environ.get("PATH", "")
     msys2_usr_bin = os.environ.get("MSYS2_USR_BIN")
     if msys2_usr_bin and os.path.isdir(msys2_usr_bin):
-        os.environ["PATH"] = msys2_usr_bin + os.pathsep + os.environ.get("PATH", "")
+        os.environ["PATH"] = os.environ.get("PATH", "") + os.pathsep + msys2_usr_bin
 
 def get_version():
     here = os.path.dirname(os.path.abspath(__file__))
@@ -255,6 +255,8 @@ def normalize_windows_link_libraries(libs, library_dirs):
 
         if not resolved and lib in system_libs:
             resolved = lib
+        if not resolved:
+            resolved = aliases.get(lib, lib)
 
         if resolved and resolved not in normalized:
             normalized.append(resolved)
