@@ -71,14 +71,21 @@ $ManifestDir = Join-Path $ProjectRoot "scripts/cibuildwheel"
 $VcpkgManifest = Join-Path $ManifestDir "vcpkg.json"
 
 if (-not (Test-Path $VcpkgRoot)) {
-    git clone --depth 1 --branch $VcpkgVersion `
+    # vcpkg versioned ports need historical tree objects; shallow clones fail during install.
+    git clone --branch $VcpkgVersion `
         https://github.com/microsoft/vcpkg.git $VcpkgRoot
     Assert-NativeCommandSucceeded "git clone vcpkg"
 } else {
     Push-Location $VcpkgRoot
     try {
-        git fetch --depth 1 origin "refs/tags/${VcpkgVersion}:refs/tags/${VcpkgVersion}"
+        git fetch origin "refs/tags/${VcpkgVersion}:refs/tags/${VcpkgVersion}"
         Assert-NativeCommandSucceeded "git fetch vcpkg tag"
+        $IsShallow = (git rev-parse --is-shallow-repository).Trim()
+        Assert-NativeCommandSucceeded "git check vcpkg shallow state"
+        if ($IsShallow -eq "true") {
+            git fetch --unshallow origin
+            Assert-NativeCommandSucceeded "git unshallow vcpkg"
+        }
         git checkout $VcpkgVersion
         Assert-NativeCommandSucceeded "git checkout vcpkg tag"
     } finally {
