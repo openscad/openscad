@@ -105,7 +105,7 @@ try {
         --x-install-root (Join-Path $VcpkgRoot "installed")
     Assert-NativeCommandSucceeded "vcpkg install"
 } finally {
-    if ($OriginalPath) {
+    if ($null -ne $OriginalPath) {
         $env:PATH = $OriginalPath
     }
     Pop-Location
