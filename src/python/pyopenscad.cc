@@ -2216,11 +2216,7 @@ static void windows_reattach_console_for_repl(void)
 static void run_basic_python_repl(void)
 {
   pymain_run_interactive_hook();
-  PyCompilerFlags cf = {};
-#if PY_VERSION_HEX >= 0x030B0000
-  cf.cf_feature_version = PY_MINOR_VERSION;
-#endif
-  PyRun_AnyFileFlags(stdin, "<stdin>", &cf);
+  PyRun_AnyFileFlags(stdin, "<stdin>", nullptr);
 }
 
 // Open the basic embedded CPython REPL on stdin. Reachable explicitly
