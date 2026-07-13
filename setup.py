@@ -204,6 +204,7 @@ def get_library_dirs():
     vcpkg_installed = get_vcpkg_installed_dir()
     if vcpkg_installed:
         dirs.append(os.path.join(vcpkg_installed, "lib"))
+        dirs.append(os.path.join(vcpkg_installed, "lib", "manual-link"))
     if IS_DARWIN:
         for prefix in ("/opt/homebrew", "/usr/local"):
             libdir = os.path.join(prefix, "lib")
@@ -282,9 +283,9 @@ def get_platform_sources():
     sources = ["src/platform/PlatformUtils.cc"]
     if IS_WINDOWS:
         sources.append("src/platform/PlatformUtils-win.cc")
-    elif IS_DARWIN:
-        sources.append("src/platform/PlatformUtils-mac.mm")
     else:
+        # The pip extension is headless, so POSIX paths are sufficient here;
+        # on macOS this avoids requiring Objective-C++ support from setuptools.
         sources.append("src/platform/PlatformUtils-posix.cc")
     return sources
 

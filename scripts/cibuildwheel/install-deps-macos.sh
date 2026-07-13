@@ -29,6 +29,10 @@ if ! pkg-config --exists lib3mf; then
         -DCMAKE_INSTALL_LIBDIR=lib
     cmake --build build -j"$(sysctl -n hw.ncpu)"
     cmake --install build
+    mkdir -p "$BREW_PREFIX/lib/pkgconfig"
+    cp -a "$LIB3MF_SRC"/lib/lib3mf*.dylib "$BREW_PREFIX/lib/"
+    cp "$LIB3MF_SRC/lib/pkgconfig/lib3mf.pc" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
+    sed -i.bak "s|^prefix=.*|prefix=$BREW_PREFIX|" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
     cd "$PROJECT_ROOT"
 fi
 
