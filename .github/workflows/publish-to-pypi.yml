@@ -95,10 +95,12 @@ jobs:
           restore-keys: |
             pypi-windows-vcpkg-
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+      - name: Install Windows wheel dependencies
+        if: runner.os == 'Windows'
+        shell: pwsh
         env:
-          VCPKG_BINARY_SOURCES: ${{ github.event_name == 'workflow_dispatch' && runner.os == 'Windows' && format('clear;files,{0}/.wheel-vcpkg-cache,readwrite', github.workspace) || '' }}
+          VCPKG_BINARY_SOURCES: ${{ github.event_name == 'workflow_dispatch' && format('clear;files,{0}/.wheel-vcpkg-cache,readwrite', github.workspace) || '' }}
+        run: pwsh scripts/cibuildwheel/install-deps-windows.ps1
 
       - name: Prune Windows vcpkg cache
         if: always() && runner.os == 'Windows'
@@ -117,7 +119,6 @@ jobs:
 
       - name: Save Windows vcpkg cache
         if: >-
-          always() &&
           github.event_name == 'workflow_dispatch' &&
           runner.os == 'Windows' &&
           steps.windows-vcpkg-cache.outputs.cache-hit != 'true'
@@ -128,6 +129,11 @@ jobs:
             .wheel-vcpkg-cache
             ~/AppData/Local/vcpkg/archives
           key: ${{ steps.windows-vcpkg-cache.outputs.cache-primary-key }}
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        env:
+          CIBW_BEFORE_ALL_WINDOWS: python -c "print('Windows wheel dependencies already installed by workflow')"
 
       - uses: actions/upload-artifact@v7
         with:
