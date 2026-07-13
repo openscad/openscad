@@ -62,7 +62,8 @@ if ! $PKG_MGR install -y lib3mf-devel; then
         -DUSE_INCLUDED_ZLIB=OFF \
         -DUSE_INCLUDED_LIBZIP=OFF \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr/local
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib64
     cmake --build build -j"$(nproc)"
     cmake --install build
     ldconfig
