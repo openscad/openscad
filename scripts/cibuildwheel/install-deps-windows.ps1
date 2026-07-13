@@ -67,6 +67,8 @@ if (-not $BisonExe -or -not $FlexExe) {
 # Pin vcpkg to a release tag for reproducible builds (see vcpkg.json builtin-baseline).
 $VcpkgVersion = "2025.04.09"
 $VcpkgRoot = Join-Path $ProjectRoot ".wheel-vcpkg"
+$ManifestDir = Join-Path $ProjectRoot "scripts/cibuildwheel"
+$VcpkgManifest = Join-Path $ManifestDir "vcpkg.json"
 
 if (-not (Test-Path $VcpkgRoot)) {
     git clone --depth 1 --branch $VcpkgVersion `
@@ -84,13 +86,24 @@ if (-not (Test-Path $VcpkgRoot)) {
     }
 }
 
+$ManifestBaseline = ((Get-Content $VcpkgManifest -Raw) | ConvertFrom-Json)."builtin-baseline"
+Push-Location $VcpkgRoot
+try {
+    $CheckedOutCommit = (git rev-parse HEAD).Trim()
+    Assert-NativeCommandSucceeded "git rev-parse vcpkg HEAD"
+} finally {
+    Pop-Location
+}
+if ($ManifestBaseline -ne $CheckedOutCommit) {
+    throw "vcpkg tag $VcpkgVersion resolves to $CheckedOutCommit, but vcpkg.json builtin-baseline is $ManifestBaseline. Update both pins together."
+}
+
 $VcpkgExe = Join-Path $VcpkgRoot "vcpkg.exe"
 if (-not (Test-Path $VcpkgExe)) {
     & (Join-Path $VcpkgRoot "bootstrap-vcpkg.bat") -disableMetrics
     Assert-NativeCommandSucceeded "bootstrap vcpkg"
 }
 
-$ManifestDir = Join-Path $ProjectRoot "scripts/cibuildwheel"
 $Triplet = "x64-windows-release"
 $HostTriplet = "x64-windows-release"
 
