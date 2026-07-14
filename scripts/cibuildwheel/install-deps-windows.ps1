@@ -144,9 +144,11 @@ try {
 
 $BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
 if ($BoostRegexLibFiles.Count -eq 0) {
-    Write-Host "boost-regex is marked installed but no Boost regex import library was found; reinstalling boost-regex"
-    & $VcpkgExe remove "boost-regex:${Triplet}" --recurse
-    Assert-NativeCommandSucceeded "vcpkg remove boost-regex"
+    $InstallRoot = Join-Path $VcpkgRoot "installed"
+    Write-Host "boost-regex is marked installed but no Boost regex import library was found; removing stale vcpkg installed tree"
+    if (Test-Path $InstallRoot) {
+        Remove-Item -Recurse -Force $InstallRoot
+    }
     Push-Location $ManifestDir
     try {
         $OriginalPath = $env:PATH
@@ -155,7 +157,7 @@ if ($BoostRegexLibFiles.Count -eq 0) {
             --triplet $Triplet `
             --host-triplet $HostTriplet `
             --x-manifest-root $ManifestDir `
-            --x-install-root (Join-Path $VcpkgRoot "installed")
+            --x-install-root $InstallRoot
         Assert-NativeCommandSucceeded "vcpkg reinstall after boost-regex repair"
     } finally {
         if ($null -ne $OriginalPath) {
