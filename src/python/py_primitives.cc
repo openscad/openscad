@@ -1369,3 +1369,40 @@ PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
 
   return python_sheet_core(func, imin, imax, jmin, jmax, fs, ispan, jspan);
 }
+
+PyObject *python_organic(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE();
+  auto node = std::make_shared<OrganicNode>(instance);
+  char *kwlist[] = {"pts", "r", nullptr};
+  double d = NAN;
+  PyObject *points = nullptr;
+  Vector3d point;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od", kwlist, &points, &d)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing oragnic(ptlist,d)");
+    return NULL;
+  }
+  if (points != NULL && PyList_Check(points)) {
+    if (PyList_Size(points) == 0) {
+      PyErr_SetString(PyExc_TypeError, "There must at least be one point in the polyhedron");
+      return NULL;
+    }
+    for (Py_ssize_t i = 0; i < PyList_Size(points); i++) {
+      PyObject *element = PyList_GetItem(points, i);
+      if (PyList_Check(element) && PyList_Size(element) == 3) {
+        point[0] = PyFloat_AsDouble(PyList_GetItem(element, 0));
+        point[1] = PyFloat_AsDouble(PyList_GetItem(element, 1));
+        point[2] = PyFloat_AsDouble(PyList_GetItem(element, 2));
+        node->points.push_back(point);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 3 numbers");
+        return NULL;
+      }
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Organic Points must be a list of coordinates");
+    return NULL;
+  }
+  node->d = d;
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}

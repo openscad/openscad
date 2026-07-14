@@ -793,6 +793,17 @@ def polyhedron(
     """
     ...
 
+
+def organic(pts:list[list[float]], max_mesh_size:float, alpha:float=-1) -> PyOpenSCAD:
+    """Connects a cloud of points into a smooth, watertight organic surface
+    pts: list of [x,y,z] points to connect; every point is guaranteed to be used
+    max_mesh_size: maximum edge length of the resulting mesh (smaller = finer/smoother)
+    alpha: advanced override for the internal alpha-shape radius; leave at -1 for automatic selection
+    Requires the point cloud to be star-shaped around some interior point; split non-star-shaped objects (e.g. a figure with separate limbs) into several star-shaped point groups and union the results
+    """
+    ...
+
+
 def frep(exp: PyLibFive, min: List[float], max: List[float], res: int) -> PyOpenSCAD:
     """Create F-Rep (libfive)
     exp : an SDF epression composed from SDF variables and operators, see tutorial

@@ -38,6 +38,8 @@
 #include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
 
+PolySet organic_resample(const std::vector<Vector3d>& points, double max_mesh_size, double alpha = -1.0);
+
 class CubeNode : public LeafNode
 {
 public:
@@ -127,6 +129,18 @@ public:
   int convexity = 1;
   std::vector<int32_t> color_indices;  // when present, must be same size as faces
   std::vector<Color4f> colors;
+};
+
+class OrganicNode : public LeafNode
+{
+public:
+  OrganicNode(std::shared_ptr<const ModuleInstantiation> mi) : LeafNode(std::move(mi)) {}
+  std::string toString() const override;
+  std::string name() const override { return "polyhedron"; }
+  std::unique_ptr<const Geometry> createGeometry() const override;
+
+  std::vector<Vector3d> points;
+  double d;
 };
 
 class EdgeNode : public LeafNode

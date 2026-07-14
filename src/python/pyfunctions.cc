@@ -692,6 +692,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
 
   {"group", (PyCFunction)python_group, METH_VARARGS | METH_KEYWORDS, "Group Object."},
   {"render", (PyCFunction)python_render, METH_VARARGS | METH_KEYWORDS, "Render Object."},
+  {"organic", (PyCFunction)python_organic, METH_VARARGS | METH_KEYWORDS, "Create Organic object"},
   {"osimport", (PyCFunction)python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
   {"osuse", (PyCFunction)python_osuse, METH_VARARGS | METH_KEYWORDS, "Use OpenSCAD Library."},
   {"osinclude", (PyCFunction)python_osinclude, METH_VARARGS | METH_KEYWORDS,

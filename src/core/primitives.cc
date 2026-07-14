@@ -606,6 +606,29 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(
   return node;
 }
 
+std::string OrganicNode::toString() const
+{
+  std::ostringstream stream;
+  stream << "organic(points = [";
+  bool firstPoint = true;
+  for (const auto& point : this->points) {
+    if (firstPoint) {
+      firstPoint = false;
+    } else {
+      stream << ", ";
+    }
+    stream << "[" << point[0] << ", " << point[1] << ", " << point[2] << "]";
+  }
+  stream << "d=[" << d << ");";
+  return stream.str();
+}
+
+std::unique_ptr<const Geometry> OrganicNode::createGeometry() const
+{
+  PolySet res = organic_resample(points, d);
+  return std::make_unique<const PolySet>(res);
+}
+
 std::unique_ptr<const Geometry> EdgeNode::createGeometry() const
 {
   if (this->size <= 0) return std::make_unique<Polygon2d>();

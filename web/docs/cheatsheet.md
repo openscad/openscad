@@ -352,6 +352,11 @@
       <div class="func"><code><a href="../reference/repair/#separate">separate</a>(obj)</code></div>
       <div>Split a solid into disconnected parts</div>
       <div><code>parts = separate(my_solid)</code></div>
+
+      <div class="func"><code><a href="../reference/organic/#organic">organic</a>(pts, gridlength)</code></div>
+      <div> Connect a point cloud into a smooth, watertight organic surface</div>
+      <div><code>organic(pts, 2).show()</code></div>
+
   </div>
 </div>
 

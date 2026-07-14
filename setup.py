@@ -453,6 +453,7 @@ def main():
               "src/geometry/roof_vd.cc",
               "src/geometry/skin.cc",
               "src/geometry/linear_extrude.cc",
+              "src/geometry/organic_resample.cc",
               "src/geometry/cgal/CGALCache.cc",
               "src/geometry/cgal/cgalutils.cc",
               "src/geometry/cgal/cgalutils-kernel.cc",

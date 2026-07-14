@@ -141,6 +141,7 @@ PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs);
 PyObject *python_pull(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_pull(PyObject *obj, PyObject *args, PyObject *kwargs);
 PyObject *python_wrap(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_organic(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs);
 PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs);
