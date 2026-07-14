@@ -99,7 +99,7 @@ jobs:
         shell: pwsh
         env:
           VCPKG_BINARY_SOURCES: ${{ github.event_name == 'workflow_dispatch' && format('clear;files,{0}/.wheel-vcpkg-cache,readwrite', github.workspace) || '' }}
-        run: pwsh scripts/cibuildwheel/install-deps-windows.ps1
+        run: ./scripts/cibuildwheel/install-deps-windows.ps1
 
       - name: Prune Windows vcpkg cache
         if: always() && runner.os == 'Windows'

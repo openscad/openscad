@@ -48,7 +48,7 @@ if ! pkg-config --exists lib3mf; then
         echo "lib3mf install did not provide lib3mf.pc" >&2
         exit 1
     fi
-    sed -i.bak "s|^prefix=.*|prefix=$BREW_PREFIX|" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
+    sed -i '' "s|^prefix=.*|prefix=$BREW_PREFIX|" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
     cd "$PROJECT_ROOT"
 fi
 
