@@ -94,6 +94,7 @@ before-all = "bash scripts/cibuildwheel/install-deps-macos.sh"
 repair-wheel-command = "DYLD_LIBRARY_PATH=\"$(brew --prefix)/lib\" delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.windows]
+# x64-windows-release is a vcpkg community triplet in the pinned vcpkg baseline.
 environment = { VCPKG_DEFAULT_TRIPLET = "x64-windows-release", PYTHONSCAD_BUILD_PARALLEL = "6" }
 before-all = "pwsh scripts/cibuildwheel/install-deps-windows.ps1"
 repair-wheel-command = "pwsh scripts/cibuildwheel/repair-wheel-windows.ps1 -Wheel {wheel} -DestDir {dest_dir}"

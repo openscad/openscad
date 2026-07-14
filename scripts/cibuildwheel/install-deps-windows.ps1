@@ -111,6 +111,7 @@ if (-not (Test-Path $VcpkgExe)) {
     Assert-NativeCommandSucceeded "bootstrap vcpkg"
 }
 
+# Use vcpkg's pinned community release triplet; keep this in sync with pyproject.toml.
 $Triplet = "x64-windows-release"
 $HostTriplet = "x64-windows-release"
 $Installed = Join-Path $VcpkgRoot "installed" $Triplet

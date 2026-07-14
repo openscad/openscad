@@ -175,6 +175,8 @@ def get_link_libraries():
     boost_libs = ["boost_program_options"]
     if not IS_DARWIN:
         boost_libs.append("boost_system")
+    # On Windows, Boost.Regex is selected via MSVC autolink; vcpkg's release
+    # triplet does not provide a stable unversioned boost_regex.lib to name here.
     if not IS_WINDOWS:
         boost_libs.insert(0, "boost_regex")
     for lib in boost_libs:

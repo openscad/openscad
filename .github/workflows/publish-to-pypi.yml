@@ -88,7 +88,6 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            .wheel-vcpkg
             .wheel-vcpkg-cache
             ~/AppData/Local/vcpkg/archives
           key: pypi-windows-vcpkg-${{ hashFiles('scripts/cibuildwheel/vcpkg.json', 'scripts/cibuildwheel/install-deps-windows.ps1') }}
@@ -125,7 +124,6 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            .wheel-vcpkg
             .wheel-vcpkg-cache
             ~/AppData/Local/vcpkg/archives
           key: ${{ steps.windows-vcpkg-cache.outputs.cache-primary-key }}
