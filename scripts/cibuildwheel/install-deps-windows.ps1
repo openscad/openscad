@@ -31,6 +31,16 @@ function Remove-Msys2PathEntries {
     }) -join $Separator
 }
 
+function Get-BoostRegexLibFiles {
+    param([string]$Installed)
+    @(
+        Get-ChildItem -Path (Join-Path $Installed "lib") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName
+        Get-ChildItem -Path (Join-Path $Installed "lib" "manual-link") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName
+    )
+}
+
 $ProjectRoot = if ($env:CIBW_PROJECT_DIR) {
     $env:CIBW_PROJECT_DIR
 } elseif ($env:GITHUB_WORKSPACE) {
@@ -113,6 +123,7 @@ if (-not (Test-Path $VcpkgExe)) {
 
 $Triplet = "x64-windows-release"
 $HostTriplet = "x64-windows-release"
+$Installed = Join-Path $VcpkgRoot "installed" $Triplet
 
 Push-Location $ManifestDir
 try {
@@ -131,7 +142,33 @@ try {
     Pop-Location
 }
 
-$Installed = Join-Path $VcpkgRoot "installed" $Triplet
+$BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
+if ($BoostRegexLibFiles.Count -eq 0) {
+    Write-Host "boost-regex is marked installed but no Boost regex import library was found; reinstalling boost-regex"
+    & $VcpkgExe remove "boost-regex:${Triplet}" --recurse
+    Assert-NativeCommandSucceeded "vcpkg remove boost-regex"
+    Push-Location $ManifestDir
+    try {
+        $OriginalPath = $env:PATH
+        $env:PATH = Remove-Msys2PathEntries $env:PATH
+        & $VcpkgExe install `
+            --triplet $Triplet `
+            --host-triplet $HostTriplet `
+            --x-manifest-root $ManifestDir `
+            --x-install-root (Join-Path $VcpkgRoot "installed")
+        Assert-NativeCommandSucceeded "vcpkg reinstall after boost-regex repair"
+    } finally {
+        if ($null -ne $OriginalPath) {
+            $env:PATH = $OriginalPath
+        }
+        Pop-Location
+    }
+    $BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
+    if ($BoostRegexLibFiles.Count -eq 0) {
+        throw "vcpkg boost-regex repair completed, but no Boost regex import library exists under $Installed"
+    }
+}
+
 $PkgConfigDir = Join-Path $Installed "lib" "pkgconfig"
 $PkgConfExe = Join-Path $Installed "tools" "pkgconf" "pkgconf.exe"
 
