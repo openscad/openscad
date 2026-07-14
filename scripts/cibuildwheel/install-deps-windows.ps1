@@ -135,6 +135,37 @@ $Installed = Join-Path $VcpkgRoot "installed" $Triplet
 $PkgConfigDir = Join-Path $Installed "lib" "pkgconfig"
 $PkgConfExe = Join-Path $Installed "tools" "pkgconf" "pkgconf.exe"
 
+#region agent log
+$DebugPayload = [ordered]@{
+    sessionId = "ea88a1"
+    runId = if ($env:GITHUB_RUN_ID) { $env:GITHUB_RUN_ID } else { "local" }
+    hypothesisId = "A,B"
+    location = "scripts/cibuildwheel/install-deps-windows.ps1:vcpkg_snapshot"
+    message = "Snapshot Windows vcpkg library files after install"
+    data = [ordered]@{
+        installed = $Installed
+        libExists = Test-Path (Join-Path $Installed "lib")
+        manualLinkExists = Test-Path (Join-Path $Installed "lib" "manual-link")
+        boostRegexLibFiles = @(
+            Get-ChildItem -Path (Join-Path $Installed "lib") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty Name
+        )
+        boostRegexManualLinkFiles = @(
+            Get-ChildItem -Path (Join-Path $Installed "lib" "manual-link") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty Name
+        )
+        boostRegexPkgConfigFiles = @(
+            Get-ChildItem -Path $PkgConfigDir -Filter "*boost*regex*.pc" -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty Name
+        )
+    }
+    timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+}
+$DebugJson = $DebugPayload | ConvertTo-Json -Depth 5 -Compress
+Add-Content -Encoding utf8 -Path (Join-Path $ProjectRoot "debug-ea88a1.log") -Value $DebugJson
+Write-Host "AGENT_DEBUG $DebugJson"
+#endregion
+
 # before-all runs in a separate process; persist env for setup.py and repair-wheel.
 $EnvFile = Join-Path $ProjectRoot "scripts/cibuildwheel/wheel-build-env.env"
 $EnvLines = @(
@@ -145,7 +176,8 @@ $EnvLines = @(
     "PKG_CONFIG=$PkgConfExe",
     "BISON=$BisonExe",
     "FLEX=$FlexExe",
-    "MSYS2_USR_BIN=$MsysUsrBin"
+    "MSYS2_USR_BIN=$MsysUsrBin",
+    "PYTHONSCAD_WHEEL_DEBUG=$env:PYTHONSCAD_WHEEL_DEBUG"
 )
 $EnvLines | Set-Content -Encoding utf8 $EnvFile
 
