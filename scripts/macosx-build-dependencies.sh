@@ -64,6 +64,9 @@ PACKAGES=(
     # https://github.com/harfbuzz/harfbuzz/releases
     "harfbuzz 11.4.1 1"
 
+    # https://openssl-library.org/source/
+    "openssl 3.6.3"
+
     # https://github.com/nih-at/libzip/releases
     "libzip 1.11.4"
 
@@ -569,9 +572,9 @@ build_fontconfig()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dtests=disabled -Dnls=disabled build-$arch
-    meson compile -C build-$arch
-    DESTDIR=install/ meson install -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dtests=disabled -Dnls=disabled build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson compile -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
@@ -658,9 +661,9 @@ build_glib2()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Ddocumentation=false -Dman-pages=disabled -Ddtrace=disabled -Dtests=false build-$arch
-    meson compile -C build-$arch
-    DESTDIR=install/ meson install -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Ddocumentation=false -Dman-pages=disabled -Ddtrace=disabled -Dtests=false build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson compile -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
@@ -707,9 +710,9 @@ build_harfbuzz()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
-    meson compile -C build-$arch
-    DESTDIR=install/ meson install -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson compile -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
@@ -725,6 +728,69 @@ build_harfbuzz()
   fi
 
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
+}
+
+build_openssl()
+{
+  version=$1
+  OPENSSL_DIR="openssl-$version"
+  OPENSSL_FILENAME="${OPENSSL_DIR}.tar.gz"
+
+  cd "$BASEDIR/src"
+  rm -rf "$OPENSSL_DIR"
+  if [ ! -f "$OPENSSL_FILENAME" ]; then
+    curl -LO "https://github.com/openssl/openssl/releases/download/openssl-$version/$OPENSSL_FILENAME"
+  fi
+  tar xzf "$OPENSSL_FILENAME"
+
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    arch_build_dir="${OPENSSL_DIR}-${arch}"
+    rm -rf "$arch_build_dir"
+    cp -R "$OPENSSL_DIR" "$arch_build_dir"
+    cd "$arch_build_dir"
+
+    case "$arch" in
+      arm64) openssl_target="darwin64-arm64-cc" ;;
+      x86_64) openssl_target="darwin64-x86_64-cc" ;;
+      *) echo "Unsupported OpenSSL architecture: $arch" >&2; exit 1 ;;
+    esac
+
+    CFLAGS="-arch $arch -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+    CXXFLAGS="-arch $arch -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+    LDFLAGS="-arch $arch -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+    ./Configure "$openssl_target" shared no-tests no-module \
+      --prefix="$DEPLOYDIR" \
+      --openssldir="$DEPLOYDIR/ssl" \
+      -mmacosx-version-min="$MAC_OSX_VERSION_MIN"
+    make -j"$NUMCPU"
+    make install_sw DESTDIR="$PWD/install"
+    cd ..
+  done
+
+  cp -R "${OPENSSL_DIR}-${ARCHS[0]}/install/$DEPLOYDIR/"* "$DEPLOYDIR"
+
+  if (( ${#ARCHS[@]} > 1 )); then
+    SSL_DYLIBS=()
+    CRYPTO_DYLIBS=()
+    SSL_STATIC_LIBS=()
+    CRYPTO_STATIC_LIBS=()
+    for arch in ${ARCHS[*]}; do
+      SSL_DYLIBS+=("${OPENSSL_DIR}-${arch}/install/$DEPLOYDIR/lib/libssl.3.dylib")
+      CRYPTO_DYLIBS+=("${OPENSSL_DIR}-${arch}/install/$DEPLOYDIR/lib/libcrypto.3.dylib")
+      SSL_STATIC_LIBS+=("${OPENSSL_DIR}-${arch}/install/$DEPLOYDIR/lib/libssl.a")
+      CRYPTO_STATIC_LIBS+=("${OPENSSL_DIR}-${arch}/install/$DEPLOYDIR/lib/libcrypto.a")
+    done
+    lipo -create "${SSL_DYLIBS[@]}" -output "$DEPLOYDIR/lib/libssl.3.dylib"
+    lipo -create "${CRYPTO_DYLIBS[@]}" -output "$DEPLOYDIR/lib/libcrypto.3.dylib"
+    lipo -create "${SSL_STATIC_LIBS[@]}" -output "$DEPLOYDIR/lib/libssl.a"
+    lipo -create "${CRYPTO_STATIC_LIBS[@]}" -output "$DEPLOYDIR/lib/libcrypto.a"
+  fi
+
+  ln -sf libssl.3.dylib "$DEPLOYDIR/lib/libssl.dylib"
+  ln -sf libcrypto.3.dylib "$DEPLOYDIR/lib/libcrypto.dylib"
+  install_name_tool -id @rpath/libssl.3.dylib "$DEPLOYDIR/lib/libssl.3.dylib"
+  install_name_tool -id @rpath/libcrypto.3.dylib "$DEPLOYDIR/lib/libcrypto.3.dylib"
 }
 
 build_hidapi()
@@ -797,9 +863,9 @@ build_pixman()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dlibpng=disabled -Dgtk=disabled -Dtests=disabled -Dneon=disabled -Ddemos=disabled
-    meson compile -C build-$arch
-    DESTDIR=install/ meson install -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dlibpng=disabled -Dgtk=disabled -Dtests=disabled -Dneon=disabled -Ddemos=disabled
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson compile -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
@@ -841,9 +907,9 @@ build_cairo()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dfreetype=enabled -Dfontconfig=enabled -Dxlib=disabled -Dxcb=disabled -Dpng=disabled -Dglib=disabled -Dtests=disabled -Dquartz=disabled build-$arch
-    meson compile -C build-$arch
-    DESTDIR=install/ meson install -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dfreetype=enabled -Dfontconfig=enabled -Dxlib=disabled -Dxcb=disabled -Dpng=disabled -Dglib=disabled -Dtests=disabled -Dquartz=disabled build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" meson compile -C build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig" DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
