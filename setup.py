@@ -57,7 +57,8 @@ def apply_wheel_build_env():
                 os.environ[key] = value
     winflex = os.environ.get("WINFLEXBISON_DIR")
     if winflex and os.path.isdir(winflex):
-        os.environ["PATH"] = winflex + os.pathsep + os.environ.get("PATH", "")
+        path = os.environ.get("PATH", "")
+        os.environ["PATH"] = winflex + os.pathsep + path if path else winflex
     msys2_usr_bin = os.environ.get("MSYS2_USR_BIN")
     if msys2_usr_bin and os.path.isdir(msys2_usr_bin):
         path = os.environ.get("PATH", "")

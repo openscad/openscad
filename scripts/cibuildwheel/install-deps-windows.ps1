@@ -31,16 +31,6 @@ function Remove-Msys2PathEntries {
     }) -join $Separator
 }
 
-function Get-BoostRegexLibFiles {
-    param([string]$Installed)
-    @(
-        Get-ChildItem -Path (Join-Path $Installed "lib") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty FullName
-        Get-ChildItem -Path (Join-Path $Installed "lib" "manual-link") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty FullName
-    )
-}
-
 $ProjectRoot = if ($env:CIBW_PROJECT_DIR) {
     $env:CIBW_PROJECT_DIR
 } elseif ($env:GITHUB_WORKSPACE) {
@@ -200,6 +190,7 @@ $EnvLines = @(
     "MSYS2_USR_BIN=$MsysUsrBin",
     "PYTHONSCAD_WHEEL_DEBUG=$env:PYTHONSCAD_WHEEL_DEBUG"
 )
-$EnvLines | Set-Content -Encoding utf8 $EnvFile
+$Utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllLines($EnvFile, $EnvLines, $Utf8NoBom)
 
 Write-Host "=== install-deps-windows.ps1: done (vcpkg root: $VcpkgRoot) ==="

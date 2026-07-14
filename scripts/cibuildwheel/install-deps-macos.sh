@@ -30,8 +30,16 @@ if ! pkg-config --exists lib3mf; then
     cmake --build build -j"$(sysctl -n hw.ncpu)"
     cmake --install build
     mkdir -p "$BREW_PREFIX/lib/pkgconfig"
-    cp -a "$LIB3MF_SRC"/lib/lib3mf*.dylib "$BREW_PREFIX/lib/"
-    cp "$LIB3MF_SRC/lib/pkgconfig/lib3mf.pc" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
+    if ! compgen -G "$BREW_PREFIX/lib/lib3mf*.dylib" >/dev/null; then
+        echo "lib3mf install did not produce dylibs under $BREW_PREFIX/lib" >&2
+        exit 1
+    fi
+    if [[ -f "$LIB3MF_SRC/lib/pkgconfig/lib3mf.pc" ]]; then
+        cp "$LIB3MF_SRC/lib/pkgconfig/lib3mf.pc" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
+    elif [[ ! -f "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc" ]]; then
+        echo "lib3mf install did not provide lib3mf.pc" >&2
+        exit 1
+    fi
     sed -i.bak "s|^prefix=.*|prefix=$BREW_PREFIX|" "$BREW_PREFIX/lib/pkgconfig/lib3mf.pc"
     cd "$PROJECT_ROOT"
 fi
