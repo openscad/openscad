@@ -41,6 +41,40 @@ function Get-BoostRegexLibFiles {
     )
 }
 
+function Remove-VcpkgBinaryArchivesContainingPath {
+    param(
+        [string]$CacheRoot,
+        [string]$Needle
+    )
+    if (-not (Test-Path $CacheRoot)) {
+        return
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    Get-ChildItem -Path $CacheRoot -Recurse -File -Include "*.zip", "*.nupkg" -ErrorAction SilentlyContinue | ForEach-Object {
+        $Archive = $_
+        $Zip = $null
+        try {
+            $Zip = [IO.Compression.ZipFile]::OpenRead($Archive.FullName)
+            $ContainsNeedle = $Zip.Entries | Where-Object {
+                $_.FullName.Replace("\", "/").Contains($Needle)
+            } | Select-Object -First 1
+            if ($ContainsNeedle) {
+                Write-Host "Removing stale vcpkg binary archive $($Archive.FullName)"
+                $Zip.Dispose()
+                $Zip = $null
+                Remove-Item -Force $Archive.FullName
+            }
+        } catch {
+            Write-Host "Could not inspect vcpkg binary archive $($Archive.FullName): $_"
+        } finally {
+            if ($null -ne $Zip) {
+                $Zip.Dispose()
+            }
+        }
+    }
+}
+
 $ProjectRoot = if ($env:CIBW_PROJECT_DIR) {
     $env:CIBW_PROJECT_DIR
 } elseif ($env:GITHUB_WORKSPACE) {
@@ -145,7 +179,9 @@ try {
 $BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
 if ($BoostRegexLibFiles.Count -eq 0) {
     $InstallRoot = Join-Path $VcpkgRoot "installed"
-    Write-Host "boost-regex is marked installed but no Boost regex import library was found; removing stale vcpkg installed tree"
+    $BinaryCacheRoot = Join-Path $ProjectRoot ".wheel-vcpkg-cache"
+    Write-Host "boost-regex is marked installed but no Boost regex import library was found; removing stale vcpkg installed tree and cached boost-regex archive"
+    Remove-VcpkgBinaryArchivesContainingPath $BinaryCacheRoot "share/boost-regex/"
     if (Test-Path $InstallRoot) {
         Remove-Item -Recurse -Force $InstallRoot
     }
