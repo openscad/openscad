@@ -173,7 +173,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   init();
   AxisConfig->init();
   setupFeaturesPage();
-  setup3DPrintPage();
   updateGUI();
 }
 
@@ -664,6 +663,7 @@ void Preferences::setup3DPrintPage()
   if (it != services.end()) {
     comboBoxDefaultPrintService->setCurrentText(it->second);
   }
+  this->printPageSetupDone = true;
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -1200,6 +1200,7 @@ void Preferences::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
 {
   S::enableRemotePrintServices.setValue(checked);
   writeSettings();
+  setup3DPrintPage();
 }
 
 void Preferences::on_comboBoxDefaultPrintService_activated(int)
@@ -1939,6 +1940,9 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 
 void Preferences::showEvent(QShowEvent *e)
 {
+  if (!this->printPageSetupDone) {
+    setup3DPrintPage();
+  }
   QMainWindow::showEvent(e);
   hidePasswords();
 }
