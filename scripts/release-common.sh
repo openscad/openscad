@@ -320,6 +320,35 @@ case $OS in
         cd $DEPLOYDIR
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -no-strip
+
+        APP_FRAMEWORKS_DIR="OpenSCAD.app/Contents/Frameworks"
+        EXTERNAL_LIB_DIR_RAW="$OPENSCAD_LIBRARIES/lib"
+        EXTERNAL_LIB_DIR="$(cd "$EXTERNAL_LIB_DIR_RAW" && pwd -P)"
+        BUNDLE_ITEMS=("OpenSCAD.app/Contents/MacOS/OpenSCAD")
+
+        for dylib in "$APP_FRAMEWORKS_DIR"/*.dylib "$APP_FRAMEWORKS_DIR"/*.dylib.*; do
+          [ -e "$dylib" ] || continue
+          BUNDLE_ITEMS+=("$dylib")
+        done
+
+        for framework in "$APP_FRAMEWORKS_DIR"/*.framework; do
+          if [ -d "$framework/Versions/A" ]; then
+            BUNDLE_ITEMS+=("$framework/Versions/A/$(basename "$framework" .framework)")
+          fi
+        done
+
+        for item in "${BUNDLE_ITEMS[@]}"; do
+          [ -e "$item" ] || continue
+
+          install_name_tool -delete_rpath "$EXTERNAL_LIB_DIR_RAW" "$item" 2>/dev/null || true
+          install_name_tool -delete_rpath "$EXTERNAL_LIB_DIR" "$item" 2>/dev/null || true
+
+          while IFS= read -r dep; do
+            [ -n "$dep" ] || continue
+            install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$item"
+          done < <(otool -L "$item" | awk -v prefix="$EXTERNAL_LIB_DIR/" '$1 ~ "^" prefix { print $1 }')
+        done
+
         echo "Binary created: OpenSCAD.app"
         cd $OPENSCADDIR
     ;;
