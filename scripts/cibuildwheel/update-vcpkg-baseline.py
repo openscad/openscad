@@ -14,21 +14,25 @@ VCPKG_REPO = "https://github.com/microsoft/vcpkg.git"
 
 
 def pinned_vcpkg_version():
-    match = re.search(r'^\$VcpkgVersion = "([^"]+)"$', INSTALL_DEPS.read_text(), re.MULTILINE)
+    match = re.search(r'^\s*\$VcpkgVersion\s*=\s*"([^"]+)"\s*$', INSTALL_DEPS.read_text(), re.MULTILINE)
     if not match:
         raise RuntimeError(f"Could not find $VcpkgVersion in {INSTALL_DEPS}")
     return match.group(1)
 
 
 def tag_commit(version):
-    ref = f"refs/tags/{version}"
+    refs = [f"refs/tags/{version}", f"refs/tags/{version}^{{}}"]
     output = subprocess.check_output(
-        ["git", "ls-remote", "--tags", VCPKG_REPO, ref],
+        ["git", "ls-remote", "--tags", VCPKG_REPO, *refs],
         text=True,
     ).strip()
     if not output:
         raise RuntimeError(f"Could not resolve vcpkg tag {version}")
-    return output.split()[0]
+    resolved = {}
+    for line in output.splitlines():
+        commit, ref = line.split()
+        resolved[ref] = commit
+    return resolved.get(f"refs/tags/{version}^{{}}", resolved[f"refs/tags/{version}"])
 
 
 def main():
