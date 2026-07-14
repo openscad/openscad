@@ -206,9 +206,11 @@ def get_link_libraries():
     """Return the full set of libraries to link the pip extension against."""
     libs = get_pkg_config_libraries()
 
-    # Match CMake (Boost::regex, Boost::program_options) so shared deps appear
-    # in DT_NEEDED and auditwheel/delocate/delvewheel can bundle them.
+    # Link concrete Boost libraries so auditwheel/delocate/delvewheel can
+    # bundle them. Current Homebrew Boost.System is header-only on macOS.
     boost_libs = ["boost_program_options"]
+    if not IS_DARWIN:
+        boost_libs.append("boost_system")
     if not IS_WINDOWS:
         boost_libs.insert(0, "boost_regex")
     for lib in boost_libs:
@@ -397,7 +399,10 @@ def get_platform_sources():
 def get_extra_link_args():
     """Return platform-specific linker flags."""
     if IS_DARWIN:
-        return ["-framework", "Foundation"]
+        args = ["-framework", "Foundation"]
+        for libdir in get_library_dirs():
+            args.append(f"-Wl,-rpath,{libdir}")
+        return args
     return []
 
 
