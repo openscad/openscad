@@ -1785,6 +1785,11 @@ list(APPEND NEF3_BROKEN_TESTS
 
 # Platform specific test disable
 if(APPLE)
+  set_tests_properties(
+    # Fails to create a 3MF file to stdout, see #6895
+    export-3mf-stdio_3mf-export
+    PROPERTIES DISABLED TRUE
+  )
 elseif(UNIX)
 elseif(WIN32 OR MXECROSS)
   set_tests_properties(
