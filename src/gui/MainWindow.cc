@@ -462,8 +462,11 @@ void MainWindow::addMenuItemCB(QString callback)
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
   initPython(binDir, "", nullptr);
-  evaluatePython(content);
-  evaluatePython(callback.toStdString());
+  const auto init_err = evaluatePython(content);
+  if (!init_err.empty()) std::cerr << init_err << std::flush;
+  const auto cb_err = evaluatePython(callback.toStdString());
+  if (!cb_err.empty()) std::cerr << cb_err << std::flush;
+
   finishPython();
 #endif
 }
@@ -476,7 +479,7 @@ void MainWindow::addMenuItem(const char *menuname, const char *itemname, const c
   foreach (QAction *menu, menubar->actions()) {
     if (menu->menu()) {
       const char *menutext = qUtf8Printable(menu->text());
-      if (strstr(menutext, menuname) != nullptr) menu_found = (QMenu *)menu;
+      if (strstr(menutext, menuname) != nullptr) menu_found = menu->menu();
     }
   }
 
@@ -486,10 +489,7 @@ void MainWindow::addMenuItem(const char *menuname, const char *itemname, const c
     menu_found->setTitle(q_(menuname, nullptr));
     menu_found->show();
     menubar->addAction(menu_found->menuAction());
-    //	menubar->addMenu(menu_found);
   }
-
-  menu_found = menu_File;
 
   // Create Menu Item
   QAction *my_menu_item = new QAction(this);
@@ -533,13 +533,15 @@ void MainWindow::customSetup(void)
   if (content == "") return;
 
   this->addmenu_mapper = new QSignalMapper(this);
-  connect(this->addmenu_mapper, SIGNAL(mapped(QString)), this, SLOT(addMenuItemCB(QString)));
+  connect(this->addmenu_mapper, &QSignalMapper::mappedString, this, &MainWindow::addMenuItemCB);
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
   initPython(binDir, "", nullptr);
-  evaluatePython(content);
+  auto init_err = evaluatePython(content);
+  if (!init_err.empty()) std::cerr << init_err << std::flush;
   addmenuitem_this = this;
-  evaluatePython("setup()");
+  auto setup_err = evaluatePython("setup()");
+  if (!setup_err.empty()) std::cerr << setup_err << std::flush;
   addmenuitem_this = nullptr;
   finishPython();
 }
@@ -548,9 +550,6 @@ void MainWindow::customSetup(void)
 
 MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 {
-#ifdef ENABLE_PYTHON
-  customSetup();
-#endif
   setupWindow();
   setupMenusAndActions();
 
@@ -579,6 +578,9 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   updateLanguageLabel();
   setupInput();
   setupPreferences();
+#ifdef ENABLE_PYTHON
+  customSetup();
+#endif
 
   restoreWindowState();
 
