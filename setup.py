@@ -1,42 +1,14 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import json
 import subprocess
 import os
 import re
 import shutil
 import sys
-import tempfile
-import time
 
 
 IS_WINDOWS = sys.platform == "win32"
 IS_DARWIN = sys.platform == "darwin"
-DEBUG_LOG_SESSION = "ea88a1"
-
-
-def agent_debug(hypothesis_id, location, message, data):
-    """Emit temporary CI diagnostics for Windows wheel dependency debugging."""
-    if os.environ.get("PYTHONSCAD_WHEEL_DEBUG") != "1":
-        return
-    payload = {
-        "sessionId": DEBUG_LOG_SESSION,
-        "runId": os.environ.get("GITHUB_RUN_ID", "local"),
-        "hypothesisId": hypothesis_id,
-        "location": location,
-        "message": message,
-        "data": data,
-        "timestamp": int(time.time() * 1000),
-    }
-    text = json.dumps(payload, sort_keys=True)
-    debug_dir = os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()
-    debug_path = os.path.join(debug_dir, f"debug-{DEBUG_LOG_SESSION}.log")
-    try:
-        with open(debug_path, "a", encoding="utf-8") as log:
-            log.write(text + "\n")
-    except OSError:
-        pass
-    print(f"AGENT_DEBUG {text}", file=sys.stderr)
 
 
 def apply_wheel_build_env():
@@ -63,21 +35,7 @@ def apply_wheel_build_env():
     if msys2_usr_bin and os.path.isdir(msys2_usr_bin):
         path = os.environ.get("PATH", "")
         os.environ["PATH"] = path + os.pathsep + msys2_usr_bin if path else msys2_usr_bin
-    # region agent log
-    agent_debug(
-        "C",
-        "setup.py:apply_wheel_build_env",
-        "Loaded wheel build environment",
-        {
-            "env_file": env_file,
-            "env_file_exists": os.path.isfile(env_file),
-            "VCPKG_ROOT": os.environ.get("VCPKG_ROOT"),
-            "VCPKG_DEFAULT_TRIPLET": os.environ.get("VCPKG_DEFAULT_TRIPLET"),
-            "PKG_CONFIG": os.environ.get("PKG_CONFIG"),
-            "PKG_CONFIG_PATH": os.environ.get("PKG_CONFIG_PATH"),
-        },
-    )
-    # endregion
+
 
 def get_version():
     here = os.path.dirname(os.path.abspath(__file__))
@@ -288,29 +246,9 @@ def normalize_windows_link_libraries(libs, library_dirs):
         for libdir in library_dirs:
             if not os.path.isdir(libdir):
                 continue
-            boost_files = []
-            if lib.startswith("boost_"):
-                boost_files = [
-                    name
-                    for name in os.listdir(libdir)
-                    if "boost" in name.lower() and "regex" in name.lower()
-                ]
             for candidate in candidates:
                 if os.path.isfile(os.path.join(libdir, f"{candidate}.lib")):
                     resolved = candidate
-                    # region agent log
-                    agent_debug(
-                        "D",
-                        "setup.py:normalize_windows_link_libraries",
-                        "Resolved exact library candidate",
-                        {
-                            "lib": lib,
-                            "candidate": candidate,
-                            "libdir": libdir,
-                            "boost_regex_files": boost_files,
-                        },
-                    )
-                    # endregion
                     break
             if resolved:
                 break
@@ -321,20 +259,6 @@ def normalize_windows_link_libraries(libs, library_dirs):
                     lowered = name.lower()
                     if lowered.endswith(".lib") and lowered.startswith(prefixes):
                         resolved = os.path.splitext(name)[0]
-                        # region agent log
-                        agent_debug(
-                            "D",
-                            "setup.py:normalize_windows_link_libraries",
-                            "Resolved prefixed Boost library",
-                            {
-                                "lib": lib,
-                                "resolved": resolved,
-                                "libdir": libdir,
-                                "prefixes": prefixes,
-                                "boost_regex_files": boost_files,
-                            },
-                        )
-                        # endregion
                         break
             if resolved:
                 break
@@ -343,35 +267,6 @@ def normalize_windows_link_libraries(libs, library_dirs):
             resolved = lib
         if not resolved:
             resolved = aliases.get(lib, lib)
-            if lib.startswith("boost_"):
-                debug_dirs = []
-                for libdir in library_dirs:
-                    if os.path.isdir(libdir):
-                        debug_dirs.append(
-                            {
-                                "libdir": libdir,
-                                "boost_regex_files": [
-                                    name
-                                    for name in os.listdir(libdir)
-                                    if "boost" in name.lower() and "regex" in name.lower()
-                                ],
-                            }
-                        )
-                    else:
-                        debug_dirs.append({"libdir": libdir, "missing": True})
-                # region agent log
-                agent_debug(
-                    "A,B,D",
-                    "setup.py:normalize_windows_link_libraries",
-                    "Falling back to unresolved Boost library name",
-                    {
-                        "lib": lib,
-                        "resolved": resolved,
-                        "candidates": candidates,
-                        "library_dirs": debug_dirs,
-                    },
-                )
-                # endregion
 
         if resolved and resolved not in normalized:
             normalized.append(resolved)
@@ -939,19 +834,6 @@ def main():
     library_dirs = get_library_dirs()
     raw_link_libraries = get_link_libraries() + lib3mf_libs
     link_libraries = normalize_windows_link_libraries(raw_link_libraries, library_dirs)
-    # region agent log
-    agent_debug(
-        "A,B,C,D",
-        "setup.py:main",
-        "Prepared extension link inputs",
-        {
-            "library_dirs": library_dirs,
-            "raw_link_libraries": raw_link_libraries,
-            "link_libraries": link_libraries,
-            "vcpkg_installed": get_vcpkg_installed_dir(),
-        },
-    )
-    # endregion
 
     pythonscad_ext = Extension(
         "_openscad",

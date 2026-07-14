@@ -100,7 +100,6 @@ jobs:
         shell: pwsh
         env:
           VCPKG_BINARY_SOURCES: ${{ github.event_name == 'workflow_dispatch' && format('clear;files,{0}/.wheel-vcpkg-cache,readwrite', github.workspace) || '' }}
-          PYTHONSCAD_WHEEL_DEBUG: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
         run: pwsh scripts/cibuildwheel/install-deps-windows.ps1
 
       - name: Prune Windows vcpkg cache
@@ -135,7 +134,6 @@ jobs:
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         env:
           CIBW_BEFORE_ALL_WINDOWS: python -c "print('Windows wheel dependencies already installed by workflow')"
-          PYTHONSCAD_WHEEL_DEBUG: ${{ github.event_name == 'workflow_dispatch' && runner.os == 'Windows' && '1' || '' }}
 
       - uses: actions/upload-artifact@v7
         with:
