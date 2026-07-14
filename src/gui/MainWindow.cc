@@ -1049,60 +1049,12 @@ MainWindow::~MainWindow()
   isBeingDestroyed = true;
 
   delete this->cgalworker;
-}
-
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-  if (!tabManager->shouldClose()) {
-    event->ignore();
-    return;
-  }
-  event->accept();
-
-  // Only save when this is the last MainWindow.
-  if (scadApp->windowManager.getWindows().size() == 1) {
-    saveWindowState();
-  }
-
-  isClosing = true;
-  progress_report_fin();
-
-  if (this->tempFile) {
-    delete this->tempFile;
-    this->tempFile = nullptr;
-  }
-
-  // Log to stdout from now on
-  clearCurrentOutput();
-  // Disable invokeMethod calls for consoleOutput during shutdown,
-  // otherwise will segfault if echos are in progress.
-  hideCurrentOutput();
-
-  // Make sure all the floating docks are closed too as those
-  // would stick around otherwise if the application keeps
-  // running (after closing just a single window, or when
-  // aborting the close process because of user cancellation).
-  for (auto& [dock, title] : docks) {
-    if (dock->isFloating()) {
-      dock->close();
-    }
-  }
-
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    QApplication::quit();
+    scadApp->quit();
   }
-}
-
-void MainWindow::saveWindowState()
-{
-  QSettingsCached settings;
-  settings.setValue("window/geometry", saveGeometry());
-  auto windowState = saveState();
-  UIUtils::dumpSaveState(windowState);
-  settings.setValue("window/state", windowState);
 }
 
 void MainWindow::showProgress()
