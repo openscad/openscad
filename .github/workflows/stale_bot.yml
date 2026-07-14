@@ -31,7 +31,7 @@ jobs:
           # Do not auto-close an issue if it is assigned to a milestone
           exempt-all-issue-milestones: true
           # Exempt feature requests
-          exempt-issue-labels: "Type: Enhancement,Tag: Good First Issue"
+          exempt-issue-labels: "Type: Enhancement,Tag: Good First Issue,Tag: Verified"
           # Idle number of days before marking issues stale
           days-before-issue-stale: 360
           # Idle number of days before marking issues close after stale label
