@@ -559,6 +559,8 @@ def detect_libfive():
 class BuildExtWithLexYacc(build_ext):
     """Custom build_ext command to run lex/yacc before building extension modules."""
 
+    cxx_only_compile_args = {"-std=c++17", "-stdlib=libc++"}
+
     def finalize_options(self):
         super().finalize_options()
         build_parallel = os.environ.get("PYTHONSCAD_BUILD_PARALLEL")
@@ -569,6 +571,27 @@ class BuildExtWithLexYacc(build_ext):
                 raise RuntimeError(
                     "PYTHONSCAD_BUILD_PARALLEL must be an integer when set"
                 ) from exc
+
+    def build_extensions(self):
+        if not IS_WINDOWS and hasattr(self.compiler, "_compile"):
+            original_compile = self.compiler._compile
+
+            def compile_without_cxx_args_for_c_sources(obj, src, ext, cc_args, extra_postargs, pp_opts):
+                if src.endswith(".c") and extra_postargs:
+                    extra_postargs = [
+                        arg for arg in extra_postargs
+                        if arg not in self.cxx_only_compile_args
+                    ]
+                return original_compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
+
+            self.compiler._compile = compile_without_cxx_args_for_c_sources
+            try:
+                super().build_extensions()
+            finally:
+                self.compiler._compile = original_compile
+            return
+
+        super().build_extensions()
 
     def run(self):
         yacc_src = "src/core/parser.y"
