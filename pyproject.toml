@@ -88,8 +88,10 @@ before-build = "bash -c 'echo \"cibuildwheel CXX=$CXX\"; \"$CXX\" --version'"
 environment = { CC = "/opt/rh/gcc-toolset-12/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-12/root/usr/bin/g++", CXXFLAGS = "-std=c++17", PYTHONSCAD_BUILD_PARALLEL = "6" }
 
 [tool.cibuildwheel.macos]
+# Homebrew bottles on the macos-15 runners currently require a macOS 15 target.
 environment = { MACOSX_DEPLOYMENT_TARGET = "15.0", PYTHONSCAD_BUILD_PARALLEL = "6" }
 before-all = "bash scripts/cibuildwheel/install-deps-macos.sh"
+repair-wheel-command = "DYLD_LIBRARY_PATH=\"$(brew --prefix)/lib\" delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.windows]
 environment = { VCPKG_DEFAULT_TRIPLET = "x64-windows-release", PYTHONSCAD_BUILD_PARALLEL = "6" }

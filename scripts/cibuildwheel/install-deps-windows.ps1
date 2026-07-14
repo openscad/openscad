@@ -142,48 +142,49 @@ try {
     Pop-Location
 }
 
-$BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
-
 $PkgConfigDir = Join-Path $Installed "lib" "pkgconfig"
 $PkgConfExe = Join-Path $Installed "tools" "pkgconf" "pkgconf.exe"
 
 #region agent log
-$DebugPayload = [ordered]@{
-    sessionId = "ea88a1"
-    runId = if ($env:GITHUB_RUN_ID) { $env:GITHUB_RUN_ID } else { "local" }
-    hypothesisId = "A,B"
-    location = "scripts/cibuildwheel/install-deps-windows.ps1:vcpkg_snapshot"
-    message = "Snapshot Windows vcpkg library files after install"
-    data = [ordered]@{
-        installed = $Installed
-        libExists = Test-Path (Join-Path $Installed "lib")
-        manualLinkExists = Test-Path (Join-Path $Installed "lib" "manual-link")
-        boostRegexLibFiles = @(
-            Get-ChildItem -Path (Join-Path $Installed "lib") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
-                Select-Object -ExpandProperty Name
-        )
-        boostRegexManualLinkFiles = @(
-            Get-ChildItem -Path (Join-Path $Installed "lib" "manual-link") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
-                Select-Object -ExpandProperty Name
-        )
-        boostRegexPkgConfigFiles = @(
-            Get-ChildItem -Path $PkgConfigDir -Filter "*boost*regex*.pc" -ErrorAction SilentlyContinue |
-                Select-Object -ExpandProperty Name
-        )
-        boostRegexShareFiles = @(
-            Get-ChildItem -Path (Join-Path $Installed "share" "boost-regex") -Recurse -File -ErrorAction SilentlyContinue |
-                ForEach-Object { $_.FullName.Substring($Installed.Length + 1) }
-        )
-        boostRegexHeaderFiles = @(
-            Get-ChildItem -Path (Join-Path $Installed "include" "boost") -Filter "regex*" -ErrorAction SilentlyContinue |
-                Select-Object -ExpandProperty Name
-        )
+if ($env:PYTHONSCAD_WHEEL_DEBUG -eq "1") {
+    $DebugPayload = [ordered]@{
+        sessionId = "ea88a1"
+        runId = if ($env:GITHUB_RUN_ID) { $env:GITHUB_RUN_ID } else { "local" }
+        hypothesisId = "A,B"
+        location = "scripts/cibuildwheel/install-deps-windows.ps1:vcpkg_snapshot"
+        message = "Snapshot Windows vcpkg library files after install"
+        data = [ordered]@{
+            installed = $Installed
+            libExists = Test-Path (Join-Path $Installed "lib")
+            manualLinkExists = Test-Path (Join-Path $Installed "lib" "manual-link")
+            boostRegexLibFiles = @(
+                Get-ChildItem -Path (Join-Path $Installed "lib") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
+                    Select-Object -ExpandProperty Name
+            )
+            boostRegexManualLinkFiles = @(
+                Get-ChildItem -Path (Join-Path $Installed "lib" "manual-link") -Filter "*boost*regex*.lib" -ErrorAction SilentlyContinue |
+                    Select-Object -ExpandProperty Name
+            )
+            boostRegexPkgConfigFiles = @(
+                Get-ChildItem -Path $PkgConfigDir -Filter "*boost*regex*.pc" -ErrorAction SilentlyContinue |
+                    Select-Object -ExpandProperty Name
+            )
+            boostRegexShareFiles = @(
+                Get-ChildItem -Path (Join-Path $Installed "share" "boost-regex") -Recurse -File -ErrorAction SilentlyContinue |
+                    ForEach-Object { $_.FullName.Substring($Installed.Length + 1) }
+            )
+            boostRegexHeaderFiles = @(
+                Get-ChildItem -Path (Join-Path $Installed "include" "boost") -Filter "regex*" -ErrorAction SilentlyContinue |
+                    Select-Object -ExpandProperty Name
+            )
+        }
+        timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
     }
-    timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    $DebugJson = $DebugPayload | ConvertTo-Json -Depth 5 -Compress
+    $DebugRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [System.IO.Path]::GetTempPath() }
+    Add-Content -Encoding utf8 -Path (Join-Path $DebugRoot "debug-ea88a1.log") -Value $DebugJson
+    Write-Host "AGENT_DEBUG $DebugJson"
 }
-$DebugJson = $DebugPayload | ConvertTo-Json -Depth 5 -Compress
-Add-Content -Encoding utf8 -Path (Join-Path $ProjectRoot "debug-ea88a1.log") -Value $DebugJson
-Write-Host "AGENT_DEBUG $DebugJson"
 #endregion
 
 # before-all runs in a separate process; persist env for setup.py and repair-wheel.

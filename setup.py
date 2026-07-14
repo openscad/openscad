@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 import time
 
 
@@ -28,9 +29,13 @@ def agent_debug(hypothesis_id, location, message, data):
         "timestamp": int(time.time() * 1000),
     }
     text = json.dumps(payload, sort_keys=True)
-    here = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(here, "debug-ea88a1.log"), "a", encoding="utf-8") as log:
-        log.write(text + "\n")
+    debug_dir = os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()
+    debug_path = os.path.join(debug_dir, f"debug-{DEBUG_LOG_SESSION}.log")
+    try:
+        with open(debug_path, "a", encoding="utf-8") as log:
+            log.write(text + "\n")
+    except OSError:
+        pass
     print(f"AGENT_DEBUG {text}", file=sys.stderr)
 
 
@@ -389,9 +394,9 @@ def get_platform_sources():
     sources = ["src/platform/PlatformUtils.cc"]
     if IS_WINDOWS:
         sources.append("src/platform/PlatformUtils-win.cc")
+    elif IS_DARWIN:
+        sources.append("src/platform/PlatformUtils-mac.mm")
     else:
-        # The pip extension is headless, so POSIX paths are sufficient here;
-        # on macOS this avoids requiring Objective-C++ support from setuptools.
         sources.append("src/platform/PlatformUtils-posix.cc")
     return sources
 
@@ -399,10 +404,7 @@ def get_platform_sources():
 def get_extra_link_args():
     """Return platform-specific linker flags."""
     if IS_DARWIN:
-        args = ["-framework", "Foundation"]
-        for libdir in get_library_dirs():
-            args.append(f"-Wl,-rpath,{libdir}")
-        return args
+        return ["-framework", "Foundation"]
     return []
 
 
