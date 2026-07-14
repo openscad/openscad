@@ -167,25 +167,25 @@ Both `--hook-type` flags are required to validate both code and commit messages.
 
 ### PR Iteration Workflow
 
-When iterating on a PR (force-pushing fixes in response to review feedback or
-CI failures), always cancel the currently-running workflows for that PR
-*before* pushing. The push itself triggers a fresh set of pipeline runs, so
-letting the old run finish only burns CI minutes / GitHub Actions concurrency
-slots without any benefit.
+The repository is configured to auto-cancel superseded workflow runs on push
+and to auto-trigger a fresh Copilot review on every push (including
+force-pushes). No manual `gh run cancel` or `gh copilot-review` re-request is
+needed in the normal case — just push.
 
-The cancel-then-push pattern, using `gh`:
+Copilot's review typically starts and finishes within 2-10 minutes, well
+inside the runtime of the CI matrix. The only fallback case: if every
+required check has gone green and no Copilot review has landed at all since
+the current HEAD was pushed, request one manually:
 
 ```bash
-# 1. Cancel any in-progress runs on this PR's branch
-BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-gh run list --branch "$BRANCH" --status in_progress --json databaseId \
-  --jq '.[].databaseId' | xargs -r -n1 gh run cancel
-gh run list --branch "$BRANCH" --status queued --json databaseId \
-  --jq '.[].databaseId' | xargs -r -n1 gh run cancel
-
-# 2. Now push
-git push --force-with-lease
+gh copilot-review "https://github.com/$OWNER/$REPO/pull/$PR" \
+  --wait --wait-timeout 15min --wait-interval 30sec
 ```
+
+This should be rare. A completed review with zero new comments (e.g.
+"Copilot reviewed 5 out of 6 changed files in this pull request and
+generated no new comments.") counts as a completed review — don't treat "no
+comments" as "no review happened."
 
 This applies whether the push is a force-push (amend) or a fast-forward (new
 commit). The new push will start fresh runs of every required check, so the
