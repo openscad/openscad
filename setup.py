@@ -580,6 +580,10 @@ class BuildExtWithLexYacc(build_ext):
                 ) from exc
 
     def build_extensions(self):
+        if IS_DARWIN and hasattr(self.compiler, "src_extensions"):
+            if ".mm" not in self.compiler.src_extensions:
+                self.compiler.src_extensions.append(".mm")
+
         if not IS_WINDOWS and hasattr(self.compiler, "_compile"):
             original_compile = self.compiler._compile
 
