@@ -88,7 +88,7 @@ before-build = "bash -c 'echo \"cibuildwheel CXX=$CXX\"; \"$CXX\" --version'"
 environment = { CC = "/opt/rh/gcc-toolset-12/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-12/root/usr/bin/g++", CXXFLAGS = "-std=c++17", PYTHONSCAD_BUILD_PARALLEL = "6" }
 
 [tool.cibuildwheel.macos]
-environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", PYTHONSCAD_BUILD_PARALLEL = "6" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "15.0", PYTHONSCAD_BUILD_PARALLEL = "6" }
 before-all = "bash scripts/cibuildwheel/install-deps-macos.sh"
 
 [tool.cibuildwheel.windows]
