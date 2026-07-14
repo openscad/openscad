@@ -208,7 +208,10 @@ def get_link_libraries():
 
     # Match CMake (Boost::regex, Boost::program_options) so shared deps appear
     # in DT_NEEDED and auditwheel/delocate/delvewheel can bundle them.
-    for lib in ("boost_regex", "boost_program_options", "boost_system"):
+    boost_libs = ["boost_program_options", "boost_system"]
+    if not IS_WINDOWS:
+        boost_libs.insert(0, "boost_regex")
+    for lib in boost_libs:
         if lib not in libs:
             libs.append(lib)
     if IS_WINDOWS:

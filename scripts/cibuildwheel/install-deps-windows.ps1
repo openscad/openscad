@@ -41,40 +41,6 @@ function Get-BoostRegexLibFiles {
     )
 }
 
-function Remove-VcpkgBinaryArchivesContainingPath {
-    param(
-        [string]$CacheRoot,
-        [string]$Needle
-    )
-    if (-not (Test-Path $CacheRoot)) {
-        return
-    }
-
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    Get-ChildItem -Path $CacheRoot -Recurse -File -Include "*.zip", "*.nupkg" -ErrorAction SilentlyContinue | ForEach-Object {
-        $Archive = $_
-        $Zip = $null
-        try {
-            $Zip = [IO.Compression.ZipFile]::OpenRead($Archive.FullName)
-            $ContainsNeedle = $Zip.Entries | Where-Object {
-                $_.FullName.Replace("\", "/").Contains($Needle)
-            } | Select-Object -First 1
-            if ($ContainsNeedle) {
-                Write-Host "Removing stale vcpkg binary archive $($Archive.FullName)"
-                $Zip.Dispose()
-                $Zip = $null
-                Remove-Item -Force $Archive.FullName
-            }
-        } catch {
-            Write-Host "Could not inspect vcpkg binary archive $($Archive.FullName): $_"
-        } finally {
-            if ($null -ne $Zip) {
-                $Zip.Dispose()
-            }
-        }
-    }
-}
-
 $ProjectRoot = if ($env:CIBW_PROJECT_DIR) {
     $env:CIBW_PROJECT_DIR
 } elseif ($env:GITHUB_WORKSPACE) {
@@ -177,35 +143,6 @@ try {
 }
 
 $BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
-if ($BoostRegexLibFiles.Count -eq 0) {
-    $InstallRoot = Join-Path $VcpkgRoot "installed"
-    $BinaryCacheRoot = Join-Path $ProjectRoot ".wheel-vcpkg-cache"
-    Write-Host "boost-regex is marked installed but no Boost regex import library was found; removing stale vcpkg installed tree and cached boost-regex archive"
-    Remove-VcpkgBinaryArchivesContainingPath $BinaryCacheRoot "share/boost-regex/"
-    if (Test-Path $InstallRoot) {
-        Remove-Item -Recurse -Force $InstallRoot
-    }
-    Push-Location $ManifestDir
-    try {
-        $OriginalPath = $env:PATH
-        $env:PATH = Remove-Msys2PathEntries $env:PATH
-        & $VcpkgExe install `
-            --triplet $Triplet `
-            --host-triplet $HostTriplet `
-            --x-manifest-root $ManifestDir `
-            --x-install-root $InstallRoot
-        Assert-NativeCommandSucceeded "vcpkg reinstall after boost-regex repair"
-    } finally {
-        if ($null -ne $OriginalPath) {
-            $env:PATH = $OriginalPath
-        }
-        Pop-Location
-    }
-    $BoostRegexLibFiles = Get-BoostRegexLibFiles $Installed
-    if ($BoostRegexLibFiles.Count -eq 0) {
-        throw "vcpkg boost-regex repair completed, but no Boost regex import library exists under $Installed"
-    }
-}
 
 $PkgConfigDir = Join-Path $Installed "lib" "pkgconfig"
 $PkgConfExe = Join-Path $Installed "tools" "pkgconf" "pkgconf.exe"
@@ -231,6 +168,14 @@ $DebugPayload = [ordered]@{
         )
         boostRegexPkgConfigFiles = @(
             Get-ChildItem -Path $PkgConfigDir -Filter "*boost*regex*.pc" -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty Name
+        )
+        boostRegexShareFiles = @(
+            Get-ChildItem -Path (Join-Path $Installed "share" "boost-regex") -Recurse -File -ErrorAction SilentlyContinue |
+                ForEach-Object { $_.FullName.Substring($Installed.Length + 1) }
+        )
+        boostRegexHeaderFiles = @(
+            Get-ChildItem -Path (Join-Path $Installed "include" "boost") -Filter "regex*" -ErrorAction SilentlyContinue |
                 Select-Object -ExpandProperty Name
         )
     }
