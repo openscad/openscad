@@ -1049,12 +1049,60 @@ MainWindow::~MainWindow()
   isBeingDestroyed = true;
 
   delete this->cgalworker;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+  if (!tabManager->shouldClose()) {
+    event->ignore();
+    return;
+  }
+  event->accept();
+
+  // Only save when this is the last MainWindow.
+  if (scadApp->windowManager.getWindows().size() == 1) {
+    saveWindowState();
+  }
+
+  isClosing = true;
+  progress_report_fin();
+
+  if (this->tempFile) {
+    delete this->tempFile;
+    this->tempFile = nullptr;
+  }
+
+  // Log to stdout from now on
+  clearCurrentOutput();
+  // Disable invokeMethod calls for consoleOutput during shutdown,
+  // otherwise will segfault if echos are in progress.
+  hideCurrentOutput();
+
+  // Make sure all the floating docks are closed too as those
+  // would stick around otherwise if the application keeps
+  // running (after closing just a single window, or when
+  // aborting the close process because of user cancellation).
+  for (auto& [dock, title] : docks) {
+    if (dock->isFloating()) {
+      dock->close();
+    }
+  }
+
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    scadApp->quit();
+    QApplication::quit();
   }
+}
+
+void MainWindow::saveWindowState()
+{
+  QSettingsCached settings;
+  settings.setValue("window/geometry", saveGeometry());
+  auto windowState = saveState();
+  UIUtils::dumpSaveState(windowState);
+  settings.setValue("window/state", windowState);
 }
 
 void MainWindow::showProgress()
@@ -5110,13 +5158,7 @@ void MainWindow::applySessionWindowGeometry(const QByteArray& geometry)
 void MainWindow::restoreWindowState()
 {
   const QSettingsCached settings;
-  // fetch window states to be restored after restoreState() call
-  const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
-  const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
-
-  // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
-  // Log to stdout
   clearCurrentOutput();
   UIUtils::dumpSaveState(windowState);
   setCurrentOutput();
@@ -5141,7 +5183,14 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, colorListDock);
     tabifyDockWidget(colorListDock, animateDock);
+    tabifyDockWidget(animateDock, viewportControlDock);
+    tabifyDockWidget(parameterDock, aiDock);
     parameterDock->hide();
+    aiDock->hide();
+    errorLogDock->hide();
+    fontListDock->hide();
+    colorListDock->hide();
+    animateDock->hide();
     viewportControlDock->hide();
     consoleDock->show();
     consoleDock->raise();
