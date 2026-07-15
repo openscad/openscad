@@ -87,7 +87,10 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && runner.os == 'Windows'
         uses: actions/cache/restore@v4
         with:
+          # actions/cache versions include this path list; keep .wheel-vcpkg here
+          # so older wheel caches remain restorable across workflow changes.
           path: |
+            .wheel-vcpkg
             .wheel-vcpkg-cache
             ~/AppData/Local/vcpkg/archives
           key: pypi-windows-vcpkg-${{ hashFiles('scripts/cibuildwheel/vcpkg.json', 'scripts/cibuildwheel/install-deps-windows.ps1') }}
@@ -123,7 +126,9 @@ jobs:
           steps.windows-vcpkg-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
+          # Keep this in sync with the restore path list above.
           path: |
+            .wheel-vcpkg
             .wheel-vcpkg-cache
             ~/AppData/Local/vcpkg/archives
           key: ${{ steps.windows-vcpkg-cache.outputs.cache-primary-key }}
