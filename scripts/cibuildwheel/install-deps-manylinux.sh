@@ -52,7 +52,8 @@ if ! $PKG_MGR install -y lib3mf-devel; then
     LIB3MF_VERSION=2.4.1
     LIB3MF_SRC="/tmp/lib3mf-${LIB3MF_VERSION}"
     rm -rf "$LIB3MF_SRC"
-    curl -L "https://github.com/3MFConsortium/lib3mf/archive/v${LIB3MF_VERSION}.tar.gz" \
+    curl --fail --show-error --retry 3 --retry-delay 5 -L \
+        "https://github.com/3MFConsortium/lib3mf/archive/v${LIB3MF_VERSION}.tar.gz" \
         -o "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
     tar -C /tmp -xzf "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
     cd "$LIB3MF_SRC"

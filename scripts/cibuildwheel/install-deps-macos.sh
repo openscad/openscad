@@ -15,7 +15,8 @@ if ! pkg-config --exists lib3mf; then
     LIB3MF_SRC="/tmp/lib3mf-${LIB3MF_VERSION}"
     BREW_PREFIX="$(brew --prefix)"
     rm -rf "$LIB3MF_SRC"
-    curl -L "https://github.com/3MFConsortium/lib3mf/archive/v${LIB3MF_VERSION}.tar.gz" \
+    curl --fail --show-error --retry 3 --retry-delay 5 -L \
+        "https://github.com/3MFConsortium/lib3mf/archive/v${LIB3MF_VERSION}.tar.gz" \
         -o "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
     tar -C /tmp -xzf "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
     cd "$LIB3MF_SRC"
