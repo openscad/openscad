@@ -4,6 +4,7 @@
 .cache/
 .vs/
 .vscode/
+.zed/
 *.code-workspace
 .idea/
 .clangd/
