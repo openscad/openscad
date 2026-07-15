@@ -46,6 +46,14 @@ nav:
   - Home: index.md
   - Get started: get_started.md
   - Downloads: downloads.md
+  - Release Notes:
+      - Overview: releases/index.md
+      - PythonSCAD v1.1.1: releases/PythonSCAD v1.1.1.md
+      - PythonSCAD v1.0.0: releases/PythonSCAD v1.0.0.md
+      - PythonSCAD v0.20.0: releases/PythonSCAD v0.20.0.md
+      - PythonSCAD v0.18.0: releases/PythonSCAD v0.18.0.md
+      - PythonSCAD v0.17.0: releases/PythonSCAD v0.17.0.md
+      - PythonSCAD v0.16.0: releases/PythonSCAD v0.16.0.md
   - Playground: https://www.pythonscad.org/playground/
   - Installation: installation.md
   - Development:
