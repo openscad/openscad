@@ -244,12 +244,12 @@ void PolySetBuilder::addCurve(std::shared_ptr<Curve> new_curve)
     for (auto& curve : curves) {
       auto arc_curve = std::dynamic_pointer_cast<ArcCurve>(curve);
       if (arc_curve != nullptr) {
-        if (*arc_curve == *arc_new_curve) return;  // duplicate
+        if (arc_curve->operator==(*arc_new_curve)) return;  // duplicate
       }
     }
   }
   for (auto& curve : curves)
-    if (*curve == *new_curve) return;  // duplicate
+    if (curve->operator==(*new_curve)) return;  // duplicate
   curves.push_back(new_curve);
 }
 
@@ -260,12 +260,12 @@ void PolySetBuilder::addSurface(std::shared_ptr<Surface> new_surface)
     for (auto& surface : surfaces) {
       auto cyl_surface = std::dynamic_pointer_cast<CylinderSurface>(surface);
       if (cyl_surface != nullptr) {
-        if (*cyl_surface == *cyl_new_surface) return;  // duplicate
+        if (cyl_surface->operator==(*cyl_new_surface)) return;  // duplicate
       }
     }
   }
   for (auto& surface : surfaces)
-    if (*surface == *new_surface) return;  // duplicate
+    if (surface->operator==(*new_surface)) return;  // duplicate
   surfaces.push_back(new_surface);
 }
 

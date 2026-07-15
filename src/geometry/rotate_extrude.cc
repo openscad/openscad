@@ -180,7 +180,7 @@ std::unique_ptr<PolySet> rotatePolygonSub(const RotateExtrudeNode& node, const P
 
     for (const auto& outline : poly.outlines()) {
       const double angle = node.start + j * node.angle / fragments;  // start on the X axis
-      std::vector<Vector2d> vertices2d;
+      VectorOfVector2d vertices2d;
       double cur_twist = 0;
 #ifdef ENABLE_PYTHON
       if (node.profile_func != NULL) {

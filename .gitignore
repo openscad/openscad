@@ -4,6 +4,12 @@ dist/
 .uuid
 .autoenv.zsh
 
+# Python wheel build artifacts
+.venv-wheel/
+.wheel-vcpkg-fresh/
+.wheel-vcpkg-cache/
+scripts/cibuildwheel/vcpkg_installed/
+
 # Debian packaging build artifacts
 obj-x86_64-linux-gnu/
 deb-build.log

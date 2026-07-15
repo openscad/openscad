@@ -374,27 +374,31 @@ void PyOpenSCADVectorIter_dealloc(PyOpenSCADVectorIter *self)
 }
 
 // Iterator Type Definition
-PyTypeObject PyOpenSCADVectorIterType = {
-  PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "PyOpenSCADVectorType.Iterator",
-  .tp_basicsize = sizeof(PyOpenSCADVectorIter),
-  .tp_dealloc = (destructor)PyOpenSCADVectorIter_dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_iter = PyOpenSCADVectorType_iter,
-  .tp_iternext = PyOpenSCADVectorType_iternext,  // <-- __next__ Implementierung
-};
+PyTypeObject PyOpenSCADVectorIterType = [] {
+  PyTypeObject type = {PyVarObject_HEAD_INIT(nullptr, 0)};
+  type.tp_name = "PyOpenSCADVectorType.Iterator";
+  type.tp_basicsize = sizeof(PyOpenSCADVectorIter);
+  type.tp_dealloc = (destructor)PyOpenSCADVectorIter_dealloc;
+  type.tp_flags = Py_TPFLAGS_DEFAULT;
+  type.tp_iter = PyOpenSCADVectorType_iter;
+  type.tp_iternext = PyOpenSCADVectorType_iternext;  // <-- __next__ Implementierung
+  return type;
+}();
 
 PyMappingMethods PyOpenSCADVectorMapping = {0, PyOpenSCADVector__getitem__, PyOpenSCADVector__setitem__};
 
-PyTypeObject PyOpenSCADVectorType = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "PyOpenSCADVector",
-  .tp_basicsize = sizeof(PyOpenSCADVectorObject),
-  .tp_itemsize = 0,
-  .tp_repr = (reprfunc)PyOpenSCADVector_repr,
-  .tp_as_number = &PyOpenSCADVector_number_methods,
-  .tp_as_mapping = &PyOpenSCADVectorMapping,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_iter = PyOpenSCADVectorType_iter,
-  .tp_methods = PyOpenSCADVectorMethods,
-  .tp_init = (initproc)python_vector,
-  .tp_new = PyOpenSCADVector_new,
-};
+PyTypeObject PyOpenSCADVectorType = [] {
+  PyTypeObject type = {PyVarObject_HEAD_INIT(NULL, 0)};
+  type.tp_name = "PyOpenSCADVector";
+  type.tp_basicsize = sizeof(PyOpenSCADVectorObject);
+  type.tp_itemsize = 0;
+  type.tp_repr = (reprfunc)PyOpenSCADVector_repr;
+  type.tp_as_number = &PyOpenSCADVector_number_methods;
+  type.tp_as_mapping = &PyOpenSCADVectorMapping;
+  type.tp_flags = Py_TPFLAGS_DEFAULT;
+  type.tp_iter = PyOpenSCADVectorType_iter;
+  type.tp_methods = PyOpenSCADVectorMethods;
+  type.tp_init = (initproc)python_vector;
+  type.tp_new = PyOpenSCADVector_new;
+  return type;
+}();
