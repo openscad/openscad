@@ -279,8 +279,9 @@ def normalize_windows_link_libraries(libs, library_dirs):
 def get_extra_compile_args():
     """Return platform-specific compiler flags."""
     if IS_WINDOWS:
-        # Keep legacy Python C API keyword arrays and UTF-8 filesystem strings building under C++20.
-        return ["/bigobj", "/EHsc", "/std:c++20", "/Zc:strictStrings-", "/Zc:char8_t-"]
+        # Disable MSVC whole-program optimization; the wheel links the full
+        # extension for every Python ABI and /GL exhausts linker heap on CI.
+        return ["/bigobj", "/EHsc", "/std:c++20", "/Zc:strictStrings-", "/Zc:char8_t-", "/GL-"]
     args = ["-std=c++17"]
     if IS_DARWIN:
         args.append("-stdlib=libc++")
