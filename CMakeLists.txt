@@ -1444,6 +1444,8 @@ set(GUI_HEADERS
     src/gui/parameter/ParameterWidget.h
     src/gui/ai/AIDock.h
     src/gui/ai/ChatWidget.h
+    src/gui/ai/DiffDialog.h
+    src/gui/ai/CollapsibleBubble.h
     src/gui/ai/ChatInputEdit.h
 )
 

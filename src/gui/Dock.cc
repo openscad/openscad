@@ -1,5 +1,6 @@
 #include "gui/Dock.h"
 
+#include <QCloseEvent>
 #include <QDockWidget>
 #include <QRegularExpression>
 #include <QWidget>
