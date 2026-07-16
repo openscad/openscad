@@ -1,6 +1,7 @@
 #include "gui/ai/ChatWidget.h"
 #include "gui/qtgettext.h"
-
+#include "json/json.hpp"
+#include <future>
 #include <QScrollBar>
 #include <QFrame>
 #include <QLabel>
@@ -113,6 +114,28 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   // Initialize backend and state
   aiService = std::make_shared<AIService>();
   aliveState = std::make_shared<bool>(true);
+
+  // Register tool executor callback
+  aiService->registerToolExecutor([this](const std::string& name, const std::string& arguments_json) {
+    auto promise = std::make_shared<std::promise<std::string>>();
+    auto future = promise->get_future();
+
+    QMetaObject::invokeMethod(
+      qApp,
+      [this, promise, name, arguments_json]() {
+        try {
+          std::string result_val = this->executeTool(name, arguments_json);
+          promise->set_value(result_val);
+        } catch (const std::exception& e) {
+          promise->set_value(std::string("Error parsing/executing tool: ") + e.what());
+        } catch (...) {
+          promise->set_value("Error: Unknown exception occurred during tool execution.");
+        }
+      },
+      Qt::QueuedConnection);
+
+    return future.get();
+  });
 
   // Initial welcome greeting
   addMessage(_("Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
@@ -413,4 +436,49 @@ void ChatWidget::logToolExecution(const std::string& name, const std::string& re
 
   // Scroll to bottom
   scrollArea->verticalScrollBar()->setValue(scrollArea->verticalScrollBar()->maximum());
+}
+
+std::string ChatWidget::executeTool(const std::string& name, const std::string& arguments_json)
+{
+  MainWindow *mw = nullptr;
+  for (auto *win : scadApp->windowManager.getWindows()) {
+    mw = win;
+    break;
+  }
+
+  std::string result_val;
+
+  if (name == "get_editor_code") {
+    if (mw && mw->activeEditor) {
+      result_val = mw->activeEditor->toPlainText().toStdString();
+    } else {
+      result_val = "Error: No active editor found.";
+    }
+  } else if (name == "set_editor_code") {
+    auto args = nlohmann::json::parse(arguments_json);
+    if (!args.contains("code")) {
+      return "Error: Missing required argument 'code'.";
+    }
+    std::string code = args["code"].get<std::string>();
+    this->proposeCodeChange(code);
+    result_val =
+      "Success: Code change proposed to the user for review. The user will review and choose whether to "
+      "apply it.";
+  } else if (name == "trigger_preview") {
+    if (this->hasPendingCodeChanges()) {
+      result_val = "Info: Preview postponed because code changes are pending user review.";
+    } else {
+      if (mw) {
+        mw->actionRenderPreview();
+        result_val = "Success: Preview triggered.";
+      } else {
+        result_val = "Error: No active MainWindow found.";
+      }
+    }
+  } else {
+    result_val = "Error: Unknown tool name '" + name + "'.";
+  }
+
+  this->logToolExecution(name, result_val);
+  return result_val;
 }

@@ -8,11 +8,6 @@
 #include "json/json.hpp"
 #include <fstream>
 #include <cstdlib>
-#include <future>
-#include <QApplication>
-#include "gui/MainWindow.h"
-#include "gui/OpenSCADApp.h"
-#include "gui/ai/ChatWidget.h"
 
 static std::string getAISettingsPath()
 {
@@ -77,128 +72,12 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   return true;
 }
 
-static std::string executeToolOnMainThread(const std::string& name, const std::string& arguments_json)
-{
-  auto promise = std::make_shared<std::promise<std::string>>();
-  auto future = promise->get_future();
-
-  QMetaObject::invokeMethod(
-    qApp,
-    [promise, name, arguments_json]() {
-      try {
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-
-        std::string result_val;
-
-        if (name == "get_editor_code") {
-          if (mw && mw->activeEditor) {
-            result_val = mw->activeEditor->toPlainText().toStdString();
-          } else {
-            result_val = "Error: No active editor found.";
-          }
-        } else if (name == "set_editor_code") {
-          auto args = nlohmann::json::parse(arguments_json);
-          if (!args.contains("code")) {
-            result_val = "Error: Missing required argument 'code'.";
-            promise->set_value(result_val);
-            return;
-          }
-          std::string code = args["code"].get<std::string>();
-          ChatWidget *chatWidget = nullptr;
-          if (mw) {
-            chatWidget = mw->findChild<ChatWidget *>();
-          }
-          if (chatWidget) {
-            chatWidget->proposeCodeChange(code);
-            result_val =
-              "Success: Code change proposed to the user for review. The user will review and choose "
-              "whether to apply it.";
-          } else {
-            if (mw && mw->activeEditor) {
-              mw->activeEditor->setText(QString::fromStdString(code));
-              result_val = "Success: Code set in the editor.";
-            } else {
-              result_val = "Error: No active editor found.";
-            }
-          }
-        } else if (name == "trigger_preview") {
-          ChatWidget *chatWidget = nullptr;
-          if (mw) {
-            chatWidget = mw->findChild<ChatWidget *>();
-          }
-          if (chatWidget && chatWidget->hasPendingCodeChanges()) {
-            result_val = "Info: Preview postponed because code changes are pending user review.";
-          } else {
-            if (mw) {
-              mw->actionRenderPreview();
-              result_val = "Success: Preview triggered.";
-            } else {
-              result_val = "Error: No active MainWindow found.";
-            }
-          }
-        } else {
-          result_val = "Error: Unknown tool name '" + name + "'.";
-        }
-
-        promise->set_value(result_val);
-
-        // Log the tool execution in the ChatWidget
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, result_val);
-        }
-
-      } catch (const std::exception& e) {
-        std::string err = std::string("Error parsing/executing tool: ") + e.what();
-        promise->set_value(err);
-
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, err);
-        }
-      } catch (...) {
-        std::string err = "Error: Unknown exception occurred during tool execution.";
-        promise->set_value(err);
-
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, err);
-        }
-      }
-    },
-    Qt::QueuedConnection);
-
-  return future.get();
-}
-
 class AIService::Impl
 {
 public:
   std::unique_ptr<HTTPClient> http_client;
   std::unique_ptr<AIClient> ai_client;
+  ToolExecutor tool_executor = nullptr;
 
   Impl()
   {
@@ -221,6 +100,11 @@ AIService::~AIService() = default;
 
 AIService::AIService(AIService&&) noexcept = default;
 AIService& AIService::operator=(AIService&&) noexcept = default;
+
+void AIService::registerToolExecutor(ToolExecutor executor)
+{
+  impl->tool_executor = std::move(executor);
+}
 
 void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCallback on_chunk,
                                      ErrorCallback on_error, CompleteCallback on_complete)
@@ -334,7 +218,12 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     history.push_back(assistant_msg);
 
     for (const auto& tc : tool_calls) {
-      std::string result = executeToolOnMainThread(tc.name, tc.arguments);
+      std::string result;
+      if (impl->tool_executor) {
+        result = impl->tool_executor(tc.name, tc.arguments);
+      } else {
+        result = "Error: No tool executor registered.";
+      }
       ChatMessage tool_msg;
       tool_msg.role = "tool";
       tool_msg.content = result;
