@@ -1,10 +1,11 @@
 {
   "name": "pythonscad-pip",
   "version-string": "1.0.0",
-  "builtin-baseline": "ce613c41372b23b1f51333815feb3edd87ef8a8b",
+  "builtin-baseline": "cd61e1e26a038e82d6550a3ebbe0fbbfe7da78e3",
   "dependencies": [
     "boost-regex",
     "boost-program-options",
+    "boost-system",
     "boost-assign",
     "boost-lockfree",
     "eigen3",

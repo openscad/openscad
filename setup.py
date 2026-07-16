@@ -171,9 +171,9 @@ def get_link_libraries():
     libs = get_pkg_config_libraries()
 
     # Link concrete Boost libraries so auditwheel/delocate/delvewheel can
-    # bundle them. Current Homebrew Boost.System is header-only on macOS.
+    # bundle them. Current Boost.System is header-only on macOS and vcpkg/MSVC.
     boost_libs = ["boost_program_options"]
-    if not IS_DARWIN:
+    if not IS_DARWIN and not IS_WINDOWS:
         boost_libs.append("boost_system")
     # On Windows, Boost.Regex is selected via MSVC autolink; vcpkg's release
     # triplet does not provide a stable unversioned boost_regex.lib to name here.

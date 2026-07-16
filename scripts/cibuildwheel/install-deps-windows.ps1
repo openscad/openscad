@@ -65,7 +65,7 @@ if (-not $BisonExe -or -not $FlexExe) {
 }
 
 # Pin vcpkg to a release tag for reproducible builds (see vcpkg.json builtin-baseline).
-$VcpkgVersion = "2025.04.09"
+$VcpkgVersion = "2026.06.24"
 $VcpkgRoot = Join-Path $ProjectRoot ".wheel-vcpkg"
 $ManifestDir = Join-Path $ProjectRoot "scripts/cibuildwheel"
 $VcpkgManifest = Join-Path $ManifestDir "vcpkg.json"

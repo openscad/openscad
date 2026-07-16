@@ -8,7 +8,7 @@
       "customType": "regex",
       "description": "Update the vcpkg release tag used by Windows PyPI wheel builds.",
       "managerFilePatterns": [
-        "^scripts/cibuildwheel/install-deps-windows\\.ps1$"
+        "/^scripts\\/cibuildwheel\\/install-deps-windows\\.ps1$/"
       ],
       "matchStrings": [
         "\\$VcpkgVersion = \"(?<currentValue>\\d{4}\\.\\d{2}\\.\\d{2})\""
