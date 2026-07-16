@@ -69,7 +69,7 @@ jobs:
 
       - name: Setup MSYS2 parser tools
         if: runner.os == 'Windows'
-        uses: msys2/setup-msys2@fb197b72ce45fb24f17bf3f807a388985654d1f2 # v2
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
         with:
           msystem: MSYS
           update: false
