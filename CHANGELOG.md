@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.2](https://github.com/pythonscad/pythonscad/compare/v1.1.1...v1.1.2) (2026-07-16)
+
+
+### Bug Fixes
+
+* **deps:** update actions/cache action to v6 ([#890](https://github.com/pythonscad/pythonscad/issues/890)) ([a4c5f6b](https://github.com/pythonscad/pythonscad/commit/a4c5f6be75a7443a0751b60b455838a80ce43761))
+
+
+### Documentation
+
+* **release:** add release notes for PythonSCAD v1.1.2 "Prominentio" ([#895](https://github.com/pythonscad/pythonscad/issues/895)) ([aef28e2](https://github.com/pythonscad/pythonscad/commit/aef28e2290016e41c503a5f3b07e764c8d1127f7))
+
 ## [1.1.1](https://github.com/pythonscad/pythonscad/compare/v1.1.0...v1.1.1) (2026-07-15)
 
 

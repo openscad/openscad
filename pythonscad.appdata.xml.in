@@ -35,6 +35,15 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.1.2" date="2026-07-16">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.1.2</url>
+      <description>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>deps: update actions/cache action to v6</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.1" date="2026-07-15">
       <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.1.1</url>
       <description>
