@@ -1,8 +1,8 @@
-# PythonSCAD v1.1.1 "Prominentio" released
+# PythonSCAD v1.1.2 "Prominentio" released
 
 Hi everyone,
 
-We are happy to announce **PythonSCAD ~~v1.1.0~~ v1.1.1** "Prominentio" (\*).
+We are happy to announce **PythonSCAD v1.1.2** "Prominentio" (\*).
 
 With so much going on since the last release, it's hard to decide what to write
 about first.
@@ -29,10 +29,10 @@ our website and build system. The **Windows installer** has been massively
 overhauled and now supports installing PythonSCAD without requiring
 administrative privileges.
 
-(\*) We tried releasing v1.1.0 a few days ago, but since then learned that the
+(\*) We tried releasing v1.1.0 and v1.1.1 within the last few days, but since then learned that the
 new Python wheel builds were failing and we needed a few days to address that
-issue. Thus we decided to pull that version from the shelves again so we can
-address that issue and release it with v1.1.1.
+issue. Thus we decided to pull those version from the shelves again so we can
+address that issue and release it with v1.1.2.
 
 ## Release name
 
@@ -202,7 +202,7 @@ theme path ([PR \#856](https://github.com/pythonscad/pythonscad/pull/856), [PR
 
 ### Release smoke tests
 
-v1.1.1 also adds automated release smoke tooling for AppImage, Linux package,
+v1.1.2 also adds automated release smoke tooling for AppImage, Linux package,
 macOS, and Windows artifacts ([PR
 \#870](https://github.com/pythonscad/pythonscad/pull/870)). The smoke checks
 cover application startup, `.scad` export, Python CLI export, REPL startup, and
@@ -214,7 +214,7 @@ Linux package artifact handling ([PR
 
 ## Reliability And Bug Fixes
 
-v1.1.1 includes many fixes across Python integration, geometry behavior, CI, and
+v1.1.2 includes many fixes across Python integration, geometry behavior, CI, and
 documentation:
 
 - `resize()` now accepts 1-3 element vectors from Python ([PR
