@@ -85,7 +85,7 @@ jobs:
       - name: Restore Windows vcpkg cache
         id: windows-vcpkg-cache
         if: github.event_name == 'workflow_dispatch' && runner.os == 'Windows'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           # actions/cache versions include this path list; keep .wheel-vcpkg here
           # so older wheel caches remain restorable across workflow changes.
@@ -124,7 +124,7 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           runner.os == 'Windows' &&
           steps.windows-vcpkg-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           # Keep this in sync with the restore path list above.
           path: |
