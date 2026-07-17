@@ -44,6 +44,10 @@ public:
   // Cancel any active AI completion requests
   void cancelPendingRequests();
 
+  using ToolExecutor =
+    std::function<std::string(const std::string& name, const std::string& arguments_json)>;
+  void registerToolExecutor(ToolExecutor executor);
+
 private:
   class Impl;
   std::unique_ptr<Impl> impl;

@@ -47,6 +47,7 @@ private:
   MessageBubble *addMessage(const QString& text, bool isUser);
   bool isDarkTheme() const;
   void enableInput(bool enabled);
+  std::string executeTool(const std::string& name, const std::string& arguments_json);
 
   std::shared_ptr<AIService> aiService;
   std::vector<ChatMessage> history;
