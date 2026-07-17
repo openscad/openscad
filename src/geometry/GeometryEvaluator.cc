@@ -2425,7 +2425,7 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt, Vector3d nextpt, Vecto
 }
 
 std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y, Vector3d curpt,
-                                             const std::vector<Vector2d>& profile)
+                                             const VectorOfVector2d& profile)
 {
   std::vector<Vector3d> result;
   for (unsigned int i = 0; i < profile.size(); i++) {
@@ -2611,7 +2611,7 @@ static std::unique_ptr<Geometry> extrudePath(const PathExtrudeNode& node, const 
           }
         }
         for (auto& p3d : ps_face->indices) {
-          std::vector<Vector2d> p2d;
+          VectorOfVector2d p2d;
           for (unsigned int i = 0; i < p3d.size(); i++) {
             Vector3d pt = ps_face->vertices[p3d[i]];
             p2d.push_back(Vector2d(pt[0], pt[1]));
@@ -3198,7 +3198,7 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
   }
   // now build scale form xmin to xmax
   std::vector<double> xscale;
-  std::vector<Vector2d> polygon;
+  VectorOfVector2d polygon;
   int polygonlen;
   if (node.shape != nullptr) {
     Tree tree(node.shape, "");

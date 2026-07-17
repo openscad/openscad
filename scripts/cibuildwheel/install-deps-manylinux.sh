@@ -23,6 +23,8 @@ $PKG_MGR install -y \
     boost-devel \
     cairo-devel \
     CGAL-devel \
+    cmake \
+    curl \
     double-conversion-devel \
     eigen3-devel \
     flex \
@@ -33,13 +35,42 @@ $PKG_MGR install -y \
     glib2-devel \
     gmp-devel \
     harfbuzz-devel \
+    libzip-devel \
     libxml2-devel \
+    make \
     mpfr-devel \
+    patch \
     pkgconfig
 
-# libfive fails to compile with GCC 14's stricter C++ diagnostics; use GCC 12.
+# cibuildwheel exports CC/CXX to gcc-toolset-12 before running before-all,
+# so install it before any source-built fallback dependencies invoke CMake.
 $PKG_MGR install -y gcc-toolset-12
 /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
+
+if ! $PKG_MGR install -y lib3mf-devel; then
+    echo "lib3mf-devel unavailable from EL8 repos; building lib3mf from source"
+    LIB3MF_VERSION=2.4.1
+    LIB3MF_SRC="/tmp/lib3mf-${LIB3MF_VERSION}"
+    rm -rf "$LIB3MF_SRC"
+    curl --fail --show-error --retry 3 --retry-delay 5 -L \
+        "https://github.com/3MFConsortium/lib3mf/archive/v${LIB3MF_VERSION}.tar.gz" \
+        -o "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
+    tar -C /tmp -xzf "/tmp/lib3mf-${LIB3MF_VERSION}.tar.gz"
+    cd "$LIB3MF_SRC"
+    # The patch removes non-portable compiler/linker assumptions and applies to manylinux too.
+    patch -p1 < /project/patches/lib3mf-macos.patch
+    cmake -S . -B build \
+        -DLIB3MF_TESTS=OFF \
+        -DUSE_INCLUDED_ZLIB=OFF \
+        -DUSE_INCLUDED_LIBZIP=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib64
+    cmake --build build -j"$(nproc)"
+    cmake --install build
+    ldconfig
+    cd /project
+fi
 
 # libfive tree.cpp uses std::optional without including <optional>; EL8 libstdc++
 # does not pull it in transitively.

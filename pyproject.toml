@@ -76,29 +76,25 @@ Changelog = "https://github.com/pythonscad/pythonscad/blob/master/CHANGELOG.md"
 
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
-skip = ["*-musllinux*", "*-win32*", "*-win_arm64*", "cp*t-*", "pp*"]
+skip = ["*-musllinux*", "*-win32*", "*-win_arm64*", "cp*t-*"]
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 build-frontend = "build"
-# cibuildwheel splits test-requires on ';', so PEP 508 markers must
-# use [[tool.cibuildwheel.overrides]] instead of inline markers here.
-test-requires = ["ipython>=9,<10"]
 test-command = "python {project}/scripts/smoke-test-pip.py"
-
-[[tool.cibuildwheel.overrides]]
-select = "cp310-*"
-test-requires = ["ipython>=8,<9"]
 
 [tool.cibuildwheel.linux]
 before-all = "bash scripts/cibuildwheel/install-deps-manylinux.sh"
 before-build = "bash -c 'echo \"cibuildwheel CXX=$CXX\"; \"$CXX\" --version'"
-environment = { CC = "/opt/rh/gcc-toolset-12/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-12/root/usr/bin/g++", CXXFLAGS = "-std=c++17" }
+environment = { CC = "/opt/rh/gcc-toolset-12/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-12/root/usr/bin/g++", CXXFLAGS = "-std=c++17", PYTHONSCAD_BUILD_PARALLEL = "6" }
 
 [tool.cibuildwheel.macos]
-environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+# Homebrew bottles on the macos-15 runners currently require a macOS 15 target.
+environment = { MACOSX_DEPLOYMENT_TARGET = "15.0", PYTHONSCAD_BUILD_PARALLEL = "6" }
 before-all = "bash scripts/cibuildwheel/install-deps-macos.sh"
+repair-wheel-command = "DYLD_LIBRARY_PATH=\"$(brew --prefix)/lib\" delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.windows]
-environment = { VCPKG_DEFAULT_TRIPLET = "x64-windows" }
+# x64-windows-release is a vcpkg community triplet in the pinned vcpkg baseline.
+environment = { VCPKG_DEFAULT_TRIPLET = "x64-windows-release", PYTHONSCAD_BUILD_PARALLEL = "6" }
 before-all = "pwsh scripts/cibuildwheel/install-deps-windows.ps1"
 repair-wheel-command = "pwsh scripts/cibuildwheel/repair-wheel-windows.ps1 -Wheel {wheel} -DestDir {dest_dir}"

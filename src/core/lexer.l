@@ -27,6 +27,7 @@
 %option prefix="lexer"
 %option nounput
 %option noinput
+%option nounistd
 
 %{
 
@@ -45,6 +46,8 @@ namespace fs = std::filesystem;
 #ifdef _MSC_VER
 #include <io.h>
 #define isatty _isatty
+#else
+#include <unistd.h>
 #endif
 std::string stringcontents;
 int lexerget_lineno(void);

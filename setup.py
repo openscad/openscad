@@ -29,7 +29,12 @@ def apply_wheel_build_env():
                 os.environ[key] = value
     winflex = os.environ.get("WINFLEXBISON_DIR")
     if winflex and os.path.isdir(winflex):
-        os.environ["PATH"] = winflex + os.pathsep + os.environ.get("PATH", "")
+        path = os.environ.get("PATH", "")
+        os.environ["PATH"] = winflex + os.pathsep + path if path else winflex
+    msys2_usr_bin = os.environ.get("MSYS2_USR_BIN")
+    if msys2_usr_bin and os.path.isdir(msys2_usr_bin):
+        path = os.environ.get("PATH", "")
+        os.environ["PATH"] = path + os.pathsep + msys2_usr_bin if path else msys2_usr_bin
 
 
 def get_version():
@@ -165,11 +170,22 @@ def get_link_libraries():
     """Return the full set of libraries to link the pip extension against."""
     libs = get_pkg_config_libraries()
 
-    # Match CMake (Boost::regex, Boost::program_options) so shared deps appear
-    # in DT_NEEDED and auditwheel/delocate/delvewheel can bundle them.
-    for lib in ("boost_regex", "boost_program_options", "boost_system"):
+    # Link concrete Boost libraries so auditwheel/delocate/delvewheel can
+    # bundle them. Current Boost.System is header-only on macOS and vcpkg/MSVC.
+    boost_libs = ["boost_program_options"]
+    if not IS_DARWIN and not IS_WINDOWS:
+        boost_libs.append("boost_system")
+    # On Windows, Boost.Regex is selected via MSVC autolink; vcpkg's release
+    # triplet does not provide a stable unversioned boost_regex.lib to name here.
+    if not IS_WINDOWS:
+        boost_libs.insert(0, "boost_regex")
+    for lib in boost_libs:
         if lib not in libs:
             libs.append(lib)
+    if IS_WINDOWS:
+        for lib in ("libpng16", "shell32"):
+            if lib not in libs:
+                libs.append(lib)
 
     cgal_raw = pkg_config_flags(["CGAL"], "--libs-only-l")
     if cgal_raw:
@@ -197,6 +213,7 @@ def get_library_dirs():
     vcpkg_installed = get_vcpkg_installed_dir()
     if vcpkg_installed:
         dirs.append(os.path.join(vcpkg_installed, "lib"))
+        dirs.append(os.path.join(vcpkg_installed, "lib", "manual-link"))
     if IS_DARWIN:
         for prefix in ("/opt/homebrew", "/usr/local"):
             libdir = os.path.join(prefix, "lib")
@@ -209,10 +226,62 @@ def get_library_dirs():
     return dirs
 
 
+def normalize_windows_link_libraries(libs, library_dirs):
+    """Translate pkg-config library names to MSVC/vcpkg import library names."""
+    if not IS_WINDOWS:
+        return libs
+
+    system_libs = {"advapi32", "bcrypt", "kernel32", "shell32", "user32", "winmm", "ws2_32"}
+    aliases = {
+        "3mf": "lib3mf",
+        "xml2": "libxml2",
+        "z": "zlib",
+    }
+
+    normalized = []
+    for lib in libs:
+        candidates = [aliases.get(lib, lib)]
+        if lib.startswith("boost_"):
+            candidates.append(lib)
+
+        resolved = None
+        for libdir in library_dirs:
+            if not os.path.isdir(libdir):
+                continue
+            for candidate in candidates:
+                if os.path.isfile(os.path.join(libdir, f"{candidate}.lib")):
+                    resolved = candidate
+                    break
+            if resolved:
+                break
+
+            if lib.startswith("boost_"):
+                prefixes = (f"{lib}-".lower(), f"lib{lib}-".lower())
+                for name in os.listdir(libdir):
+                    lowered = name.lower()
+                    if lowered.endswith(".lib") and lowered.startswith(prefixes):
+                        resolved = os.path.splitext(name)[0]
+                        break
+            if resolved:
+                break
+
+        if not resolved and lib in system_libs:
+            resolved = lib
+        if not resolved:
+            resolved = aliases.get(lib, lib)
+
+        if resolved and resolved not in normalized:
+            normalized.append(resolved)
+
+    return normalized
+
+
 def get_extra_compile_args():
     """Return platform-specific compiler flags."""
     if IS_WINDOWS:
-        return ["/bigobj", "/EHsc", "/std:c++17"]
+        # Disable MSVC whole-program optimization; the wheel links the full
+        # extension for every Python ABI and /GL exhausts linker heap on CI.
+        return ["/bigobj", "/EHsc", "/std:c++20", "/Zc:strictStrings-", "/Zc:char8_t-", "/GL-"]
     args = ["-std=c++17"]
     if IS_DARWIN:
         args.append("-stdlib=libc++")
@@ -244,6 +313,8 @@ def get_extra_defines():
     if IS_WINDOWS:
         defines.extend([
             ("NOMINMAX", None),
+            ("NOGDI", None),
+            ("WIN32_LEAN_AND_MEAN", None),
             ("_USE_MATH_DEFINES", None),
             ("CGAL_DISABLE_ROUNDING_MATH_CHECK", None),
         ])
@@ -265,9 +336,19 @@ def detect_lib3mf():
 
         major = int(ver.split(".")[0])
         if major >= 2:
+            for base in list(inc_dirs):
+                cpp_bindings_dir = os.path.join(base, "Bindings", "Cpp")
+                if (cpp_bindings_dir not in inc_dirs and
+                        os.path.isfile(os.path.join(cpp_bindings_dir, "lib3mf_implicit.hpp"))):
+                    inc_dirs.append(cpp_bindings_dir)
             sources = ["src/io/export_3mf_v2.cc", "src/io/import_3mf_v2.cc"]
             print(f"lib3mf: found v{ver} (v2 API)")
         else:
+            for base in list(inc_dirs):
+                legacy_dir = os.path.join(base, "lib3mf")
+                if (legacy_dir not in inc_dirs and
+                        os.path.isfile(os.path.join(legacy_dir, "Model", "COM", "NMR_DLLInterfaces.h"))):
+                    inc_dirs.append(legacy_dir)
             sources = ["src/io/export_3mf_v1.cc", "src/io/import_3mf_v1.cc"]
             print(f"lib3mf: found v{ver} (v1 API)")
 
@@ -384,6 +465,44 @@ def detect_libfive():
 class BuildExtWithLexYacc(build_ext):
     """Custom build_ext command to run lex/yacc before building extension modules."""
 
+    cxx_only_compile_args = {"-std=c++17", "-stdlib=libc++"}
+
+    def finalize_options(self):
+        super().finalize_options()
+        build_parallel = os.environ.get("PYTHONSCAD_BUILD_PARALLEL")
+        if build_parallel and not self.parallel:
+            try:
+                self.parallel = int(build_parallel)
+            except ValueError as exc:
+                raise RuntimeError(
+                    "PYTHONSCAD_BUILD_PARALLEL must be an integer when set"
+                ) from exc
+
+    def build_extensions(self):
+        if IS_DARWIN and hasattr(self.compiler, "src_extensions"):
+            if ".mm" not in self.compiler.src_extensions:
+                self.compiler.src_extensions.append(".mm")
+
+        if not IS_WINDOWS and hasattr(self.compiler, "_compile"):
+            original_compile = self.compiler._compile
+
+            def compile_without_cxx_args_for_c_sources(obj, src, ext, cc_args, extra_postargs, pp_opts):
+                if src.endswith(".c") and extra_postargs:
+                    extra_postargs = [
+                        arg for arg in extra_postargs
+                        if arg not in self.cxx_only_compile_args
+                    ]
+                return original_compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
+
+            self.compiler._compile = compile_without_cxx_args_for_c_sources
+            try:
+                super().build_extensions()
+            finally:
+                self.compiler._compile = original_compile
+            return
+
+        super().build_extensions()
+
     def run(self):
         yacc_src = "src/core/parser.y"
         lex_src = "src/core/lexer.l"
@@ -399,8 +518,20 @@ class BuildExtWithLexYacc(build_ext):
             target_time = min(os.path.getmtime(t) for t in targets)
             return src_time > target_time
 
-        bison_cmd = "win_bison" if IS_WINDOWS else "bison"
-        flex_cmd = "win_flex" if IS_WINDOWS else "flex"
+        def resolve_tool(env_var, candidates):
+            env_value = os.environ.get(env_var)
+            if env_value:
+                if os.path.isfile(env_value) or shutil.which(env_value):
+                    return env_value
+                raise RuntimeError(f"{env_var} points to missing executable: {env_value}")
+            for candidate in candidates:
+                resolved = shutil.which(candidate)
+                if resolved:
+                    return resolved
+            raise RuntimeError(f"Could not find any of: {', '.join(candidates)}")
+
+        bison_cmd = resolve_tool("BISON", ["win_bison", "bison"] if IS_WINDOWS else ["bison"])
+        flex_cmd = resolve_tool("FLEX", ["win_flex", "flex"] if IS_WINDOWS else ["flex"])
 
         if needs_rebuild(yacc_src, [yacc_out, yacc_hdr]):
             print(f"Generating Yacc: {yacc_src}")
@@ -443,6 +574,7 @@ def main():
               "src/python/pyconversion.cc",
               "src/python/pydata.cc",
               "src/python/pyopenscad.cc",
+              "src/python/python_runtime.cc",
               "src/python/pymod.cc",
               "src/python/pip_fixer.cc"
             ]
@@ -702,12 +834,16 @@ def main():
         ("STACKSIZE", "524288"),
     ] + lib3mf_defines + libfive_defines + get_extra_defines()
 
+    library_dirs = get_library_dirs()
+    raw_link_libraries = get_link_libraries() + lib3mf_libs
+    link_libraries = normalize_windows_link_libraries(raw_link_libraries, library_dirs)
+
     pythonscad_ext = Extension(
         "_openscad",
         sources=all_sources,
         include_dirs=project_include_dirs,
-        library_dirs=get_library_dirs(),
-        libraries=get_link_libraries() + lib3mf_libs,
+        library_dirs=library_dirs,
+        libraries=link_libraries,
         define_macros=all_defines,
         extra_compile_args=get_extra_compile_args(),
         extra_link_args=get_extra_link_args(),

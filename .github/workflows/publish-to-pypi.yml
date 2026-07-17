@@ -1,5 +1,5 @@
-# Builds binary wheels and a source distribution, then publishes all artifacts to PyPI.
-# Triggered when a GitHub Release is fully published (not prerelease).
+# Builds binary wheels and a source distribution. Release-triggered runs publish
+# all artifacts to PyPI; manually dispatched runs only validate the build.
 #
 # Prerequisites (one-time setup):
 #   1. Create the "pythonscad" project on PyPI (https://pypi.org)
@@ -51,7 +51,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3 # v8.3.0
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
           enable-cache: false
 
@@ -67,8 +67,76 @@ jobs:
             echo "${GITHUB_WORKSPACE}/.venv/bin" >> "$GITHUB_PATH"
           fi
 
+      - name: Setup MSYS2 parser tools
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
+        with:
+          msystem: MSYS
+          update: false
+          install: >-
+            flex
+            bison
+
+      - name: Add MSYS2 parser tools to PATH
+        if: runner.os == 'Windows'
+        shell: bash
+        run: echo "C:/msys64/usr/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Windows vcpkg cache
+        id: windows-vcpkg-cache
+        if: github.event_name == 'workflow_dispatch' && runner.os == 'Windows'
+        uses: actions/cache/restore@v6
+        with:
+          # actions/cache versions include this path list; keep .wheel-vcpkg here
+          # so older wheel caches remain restorable across workflow changes.
+          path: |
+            .wheel-vcpkg
+            .wheel-vcpkg-cache
+            ~/AppData/Local/vcpkg/archives
+          key: pypi-windows-vcpkg-${{ hashFiles('scripts/cibuildwheel/vcpkg.json', 'scripts/cibuildwheel/install-deps-windows.ps1') }}
+          restore-keys: |
+            pypi-windows-vcpkg-
+
+      - name: Install Windows wheel dependencies
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          VCPKG_BINARY_SOURCES: ${{ github.event_name == 'workflow_dispatch' && format('clear;files,{0}/.wheel-vcpkg-cache,readwrite', github.workspace) || '' }}
+        run: ./scripts/cibuildwheel/install-deps-windows.ps1
+
+      - name: Prune Windows vcpkg cache
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          foreach ($path in @(
+            ".wheel-vcpkg\buildtrees",
+            ".wheel-vcpkg\downloads",
+            ".wheel-vcpkg\packages"
+          )) {
+            if (Test-Path $path) {
+              Remove-Item -Recurse -Force $path
+            }
+          }
+
+      - name: Save Windows vcpkg cache
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          runner.os == 'Windows' &&
+          steps.windows-vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          # Keep this in sync with the restore path list above.
+          path: |
+            .wheel-vcpkg
+            .wheel-vcpkg-cache
+            ~/AppData/Local/vcpkg/archives
+          key: ${{ steps.windows-vcpkg-cache.outputs.cache-primary-key }}
+
       - name: Build wheels
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        env:
+          CIBW_BEFORE_ALL_WINDOWS: python -c "print('Windows wheel dependencies already installed by workflow')"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -93,7 +161,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3 # v8.3.0
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
           enable-cache: false
 
@@ -111,6 +179,7 @@ jobs:
   publish:
     name: Publish to PyPI
     needs: [build-wheels, build-sdist]
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:

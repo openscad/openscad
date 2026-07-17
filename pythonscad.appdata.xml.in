@@ -35,6 +35,36 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.1.2" date="2026-07-16">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.1.2</url>
+      <description>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>deps: update actions/cache action to v6</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.1.1" date="2026-07-15">
+      <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.1.1</url>
+      <description>
+        <p>Bug fixes:</p>
+        <ul>
+          <li>ci: correct Renovate vcpkg file matcher</li>
+          <li>ci: harden vcpkg baseline updater</li>
+          <li>core: correct foldable boundary comment typo</li>
+          <li>core: declare isatty for non-MSVC lexer builds</li>
+          <li>gui: restore/establish Python custom menu items functionality</li>
+          <li>pypi: address wheel build review feedback</li>
+          <li>pypi: address wheel review feedback</li>
+          <li>pypi: align macOS wheel deployment target</li>
+          <li>pypi: apply Copilot wheel cleanup feedback</li>
+          <li>pypi: avoid empty PATH entries in wheel setup</li>
+          <li>pypi: build lib3mf from source on macOS</li>
+          <li>pypi: build lib3mf in manylinux wheels</li>
+          <li>and more</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.0" date="2026-07-11">
       <url type="details">https://github.com/pythonscad/pythonscad/releases/tag/v1.1.0</url>
       <description>

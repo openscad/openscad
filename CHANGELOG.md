@@ -1,5 +1,70 @@
 # Changelog
 
+## [1.1.2](https://github.com/pythonscad/pythonscad/compare/v1.1.1...v1.1.2) (2026-07-16)
+
+
+### Bug Fixes
+
+* **deps:** update actions/cache action to v6 ([#890](https://github.com/pythonscad/pythonscad/issues/890)) ([a4c5f6b](https://github.com/pythonscad/pythonscad/commit/a4c5f6be75a7443a0751b60b455838a80ce43761))
+
+
+### Documentation
+
+* **release:** add release notes for PythonSCAD v1.1.2 "Prominentio" ([#895](https://github.com/pythonscad/pythonscad/issues/895)) ([aef28e2](https://github.com/pythonscad/pythonscad/commit/aef28e2290016e41c503a5f3b07e764c8d1127f7))
+
+## [1.1.1](https://github.com/pythonscad/pythonscad/compare/v1.1.0...v1.1.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* **ci:** correct Renovate vcpkg file matcher ([3e9b2c8](https://github.com/pythonscad/pythonscad/commit/3e9b2c82b0610f49493be7d6084107a4cf95b3ea))
+* **ci:** harden vcpkg baseline updater ([1f6ab02](https://github.com/pythonscad/pythonscad/commit/1f6ab02eafd29e1f1bc1231607bfc45a59745ec5))
+* **core:** correct foldable boundary comment typo ([0f326a7](https://github.com/pythonscad/pythonscad/commit/0f326a7d81e51202cf77ff50667a22e149f7ec3a))
+* **core:** declare isatty for non-MSVC lexer builds ([712690d](https://github.com/pythonscad/pythonscad/commit/712690d61b5ba4da0af4af1e28b603a985647d0a))
+* **gui:** restore/establish  Python custom menu items functionality ([b5c2b08](https://github.com/pythonscad/pythonscad/commit/b5c2b085435dc47834f00de3b1125a75ae120521))
+* **pypi:** address wheel build review feedback ([d00c939](https://github.com/pythonscad/pythonscad/commit/d00c9398c0f77d5e21fe62b35118b96e3e16ba5a))
+* **pypi:** address wheel review feedback ([9cf3a33](https://github.com/pythonscad/pythonscad/commit/9cf3a3371fbcfd3ed98095af931e6fdcd28b8f56))
+* **pypi:** align macOS wheel deployment target ([1e96f43](https://github.com/pythonscad/pythonscad/commit/1e96f43a21708f9fd13c3be708ee427cc8e97165))
+* **pypi:** apply Copilot wheel cleanup feedback ([821ef24](https://github.com/pythonscad/pythonscad/commit/821ef24b48054eecd488978ccaa7fa0657233f13))
+* **pypi:** avoid empty PATH entries in wheel setup ([a1a7fb5](https://github.com/pythonscad/pythonscad/commit/a1a7fb578fe26bd3d35bdfbf79691f0c41671151))
+* **pypi:** build lib3mf from source on macOS ([c06bb26](https://github.com/pythonscad/pythonscad/commit/c06bb2678000d10b47a6614cbc521de12bc6abe0))
+* **pypi:** build lib3mf in manylinux wheels ([fcbedd9](https://github.com/pythonscad/pythonscad/commit/fcbedd9e256294d4e12485ebff426a5e44473bea))
+* **pypi:** clarify wheel build diagnostics ([7f8ebb4](https://github.com/pythonscad/pythonscad/commit/7f8ebb4eaf105409d400b83d7eb55cb943c0f892))
+* **pypi:** clean up wheel debug and macOS repair ([d3e49ba](https://github.com/pythonscad/pythonscad/commit/d3e49baaccd5a2da933b7ca58650b5eb563c720d))
+* **pypi:** clean wheel build configuration ([8b86584](https://github.com/pythonscad/pythonscad/commit/8b865841c4a18deeb6d93764eea5996ada10c9b7))
+* **pypi:** disable MSVC whole-program optimization ([6f4c175](https://github.com/pythonscad/pythonscad/commit/6f4c175bcd1e7263107e9e621902257821becd39))
+* **pypi:** drop unused Boost.System link dependency ([10fb84f](https://github.com/pythonscad/pythonscad/commit/10fb84fdfd3cac684e56e618b154a37239b0561a))
+* **pypi:** guard macOS lib3mf dylib copy ([9555dea](https://github.com/pythonscad/pythonscad/commit/9555dea0b4bf5e1e8a12b7a81a88c036c33871cf))
+* **pypi:** harden lib3mf source downloads ([a61fbe7](https://github.com/pythonscad/pythonscad/commit/a61fbe705127d331ad41f7bf0fc157d71cc2cae1))
+* **pypi:** install manylinux compiler before lib3mf fallback ([1860454](https://github.com/pythonscad/pythonscad/commit/1860454205a09912d52ca0b66fc1cc113210005a))
+* **pypi:** install manylinux lib3mf fallback into system libdir ([b73765e](https://github.com/pythonscad/pythonscad/commit/b73765e6f7a529a464346400e459f8b3aecdfaa7))
+* **pypi:** keep C++ flags off macOS C sources ([1be2642](https://github.com/pythonscad/pythonscad/commit/1be2642db6de2a1e7791602b1ebd0468432b9a40))
+* **pypi:** keep Windows vcpkg checkout complete ([6b518f6](https://github.com/pythonscad/pythonscad/commit/6b518f62dd0bb166e28b9c396197bde48d03296b))
+* **pypi:** preserve Windows vcpkg cache compatibility ([4450d2c](https://github.com/pythonscad/pythonscad/commit/4450d2c608c0e531405435fe412f0cc49fce5b9c))
+* **pypi:** purge corrupt boost-regex binary cache ([e0cd5b3](https://github.com/pythonscad/pythonscad/commit/e0cd5b356503baf9af7ccc9e21f7111d5ff4276f))
+* **pypi:** rebuild stale Windows vcpkg install tree ([c66eb05](https://github.com/pythonscad/pythonscad/commit/c66eb0587c0281346897110ade9cca6e4e2b9745))
+* **pypi:** remove temporary wheel diagnostics ([b759291](https://github.com/pythonscad/pythonscad/commit/b75929165123c365f2501cd24afbfcbc34b52a81))
+* **pypi:** repair incomplete boost-regex vcpkg cache ([cb154bd](https://github.com/pythonscad/pythonscad/commit/cb154bd68b843afb728a5098995d61c7381a8a8d))
+* **pypi:** repair macOS and Boost wheel linking ([4d471d4](https://github.com/pythonscad/pythonscad/commit/4d471d414e3a74d372f8dec418a007824cf692b4))
+* **pypi:** resolve lib-prefixed Boost regex import libs ([7de8ad8](https://github.com/pythonscad/pythonscad/commit/7de8ad875888f185b96ae3f8fed2580c58ab789f))
+* **pypi:** resolve platform wheel link paths ([974539a](https://github.com/pythonscad/pythonscad/commit/974539a4d4d88d9c68f1a6d31f9bf971cb2d2b5b))
+* **pypi:** restore PyPI wheel builds ([cd3383d](https://github.com/pythonscad/pythonscad/commit/cd3383d6440ee7a4fdcad200ab3a5f34a7fea20a))
+* **pypi:** restore wheel build workflow ([440f520](https://github.com/pythonscad/pythonscad/commit/440f520affe66e4aefeb42d57c8568c1c012d6f8))
+* **pypi:** restore Windows vcpkg PATH reliably ([7268d73](https://github.com/pythonscad/pythonscad/commit/7268d735560f95571c74156bfc2e1e92533ee73d))
+* **pypi:** support macOS Objective-C sources ([49fe425](https://github.com/pythonscad/pythonscad/commit/49fe425c5da2075ba0018b74f07e9ce6feaf60ee))
+* **pypi:** tidy wheel release diagnostics ([92d3ce8](https://github.com/pythonscad/pythonscad/commit/92d3ce81c014d6be96940a982fca0d70aab04188))
+* **pypi:** treat Windows Boost regex as header-only ([5f822aa](https://github.com/pythonscad/pythonscad/commit/5f822aa2fce06571df41b165682ce0f5f5bc4a56))
+* **pypi:** validate Windows vcpkg baseline pin ([b7f7bd7](https://github.com/pythonscad/pythonscad/commit/b7f7bd715aa8700eac2db85cec0fb3ae9024f24c))
+* **python:** preserve compiler feature version in REPL ([b693d37](https://github.com/pythonscad/pythonscad/commit/b693d375ee4b3b5d8f52a190ea8186e9a1d0670f))
+* **python:** use default compiler flags for fallback REPL ([f62e3bb](https://github.com/pythonscad/pythonscad/commit/f62e3bbb893dc30a57b2129177e871553c6eb66d))
+* **windows:** declare isatty for MinGW lexer builds ([c728598](https://github.com/pythonscad/pythonscad/commit/c728598f05ef56418d318ff9d897fe4ba793f8c7))
+* **windows:** make sources build with MSVC wheels ([d6699ba](https://github.com/pythonscad/pythonscad/commit/d6699ba164a8e6891d41a79023238c0a3f618453))
+
+
+### Documentation
+
+* reflect auto CI cancellation and auto Copilot re-review ([5f46a0f](https://github.com/pythonscad/pythonscad/commit/5f46a0f322e844a1b6ea9533bb3dfcb19d8a6d42))
+
 ## [1.1.0](https://github.com/pythonscad/pythonscad/compare/v1.0.0...v1.1.0) (2026-07-11)
 
 
