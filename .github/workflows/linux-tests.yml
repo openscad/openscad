@@ -83,8 +83,6 @@ jobs:
         path: |
           b/Testing/Temporary/*_report.html
           b/Testing/Temporary/LastTest.log
-          b/tests/output/svgviewbox*/*png
-          tests/regression/svgviewbox*/*png
     - name: Upload Code Coverage Report
       uses: actions/upload-artifact@v7
       with:
