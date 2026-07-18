@@ -26,6 +26,9 @@ module ln(x, h, v=undef, twist=0, scale=1) {
                 children();
 }
 
+translate([2 * xo, -2 * yo, 0]) linear_extrude(10) s();
+translate([3 * xo, -2 * yo, 10]) linear_extrude(-10) s();
+
 lp(0, 10) s();
 ln(0, 10) s();
 

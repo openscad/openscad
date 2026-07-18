@@ -367,10 +367,11 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 {
   assert(poly.isSanitized());
   if (node.height[2] == 0) return PolySet::createEmpty();
+  const bool negative_z_direction = node.height[2] < 0;
 
   // Negate twist for negative height so the helix continues smoothly through z=0.
   // The twist always applies in the direction of extrusion.
-  double twist = node.height[2] < 0 ? -node.twist : node.twist;
+  double twist = negative_z_direction ? -node.twist : node.twist;
 
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
   boost::tribool isConvex{poly.is_convex()};
@@ -416,12 +417,23 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   // Without Manifold, however, we don't have such a tessellator available, so we'll have to build
   // the polyset from vertices using PolySetBuilder
 
+  std::unique_ptr<PolySet> result;
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return assemblePolySetForManifold(polyref, std::move(vertices), std::move(indices), node.convexity,
-                                      isConvex, slice_stride * num_slices);
+    result = assemblePolySetForManifold(polyref, std::move(vertices), std::move(indices), node.convexity,
+                                        isConvex, slice_stride * num_slices);
   } else
 #endif
-    return assemblePolySetForCGAL(polyref, vertices, indices, node.convexity, isConvex, node.scale_x,
-                                  node.scale_y, h1, h2, twist);
+    result = assemblePolySetForCGAL(polyref, vertices, indices, node.convexity, isConvex, node.scale_x,
+                                    node.scale_y, h1, h2, twist);
+
+  // When extruding in the negative direction, all face normals point inward.
+  // Reverse winding of every triangle to restore outward-facing normals.
+  if (negative_z_direction) {
+    for (auto& tri : result->indices) {
+      std::reverse(tri.begin(), tri.end());
+    }
+  }
+
+  return result;
 }
