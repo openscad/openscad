@@ -730,7 +730,7 @@
   </action>
   <action name="fileActionNewWindow">
    <property name="text">
-    <string>New Window</string>
+    <string>New &amp;Window</string>
    </property>
   </action>
   <action name="fileActionOpen">
@@ -746,7 +746,7 @@
   </action>
   <action name="fileActionOpenWindow">
    <property name="text">
-    <string>Open in New Window</string>
+    <string>Open in New Windo&amp;w</string>
    </property>
   </action>
   <action name="fileActionSave">
@@ -770,12 +770,12 @@
   </action>
   <action name="fileActionSaveACopy">
    <property name="text">
-    <string>Save a Copy...</string>
+    <string>Save a C&amp;opy...</string>
    </property>
   </action>
   <action name="fileActionSaveAll">
    <property name="text">
-    <string>Save All</string>
+    <string>S&amp;ave All</string>
    </property>
   </action>
   <action name="fileActionReload">
@@ -898,7 +898,7 @@
   </action>
   <action name="editActionNextTab">
    <property name="text">
-    <string>Show Next Tab</string>
+    <string>Show &amp;Next Tab</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Tab</string>
@@ -906,7 +906,7 @@
   </action>
   <action name="editActionPrevTab">
    <property name="text">
-    <string>Show Previous Tab</string>
+    <string>Show P&amp;revious Tab</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Tab</string>
@@ -1110,7 +1110,7 @@
     <iconset theme="chokusen-surface"/>
    </property>
    <property name="text">
-    <string>Preview</string>
+    <string>P&amp;review</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -1124,7 +1124,7 @@
     <iconset theme="chokusen-throwntogether"/>
    </property>
    <property name="text">
-    <string>Thrown Together</string>
+    <string>T&amp;hrown Together</string>
    </property>
    <property name="shortcut">
     <string>F12</string>
@@ -1138,7 +1138,7 @@
     <iconset theme="chokusen-show-edges"/>
    </property>
    <property name="text">
-    <string>Show Edges</string>
+    <string>&amp;Show Edges</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+1</string>
@@ -1152,7 +1152,7 @@
     <iconset theme="chokusen-axes"/>
    </property>
    <property name="text">
-    <string>Show Axes</string>
+    <string>Show A&amp;xes</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+2</string>
@@ -1166,7 +1166,7 @@
     <iconset theme="chokusen-crosshairs"/>
    </property>
    <property name="text">
-    <string>Show Crosshairs</string>
+    <string>Show &amp;Crosshairs</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+3</string>
@@ -1180,7 +1180,7 @@
     <iconset theme="chokusen-scalemarkers"/>
    </property>
    <property name="text">
-    <string>Show Scale Markers</string>
+    <string>Show Scale &amp;Markers</string>
    </property>
   </action>
   <action name="viewActionTop">
@@ -1392,7 +1392,7 @@
   </action>
   <action name="editActionJumpToNextError">
    <property name="text">
-    <string>Jump to next error</string>
+    <string>J&amp;ump to next error</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+E</string>
@@ -1447,7 +1447,7 @@
     <iconset theme="chokusen-reset-view"/>
    </property>
    <property name="text">
-    <string>Reset View</string>
+    <string>Reset &amp;View</string>
    </property>
   </action>
   <action name="fileActionExportSVG">
@@ -1479,7 +1479,7 @@
     <iconset theme="chokusen-zoom-in"/>
    </property>
    <property name="text">
-    <string>Zoom In</string>
+    <string>Zoom &amp;In</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+]</string>
@@ -1490,7 +1490,7 @@
     <iconset theme="chokusen-zoom-out"/>
    </property>
    <property name="text">
-    <string>Zoom Out</string>
+    <string>&amp;Zoom Out</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+[</string>
@@ -1501,7 +1501,7 @@
     <iconset theme="chokusen-zoom-all"/>
    </property>
    <property name="text">
-    <string>View All</string>
+    <string>View &amp;All</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+V</string>
@@ -1514,7 +1514,7 @@
   </action>
   <action name="editActionToggleBookmark">
    <property name="text">
-    <string>Toggle Bookmark</string>
+    <string>&amp;Toggle Bookmark</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F2</string>
@@ -1522,7 +1522,7 @@
   </action>
   <action name="editActionNextBookmark">
    <property name="text">
-    <string>Jump to next bookmark</string>
+    <string>Jump to next &amp;bookmark</string>
    </property>
    <property name="shortcut">
     <string>F2</string>
@@ -1530,7 +1530,7 @@
   </action>
   <action name="editActionPrevBookmark">
    <property name="text">
-    <string>Jump to previous bookmark</string>
+    <string>Jump to &amp;previous bookmark</string>
    </property>
    <property name="shortcut">
     <string>Shift+F2</string>
@@ -1541,7 +1541,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide Editor toolbar</string>
+    <string>&amp;Hide Editor toolbar</string>
    </property>
   </action>
   <action name="editActionUnindent">
@@ -1573,7 +1573,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide 3D View toolbar</string>
+    <string>Hide &amp;3D View toolbar</string>
    </property>
   </action>
   <action name="windowActionNextWindow">
@@ -1601,7 +1601,7 @@
   </action>
   <action name="windowActionJumpTo">
    <property name="text">
-    <string>Jump To</string>
+    <string>&amp;Jump To</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+J</string>
