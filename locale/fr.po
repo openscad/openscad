@@ -3403,8 +3403,6 @@ msgid ""
 "\n"
 "%2"
 msgstr ""
-"Les fichiers Python peuvent potentiellement contenir du code dangereux.\n"
-"Faites-vous confiance à ce fichier ?\n"
 
 #: src/gui/MainWindow.cc:1613
 msgid "Try Again"
