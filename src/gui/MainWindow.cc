@@ -4862,11 +4862,11 @@ void MainWindow::setupDocks()
     {editorDock, _("&Editor")},
     {consoleDock, _("&Console")},
     {parameterDock, _("C&ustomizer")},
-    {errorLogDock, _("Error-&Log")},
+    {errorLogDock, _("Error &Log")},
     {animateDock, _("&Animate")},
     {fontListDock, _("&Font List")},
     {colorListDock, _("C&olor List")},
-    {viewportControlDock, _("&Viewport-Control")},
+    {viewportControlDock, _("&Viewport Control")},
     {aiDock,_("&AI Chat")}
   };
   // clang-format off
