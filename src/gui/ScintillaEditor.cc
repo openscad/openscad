@@ -1640,3 +1640,13 @@ void ScintillaEditor::correctUserVarNamesForCompletionFromInputText(
   api->correctUserVarNamesForCompletionFromInputText(
     flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules, flagAutoCompleteIncludeFunctions);
 }
+
+void ScintillaEditor::moveLineUp()
+{
+  qsci->SendScintilla(QsciScintilla::SCI_MOVESELECTEDLINESUP);
+}
+
+void ScintillaEditor::moveLineDown()
+{
+  qsci->SendScintilla(QsciScintilla::SCI_MOVESELECTEDLINESDOWN);
+}
