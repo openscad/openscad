@@ -24,6 +24,8 @@ private:
   int thinkingStep = 0;
 };
 
+class CollapsibleBubble;
+
 class ChatWidget : public QWidget, public Ui::ChatWidget
 {
   Q_OBJECT
@@ -31,6 +33,11 @@ class ChatWidget : public QWidget, public Ui::ChatWidget
 public:
   ChatWidget(QWidget *parent = nullptr);
   virtual ~ChatWidget();
+
+  void proposeCodeChange(const std::string& code);
+  bool hasPendingCodeChanges() const;
+  void logToolExecution(const std::string& name, const std::string& result);
+  void startNewResponseTurn();
 
 private slots:
   void onSendPressed();
@@ -44,4 +51,13 @@ private:
   std::shared_ptr<AIService> aiService;
   std::vector<ChatMessage> history;
   std::shared_ptr<bool> aliveState;
+
+  MessageBubble *activeAIBubble = nullptr;
+  std::shared_ptr<std::string> activeResponseText;
+  bool isRequestRunning = false;
+
+  std::string proposedCode;
+  std::string originalCode;
+  QWidget *diffBannerWidget = nullptr;
+  CollapsibleBubble *activeToolBubble = nullptr;
 };

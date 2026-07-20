@@ -36,6 +36,9 @@ public:
   void asyncPostStream(const std::string& url, const Headers& headers, const std::string& body,
                        ChunkCallback on_chunk, ErrorCallback on_error, CompleteCallback on_complete);
 
+  // Cancel all active HTTP/HTTPS connections immediately
+  void cancelPendingRequests();
+
 private:
   class Impl;
   std::unique_ptr<Impl> impl;

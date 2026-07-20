@@ -135,10 +135,8 @@ tests/data/python/gen_svg_viewbox_tests.py
 tests/data/scad/2D/features/import_dxf-tests.scad
 tests/data/scad/3D/features/import_stl-tests.scad
 tests/data/scad/3D/features/import_3mf-tests.scad
-tests/data/scad/issues/issue2342.scad
 tests/data/scad/misc/include-tests.scad
 tests/data/scad/misc/use-tests.scad
-tests/data/svg/viewbox/viewbox_*.svg
 tests/regression/pdfexporttest/centered.pdf
 tests/regression/pdfexporttest/simple-pdf.pdf
 tests/regression/export-pdf-fill/centered.pdf

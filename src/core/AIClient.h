@@ -8,9 +8,18 @@
 #include <memory>
 #include "json/json.hpp"
 
+struct AIToolCall {
+  std::string id;
+  std::string type;
+  std::string name;
+  std::string arguments;
+};
+
 struct AIChatMessage {
   std::string role;
   std::string content;
+  std::string tool_call_id;
+  std::vector<AIToolCall> tool_calls;
 };
 
 struct AIProfileConfig {
@@ -26,9 +35,10 @@ class AIClient
 {
 public:
   using ChunkCallback = std::function<void(const std::string& chunk)>;
-  using ResponseCallback = std::function<void(const std::string& response)>;
+  using ResponseCallback =
+    std::function<void(const std::string& response, const std::vector<AIToolCall>& tool_calls)>;
   using ErrorCallback = std::function<void(const std::string& error_msg)>;
-  using CompleteCallback = std::function<void()>;
+  using CompleteCallback = std::function<void(const std::vector<AIToolCall>& tool_calls)>;
 
   AIClient(std::shared_ptr<HTTPClient> httpClient);
   ~AIClient();
@@ -47,6 +57,9 @@ public:
   void sendChatCompletionStream(const AIProfileConfig& config, const std::vector<AIChatMessage>& history,
                                 ChunkCallback on_chunk, ErrorCallback on_error,
                                 CompleteCallback on_complete);
+
+  // Cancel all pending HTTP requests
+  void cancelPendingRequests();
 
 private:
   class Impl;
