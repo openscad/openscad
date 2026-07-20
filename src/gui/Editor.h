@@ -92,6 +92,8 @@ public slots:
   virtual void nextBookmark() = 0;
   virtual void prevBookmark() = 0;
   virtual void jumpToNextError() = 0;
+  virtual void moveLineUp() = 0;
+  virtual void moveLineDown() = 0;
 
 private:
   QSize initialSizeHint;

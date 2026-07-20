@@ -132,6 +132,8 @@ public slots:
   void applySettings();
   void onAutocompleteChanged(bool state);
   void onCharacterThresholdChanged(int val);
+  void moveLineUp() override;
+  void moveLineDown() override;
 
 private slots:
   void onTextChanged();
