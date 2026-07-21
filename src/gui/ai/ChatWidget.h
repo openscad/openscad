@@ -8,6 +8,7 @@
 #include "ui_ChatWidget.h"
 
 class QLabel;
+class QMenu;
 class QTimer;
 
 class MessageBubble : public QWidget
@@ -42,9 +43,13 @@ public:
 private slots:
   void onSendPressed();
   void onClearPressed();
+  void exportChat();
+  void importChat();
+  void copyAsMarkdown();
 
 private:
   MessageBubble *addMessage(const QString& text, bool isUser);
+  void rebuildChatUI();
   bool isDarkTheme() const;
   void enableInput(bool enabled);
   std::string executeTool(const std::string& name, const std::string& arguments_json);
