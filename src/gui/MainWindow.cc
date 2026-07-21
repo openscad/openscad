@@ -726,8 +726,10 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
-  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-  OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::hardwarnings =
+    GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth =
+    GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
   OpenSCAD::traceUsermoduleParameters =
     GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
   OpenSCAD::parameterCheck =
@@ -744,73 +746,83 @@ void MainWindow::compile(bool reload, bool forcedone)
 
     this->renderStatistic.start();
 
-    // Reload checks the timestamp of the toplevel file and refreshes if necessary,
     if (reload) {
-      // Refresh files if it has changed on disk
       if (fileChangedOnDisk() && checkEditorModified()) {
-        shouldcompiletoplevel =
-          tabManager->refreshDocument();  // don't compile if we couldn't open the file
+        shouldcompiletoplevel = tabManager->refreshDocument();
+
         if (shouldcompiletoplevel &&
             GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
-          // reloading the 'same' document brings the 'old' one to front.
           this->raise();
         }
       }
-      // If the file has some content and there is no currently compiled content,
-      // then we force the top level compilation.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() && lastCompiledDoc.size() == 0) {
+
+        if (current_doc.size() &&
+            lastCompiledDoc.size() == 0 &&
+            fileChangedOnDisk()) {
           shouldcompiletoplevel = true;
         }
       }
-    } else {
+    }
+    else {
       shouldcompiletoplevel = true;
     }
 
     if (this->parsedFile) {
       auto mtime = this->parsedFile->includesChanged();
+
       if (mtime > this->includesMTime) {
         this->includesMTime = mtime;
         shouldcompiletoplevel = true;
       }
     }
 
-    // Parsing and dependency handling must run to completion even with stop on errors to prevent auto
-    // reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
     no_exceptions_for_warnings();
+
     if (shouldcompiletoplevel) {
       initialize_rng();
+
       this->errorLogWidget->clearModel();
+
       if (GlobalPreferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->clear();
       }
-      if (activeEditor->isContentModified()) saveBackup();
+
+      if (activeEditor->isContentModified())
+        saveBackup();
+
       parseTopLevelDocument();
       didcompile = true;
     }
 
     if (didcompile && parser_error_pos != lastParserErrorPos) {
-      if (lastParserErrorPos >= 0) emit unhighlightLastError();
-      if (parser_error_pos >= 0) emit highlightError(parser_error_pos);
+      if (lastParserErrorPos >= 0)
+        emit unhighlightLastError();
+
+      if (parser_error_pos >= 0)
+        emit highlightError(parser_error_pos);
+
       lastParserErrorPos = parser_error_pos;
     }
 
     if (this->rootFile) {
       auto mtime = this->rootFile->handleDependencies();
+
       if (mtime > this->depsMTime) {
         this->depsMTime = mtime;
-        LOG("Used file cache size: %1$d files", SourceFileCache::instance()->size());
+        LOG("Used file cache size: %1$d files",
+            SourceFileCache::instance()->size());
         didcompile = true;
       }
     }
 
-    // Had any errors in the parse that would have caused exceptions via PRINT.
-    if (would_have_thrown()) throw HardWarningException("");
-    // If we're auto-reloading, listen for a cascade of changes by starting a timer
-    // if something changed _and_ there are any external dependencies
+    if (would_have_thrown())
+      throw HardWarningException("");
+
     if (reload && didcompile && this->rootFile) {
-      if (this->rootFile->hasIncludes() || this->rootFile->usesLibraries()) {
+      if (this->rootFile->hasIncludes() ||
+          this->rootFile->usesLibraries()) {
         this->waitAfterReloadTimer->start();
         this->procevents = false;
         return;
@@ -818,11 +830,14 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     compileDone(didcompile | forcedone);
-  } catch (const HardWarningException&) {
+  }
+  catch (const HardWarningException&) {
     exceptionCleanup();
-  } catch (const std::exception& ex) {
+  }
+  catch (const std::exception& ex) {
     UnknownExceptionCleanup(ex.what());
-  } catch (...) {
+  }
+  catch (...) {
     UnknownExceptionCleanup();
   }
 }
@@ -833,7 +848,7 @@ void MainWindow::waitAfterReload()
   auto mtime = this->rootFile->handleDependencies();
   auto stop = would_have_thrown();
   if (mtime > this->depsMTime) this->depsMTime = mtime;
-  else if (!stop) {
+   else if (!stop) {
     compile(true, true);  // In case file itself or top-level includes changed during dependency updates
     return;
   }
@@ -1752,10 +1767,19 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   }
 #endif  // ifdef ENABLE_PYTHON
 
-  SourceFile *sourceFile;
-  sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
+SourceFile *parsedSource = nullptr;
 
-  editor->resetHighlighting();
+bool ok = parse(parsedSource, fulltext, fname, fname, false);
+
+if (ok) {
+    this->parsedFile.reset(parsedSource);
+} else {
+    this->parsedFile.reset();
+}
+
+SourceFile *sourceFile = this->parsedFile.get();
+
+editor->resetHighlighting();
   if (sourceFile) {
     // add parameters as annotation in AST
     CommentParser::collectParameters(fulltext, sourceFile);
@@ -1767,7 +1791,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     editor->parameterWidget->setEnabled(false);
   }
 
-  return std::shared_ptr<SourceFile>(sourceFile);
+  return this->parsedFile;
 }
 
 void MainWindow::parseTopLevelDocument()
@@ -1775,14 +1799,15 @@ void MainWindow::parseTopLevelDocument()
   resetSuppressedMessages();
 
   this->lastCompiledDoc = activeEditor->toPlainText();
-
+  tabManager->refreshDocument();
   activeEditor->resetHighlighting();
   this->rootFile = parseDocument(activeEditor);
   this->parsedFile = this->rootFile;
 }
-
 void MainWindow::checkAutoReload()
 {
+  
+  
   if (!activeEditor->filepath.isEmpty()) {
     actionReloadRenderPreview();
   }
