@@ -116,13 +116,13 @@ time_t SourceFile::includesChanged() const
 
 time_t SourceFile::include_modified(const std::string& filename) const
 {
-  struct stat st;
+struct stat st;
 
   if (StatCache::stat(filename, st) == 0) {
-    return st.st_mtime;
-  }
+      return st.st_mtime;
+    }
 
-  return 0;
+return 0;
 }
 
 /*!
