@@ -244,6 +244,10 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     return node.slices;
   }
 
+  // Use absolute height for slice count calculations, since the number of slices
+  // depends on the extrusion distance, not direction.
+  const double abs_height = std::fabs(node.height[2]);
+
   if (node.has_twist) {
     double max_r1_sqr = 0;  // r1 is before scaling
     for (const auto& o : poly.outlines())
@@ -251,7 +255,7 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
       // Calculate Helical curve length for Twist with no Scaling
       num_slices = static_cast<unsigned int>(
-        node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+        node.discretizer.getHelixSlices(max_r1_sqr, abs_height, node.twist)
           .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1)));
     } else if (node.scale_x != node.scale_y) {
       // Non-uniform scaling with twist.
@@ -269,15 +273,15 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
       // but the second vertex starts and ends out further.
 
       size_t slicesNonUniScale = static_cast<unsigned int>(
-        node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1));
+        node.discretizer.getDiagonalSlices(max_delta_sqr, abs_height).value_or(1));
       size_t slicesTwist = static_cast<unsigned int>(
-        node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+        node.discretizer.getHelixSlices(max_r1_sqr, abs_height, node.twist)
           .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1)));
       num_slices = std::max(slicesNonUniScale, slicesTwist);
     } else {
       // uniform scaling with twist, use conical helix calculation
       num_slices = static_cast<unsigned int>(
-        node.discretizer.getConicalHelixSlices(max_r1_sqr, node.height[2], node.twist, node.scale_x)
+        node.discretizer.getConicalHelixSlices(max_r1_sqr, abs_height, node.twist, node.scale_x)
           .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1)));
     }
   } else if (node.scale_x != node.scale_y) {
@@ -298,7 +302,7 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     // }
 
     double max_delta_sqr = calc_max_delta_sqr(poly.outlines(), Vector2d(node.scale_x, node.scale_y));
-    num_slices = node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
+    num_slices = node.discretizer.getDiagonalSlices(max_delta_sqr, abs_height).value_or(1);
   } else {
     // uniform scaling w/o twist needs only one slice
     num_slices = 1;
@@ -362,7 +366,12 @@ using namespace LinearExtrudeInternals;
 std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   assert(poly.isSanitized());
-  if (node.height[2] <= 0) return PolySet::createEmpty();
+  if (node.height[2] == 0) return PolySet::createEmpty();
+  const bool negative_z_direction = node.height[2] < 0;
+
+  // Negate twist for negative height so the helix continues smoothly through z=0.
+  // The twist always applies in the direction of extrusion.
+  double twist = negative_z_direction ? -node.twist : node.twist;
 
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
   boost::tribool isConvex{poly.is_convex()};
@@ -382,7 +391,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
     // only segment if the user requests it or we're doing something funky.
     if (node.segments > 0 || non_linear) {
       for (const auto& o : poly.outlines()) {
-        seg_poly.addOutline(node.discretizer.splitOutline(o, node.twist, node.scale_x, node.scale_y,
+        seg_poly.addOutline(node.discretizer.splitOutline(o, twist, node.scale_x, node.scale_y,
                                                           num_slices, node.segments));
       }
     }
@@ -401,19 +410,30 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   int slice_stride = 0;
   std::vector<Vector3d> vertices;
   PolygonIndices indices;
-  prepareVerticesAndIndices(polyref, h1, h2, num_slices, node.scale_x, node.scale_y, node.twist,
-                            vertices, indices, slice_stride);
+  prepareVerticesAndIndices(polyref, h1, h2, num_slices, node.scale_x, node.scale_y, twist, vertices,
+                            indices, slice_stride);
 
   // For Manifold, we can tesselate the endcaps using existing vertices to build a manifold mesh.
   // Without Manifold, however, we don't have such a tessellator available, so we'll have to build
   // the polyset from vertices using PolySetBuilder
 
+  std::unique_ptr<PolySet> result;
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return assemblePolySetForManifold(polyref, std::move(vertices), std::move(indices), node.convexity,
-                                      isConvex, slice_stride * num_slices);
+    result = assemblePolySetForManifold(polyref, std::move(vertices), std::move(indices), node.convexity,
+                                        isConvex, slice_stride * num_slices);
   } else
 #endif
-    return assemblePolySetForCGAL(polyref, vertices, indices, node.convexity, isConvex, node.scale_x,
-                                  node.scale_y, h1, h2, node.twist);
+    result = assemblePolySetForCGAL(polyref, vertices, indices, node.convexity, isConvex, node.scale_x,
+                                    node.scale_y, h1, h2, twist);
+
+  // When extruding in the negative direction, all face normals point inward.
+  // Reverse winding of every triangle to restore outward-facing normals.
+  if (negative_z_direction) {
+    for (auto& tri : result->indices) {
+      std::reverse(tri.begin(), tri.end());
+    }
+  }
+
+  return result;
 }

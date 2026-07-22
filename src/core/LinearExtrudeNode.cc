@@ -87,8 +87,6 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
 
   if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
 
-  if (node->height[2] <= 0) node->height[2] = 0;
-
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
 
