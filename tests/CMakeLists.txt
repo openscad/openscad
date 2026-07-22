@@ -178,13 +178,19 @@ configure_file(${TEST_PYTHON_DIR}/gen_svg_viewbox_tests-template.py
 
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
+# Generated into the build dir (CCBD) so the source tree can stay read-only (#6700)
+file(MAKE_DIRECTORY ${CCBD}/data/scad/issues)
 add_custom_target(issue2342 ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${CCBD}/data/scad/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
+file(MAKE_DIRECTORY ${CCBD}/data/svg/viewbox)
+file(MAKE_DIRECTORY ${CCBD}/data/scad/svg/extruded)
+configure_file(${TEST_DATA_DIR}/svg/viewbox/viewbox-tests.svg.in ${CCBD}/data/svg/viewbox/viewbox-tests.svg.in COPYONLY)
+configure_file(${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad ${CCBD}/data/scad/svg/extruded/viewbox-test.scad COPYONLY)
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${CCBD}/data/svg/viewbox" "${CCBD}/data/scad/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -373,7 +379,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/issues/issue1923.scad
   ${TEST_SCAD_DIR}/misc/preview_variable.scad
   ${TEST_SCAD_DIR}/issues/issue1851-each-fail-on-scalar.scad
-  ${TEST_SCAD_DIR}/issues/issue2342.scad
+  ${CCBD}/data/scad/issues/issue2342.scad
   ${TEST_SCAD_DIR}/issues/issue3118-recur-limit.scad
   ${TEST_SCAD_DIR}/issues/issue3541.scad
   ${TEST_SCAD_DIR}/misc/function-scope.scad
@@ -864,9 +870,9 @@ endif()
 add_cmdline_test(throwntogether-cgal  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=cgal)
 add_cmdline_test(throwntogether-manifold  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=manifold)
 
-set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
+set(VIEWBOX_TEST "${CCBD}/data/scad/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
-  add_cmdline_test(svgviewbox-${TEST} OPENSCAD ARGS --imgsize 600,600 "-Dfile=\"${TEST_DATA_DIR}/svg/viewbox/${TEST}.svg\";" SUFFIX png FILES ${VIEWBOX_TEST})
+  add_cmdline_test(svgviewbox-${TEST} OPENSCAD ARGS --imgsize 600,600 "-Dfile=\"${CCBD}/data/svg/viewbox/${TEST}.svg\";" SUFFIX png FILES ${VIEWBOX_TEST})
 endforeach()
 
 add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
@@ -972,6 +978,7 @@ add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES 
 if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_LAZY_UNION_TEST_FILES} ARGS --enable=predictible-output --enable=lazy-union)
+add_cmdline_test(export-3mf-stdio        EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} STDIO ARGS --enable=predictible-output --export-format 3mf)
 endif()
 add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
 add_cmdline_test(export-pov-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140)
@@ -1487,6 +1494,11 @@ list(APPEND NEF3_BROKEN_TESTS
 
 # Platform specific test disable
 if(APPLE)
+  set_tests_properties(
+    # Fails to create a 3MF file to stdout, see #6895
+    export-3mf-stdio_3mf-export
+    PROPERTIES DISABLED TRUE
+  )
 elseif(UNIX)
 elseif(WIN32 OR MXECROSS)
   set_tests_properties(

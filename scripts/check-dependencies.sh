@@ -400,12 +400,12 @@ get_minversion_from_readme()
   debug get_minversion_from_readme $*
 
   # Extract dependency name
-  if [ ! $1 ]; then return; fi
+  if [ ! "$1" ]; then return; fi
   depname=$1
 
   debug $depname
   local grv_tmp=
-  for READFILE in README.md ../README.md "`dirname "$0"`/../README.md"
+  for READFILE in README.md ../README.md "$(dirname "$0")/../README.md"
   do
     if [ ! -e "$READFILE" ]
     then
@@ -413,16 +413,25 @@ get_minversion_from_readme()
       continue
     fi
     debug "get_minversion_from_readme $READFILE found"
-    grep -qi ".$depname.*([0-9]" $READFILE || continue
-    grv_tmp="`grep -i ".$depname.*([0-9]" $READFILE | sed s/"*"//`"
-    debug $grv_tmp
-    grv_tmp="`echo $grv_tmp | awk -F"(" '{print $2}'`"
-    debug $grv_tmp
-    grv_tmp="`echo $grv_tmp | awk -F"-" '{print $1}'`"
-    debug $grv_tmp
-    grv_tmp="`echo $grv_tmp | sed s/"x"/"0"/g`"
-    debug $grv_tmp
-    grv_tmp="`echo $grv_tmp | sed s/"[^0-9.]"//g`"
+    grv_tmp="$(awk -v depname="$depname" '
+      /^[[:space:]]*\*/ {
+        line = $0
+        dep = line
+        sub(/^[[:space:]]*\*+[[:space:]]*/, "", dep)
+        sub(/^\[/, "", dep)
+        sub(/\].*/, "", dep)
+        sub(/[[:space:]]*\(.*/, "", dep)
+
+        if (tolower(dep) == tolower(depname) && match(line, /\([[:space:]]*[0-9][^)]*\)/)) {
+          version = substr(line, RSTART + 1, RLENGTH - 2)
+          sub(/[[:space:]]*-.*/, "", version)
+          gsub(/[xX]/, "0", version)
+          gsub(/[^0-9.]/, "", version)
+          print version
+          exit
+        }
+      }
+    ' "$READFILE")"
     debug $grv_tmp
     if [ "z$grv_tmp" = "z" ]
     then
@@ -440,19 +449,63 @@ get_minversion_from_readme()
   fi
 }
 
+get_minversion_from_cmake()
+{
+  debug get_minversion_from_cmake
+
+  local gmvc_tmp=
+  for CMAKEFILE in CMakeLists.txt ../CMakeLists.txt "$(dirname "$0")/../CMakeLists.txt"
+  do
+    if [ ! -e "$CMAKEFILE" ]
+    then
+      debug "get_minversion_from_cmake $CMAKEFILE not found"
+      continue
+    fi
+    debug "get_minversion_from_cmake $CMAKEFILE found"
+    gmvc_tmp="$(awk '
+      /^[[:space:]]*cmake_minimum_required[[:space:]]*\(/ {
+        line = tolower($0)
+        if (match(line, /version[[:space:]]+[0-9][0-9.]*/)) {
+          version = substr(line, RSTART, RLENGTH)
+          sub(/^version[[:space:]]+/, "", version)
+          print version
+          exit
+        }
+      }
+    ' "$CMAKEFILE")"
+    debug "$gmvc_tmp"
+    if [ "z$gmvc_tmp" = "z" ]
+    then
+      debug "get_minversion_from_cmake no result from $CMAKEFILE"
+      continue
+    fi
+    get_minversion_from_cmake_result=$gmvc_tmp
+    return 0
+  done
+
+  debug "get_minversion_from_cmake no result found anywhere"
+  get_minversion_from_cmake_result=""
+  return 0
+}
+
 find_min_version()
 {
   find_min_version_result=
   fmvtmp=
-  if [ ! $1 ] ; then return; fi
+  if [ ! "$1" ] ; then return; fi
   fmvdep=$1
   get_minversion_from_readme $fmvdep
   fmvtmp=$get_minversion_from_readme_result
 
+  if [ "$fmvdep" = "cmake" ]; then
+    get_minversion_from_cmake
+    fmvtmp=$get_minversion_from_cmake_result
+  fi
+
   # items not included in README.md
   if [ $fmvdep = "git" ]; then fmvtmp=1.5 ; fi
   if [ $fmvdep = "curl" ]; then fmvtmp=6 ; fi
-  if [ $fmvdep = "make" ]; then fmvtmp=3 ; fi
+  if [ "$fmvdep" = "make" ]; then fmvtmp=3 ; fi
   if [ $fmvdep = "python" ]; then fmvtmp=2 ; fi
 
   find_min_version_result=$fmvtmp
