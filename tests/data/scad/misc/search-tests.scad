@@ -89,5 +89,10 @@ echo(search("a", lTableW5, num_returns_per_match=0));
 lTableW6=[ ["a",1],-1/0];
 echo(search("a", lTableW6, num_returns_per_match=0)); 
 
+// Mismatches are silently not-equal
+mixedTable=[ ["a", 1], [2, 2], ["b", 3] ];
+echo(search("b", mixedTable));
+echo(search(2, mixedTable));
+
 // for completeness
 cube(1.0);
