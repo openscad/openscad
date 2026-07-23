@@ -92,6 +92,42 @@ const Value& Parameters::get(const std::initializer_list<std::string> names) con
   return matchValue ? *matchValue : Value::undefined;
 }
 
+boost::optional<const std::string&> Parameters::exactlyOneOf(
+  const std::initializer_list<std::string> names) const
+{
+  boost::optional<const std::string&> matchName;
+
+  for (const std::string& name : names) {
+    boost::optional<const Value&> value = lookup(name);
+    if (value && value->isDefined()) {
+      if (!matchName) {
+        matchName = name;
+      } else {
+        LOG(message_group::Warning, loc, documentRoot(), "%1$s(): specified both %2$s and %3$s", caller,
+            quoteVar(*matchName), quoteVar(name));
+        return boost::none;
+      }
+    }
+  }
+
+  if (!matchName) {
+    std::stringstream str;
+    auto it = names.begin();
+    if (names.size() == 2) {
+      str << quoteVar(*it++);
+      str << " or " << quoteVar(*it);
+    } else {
+      for (int i = 0; i < names.size() - 1; i++) {
+        str << quoteVar(*it++) << ", ";
+      }
+      str << "or " << quoteVar(*it);
+    }
+    LOG(message_group::Warning, loc, documentRoot(), "%1$s(): expected one of %2$s", caller, str.str());
+    return boost::none;
+  }
+  return matchName;
+}
+
 double Parameters::get(const std::string& name, double default_value) const
 {
   boost::optional<const Value&> value = lookup(name);
