@@ -44,6 +44,9 @@ public:
   // Cancel any active AI completion requests
   void cancelPendingRequests();
 
+  // Get the configured character/payload size limit
+  int getPayloadLimit() const;
+
   using ToolExecutor =
     std::function<std::string(const std::string& name, const std::string& arguments_json)>;
   void registerToolExecutor(ToolExecutor executor);

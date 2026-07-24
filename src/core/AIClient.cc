@@ -297,7 +297,9 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools" ||
+          key == "system_prompt" || key == "default_prompt" || key == "context_limit" ||
+          key == "payload_limit") {
         continue;
       }
       payload[key] = el.value();
@@ -432,7 +434,9 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools" ||
+          key == "system_prompt" || key == "default_prompt" || key == "context_limit" ||
+          key == "payload_limit") {
         continue;
       }
       payload[key] = el.value();

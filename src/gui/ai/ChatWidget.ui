@@ -70,6 +70,25 @@
        </spacer>
       </item>
       <item>
+       <widget class="QToolButton" name="menuButton">
+        <property name="maximumSize">
+         <size>
+          <width>28</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Chat options</string>
+        </property>
+        <property name="text">
+         <string>&#x2630;</string>
+        </property>
+        <property name="popupMode">
+         <enum>QToolButton::InstantPopup</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="clearButton">
         <property name="maximumSize">
          <size>
