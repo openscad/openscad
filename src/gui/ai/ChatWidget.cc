@@ -267,6 +267,14 @@ void ChatWidget::onSendPressed()
     return;
   }
 
+  if (prompt.length() > 100000) {
+    addMessage(prompt, true);
+    addMessage(
+      tr("Error: Prompt size exceeds the limit of 100,000 characters. Please shorten your prompt."),
+      false);
+    return;
+  }
+
   inputField->clear();
   addMessage(prompt, true);
 
@@ -298,6 +306,29 @@ void ChatWidget::onSendPressed()
       QMetaObject::invokeMethod(qApp, [this, alive, error_msg]() {
         if (!*alive || !isRequestRunning) return;
         std::string display_err = "Error: " + error_msg;
+        if (error_msg.find("Connection refused") != std::string::npos) {
+          display_err +=
+            "\n\n*Troubleshooting Tip: Connection refused. Please check if your local model server "
+            "(such as Ollama or LM Studio) is running and listening on the configured port.*";
+        } else if (error_msg.find("Host not found") != std::string::npos ||
+                   error_msg.find("unreachable") != std::string::npos) {
+          display_err +=
+            "\n\n*Troubleshooting Tip: Host unreachable. Please check your internet connection and "
+            "verify that the API endpoint URL in Preferences is correct.*";
+        } else if (error_msg.find("timed out") != std::string::npos ||
+                   error_msg.find("Timeout") != std::string::npos) {
+          display_err +=
+            "\n\n*Troubleshooting Tip: The request timed out. The server might be busy or offline. "
+            "Please try again.*";
+        } else if (error_msg.find("HTTP status 401") != std::string::npos) {
+          display_err +=
+            "\n\n*Troubleshooting Tip: Unauthorized. Please check if your API Key is entered correctly "
+            "in Preferences -> AI tab.*";
+        } else if (error_msg.find("HTTP status 404") != std::string::npos) {
+          display_err +=
+            "\n\n*Troubleshooting Tip: Not Found. Please check if the endpoint URL and model name are "
+            "configured correctly in Preferences.*";
+        }
         if (activeResponseText && activeResponseText->empty()) {
           activeAIBubble->updateText(QString::fromStdString(display_err));
         } else {
@@ -463,10 +494,18 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
   }
 
   std::string result_val;
+  int limit = aiService ? aiService->getPayloadLimit() : 50000;
 
   if (name == "get_editor_code") {
     if (mw && mw->activeEditor) {
-      result_val = mw->activeEditor->toPlainText().toStdString();
+      std::string code = mw->activeEditor->toPlainText().toStdString();
+      if (static_cast<int>(code.size()) > limit) {
+        result_val = "Error: The active editor script is too large (" + std::to_string(code.size()) +
+                     " bytes). The maximum allowed size for AI analysis is " + std::to_string(limit) +
+                     " bytes. Please reduce the script size.";
+      } else {
+        result_val = code;
+      }
     } else {
       result_val = "Error: No active editor found.";
     }
@@ -476,10 +515,16 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
       return "Error: Missing required argument 'code'.";
     }
     std::string code = args["code"].get<std::string>();
-    this->proposeCodeChange(code);
-    result_val =
-      "Success: Code change proposed to the user for review. The user will review and choose whether to "
-      "apply it.";
+    if (static_cast<int>(code.size()) > limit) {
+      result_val = "Error: Proposed code change is too large (" + std::to_string(code.size()) +
+                   " bytes). The maximum allowed size is " + std::to_string(limit) + " bytes.";
+    } else {
+      this->proposeCodeChange(code);
+      result_val =
+        "Success: Code change proposed to the user for review. The user will review and choose whether "
+        "to "
+        "apply it.";
+    }
   } else if (name == "trigger_preview") {
     if (this->hasPendingCodeChanges()) {
       result_val = "Info: Preview postponed because code changes are pending user review.";

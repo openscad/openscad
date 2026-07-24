@@ -58,6 +58,15 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   auto& profile = profiles[active_profile_name];
 
   config.endpoint = profile.value("endpoint", "");
+  if (config.endpoint.empty()) {
+    error_msg = "API endpoint is empty. Please configure a valid API URL in Preferences -> AI tab.";
+    return false;
+  }
+  if (config.endpoint.rfind("http://", 0) != 0 && config.endpoint.rfind("https://", 0) != 0) {
+    error_msg =
+      "Invalid API endpoint: '" + config.endpoint + "'. Must start with 'http://' or 'https://'";
+    return false;
+  }
   config.apiKey = profile.value("apiKey", "");
 
   if (profile.contains("params") && profile["params"].is_object()) {
@@ -406,6 +415,19 @@ void AIService::cancelPendingRequests()
   impl->ai_client->cancelPendingRequests();
 }
 
+int AIService::getPayloadLimit() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("payload_limit") &&
+        config.parameters["payload_limit"].is_number_integer()) {
+      return config.parameters["payload_limit"].get<int>();
+    }
+  }
+  return 50000;
+}
+
 #else  // __EMSCRIPTEN__
 
 class AIService::Impl
@@ -442,6 +464,11 @@ std::string AIService::getDefaultPrompt() const
 
 void AIService::cancelPendingRequests()
 {
+}
+
+int AIService::getPayloadLimit() const
+{
+  return 50000;
 }
 
 #endif  // __EMSCRIPTEN__
