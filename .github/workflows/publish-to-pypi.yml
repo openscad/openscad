@@ -160,7 +160,7 @@ jobs:
           key: ${{ steps.windows-vcpkg-cache.outputs.cache-primary-key }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
         env:
           CIBW_BEFORE_ALL_WINDOWS: python -c "print('Windows wheel dependencies already installed by workflow')"
 
