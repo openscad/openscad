@@ -1596,7 +1596,7 @@
   </action>
   <action name="editActionFoldAll">
    <property name="text">
-    <string>Fold/Unfoll All</string>
+    <string>Fold/Unfold All</string>
    </property>
   </action>
   <action name="windowActionJumpTo">
