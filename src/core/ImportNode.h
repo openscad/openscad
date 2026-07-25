@@ -8,6 +8,7 @@
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
 #include "core/node.h"
+#include "geometry/linalg.h"
 
 enum class ImportType {
   UNKNOWN,
@@ -48,5 +49,8 @@ public:
   double origin_x, origin_y, scale;
   double width, height;
   bool stroke = false;
+  // SVG only: when set, restricts import to shapes resolving to this exact color.
+  // Used by osimport(..., split_by_color=True) to build one node per SVG color.
+  boost::optional<Color4f> colorFilter;
   std::unique_ptr<const class Geometry> createGeometry() const override;
 };

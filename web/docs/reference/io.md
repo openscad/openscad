@@ -9,9 +9,9 @@ Import geometry from a file. This is the PythonSCAD equivalent of OpenSCAD's `im
 === "Python"
 
     ```python
-    osimport(file, layer="", convexity=2, origin=None, scale=None,
-             width=0, height=0, center=False, dpi=96, id="", stroke=False,
-             fn=0, fa=0, fs=0)
+    osimport(file, layer=None, convexity=2, origin=None, scale=1,
+             width=1, height=1, center=False, dpi=72, id=None, stroke=False,
+             fn=None, fa=None, fs=None, split_by_color=False)
     ```
 
 **Parameters:**
@@ -19,17 +19,18 @@ Import geometry from a file. This is the PythonSCAD equivalent of OpenSCAD's `im
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `file` | string | — | Path to the file to import |
-| `layer` | string | `""` | Layer name (for DXF files) |
+| `layer` | string | `None` | Layer name (for DXF files) |
 | `convexity` | int | `2` | Convexity hint |
 | `origin` | `[x, y]` | `None` | Origin offset (for DXF) |
-| `scale` | float | `None` | Scale factor (for DXF) |
-| `width` | float | `0` | Width (for image-based imports) |
-| `height` | float | `0` | Height (for image-based imports) |
+| `scale` | float | `1` | Scale factor (for DXF) |
+| `width` | float | `1` | Width (for image-based imports) |
+| `height` | float | `1` | Height (for image-based imports) |
 | `center` | bool | `False` | Center the imported geometry |
-| `dpi` | float | `96` | DPI for SVG imports |
-| `id` | string | `""` | Element ID (for SVG) |
+| `dpi` | float | `72` | DPI for SVG imports |
+| `id` | string | `None` | Element ID (for SVG) |
 | `stroke` | bool | `False` | Include stroke paths (for SVG) |
 | `fn`, `fa`, `fs` | float | global | Curve discretization; defaults to the global `fn`/`fa`/`fs` values |
+| `split_by_color` | bool | `False` | SVG only: return `{hex_color: 2D object}` instead of one merged object; raises `ValueError` for non-SVG input or when no colors match the SVG selection. |
 
 **Supported formats:** STL, OFF, AMF, 3MF (3D); DXF, SVG (2D)
 
@@ -45,6 +46,25 @@ Import geometry from a file. This is the PythonSCAD equivalent of OpenSCAD's `im
 
     drawing = osimport("design.svg", dpi=96)
     drawing.linear_extrude(height=2).show()
+    ```
+
+**Multi-color SVG to multi-object 3MF (e.g. for multi-toolhead printing):**
+
+`split_by_color=True` returns one 2D object per SVG color, keyed by hex color
+string. Extrude each separately and pass the resulting dict to `export()` to
+produce a 3MF file with one separately named/colored object per SVG color —
+ready to assign to different tool heads in a slicer:
+
+=== "Python"
+
+    ```python
+    from pythonscad import *
+
+    parts = osimport("watermelon.svg", split_by_color=True)
+    # {"#4a7d2eff": <2D object>, "#c0392bff": <2D object>, ...}
+
+    solids = {name: obj.linear_extrude(2) for name, obj in parts.items()}
+    export(solids, "watermelon.3mf")
     ```
 
 **OpenSCAD reference:** [import](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Importing_Geometry#import)

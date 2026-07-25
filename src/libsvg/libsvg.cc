@@ -299,8 +299,14 @@ void dump(int idx, shape *s)
 
 shapes_list_t *libsvg_read_file(const char *filename, void *context)
 {
-  shape_list = new shapes_list_t();
-  streamFile(filename, context);
+  auto shapes = std::make_unique<shapes_list_t>();
+  shape_list = shapes.get();
+  try {
+    streamFile(filename, context);
+  } catch (...) {
+    shape_list = nullptr;
+    throw;
+  }
 
   // #ifdef DEBUG
   //	if (!shape_list->empty()) {
@@ -308,7 +314,8 @@ shapes_list_t *libsvg_read_file(const char *filename, void *context)
   //	}
   // #endif
 
-  return shape_list;
+  shape_list = nullptr;
+  return shapes.release();
 }
 
 void libsvg_free(shapes_list_t *shapes)

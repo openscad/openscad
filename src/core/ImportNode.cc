@@ -235,7 +235,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 #ifndef ENABLE_PIP
   case ImportType::SVG: {
     g = import_svg(this->discretizer, this->filename, this->id, this->layer, this->dpi, this->center,
-                   loc, this->stroke);
+                   loc, this->stroke, this->colorFilter);
     break;
   }
 #endif
@@ -300,7 +300,11 @@ std::string ImportNode::toString() const
   }
   stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
-    stream << ", dpi = " << this->dpi;
+    stream << ", dpi = " << this->dpi << ", stroke = " << (this->stroke ? "true" : "false");
+    if (this->colorFilter) {
+      stream << ", colorFilter = [" << this->colorFilter->r() << ", " << this->colorFilter->g() << ", "
+             << this->colorFilter->b() << ", " << this->colorFilter->a() << "]";
+    }
   }
   stream << ", scale = " << this->scale << ", center = " << (this->center ? "true" : "false")
          << ", convexity = " << this->convexity << ", " << this->discretizer

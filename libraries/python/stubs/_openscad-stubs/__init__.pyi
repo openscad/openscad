@@ -1,6 +1,6 @@
 """ PythonSCAD Stub File for use in editors like Visual Studio Code """
 from enum import Enum
-from typing import List, Mapping, Optional, Self, Sequence, Union, overload
+from typing import List, Literal, Mapping, Optional, Self, Sequence, Union, overload
 
 PyOpenSCADs = Union["PyOpenSCAD", list["PyOpenSCAD"]]
 """Type for functions that accept either a single OpenSCAD object or a list of objects."""
@@ -1371,27 +1371,84 @@ def machineconfig(
     """
     ...
 
+@overload
 def osimport(
     file: str,
-    layer: str,
+    layer: Optional[str] = None,
+    convexity: int = 2,
+    origin: Optional[List[float]] = None,
+    scale: float = 1,
+    width: float = 1,
+    height: float = 1,
+    center: bool = False,
+    dpi: float = 72.0,
+    id: Optional[str] = None,
+    stroke: bool = False,
+    fn: Optional[float] = None,
+    fa: Optional[float] = None,
+    fs: Optional[float] = None,
+    split_by_color: Literal[False] = False,
+) -> PyOpenSCAD:
+    """Imports an object from disk.
+
+    Args:
+        stroke: When True, turns open SVG paths into polygons. When False (the
+                default), SVG paths are converted to polylines instead.
+        split_by_color: SVG only. When True, returns a dict of ``{hex_color: PyOpenSCAD}``
+                with one 2D object per distinct color found in the SVG, instead of a
+                single merged object. Useful for exporting each color as a separate
+                named/colored object (e.g. for multi-toolhead 3MF export via
+                ``export()``'s dict form). Raises ValueError for non-SVG files or if
+                the SVG has no colored shapes.
+
+    Example:
+        >>> parts = osimport("logo.svg", split_by_color=True)
+        >>> solids = {name: obj.linear_extrude(2) for name, obj in parts.items()}
+        >>> export(solids, "logo.3mf")
+    """
+    ...
+
+@overload
+def osimport(
+    file: str,
+    layer: Optional[str] = None,
+    convexity: int = 2,
+    origin: Optional[List[float]] = None,
+    scale: float = 1,
+    width: float = 1,
+    height: float = 1,
+    center: bool = False,
+    dpi: float = 72.0,
+    id: Optional[str] = None,
+    stroke: bool = False,
+    fn: Optional[float] = None,
+    fa: Optional[float] = None,
+    fs: Optional[float] = None,
+    *,
+    split_by_color: Literal[True],
+) -> dict[str, PyOpenSCAD]:
+    """See the non-overloaded osimport() docstring."""
+    ...
+
+@overload
+def osimport(
+    file: str,
+    layer: Optional[str],
     convexity: int,
-    origin: List[float],
+    origin: Optional[List[float]],
     scale: float,
     width: float,
     height: float,
-    filename: str,
     center: bool,
     dpi: float,
+    id: Optional[str],
     stroke: bool,
-    id: int,
-) -> PyOpenSCAD:
-    """Imports Object from disc
-    Args:
-        stroke: defaults to true which turnes open SVG pathes to polygons. if set to false,
-                SVG pathes are converted to polylines instead.
-
-
-    """
+    fn: Optional[float],
+    fa: Optional[float],
+    fs: Optional[float],
+    split_by_color: Literal[True],
+) -> dict[str, PyOpenSCAD]:
+    """Positional form of the split-by-color overload."""
     ...
 
 def osuse(path: str) -> PyOpenSCAD:

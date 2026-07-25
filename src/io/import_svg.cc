@@ -29,6 +29,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <algorithm>
 #include <exception>
 #include <memory>
 #include <string>
@@ -80,42 +81,91 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
   }
 }
 
+// Resolves an SVG fill/stroke color string the same way for every caller (regular
+// import, color enumeration, and color-filtered import), so that Color4f equality
+// comparisons between them (e.g. against ClipperUtils::cleanUnion's grouping) agree.
+Color4f resolve_outline_color(const std::string& color)
+{
+  if (color == "none") return Color4f(0, 0, 0, 0);  // transparent
+  auto x = OpenSCAD::parse_color(color);
+  if (x.has_value()) return *x;
+  return *OpenSCAD::parse_color("#f9d72c");
+}
+
+// Shared shape-selector construction for import_svg() and import_svg_list_colors(),
+// so both walk the exact same set of shapes for a given id/layer filter.
+void build_svg_selector(fnContext& scadContext, const boost::optional<std::string>& id,
+                        const boost::optional<std::string>& layer)
+{
+  if (id) {
+    scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
+      bool layer_match = true;
+      if (layer) {
+        layer_match = false;
+        for (const libsvg::shape *shape = s; shape->get_parent() != nullptr;
+             shape = shape->get_parent()) {
+          if (shape->has_layer() && shape->get_layer() == layer.get()) {
+            layer_match = true;
+            break;
+          }
+        }
+      }
+      return scadContext.match(layer_match && s->has_id() && s->get_id() == id.get());
+    };
+  } else if (layer) {
+    scadContext.selector = [&scadContext, layer](const libsvg::shape *s) {
+      return scadContext.match(s->has_layer() && s->get_layer() == layer.get());
+    };
+  } else {
+    // no selection means selecting the root
+    scadContext.selector = [&scadContext](const libsvg::shape *s) {
+      return scadContext.match(s->get_parent() == nullptr);
+    };
+  }
+}
+
 }  // namespace
+
+std::vector<Color4f> import_svg_list_colors(CurveDiscretizer discretizer, const std::string& filename,
+                                            const boost::optional<std::string>& id,
+                                            const boost::optional<std::string>& layer, bool stroke,
+                                            const Location& loc)
+{
+  std::vector<Color4f> colors;
+  try {
+    fnContext scadContext(
+      [&discretizer](double r, double angle) { return discretizer.getCircularSegmentCount(r, angle); },
+      discretizer.getPathSegmentCount(), stroke);
+    build_svg_selector(scadContext, id, layer);
+
+    const std::unique_ptr<libsvg::shapes_list_t, decltype(&libsvg::libsvg_free)> shapes(
+      libsvg::libsvg_read_file(filename.c_str(), (void *)&scadContext), &libsvg::libsvg_free);
+    for (const auto& shape_ptr : *shapes) {
+      if (shape_ptr->is_excluded()) continue;
+      const auto& s = *shape_ptr;
+      if (s.get_path_list().empty()) continue;
+      const Color4f color = resolve_outline_color(stroke ? s.get_stroke() : s.get_fill());
+      if (std::find(colors.begin(), colors.end(), color) == colors.end()) {
+        colors.push_back(color);
+      }
+    }
+  } catch (const std::exception& e) {
+    LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
+  }
+  return colors;
+}
 
 std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::string& filename,
                                       const boost::optional<std::string>& id,
                                       const boost::optional<std::string>& layer, const double dpi,
-                                      const bool center, const Location& loc, bool stroke)
+                                      const bool center, const Location& loc, bool stroke,
+                                      const boost::optional<Color4f>& colorFilter)
 {
   try {
     fnContext scadContext(
       [&discretizer](double r, double angle) { return discretizer.getCircularSegmentCount(r, angle); },
       discretizer.getPathSegmentCount(), stroke);
-    if (id) {
-      scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
-        bool layer_match = true;
-        if (layer) {
-          layer_match = false;
-          for (const libsvg::shape *shape = s; shape->get_parent() != nullptr;
-               shape = shape->get_parent()) {
-            if (shape->has_layer() && shape->get_layer() == layer.get()) {
-              layer_match = true;
-              break;
-            }
-          }
-        }
-        return scadContext.match(layer_match && s->has_id() && s->get_id() == id.get());
-      };
-    } else if (layer) {
-      scadContext.selector = [&scadContext, layer](const libsvg::shape *s) {
-        return scadContext.match(s->has_layer() && s->get_layer() == layer.get());
-      };
-    } else {
-      // no selection means selecting the root
-      scadContext.selector = [&scadContext](const libsvg::shape *s) {
-        return scadContext.match(s->get_parent() == nullptr);
-      };
-    }
+    build_svg_selector(scadContext, id, layer);
 
     std::string match_args;
     if (id) {
@@ -126,7 +176,8 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
       match_args += "layer = \"" + layer.get() + "\"";
     }
 
-    const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *)&scadContext);
+    const std::unique_ptr<libsvg::shapes_list_t, decltype(&libsvg::libsvg_free)> shapes(
+      libsvg::libsvg_read_file(filename.c_str(), (void *)&scadContext), &libsvg::libsvg_free);
     if (!match_args.empty() && !scadContext.has_matches()) {
       LOG(message_group::Warning, loc, "", "import() filter %2$s did not match anything", filename,
           match_args);
@@ -195,16 +246,11 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
       if (!shape_ptr->is_excluded()) {
         Polygon2d poly;
         const auto& s = *shape_ptr;
+        const Color4f resolved_color = resolve_outline_color(stroke ? s.get_stroke() : s.get_fill());
+        if (colorFilter && resolved_color != *colorFilter) continue;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
-          std::string color = stroke ? s.get_stroke() : s.get_fill();
-          if (color == "none") outline.color = Color4f(0, 0, 0, 0);  // transparent
-          else {
-            auto x = OpenSCAD::parse_color(color);
-            if (x.has_value()) {
-              outline.color = *x;
-            } else outline.color = *OpenSCAD::parse_color("#f9d72c");
-          }
+          outline.color = resolved_color;
           for (const auto& v : p) {
             const double x = scale.x() * (-viewbox.x() + v.x()) - cx;
             const double y = scale.y() * (-viewbox.y() - v.y()) + cy;
@@ -218,7 +264,6 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
         if (!poly.isEmpty()) polygons.push_back(std::make_shared<const Polygon2d>(poly));
       }
     }
-    libsvg_free(shapes);
     std::reverse(polygons.begin(), polygons.end());
     auto result_cleaned = ClipperUtils::cleanUnion(polygons);
     return std::make_unique<Polygon2d>(result_cleaned);

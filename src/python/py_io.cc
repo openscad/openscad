@@ -32,6 +32,9 @@
 #include "pyfunctions.h"
 #include "export.h"
 #include "ImportNode.h"
+#include <io/import.h>
+#include <ColorNode.h>
+#include <ColorUtil.h>
 #include <io/fileutils.h>
 #include <GeometryEvaluator.h>
 #include <platform/PlatformUtils.h>
@@ -483,10 +486,11 @@ PyObject *python_oo_export(PyObject *obj, PyObject *args, PyObject *kwargs)
 PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
 {
   DECLARE_INSTANCE();
-  char *kwlist[] = {"file", "layer", "convexity", "origin", "scale", "width", "height", "center",
-                    "dpi",  "id",    "stroke",    "fn",     "fa",    "fs",    NULL};
-  double fn = NAN, fa = NAN, fs = NAN;
+  char *kwlist[] = {"file", "layer", "convexity", "origin", "scale", "width", "height",         "center",
+                    "dpi",  "id",    "stroke",    "fn",     "fa",    "fs",    "split_by_color", NULL};
+  PyObject *fn = nullptr, *fa = nullptr, *fs = nullptr;
   PyObject *stroke = nullptr;
+  PyObject *split_by_color = nullptr;
 
   std::string filename;
   const char *v = NULL, *layer = NULL, *id = NULL;
@@ -494,13 +498,25 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   int convexity = 2;
   double scale = 1.0, width = 1, height = 1, dpi = ImportNode::SVG_DEFAULT_DPI;
   PyObject *origin = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|siO!dddOdsOddd", kwlist, &v, &layer, &convexity,
-                                   &PyList_Type, &origin, &scale, &width, &height, &center, &dpi, &id,
-                                   &stroke, &fn, &fa, &fs
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ziOdddOdzOOOOO", kwlist, &v, &layer, &convexity,
+                                   &origin, &scale, &width, &height, &center, &dpi, &id, &stroke, &fn,
+                                   &fa, &fs, &split_by_color
 
                                    )) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
+  }
+  if (origin != nullptr && origin != Py_None && (!PyList_Check(origin) || PyList_Size(origin) != 2)) {
+    PyErr_SetString(PyExc_TypeError, "osimport(): origin must be a two-element list or None");
+    return nullptr;
+  }
+  double originX = 0;
+  double originY = 0;
+  if (origin != nullptr && origin != Py_None) {
+    originX = PyFloat_AsDouble(PyList_GetItem(origin, 0));
+    if (PyErr_Occurred()) return nullptr;
+    originY = PyFloat_AsDouble(PyList_GetItem(origin, 1));
+    if (PyErr_Occurred()) return nullptr;
   }
   if (v == NULL || v[0] == '\0') {
     PyErr_SetString(PyExc_ValueError, "osimport(): filename must not be empty");
@@ -541,41 +557,110 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     else if (ext == ".step") actualtype = ImportType::STEP;
   }
 
-  auto node = std::make_shared<ImportNode>(instance, actualtype, CreateCurveDiscretizer(kwargs));
-
-  node->filename = filename;
-
-  if (layer != NULL) node->layer = layer;
-  if (id != NULL) node->id = id;
-  node->convexity = convexity;
-  if (node->convexity <= 0) node->convexity = 1;
-
-  if (origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
-    node->origin_x = PyFloat_AsDouble(PyList_GetItem(origin, 0));
-    node->origin_y = PyFloat_AsDouble(PyList_GetItem(origin, 1));
-  }
-
-  node->center = 0;
-  if (center == Py_True) node->center = 1;
-
-  node->stroke = false;
-  if (stroke == Py_True) node->stroke = true;
-
-  node->scale = scale;
-  if (node->scale <= 0) node->scale = 1;
-
-  node->dpi = ImportNode::SVG_DEFAULT_DPI;
-  double val = dpi;
-  if (val < 0.001) {
-    PyErr_SetString(PyExc_TypeError, "Invalid dpi value giving");
+  const int splitByColorValue = split_by_color == nullptr ? 0 : PyObject_IsTrue(split_by_color);
+  if (splitByColorValue < 0) return nullptr;
+  const bool splitByColor = splitByColorValue != 0;
+  if (splitByColor && actualtype != ImportType::SVG) {
+    PyErr_SetString(PyExc_ValueError, "osimport(): split_by_color=True is only supported for SVG files");
     return NULL;
-  } else {
-    node->dpi = val;
+  }
+#ifdef ENABLE_PIP
+  if (splitByColor) {
+    PyErr_SetString(PyExc_ValueError, "osimport(): split_by_color=True is not supported in this build");
+    return NULL;
+  }
+#endif
+
+  double dpiVal = dpi;
+  if (dpiVal < 0.001) {
+    PyErr_SetString(PyExc_TypeError, "osimport(): dpi must be at least 0.001");
+    return NULL;
   }
 
-  node->width = width;
-  node->height = height;
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  PyObjectUniquePtr discretizerKwargs(PyDict_New(), &PyObjectDeleter);
+  if (!discretizerKwargs) return nullptr;
+  auto addDiscretizerArg = [&](const char *name, PyObject *value) {
+    if (value == nullptr || value == Py_None) return true;
+    const double number = PyFloat_AsDouble(value);
+    if (PyErr_Occurred()) return false;
+    PyObjectUniquePtr normalized(PyFloat_FromDouble(number), &PyObjectDeleter);
+    return normalized && PyDict_SetItemString(discretizerKwargs.get(), name, normalized.get()) == 0;
+  };
+  if (!addDiscretizerArg("fn", fn) || !addDiscretizerArg("fa", fa) || !addDiscretizerArg("fs", fs)) {
+    return nullptr;
+  }
+  const auto discretizer = CreateCurveDiscretizer(discretizerKwargs.get());
+  auto build_node = [&](const boost::optional<Color4f>& colorFilter) {
+    auto n = std::make_shared<ImportNode>(instance, actualtype, discretizer);
+
+    n->filename = filename;
+
+    if (layer != NULL) n->layer = layer;
+    if (id != NULL) n->id = id;
+    n->convexity = convexity;
+    if (n->convexity <= 0) n->convexity = 1;
+
+    n->origin_x = originX;
+    n->origin_y = originY;
+
+    n->center = 0;
+    if (center == Py_True) n->center = 1;
+
+    n->stroke = false;
+    if (stroke == Py_True) n->stroke = true;
+
+    n->scale = scale;
+    if (n->scale <= 0) n->scale = 1;
+
+    n->dpi = dpiVal;
+
+    n->width = width;
+    n->height = height;
+
+    n->colorFilter = colorFilter;
+    return n;
+  };
+
+  if (!splitByColor) {
+    auto node = build_node(boost::none);
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  }
+
+  const boost::optional<std::string> idOpt = id != NULL ? boost::optional<std::string>(id) : boost::none;
+  const boost::optional<std::string> layerOpt =
+    layer != NULL ? boost::optional<std::string>(layer) : boost::none;
+  const bool strokeBool = (stroke == Py_True);
+  const std::vector<Color4f> colors =
+    import_svg_list_colors(discretizer, filename, idOpt, layerOpt, strokeBool, instance->location());
+  if (colors.empty()) {
+    PyErr_SetString(PyExc_ValueError,
+                    "osimport(): split_by_color=True found no colors matching the SVG selection; "
+                    "check id, layer, and stroke settings");
+    return NULL;
+  }
+
+  PyObject *result = PyDict_New();
+  if (result == nullptr) return nullptr;
+  for (const auto& color : colors) {
+    auto importNode = build_node(color);
+    auto colorNode = std::make_shared<ColorNode>(instance);
+    colorNode->color = color;
+    colorNode->children.push_back(importNode);
+
+    PyObject *pyobj = PyOpenSCADObjectFromNode(&PyOpenSCADType, colorNode);
+    if (pyobj == nullptr) {
+      Py_DECREF(result);
+      return nullptr;
+    }
+    const std::string hexKey = OpenSCAD::toHexString(color);
+    const int rc = PyDict_SetItemString(result, hexKey.c_str(), pyobj);
+    Py_DECREF(pyobj);
+    if (rc < 0) {
+      Py_DECREF(result);
+      return nullptr;
+    }
+  }
+  return result;
 }
 
 PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs)

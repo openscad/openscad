@@ -1,0 +1,12 @@
+type: dict
+keys: ['#004080ff', '#804000ff']
+all values are PyOpenSCAD: True
+None selectors and truthy flag return dict: True
+fully positional flag returns dict: True
+invalid origin: TypeError
+default is dict: False
+default type: PyOpenSCAD
+explicit False is dict: False
+explicit False type: PyOpenSCAD
+non-svg split_by_color: ValueError
+

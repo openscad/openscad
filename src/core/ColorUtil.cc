@@ -5,6 +5,7 @@
 #include <boost/spirit/home/support/common_terminals.hpp>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -120,6 +121,15 @@ std::optional<Color4f> parse_color(const std::string& col)
   }
 
   return {};
+}
+
+std::string toHexString(const Color4f& col)
+{
+  int r = 0, g = 0, b = 0, a = 0;
+  col.getRgba(r, g, b, a);
+  char buf[10];
+  std::snprintf(buf, sizeof(buf), "#%02x%02x%02x%02x", r, g, b, a);
+  return std::string(buf);
 }
 
 Color4f getColor(const std::string& col, const Color4f& defaultcolor)

@@ -410,6 +410,10 @@
       <div>Import geometry from file (STL, OFF, AMF, 3MF, SVG, DXF)</div>
       <div><code>osimport("model.stl").show()</code></div>
 
+      <div class="func"><code><a href="../reference/io/#osimport">osimport</a>(file, split_by_color=True)</code></div>
+      <div>SVG only: return a dict of <code>{hex_color: 2D object}</code>, one entry per SVG color, for per-color/per-tool export</div>
+      <div><code>parts = osimport("logo.svg", split_by_color=True)<br>export({k: v.linear_extrude(2) for k, v in parts.items()}, "logo.3mf")</code></div>
+
       <div class="func"><code><a href="../reference/io/#osuse">osuse</a>(file)</code></div>
       <div>Use an OpenSCAD library file (like <code>use &lt;...&gt;</code>); call modules/functions on the returned handle</div>
       <div><code>lib = osuse("library.scad"); lib.my_module().show()</code></div>

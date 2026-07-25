@@ -18,6 +18,9 @@ inline Color4f CORNFIELD_FACE_COLOR{0xf9, 0xd7, 0x2c, 0xff};
 
 std::optional<Color4f> parse_color(const std::string& col);
 
+// Formats a color as a lowercase "#rrggbbaa" hex string (inverse of parse_color's hex path).
+std::string toHexString(const Color4f& col);
+
 Color4f getColor(const std::string& col, const Color4f& defaultcolor);
 
 Color4f getContrastColor(const Color4f& col);
