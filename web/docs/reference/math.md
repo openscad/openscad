@@ -186,6 +186,28 @@ Calculate the cross product of two 3D vectors.
 There are many places, where PythonSCAD accepts vectors which are supplied as Python lists with 2 or 3 numbers.
 Alernatively, PythonSCAD also accepts PythonSCAD Vector objects with calculating capabilities
 
+### NumPy support
+
+Anywhere PythonSCAD accepts a vector or a list of vectors, a NumPy array can be used instead of a Python list.
+
+- A 1D NumPy array of length 2, 3, or 4 is accepted wherever a single vector (e.g. a size, translation, or point) is expected.
+- A 2D NumPy array (shape `(n, 2)` or `(n, 3)`) is accepted wherever a list of vectors (e.g. a point list) is expected.
+- Individual NumPy scalars (e.g. `numpy.float64`, `numpy.int64`) are accepted anywhere a plain Python number is expected.
+
+Supported dtypes are `float64`, `float32`, `int64`, and `int32`. NumPy is not a build-time dependency of PythonSCAD; support only activates if the script itself imports NumPy.
+
+=== "Python"
+
+    ```python
+    from pythonscad import *
+    import numpy as np
+
+    # A cube sized from a 1D numpy array
+    c = cube(np.array([1, 2, 3]))
+
+    # Translate by a 2D numpy array of vectors (broadcasts a list of copies)
+    show(c + np.array([[10, 0, 0], [0, 10, 0]]))
+    ```
 
 ### Vector addition
 
