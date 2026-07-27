@@ -27,6 +27,7 @@
 #include "genlang/genlang.h"
 #include <Python.h>
 #include <algorithm>
+#include <string>
 #include "pyopenscad.h"
 #include <io/fileutils.h>
 #include <handle_dep.h>
@@ -244,15 +245,14 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
   if (!python_vectorval(color, 3, 4, &col[0], &col[1], &col[2], &col[3])) {
     node->color.setRgba(float(col[0]), float(col[1]), float(col[2]), float(col[3]));
   } else if (PyUnicode_Check(color)) {
-    auto value = py_owned(PyUnicode_AsEncodedString(color, "utf-8", "~"));
-    if (value.get() == nullptr) return NULL;
-    char *colorname = PyBytes_AS_STRING(value.get());
+    std::string colorname;
+    if (!python_pyobject_to_utf8(color, colorname, "color() color")) return nullptr;
     const auto parsed_color = OpenSCAD::parse_color(colorname);
     if (parsed_color) {
       node->color = *parsed_color;
       if (1.0 != alpha) node->color.setAlpha(alpha);
     } else {
-      PyErr_SetString(PyExc_TypeError, "Cannot parse color");
+      PyErr_Format(PyExc_TypeError, "Unable to parse color %R", color);
       return NULL;
     }
   } else {
@@ -459,15 +459,14 @@ PyObject *python_repair_core(PyObject *obj, PyObject *color)
     if (!python_vectorval(color, 3, 4, &col[0], &col[1], &col[2], &col[3])) {
       node->color.setRgba(float(col[0]), float(col[1]), float(col[2]), float(col[3]));
     } else if (PyUnicode_Check(color)) {
-      auto value = py_owned(PyUnicode_AsEncodedString(color, "utf-8", "~"));
-      if (value.get() == nullptr) return nullptr;
-      const char *colorname = PyBytes_AS_STRING(value.get());
+      std::string colorname;
+      if (!python_pyobject_to_utf8(color, colorname, "repair() color")) return nullptr;
       const auto parsed_color = OpenSCAD::parse_color(colorname);
       if (parsed_color) {
         node->color = *parsed_color;
         node->color.setAlpha(1.0);
       } else {
-        PyErr_SetString(PyExc_TypeError, "Cannot parse color");
+        PyErr_Format(PyExc_TypeError, "Unable to parse color %R", color);
         return NULL;
       }
     } else {

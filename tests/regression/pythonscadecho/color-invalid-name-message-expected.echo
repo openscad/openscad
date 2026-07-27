@@ -1,0 +1,5 @@
+color invalid name: TypeError: Unable to parse color 'notAName'
+color invalid nul name: TypeError: Unable to parse color 'Br\x00on'
+repair invalid name: TypeError: Unable to parse color 'notAName'
+repair invalid nul name: TypeError: Unable to parse color 'Br\x00on'
+
