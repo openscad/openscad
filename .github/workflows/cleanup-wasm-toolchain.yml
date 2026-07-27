@@ -1,0 +1,115 @@
+name: Clean WASM Toolchain Images
+
+on:
+  schedule:
+    - cron: '37 3 1 * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report candidates without deleting package versions'
+        type: boolean
+        required: true
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Retain supported WASM toolchains
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch branch references
+        run: git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
+
+      - name: Collect protected toolchain tags
+        id: protected
+        run: |
+          set -euo pipefail
+          failures="$RUNNER_TEMP/wasm-toolchain-hash-failures.txt"
+          : > "$failures"
+          {
+            ./scripts/wasm-toolchain-id.sh
+            git for-each-ref \
+              --format='%(refname)' \
+              refs/remotes/origin refs/tags |
+              while IFS= read -r ref; do
+                set +e
+                toolchain_hash=$(./scripts/wasm-toolchain-id.sh "$ref")
+                status=$?
+                set -e
+                case "$status" in
+                  0) printf '%s\n' "$toolchain_hash" ;;
+                  2) echo "Skipping ${ref}: toolchain inputs are incomplete." >&2 ;;
+                  *)
+                    echo "$ref" >> "$failures"
+                    echo "Failed to hash ${ref}; cleanup will remain report-only." >&2
+                    ;;
+                esac
+              done
+          } |
+            awk 'NF { print "toolchain-v1-" $0 }' |
+            sort -u > "$RUNNER_TEMP/protected-wasm-toolchains.txt"
+          if [[ -s "$failures" ]]; then
+            echo "hash_failures=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hash_failures=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Protected toolchain tags:"
+          cat "$RUNNER_TEMP/protected-wasm-toolchains.txt"
+
+      - name: Check whether the package exists
+        id: package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh api \
+            'orgs/pythonscad/packages/container/wasm-python-base/versions?per_page=1' \
+            >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "The GHCR package does not exist or is not accessible; nothing to clean."
+          fi
+
+      - name: Apply retention policy
+        if: ${{ steps.package.outputs.exists == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_DRY_RUN: ${{ inputs.dry_run }}
+          SCHEDULE_DELETE: ${{ vars.WASM_TOOLCHAIN_CLEANUP_DELETE }}
+          HASH_FAILURES: ${{ steps.protected.outputs.hash_failures }}
+        run: |
+          set -euo pipefail
+          delete_arg=()
+          if [[ "$HASH_FAILURES" == "true" ]]; then
+            echo "Reference hashing failed; forcing report-only cleanup." >&2
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" &&
+                "$DISPATCH_DRY_RUN" == "false" ]]; then
+            delete_arg=(--delete)
+          elif [[ "$EVENT_NAME" == "schedule" &&
+                  "$SCHEDULE_DELETE" == "true" ]]; then
+            delete_arg=(--delete)
+          fi
+          ./scripts/cleanup-wasm-toolchain-images.py \
+            --protected-tags "$RUNNER_TEMP/protected-wasm-toolchains.txt" \
+            "${delete_arg[@]}" |
+            tee "$RUNNER_TEMP/wasm-toolchain-cleanup.txt"
+          {
+            echo "## WASM toolchain retention"
+            echo
+            echo '```text'
+            cat "$RUNNER_TEMP/wasm-toolchain-cleanup.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

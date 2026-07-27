@@ -923,7 +923,7 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
   else() #MXE
     if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
-      # WASM cross-compile: use pre-built CPython artifacts from Dockerfile.wasm-python-base.
+      # WASM cross-compile: use CPython artifacts from the published toolchain image.
       # find_package(Python3) cannot run the target interpreter, so we set paths directly.
       # Nettle is GUI-only; HEADLESS=ON (forced by NULLGL) excludes that code path.
       set(Python_Eff_LIBRARIES "${CPYTHON_WASM_PREFIX}/lib/libpython${CPYTHON_WASM_PYVER}.a")

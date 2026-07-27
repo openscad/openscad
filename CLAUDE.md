@@ -403,12 +403,14 @@ PythonSCAD ships a Python-enabled WASM build on **Emscripten 6.0** with **CPytho
 3.14**. Two variants: `node` (NODERAWFS, for smoke testing) and `web` (MEMFS +
 preloaded stdlib, for browser distribution).
 
-Docker uses two local images (no `openscad/wasm-base` dependency):
+Docker uses a content-addressed public toolchain image (no
+`openscad/wasm-base` dependency):
 
-1. **`pythonscad-wasm-sysroot:local`** — third-party WASM libraries (Boost, CGAL, …)
-2. **`pythonscad-wasm-python-base:local`** — sysroot + cross-compiled CPython 3.14
+**`ghcr.io/pythonscad/wasm-python-base:toolchain-v1-<input-sha256>`** — Emscripten
+sysroot, third-party libraries, and cross-compiled CPython 3.14.
 
-`scripts/wasm-base-docker-run.sh` builds the `wasm-python-base` image automatically if missing.
+`scripts/wasm-base-docker-run.sh` pulls the matching image automatically. A
+checkout with unpublished toolchain changes falls back to a local cold build.
 
 ```bash
 # Unified build (sysroot + CPython, ~60 min first time)

@@ -30,47 +30,58 @@ absent from the WASM sysroot.
 
 ### Docker base image
 
-The WASM build uses two Docker images, both on **Emscripten 6.0** (required for
-CPython 3.14 browser support):
+The WASM build runs in a public, content-addressed toolchain image:
 
-1. **`pythonscad-wasm-sysroot:local`** — cross-compiles third-party libraries
-   (Eigen, Boost, CGAL, …) using the
-   [openscad-wasm](https://github.com/openscad/openscad-wasm) recipe in
-   `docker/wasm/sysroot.dockerfile`. No dependency on `openscad/wasm-base`.
-2. **`pythonscad-wasm-python-base:local`** — adds CPython 3.14 on top of the sysroot.
+```text
+ghcr.io/pythonscad/wasm-python-base:toolchain-v1-<input-sha256>
+```
 
-`scripts/wasm-base-docker-run.sh` builds `pythonscad-wasm-python-base:local`
-(sysroot + CPython in one multi-stage build) automatically if missing. It does
-not tag a separate `pythonscad-wasm-sysroot:local` image.
+The hash covers `docker/wasm/sysroot.dockerfile`, its pinned Python build tools,
+and the Meson cross-file. This makes a toolchain change explicit and lets normal
+CI and local builds pull an immutable image instead of rebuilding it.
+The `v1` prefix versions the hashing contract; changing the identity algorithm
+requires a new prefix and an explicit retention migration.
 
-Build the full image (sysroot + CPython; ~60 min first time, cached afterwards):
+The image contains an Emscripten 6.0 sysroot with the OpenSCAD-family
+dependencies (Eigen, Boost, CGAL, …) and CPython 3.14. Its stable paths are:
+
+- `/emsdk/upstream/emscripten/cache/sysroot/` — cross-compiled dependencies
+- `/cpython-wasm/lib/libpython3.14.a` — static CPython library
+- `/cpython-wasm/include/python3.14/` — C headers
+- `/cpython-wasm/lib/python3.14/` — trimmed Python standard library
+
+`scripts/wasm-base-docker-run.sh` computes the current hash and pulls the
+matching image. If no published image exists—for example while developing an
+Emscripten upgrade—it performs the cold local build and tags it as
+`pythonscad-wasm-python-base:local`.
+
+To inspect the identity or build the image explicitly:
 
 ```bash
+./scripts/wasm-toolchain-id.sh
 docker build -f docker/wasm/sysroot.dockerfile --target wasm-python-base \
   -t pythonscad-wasm-python-base:local .
 ```
 
-To build or tag the sysroot stage only (no CPython):
+The cold build takes roughly 60 minutes. The canonical Dockerfile uses a
+version-and-digest-pinned Emscripten base; both values must change together.
 
-```bash
-docker build -f docker/wasm/sysroot.dockerfile --target wasm-sysroot \
-  -t pythonscad-wasm-sysroot:local .
-```
+### Publishing and retention
 
-Legacy two-step build (requires sysroot image tag first):
+`.github/workflows/publish-wasm-toolchain.yml` publishes a missing image from
+trusted non-PR runs. The shared build/pull implementation lives in
+`.github/actions/build-wasm-toolchain/action.yml`; untrusted pull requests
+never receive package-write permission.
 
-```bash
-docker build \
-  -f Dockerfile.wasm-python-base \
-  -t pythonscad-wasm-python-base:local .
-```
+After the package is first published, an organization owner must set
+`wasm-python-base` to **public** in its package settings. Public visibility
+allows forks and local developers to pull without credentials.
 
-- `/cpython-wasm/lib/libpython3.14.a` — static library
-- `/cpython-wasm/include/python3.14/` — C headers
-- `/cpython-wasm/lib/python3.14/` — stdlib (`.py` files only; heavy dirs stripped)
-
-`scripts/wasm-base-docker-run.sh` builds the base image automatically if it is
-not present, then layers a ccache image on top for fast incremental builds.
+The monthly cleanup workflow is report-only by default. It retains images used
+by repository branches and release tags, all images younger than one year, and
+the newest ten toolchains. Set the repository variable
+`WASM_TOOLCHAIN_CLEANUP_DELETE=true` after reviewing its reports to enable
+scheduled deletion; manual dispatches also offer an explicit dry-run switch.
 
 ## Building
 

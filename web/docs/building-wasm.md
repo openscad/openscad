@@ -24,12 +24,11 @@ There are two build variants:
 ## Build
 
 ```bash
-# Build the base image (Emscripten + cross-compiled CPython). First run is slow
-# (~1 h); cached afterwards. scripts/wasm-base-docker-run.sh builds it on demand.
-docker build -f docker/wasm/sysroot.dockerfile --target wasm-python-base \
-  -t pythonscad-wasm-python-base:local .
+# Show the content-derived identity used for the public toolchain image.
+./scripts/wasm-toolchain-id.sh
 
-# Node variant (smoke test)
+# Node variant (smoke test). The helper pulls the matching public toolchain
+# image, or builds it locally when the current inputs have not been published.
 ./scripts/wasm-base-docker-run.sh emcmake cmake -B build-wasm-node \
   -DWASM_BUILD_TYPE=node -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=1
 ./scripts/wasm-base-docker-run.sh cmake --build build-wasm-node -j"$(nproc)"

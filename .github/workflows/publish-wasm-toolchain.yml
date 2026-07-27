@@ -1,0 +1,77 @@
+name: Publish WASM Toolchain
+
+on:
+  workflow_call:
+    outputs:
+      image_ref:
+        description: 'Content-addressed toolchain image tag'
+        value: ${{ jobs.publish.outputs.image_ref }}
+      digest:
+        description: 'Published or existing OCI manifest digest'
+        value: ${{ jobs.publish.outputs.digest }}
+      built:
+        description: 'Whether this run built and published the image'
+        value: ${{ jobs.publish.outputs.built }}
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Resolve and publish WASM toolchain
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_ref: ${{ steps.toolchain.outputs.image-ref }}
+      digest: ${{ steps.toolchain.outputs.digest }}
+      built: ${{ steps.toolchain.outputs.built }}
+
+    steps:
+      - name: Checkout trusted source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve or publish toolchain image
+        id: toolchain
+        uses: ./.github/actions/build-wasm-toolchain
+        with:
+          push: 'true'
+          load: 'false'
+          reclaim-space: 'true'
+
+      - name: Require public package visibility
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          visibility=$(gh api \
+            orgs/pythonscad/packages/container/wasm-python-base \
+            --jq '.visibility')
+          if [[ "$visibility" != "public" ]]; then
+            echo "::error::Set the wasm-python-base GHCR package visibility to public, then rerun this workflow."
+            exit 1
+          fi
+
+      - name: Summarize toolchain image
+        env:
+          IMAGE_REF: ${{ steps.toolchain.outputs.image-ref }}
+          DIGEST: ${{ steps.toolchain.outputs.digest }}
+          BUILT: ${{ steps.toolchain.outputs.built }}
+        run: |
+          {
+            echo "## WASM toolchain"
+            echo
+            echo "- Image: \`${IMAGE_REF}\`"
+            echo "- Digest: \`${DIGEST}\`"
+            echo "- Built in this run: \`${BUILT}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

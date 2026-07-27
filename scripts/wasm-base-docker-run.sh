@@ -25,21 +25,57 @@ set -euo pipefail
 CCACHE_DIR=${CCACHE_DIR:-$HOME/.ccache/}
 mkdir -p "$CCACHE_DIR"
 
-# Build the WASM docker image (sysroot + CPython) if not already present.
-# Slow on first run (~60 min); cached by Docker layer cache afterwards.
-# To force a rebuild: docker rmi pythonscad-wasm-python-base:local
-if ! docker image inspect pythonscad-wasm-python-base:local &>/dev/null; then
-  echo "Building pythonscad-wasm-python-base:local (sysroot + CPython — first run only)..."
+# Prefer the immutable public GHCR image for this exact toolchain input set.
+# A source checkout with unpublished toolchain changes falls back to a local
+# build, preserving the ability to develop and test upgrades before merging.
+TOOLCHAIN_IMAGE=${PYTHONSCAD_WASM_TOOLCHAIN_IMAGE:-ghcr.io/pythonscad/wasm-python-base}
+TOOLCHAIN_HASH=$(./scripts/wasm-toolchain-id.sh)
+TOOLCHAIN_REF="${TOOLCHAIN_IMAGE}:toolchain-v1-${TOOLCHAIN_HASH}"
+LOCAL_TOOLCHAIN_TAG=pythonscad-wasm-python-base:local
+
+pull_toolchain()
+{
+  local image_ref=$1
+  local attempt
+
+  for attempt in 1 2 3; do
+    if docker pull --platform=linux/amd64 "$image_ref"; then
+      return 0
+    fi
+    if (( attempt < 3 )); then
+      echo "Toolchain pull attempt ${attempt} failed; retrying..." >&2
+      sleep $((attempt * 5))
+    fi
+  done
+  return 1
+}
+
+pull_ref=$TOOLCHAIN_REF
+if digest=$(docker buildx imagetools inspect "$TOOLCHAIN_REF" \
+  --format '{{.Manifest.Digest}}' 2>/dev/null); then
+  pull_ref="${TOOLCHAIN_IMAGE}@${digest}"
+fi
+
+echo "Pulling ${pull_ref}..."
+if pull_toolchain "$pull_ref"; then
+  if [[ "$pull_ref" != "$TOOLCHAIN_REF" ]]; then
+    docker tag "$pull_ref" "$TOOLCHAIN_REF"
+  fi
+elif docker image inspect "$TOOLCHAIN_REF" &>/dev/null; then
+  echo "Registry unavailable; using the cached immutable toolchain image." >&2
+else
+  echo "No published or cached image exists; building the WASM toolchain locally..."
   docker build \
     --platform=linux/amd64 \
     -f docker/wasm/sysroot.dockerfile \
     --target wasm-python-base \
-    -t pythonscad-wasm-python-base:local \
+    -t "$TOOLCHAIN_REF" \
     .
 fi
+docker tag "$TOOLCHAIN_REF" "$LOCAL_TOOLCHAIN_TAG"
 
 echo "
-  FROM pythonscad-wasm-python-base:local
+  FROM ${LOCAL_TOOLCHAIN_TAG}
   RUN apt update && \
       apt install -y ccache && \
       apt clean

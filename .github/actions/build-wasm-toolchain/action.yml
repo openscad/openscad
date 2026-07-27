@@ -1,0 +1,214 @@
+name: Resolve or build WASM toolchain
+description: >
+  Resolves the content-addressed PythonSCAD WASM toolchain image, pulling an
+  existing GHCR image or building it from the canonical Dockerfile.
+
+inputs:
+  image:
+    description: 'GHCR image name without a tag'
+    required: false
+    default: 'ghcr.io/pythonscad/wasm-python-base'
+  local-tag:
+    description: 'Local Docker tag used by subsequent build steps'
+    required: false
+    default: 'pythonscad-wasm-python-base:local'
+  push:
+    description: 'Publish a missing image and registry build cache'
+    required: false
+    default: 'false'
+  load:
+    description: 'Load the selected image into the local Docker daemon'
+    required: false
+    default: 'true'
+  reclaim-space:
+    description: 'Remove unused hosted-runner SDKs before a cold build'
+    required: false
+    default: 'false'
+
+outputs:
+  toolchain-hash:
+    description: 'SHA-256 over all effective in-repository toolchain inputs'
+    value: ${{ steps.identity.outputs.toolchain_hash }}
+  image-ref:
+    description: 'Content-addressed GHCR tag selected by this action'
+    value: ${{ steps.identity.outputs.image_ref }}
+  digest:
+    description: 'OCI manifest digest of the selected image'
+    value: ${{ steps.result.outputs.digest }}
+  built:
+    description: 'Whether this invocation built the image'
+    value: ${{ steps.result.outputs.built }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up constrained Docker Buildx
+      uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+      with:
+        buildkitd-config-inline: |
+          [worker.oci]
+            max-parallelism = 2
+
+    - name: Compute toolchain identity
+      id: identity
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        toolchain_hash=$(./scripts/wasm-toolchain-id.sh)
+        image_ref="${IMAGE}:toolchain-v1-${toolchain_hash}"
+        echo "toolchain_hash=${toolchain_hash}" >> "$GITHUB_OUTPUT"
+        echo "image_ref=${image_ref}" >> "$GITHUB_OUTPUT"
+        echo "Toolchain image: ${image_ref}"
+
+    - name: Check container registry
+      id: registry
+      shell: bash
+      env:
+        IMAGE_REF: ${{ steps.identity.outputs.image_ref }}
+        PUSH: ${{ inputs.push }}
+      run: |
+        set -euo pipefail
+        error_file="${RUNNER_TEMP:-/tmp}/wasm-toolchain-inspect.err"
+        for attempt in 1 2 3; do
+          if digest=$(docker buildx imagetools inspect "$IMAGE_REF" \
+            --format '{{.Manifest.Digest}}' 2>"$error_file"); then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+            echo "Found ${IMAGE_REF}@${digest}"
+            exit 0
+          fi
+          if (( attempt < 3 )); then
+            echo "Registry lookup attempt ${attempt} failed; retrying..." >&2
+            sleep $((attempt * 5))
+          fi
+        done
+        inspect_error=$(< "$error_file")
+        echo "$inspect_error" >&2
+        if [[ "$inspect_error" == *"not found"* ||
+              "$inspect_error" == *"manifest unknown"* ||
+              "$inspect_error" == *"no such manifest"* ]]; then
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "No published image exists for this toolchain input set."
+        elif [[ "$PUSH" == "true" ]]; then
+          echo "::error::Registry lookup failed; refusing to publish to an unverified immutable tag."
+          exit 1
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::Registry lookup was inconclusive; falling back to a local build."
+        fi
+
+    - name: Resolve optional registry build cache
+      id: cache
+      if: ${{ steps.registry.outputs.exists != 'true' }}
+      shell: bash
+      env:
+        CACHE_REF: ${{ inputs.image }}:buildcache-v1
+      run: |
+        set -euo pipefail
+        for attempt in 1 2 3; do
+          if docker buildx imagetools inspect "$CACHE_REF" >/dev/null 2>&1; then
+            echo "cache_from=type=registry,ref=${CACHE_REF}" >> "$GITHUB_OUTPUT"
+            echo "Using registry build cache ${CACHE_REF}."
+            exit 0
+          fi
+          if (( attempt < 3 )); then
+            sleep $((attempt * 5))
+          fi
+        done
+        echo "cache_from=" >> "$GITHUB_OUTPUT"
+        echo "::notice::Registry build cache is unavailable; continuing without it."
+
+    - name: Pull existing toolchain image
+      if: ${{ steps.registry.outputs.exists == 'true' && inputs.load == 'true' }}
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+        DIGEST: ${{ steps.registry.outputs.digest }}
+        LOCAL_TAG: ${{ inputs.local-tag }}
+      run: |
+        set -euo pipefail
+        immutable_ref="${IMAGE}@${DIGEST}"
+        docker pull --platform=linux/amd64 "$immutable_ref"
+        docker tag "$immutable_ref" "$LOCAL_TAG"
+
+    - name: Report disk space before cold build
+      if: ${{ steps.registry.outputs.exists != 'true' }}
+      shell: bash
+      run: |
+        df -h
+        docker system df || true
+
+    - name: Reclaim hosted-runner disk space
+      if: ${{ steps.registry.outputs.exists != 'true' && inputs.reclaim-space == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        docker system prune --all --force || true
+        if [[ -n "${RUNNER_TEMP:-}" ]]; then
+          sudo rm -rf \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/lib/android \
+            /usr/share/dotnet
+        fi
+        df -h
+
+    - name: Build and load missing toolchain image
+      id: build_local
+      if: ${{ steps.registry.outputs.exists != 'true' && inputs.push != 'true' }}
+      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+      with:
+        context: .
+        file: docker/wasm/sysroot.dockerfile
+        target: wasm-python-base
+        platforms: linux/amd64
+        tags: ${{ inputs.local-tag }}
+        load: ${{ inputs.load }}
+        cache-from: ${{ steps.cache.outputs.cache_from }}
+
+    - name: Build and publish missing toolchain image
+      id: build_publish
+      if: ${{ steps.registry.outputs.exists != 'true' && inputs.push == 'true' }}
+      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+      with:
+        context: .
+        file: docker/wasm/sysroot.dockerfile
+        target: wasm-python-base
+        platforms: linux/amd64
+        tags: ${{ steps.identity.outputs.image_ref }}
+        push: true
+        cache-from: ${{ steps.cache.outputs.cache_from }}
+        cache-to: type=registry,ref=${{ inputs.image }}:buildcache-v1,mode=max
+        provenance: mode=max
+        sbom: true
+
+    - name: Report selected image
+      id: result
+      shell: bash
+      env:
+        EXISTING_DIGEST: ${{ steps.registry.outputs.digest }}
+        LOCAL_DIGEST: ${{ steps.build_local.outputs.digest }}
+        PUBLISHED_DIGEST: ${{ steps.build_publish.outputs.digest }}
+        IMAGE_EXISTS: ${{ steps.registry.outputs.exists }}
+      run: |
+        set -euo pipefail
+        digest=${EXISTING_DIGEST:-${LOCAL_DIGEST:-${PUBLISHED_DIGEST:-}}}
+        if [[ -z "$digest" ]]; then
+          echo "Unable to determine the selected image digest." >&2
+          exit 1
+        fi
+        echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+        if [[ "$IMAGE_EXISTS" == "true" ]]; then
+          echo "built=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "built=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Report disk space after cold build
+      if: ${{ steps.registry.outputs.exists != 'true' }}
+      shell: bash
+      run: |
+        df -h
+        docker system df || true

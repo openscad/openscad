@@ -1,0 +1,67 @@
+name: Audit Actions Storage
+
+on:
+  schedule:
+    - cron: '19 4 1 * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  audit:
+    name: Report cache and artifact storage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Measure active storage
+        id: usage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cache_bytes=$(gh api "repos/${GH_REPO}/actions/cache/usage" \
+            --jq '.active_caches_size_in_bytes')
+          artifacts_file="$RUNNER_TEMP/actions-artifacts.json"
+          gh api "repos/${GH_REPO}/actions/artifacts?per_page=100" \
+            --paginate --slurp > "$artifacts_file"
+          artifact_bytes=$(jq \
+            '[.[].artifacts[] | select(.expired == false) | .size_in_bytes] | add // 0' \
+            "$artifacts_file")
+          wasm_artifact_bytes=$(jq '
+              [.[].artifacts[] |
+               select(.expired == false and (.name | test("wasm"; "i"))) |
+               .size_in_bytes] | add // 0
+            ' "$artifacts_file")
+          {
+            echo "cache_bytes=${cache_bytes}"
+            echo "artifact_bytes=${artifact_bytes}"
+            echo "wasm_artifact_bytes=${wasm_artifact_bytes}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Summarize storage
+        env:
+          CACHE_BYTES: ${{ steps.usage.outputs.cache_bytes }}
+          ARTIFACT_BYTES: ${{ steps.usage.outputs.artifact_bytes }}
+          WASM_ARTIFACT_BYTES: ${{ steps.usage.outputs.wasm_artifact_bytes }}
+        run: |
+          set -euo pipefail
+          gib() { awk -v bytes="$1" 'BEGIN { printf "%.2f", bytes / 1073741824 }'; }
+          cache_gib=$(gib "$CACHE_BYTES")
+          artifact_gib=$(gib "$ARTIFACT_BYTES")
+          wasm_gib=$(gib "$WASM_ARTIFACT_BYTES")
+          {
+            echo "## Actions storage"
+            echo
+            echo "- Cache: ${cache_gib} GiB (default allowance: 10 GiB)"
+            echo "- Active artifacts: ${artifact_gib} GiB"
+            echo "- Active WASM artifacts: ${wasm_gib} GiB"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if (( CACHE_BYTES > 9663676416 )); then
+            echo "::warning::Actions cache usage exceeds 90% of the default 10 GiB allowance."
+          fi
+          if (( ARTIFACT_BYTES > 524288000 )); then
+            echo "::warning::Active artifact storage exceeds the GitHub Free 500 MiB allowance."
+          fi
