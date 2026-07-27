@@ -25,6 +25,9 @@ jobs:
           - os: ubuntu-22.04
             # libqscintilla2-qt6-dev not packaged
             qt: qt6
+          - os: ubuntu-24.04
+            # libqscintilla2-qt6-dev not packaged
+            qt: qt5
 
     runs-on: ${{ matrix.os }}
 
