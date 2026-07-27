@@ -24,8 +24,7 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        os: [macos-15-intel]
-        # Note: macos-14 (ARM64) excluded due to known SW renderer issues causing image test failures
+        os: [macos-15]
     runs-on:  ${{ matrix.os }}
     name: ${{ matrix.os }} qt6
     # If it's not done in 90 minutes, something is wrong.
