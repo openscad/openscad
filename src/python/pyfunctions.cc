@@ -49,7 +49,9 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
     std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
     if (polygon != nullptr) {
       if (v != nullptr) {
-        polygon->points = python_to2dvarpointlist(v);
+        auto points = python_to2dvarpointlist(v);
+        if (PyErr_Occurred()) return nullptr;
+        polygon->points = std::move(points);
         Py_RETURN_NONE;
       }
 
@@ -66,7 +68,9 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
     std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
     if (polygon != nullptr) {
       if (v != nullptr) {
-        polygon->paths = python_to2dintlist(v);
+        auto paths = python_to2dintlist(v);
+        if (PyErr_Occurred()) return nullptr;
+        polygon->paths = std::move(paths);
         Py_RETURN_NONE;
       }
 

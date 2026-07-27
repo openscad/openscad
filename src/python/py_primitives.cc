@@ -614,31 +614,40 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *element;
   Vector3d point;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!O!", kwlist, &PyList_Type, &points,
-                                   &PyList_Type, &faces, &convexity, &PyList_Type, &triangles,
-                                   &PyList_Type, &colors)) {
+  // Accept lists, tuples or NumPy arrays for every array-like argument, so
+  // the parse format is plain `O` and the type is validated below.
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|iOO", kwlist, &points, &faces, &convexity,
+                                   &triangles, &colors)) {
     PyErr_SetString(PyExc_TypeError,
                     "Error during parsing polyhedron(points, faces, convexity, triangles, colors)");
     return NULL;
   }
 
-  if (points != NULL && PyList_Check(points)) {
-    if (PyList_Size(points) == 0) {
+  if (points != NULL && python_is_sequence(points)) {
+    // Accept a list/tuple/NumPy array of coordinates; each point must have
+    // exactly 3 components for a polyhedron.
+    PyObject *seq = PySequence_Fast(points, "expected a list of coordinates");
+    if (seq == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Polyhedron Points must be a list of coordinates");
+      return NULL;
+    }
+    Py_ssize_t npoints = PySequence_Fast_GET_SIZE(seq);
+    if (npoints == 0) {
+      Py_DECREF(seq);
       PyErr_SetString(PyExc_TypeError, "There must at least be one point in the polyhedron");
       return NULL;
     }
-    for (Py_ssize_t i = 0; i < PyList_Size(points); i++) {
-      element = PyList_GetItem(points, i);
-      if (PyList_Check(element) && PyList_Size(element) == 3) {
-        point[0] = PyFloat_AsDouble(PyList_GetItem(element, 0));
-        point[1] = PyFloat_AsDouble(PyList_GetItem(element, 1));
-        point[2] = PyFloat_AsDouble(PyList_GetItem(element, 2));
-        node->points.push_back(point);
-      } else {
+    for (Py_ssize_t i = 0; i < npoints; i++) {
+      element = PySequence_Fast_GET_ITEM(seq, i);
+      if (!python_is_sequence(element) ||
+          python_vectorval(element, 3, 3, &point[0], &point[1], &point[2], nullptr, nullptr)) {
+        Py_DECREF(seq);
         PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 3 numbers");
         return NULL;
       }
+      node->points.push_back(point);
     }
+    Py_DECREF(seq);
   } else {
     PyErr_SetString(PyExc_TypeError, "Polyhedron Points must be a list of coordinates");
     return NULL;
@@ -650,52 +659,84 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
     //"polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
   }
 
-  if (faces != NULL && PyList_Check(faces)) {
-    if (PyList_Size(faces) == 0) {
+  if (faces != NULL && python_is_sequence(faces)) {
+    PyObject *seq = PySequence_Fast(faces, "expected a list of faces");
+    if (seq == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Polyhedron faces must be a list of indices");
+      return NULL;
+    }
+    Py_ssize_t nfaces = PySequence_Fast_GET_SIZE(seq);
+    if (nfaces == 0) {
+      Py_DECREF(seq);
       PyErr_SetString(PyExc_TypeError, "must specify at least 1 face");
       return NULL;
     }
-    for (Py_ssize_t i = 0; i < PyList_Size(faces); i++) {
-      element = PyList_GetItem(faces, i);
-      if (PyList_Check(element)) {
+    for (Py_ssize_t i = 0; i < nfaces; i++) {
+      element = PySequence_Fast_GET_ITEM(seq, i);
+      if (python_is_sequence(element)) {
+        PyObject *fseq = PySequence_Fast(element, "expected a list of indices");
+        if (fseq == NULL) {
+          Py_DECREF(seq);
+          PyErr_SetString(PyExc_TypeError, "Polyhedron Face must be a list of indices");
+          return NULL;
+        }
         IndexedFace face;
-        for (Py_ssize_t j = 0; j < PyList_Size(element); j++) {
-          long pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
+        Py_ssize_t nind = PySequence_Fast_GET_SIZE(fseq);
+        for (Py_ssize_t j = 0; j < nind; j++) {
+          long pointIndex;
+          if (python_indexval(PySequence_Fast_GET_ITEM(fseq, j), &pointIndex)) {
+            Py_DECREF(fseq);
+            Py_DECREF(seq);
+            PyErr_SetString(PyExc_TypeError, "Polyhedron Point Index must be an integer");
+            return NULL;
+          }
           if (pointIndex < 0 || pointIndex >= static_cast<long>(node->points.size())) {
+            Py_DECREF(fseq);
+            Py_DECREF(seq);
             PyErr_SetString(PyExc_TypeError, "Polyhedron Point Index out of range");
             return NULL;
           }
           face.push_back(pointIndex);
         }
+        Py_DECREF(fseq);
         if (face.size() >= 3) {
           node->faces.push_back(std::move(face));
         } else {
-          PyErr_SetString(PyExc_TypeError, "Polyhedron Face must sepcify at least 3 indices");
+          Py_DECREF(seq);
+          PyErr_SetString(PyExc_TypeError, "Polyhedron Face must specify at least 3 indices");
           return NULL;
         }
 
       } else {
+        Py_DECREF(seq);
         PyErr_SetString(PyExc_TypeError, "Polyhedron Face must be a list of indices");
         return NULL;
       }
     }
+    Py_DECREF(seq);
   } else {
     PyErr_SetString(PyExc_TypeError, "Polyhedron faces must be a list of indices");
     return NULL;
   }
 
-  if (colors != NULL && PyList_Check(colors)) {
-    if ((size_t)PyList_Size(colors) != node->faces.size()) {
+  if (colors != NULL && python_is_sequence(colors)) {
+    PyObject *seq = PySequence_Fast(colors, "expected a list of colors");
+    if (seq == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Face Color must be a list with 3 values");
+      return NULL;
+    }
+    if ((size_t)PySequence_Fast_GET_SIZE(seq) != node->faces.size()) {
+      Py_DECREF(seq);
       PyErr_SetString(PyExc_TypeError, "when specified must match number of faces");
       return NULL;
     }
-    for (Py_ssize_t i = 0; i < PyList_Size(colors); i++) {
-      element = PyList_GetItem(colors, i);
-      if (PyList_Check(element) && PyList_Size(element) == 3) {
-        Vector4f color(0, 0, 0, 1.0);
-        for (int j = 0; j < 3; j++) {
-          color[j] = PyFloat_AsDouble(PyList_GetItem(element, j));
-        }
+    for (Py_ssize_t i = 0; i < PySequence_Fast_GET_SIZE(seq); i++) {
+      element = PySequence_Fast_GET_ITEM(seq, i);
+      // python_vectorval() writes doubles; Vector4f stores floats.
+      double r, g, b;
+      if (python_is_sequence(element) &&
+          python_vectorval(element, 3, 3, &r, &g, &b, nullptr, nullptr) == 0) {
+        Vector4f color(r, g, b, 1.0);
         int colind = -1;
         int ind = 0;
         for (auto& c : node->colors) {
@@ -711,10 +752,12 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         node->color_indices.push_back(colind);
       } else {
+        Py_DECREF(seq);
         PyErr_SetString(PyExc_TypeError, "Face Color must be a list with 3 values");
         return NULL;
       }
     }
+    Py_DECREF(seq);
   }
 
   node->convexity = convexity;
@@ -882,8 +925,9 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *pypaths = NULL;
   int convexity = 2;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, &PyList_Type, &pypoints, &PyList_Type,
-                                   &pypaths, &convexity)) {
+  // Accept lists, tuples or NumPy arrays; type is validated by
+  // python_to2dvarpointlist() / python_to2dintlist() below.
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Oi", kwlist, &pypoints, &pypaths, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polygon(points,paths)");
     return NULL;
   }
@@ -896,9 +940,7 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   node->points = points;
 
   std::vector<std::vector<size_t>> paths = python_to2dintlist(pypaths);
-  //  if (paths.size() == 0) { TODO fehlercode ?
-  //    return NULL;
-  //  }
+  if (PyErr_Occurred()) return NULL;
   node->paths = paths;
 
   node->convexity = convexity;
@@ -916,7 +958,7 @@ PyObject *python_polyline(PyObject *self, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {"points", NULL};
   PyObject *pypoints = NULL;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type, &pypoints)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &pypoints)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polyline(points,paths)");
     return NULL;
   }
@@ -941,29 +983,35 @@ PyObject *python_spline(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *points = NULL;
   double fn = 0, fa = 0, fs = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|ddd", kwlist, &PyList_Type, &points, &fn, &fa,
-                                   &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddd", kwlist, &points, &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing spline(points)");
     return NULL;
   }
 
-  if (points != NULL && PyList_Check(points)) {
-    if (PyList_Size(points) == 0) {
+  if (points != NULL && python_is_sequence(points)) {
+    PyObject *seq = PySequence_Fast(points, "expected a list of coordinates");
+    if (seq == NULL) {
+      PyErr_SetString(PyExc_TypeError, "Polygon points must be a list of coordinates");
+      return NULL;
+    }
+    Py_ssize_t npoints = PySequence_Fast_GET_SIZE(seq);
+    if (npoints == 0) {
+      Py_DECREF(seq);
       PyErr_SetString(PyExc_TypeError, "There must at least be one point in the polygon");
       return NULL;
     }
-    for (Py_ssize_t i = 0; i < PyList_Size(points); i++) {
-      PyObject *element = PyList_GetItem(points, i);
-      if (PyList_Check(element) && PyList_Size(element) == 2) {
-        Vector2d point;
-        point[0] = PyFloat_AsDouble(PyList_GetItem(element, 0));
-        point[1] = PyFloat_AsDouble(PyList_GetItem(element, 1));
-        node->points.push_back(point);
-      } else {
+    for (Py_ssize_t i = 0; i < npoints; i++) {
+      PyObject *element = PySequence_Fast_GET_ITEM(seq, i);
+      double x, y;
+      if (!python_is_sequence(element) ||
+          python_vectorval(element, 2, 2, &x, &y, nullptr, nullptr, nullptr)) {
+        Py_DECREF(seq);
         PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 2 numbers");
         return NULL;
       }
+      node->points.push_back(Vector2d(x, y));
     }
+    Py_DECREF(seq);
   } else {
     PyErr_SetString(PyExc_TypeError, "Polygon points must be a list of coordinates");
     return NULL;

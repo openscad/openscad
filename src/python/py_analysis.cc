@@ -241,10 +241,22 @@ PyObject *python_bbox_core(PyObject *obj)
     Py_RETURN_NONE;
   }
 
+  // `size` may be a plain list or a NumPy array (when numpy is installed),
+  // so probe it through the sequence protocol rather than PyList_*.
+  bool is_2d = false;
+  if (python_is_sequence(size)) {
+    Py_ssize_t size_length = PySequence_Size(size);
+    if (size_length < 0) {
+      Py_DECREF(position);
+      Py_DECREF(size);
+      return NULL;
+    }
+    is_2d = size_length == 2;
+  }
+
   // Create bounding shape: square for 2D, cube for 3D
   PyObject *bbox_args = PyTuple_New(0);
   PyObject *bbox_kwargs = PyDict_New();
-  bool is_2d = PyList_Check(size) && PyList_Size(size) == 2;
   PyDict_SetItemString(bbox_kwargs, is_2d ? "dim" : "size", size);
   PyDict_SetItemString(bbox_kwargs, "center", Py_False);
 

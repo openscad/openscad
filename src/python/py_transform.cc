@@ -261,14 +261,14 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v, Py
   Vector3d vec3(0, 0, 0);
   double angle;
   int dragflags = 0;
-  if (val_a != nullptr && PyList_Check(val_a) && val_v == nullptr) {
-    python_vectorval(val_a, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
+  if (val_a != nullptr && python_is_sequence(val_a) && val_v == nullptr) {
+    if (python_vectorval(val_a, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags)) {
+      PyErr_SetString(PyExc_TypeError, "Invalid rotation vector");
+      return nullptr;
+    }
     return python_rotate_sub(obj, vec3, NAN, ref, dragflags);
   } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a, &angle, nullptr, 0) &&
-             PyList_Check(val_v) && PyList_Size(val_v) == 3) {
-    vec3[0] = PyFloat_AsDouble(PyList_GetItem(val_v, 0));
-    vec3[1] = PyFloat_AsDouble(PyList_GetItem(val_v, 1));
-    vec3[2] = PyFloat_AsDouble(PyList_GetItem(val_v, 2));
+             python_tovector(val_v, vec3) == 0) {
     return python_rotate_sub(obj, vec3, angle, ref, dragflags);
   }
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to rotate()");
@@ -540,7 +540,8 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, &obj, &PyList_Type, &mat)) {
+  // Accept a list/tuple/NumPy 4x4 matrix; validated by python_tomatrix().
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj, &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix(object, vec16)");
     return NULL;
   }
@@ -551,7 +552,7 @@ PyObject *python_oo_multmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"m", NULL};
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix(object, vec16)");
     return NULL;
   }
@@ -563,7 +564,7 @@ PyObject *python_divmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, &obj, &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj, &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing divmatrix(object, vec16)");
     return NULL;
   }
@@ -574,7 +575,7 @@ PyObject *python_oo_divmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"m", NULL};
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing divmatrix(object, vec16)");
     return NULL;
   }

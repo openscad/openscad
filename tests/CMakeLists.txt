@@ -1553,13 +1553,24 @@ if(ENABLE_PYTHON)
   set_property(TEST version-helpers PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
 
   # Coverage for the C++ Python-object type-conversion helpers in
-  # src/python/pyconversion.cc, driven through their Python API entry points.
+  # src/python/pyconversion.cc, driven through their Python API entry points
+  # with list/tuple/numpy/scalar/error variants. Self-skips without numpy.
   add_test(NAME python-conversions CONFIGURATIONS Default
     COMMAND ${Python3_EXECUTABLE} -Xutf8=1
       ${CMAKE_CURRENT_SOURCE_DIR}/test_python_conversions.py
       ${OPENSCAD_BINPATH}
   )
   set_property(TEST python-conversions PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+  set_property(TEST python-conversions PROPERTY SKIP_REGULAR_EXPRESSION "^SKIP")
+
+  # Unit tests for the pure-Python Vector/Matrix helper classes
+  # (libraries/python/pythonscad/_vectors.py). This remains a host-Python test
+  # so it can force and exercise the list-backed fallback with NumPy blocked.
+  add_test(NAME python-vectors CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_python_vectors.py
+  )
+  set_property(TEST python-vectors PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
 
   add_test(NAME python-sibling-import-cli CONFIGURATIONS Default
     COMMAND ${Python3_EXECUTABLE} -Xutf8=1

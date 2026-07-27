@@ -686,17 +686,25 @@ Outline2d python_getprofile(void *v_cbfunc, int fn, double arg)
       double y = r * sin(ang1);
       result.vertices.push_back(Vector2d(x, y));
     }
-  } else if (PyList_Check(polygon)) {
-    unsigned int n = PyList_Size(polygon);
-    for (unsigned int i = 0; i < n; i++) {
-      PyObject *pypt = PyList_GetItem(polygon, i);
-      if (PyList_Check(pypt) && PyList_Size(pypt) == 2) {
-        double x = PyFloat_AsDouble(PyList_GetItem(pypt, 0));
-        double y = PyFloat_AsDouble(PyList_GetItem(pypt, 1));
-        result.vertices.push_back(Vector2d(x, y));
+  } else if (python_is_sequence(polygon)) {
+    // Accept a list/tuple/NumPy array of 2D coordinates.
+    PyObject *seq = PySequence_Fast(polygon, "expected a list of coordinates");
+    if (seq == nullptr) {
+      PyErr_Clear();
+    } else {
+      Py_ssize_t n = PySequence_Fast_GET_SIZE(seq);
+      for (Py_ssize_t i = 0; i < n; i++) {
+        PyObject *pypt = PySequence_Fast_GET_ITEM(seq, i);
+        double x, y;
+        if (python_is_sequence(pypt) &&
+            python_vectorval(pypt, 2, 2, &x, &y, nullptr, nullptr, nullptr) == 0) {
+          result.vertices.push_back(Vector2d(x, y));
+        }
       }
+      Py_DECREF(seq);
     }
   }
+  Py_XDECREF(polygon);
   if (result.vertices.size() < 3) {
     Outline2d err;
     err.vertices.push_back(Vector2d(0, 0));
@@ -925,14 +933,23 @@ Value python_convertresult(PyObject *arg, int& error)
 {
   error = 0;
   if (arg == nullptr) return Value::undefined.clone();
-  if (PyList_Check(arg)) {
+  // Lists, tuples and NumPy arrays all convert to an OpenSCAD vector.
+  if (python_is_sequence(arg)) {
+    PyObject *seq = PySequence_Fast(arg, "expected a sequence");
+    if (seq == nullptr) {
+      PyErr_Clear();
+      error = 1;
+      return Value::undefined.clone();
+    }
     VectorType vec(nullptr);
-    for (int i = 0; i < PyList_Size(arg); i++) {
-      PyObject *item = PyList_GetItem(arg, i);
+    Py_ssize_t n = PySequence_Fast_GET_SIZE(seq);
+    for (Py_ssize_t i = 0; i < n; i++) {
+      PyObject *item = PySequence_Fast_GET_ITEM(seq, i);
       int suberror;
       vec.emplace_back(python_convertresult(item, suberror));
       error |= suberror;
     }
+    Py_DECREF(seq);
     return std::move(vec);
   } else if (PyFloat_Check(arg)) {
     return {PyFloat_AsDouble(arg)};
@@ -947,6 +964,18 @@ Value python_convertresult(PyObject *arg, int& error)
     return {str};
   } else if (arg == Py_None) {
     return Value::undefined.clone();
+  } else if (PyNumber_Check(arg)) {
+    // NumPy scalars (numpy.float64, numpy.int64, ...) and other objects
+    // implementing the number protocol collapse to a double.
+    PyObject *f = PyNumber_Float(arg);
+    if (f != nullptr) {
+      double d = PyFloat_AsDouble(f);
+      Py_DECREF(f);
+      return {d};
+    }
+    PyErr_Clear();
+    PyErr_SetString(PyExc_TypeError, "Unsupported numeric function result");
+    error = 1;
   } else if (arg->ob_type->tp_base == &PyBaseObject_Type) {
     Py_INCREF(arg);
     return PythonClassType(arg);

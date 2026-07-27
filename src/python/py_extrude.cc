@@ -75,13 +75,25 @@ PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double
     } else node->twist = PyFloat_AsDouble(twist);
   }
 
-  if (origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
-    node->origin_x = PyFloat_AsDouble(PyList_GetItem(origin, 0));
-    node->origin_y = PyFloat_AsDouble(PyList_GetItem(origin, 1));
+  // origin/offset accept a list/tuple/NumPy 2-vector.
+  double ox, oy;
+  if (origin != NULL && origin != Py_None) {
+    if (!python_is_sequence(origin) ||
+        python_vectorval(origin, 2, 2, &ox, &oy, nullptr, nullptr, nullptr)) {
+      PyErr_SetString(PyExc_TypeError, "Invalid rotate_extrude origin parameter");
+      return NULL;
+    }
+    node->origin_x = ox;
+    node->origin_y = oy;
   }
-  if (offset != NULL && PyList_Check(offset) && PyList_Size(offset) == 2) {
-    node->offset_x = PyFloat_AsDouble(PyList_GetItem(offset, 0));
-    node->offset_y = PyFloat_AsDouble(PyList_GetItem(offset, 1));
+  if (offset != NULL && offset != Py_None) {
+    if (!python_is_sequence(offset) ||
+        python_vectorval(offset, 2, 2, &ox, &oy, nullptr, nullptr, nullptr)) {
+      PyErr_SetString(PyExc_TypeError, "Invalid rotate_extrude offset parameter");
+      return NULL;
+    }
+    node->offset_x = ox;
+    node->offset_y = oy;
   }
   double dummy;
   Vector3d v(0, 0, 0);
@@ -183,16 +195,28 @@ PyObject *linear_extrude_core(PyObject *obj, PyObject *height, int convexity, Py
 
   node->origin_x = 0.0;
   node->origin_y = 0.0;
-  if (origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
-    node->origin_x = PyFloat_AsDouble(PyList_GetItem(origin, 0));
-    node->origin_y = PyFloat_AsDouble(PyList_GetItem(origin, 1));
+  if (origin != NULL && origin != Py_None) {
+    double ox, oy;
+    if (!python_is_sequence(origin) ||
+        python_vectorval(origin, 2, 2, &ox, &oy, nullptr, nullptr, nullptr)) {
+      PyErr_SetString(PyExc_TypeError, "Invalid linear_extrude origin parameter");
+      return NULL;
+    }
+    node->origin_x = ox;
+    node->origin_y = oy;
   }
 
   node->scale_x = 1.0;
   node->scale_y = 1.0;
-  if (scale != NULL && PyList_Check(scale) && PyList_Size(scale) == 2) {
-    node->scale_x = PyFloat_AsDouble(PyList_GetItem(scale, 0));
-    node->scale_y = PyFloat_AsDouble(PyList_GetItem(scale, 1));
+  if (scale != NULL && scale != Py_None) {
+    double sx, sy;
+    if (!python_is_sequence(scale) ||
+        python_vectorval(scale, 2, 2, &sx, &sy, nullptr, nullptr, nullptr)) {
+      PyErr_SetString(PyExc_TypeError, "Invalid linear_extrude scale parameter");
+      return NULL;
+    }
+    node->scale_x = sx;
+    node->scale_y = sy;
   }
 
   if (center == Py_True) node->center = 1;
@@ -290,12 +314,19 @@ PyObject *path_extrude_core(PyObject *obj, PyObject *path, PyObject *xdir, int c
     if (child == NULL) return propagate_or_typeerror("Invalid type for  Object in path_extrude\n");
     node->children.push_back(child);
   }
-  if (path != NULL && PyList_Check(path)) {
-    int n = PyList_Size(path);
-    for (int i = 0; i < n; i++) {
-      PyObject *point = PyList_GetItem(path, i);
+  if (path != NULL && python_is_sequence(path)) {
+    PyObject *seq = PySequence_Fast(path, "expected a list of path points");
+    if (seq == NULL) {
+      PyErr_Clear();
+      PyErr_SetString(PyExc_TypeError, "Cannot parse path_extrude path\n");
+      return NULL;
+    }
+    Py_ssize_t n = PySequence_Fast_GET_SIZE(seq);
+    for (Py_ssize_t i = 0; i < n; i++) {
+      PyObject *point = PySequence_Fast_GET_ITEM(seq, i);
       double x, y, z, w = 0;
-      if (python_vectorval(point, 3, 4, &x, &y, &z, &w)) {
+      if (!python_is_sequence(point) || python_vectorval(point, 3, 4, &x, &y, &z, &w)) {
+        Py_DECREF(seq);
         PyErr_SetString(PyExc_TypeError, "Cannot parse vector in path_extrude path\n");
         return NULL;
       }
@@ -303,6 +334,7 @@ PyObject *path_extrude_core(PyObject *obj, PyObject *path, PyObject *xdir, int c
       if (i > 0 && node->path[i - 1] == pt3d) continue;  //  prevent double pts
       node->path.push_back(pt3d);
     }
+    Py_DECREF(seq);
   }
   node->xdir_x = 1;
   node->xdir_y = 0;
@@ -311,7 +343,8 @@ PyObject *path_extrude_core(PyObject *obj, PyObject *path, PyObject *xdir, int c
   if (closed == Py_True) node->closed = true;
   if (allow_intersect == Py_True) node->allow_intersect = true;
   if (xdir != NULL) {
-    if (python_vectorval(xdir, 3, 3, &(node->xdir_x), &(node->xdir_y), &(node->xdir_z))) {
+    if (!python_is_sequence(xdir) ||
+        python_vectorval(xdir, 3, 3, &(node->xdir_x), &(node->xdir_y), &(node->xdir_z))) {
       PyErr_SetString(PyExc_TypeError, "error in path_extrude xdir parameter\n");
       return NULL;
     }
@@ -332,7 +365,8 @@ PyObject *path_extrude_core(PyObject *obj, PyObject *path, PyObject *xdir, int c
   node->origin_y = 0.0;
   if (origin != NULL) {
     double dummy;
-    if (python_vectorval(origin, 2, 2, &(node->origin_x), &(node->origin_y), &dummy)) {
+    if (!python_is_sequence(origin) ||
+        python_vectorval(origin, 2, 2, &(node->origin_x), &(node->origin_y), &dummy)) {
       PyErr_SetString(PyExc_TypeError, "error in path_extrude origin parameter\n");
       return NULL;
     }
@@ -342,16 +376,13 @@ PyObject *path_extrude_core(PyObject *obj, PyObject *path, PyObject *xdir, int c
   node->scale_y = 1.0;
   if (scale != NULL) {
     double dummy;
-    if (python_vectorval(scale, 2, 2, &(node->scale_x), &(node->scale_y), &dummy)) {
+    if (!python_is_sequence(scale) ||
+        python_vectorval(scale, 2, 2, &(node->scale_x), &(node->scale_y), &dummy)) {
       PyErr_SetString(PyExc_TypeError, "error in path_extrude scale parameter\n");
       return NULL;
     }
   }
 
-  if (scale != NULL && PyList_Check(scale) && PyList_Size(scale) == 2) {
-    node->scale_x = PyFloat_AsDouble(PyList_GetItem(scale, 0));
-    node->scale_y = PyFloat_AsDouble(PyList_GetItem(scale, 1));
-  }
   if (twist != NULL) {
     if (twist->ob_type == &PyFunction_Type) {
       Py_XINCREF(twist);  // TODO there to decref it ?
@@ -376,11 +407,13 @@ PyObject *python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *twist = NULL;
   double fn = -1, fa = -1, fs = -1;
 
-  char *kwlist[] = {"obj",   "path",   "xdir", "convexity", "origin", "scale",
-                    "twist", "closed", "fn",   "fa",        "fs",     NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOOOOddd", kwlist, &obj, &PyList_Type, &path,
-                                   &PyList_Type, &xdir, &convexity, &origin, &scale, &twist, &closed,
-                                   &allow_intersect, &fn, &fs, &fs)) {
+  char *kwlist[] = {"obj",   "path",  "xdir",   "convexity",       "origin",
+                    "scale", "twist", "closed", "allow_intersect", "fn",
+                    "fa",    "fs",    NULL};
+  // path/xdir accept list/tuple/NumPy; validated by python_vectorval() in
+  // path_extrude_core().
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|OiOOOOOddd", kwlist, &obj, &path, &xdir, &convexity,
+                                   &origin, &scale, &twist, &closed, &allow_intersect, &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -536,11 +569,10 @@ PyObject *python_oo_path_extrude(PyObject *obj, PyObject *args, PyObject *kwargs
   PyObject *twist = NULL;
   double fn = -1, fa = -1, fs = -1;
 
-  char *kwlist[] = {"path",   "xdir", "convexity", "origin", "scale", "twist",
-                    "closed", "fn",   "fa",        "fs",     NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!iOOOOOddd", kwlist, &PyList_Type, &path,
-                                   &PyList_Type, &xdir, &convexity, &origin, &scale, &twist, &closed,
-                                   &allow_intersect, &fn, &fs, &fs)) {
+  char *kwlist[] = {"path", "xdir", "convexity", "origin", "scale", "twist", "closed", "allow_intersect",
+                    "fn",   "fa",   "fs",        NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OiOOOOOddd", kwlist, &path, &xdir, &convexity,
+                                   &origin, &scale, &twist, &closed, &allow_intersect, &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }

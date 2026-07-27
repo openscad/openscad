@@ -404,13 +404,21 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2,
   std::vector<Vector3d> vecs;
   int dragflags = 0;
   if (mode == 3) {
-    if (!PyList_Check(arg2)) {
-      PyErr_SetString(PyExc_TypeError, "explode arg must be a list");
+    // Accept a list/tuple/NumPy array for the explode spec.
+    if (!python_is_sequence(arg2)) {
+      PyErr_SetString(PyExc_TypeError, "explode arg must be a sequence");
       return NULL;
     }
-    int n = PyList_Size(arg2);
-    if (PyList_Size(arg2) > 3) {
-      PyErr_SetString(PyExc_TypeError, "explode arg list can have maximal 3 directions");
+    PyObject *arg2seq = PySequence_Fast(arg2, "expected an explode spec");
+    if (arg2seq == NULL) {
+      PyErr_Clear();
+      PyErr_SetString(PyExc_TypeError, "explode arg must be a sequence");
+      return NULL;
+    }
+    int n = PySequence_Fast_GET_SIZE(arg2seq);
+    if (n > 3) {
+      Py_DECREF(arg2seq);
+      PyErr_SetString(PyExc_TypeError, "explode arg sequence can have at most 3 directions");
       return NULL;
     }
     double dmy;
@@ -418,19 +426,29 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2,
     for (int i = 0; i < 3; i++) vals[i].push_back(0.0);
     for (int i = 0; i < n; i++) {
       vals[i].clear();
-      auto *item = PyList_GetItem(arg2, i);  // TODO fix here
+      auto *item = PySequence_Fast_GET_ITEM(arg2seq, i);
       if (!python_numberval(item, &dmy, &dragflags, 1 << i)) vals[i].push_back(dmy);
-      else if (PyList_Check(item)) {
-        int m = PyList_Size(item);
+      else if (python_is_sequence(item)) {
+        PyObject *itemseq = PySequence_Fast(item, "expected an explode direction");
+        if (itemseq == NULL) {
+          Py_DECREF(arg2seq);
+          PyErr_Clear();
+          PyErr_SetString(PyExc_TypeError, "Unknown explode spec");
+          return NULL;
+        }
+        int m = PySequence_Fast_GET_SIZE(itemseq);
         for (int j = 0; j < m; j++) {
-          auto *item1 = PyList_GetItem(item, j);
+          auto *item1 = PySequence_Fast_GET_ITEM(itemseq, j);
           if (!python_numberval(item1, &dmy, nullptr, 0)) vals[i].push_back(dmy);
         }
+        Py_DECREF(itemseq);
       } else {
+        Py_DECREF(arg2seq);
         PyErr_SetString(PyExc_TypeError, "Unknown explode spec");
         return NULL;
       }
     }
+    Py_DECREF(arg2seq);
     for (auto z : vals[2])
       for (auto y : vals[1])
         for (auto x : vals[0]) vecs.push_back(Vector3d(x, y, z));
@@ -578,10 +596,21 @@ PyObject *python_nb_or(PyObject *arg1, PyObject *arg2)
 PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
 {
   double dmy;
-  if (PyList_Check(arg2) && PyList_Size(arg2) > 0) {
-    PyObject *sub = PyList_GetItem(arg2, 0);
-    if (!python_numberval(sub, &dmy, nullptr, 0) || PyList_Check(sub)) {
-      return python_nb_sub_vec3(arg1, arg2, 2);
+  // A list/tuple/NumPy vector on the RHS means "translate by -vector";
+  // anything else is treated as a solid to subtract.
+  if (python_is_sequence(arg2)) {
+    PyObject *seq = PySequence_Fast(arg2, "expected a vector");
+    if (seq == NULL) {
+      PyErr_Clear();
+    } else if (PySequence_Fast_GET_SIZE(seq) > 0) {
+      PyObject *sub = PySequence_Fast_GET_ITEM(seq, 0);
+      bool isvec = (!python_numberval(sub, &dmy, nullptr, 0) || python_is_sequence(sub));
+      Py_DECREF(seq);
+      if (isvec) {
+        return python_nb_sub_vec3(arg1, arg2, 2);
+      }
+    } else {
+      Py_DECREF(seq);
     }
   }
   return python_nb_sub(arg1, arg2, OpenSCADOperator::DIFFERENCE);  // if its solid

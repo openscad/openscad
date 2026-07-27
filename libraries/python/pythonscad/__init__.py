@@ -24,6 +24,13 @@ from openscad import (  # noqa: F401
     ChildRef,
     Openscad,
 )
+from ._vectors import (  # noqa: F401
+    HAS_NUMPY,
+    Matrix4x4,
+    Vector1,
+    Vector2,
+    Vector3,
+)
 
 # Convention: any module-level import that is NOT meant to be part of
 # the public `pythonscad` API must be aliased with a leading underscore

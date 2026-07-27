@@ -136,6 +136,11 @@ std::shared_ptr<AbstractNode> python_modulefunc(const std::shared_ptr<const Modu
                                                 const std::shared_ptr<const Context>& context,
                                                 std::string& error);
 std::vector<int> python_intlistval(PyObject *list);
+// True for list/tuple/NumPy-array-like objects (anything supporting the
+// sequence protocol) but not str/bytes/dict/PyOpenSCAD objects. Use in place
+// of PyList_Check() when parsing user coordinate/index input so NumPy arrays
+// and tuples are accepted alongside plain lists.
+bool python_is_sequence(PyObject *o);
 
 Value python_functionfunc(const FunctionCall *call, const std::shared_ptr<const Context>& context,
                           int& error);

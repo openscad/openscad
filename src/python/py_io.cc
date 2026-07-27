@@ -498,6 +498,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   int convexity = 2;
   double scale = 1.0, width = 1, height = 1, dpi = ImportNode::SVG_DEFAULT_DPI;
   PyObject *origin = NULL;
+  // origin accepts a list/tuple/NumPy 2-vector; validated by python_vectorval().
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ziOdddOdzOOOOO", kwlist, &v, &layer, &convexity,
                                    &origin, &scale, &width, &height, &center, &dpi, &id, &stroke, &fn,
                                    &fa, &fs, &split_by_color
@@ -506,17 +507,15 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
   }
-  if (origin != nullptr && origin != Py_None && (!PyList_Check(origin) || PyList_Size(origin) != 2)) {
-    PyErr_SetString(PyExc_TypeError, "osimport(): origin must be a two-element list or None");
-    return nullptr;
-  }
   double originX = 0;
   double originY = 0;
   if (origin != nullptr && origin != Py_None) {
-    originX = PyFloat_AsDouble(PyList_GetItem(origin, 0));
-    if (PyErr_Occurred()) return nullptr;
-    originY = PyFloat_AsDouble(PyList_GetItem(origin, 1));
-    if (PyErr_Occurred()) return nullptr;
+    if (!python_is_sequence(origin) ||
+        python_vectorval(origin, 2, 2, &originX, &originY, nullptr, nullptr, nullptr) != 0) {
+      PyErr_SetString(PyExc_TypeError,
+                      "osimport(): origin must be a two-element coordinate sequence or None");
+      return nullptr;
+    }
   }
   if (v == NULL || v[0] == '\0') {
     PyErr_SetString(PyExc_ValueError, "osimport(): filename must not be empty");

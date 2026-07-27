@@ -3,16 +3,17 @@
 
 Every conversion helper in ``src/python/pyconversion.cc`` is reachable only
 through a Python-facing API entry point, so this test drives those entry
-points through the ``pythonscad`` binary and asserts that each one:
+points through the ``pythonscad`` binary and asserts:
 
-* accepts the coordinate/index shapes it documents (lists, the native
-  ``vector()`` type, and scalar broadcast),
-* rejects malformed input with a ``TypeError`` (the converters' error paths),
-* and hands back values of the documented type/shape.
+* the same result is produced from a plain list, a tuple and a NumPy array
+  (proves list/tuple/ndarray all flow through the converter identically),
+* scalar-broadcast, native-vector and 2-D/3-D coordinate paths behave,
+* invalid input raises ``TypeError`` (the converters' error paths), and
+* the values returned *to* Python have the documented type/shape.
 
 Helper -> entry point coverage:
 
-    python_numberval        - cube(<scalar>); reject non-numeric str
+    python_numberval        - cube(<scalar>), incl. numpy scalars; reject str
     python_vectorval        - cube(size3), color(3/4-vec, w component)
     python_vectors          - translate/scale (+ scalar broadcast, vector())
     python_tovector         - rotate(angle, v3)
@@ -20,10 +21,12 @@ Helper -> entry point coverage:
     python_intlistval       - debug(faces)
     python_to2dvarpointlist - polygon(points 2-D/3-D)
     python_to2dintlist      - polygon(points, paths)
-    python_fromvector       - .size / .bbox.*  / cross()
+    python_fromvector       - .size / .bbox.* / cross()
     python_frommatrix       - face.matrix
     python_from2dvarpointlist / python_from2dint
-                            - polygon.points / polyhedron.faces
+                            - polygon.points / polyhedron.faces (list returns)
+
+Self-skips (prints ``SKIP``) when the interpreter has no numpy.
 """
 from __future__ import annotations
 
@@ -35,14 +38,20 @@ import tempfile
 
 TIMEOUT_SECONDS = 120
 
-# This program runs *inside* the pythonscad interpreter.
 PYTHONSCAD_PROGRAM = r'''
 import atexit as _atexit
 import os as _os
+import sys as _sys
 import tempfile as _tempfile
 
+try:
+    import numpy as np
+except ImportError:
+    print("SKIP: numpy not available in the pythonscad interpreter")
+    _sys.exit(0)
+
 from pythonscad import (
-    cube, polygon, polyhedron, linear_extrude,
+    cube, cylinder, polygon, polyhedron, linear_extrude,
     translate, scale, rotate, multmatrix, vector,
 )
 
@@ -109,48 +118,74 @@ def _ext(p):
 
 
 # --- python_numberval -------------------------------------------------
-same("numberval-scalar", cube(10), cube(10.0))
+same("numberval-scalar",
+     cube(10), cube(10.0), cube(np.int64(10)), cube(np.float64(10.0)))
 err("numberval-reject-str", lambda: cube("nope"))
 
 # --- python_vectorval (cube size = 3, exact) --------------------------
-same("vectorval-size3", cube([2, 4, 6]), cube(vector(2, 4, 6)))
+same("vectorval-size3",
+     cube([2, 4, 6]), cube((2, 4, 6)),
+     cube(np.array([2.0, 4.0, 6.0])), cube(vector(2, 4, 6)))
 err("vectorval-too-short", lambda: cube([1, 2]))
 err("vectorval-too-long", lambda: cube([1, 2, 3, 4]))
 
 # --- python_vectorval (color, 3 or 4 components -> w path) ------------
-same("vectorval-color3", cube(1).color([1, 0, 0]), cube(1).color([1.0, 0.0, 0.0]))
-same("vectorval-color4-w", cube(1).color([1, 0, 0, 0.5]), cube(1).color([1.0, 0.0, 0.0, 0.5]))
+same("vectorval-color3",
+     cube(1).color([1, 0, 0]), cube(1).color((1, 0, 0)),
+     cube(1).color(np.array([1.0, 0.0, 0.0])))
+same("vectorval-color4-w",
+     cube(1).color([1, 0, 0, 0.5]),
+     cube(1).color(np.array([1.0, 0.0, 0.0, 0.5])))
 
 # --- python_vectors (translate/scale, broadcast, native vector) ------
 same("vectors-translate",
-     translate(cube(1), [1, 2, 3]), translate(cube(1), vector(1, 2, 3)))
-same("vectors-scale", scale(cube(2), [1, 2, 3]), scale(cube(2), [1.0, 2.0, 3.0]))
-same("vectors-scale-scalar-broadcast", scale(cube(2), 3), scale(cube(2), [3, 3, 3]))
+     translate(cube(1), [1, 2, 3]), translate(cube(1), (1, 2, 3)),
+     translate(cube(1), np.array([1.0, 2.0, 3.0])),
+     translate(cube(1), vector(1, 2, 3)))
+same("vectors-scale",
+     scale(cube(2), [1, 2, 3]), scale(cube(2), np.array([1.0, 2.0, 3.0])))
+same("vectors-scale-scalar-broadcast",
+     scale(cube(2), 3), scale(cube(2), [3, 3, 3]))
 
 # --- python_tovector (rotate axis, exactly 3) ------------------------
 same("tovector-rotate-v",
-     rotate(cube([1, 2, 3]), 45, [0, 0, 1]), rotate(cube([1, 2, 3]), 45, [0.0, 0.0, 1.0]))
+     rotate(cube([1, 2, 3]), 45, [0, 0, 1]),
+     rotate(cube([1, 2, 3]), 45, (0, 0, 1)),
+     rotate(cube([1, 2, 3]), 45, np.array([0.0, 0.0, 1.0])))
 err("tovector-wrong-len", lambda: cube([1, 2, 3]).rotate(45, [0, 1]))
 
 # --- python_tomatrix (multmatrix 4x4) --------------------------------
 _M = [[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-_Mf = [[float(x) for x in row] for row in _M]
-same("tomatrix-multmatrix", multmatrix(cube([1, 2, 3]), _M), multmatrix(cube([1, 2, 3]), _Mf))
+same("tomatrix-multmatrix",
+     multmatrix(cube([1, 2, 3]), _M),
+     multmatrix(cube([1, 2, 3]), tuple(tuple(r) for r in _M)),
+     multmatrix(cube([1, 2, 3]), np.array(_M, dtype=float)))
 err("tomatrix-not-matrix", lambda: cube(1).multmatrix([1, 2, 3, 4]))
 
 # --- python_intlistval (debug faces) ---------------------------------
-same("intlistval-debug", cube(10).debug([0, 1]), cube(10).debug([0, 1]))
+same("intlistval-debug",
+     cube(10).debug([0, 1]), cube(10).debug(np.array([0, 1])))
 
-# --- python_to2dvarpointlist (polygon points) ------------------------
+# --- python_to2dvarpointlist (polygon points, 2-D and 3-D) -----------
 _sq = [[0, 0], [10, 0], [10, 10], [0, 10]]
-_sqf = [[float(x) for x in p] for p in _sq]
-same("to2dvarpointlist-polygon", _ext(polygon(_sq)), _ext(polygon(_sqf)))
+same("to2dvarpointlist-polygon",
+     _ext(polygon(_sq)),
+     _ext(polygon(tuple(tuple(p) for p in _sq))),
+     _ext(polygon(np.array(_sq, dtype=float))))
 err("to2dvarpointlist-empty", lambda: polygon([]))
 err("to2dvarpointlist-bad-coord", lambda: polygon([[1]]))
 
 # --- python_to2dintlist (polygon paths) ------------------------------
 same("to2dintlist-paths",
-     _ext(polygon(_sq, paths=[[0, 1, 2, 3]])), _ext(polygon(_sqf, paths=[[0, 1, 2, 3]])))
+     _ext(polygon(_sq, paths=[[0, 1, 2, 3]])),
+     _ext(polygon(_sq, paths=np.array([[0, 1, 2, 3]]))))
+err("to2dintlist-reject-float-index",
+    lambda: polygon(_sq, paths=np.array([[0.5, 1.0, 2.0, 3.0]])))
+err("polyhedron-reject-float-index",
+    lambda: polyhedron(
+        [[0, 0, 0], [1, 0, 0], [0, 1, 0]],
+        np.array([[0.5, 1.0, 2.0]]),
+    ))
 
 # --- python_fromvector (vector return) -------------------------------
 _sz = cube([2, 4, 6]).size
@@ -165,7 +200,7 @@ check("frommatrix-shape", len(_m) == 4 and len(_m[0]) == 4)
 multmatrix(cube(1), _m)
 check("frommatrix-roundtrip", True)
 
-# --- python_from2dvarpointlist / from2dint (list returns) ------------
+# --- python_from2dvarpointlist / from2dint (plain list returns) ------
 _pol = polygon([[0, 0], [10, 0], [10, 10]])
 check("from2dvar-list", isinstance(_pol.points, list))
 # list concatenation idiom (2-D -> 3-D promotion) must keep working
@@ -198,8 +233,6 @@ def main() -> int:
     ) as fh:
         fh.write(PYTHONSCAD_PROGRAM)
         script_path = fh.name
-    # Pass an output file so the binary runs headless and exits instead of
-    # launching the GUI.
     out_stl = script_path + ".out.stl"
 
     try:
@@ -221,6 +254,10 @@ def main() -> int:
 
     # pythonscad routes Python print() output to stderr, so search both.
     combined = (proc.stdout or "") + (proc.stderr or "")
+
+    if any(line.startswith("SKIP:") for line in combined.splitlines()):
+        print("SKIP: numpy not available")
+        return 0
 
     if proc.returncode != 0:
         print(f"FAIL: pythonscad exited with {proc.returncode}", file=sys.stderr)
