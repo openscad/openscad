@@ -1769,15 +1769,12 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 
 SourceFile *parsedSource = nullptr;
 
-bool ok = parse(parsedSource, fulltext, fname, fname, false);
+parse(parsedSource, fulltext, fname, fname, false);
 
-if (ok) {
-    this->parsedFile.reset(parsedSource);
-} else {
-    this->parsedFile.reset();
-}
+this->parsedFile.reset(parsedSource);
 
 SourceFile *sourceFile = this->parsedFile.get();
+
 
 editor->resetHighlighting();
   if (sourceFile) {

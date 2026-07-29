@@ -56,7 +56,6 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
 
   cache_entry& cacheEntry = this->entries[filename];
   // Initialize entry, if new
-  std::time_t pendingIncludesMtime = cacheEntry.includes_mtime;
   if (!found) {
     cacheEntry.file = nullptr;
     cacheEntry.parsed_file = nullptr;
@@ -74,7 +73,7 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
       if (cacheEntry.parsed_file) {
         std::time_t mtime = cacheEntry.parsed_file->includesChanged();
         if (mtime > cacheEntry.includes_mtime) {
-          pendingIncludesMtime = mtime;
+          cacheEntry.includes_mtime = mtime;
           shouldParse = true;
         }
       }
@@ -109,28 +108,21 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
     print_messages_push();
 
     delete cacheEntry.parsed_file;
-file =
-    parse(cacheEntry.parsed_file, text, filename, mainFile, false)
-        ? cacheEntry.parsed_file
-        : nullptr;
+    file =
+      parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
+    PRINTDB("parsed file: %s", filename);
+    cacheEntry.file = file;
+    cacheEntry.cache_id = cache_id;
+    auto mod = file ? file : cacheEntry.parsed_file;
+    if (!found && mod) cacheEntry.includes_mtime = mod->includesChanged();
+    print_messages_pop();
+  }
 
+  sourceFile = file;
+  // FIXME: Do we need to handle include-only cases?
+  std::time_t deps_mtime = file ? file->handleDependencies(false) : 0;
 
-cacheEntry.file = file;
-cacheEntry.cache_id = cache_id;
-
-if (file) {
-    cacheEntry.includes_mtime = pendingIncludesMtime;
-}
-
-auto mod = file ? file : cacheEntry.parsed_file;
-if (!found && mod)
-    cacheEntry.includes_mtime = mod->includesChanged();
-
-print_messages_pop();
-}
-
-sourceFile = cacheEntry.file;
-return cacheEntry.includes_mtime;
+  return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }
 
 void SourceFileCache::clear()
