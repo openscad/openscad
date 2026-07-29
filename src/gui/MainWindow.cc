@@ -1780,7 +1780,7 @@ void MainWindow::parseTopLevelDocument()
   resetSuppressedMessages();
 
   this->lastCompiledDoc = activeEditor->toPlainText();
-  tabManager->refreshDocument();
+  
   activeEditor->resetHighlighting();
   this->rootFile = parseDocument(activeEditor);
   this->parsedFile = this->rootFile;
