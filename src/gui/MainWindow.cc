@@ -726,10 +726,8 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
-  OpenSCAD::hardwarnings =
-    GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-  OpenSCAD::traceDepth =
-    GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
   OpenSCAD::traceUsermoduleParameters =
     GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
   OpenSCAD::parameterCheck =
@@ -754,18 +752,14 @@ void MainWindow::compile(bool reload, bool forcedone)
             GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
           this->raise();
         }
-      }
-      else {
+      } else {
         auto current_doc = activeEditor->toPlainText();
 
-        if (current_doc.size() &&
-            lastCompiledDoc.size() == 0 &&
-            fileChangedOnDisk()) {
+        if (current_doc.size() && lastCompiledDoc.size() == 0 && fileChangedOnDisk()) {
           shouldcompiletoplevel = true;
         }
       }
-    }
-    else {
+    } else {
       shouldcompiletoplevel = true;
     }
 
@@ -789,19 +783,16 @@ void MainWindow::compile(bool reload, bool forcedone)
         this->console->clear();
       }
 
-      if (activeEditor->isContentModified())
-        saveBackup();
+      if (activeEditor->isContentModified()) saveBackup();
 
       parseTopLevelDocument();
       didcompile = true;
     }
 
     if (didcompile && parser_error_pos != lastParserErrorPos) {
-      if (lastParserErrorPos >= 0)
-        emit unhighlightLastError();
+      if (lastParserErrorPos >= 0) emit unhighlightLastError();
 
-      if (parser_error_pos >= 0)
-        emit highlightError(parser_error_pos);
+      if (parser_error_pos >= 0) emit highlightError(parser_error_pos);
 
       lastParserErrorPos = parser_error_pos;
     }
@@ -811,18 +802,15 @@ void MainWindow::compile(bool reload, bool forcedone)
 
       if (mtime > this->depsMTime) {
         this->depsMTime = mtime;
-        LOG("Used file cache size: %1$d files",
-            SourceFileCache::instance()->size());
+        LOG("Used file cache size: %1$d files", SourceFileCache::instance()->size());
         didcompile = true;
       }
     }
 
-    if (would_have_thrown())
-      throw HardWarningException("");
+    if (would_have_thrown()) throw HardWarningException("");
 
     if (reload && didcompile && this->rootFile) {
-      if (this->rootFile->hasIncludes() ||
-          this->rootFile->usesLibraries()) {
+      if (this->rootFile->hasIncludes() || this->rootFile->usesLibraries()) {
         this->waitAfterReloadTimer->start();
         this->procevents = false;
         return;
@@ -830,14 +818,11 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     compileDone(didcompile | forcedone);
-  }
-  catch (const HardWarningException&) {
+  } catch (const HardWarningException&) {
     exceptionCleanup();
-  }
-  catch (const std::exception& ex) {
+  } catch (const std::exception& ex) {
     UnknownExceptionCleanup(ex.what());
-  }
-  catch (...) {
+  } catch (...) {
     UnknownExceptionCleanup();
   }
 }
@@ -848,7 +833,7 @@ void MainWindow::waitAfterReload()
   auto mtime = this->rootFile->handleDependencies();
   auto stop = would_have_thrown();
   if (mtime > this->depsMTime) this->depsMTime = mtime;
-   else if (!stop) {
+  else if (!stop) {
     compile(true, true);  // In case file itself or top-level includes changed during dependency updates
     return;
   }
@@ -1767,16 +1752,15 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   }
 #endif  // ifdef ENABLE_PYTHON
 
-SourceFile *parsedSource = nullptr;
+  SourceFile *parsedSource = nullptr;
 
-parse(parsedSource, fulltext, fname, fname, false);
+  parse(parsedSource, fulltext, fname, fname, false);
 
-this->parsedFile.reset(parsedSource);
+  this->parsedFile.reset(parsedSource);
 
-SourceFile *sourceFile = this->parsedFile.get();
+  SourceFile *sourceFile = this->parsedFile.get();
 
-
-editor->resetHighlighting();
+  editor->resetHighlighting();
   if (sourceFile) {
     // add parameters as annotation in AST
     CommentParser::collectParameters(fulltext, sourceFile);
@@ -1803,8 +1787,6 @@ void MainWindow::parseTopLevelDocument()
 }
 void MainWindow::checkAutoReload()
 {
-  
-  
   if (!activeEditor->filepath.isEmpty()) {
     actionReloadRenderPreview();
   }
