@@ -15,7 +15,8 @@ class MessageBubble : public QWidget
 {
   Q_OBJECT
 public:
-  MessageBubble(const QString& text, bool isUser, QWidget *parent = nullptr);
+  MessageBubble(const QString& text, bool isUser, const std::vector<ImageAttachment>& images = {},
+                QWidget *parent = nullptr);
   void updateText(const QString& text);
 
 private:
@@ -46,10 +47,15 @@ private slots:
   void exportChat();
   void importChat();
   void copyAsMarkdown();
+  void onAnalyzeScreenPressed();
+  void onAttachImagePressed();
+  void removeAttachment(size_t index);
 
 private:
-  MessageBubble *addMessage(const QString& text, bool isUser);
+  MessageBubble *addMessage(const QString& text, bool isUser,
+                            const std::vector<ImageAttachment>& images = {});
   void rebuildChatUI();
+  void updateAttachmentPreviewBar();
   bool isDarkTheme() const;
   void enableInput(bool enabled);
   std::string executeTool(const std::string& name, const std::string& arguments_json);
@@ -66,4 +72,5 @@ private:
   std::string originalCode;
   QWidget *diffBannerWidget = nullptr;
   CollapsibleBubble *activeToolBubble = nullptr;
+  std::vector<ImageAttachment> pendingAttachments;
 };

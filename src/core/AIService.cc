@@ -226,6 +226,9 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    for (const auto& img : msg.images) {
+      am.images.push_back({img.mime_type, img.base64_data});
+    }
     if (!msg.tool_calls.empty()) {
       try {
         auto tcs_json = nlohmann::json::parse(msg.tool_calls);
@@ -356,6 +359,9 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    for (const auto& img : msg.images) {
+      am.images.push_back({img.mime_type, img.base64_data});
+    }
     if (!msg.tool_calls.empty()) {
       try {
         auto tcs_json = nlohmann::json::parse(msg.tool_calls);
@@ -428,6 +434,19 @@ int AIService::getPayloadLimit() const
   return 50000;
 }
 
+bool AIService::getAutoAttachViewport() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("auto_attach_viewport") &&
+        config.parameters["auto_attach_viewport"].is_boolean()) {
+      return config.parameters["auto_attach_viewport"].get<bool>();
+    }
+  }
+  return false;
+}
+
 #else  // __EMSCRIPTEN__
 
 class AIService::Impl
@@ -469,6 +488,11 @@ void AIService::cancelPendingRequests()
 int AIService::getPayloadLimit() const
 {
   return 50000;
+}
+
+bool AIService::getAutoAttachViewport() const
+{
+  return false;
 }
 
 #endif  // __EMSCRIPTEN__

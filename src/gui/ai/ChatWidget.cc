@@ -22,9 +22,13 @@
 #include "gui/ai/DiffDialog.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/ai/CollapsibleBubble.h"
+#include "gui/ai/ViewportGrabber.h"
+#include "gui/QGLView.h"
 
 // MessageBubble implementation
-MessageBubble::MessageBubble(const QString& text, bool isUser, QWidget *parent) : QWidget(parent)
+MessageBubble::MessageBubble(const QString& text, bool isUser,
+                             const std::vector<ImageAttachment>& images, QWidget *parent)
+  : QWidget(parent)
 {
   QHBoxLayout *layout = new QHBoxLayout(this);
   layout->setContentsMargins(0, 4, 0, 4);
@@ -72,6 +76,25 @@ MessageBubble::MessageBubble(const QString& text, bool isUser, QWidget *parent) 
 
   frameLayout->addWidget(this->label);
 
+  if (!images.empty()) {
+    QHBoxLayout *imgLayout = new QHBoxLayout();
+    imgLayout->setSpacing(6);
+    for (const auto& img : images) {
+      QByteArray data = QByteArray::fromBase64(QByteArray::fromStdString(img.base64_data));
+      QImage qimg;
+      if (qimg.loadFromData(data)) {
+        QLabel *imgLabel = new QLabel(bubbleFrame);
+        QPixmap pixmap =
+          QPixmap::fromImage(qimg).scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        imgLabel->setPixmap(pixmap);
+        imgLabel->setStyleSheet("border-radius: 6px;");
+        imgLayout->addWidget(imgLabel);
+      }
+    }
+    imgLayout->addStretch(1);
+    frameLayout->addLayout(imgLayout);
+  }
+
   if (!isUser && text == _("Thinking...")) {
     thinkingStep = 0;
     thinkingTimer = new QTimer(this);
@@ -118,6 +141,8 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   connect(sendButton, &QPushButton::clicked, this, &ChatWidget::onSendPressed);
   connect(inputField, &ChatInputEdit::sendPressed, this, &ChatWidget::onSendPressed);
   connect(clearButton, &QPushButton::clicked, this, &ChatWidget::onClearPressed);
+  connect(analyzeScreenButton, &QPushButton::clicked, this, &ChatWidget::onAnalyzeScreenPressed);
+  connect(attachImageButton, &QPushButton::clicked, this, &ChatWidget::onAttachImagePressed);
 
   // Setup chat options menu
   QMenu *chatMenu = new QMenu(this);
@@ -275,11 +300,28 @@ void ChatWidget::onSendPressed()
     return;
   }
 
+  if (pendingAttachments.empty() && aiService && aiService->getAutoAttachViewport()) {
+    MainWindow *mw = nullptr;
+    for (auto *win : scadApp->windowManager.getWindows()) {
+      mw = win;
+      break;
+    }
+    if (mw && mw->qglview) {
+      std::string base64_img = ViewportGrabber::captureViewportBase64(mw->qglview, 1024);
+      if (!base64_img.empty()) {
+        pendingAttachments.push_back({"image/png", base64_img});
+      }
+    }
+  }
+
   inputField->clear();
-  addMessage(prompt, true);
+  addMessage(prompt, true, pendingAttachments);
 
   // Save to history
-  history.push_back({"user", prompt.toStdString()});
+  history.push_back({"user", prompt.toStdString(), "", "", pendingAttachments});
+
+  pendingAttachments.clear();
+  updateAttachmentPreviewBar();
 
   // Set active request states
   isRequestRunning = true;
@@ -351,6 +393,24 @@ void ChatWidget::onSendPressed()
           }
         } else if (activeResponseText) {
           this->history.push_back({"assistant", *activeResponseText});
+          // Fallback: If no tool was executed during this turn, extract code blocks from assistant text
+          // and propose change
+          if (!this->hasPendingCodeChanges()) {
+            std::string text = *activeResponseText;
+            size_t start = text.find("```");
+            if (start != std::string::npos) {
+              size_t code_start = text.find('\n', start);
+              if (code_start != std::string::npos) {
+                size_t end = text.find("```", code_start);
+                if (end != std::string::npos) {
+                  std::string code = text.substr(code_start + 1, end - (code_start + 1));
+                  if (!code.empty()) {
+                    this->proposeCodeChange(code);
+                  }
+                }
+              }
+            }
+          }
         }
         isRequestRunning = false;
         activeAIBubble = nullptr;
@@ -367,9 +427,10 @@ void ChatWidget::startNewResponseTurn()
   activeToolBubble = nullptr;
 }
 
-MessageBubble *ChatWidget::addMessage(const QString& text, bool isUser)
+MessageBubble *ChatWidget::addMessage(const QString& text, bool isUser,
+                                      const std::vector<ImageAttachment>& images)
 {
-  MessageBubble *bubble = new MessageBubble(text, isUser, scrollAreaWidgetContents);
+  MessageBubble *bubble = new MessageBubble(text, isUser, images, scrollAreaWidgetContents);
   scrollLayout->insertWidget(scrollLayout->count() - 1, bubble);
 
   // Auto-scroll to bottom after layout calculation
@@ -378,6 +439,133 @@ MessageBubble *ChatWidget::addMessage(const QString& text, bool isUser)
   });
 
   return bubble;
+}
+
+void ChatWidget::onAnalyzeScreenPressed()
+{
+  MainWindow *mw = nullptr;
+  for (auto *win : scadApp->windowManager.getWindows()) {
+    mw = win;
+    break;
+  }
+
+  if (!mw || !mw->qglview) {
+    QMessageBox::warning(this, _("Viewport Error"),
+                         _("Could not find active 3D Viewport to grab screen."));
+    return;
+  }
+
+  std::string base64_img = ViewportGrabber::captureViewportBase64(mw->qglview, 1024);
+  if (base64_img.empty()) {
+    QMessageBox::warning(this, _("Viewport Error"), _("Failed to capture 3D viewport frame."));
+    return;
+  }
+
+  std::string meta = ViewportGrabber::serializeCameraMetadata(mw->qglview->cam);
+
+  pendingAttachments.push_back({"image/png", base64_img});
+  updateAttachmentPreviewBar();
+
+  QString currentText = inputField->toPlainText();
+  if (currentText.isEmpty()) {
+    inputField->setPlainText(
+      QString::fromStdString(meta + "\n\nDescribe what you see in this 3D view: "));
+  } else if (!currentText.contains("[Viewport Camera Metadata]")) {
+    inputField->setPlainText(QString::fromStdString(meta + "\n\n") + currentText);
+  }
+}
+
+void ChatWidget::onAttachImagePressed()
+{
+  QString filePath = QFileDialog::getOpenFileName(this, _("Attach Image"), "",
+                                                  _("Image Files (*.png *.jpg *.jpeg *.webp)"));
+
+  if (filePath.isEmpty()) {
+    return;
+  }
+
+  QFile file(filePath);
+  if (!file.open(QIODevice::ReadOnly)) {
+    QMessageBox::warning(this, _("File Error"), _("Could not open the selected image file."));
+    return;
+  }
+
+  QByteArray data = file.readAll();
+  std::string base64_str = data.toBase64().toStdString();
+
+  std::string mime = "image/png";
+  QString suffix = QFileInfo(filePath).suffix().toLower();
+  if (suffix == "jpg" || suffix == "jpeg") {
+    mime = "image/jpeg";
+  } else if (suffix == "webp") {
+    mime = "image/webp";
+  }
+
+  pendingAttachments.push_back({mime, base64_str});
+  updateAttachmentPreviewBar();
+}
+
+void ChatWidget::removeAttachment(size_t index)
+{
+  if (index < pendingAttachments.size()) {
+    pendingAttachments.erase(pendingAttachments.begin() + index);
+    updateAttachmentPreviewBar();
+  }
+}
+
+void ChatWidget::updateAttachmentPreviewBar()
+{
+  QLayoutItem *child;
+  while ((child = attachmentPreviewLayout->takeAt(0)) != nullptr) {
+    if (child->widget()) {
+      delete child->widget();
+    }
+    delete child;
+  }
+
+  if (pendingAttachments.empty()) {
+    attachmentPreviewWidget->setVisible(false);
+    return;
+  }
+
+  attachmentPreviewWidget->setVisible(true);
+
+  for (size_t i = 0; i < pendingAttachments.size(); ++i) {
+    const auto& att = pendingAttachments[i];
+
+    QWidget *itemWidget = new QWidget(attachmentPreviewWidget);
+    QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
+    itemLayout->setContentsMargins(4, 2, 4, 2);
+    itemLayout->setSpacing(4);
+
+    QLabel *thumbLabel = new QLabel(itemWidget);
+    QByteArray data = QByteArray::fromBase64(QByteArray::fromStdString(att.base64_data));
+    QImage qimg;
+    if (qimg.loadFromData(data)) {
+      QPixmap pix =
+        QPixmap::fromImage(qimg).scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+      thumbLabel->setPixmap(pix);
+    } else {
+      thumbLabel->setText(_("[Img]"));
+    }
+
+    QPushButton *removeBtn = new QPushButton("X", itemWidget);
+    removeBtn->setFixedSize(20, 20);
+    removeBtn->setToolTip(_("Remove attachment"));
+    connect(removeBtn, &QPushButton::clicked, this, [this, i]() { removeAttachment(i); });
+
+    itemLayout->addWidget(thumbLabel);
+    itemLayout->addWidget(removeBtn);
+
+    itemWidget->setStyleSheet(
+      "QWidget { background-color: #374151; border-radius: 6px; } QLabel { color: white; } QPushButton "
+      "{ background-color: #ef4444; color: white; border: none; border-radius: 4px; font-weight: bold; "
+      "}");
+
+    attachmentPreviewLayout->addWidget(itemWidget);
+  }
+
+  attachmentPreviewLayout->addStretch(1);
 }
 
 void ChatWidget::onClearPressed()
@@ -547,7 +735,7 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
 void ChatWidget::exportChat()
 {
   QString fileName =
-    QFileDialog::getSaveFileName(this, _("Export Chat History"), "", _("OpenSCAD Chat (*.oschat.json)"));
+    QFileDialog::getSaveFileName(this, _("Export Chat History"), "", _("JSON Files (*.json)"));
 
   if (fileName.isEmpty()) {
     return;
@@ -565,13 +753,25 @@ void ChatWidget::exportChat()
     m["content"] = msg.content;
     m["tool_call_id"] = msg.tool_call_id;
     m["tool_calls"] = msg.tool_calls;
+
+    if (!msg.images.empty()) {
+      nlohmann::json img_arr = nlohmann::json::array();
+      for (const auto& img : msg.images) {
+        nlohmann::json im;
+        im["mime_type"] = img.mime_type;
+        im["base64_data"] = img.base64_data;
+        img_arr.push_back(im);
+      }
+      m["images"] = img_arr;
+    }
+
     hist_arr.push_back(m);
   }
   j["history"] = hist_arr;
 
   std::ofstream file(fileName.toStdString());
   if (!file.is_open()) {
-    QMessageBox::critical(this, _("Export Error"), _("Could not write to the chosen file."));
+    QMessageBox::warning(this, _("Export Warning"), _("Could not write to the chosen file."));
     return;
   }
 
@@ -582,7 +782,7 @@ void ChatWidget::exportChat()
 void ChatWidget::importChat()
 {
   QString fileName =
-    QFileDialog::getOpenFileName(this, _("Import Chat History"), "", _("OpenSCAD Chat (*.oschat.json)"));
+    QFileDialog::getOpenFileName(this, _("Import Chat History"), "", _("JSON Files (*.json)"));
 
   if (fileName.isEmpty()) {
     return;
@@ -590,7 +790,7 @@ void ChatWidget::importChat()
 
   std::ifstream file(fileName.toStdString());
   if (!file.is_open()) {
-    QMessageBox::critical(this, _("Import Error"), _("Could not open the chosen file."));
+    QMessageBox::warning(this, _("Import Warning"), _("Could not open the selected file."));
     return;
   }
 
@@ -598,30 +798,59 @@ void ChatWidget::importChat()
   try {
     file >> j;
   } catch (const std::exception& e) {
-    QMessageBox::critical(this, _("Import Error"), tr("Failed to parse JSON file: %1").arg(e.what()));
+    QMessageBox::warning(this, _("Import Warning"), tr("Failed to parse JSON file: %1").arg(e.what()));
     return;
   }
 
   if (!j.is_object() || !j.contains("history") || !j["history"].is_array()) {
-    QMessageBox::critical(this, _("Import Error"), _("Invalid chat file: missing history array."));
+    QMessageBox::warning(this, _("Import Warning"),
+                         _("Selected file does not contain a valid chat history array."));
     return;
   }
 
   std::vector<ChatMessage> new_history;
+  int skipped_count = 0;
   for (const auto& m : j["history"]) {
-    if (!m.is_object()) continue;
+    if (!m.is_object()) {
+      skipped_count++;
+      continue;
+    }
     ChatMessage msg;
     msg.role = m.value("role", "");
     msg.content = m.value("content", "");
     msg.tool_call_id = m.value("tool_call_id", "");
     msg.tool_calls = m.value("tool_calls", "");
-    new_history.push_back(msg);
+
+    if (m.contains("images") && m["images"].is_array()) {
+      for (const auto& im : m["images"]) {
+        if (im.is_object()) {
+          ImageAttachment img;
+          img.mime_type = im.value("mime_type", "image/png");
+          img.base64_data = im.value("base64_data", "");
+          if (!img.base64_data.empty()) {
+            msg.images.push_back(img);
+          }
+        }
+      }
+    }
+
+    if (!msg.role.empty()) {
+      new_history.push_back(msg);
+    } else {
+      skipped_count++;
+    }
   }
 
   this->history = std::move(new_history);
   rebuildChatUI();
 
-  QMessageBox::information(this, _("Import Successful"), _("Chat history imported successfully."));
+  if (skipped_count > 0) {
+    QMessageBox::warning(
+      this, _("Import Warning"),
+      tr("Imported chat history with warnings: %1 invalid entries were skipped.").arg(skipped_count));
+  } else {
+    QMessageBox::information(this, _("Import Successful"), _("Chat history imported successfully."));
+  }
 }
 
 void ChatWidget::copyAsMarkdown()
@@ -678,11 +907,11 @@ void ChatWidget::rebuildChatUI()
     if (msg.role == "system") {
       continue;
     } else if (msg.role == "user") {
-      addMessage(QString::fromStdString(msg.content), true);
+      addMessage(QString::fromStdString(msg.content), true, msg.images);
       activeToolBubble = nullptr;
     } else if (msg.role == "assistant") {
-      if (!msg.content.empty()) {
-        addMessage(QString::fromStdString(msg.content), false);
+      if (!msg.content.empty() || !msg.images.empty()) {
+        addMessage(QString::fromStdString(msg.content), false, msg.images);
         activeToolBubble = nullptr;
       }
       if (!msg.tool_calls.empty()) {
