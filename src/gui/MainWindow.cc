@@ -737,7 +737,9 @@ void MainWindow::compile(bool reload, bool forcedone)
       if (GlobalPreferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->clear();
       }
-      if (activeEditor->isContentModified()) saveBackup();
+      if (activeEditor->isContentModified() && backupPending) {
+        saveBackup();
+      }
       parseTopLevelDocument();
       didcompile = true;
     }
@@ -1243,7 +1245,8 @@ void MainWindow::saveBackup()
     LOG(message_group::UI_Warning, "Failed to create backup file");
     return;
   }
-  return writeBackup(this->tempFile);
+  writeBackup(this->tempFile);
+  backupPending = false;
 }
 
 void MainWindow::on_fileActionSave_triggered()
@@ -2749,7 +2752,8 @@ void MainWindow::editorContentChanged()
 {
   // this slot is called when the content of the active editor changed.
   // it rely on the activeEditor member to pick the new data.
-
+  backupPending = true;
+  
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != lastCompiledDoc) {
     animateWidget->editorContentChanged();

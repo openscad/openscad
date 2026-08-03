@@ -458,6 +458,7 @@ private:
 
   char const *afterCompileSlot;
   bool procevents{false};
+  bool backupPending{true};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   CGALWorker *cgalworker;
