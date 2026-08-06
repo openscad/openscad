@@ -320,6 +320,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-negative-h.scad
   ${TEST_SCAD_DIR}/misc/expression-evaluation-tests.scad
   ${TEST_SCAD_DIR}/misc/echo-tests.scad
   ${TEST_SCAD_DIR}/misc/assert-fail1-test.scad
@@ -471,6 +472,7 @@ list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/misc/color-cubes.scad
   ${TEST_SCAD_DIR}/3D/features/color-tests3.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-negative-h.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
 )
 
@@ -573,6 +575,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/render-preserve-colors.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-negative-h.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
   ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
@@ -1468,6 +1471,10 @@ disable_tests_safe(
   # https://github.com/openscad/openscad/issues/5966
   render-off-manifold_issue5216
 
+  # Very slow tests
+  render-cgal_linear_extrude-negative-h
+  render-csg-cgal_linear_extrude-negative-h
+
   # For some reason, only failing on Linux
   render-manifold_import_3mf-tests
   preview-cgal_3mf-import-centered
@@ -1538,10 +1545,12 @@ if(NOT ENABLE_MANIFOLD)
     offcolorpngtest_color-cubes
     offcolorpngtest_color-tests3
     offcolorpngtest_linear_extrude-parameter-tests
+    offcolorpngtest_linear_extrude-negative-h
     offcolorpngtest_resize-tests
     3mfcolorpngtest_color-cubes
     3mfcolorpngtest_color-tests3
     3mfcolorpngtest_linear_extrude-parameter-tests
+    3mfcolorpngtest_linear_extrude-negative-h
     3mfcolorpngtest_resize-tests
     render-view-crosshairs_view-options-tests
     preview-view-edges-manifold_render-preserve-colors
