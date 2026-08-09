@@ -327,6 +327,8 @@ void Preferences::init()
           "6. **Tone**: Technical, concise, and helpful. Avoid long conversational filler.";
         params["default_prompt"] = "Create a sphere with radius 10 and detail level $fn=50.";
         params["context_limit"] = 10;
+        params["payload_limit"] = 50000;
+        params["auto_attach_viewport"] = false;
       }
       prof["params"] = params;
       prof["apiKey"] = "";
@@ -1502,6 +1504,8 @@ void Preferences::on_pushButtonAINewProfile_clicked()
     "6. **Tone**: Technical, concise, and helpful. Avoid long conversational filler.";
   params["default_prompt"] = "Create a sphere with radius 10 and detail level $fn=50.";
   params["context_limit"] = 10;
+  params["payload_limit"] = 50000;
+  params["auto_attach_viewport"] = false;
   newProfile["params"] = params;
 
   profilesObj[trimmed.toStdString()] = newProfile;
@@ -1621,6 +1625,12 @@ void Preferences::loadAIParams(const QString& profileName)
   }
   if (!paramsObj.contains("context_limit")) {
     paramsObj["context_limit"] = 10;
+  }
+  if (!paramsObj.contains("payload_limit")) {
+    paramsObj["payload_limit"] = 50000;
+  }
+  if (!paramsObj.contains("auto_attach_viewport")) {
+    paramsObj["auto_attach_viewport"] = false;
   }
 
   std::string sysPrompt = paramsObj.value("system_prompt", "");
