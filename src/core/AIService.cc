@@ -171,40 +171,38 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     already_has_system = true;
   }
   if (!already_has_system) {
-    ai_history.push_back({"system", sys_prompt});
+    // Append hidden OpenSCAD reference documentation to the system prompt
+    std::string ref_doc =
+      "\n\n### OpenSCAD Quick Reference\n"
+      "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
+      "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
+      "font, halign, valign)\n"
+      "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
+      "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
+      "**Boolean Ops**: union(), difference(), intersection()\n"
+      "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
+      "rotate_extrude(angle, $fn)\n"
+      "**Modules**: module name(params) { body } -- NO semicolon after definition. "
+      "Call with: name(args);\n"
+      "**Functions**: function name(params) = expression;\n"
+      "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
+      "assert(cond, msg), echo(values)\n"
+      "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
+      "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
+      "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
+      "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
+      "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
+      "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
+      "import(\"file.stl\")\n\n"
+      "### Available Tools\n"
+      "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
+      "- **set_editor_code({\"code\": \"...\"})**:  Proposes code changes for user review in a "
+      "side-by-side diff dialog. "
+      "Always use this instead of pasting code in chat.\n"
+      "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
+      "Automatically postponed if code changes are pending review.";
+    ai_history.push_back({"system", sys_prompt + ref_doc});
   }
-
-  // Attach hidden OpenSCAD reference documentation
-  std::string ref_doc =
-    "### OpenSCAD Quick Reference\n"
-    "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
-    "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
-    "font, halign, valign)\n"
-    "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
-    "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
-    "**Boolean Ops**: union(), difference(), intersection()\n"
-    "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
-    "rotate_extrude(angle, $fn)\n"
-    "**Modules**: module name(params) { body } -- NO semicolon after definition. "
-    "Call with: name(args);\n"
-    "**Functions**: function name(params) = expression;\n"
-    "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
-    "assert(cond, msg), echo(values)\n"
-    "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
-    "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
-    "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
-    "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
-    "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
-    "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
-    "import(\"file.stl\")\n\n"
-    "### Available Tools\n"
-    "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
-    "- **set_editor_code({\"code\": \"...\"})**: Proposes code changes for user review in a "
-    "side-by-side diff dialog. "
-    "Always use this instead of pasting code in chat.\n"
-    "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
-    "Automatically postponed if code changes are pending review.";
-  ai_history.push_back({"system", ref_doc});
 
   // Apply sliding window: keep last context_limit turn pairs (a turn starts with a "user" message)
   size_t window_start = 0;
@@ -351,7 +349,37 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     already_has_system = true;
   }
   if (!already_has_system) {
-    ai_history.push_back({"system", sys_prompt});
+    // Append hidden OpenSCAD reference documentation to the system prompt
+    std::string ref_doc =
+      "\n\n### OpenSCAD Quick Reference\n"
+      "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
+      "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
+      "font, halign, valign)\n"
+      "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
+      "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
+      "**Boolean Ops**: union(), difference(), intersection()\n"
+      "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
+      "rotate_extrude(angle, $fn)\n"
+      "**Modules**: module name(params) { body } -- NO semicolon after definition. "
+      "Call with: name(args);\n"
+      "**Functions**: function name(params) = expression;\n"
+      "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
+      "assert(cond, msg), echo(values)\n"
+      "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
+      "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
+      "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
+      "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
+      "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
+      "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
+      "import(\"file.stl\")\n\n"
+      "### Available Tools\n"
+      "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
+      "- **set_editor_code({\"code\": \"...\"})**:  Proposes code changes for user review in a "
+      "side-by-side diff dialog. "
+      "Always use this instead of pasting code in chat.\n"
+      "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
+      "Automatically postponed if code changes are pending review.";
+    ai_history.push_back({"system", sys_prompt + ref_doc});
   }
 
   for (const auto& msg : history) {
