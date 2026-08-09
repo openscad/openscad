@@ -2,10 +2,11 @@
 .venv
 .uuid
 .cache/
-.vs/
-.vscode/
+/.vs/
+/.vscode/
+/.idea/
+/.zed/
 *.code-workspace
-.idea/
 .clangd/
 /*.scad
 **/out*.*
@@ -104,4 +105,3 @@ tests/regression/export-pdf/simple-pdf.pdf
 scripts/run-clang-tidy-cached
 .clangd
 /builddir
-/tests
