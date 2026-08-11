@@ -91,18 +91,30 @@ TEST_CASE("visual profile handles a model of zero depth extent", "[Depthmap]")
   CHECK(img.pixels[8] == 0);
 }
 
-TEST_CASE("orthographic depth linearizes to distance from the near plane", "[Depthmap]")
+TEST_CASE("orthographic depth is measured from the eye, not the near plane", "[Depthmap]")
 {
-  // Ortho depth is linear in eye distance, so window depth maps straight across
-  // the clip range. Near/far here are the -100*dist/+100*dist that
-  // GLView::setupCamera uses for an orthographic camera.
-  const std::vector<float> window = {0.0f, 0.25f, 0.5f};
+  // Near/far here are the -100*dist/+100*dist that GLView::setupCamera uses for
+  // an orthographic camera. That near plane sits 100*dist *behind* the eye, so
+  // measuring from it would offset every value by a distance that has nothing to
+  // do with the model - and would overflow the metric profile's 65535mm ceiling
+  // for any model over roughly 328 units. Orthographic depth is therefore
+  // reported from the eye, where the numbers mean something.
+  const std::vector<float> window = {0.5f, 0.75f, 0.9f};
   const auto mm = linearize_depth(window, -100.0, 100.0, false);
 
   REQUIRE(mm.size() == 3);
-  CHECK(mm[0] == Catch::Approx(0.0));    // on the near plane
-  CHECK(mm[1] == Catch::Approx(50.0));   // a quarter of the way through
-  CHECK(mm[2] == Catch::Approx(100.0));  // halfway - where the eye sits
+  CHECK(mm[0] == Catch::Approx(0.0));   // halfway through the clip range is the eye
+  CHECK(mm[1] == Catch::Approx(50.0));  // linear in eye distance, so no curve to undo
+  CHECK(mm[2] == Catch::Approx(80.0));
+}
+
+TEST_CASE("orthographic geometry behind the eye reads as negative", "[Depthmap]")
+{
+  // The orthographic near plane is behind the eye, so the clip volume genuinely
+  // contains negative eye distances. They are left negative here rather than
+  // clamped, so the caller can see them; the metric profile floors them at 0.
+  const auto mm = linearize_depth({0.25f}, -100.0, 100.0, false);
+  CHECK(mm[0] == Catch::Approx(-50.0));
 }
 
 TEST_CASE("perspective depth unprojects through the hyperbolic curve", "[Depthmap]")

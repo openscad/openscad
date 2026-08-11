@@ -55,7 +55,15 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
 
 /*!
    Convert window-space depth (as glReadPixels(GL_DEPTH_COMPONENT) returns it,
-   in [0,1]) to distance from the near plane in millimetres.
+   in [0,1]) to millimetres.
+
+   The origin differs by projection, because the two near planes are not
+   comparable things. In perspective the near plane sits just in front of the
+   scene (0.1*dist) and is the origin. In orthographic it sits 100*dist *behind*
+   the eye, so measuring from it would add a large offset unrelated to the model
+   - and overflow the metric profile's 65535mm ceiling for any model over
+   roughly 328 units - so orthographic depth is measured from the eye. Depths
+   behind the eye come back negative rather than clamped.
 
    Pixels at the far plane are background and come back as infinity, which is
    what encode_depthmap() expects. Orthographic depth is linear in eye distance;
