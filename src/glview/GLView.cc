@@ -128,13 +128,17 @@ void GLView::setupCamera()
   auto dist = cam.zoomValue();
   switch (this->cam.projection) {
   case Camera::ProjectionType::PERSPECTIVE: {
-    gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+    this->clipNear = 0.1 * dist;
+    this->clipFar = 100 * dist;
+    gluPerspective(cam.fov, aspectratio, this->clipNear, this->clipFar);
     break;
   }
   default:
   case Camera::ProjectionType::ORTHOGONAL: {
     auto height = dist * tan_degrees(cam.fov / 2);
-    glOrtho(-height * aspectratio, height * aspectratio, -height, height, -100 * dist, +100 * dist);
+    this->clipNear = -100 * dist;
+    this->clipFar = +100 * dist;
+    glOrtho(-height * aspectratio, height * aspectratio, -height, height, this->clipNear, this->clipFar);
     break;
   }
   }

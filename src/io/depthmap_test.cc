@@ -55,21 +55,25 @@ TEST_CASE("visual profile normalizes to the model extent, near bright", "[Depthm
   const std::vector<float> depths = {10.0f, 20.0f, 30.0f, BG};
   const auto img = encode_depthmap(depths, 2, 2, DepthProfile::visual);
 
-  REQUIRE(img.bytesPerPixel == 3);
-  REQUIRE(img.pixels.size() == 4 * 3);
+  // RGBA, because that is what write_png() consumes on both backends: the
+  // CoreGraphics writer is kCGImageAlphaNoneSkipLast and lodepng's info_raw
+  // defaults to RGBA8. Alpha is dropped on the way out to a 3-channel PNG.
+  REQUIRE(img.bytesPerPixel == 4);
+  REQUIRE(img.pixels.size() == 4 * 4);
 
   // Nearest surface saturates white, farthest goes black, and the range is
   // stretched across the model's own extent rather than the clip planes.
   CHECK(img.pixels[0] == 255);
-  CHECK(img.pixels[3] == 128);
-  CHECK(img.pixels[6] == 0);
+  CHECK(img.pixels[4] == 128);
+  CHECK(img.pixels[8] == 0);
   // Background is black too - indistinguishable from the far surface, which is
   // what MiDaS-trained consumers expect.
-  CHECK(img.pixels[9] == 0);
+  CHECK(img.pixels[12] == 0);
 
   // Grey, so a consumer reading only one channel gets the same answer.
   CHECK(img.pixels[0] == img.pixels[1]);
   CHECK(img.pixels[1] == img.pixels[2]);
+  CHECK(img.pixels[3] == 255);  // opaque
 
   CHECK(img.minDepth == Catch::Approx(10.0));
   CHECK(img.maxDepth == Catch::Approx(30.0));
@@ -83,8 +87,50 @@ TEST_CASE("visual profile handles a model of zero depth extent", "[Depthmap]")
   const auto img = encode_depthmap(depths, 2, 2, DepthProfile::visual);
 
   CHECK(img.pixels[0] == 255);
-  CHECK(img.pixels[3] == 255);
-  CHECK(img.pixels[6] == 0);
+  CHECK(img.pixels[4] == 255);
+  CHECK(img.pixels[8] == 0);
+}
+
+TEST_CASE("orthographic depth linearizes to distance from the near plane", "[Depthmap]")
+{
+  // Ortho depth is linear in eye distance, so window depth maps straight across
+  // the clip range. Near/far here are the -100*dist/+100*dist that
+  // GLView::setupCamera uses for an orthographic camera.
+  const std::vector<float> window = {0.0f, 0.25f, 0.5f};
+  const auto mm = linearize_depth(window, -100.0, 100.0, false);
+
+  REQUIRE(mm.size() == 3);
+  CHECK(mm[0] == Catch::Approx(0.0));    // on the near plane
+  CHECK(mm[1] == Catch::Approx(50.0));   // a quarter of the way through
+  CHECK(mm[2] == Catch::Approx(100.0));  // halfway - where the eye sits
+}
+
+TEST_CASE("perspective depth unprojects through the hyperbolic curve", "[Depthmap]")
+{
+  // n=1, f=101. A surface at eye distance d has window depth
+  // f*(d-n) / ((f-n)*d), so d=2 gives 101/200 = 0.505.
+  const std::vector<float> window = {0.0f, 0.505f};
+  const auto mm = linearize_depth(window, 1.0, 101.0, true);
+
+  REQUIRE(mm.size() == 2);
+  CHECK(mm[0] == Catch::Approx(0.0));  // near plane, so zero distance from it
+  // Eye distance 2, minus the near plane. The margin is loose because window
+  // depth arrives as a float and the curve is steep here - which is the
+  // precision hazard of a wide near/far ratio, visible even in this toy case.
+  CHECK(mm[1] == Catch::Approx(1.0).margin(1e-4));
+}
+
+TEST_CASE("the far plane is background, not a real distance", "[Depthmap]")
+{
+  const std::vector<float> window = {1.0f, 0.5f};
+
+  const auto ortho = linearize_depth(window, -100.0, 100.0, false);
+  CHECK(std::isinf(ortho[0]));
+  CHECK(std::isfinite(ortho[1]));
+
+  const auto persp = linearize_depth(window, 1.0, 101.0, true);
+  CHECK(std::isinf(persp[0]));
+  CHECK(std::isfinite(persp[1]));
 }
 
 TEST_CASE("an empty view yields background everywhere", "[Depthmap]")
@@ -99,5 +145,5 @@ TEST_CASE("an empty view yields background everywhere", "[Depthmap]")
 
   const auto visual = encode_depthmap(depths, 2, 1, DepthProfile::visual);
   CHECK(visual.pixels[0] == 0);
-  CHECK(visual.pixels[3] == 0);
+  CHECK(visual.pixels[4] == 0);
 }

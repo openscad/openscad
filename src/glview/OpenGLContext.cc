@@ -13,3 +13,10 @@ std::vector<uint8_t> OpenGLContext::getFramebuffer() const
   GL_CHECK(glReadPixels(0, 0, this->width_, this->height_, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data()));
   return buffer;
 }
+
+std::vector<float> OpenGLContext::getDepthbuffer() const
+{
+  std::vector<float> buffer(static_cast<size_t>(this->width_) * this->height_);
+  GL_CHECK(glReadPixels(0, 0, this->width_, this->height_, GL_DEPTH_COMPONENT, GL_FLOAT, buffer.data()));
+  return buffer;
+}

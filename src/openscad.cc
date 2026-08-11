@@ -477,7 +477,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     GeometryEvaluator geomevaluator(tree);
     std::unique_ptr<OffscreenView> glview;
     std::shared_ptr<const Geometry> root_geom;
-    if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) &&
+    if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG ||
+         export_format == FileFormat::DEPTHMAP) &&
         (cmd.viewOptions.renderer == RenderType::OPENCSG ||
          cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
@@ -514,6 +515,40 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
                                              input_filename, &cmd.camera, cmd.exportOptions);
     if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
+    }
+
+    if (export_format == FileFormat::DEPTHMAP) {
+      // -O depthmap/profile=metric|visual, using the generic export-option
+      // mechanism rather than a flag of its own.
+      DepthProfile profile = DepthProfile::metric;
+      const auto section = cmd.exportOptions.find("depthmap");
+      if (section != cmd.exportOptions.end()) {
+        const auto entry = section->second.find("profile");
+        if (entry != section->second.end()) {
+          if (entry->second == "visual") {
+            profile = DepthProfile::visual;
+          } else if (entry->second != "metric") {
+            LOG("Unknown depthmap profile '%1$s'. Expected 'metric' or 'visual'.", entry->second);
+            return 1;
+          }
+        }
+      }
+
+      bool success = true;
+      bool const wrote = with_output(
+        cmd.is_stdout, filename_str,
+        [&success, &root_geom, &cmd, &camera, &glview, profile](std::ostream& stream) {
+          if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
+              cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+            success = export_depthmap(root_geom, cmd.viewOptions, camera, profile, stream);
+          } else {
+            success = export_depthmap(*glview, profile, stream);
+          }
+        },
+        std::ios::out | std::ios::binary);
+      if (!success || !wrote) {
+        return 1;
+      }
     }
 
     if (export_format == FileFormat::PNG) {

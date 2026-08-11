@@ -72,6 +72,11 @@ public:
   Camera cam;
   double far_far_away;
   double aspectratio;
+  //! The clip planes setupCamera() last handed to the projection matrix. Kept
+  //! so depth-buffer readback can linearize without re-deriving the formula -
+  //! two copies of it would drift apart the first time the projection changes.
+  double clipNear{0.0};
+  double clipFar{0.0};
   bool showaxes;
   bool showedges;
   bool showcrosshairs;

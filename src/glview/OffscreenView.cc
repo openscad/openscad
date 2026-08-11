@@ -121,6 +121,31 @@ bool OffscreenView::save(const char *filename) const
   return true;
 }
 
+bool OffscreenView::saveDepth(std::ostream& output, DepthProfile profile) const
+{
+  if (!this->ctx) return false;
+
+  const auto mm = linearize_depth(this->ctx->getDepthbuffer(), this->clipNear, this->clipFar,
+                                  this->cam.projection == Camera::ProjectionType::PERSPECTIVE);
+  const auto image = encode_depthmap(mm, this->ctx->width(), this->ctx->height(), profile);
+
+  // Same as the colour path: buffers read from OpenGL are upside-down.
+  std::vector<uint8_t> flipped(image.pixels.size());
+  flip_image(image.pixels.data(), flipped.data(), image.bytesPerPixel, this->ctx->width(),
+             this->ctx->height());
+
+  // The scale cannot travel inside the image, so report it - without it a
+  // metric depthmap is just numbers.
+  if (profile == DepthProfile::metric) {
+    LOG("Depthmap: %1$.3f - %2$.3f mm from the near plane, %3$g units per mm.", image.minDepth,
+        image.maxDepth, DEPTHMAP_METRIC_SCALE);
+    return write_png_gray16(output, flipped.data(), this->ctx->width(), this->ctx->height());
+  }
+  LOG("Depthmap: %1$.3f - %2$.3f mm from the near plane, normalized across that range.", image.minDepth,
+      image.maxDepth);
+  return write_png(output, flipped.data(), this->ctx->width(), this->ctx->height());
+}
+
 bool OffscreenView::save(std::ostream& output) const
 {
   return save_framebuffer(this->ctx.get(), output);

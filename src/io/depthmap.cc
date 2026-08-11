@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 namespace {
@@ -21,13 +22,49 @@ void push_be16(std::vector<std::uint8_t>& pixels, std::uint16_t value)
 
 }  // namespace
 
+std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double clipNear,
+                                   double clipFar, bool perspective)
+{
+  std::vector<float> mm;
+  mm.reserve(windowDepth.size());
+
+  for (const float z : windowDepth) {
+    // Anything at (or past) the far plane is empty space, not a surface.
+    if (!(z < 1.0f)) {
+      mm.push_back(std::numeric_limits<float>::infinity());
+      continue;
+    }
+    double eye;
+    if (perspective) {
+      // Undo the hyperbolic projection: z_ndc = 2z - 1, and
+      // eye = 2nf / (f + n - z_ndc(f - n)).
+      const double ndc = 2.0 * z - 1.0;
+      const double denom = clipFar + clipNear - ndc * (clipFar - clipNear);
+      if (denom == 0.0) {
+        mm.push_back(std::numeric_limits<float>::infinity());
+        continue;
+      }
+      eye = 2.0 * clipNear * clipFar / denom;
+    } else {
+      // Orthographic depth is already linear in eye distance.
+      eye = clipNear + z * (clipFar - clipNear);
+    }
+    mm.push_back(static_cast<float>(eye - clipNear));
+  }
+
+  return mm;
+}
+
 DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
                            DepthProfile profile)
 {
   const size_t count = std::min(depths.size(), static_cast<size_t>(width) * height);
 
   DepthImage img;
-  img.bytesPerPixel = profile == DepthProfile::metric ? 2 : 3;
+  // Visual is RGBA rather than RGB because that is what write_png() consumes on
+  // both backends - the CoreGraphics writer is kCGImageAlphaNoneSkipLast, and
+  // lodepng's info_raw defaults to RGBA8. The alpha is dropped on the way out.
+  img.bytesPerPixel = profile == DepthProfile::metric ? 2 : 4;
   img.pixels.reserve(count * img.bytesPerPixel);
 
   bool any = false;
@@ -67,6 +104,7 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
         grey = static_cast<std::uint8_t>(std::lround(t * 255.0));
       }
       img.pixels.insert(img.pixels.end(), 3, grey);
+      img.pixels.push_back(255);  // opaque; write_png() discards it
     }
   }
 

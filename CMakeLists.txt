@@ -1254,7 +1254,8 @@ if(NULLGL)
     src/glview/OffscreenView.cc
     src/glview/OffscreenContextNULL.cc
     src/io/export_png.cc
-    src/io/imageutils.cc)
+    src/io/imageutils.cc
+    src/io/imageutils-gray16.cc)
 else()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
@@ -1273,6 +1274,7 @@ else()
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
+    src/io/imageutils-gray16.cc
     ${GLEW_SOURCES})
   if(NOT USE_POLYSET_FOR_CGAL)
     list(APPEND OFFSCREEN_SOURCES

@@ -52,3 +52,15 @@ struct DepthImage {
  */
 DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
                            DepthProfile profile);
+
+/*!
+   Convert window-space depth (as glReadPixels(GL_DEPTH_COMPONENT) returns it,
+   in [0,1]) to distance from the near plane in millimetres.
+
+   Pixels at the far plane are background and come back as infinity, which is
+   what encode_depthmap() expects. Orthographic depth is linear in eye distance;
+   perspective depth is hyperbolic and has to be unprojected, which is where the
+   precision hazard of a wide near/far ratio actually bites.
+ */
+std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double clipNear,
+                                   double clipFar, bool perspective);

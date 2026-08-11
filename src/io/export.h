@@ -1,5 +1,7 @@
 #pragma once
 
+#include "io/depthmap.h"
+
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm.hpp>
 #include <filesystem>
@@ -42,6 +44,7 @@ enum class FileFormat {
   TERM,
   ECHO,
   PNG,
+  DEPTHMAP,
   PDF,
   POV,
   PARAM
@@ -364,6 +367,9 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
                 Camera& camera, std::ostream& output);
 bool export_png(const OffscreenView& glview, std::ostream& output);
+bool export_depthmap(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
+                     Camera& camera, DepthProfile profile, std::ostream& output);
+bool export_depthmap(const OffscreenView& glview, DepthProfile profile, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);
