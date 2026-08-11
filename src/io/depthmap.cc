@@ -3,6 +3,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <cstdint>
 #include <limits>
 #include <sstream>
@@ -149,9 +153,60 @@ std::string serialize_camera_json(const CameraParameters& cam)
   ss << "  \"clipFar\": " << cam.clipFar << ",\n";
   ss << "  \"fov\": " << cam.fov << ",\n";
   ss << "  \"ortho\": " << (cam.ortho ? "true" : "false") << ",\n";
-  ss << "  \"viewport\": [" << cam.viewport[0] << ", " << cam.viewport[1] << "]\n";
+  ss << "  \"viewport\": [" << cam.viewport[0] << ", " << cam.viewport[1] << "],\n";
+  // Sixteen bare numbers are ambiguous, and every wrong guess produces a
+  // plausible-looking reconstruction rather than an obvious failure: glGetDoublev
+  // returns column-major while JSON consumers tend to assume row-major, and the
+  // depth origin moved to the eye for both projections. State all of it.
+  ss << "  \"matrixOrder\": \"column-major\",\n";
+  ss << "  \"handedness\": \"right\",\n";
+  ss << "  \"depthOrigin\": \"eye\",\n";
+  ss << "  \"depthUnits\": \"mm\"\n";
   ss << "}\n";
   return ss.str();
+}
+
+bool parse_depth_range(const std::string& text, double& near, double& far, std::string& error)
+{
+  const auto comma = text.find(',');
+  if (comma == std::string::npos) {
+    error = "expected 'near,far'";
+    return false;
+  }
+  if (text.find(',', comma + 1) != std::string::npos) {
+    error = "expected exactly two values";
+    return false;
+  }
+
+  // stod throws on junk, which used to abort the process; check before parsing.
+  auto to_double = [](std::string t, double& out) {
+    const auto first = t.find_first_not_of(" \t");
+    if (first == std::string::npos) return false;
+    t = t.substr(first, t.find_last_not_of(" \t") - first + 1);
+    try {
+      size_t used = 0;
+      out = std::stod(t, &used);
+      return used == t.size();
+    } catch (const std::exception&) {
+      return false;
+    }
+  };
+
+  double n = 0, f = 0;
+  if (!to_double(text.substr(0, comma), n) || !to_double(text.substr(comma + 1), f)) {
+    error = "both values must be numbers";
+    return false;
+  }
+  if (!(n < f)) {
+    // An inverted or empty range silently produced an all-white visual image.
+    error = "near must be less than far";
+    return false;
+  }
+
+  near = n;
+  far = f;
+  error.clear();
+  return true;
 }
 
 DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
@@ -166,8 +221,22 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
   img.bytesPerPixel = options.profile == DepthProfile::metric ? 2 : 4;
   img.pixels.reserve(count * img.bytesPerPixel);
 
-  img.minDepth = options.explicit_near;
-  img.maxDepth = options.explicit_far;
+  // Report what was actually in the scene, not what was asked for, and say
+  // whether the range cut anything off.
+  bool any = false;
+  for (size_t i = 0; i < count; ++i) {
+    if (!std::isfinite(depths[i])) continue;
+    const double d = depths[i];
+    if (!any) {
+      img.minDepth = img.maxDepth = d;
+      any = true;
+    } else {
+      img.minDepth = std::min(img.minDepth, d);
+      img.maxDepth = std::max(img.maxDepth, d);
+    }
+    if (d < options.explicit_near || d > options.explicit_far) img.clipped = true;
+  }
+  if (!any) img.minDepth = img.maxDepth = 0.0;
 
   if (options.profile == DepthProfile::metric) {
     for (size_t i = 0; i < count; ++i) {
@@ -202,14 +271,22 @@ bool export_pfm(std::ostream& out, const std::vector<float>& depths, std::uint32
                 std::uint32_t height)
 {
   if (width == 0 || height == 0) return false;
-  out << "Pf\n" << width << " " << height << "\n-1.0\n";
+  // Negative scale means little-endian samples. Derived rather than hardcoded so
+  // the header cannot quietly disagree with the bytes that follow it.
+  const bool little_endian = []() {
+    const std::uint32_t probe = 1;
+    unsigned char first;
+    std::memcpy(&first, &probe, 1);
+    return first == 1;
+  }();
+  out << "Pf\n" << width << " " << height << "\n" << (little_endian ? "-1.0" : "1.0") << "\n";
+
+  // Array order *is* PFM order: both are bottom row first. See the header.
   const float bg = std::numeric_limits<float>::infinity();
-  for (int y = static_cast<int>(height) - 1; y >= 0; --y) {
-    for (std::uint32_t x = 0; x < width; ++x) {
-      size_t idx = static_cast<size_t>(y) * width + x;
-      float val = (idx < depths.size() && std::isfinite(depths[idx])) ? depths[idx] : bg;
-      out.write(reinterpret_cast<const char *>(&val), sizeof(float));
-    }
+  const size_t count = static_cast<size_t>(width) * height;
+  for (size_t idx = 0; idx < count; ++idx) {
+    const float val = (idx < depths.size() && std::isfinite(depths[idx])) ? depths[idx] : bg;
+    out.write(reinterpret_cast<const char *>(&val), sizeof(float));
   }
   return out.good();
 }

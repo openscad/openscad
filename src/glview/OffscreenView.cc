@@ -150,6 +150,12 @@ bool OffscreenView::saveDepth(std::ostream& output, const DepthmapOptions& optio
       sidecar << serialize_camera_json(camParams);
       sidecar.close();
     }
+    // Failing silently would hand back a depth map that cannot be unprojected,
+    // with nothing to say why.
+    if (!sidecar) {
+      LOG(message_group::Error, "Can't write camera sidecar '%1$s'.", options.camera_sidecar_path);
+      return false;
+    }
   }
 
   const bool perspective = this->cam.projection == Camera::ProjectionType::PERSPECTIVE;
@@ -162,6 +168,11 @@ bool OffscreenView::saveDepth(std::ostream& output, const DepthmapOptions& optio
   flip_image(image.pixels.data(), flipped.data(), image.bytesPerPixel, this->ctx->width(),
              this->ctx->height());
 
+  if (image.clipped) {
+    LOG(message_group::Warning,
+        "Depthmap: geometry outside the requested range %1$.3f - %2$.3f mm was clamped.",
+        options.explicit_near, options.explicit_far);
+  }
   if (options.profile == DepthProfile::metric) {
     LOG("Depthmap: %1$.3f - %2$.3f mm from the camera, %3$g units per mm.", image.minDepth,
         image.maxDepth, DEPTHMAP_METRIC_SCALE);

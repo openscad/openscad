@@ -3,6 +3,9 @@
 #include <catch2/catch_all.hpp>
 
 #include <cmath>
+#include <cstring>
+#include <sstream>
+#include <string>
 #include <cstdint>
 #include <limits>
 #include <vector>
@@ -242,4 +245,103 @@ TEST_CASE("Feature 24: float depth exports to PFM format stream", "[Depthmap]")
   CHECK(str.substr(0, 3) == "Pf\n");
   CHECK(str.find("2 2\n") != std::string::npos);
   CHECK(str.find("-1.0\n") != std::string::npos);
+}
+
+TEST_CASE("PFM rows are written in the order the format expects", "[Depthmap]")
+{
+  // The depths handed to export_pfm come straight from glReadPixels, which is
+  // already bottom-to-top - and bottom-to-top is exactly PFM's own row order.
+  // So the payload must come out in array order, untouched. Reversing here
+  // would undo a flip that was never applied and write the image upside down.
+  const std::vector<float> depths = {1.0f, 2.0f, 3.0f, 4.0f};  // row 0 = {1,2} = bottom
+  std::ostringstream out;
+  REQUIRE(export_pfm(out, depths, 2, 2));
+
+  const std::string s = out.str();
+  const size_t payload = s.size() - 2 * 2 * sizeof(float);
+  std::vector<float> got(4);
+  std::memcpy(got.data(), s.data() + payload, 4 * sizeof(float));
+
+  CHECK(got[0] == 1.0f);
+  CHECK(got[1] == 2.0f);
+  CHECK(got[2] == 3.0f);
+  CHECK(got[3] == 4.0f);
+}
+
+TEST_CASE("a depth range is parsed only when it is usable", "[Depthmap]")
+{
+  double near = 0, far = 0;
+  std::string err;
+
+  CHECK(parse_depth_range("80,90", near, far, err));
+  CHECK(near == Catch::Approx(80.0));
+  CHECK(far == Catch::Approx(90.0));
+
+  // Whitespace is what a shell leaves behind; tolerate it.
+  CHECK(parse_depth_range(" 80 , 90 ", near, far, err));
+  CHECK(near == Catch::Approx(80.0));
+
+  // Each of these used to be accepted, silently ignored, or fatal.
+  CHECK_FALSE(parse_depth_range("abc,def", near, far, err));  // used to abort the process
+  CHECK_FALSE(parse_depth_range("5", near, far, err));        // used to be silently dropped
+  CHECK_FALSE(parse_depth_range("100,50", near, far, err));   // inverted; used to paint all white
+  CHECK_FALSE(parse_depth_range("80,80", near, far, err));    // zero extent divides by zero
+  CHECK_FALSE(parse_depth_range("", near, far, err));
+  CHECK_FALSE(parse_depth_range("80,", near, far, err));
+  CHECK_FALSE(parse_depth_range("80,90,100", near, far, err));
+
+  // Every rejection explains itself, so the CLI has something to print.
+  CHECK_FALSE(err.empty());
+}
+
+TEST_CASE("an explicit range reports the true extent and flags clipping", "[Depthmap]")
+{
+  // Depths run 70-95; the range covers only 80-90, so both ends are clipped.
+  const std::vector<float> depths = {70.0f, 85.0f, 95.0f, BG};
+  DepthmapOptions opts;
+  opts.profile = DepthProfile::metric;
+  opts.has_explicit_range = true;
+  opts.explicit_near = 80.0;
+  opts.explicit_far = 90.0;
+  const auto img = encode_depthmap(depths, 2, 2, opts);
+
+  // Values are clamped into the range...
+  CHECK(grey16(img, 0) == 80);
+  CHECK(grey16(img, 1) == 85);
+  CHECK(grey16(img, 2) == 90);
+
+  // ...but the reported extent stays truthful, so the caller can still tell what
+  // was actually in the scene. Reporting the requested range back would hide
+  // exactly the fact an explicit range most needs to surface.
+  CHECK(img.minDepth == Catch::Approx(70.0));
+  CHECK(img.maxDepth == Catch::Approx(95.0));
+  CHECK(img.clipped);
+}
+
+TEST_CASE("an explicit range that covers the scene does not flag clipping", "[Depthmap]")
+{
+  const std::vector<float> depths = {82.0f, 88.0f, BG, BG};
+  DepthmapOptions opts;
+  opts.has_explicit_range = true;
+  opts.explicit_near = 80.0;
+  opts.explicit_far = 90.0;
+  const auto img = encode_depthmap(depths, 2, 2, opts);
+  CHECK_FALSE(img.clipped);
+}
+
+TEST_CASE("the camera sidecar states its conventions", "[Depthmap]")
+{
+  CameraParameters cam;
+  cam.clipNear = 10;
+  cam.clipFar = 500;
+  const auto json = serialize_camera_json(cam);
+
+  // Sixteen bare numbers are ambiguous: glGetDoublev returns column-major, while
+  // JSON consumers tend to assume row-major, and guessing wrong yields a
+  // plausible-looking transposed reconstruction. Say it in the file.
+  CHECK(json.find("\"matrixOrder\": \"column-major\"") != std::string::npos);
+  CHECK(json.find("\"handedness\": \"right\"") != std::string::npos);
+  // Depth is measured from the eye in both projections, and in millimetres.
+  CHECK(json.find("\"depthOrigin\": \"eye\"") != std::string::npos);
+  CHECK(json.find("\"depthUnits\": \"mm\"") != std::string::npos);
 }

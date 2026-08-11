@@ -536,12 +536,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         }
         const auto r_entry = section->second.find("range");
         if (r_entry != section->second.end()) {
-          size_t comma = r_entry->second.find(',');
-          if (comma != std::string::npos) {
-            opts.has_explicit_range = true;
-            opts.explicit_near = std::stod(r_entry->second.substr(0, comma));
-            opts.explicit_far = std::stod(r_entry->second.substr(comma + 1));
+          std::string error;
+          if (!parse_depth_range(r_entry->second, opts.explicit_near, opts.explicit_far, error)) {
+            LOG("Invalid depthmap range '%1$s': %2$s.", r_entry->second, error);
+            return 1;
           }
+          opts.has_explicit_range = true;
         }
       }
 

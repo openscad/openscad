@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 /*!
@@ -41,9 +42,13 @@ struct DepthImage {
   //! Bytes per pixel: 2 for metric (16-bit grey), 3 for visual (8-bit RGB).
   std::uint8_t bytesPerPixel = 0;
   //! The finite depth extent actually found, in millimetres. Both are 0 when
-  //! the buffer held no geometry at all.
+  //! the buffer held no geometry at all. These stay truthful even when an
+  //! explicit range is in force - reporting the requested range back would hide
+  //! precisely the fact an explicit range most needs to surface.
   double minDepth = 0.0;
   double maxDepth = 0.0;
+  //! Set when an explicit range clamped real geometry, so the caller can warn.
+  bool clipped = false;
 };
 
 /*!
@@ -114,5 +119,20 @@ struct DepthmapOptions {
 DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
                            const DepthmapOptions& options);
 
+/*!
+   Write depths as a PFM (greyscale float) stream.
+
+   `depths` arrives in the orientation glReadPixels produced, bottom row first,
+   which is already PFM's own row order - so the payload is written in array
+   order. Do not "flip for PFM": that undoes a flip this path never applied and
+   writes the image upside down.
+ */
 bool export_pfm(std::ostream& out, const std::vector<float>& depths, std::uint32_t width,
                 std::uint32_t height);
+
+/*!
+   Parse a "near,far" depth range. Returns false and sets `error` for anything
+   unusable - non-numeric, missing comma, inverted, or zero extent - so the
+   caller can report it rather than crash on it or silently drop it.
+ */
+bool parse_depth_range(const std::string& text, double& near, double& far, std::string& error);
