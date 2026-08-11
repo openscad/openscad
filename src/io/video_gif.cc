@@ -37,8 +37,14 @@ public:
   {
     if (width == 0 || height == 0 || fps == 0) return false;
 
-    // GIF frame delays are in centiseconds, so anything above 100fps rounds to zero.
-    delay_ = 100 / fps;
+    /*
+       GIF frame delays are whole centiseconds, so most rates cannot be represented
+       exactly and anything above 100fps would round to zero. Round to nearest rather
+       than truncating: at 15fps truncation gives 6cs (16.7fps, 11% fast) where
+       rounding gives 7cs (14.3fps, 4.8% slow), and at 60fps truncation gives 1cs --
+       100fps, nearly double speed.
+     */
+    delay_ = (100 + fps / 2) / fps;
     if (delay_ == 0) return false;
 
     if (!GifBegin(&writer_, path.c_str(), width, height, delay_, 8, DITHER)) return false;
