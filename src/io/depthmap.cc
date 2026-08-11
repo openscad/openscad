@@ -48,7 +48,6 @@ std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double
       continue;
     }
     double eye;
-    double zero;
     if (perspective) {
       // Undo the hyperbolic projection: z_ndc = 2z - 1, and
       // eye = 2nf / (f + n - z_ndc(f - n)).
@@ -59,20 +58,17 @@ std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double
         continue;
       }
       eye = 2.0 * clipNear * clipFar / denom;
-      // The perspective near plane is just in front of the scene (0.1*dist), so
-      // it is a sensible origin.
-      zero = clipNear;
     } else {
       // Orthographic depth is already linear in eye distance.
       eye = clipNear + z * (clipFar - clipNear);
-      // ...but the orthographic near plane is 100*dist *behind* the eye, so
-      // measuring from it would add a large offset unrelated to the model and
-      // overflow the metric profile's ceiling for ordinary-sized models. Measure
-      // from the eye instead. Geometry behind the eye stays negative rather than
-      // being clamped here; the metric profile floors it at 0.
-      zero = 0.0;
     }
-    mm.push_back(static_cast<float>(eye - zero));
+    // Both projections report distance from the eye. Neither near plane is a
+    // usable origin: the orthographic one sits 100*dist *behind* the eye, and
+    // the perspective one at 0.1*dist put the two projections that far apart for
+    // the same model. The eye is the one origin they share, and it is what the
+    // viewport shading measures from too. Geometry behind the eye stays negative
+    // here rather than being clamped; the metric profile floors it at 0.
+    mm.push_back(static_cast<float>(eye));
   }
 
   return mm;

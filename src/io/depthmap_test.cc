@@ -121,15 +121,20 @@ TEST_CASE("perspective depth unprojects through the hyperbolic curve", "[Depthma
 {
   // n=1, f=101. A surface at eye distance d has window depth
   // f*(d-n) / ((f-n)*d), so d=2 gives 101/200 = 0.505.
+  //
+  // Measured from the eye, exactly as the orthographic case is: measuring from
+  // the near plane instead put the two projections 0.1*dist apart for the same
+  // model, and left the viewport shading (which is eye-relative in both)
+  // agreeing with only one of them.
   const std::vector<float> window = {0.0f, 0.505f};
   const auto mm = linearize_depth(window, 1.0, 101.0, true);
 
   REQUIRE(mm.size() == 2);
-  CHECK(mm[0] == Catch::Approx(0.0));  // near plane, so zero distance from it
-  // Eye distance 2, minus the near plane. The margin is loose because window
-  // depth arrives as a float and the curve is steep here - which is the
-  // precision hazard of a wide near/far ratio, visible even in this toy case.
-  CHECK(mm[1] == Catch::Approx(1.0).margin(1e-4));
+  CHECK(mm[0] == Catch::Approx(1.0));  // on the near plane, which is 1 from the eye
+  // The margin is loose because window depth arrives as a float and the curve is
+  // steep here - the precision hazard of a wide near/far ratio, visible even in
+  // this toy case.
+  CHECK(mm[1] == Catch::Approx(2.0).margin(1e-4));
 }
 
 TEST_CASE("the far plane is background, not a real distance", "[Depthmap]")
