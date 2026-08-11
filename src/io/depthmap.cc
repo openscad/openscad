@@ -22,6 +22,19 @@ void push_be16(std::vector<std::uint8_t>& pixels, std::uint16_t value)
 
 }  // namespace
 
+DepthRange depth_range_for_bounds(double nearest, double farthest)
+{
+  DepthRange range;
+  // Geometry behind the eye would make fog run backwards, so the near end
+  // floors at zero.
+  range.start = std::max(0.0, nearest);
+  range.end = std::max(range.start, farthest);
+  // GL_LINEAR fog divides by (end - start), so the two must never coincide - a
+  // degenerate or zero-radius model would otherwise produce a division by zero.
+  if (!(range.end > range.start)) range.end = range.start + 1.0;
+  return range;
+}
+
 std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double clipNear,
                                    double clipFar, bool perspective)
 {

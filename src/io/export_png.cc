@@ -76,6 +76,7 @@ std::unique_ptr<OffscreenView> prepare_geometry_view(const std::shared_ptr<const
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
+  glview->setShowDepth(options["depth"]);
   glview->paintGL();
   return glview;
 }
@@ -145,6 +146,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
+  glview->setShowDepth(options["depth"]);
   glview->paintGL();
   return glview;
 }

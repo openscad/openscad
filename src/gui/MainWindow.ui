@@ -341,6 +341,7 @@
     <addaction name="viewActionThrownTogether"/>
     <addaction name="separator"/>
     <addaction name="viewActionShowEdges"/>
+    <addaction name="viewActionShowDepth"/>
     <addaction name="viewActionShowAxes"/>
     <addaction name="viewActionShowScaleProportional"/>
     <addaction name="viewActionShowCrosshairs"/>
@@ -1128,6 +1129,17 @@
    </property>
    <property name="shortcut">
     <string>F12</string>
+   </property>
+  </action>
+  <action name="viewActionShowDepth">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Shade by Depth</string>
+   </property>
+   <property name="toolTip">
+    <string>Shade the model by distance from the camera, previewing a depth map export</string>
    </property>
   </action>
   <action name="viewActionShowEdges">

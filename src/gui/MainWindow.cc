@@ -509,6 +509,9 @@ void MainWindow::loadViewSettings()
   if (settings.value("view/showEdges").toBool()) {
     viewActionShowEdges->setChecked(true);
   }
+  if (settings.value("view/showDepth").toBool()) {
+    viewActionShowDepth->setChecked(true);
+  }
   if (settings.value("view/showAxes", true).toBool()) {
     viewActionShowAxes->setChecked(true);
   }
@@ -2751,6 +2754,14 @@ void MainWindow::on_viewActionShowEdges_toggled(bool checked)
   QSettingsCached settings;
   settings.setValue("view/showEdges", checked);
   this->qglview->setShowEdges(checked);
+  this->qglview->update();
+}
+
+void MainWindow::on_viewActionShowDepth_toggled(bool checked)
+{
+  QSettingsCached settings;
+  settings.setValue("view/showDepth", checked);
+  this->qglview->setShowDepth(checked);
   this->qglview->update();
 }
 

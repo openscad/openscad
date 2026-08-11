@@ -72,3 +72,20 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
  */
 std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double clipNear,
                                    double clipFar, bool perspective);
+
+//! Eye-space distances that the viewport depth shading maps across.
+struct DepthRange {
+  double start = 0.0;
+  double end = 0.0;
+};
+
+/*!
+   The depth-to-grey mapping for the viewport, built from the eye-space depth
+   extent of the model's bounding box - pinned to the model, not recomputed from
+   what happens to be on screen, so the shading does not swim as the model is
+   rotated.
+
+   Fed to GL_LINEAR fog, whose distance is eye-space and linear, so the viewport
+   needs none of linearize_depth()'s unprojection.
+ */
+DepthRange depth_range_for_bounds(double nearest, double farthest);

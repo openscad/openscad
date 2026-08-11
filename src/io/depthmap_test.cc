@@ -145,6 +145,33 @@ TEST_CASE("the far plane is background, not a real distance", "[Depthmap]")
   CHECK(std::isfinite(persp[1]));
 }
 
+TEST_CASE("the viewport depth range spans the bounding box extent", "[Depthmap]")
+{
+  // Taken from the model's own eye-space extent, not from what is on screen, so
+  // rotating the model does not change the shading of a surface that did not move.
+  const auto r = depth_range_for_bounds(90.0, 110.0);
+  CHECK(r.start == Catch::Approx(90.0));
+  CHECK(r.end == Catch::Approx(110.0));
+}
+
+TEST_CASE("the viewport depth range survives the camera being inside the model", "[Depthmap]")
+{
+  // Zoomed in past the model's near side: the near end would go negative, which
+  // fog will not accept, so it floors at zero without collapsing the range.
+  const auto r = depth_range_for_bounds(-5.0, 15.0);
+  CHECK(r.start == Catch::Approx(0.0));
+  CHECK(r.end == Catch::Approx(15.0));
+  CHECK(r.end > r.start);
+}
+
+TEST_CASE("the viewport depth range never collapses to a point", "[Depthmap]")
+{
+  // A zero-radius bound (a single point, or a degenerate model) would make fog
+  // divide by zero.
+  const auto r = depth_range_for_bounds(50.0, 50.0);
+  CHECK(r.end > r.start);
+}
+
 TEST_CASE("an empty view yields background everywhere", "[Depthmap]")
 {
   const std::vector<float> depths = {BG, BG};

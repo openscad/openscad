@@ -345,6 +345,10 @@ struct ViewOptions {
     {"scales", false},
     {"edges", false},
     {"crosshairs", false},
+    // Shade the model by distance rather than by lighting. A render toggle, not
+    // an output encoding, which is why it belongs here and the depthmap profile
+    // does not.
+    {"depth", false},
   };
 
   const std::vector<std::string> names()

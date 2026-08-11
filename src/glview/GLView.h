@@ -48,6 +48,8 @@ public:
 
   void setCamera(const Camera& cam);
   void setupCamera();
+  void setupDepthShading();
+  void teardownDepthShading();
 
   void setColorScheme(const ColorScheme& cs);
   void setColorScheme(const std::string& cs);
@@ -61,6 +63,8 @@ public:
   void setShowEdges(bool enabled) { this->showedges = enabled; }
   [[nodiscard]] bool showCrosshairs() const { return this->showcrosshairs; }
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
+  [[nodiscard]] bool showDepth() const { return this->showdepth; }
+  void setShowDepth(bool enabled) { this->showdepth = enabled; }
 
   virtual bool save(const char *filename) const = 0;
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
@@ -81,6 +85,9 @@ public:
   bool showedges;
   bool showcrosshairs;
   bool showscale;
+  //! Shade the model by distance instead of by lighting - the viewport preview
+  //! of what a depth map export will contain.
+  bool showdepth{false};
   GLdouble modelview[16];
   GLdouble projection[16];
   std::vector<SelectedObject> selected_obj;
