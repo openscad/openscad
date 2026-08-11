@@ -289,15 +289,30 @@ bool Animate::saveFrame(const QImage& image)
 
 void Animate::startDump()
 {
+  /*
+     Stop the animation while the dialog is up. Qt keeps delivering timer events to a
+     running animation underneath a modal dialog, so nextFrame() counts a whole loop
+     and unticks the checkbox before the user has even chosen a file -- the recording
+     then ends before it begins and writes nothing.
+   */
+  const bool wasRunning = animateTimer->isActive();
+  animateTimer->stop();
+
   const QString path =
     QFileDialog::getSaveFileName(this, _("Export Animation"), QString(),
                                  _("Animated GIF (*.gif);;Animated PNG (*.apng);;MJPEG AVI (*.avi);;"
                                    "PNG image sequence (*.png)"));
+
+  if (wasRunning) animateTimer->start();
+
   if (path.isEmpty()) {
     // Cancelled: untick the box rather than silently recording to nowhere.
     e_dump->setChecked(false);
     return;
   }
+
+  // Re-anchor the loop detection so the recording spans a full loop from here on.
+  animDumping = false;
 
   dumpPath = path;
   dumpFrame = 0;
