@@ -125,6 +125,7 @@
 #include "gui/Editor.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
+#include "gui/ExportPngDialog.h"
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/ImportUtils.h"
@@ -2625,8 +2626,12 @@ void MainWindow::actionExportFileFormat(int fmt)
 
   } break;
   case FileFormat::PNG: {
+    ExportPngDialog exportPngDialog;
+    if (exportPngDialog.exec() == QDialog::Rejected) {
+      return;
+    }
     // Grab first to make sure dialog box isn't part of the grabbed image
-    qglview->grabFrame();
+    qglview->grabFrame(exportPngDialog.isTransparentBackground());
     const QString suffix = "png";
     auto img_filename =
       QFileDialog::getSaveFileName(this, _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));

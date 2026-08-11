@@ -1178,6 +1178,23 @@ add_cmdline_test(preview-view-edges-cgal           OPENSCAD FILES ${VIEW_OPTIONS
 add_cmdline_test(preview-view-edges-manifold       OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --backend=manifold)
 add_cmdline_test(render-view-edges-manifold OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --render --backend=manifold)
 
+# --view transparent is checked by asserting on the alpha channel rather than by comparing against
+# an expected image: image comparison would not reliably fail if the alpha channel were dropped.
+add_test(NAME transparent-png CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CCSD}/transparent_pngtest.py
+          ${OPENSCAD_BINPATH} ${VIEW_OPTIONS_TEST})
+
+# Correctness of the experimental transparent-compositing feature: the exported image, composited
+# back over the background, must reproduce the ordinary render. Needs a model containing partially
+# transparent geometry, which the view-options model does not have.
+add_test(NAME transparent-export-alpha CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CCSD}/transparent_compositing_pngtest.py
+          ${OPENSCAD_BINPATH} ${TEST_SCAD_DIR}/3D/misc/transparent-color-test.scad)
+
+add_test(NAME transparent-compositing CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CCSD}/transparent_compositing_pngtest.py
+          ${OPENSCAD_BINPATH} ${TEST_SCAD_DIR}/3D/misc/transparent-color-test.scad --enable-feature)
+
 #
 # Colorscheme tests
 #

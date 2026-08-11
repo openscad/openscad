@@ -49,6 +49,11 @@ const Feature Feature::ExperimentalDiscretizationByError(
 const Feature Feature::ExperimentalAiFeatures("ai-features",
                                               "Enable AI features (Note: AI integration is under "
                                               "development and does not connect to external APIs yet).");
+const Feature Feature::ExperimentalTransparentCompositing(
+  "transparent-compositing",
+  "Always render the 3D view on a transparent background and composite it over the background "
+  "color for display. Makes transparent image export correct for partially transparent "
+  "geometry, and lets it be exported without re-rendering.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
