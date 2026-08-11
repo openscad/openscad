@@ -109,6 +109,28 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
   data.min_val = min_val;
 }
 
+void SurfaceNode::convert_image_16bit(img_data_t& data, std::vector<uint8_t>& img, unsigned int width,
+                                      unsigned int height) const
+{
+  data.width = width;
+  data.height = height;
+  data.resize((size_t)width * height);
+  double min_val = 200;
+  for (unsigned int y = 0; y < height; ++y) {
+    for (unsigned int x = 0; x < width; ++x) {
+      long idx = 8l * (y * width + x);
+      uint16_t r = (static_cast<uint16_t>(img[idx]) << 8) | img[idx + 1];
+      uint16_t g = (static_cast<uint16_t>(img[idx + 2]) << 8) | img[idx + 3];
+      uint16_t b = (static_cast<uint16_t>(img[idx + 4]) << 8) | img[idx + 5];
+      double pixel = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      double z = 100.0 / 65535.0 * (invert ? 65535.0 - pixel : pixel);
+      data[x + (width * (height - 1 - y))] = z;
+      min_val = std::min(z, min_val);
+    }
+  }
+  data.min_val = min_val;
+}
+
 bool SurfaceNode::is_png(std::vector<uint8_t>& png) const
 {
   const size_t pngHeaderLength = 8;
@@ -138,16 +160,37 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
     return read_dat(filename);
   }
 
-  unsigned int width, height;
-  std::vector<uint8_t> img;
-  auto error = lodepng::decode(img, width, height, png);
+  lodepng::State state;
+  unsigned int width = 0, height = 0;
+  unsigned error = lodepng_inspect(&width, &height, &state, png.data(), png.size());
   if (error) {
     LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
     data.clear();
     return data;
   }
 
-  convert_image(data, img, width, height);
+  bool is_16bit = (state.info_png.color.bitdepth == 16);
+
+  std::vector<uint8_t> img;
+  if (is_16bit) {
+    state.info_raw.colortype = LCT_RGBA;
+    state.info_raw.bitdepth = 16;
+    error = lodepng::decode(img, width, height, state, png);
+  } else {
+    error = lodepng::decode(img, width, height, png);
+  }
+
+  if (error) {
+    LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
+    data.clear();
+    return data;
+  }
+
+  if (is_16bit) {
+    convert_image_16bit(data, img, width, height);
+  } else {
+    convert_image(data, img, width, height);
+  }
 
   return data;
 }

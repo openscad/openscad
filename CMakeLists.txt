@@ -1575,6 +1575,8 @@ endif()
 
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
+  "src/core/*_test.cc"
+  "src/geometry/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
