@@ -288,6 +288,18 @@ TEST_CASE("APNG output is a structurally valid animated PNG", "[video]")
   CHECK(readBE32(data, chunks.front().dataOffset + 0) == WIDTH);
   CHECK(readBE32(data, chunks.front().dataOffset + 4) == HEIGHT);
 
+  /*
+     There is one IHDR and one palette for the whole file, but frames are compressed
+     independently -- so an encoder that lets each frame pick its own smallest colour
+     type produces frames that all render in frame 0's palette. Pinning 8-bit RGBA
+     (colour type 6) and requiring no PLTE is what keeps frames independent.
+   */
+  CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 8]) == 8);   // bit depth
+  CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 9]) == 6);   // RGBA
+  for (const auto& chunk : chunks) {
+    CHECK(chunk.type != "PLTE");
+  }
+
   unsigned actl = 0, fctl = 0, fdat = 0, idat = 0;
   std::vector<uint32_t> sequenceNumbers;
   const PngChunk *animationControl = nullptr;
