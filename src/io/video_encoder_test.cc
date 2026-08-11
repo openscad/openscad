@@ -1,8 +1,8 @@
 /*
    Tests for the animation container encoders (APNG, GIF, MJPEG/AVI).
 
-   These run headless: the encoders take raw RGBA and write to a std::ostream, so no
-   GL context, no window and no event loop are involved. They assert on container
+   These run headless: the encoders take raw RGBA and write a file, so no GL context,
+   no window and no event loop are involved. They assert on container
    *structure* parsed back out of the produced bytes rather than comparing against
    golden files -- a golden would break on any zlib or JPEG library version bump and
    would teach us to re-bless it rather than to read it.
@@ -12,11 +12,16 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "io/VideoEncoder.h"
+
+namespace fs = std::filesystem;
 
 namespace {
 
@@ -47,8 +52,11 @@ std::string encodeThreeFrames(const std::string& suffix)
   auto encoder = VideoEncoder::create(suffix);
   REQUIRE(encoder != nullptr);
 
-  std::ostringstream out(std::ios::binary);
-  REQUIRE(encoder->open(out, WIDTH, HEIGHT, FPS));
+  // The encoders write files rather than streams -- gif.h needs a FILE* and the AVI
+  // writer seeks back to patch sizes -- so round-trip through a temporary.
+  const auto path = fs::temp_directory_path() / ("openscad_video_test." + suffix);
+  fs::remove(path);
+  REQUIRE(encoder->open(path.string(), WIDTH, HEIGHT, FPS));
 
   const std::vector<std::vector<uint8_t>> frames = {
     solidFrame(255, 0, 0),
@@ -60,7 +68,15 @@ std::string encodeThreeFrames(const std::string& suffix)
   }
 
   REQUIRE(encoder->close());
-  return out.str();
+
+  std::ifstream in(path, std::ios::binary);
+  REQUIRE(in.good());
+  const std::string data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  in.close();
+  fs::remove(path);
+
+  REQUIRE(!data.empty());
+  return data;
 }
 
 uint32_t readBE32(const std::string& d, size_t off)
@@ -77,17 +93,18 @@ uint32_t readLE32(const std::string& d, size_t off)
 
 uint16_t readBE16(const std::string& d, size_t off)
 {
-  return static_cast<uint16_t>((static_cast<uint8_t>(d[off]) << 8) |
-                               static_cast<uint8_t>(d[off + 1]));
+  return static_cast<uint16_t>((static_cast<uint8_t>(d[off]) << 8) | static_cast<uint8_t>(d[off + 1]));
 }
 
 uint16_t readLE16(const std::string& d, size_t off)
 {
-  return static_cast<uint16_t>(static_cast<uint8_t>(d[off]) |
-                               (static_cast<uint8_t>(d[off + 1]) << 8));
+  return static_cast<uint16_t>(static_cast<uint8_t>(d[off]) | (static_cast<uint8_t>(d[off + 1]) << 8));
 }
 
-std::string fourcc(const std::string& d, size_t off) { return d.substr(off, 4); }
+std::string fourcc(const std::string& d, size_t off)
+{
+  return d.substr(off, 4);
+}
 
 /*
    ---- PNG / APNG ----------------------------------------------------------------
@@ -294,8 +311,8 @@ TEST_CASE("APNG output is a structurally valid animated PNG", "[video]")
      type produces frames that all render in frame 0's palette. Pinning 8-bit RGBA
      (colour type 6) and requiring no PLTE is what keeps frames independent.
    */
-  CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 8]) == 8);   // bit depth
-  CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 9]) == 6);   // RGBA
+  CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 8]) == 8);  // bit depth
+  CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 9]) == 6);  // RGBA
   for (const auto& chunk : chunks) {
     CHECK(chunk.type != "PLTE");
   }

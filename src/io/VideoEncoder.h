@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <ostream>
 #include <string>
 
 /*!
@@ -24,10 +23,14 @@ public:
   VideoEncoder& operator=(const VideoEncoder&) = delete;
 
   /*!
-     Begins a stream. `out` must stay alive until close() returns.
-     Returns false if the parameters are unusable (zero dimensions, zero fps).
+     Begins writing `path`, truncating any existing file. Returns false if the file
+     cannot be opened or the parameters are unusable (zero dimensions, zero fps).
+
+     A path rather than a std::ostream because two of the four backends cannot write
+     to a stream at all: the vendored gif.h writes through a FILE*, and Qt's
+     QMediaRecorder takes an output URL.
    */
-  virtual bool open(std::ostream& out, unsigned width, unsigned height, unsigned fps) = 0;
+  virtual bool open(const std::string& path, unsigned width, unsigned height, unsigned fps) = 0;
 
   /*!
      Appends one frame. `rgba` points at `height * stride` bytes, 4 bytes per pixel,
