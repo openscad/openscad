@@ -9,6 +9,7 @@
 #include "glview/Renderer.h"
 #include "utils/degree_trig.h"
 #include "glview/hershey.h"
+#include "Feature.h"
 
 #include <functional>
 #include <memory>
@@ -162,10 +163,35 @@ void GLView::paintGL()
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
 
-  glClearColor(bgcol.r(), bgcol.g(), bgcol.b(), 1.0);
+  // With transparent compositing the scene is always rendered onto a fully transparent buffer and
+  // the background is composited underneath at the end of this function. Clearing to (0,0,0,0)
+  // rather than to the background color is what makes partially transparent geometry come out
+  // right: together with the separate alpha blend function below, the buffer ends up holding
+  // premultiplied RGBA, which can be composited over any background without color error.
+  const bool composite_background = Feature::ExperimentalTransparentCompositing.is_enabled();
+  // A transparent export must be rendered this way whether or not the feature is on: exporting an
+  // image with the background matted into it is a defect, not a default worth preserving. The
+  // feature flag additionally applies it to the *live view*, which is the part that changes what
+  // every user sees on every frame and therefore deserves gating.
+  const bool premultiplied = composite_background || transparent_background;
+
+  if (premultiplied) {
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+  } else {
+    glClearColor(bgcol.r(), bgcol.g(), bgcol.b(), 1.0);
+  }
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  if (bgcol != bgstopcol) {
+  if (premultiplied) {
+    // Accumulate coverage in the alpha channel instead of blending it as if it were a color
+    // channel. Source colors stay non-premultiplied, so no renderer or shader needs to change; only
+    // the destination becomes premultiplied, which is what correct compositing requires.
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  }
+
+  // ponytail: a gradient background can't be transparent, so just skip it
+  // Under compositing the background (gradient included) is drawn underneath at the end instead.
+  if (bgcol != bgstopcol && !premultiplied) {
     glDisable(GL_DEPTH_TEST);
 
     glMatrixMode(GL_PROJECTION);
@@ -235,12 +261,41 @@ void GLView::paintGL()
   // Solves https://github.com/openscad/openscad/issues/3689.
   //
   // Originally developed by @karliss for FreeCAD (https://github.com/FreeCAD/FreeCAD/pull/19499).
-  GLboolean mask[4];
-  glGetBooleanv(GL_COLOR_WRITEMASK, mask);
-  glColorMask(false, false, false, true);
-  glClearColor(0, 0, 0, 1);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glColorMask(mask[0], mask[1], mask[2], mask[3]);
+  if (premultiplied) {
+    if (!transparent_background) {
+      // Composite the background *underneath* what has been drawn (destination-over). The color
+      // blend adds bg*(1 - dstAlpha), which is exactly the missing contribution for a premultiplied
+      // destination; the alpha blend drives the result to opaque, which also does the job of the
+      // alpha-scrub workaround below.
+      glDisable(GL_DEPTH_TEST);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ONE, GL_ONE, GL_ONE);
+
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+
+      glBegin(GL_QUADS);
+      glColor4f(bgcol.r(), bgcol.g(), bgcol.b(), 1.0f);
+      glVertex2f(-1.0f, +1.0f);
+      glVertex2f(+1.0f, +1.0f);
+      glColor4f(bgstopcol.r(), bgstopcol.g(), bgstopcol.b(), 1.0f);
+      glVertex2f(+1.0f, -1.0f);
+      glVertex2f(-1.0f, -1.0f);
+      glEnd();
+
+      glEnable(GL_DEPTH_TEST);
+    }
+    // Leave the blend function as the rest of the code expects to find it.
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  } else if (!transparent_background) {
+    GLboolean mask[4];
+    glGetBooleanv(GL_COLOR_WRITEMASK, mask);
+    glColorMask(false, false, false, true);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColorMask(mask[0], mask[1], mask[2], mask[3]);
+  }
 }
 
 #ifdef ENABLE_OPENCSG

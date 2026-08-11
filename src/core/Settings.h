@@ -29,6 +29,7 @@ constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
+constexpr inline auto SECTION_EXPORT_PNG = "export-png";
 constexpr inline auto SECTION_COLOR_LIST = "color-list";
 
 class SettingsEntryBase
@@ -385,6 +386,7 @@ class Settings
 public:
   static SettingsEntryBool showWarningsIn3dView;
   static SettingsEntryBool mouseCentricZoom;
+  static SettingsEntryBool exportPngTransparentBackground;
   static SettingsEntryInt indentationWidth;
   static SettingsEntryInt tabWidth;
   static SettingsEntryEnum<std::string> lineWrap;

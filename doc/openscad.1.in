@@ -90,8 +90,9 @@ If exporting an image, use an OpenCSG preview (optionally in throwntogether mode
 .B \-\-animate[=N]
 Export N animated frames as PNG images.
 .TP
-.B \-\-view[=axes|crosshairs|edges|scales]
-View options
+.B \-\-view[=axes|crosshairs|edges|scales|transparent]
+View options. \fItransparent\fP exports the image with a transparent background instead of the
+background colour, producing a PNG with an alpha channel.
 .TP
 .B \-\-csglimit=limit
 If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.

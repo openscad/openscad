@@ -45,7 +45,10 @@ public:
   std::string getRendererInfo() const override;
   float getDPI() override { return this->devicePixelRatio(); }
 
-  const QImage& grabFrame();
+  // transparent=true grabs the frame with a transparent background instead of the background
+  // color. The view's own state is restored before returning, so the on-screen viewport is
+  // unaffected either way.
+  const QImage& grabFrame(bool transparent = false);
   bool save(const char *filename) const override;
   void resetView();
   void viewAll();
