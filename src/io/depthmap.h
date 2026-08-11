@@ -17,9 +17,12 @@
      near = bright, background = black. This is what ControlNet depth and
      general image tooling expect, having been trained on MiDaS output.
 
-   The input is linear distance from the camera in millimetres. Pixels with no
-   geometry are marked by a non-finite value (infinity), not by a sentinel
-   number, so that no real distance can be mistaken for background.
+   The input is linear distance **from the near plane** in millimetres, not from
+   the eye: the eye sits at Camera::zoomValue() along -Y and --viewall moves it,
+   so eye-relative values would shift with the zoom level and the same model
+   would encode differently at two zooms. Pixels with no geometry are marked by
+   a non-finite value (infinity), not by a sentinel number, so that no real
+   distance can be mistaken for background.
  */
 
 enum class DepthProfile : std::uint8_t {
@@ -47,5 +50,5 @@ struct DepthImage {
    Encode linear camera-space depths (millimetres, non-finite where there is no
    geometry) into pixels for the given profile.
  */
-DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width,
-                           std::uint32_t height, DepthProfile profile);
+DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
+                           DepthProfile profile);
