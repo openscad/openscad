@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "gif-h/gif.h"
+#include "utils/printutils.h"
 
 namespace {
 
@@ -46,6 +47,19 @@ public:
      */
     delay_ = (100 + fps / 2) / fps;
     if (delay_ == 0) return false;
+
+    /*
+       Say so when the requested rate is not representable, rather than silently
+       producing an animation that plays at a different speed. 30fps is the common
+       case: 100/30 is 3.33, and neither 3 (33.3fps) nor 4 (25fps) is 30. Rates that
+       divide 100 -- 10, 20, 25, 50 -- are exact.
+     */
+    if (100 % fps != 0) {
+      LOG(message_group::Warning,
+          "GIF frame delays are whole centiseconds; %1$d fps is not representable, "
+          "so this file plays at %2$.1f fps. Use 10, 20, 25 or 50 fps for exact timing.",
+          fps, 100.0 / delay_);
+    }
 
     if (!GifBegin(&writer_, path.c_str(), width, height, delay_, 8, DITHER)) return false;
 
