@@ -467,3 +467,55 @@ TEST_CASE("AVI output is a structurally valid MJPEG AVI", "[video]")
     CHECK(chunkLength == frames[i]->size);
   }
 }
+
+TEST_CASE("outputSuffix lowercases the final suffix only", "[video]")
+{
+  CHECK(outputSuffix("out.gif") == "gif");
+  CHECK(outputSuffix("out.png") == "png");
+
+  // The save dialog and the user can both produce either case.
+  CHECK(outputSuffix("OUT.GIF") == "gif");
+  CHECK(outputSuffix("Out.Avi") == "avi");
+
+  // Only the last dot in the final component counts.
+  CHECK(outputSuffix("/tmp/my.model.apng") == "apng");
+
+  // A dot in a directory name is not the file's suffix.
+  CHECK(outputSuffix("/tmp/v1.gif/out.png") == "png");
+  CHECK(outputSuffix("/tmp/v1.gif/out") == "");
+
+  CHECK(outputSuffix("out") == "");
+  CHECK(outputSuffix("") == "");
+}
+
+TEST_CASE("numberedFramePath zero-pads before the suffix", "[video]")
+{
+  CHECK(numberedFramePath("spin.png", 0) == "spin00000.png");
+  CHECK(numberedFramePath("spin.png", 7) == "spin00007.png");
+  CHECK(numberedFramePath("spin.png", 12345) == "spin12345.png");
+
+  // Past five digits the number must widen rather than wrap or truncate.
+  CHECK(numberedFramePath("spin.png", 123456) == "spin123456.png");
+
+  // Only the final suffix is a suffix; earlier dots belong to the name.
+  CHECK(numberedFramePath("/tmp/my.model.png", 3) == "/tmp/my.model00003.png");
+
+  // A directory containing a dot must not be mistaken for a suffix.
+  CHECK(numberedFramePath("/tmp/v1.2/spin.png", 3) == "/tmp/v1.2/spin00003.png");
+
+  // No suffix at all is still usable.
+  CHECK(numberedFramePath("frames", 4) == "frames00004");
+}
+
+TEST_CASE("the output suffix selects container or still-image dump", "[video]")
+{
+  // The GUI and CLI both route a chosen filename through outputSuffix into create().
+  CHECK(VideoEncoder::create(outputSuffix("out.gif")) != nullptr);
+  CHECK(VideoEncoder::create(outputSuffix("out.apng")) != nullptr);
+  CHECK(VideoEncoder::create(outputSuffix("OUT.AVI")) != nullptr);
+
+  // Everything else falls back to the numbered still-image dump.
+  CHECK(VideoEncoder::create(outputSuffix("out.png")) == nullptr);
+  CHECK(VideoEncoder::create(outputSuffix("out.jpg")) == nullptr);
+  CHECK(VideoEncoder::create(outputSuffix("out")) == nullptr);
+}
