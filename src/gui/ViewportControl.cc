@@ -30,10 +30,25 @@ ViewportControl::ViewportControl(QWidget *parent) : QWidget(parent)
 
 void ViewportControl::initGUI()
 {
+  QFontMetrics metrics(this->font());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+  int charWidth = metrics.horizontalAdvance("0");
+#else
+  int charWidth = metrics.width("0");
+#endif
+
+  int dynamicMinWidth = (charWidth * 8) + 35;
+  int dynamicMaxWidth = (charWidth * 12) + 35;
+
   auto spinDoubleBoxes = this->groupBoxAbsoluteCamera->findChildren<QDoubleSpinBox *>();
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->setMinimum(-DBL_MAX);
     spinDoubleBox->setMaximum(+DBL_MAX);
+
+    spinDoubleBox->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    spinDoubleBox->setMinimumWidth(dynamicMinWidth);
+    spinDoubleBox->setMaximumWidth(dynamicMaxWidth);
+
     connect(spinDoubleBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
             &ViewportControl::updateCamera);
   }
@@ -42,6 +57,15 @@ void ViewportControl::initGUI()
   spinBoxHeight->setMinimum(1);
   spinBoxWidth->setMaximum(8192);
   spinBoxHeight->setMaximum(8192);
+
+  spinBoxWidth->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  spinBoxWidth->setMinimumWidth(dynamicMinWidth);
+  spinBoxWidth->setMaximumWidth(dynamicMaxWidth);
+
+  spinBoxHeight->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  spinBoxHeight->setMinimumWidth(dynamicMinWidth);
+  spinBoxHeight->setMaximumWidth(dynamicMaxWidth);
+
   connect(spinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this,
           &ViewportControl::requestResize);
   connect(spinBoxHeight, QOverload<int>::of(&QSpinBox::valueChanged), this,
@@ -74,6 +98,7 @@ void ViewportControl::resizeEvent(QResizeEvent *event)
 {
   auto layoutAspectRatio = dynamic_cast<QBoxLayout *>(groupBoxAspectRatio->layout());
   auto gridLayout = dynamic_cast<QGridLayout *>(groupBoxAbsoluteCamera->layout());
+  gridLayout->setColumnStretch(4, 1);
 
   QLayoutItem *child;
   if (layoutAspectRatio && gridLayout) {

@@ -6,11 +6,17 @@
 #include <functional>
 #include <memory>
 
+struct ImageAttachment {
+  std::string mime_type;    // e.g. "image/png"
+  std::string base64_data;  // raw base64 string
+};
+
 struct ChatMessage {
   std::string role;
   std::string content;
   std::string tool_call_id;
   std::string tool_calls;  // Serialized JSON representation
+  std::vector<ImageAttachment> images;
 };
 
 class AIService
@@ -43,6 +49,16 @@ public:
 
   // Cancel any active AI completion requests
   void cancelPendingRequests();
+
+  // Get the configured character/payload size limit
+  int getPayloadLimit() const;
+
+  // Get auto attach viewport setting
+  bool getAutoAttachViewport() const;
+
+  using ToolExecutor =
+    std::function<std::string(const std::string& name, const std::string& arguments_json)>;
+  void registerToolExecutor(ToolExecutor executor);
 
 private:
   class Impl;

@@ -27,3 +27,5 @@ WARNING: Invalid entry in search vector at index 1, required number of values in
 ECHO: []
 WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: -inf in file search-tests.scad, line 90
 ECHO: []
+ECHO: [2]
+ECHO: [1]
