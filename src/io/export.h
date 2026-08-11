@@ -45,6 +45,7 @@ enum class FileFormat {
   ECHO,
   PNG,
   DEPTHMAP,
+  PFM,
   PDF,
   POV,
   PARAM
@@ -374,6 +375,13 @@ bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_depthmap(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
                      Camera& camera, DepthProfile profile, std::ostream& output);
 bool export_depthmap(const OffscreenView& glview, DepthProfile profile, std::ostream& output);
+bool export_depthmap(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
+                     Camera& camera, const DepthmapOptions& depthOptions, std::ostream& output);
+bool export_depthmap(const OffscreenView& glview, const DepthmapOptions& depthOptions,
+                     std::ostream& output);
+bool export_pfm(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, std::ostream& output);
+bool export_pfm(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);

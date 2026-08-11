@@ -158,10 +158,48 @@ bool export_png(const OffscreenView& glview, std::ostream& output)
   return true;
 }
 
+bool export_depthmap(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                     Camera& camera, const DepthmapOptions& depthOptions, std::ostream& output)
+{
+  PRINTD("export_depthmap geom options");
+  const auto glview = prepare_geometry_view(root_geom, options, camera);
+  if (!glview) return false;
+  return glview->saveDepth(output, depthOptions);
+}
+
+bool export_depthmap(const OffscreenView& glview, const DepthmapOptions& depthOptions,
+                     std::ostream& output)
+{
+  PRINTD("export_depthmap_preview_common options");
+  return glview.saveDepth(output, depthOptions);
+}
+
 bool export_depthmap(const OffscreenView& glview, DepthProfile profile, std::ostream& output)
 {
   PRINTD("export_depthmap_preview_common");
   return glview.saveDepth(output, profile);
+}
+
+bool export_pfm(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, std::ostream& output)
+{
+  PRINTD("export_pfm geom");
+  const auto glview = prepare_geometry_view(root_geom, options, camera);
+  if (!glview || !glview->ctx) return false;
+  const bool perspective = glview->cam.projection == Camera::ProjectionType::PERSPECTIVE;
+  const auto mm =
+    linearize_depth(glview->ctx->getDepthbuffer(), glview->clipNear, glview->clipFar, perspective);
+  return export_pfm(output, mm, glview->ctx->width(), glview->ctx->height());
+}
+
+bool export_pfm(const OffscreenView& glview, std::ostream& output)
+{
+  PRINTD("export_pfm preview");
+  if (!glview.ctx) return false;
+  const bool perspective = glview.cam.projection == Camera::ProjectionType::PERSPECTIVE;
+  const auto mm =
+    linearize_depth(glview.ctx->getDepthbuffer(), glview.clipNear, glview.clipFar, perspective);
+  return export_pfm(output, mm, glview.ctx->width(), glview.ctx->height());
 }
 
 #else  // NULLGL

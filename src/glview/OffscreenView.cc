@@ -123,21 +123,46 @@ bool OffscreenView::save(const char *filename) const
 
 bool OffscreenView::saveDepth(std::ostream& output, DepthProfile profile) const
 {
+  DepthmapOptions opts;
+  opts.profile = profile;
+  return saveDepth(output, opts);
+}
+
+bool OffscreenView::saveDepth(std::ostream& output, const DepthmapOptions& options) const
+{
   if (!this->ctx) return false;
+
+  CameraParameters camParams;
+  for (int i = 0; i < 16; ++i) {
+    camParams.modelview[i] = static_cast<double>(this->modelview[i]);
+    camParams.projection[i] = static_cast<double>(this->projection[i]);
+  }
+  camParams.clipNear = this->clipNear;
+  camParams.clipFar = this->clipFar;
+  camParams.fov = this->cam.fov;
+  camParams.ortho = (this->cam.projection == Camera::ProjectionType::ORTHOGONAL);
+  camParams.viewport[0] = static_cast<int>(this->ctx->width());
+  camParams.viewport[1] = static_cast<int>(this->ctx->height());
+
+  if (!options.camera_sidecar_path.empty()) {
+    std::ofstream sidecar(options.camera_sidecar_path);
+    if (sidecar.is_open()) {
+      sidecar << serialize_camera_json(camParams);
+      sidecar.close();
+    }
+  }
 
   const bool perspective = this->cam.projection == Camera::ProjectionType::PERSPECTIVE;
   const auto mm =
     linearize_depth(this->ctx->getDepthbuffer(), this->clipNear, this->clipFar, perspective);
-  const auto image = encode_depthmap(mm, this->ctx->width(), this->ctx->height(), profile);
+  const auto image = encode_depthmap(mm, this->ctx->width(), this->ctx->height(), options);
 
   // Same as the colour path: buffers read from OpenGL are upside-down.
   std::vector<uint8_t> flipped(image.pixels.size());
   flip_image(image.pixels.data(), flipped.data(), image.bytesPerPixel, this->ctx->width(),
              this->ctx->height());
 
-  // The scale cannot travel inside the image, so report it - without it a
-  // metric depthmap is just numbers.
-  if (profile == DepthProfile::metric) {
+  if (options.profile == DepthProfile::metric) {
     LOG("Depthmap: %1$.3f - %2$.3f mm from the camera, %3$g units per mm.", image.minDepth,
         image.maxDepth, DEPTHMAP_METRIC_SCALE);
     return write_png_gray16(output, flipped.data(), this->ctx->width(), this->ctx->height());

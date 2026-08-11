@@ -96,6 +96,7 @@ Containers& containers()
     add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
     add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
     add_item(*containers, {FileFormat::DEPTHMAP, "depthmap", "png", "Depthmap PNG"});
+    add_item(*containers, {FileFormat::PFM, "pfm", "pfm", "Portable Float Map"});
     add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
