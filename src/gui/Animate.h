@@ -3,16 +3,20 @@
 #include <QAction>
 #include <QColor>
 #include <QIcon>
+#include <QImage>
+#include <QSize>
 #include <QList>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QString>
 #include <QTimer>
 #include <QWidget>
+#include <memory>
 #include <string>
 
 #include "gui/input/InputDriverEvent.h"
 #include "gui/qtgettext.h"
+#include "io/VideoEncoder.h"
 #include "ui_Animate.h"
 
 class MainWindow;
@@ -32,6 +36,15 @@ public:
   void initGUI();
   bool dumpPictures();
   int nextFrame();
+
+  /*!
+     Writes one rendered frame, either into the open animation container or as a
+     numbered still image. Returns false when no dump is active, which is the ordinary
+     case on the frame that completes the loop -- nextFrame() unticks the checkbox
+     there, which closes the container before this is reached, so that frame is not
+     written twice.
+   */
+  bool saveFrame(const QImage& image);
 
   QTimer *animateTimer;
 
@@ -57,6 +70,17 @@ protected:
 
 private:
   MainWindow *mainWindow;
+
+  //! Asks for an output file and prepares the dump; unticks e_dump if cancelled.
+  void startDump();
+  //! Finalizes any open container and forgets the output file.
+  void stopDump();
+
+  QString dumpPath;
+  std::unique_ptr<VideoEncoder> dumpEncoder;
+  unsigned dumpFrame = 0;
+  unsigned dumpFps = 30;
+  QSize dumpSize;
 
   void updatePauseButtonIcon();
   void connectAction(QAction *, QPushButton *);

@@ -49,3 +49,16 @@ public:
    */
   static std::unique_ptr<VideoEncoder> create(const std::string& suffix);
 };
+
+/*!
+   The final path component's suffix, lowercased and without the dot; empty when there
+   is none. A dot in a directory name is not a suffix.
+ */
+std::string outputSuffix(const std::string& path);
+
+/*!
+   Output path for one frame of a numbered still-image sequence: "spin.png" with frame
+   7 becomes "spin00007.png". Shared by the GUI's frame dump and the CLI's --animate so
+   the two cannot drift apart.
+ */
+std::string numberedFramePath(const std::string& path, unsigned frame);
