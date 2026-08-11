@@ -1089,6 +1089,7 @@ set(CORE_SOURCES
   src/glview/RenderSettings.cc
   src/glview/preview/CSGTreeNormalizer.cc
   src/handle_dep.cc
+  src/io/depthmap.cc
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
@@ -1575,6 +1576,7 @@ endif()
 
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
+  "src/io/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
