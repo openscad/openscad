@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <sstream>
 #include <vector>
 
 namespace {
@@ -128,4 +129,87 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
   }
 
   return img;
+}
+
+std::string serialize_camera_json(const CameraParameters& cam)
+{
+  std::ostringstream ss;
+  ss << "{\n";
+  ss << "  \"modelview\": [";
+  for (int i = 0; i < 16; ++i) {
+    ss << cam.modelview[i] << (i < 15 ? ", " : "");
+  }
+  ss << "],\n";
+  ss << "  \"projection\": [";
+  for (int i = 0; i < 16; ++i) {
+    ss << cam.projection[i] << (i < 15 ? ", " : "");
+  }
+  ss << "],\n";
+  ss << "  \"clipNear\": " << cam.clipNear << ",\n";
+  ss << "  \"clipFar\": " << cam.clipFar << ",\n";
+  ss << "  \"fov\": " << cam.fov << ",\n";
+  ss << "  \"ortho\": " << (cam.ortho ? "true" : "false") << ",\n";
+  ss << "  \"viewport\": [" << cam.viewport[0] << ", " << cam.viewport[1] << "]\n";
+  ss << "}\n";
+  return ss.str();
+}
+
+DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
+                           const DepthmapOptions& options)
+{
+  if (!options.has_explicit_range) {
+    return encode_depthmap(depths, width, height, options.profile);
+  }
+
+  const size_t count = std::min(depths.size(), static_cast<size_t>(width) * height);
+  DepthImage img;
+  img.bytesPerPixel = options.profile == DepthProfile::metric ? 2 : 4;
+  img.pixels.reserve(count * img.bytesPerPixel);
+
+  img.minDepth = options.explicit_near;
+  img.maxDepth = options.explicit_far;
+
+  if (options.profile == DepthProfile::metric) {
+    for (size_t i = 0; i < count; ++i) {
+      if (!std::isfinite(depths[i])) {
+        push_be16(img.pixels, METRIC_BACKGROUND);
+        continue;
+      }
+      double d = std::clamp(static_cast<double>(depths[i]), options.explicit_near, options.explicit_far);
+      const double scaled = std::lround(d * DEPTHMAP_METRIC_SCALE);
+      const double clamped = std::clamp(scaled, 0.0, static_cast<double>(METRIC_BACKGROUND - 1));
+      push_be16(img.pixels, static_cast<std::uint16_t>(clamped));
+    }
+  } else {
+    const double extent = options.explicit_far - options.explicit_near;
+    for (size_t i = 0; i < count; ++i) {
+      std::uint8_t grey = 0;
+      if (std::isfinite(depths[i])) {
+        double d =
+          std::clamp(static_cast<double>(depths[i]), options.explicit_near, options.explicit_far);
+        const double t = extent > 0.0 ? (options.explicit_far - d) / extent : 1.0;
+        grey = static_cast<std::uint8_t>(std::lround(t * 255.0));
+      }
+      img.pixels.insert(img.pixels.end(), 3, grey);
+      img.pixels.push_back(255);
+    }
+  }
+
+  return img;
+}
+
+bool export_pfm(std::ostream& out, const std::vector<float>& depths, std::uint32_t width,
+                std::uint32_t height)
+{
+  if (width == 0 || height == 0) return false;
+  out << "Pf\n" << width << " " << height << "\n-1.0\n";
+  const float bg = std::numeric_limits<float>::infinity();
+  for (int y = static_cast<int>(height) - 1; y >= 0; --y) {
+    for (std::uint32_t x = 0; x < width; ++x) {
+      size_t idx = static_cast<size_t>(y) * width + x;
+      float val = (idx < depths.size() && std::isfinite(depths[idx])) ? depths[idx] : bg;
+      out.write(reinterpret_cast<const char *>(&val), sizeof(float));
+    }
+  }
+  return out.good();
 }

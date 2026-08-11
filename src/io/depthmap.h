@@ -90,3 +90,29 @@ struct DepthRange {
    needs none of linearize_depth()'s unprojection.
  */
 DepthRange depth_range_for_bounds(double nearest, double farthest);
+
+struct CameraParameters {
+  double modelview[16]{};
+  double projection[16]{};
+  double clipNear = 0.0;
+  double clipFar = 0.0;
+  double fov = 0.0;
+  bool ortho = false;
+  int viewport[2]{};
+};
+
+std::string serialize_camera_json(const CameraParameters& cam);
+
+struct DepthmapOptions {
+  DepthProfile profile = DepthProfile::metric;
+  std::string camera_sidecar_path;
+  bool has_explicit_range = false;
+  double explicit_near = 0.0;
+  double explicit_far = 0.0;
+};
+
+DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
+                           const DepthmapOptions& options);
+
+bool export_pfm(std::ostream& out, const std::vector<float>& depths, std::uint32_t width,
+                std::uint32_t height);

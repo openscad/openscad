@@ -191,3 +191,55 @@ TEST_CASE("an empty view yields background everywhere", "[Depthmap]")
   CHECK(visual.pixels[0] == 0);
   CHECK(visual.pixels[4] == 0);
 }
+
+TEST_CASE("Feature 22: camera parameters serialize to valid JSON", "[Depthmap]")
+{
+  CameraParameters cam;
+  cam.modelview[0] = 1.0;
+  cam.modelview[5] = 1.0;
+  cam.modelview[10] = 1.0;
+  cam.modelview[15] = 1.0;
+  cam.projection[0] = 2.0;
+  cam.clipNear = 10.0;
+  cam.clipFar = 500.0;
+  cam.fov = 45.0;
+  cam.ortho = false;
+  cam.viewport[0] = 800;
+  cam.viewport[1] = 600;
+
+  std::string json = serialize_camera_json(cam);
+  CHECK(json.find("\"modelview\"") != std::string::npos);
+  CHECK(json.find("\"projection\"") != std::string::npos);
+  CHECK(json.find("\"clipNear\": 10") != std::string::npos);
+  CHECK(json.find("\"clipFar\": 500") != std::string::npos);
+}
+
+TEST_CASE("Feature 23: explicit depth range overrides dynamic bounds", "[Depthmap]")
+{
+  const std::vector<float> depths = {5.0f, 50.0f, 150.0f, BG};
+  DepthmapOptions opts;
+  opts.profile = DepthProfile::metric;
+  opts.has_explicit_range = true;
+  opts.explicit_near = 10.0;
+  opts.explicit_far = 100.0;
+
+  const auto img = encode_depthmap(depths, 2, 2, opts);
+  // 5.0 is below explicit_near (10.0) -> clamps to explicit_near (10mm)
+  CHECK(grey16(img, 0) == 10);
+  // 50.0 is inside range -> 50mm
+  CHECK(grey16(img, 1) == 50);
+  // 150.0 is above explicit_far (100.0) -> clamps to explicit_far (100mm)
+  CHECK(grey16(img, 2) == 100);
+}
+
+TEST_CASE("Feature 24: float depth exports to PFM format stream", "[Depthmap]")
+{
+  const std::vector<float> depths = {10.5f, 20.25f, 30.0f, BG};
+  std::ostringstream ss;
+  bool ok = export_pfm(ss, depths, 2, 2);
+  REQUIRE(ok);
+  std::string str = ss.str();
+  CHECK(str.substr(0, 3) == "Pf\n");
+  CHECK(str.find("2 2\n") != std::string::npos);
+  CHECK(str.find("-1.0\n") != std::string::npos);
+}
