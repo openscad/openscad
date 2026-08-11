@@ -383,7 +383,7 @@ TEST_CASE("GIF output is a structurally valid animated GIF", "[video]")
 
   REQUIRE(parsed.delaysCentiseconds.size() == FRAMES);
   for (const unsigned delay : parsed.delaysCentiseconds) {
-    CHECK(delay == 100 / FPS);  // GIF delays are in centiseconds
+    CHECK(delay == 100 / FPS);  // GIF delays are in centiseconds; 10fps is exactly 10
   }
 }
 
@@ -518,4 +518,33 @@ TEST_CASE("the output suffix selects container or still-image dump", "[video]")
   CHECK(VideoEncoder::create(outputSuffix("out.png")) == nullptr);
   CHECK(VideoEncoder::create(outputSuffix("out.jpg")) == nullptr);
   CHECK(VideoEncoder::create(outputSuffix("out")) == nullptr);
+}
+
+TEST_CASE("GIF frame delays round to the nearest centisecond", "[video]")
+{
+  /*
+     GIF stores whole centiseconds, so most frame rates are approximations. Truncating
+     biases every inexact rate fast, badly so at high rates -- 60fps would truncate to
+     1cs, i.e. 100fps. These are the delays the encoder must choose.
+   */
+  const auto delayFor = [](unsigned fps) { return (100 + fps / 2) / fps; };
+
+  // Rates that divide 100 exactly must stay exact.
+  CHECK(delayFor(10) == 10);
+  CHECK(delayFor(20) == 5);
+  CHECK(delayFor(25) == 4);
+  CHECK(delayFor(50) == 2);
+
+  // Rates that do not: nearest, not truncated.
+  CHECK(delayFor(15) == 7);  // 6.67 -> 7 (14.3fps), truncation gives 6 (16.7fps)
+  CHECK(delayFor(60) == 2);  // 1.67 -> 2 (50fps), truncation gives 1 (100fps)
+  CHECK(delayFor(30) == 3);  // 3.33 -> 3 either way
+
+  // Above 100fps there is no representable delay and open() must refuse.
+  auto encoder = VideoEncoder::create("gif");
+  REQUIRE(encoder != nullptr);
+  const auto path = fs::temp_directory_path() / "openscad_video_fps_test.gif";
+  fs::remove(path);
+  CHECK_FALSE(encoder->open(path.string(), WIDTH, HEIGHT, 201));
+  fs::remove(path);
 }
