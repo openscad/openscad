@@ -13,6 +13,7 @@
 #include "io/VideoEncoder.h"
 
 #include <cstring>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -99,8 +100,7 @@ bool encodeFrameData(const std::vector<uint8_t>& rgba, unsigned width, unsigned 
   // Walk the chunk list, skipping the 8-byte signature.
   size_t pos = 8;
   while (pos + 12 <= pngSize) {
-    const uint32_t length = (png[pos] << 24) | (png[pos + 1] << 16) | (png[pos + 2] << 8) |
-                            png[pos + 3];
+    const uint32_t length = (png[pos] << 24) | (png[pos + 1] << 16) | (png[pos + 2] << 8) | png[pos + 3];
     if (pos + 12 + length > pngSize) return false;
     const char *type = reinterpret_cast<const char *>(png + pos + 4);
     const char *data = reinterpret_cast<const char *>(png + pos + 8);
@@ -118,10 +118,11 @@ bool encodeFrameData(const std::vector<uint8_t>& rgba, unsigned width, unsigned 
 class ApngEncoder : public VideoEncoder
 {
 public:
-  bool open(std::ostream& out, unsigned width, unsigned height, unsigned fps) override
+  bool open(const std::string& path, unsigned width, unsigned height, unsigned fps) override
   {
     if (width == 0 || height == 0 || fps == 0 || fps > 0xffff) return false;
-    out_ = &out;
+    out_.open(path, std::ios::binary | std::ios::trunc);
+    if (!out_) return false;
     width_ = width;
     height_ = height;
     fps_ = fps;
@@ -134,7 +135,7 @@ public:
 
   bool addFrame(const uint8_t *rgba, std::size_t stride) override
   {
-    if (out_ == nullptr || rgba == nullptr) return false;
+    if (!out_.is_open() || rgba == nullptr) return false;
 
     // lodepng wants tightly-packed rows; the caller's buffer may be padded.
     const size_t rowBytes = static_cast<size_t>(width_) * 4;
@@ -144,8 +145,7 @@ public:
     }
 
     std::string frameData;
-    if (!encodeFrameData(packed, width_, height_, &frameData,
-                         frames_ == 0 ? &ihdr_ : nullptr)) {
+    if (!encodeFrameData(packed, width_, height_, &frameData, frames_ == 0 ? &ihdr_ : nullptr)) {
       return false;
     }
 
@@ -154,12 +154,12 @@ public:
     appendBE32(fctl, sequence_++);
     appendBE32(fctl, width_);
     appendBE32(fctl, height_);
-    appendBE32(fctl, 0);  // x_offset
-    appendBE32(fctl, 0);  // y_offset
-    appendBE16(fctl, 1);  // delay_num
+    appendBE32(fctl, 0);                            // x_offset
+    appendBE32(fctl, 0);                            // y_offset
+    appendBE16(fctl, 1);                            // delay_num
     appendBE16(fctl, static_cast<uint16_t>(fps_));  // delay_den
-    fctl.push_back(0);  // APNG_DISPOSE_OP_NONE
-    fctl.push_back(0);  // APNG_BLEND_OP_SOURCE
+    fctl.push_back(0);                              // APNG_DISPOSE_OP_NONE
+    fctl.push_back(0);                              // APNG_BLEND_OP_SOURCE
     appendChunk(body_, "fcTL", fctl);
 
     if (frames_ == 0) {
@@ -178,9 +178,9 @@ public:
 
   bool close() override
   {
-    if (out_ == nullptr) return false;
+    if (!out_.is_open()) return false;
     if (frames_ == 0 || ihdr_.size() != 13) {
-      out_ = nullptr;
+      out_.close();
       return false;
     }
 
@@ -201,14 +201,13 @@ public:
     file.append(body_);
     appendChunk(file, "IEND", std::string());
 
-    out_->write(file.data(), static_cast<std::streamsize>(file.size()));
-    const bool ok = out_->good();
-    out_ = nullptr;
-    return ok;
+    out_.write(file.data(), static_cast<std::streamsize>(file.size()));
+    out_.close();
+    return out_.good();
   }
 
 private:
-  std::ostream *out_ = nullptr;
+  std::ofstream out_;
   unsigned width_ = 0;
   unsigned height_ = 0;
   unsigned fps_ = 0;
