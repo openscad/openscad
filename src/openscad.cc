@@ -159,9 +159,8 @@ private:
 
 struct AnimateArgs {
   unsigned frames = 0;
-  unsigned shard = 1;
   unsigned num_shards = 1;
-  unsigned threads = 1;
+  unsigned shard = 1;
 };
 
 struct CommandLine {
@@ -299,10 +298,6 @@ AnimateArgs get_animate(const po::variables_map& vm)
   if (vm.count("animate")) {
     animate.frames = vm["animate"].as<unsigned>();
   }
-  if (vm.count("animate-threads")) {
-    animate.threads = vm["animate-threads"].as<unsigned>();
-    if (animate.threads == 0) animate.threads = 1;
-  }
   if (vm.count("animate_sharding")) {
     std::vector<std::string> strs;
     boost::split(strs, vm["animate_sharding"].as<std::string>(), boost::is_any_of("/"));
@@ -392,22 +387,24 @@ Camera get_camera(const po::variables_map& vm)
   return camera;
 }
 
-struct ASTResult {
-  std::shared_ptr<AbstractNode> root_node;
-  std::shared_ptr<const FileContext> file_context;
-  std::string document_root;
-};
-
-ASTResult do_ast_evaluation(const CommandLine& cmd, const RenderVariables& render_variables,
-                            SourceFile *root_file, EvaluationSession& session,
-                            ContextHandle<BuiltinContext>& builtin_context)
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
+              SourceFile *root_file)
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
+  // Avoid possibility of fs::absolute throwing when passed an empty path
   auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
+
+  // set CWD relative to source file
   fs::current_path(fparent);
 
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   render_variables.applyToContext(builtin_context);
+
+#ifdef DEBUG
+  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
+#endif
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
@@ -423,37 +420,13 @@ ASTResult do_ast_evaluation(const CommandLine& cmd, const RenderVariables& rende
   }
 #endif
 
-  fs::current_path(cmd.original_path);
-  return {absolute_root_node, file_context, builtin_context->documentRoot()};
-}
-
-/*
-   The half of do_export() that turns an already-evaluated AST into output.
-
-   Split out so the animation loop can run it per frame on a pre-evaluated tree
-   without duplicating it. Keep it a single body: a second copy is how a change
-   made here (a new export format, a different renderer path) silently fails to
-   apply to animation.
-
-   Runs with the working directory left where do_ast_evaluation() restored it —
-   the invocation directory — so relative output paths resolve against it. Only
-   the CSG and AST branches below change directory, deliberately, and they are
-   the reason can_render_in_parallel() excludes those two formats.
- */
-int do_render_export(const CommandLine& cmd, const ASTResult& ast, FileFormat export_format,
-                     SourceFile *root_file)
-{
-  auto filename_str = fs::path(cmd.output_file).generic_string();
-  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
-  auto fparent = fpath.parent_path();
-
-  std::shared_ptr<AbstractNode> absolute_root_node = ast.root_node;
-  std::shared_ptr<const FileContext> file_context = ast.file_context;
-
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
   }
+
+  // restore CWD after module instantiation finished
+  fs::current_path(cmd.original_path);
 
   // Do we have an explicit root node (! modifier)?
   std::shared_ptr<const AbstractNode> root_node;
@@ -462,7 +435,8 @@ int do_render_export(const CommandLine& cmd, const ASTResult& ast, FileFormat ex
     root_node = absolute_root_node;
   }
   if (nextLocation) {
-    LOG(message_group::Warning, *nextLocation, ast.document_root, "More than one Root Modifier (!)");
+    LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(),
+        "More than one Root Modifier (!)");
   }
   Tree tree(root_node, fparent.string());
 
@@ -563,35 +537,6 @@ int do_render_export(const CommandLine& cmd, const ASTResult& ast, FileFormat ex
     renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
   }
   return 0;
-}
-
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
-              SourceFile *root_file)
-{
-  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
-  auto fparent = fpath.parent_path();
-
-  EvaluationSession session{fparent.string()};
-  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-
-  const ASTResult ast = do_ast_evaluation(cmd, render_variables, root_file, session, builtin_context);
-  return do_render_export(cmd, ast, export_format, root_file);
-}
-
-/*
-   Whether frames of this format may be rendered on worker threads.
-
-   CSG and AST export change the process working directory on purpose, to make the
-   paths they write come out relative to the document. The working directory is
-   process-global, so a thread doing that moves every other thread's output too —
-   those two formats stay sequential.
-
-   An animation container format (one file collecting every frame) belongs here as
-   well when one exists: a single encoder needs its frames handed over in order.
- */
-bool can_render_in_parallel(FileFormat export_format)
-{
-  return export_format != FileFormat::CSG && export_format != FileFormat::AST;
 }
 
 int cmdline(const CommandLine& cmd)
@@ -709,84 +654,31 @@ int cmdline(const CommandLine& cmd)
     // export the requested number of animated frames
     const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames) / cmd.animate.num_shards;
     const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames) / cmd.animate.num_shards;
-
-    /*
-       Phase 1, on this thread: evaluate every frame's AST.
-
-       Evaluation is the cheap half and is not thread-safe (it mutates the global
-       node index counter, and the Python frontend's interpreter state), so it stays
-       sequential regardless of --animate-threads. The sessions and contexts have to
-       outlive the trees they produced, hence the vectors.
-     */
-    std::vector<std::unique_ptr<EvaluationSession>> frame_sessions;
-    std::vector<ContextHandle<BuiltinContext>> frame_contexts;
-    std::vector<ASTResult> ast_results;
-    std::vector<CommandLine> frame_cmds;
-
     for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
-      RenderVariables rv = render_variables;
-      rv.time = frame * (1.0 / cmd.animate.frames);
+      render_variables.time = frame * (1.0 / cmd.animate.frames);
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
+
       auto frame_file = fs::path(cmd.output_file);
       auto extension = frame_file.extension();
       frame_file.replace_extension();
       frame_file += oss.str();
       frame_file.replace_extension(extension);
+      std::string const frame_str = frame_file.generic_string();
+
+      LOG("Exporting %1$s...", cmd.filename);
 
       CommandLine frame_cmd = cmd;
-      frame_cmd.output_file = frame_file.generic_string();
-      frame_cmds.push_back(frame_cmd);
+      frame_cmd.output_file = frame_str;
 
-      auto fpath =
-        frame_cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(frame_cmd.filename));
-      auto fparent = fpath.parent_path();
-
-      auto session = std::make_unique<EvaluationSession>(fparent.string());
-      ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(session.get())};
-
-      ast_results.push_back(do_ast_evaluation(frame_cmd, rv, root_file, *session, builtin_context));
-
-      frame_sessions.push_back(std::move(session));
-      frame_contexts.push_back(std::move(builtin_context));
-    }
-
-    // Phase 2: geometry and output, one frame at a time or several at once.
-    std::atomic<int> exit_code{0};
-    auto render_frame = [&](size_t idx) {
-      if (do_render_export(frame_cmds[idx], ast_results[idx], export_format, root_file) != 0) {
-        exit_code = 1;
-      }
-    };
-
-    if (cmd.animate.threads > 1 && can_render_in_parallel(export_format) && !ast_results.empty()) {
-      /*
-         Frame 0 renders alone first. Everything in the model that does not depend
-         on $t resolves to the same geometry in every frame, so rendering one frame
-         to completion fills the GeometryCache with all of it; the workers that
-         follow hit that cache instead of recomputing the static parts N times over.
-         Starting all the threads cold would have each of them build the same
-         geometry simultaneously, which is slower than the sequential path.
-       */
-      render_frame(0);
-
-      std::vector<std::thread> threads;
-      for (size_t i = 1; i < ast_results.size(); ++i) {
-        if (threads.size() >= cmd.animate.threads) {
-          threads.front().join();
-          threads.erase(threads.begin());
-        }
-        threads.emplace_back(render_frame, i);
-      }
-      for (auto& t : threads) t.join();
-    } else {
-      for (size_t i = 0; i < ast_results.size(); ++i) {
-        render_frame(i);
+      int const r = do_export(frame_cmd, render_variables, export_format, root_file);
+      if (r != 0) {
+        return r;
       }
     }
 
-    return exit_code.load();
+    return 0;
   }
 }
 
@@ -997,7 +889,6 @@ int openscad_main(int argc, char **argv)
     ("preview", po::value<std::string>()->implicit_value(""),
       "[=throwntogether] -for ThrownTogether preview png")
     ("animate", po::value<unsigned>(), "export N animated frames")
-    ("animate-threads", po::value<unsigned>(), "number of threads to use for parallel animation rendering")
     ("animate_sharding", po::value<std::string>(),
       "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
       "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "

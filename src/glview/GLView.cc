@@ -12,10 +12,6 @@
 
 #include <functional>
 #include <memory>
-#include <atomic>
-#include <iostream>
-#include <sstream>
-#include <cstdint>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -37,7 +33,7 @@ GLView::GLView()
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
-  static std::atomic<int> sId{1};
+  static int sId = 0;
   this->opencsg_id = sId++;
 #endif
 }

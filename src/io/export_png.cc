@@ -1,7 +1,6 @@
 #include <cassert>
 #include <cstdio>
 #include <memory>
-#include <mutex>
 #include <ostream>
 
 #include "core/Tree.h"
@@ -84,9 +83,6 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   PRINTD("prepare_preview_common");
   CsgInfo csgInfo = CsgInfo();
   csgInfo.compile_products(tree);
-
-  static std::mutex opencsg_mutex;
-  std::lock_guard<std::mutex> lock(opencsg_mutex);
 
   std::unique_ptr<OffscreenView> glview;
   try {
