@@ -1116,6 +1116,7 @@ set(CORE_SOURCES
   src/io/import_stl.cc
   src/io/import_svg.cc
   src/platform/PlatformUtils.cc
+  src/platform/Subprocess.cc
   src/utils/StackCheck.h
   src/utils/calc.cc
   src/utils/degree_trig.cc

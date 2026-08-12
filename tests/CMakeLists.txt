@@ -1570,6 +1570,24 @@ if(OPENSCAD_BINPATH)
   )
 endif()
 
+######################
+# Parallel animation #
+######################
+
+# Checks that --animate-processes produces exactly what a single-process --animate
+# run does, for a still-image sequence and for the container formats where the
+# parent has to collect the workers' frames and encode them itself.
+if(OPENSCAD_BINPATH)
+  add_test(NAME parallel_animation
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_parallel_animation.py
+      ${OPENSCAD_BINPATH}
+      ${TEST_SCAD_DIR}/misc/parallel-animation.scad
+      ${CMAKE_CURRENT_BINARY_DIR}/parallel_animation_output
+  )
+endif()
+
 ####################
 # Extra Debug Info #
 ####################

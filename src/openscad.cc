@@ -36,6 +36,7 @@
 #endif
 #include <libintl.h>
 
+#include <algorithm>
 #include <array>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -107,9 +108,11 @@
 #include "handle_dep.h"
 #include "io/export.h"
 #include "io/VideoEncoder.h"
+#include "lodepng/lodepng.h"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
 #include "platform/PlatformUtils.h"
+#include "platform/Subprocess.h"
 #include "utils/StackCheck.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
@@ -162,8 +165,17 @@ struct AnimateArgs {
   unsigned frames = 0;
   unsigned num_shards = 1;
   unsigned shard = 1;
-  unsigned fps = 30;  //!< only used by the animation container formats
+  unsigned fps = 30;       //!< only used by the animation container formats
+  unsigned processes = 1;  //!< >1 renders the frames in that many worker processes
 };
+
+/*!
+   This process's own argv, kept so that a worker copy of ourselves can be handed the
+   same options. Rebuilding the command line from the parsed values instead would mean
+   knowing how to re-emit every option OpenSCAD accepts, and would silently drop any
+   option added later.
+ */
+std::vector<std::string> original_args;
 
 struct CommandLine {
   const bool is_stdin;
@@ -299,6 +311,10 @@ AnimateArgs get_animate(const po::variables_map& vm)
   AnimateArgs animate;
   if (vm.count("animate")) {
     animate.frames = vm["animate"].as<unsigned>();
+  }
+  if (vm.count("animate-processes")) {
+    animate.processes = vm["animate-processes"].as<unsigned>();
+    if (animate.processes == 0) animate.processes = 1;
   }
   if (vm.count("animate_fps")) {
     animate.fps = vm["animate_fps"].as<unsigned>();
@@ -559,6 +575,184 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   return 0;
 }
 
+/*
+   Builds the command line for one worker copy of ourselves.
+
+   Everything this process was given is passed through, minus the options a worker
+   must not inherit, plus its own output path and shard. Dropping
+   --animate-processes here is what stops a worker from spawning workers of its own;
+   -o is dropped because it accepts multiple values, so appending would add a second
+   output rather than replace the first.
+
+   The forms are the ones boost::program_options accepts: "--name value",
+   "--name=value", "-o value" and "-ovalue".
+ */
+std::vector<std::string> worker_command_line(const std::string& executable,
+                                             const std::string& output_file, unsigned shard,
+                                             unsigned num_shards)
+{
+  std::vector<std::string> args{executable};
+
+  for (size_t i = 1; i < original_args.size(); ++i) {
+    const std::string& arg = original_args[i];
+    bool dropped = false;
+    for (const std::string name : {"--animate-processes", "--o"}) {
+      if (arg == name) {  // value is the next argument
+        ++i;
+        dropped = true;
+        break;
+      }
+      if (arg.rfind(name + "=", 0) == 0) {
+        dropped = true;
+        break;
+      }
+    }
+    if (dropped) continue;
+    if (arg == "-o") {  // value is the next argument
+      ++i;
+      continue;
+    }
+    if (arg.rfind("-o", 0) == 0 && arg.size() > 2) continue;  // "-ovalue"
+    args.push_back(arg);
+  }
+
+  args.push_back("-o");
+  args.push_back(output_file);
+  args.push_back("--animate_sharding");
+  args.push_back(std::to_string(shard) + "/" + std::to_string(num_shards));
+  return args;
+}
+
+//! A directory of our own under the system temp directory, or an empty path on failure.
+fs::path make_temp_directory()
+{
+  std::error_code ec;
+  const fs::path base = fs::temp_directory_path(ec);
+  if (ec) {
+    LOG(message_group::Error, "Can't locate a temporary directory: %1$s.", ec.message());
+    return {};
+  }
+  // Racing another OpenSCAD is handled by create_directory returning false rather
+  // than by trying to pick a name nobody else could have chosen.
+  for (unsigned attempt = 0; attempt < 1000; ++attempt) {
+    const fs::path candidate = base / ("openscad-animate-" + std::to_string(attempt));
+    if (fs::create_directory(candidate, ec)) return candidate;
+  }
+  LOG(message_group::Error, "Can't create a temporary directory under %1$s.", base.generic_string());
+  return {};
+}
+
+/*
+   Renders the frames of --animate in several worker processes and combines them.
+
+   Separate processes rather than threads because the renderer's OpenGL and OpenCSG
+   state is process-global: workers that share an address space have to serialize
+   around it, which costs most of the parallelism, while separate processes each get
+   a private copy and need no locking at all.
+
+   For a still-image sequence the workers write the final numbered files themselves
+   and there is nothing left to do. For an animation container there is exactly one
+   encoder and it lives here, in the parent: the workers render PNGs into a
+   temporary directory and this function feeds them to the encoder in order.
+ */
+int run_sharded_animation(const CommandLine& cmd, FileFormat export_format)
+{
+  if (cmd.is_stdin) {
+    LOG(message_group::Error, "--animate-processes can't read the model from stdin.");
+    return 1;
+  }
+  if (cmd.is_stdout) {
+    LOG(message_group::Error, "--animate-processes can't write to stdout.");
+    return 1;
+  }
+  if (cmd.animate.num_shards != 1) {
+    LOG(message_group::Error,
+        "--animate-processes and --animate_sharding can't be combined; "
+        "--animate_sharding is what the workers are given.");
+    return 1;
+  }
+
+  // More workers than frames would leave some with nothing to do. One worker is a
+  // legitimate outcome of that clamp and still works - it renders every frame and
+  // the parent muxes as usual.
+  const unsigned workers = std::min(cmd.animate.processes, cmd.animate.frames);
+
+  const bool container = fileformat::isAnimation(export_format);
+  fs::path temp_dir;
+  std::string frame_output = cmd.output_file;
+  if (container) {
+    temp_dir = make_temp_directory();
+    if (temp_dir.empty()) return 1;
+    frame_output = (temp_dir / "frame.png").generic_string();
+  }
+
+  const std::string executable = boost::dll::program_location().generic_string();
+  std::vector<std::vector<std::string>> commands;
+  commands.reserve(workers);
+  for (unsigned shard = 1; shard <= workers; ++shard) {
+    commands.push_back(worker_command_line(executable, frame_output, shard, workers));
+  }
+
+  LOG("Rendering %1$d frames in %2$d processes...", cmd.animate.frames, workers);
+  const bool spawned = Subprocess::runAllAndWait(commands);
+
+  auto cleanup = [&temp_dir]() {
+    if (temp_dir.empty()) return;
+    std::error_code ec;
+    fs::remove_all(temp_dir, ec);
+  };
+
+  if (!spawned) {
+    cleanup();
+    return 1;
+  }
+  if (!container) return 0;
+
+  auto encoder = VideoEncoder::create(fileformat::toSuffix(export_format));
+  assert(encoder != nullptr);
+
+  bool opened = false;
+  for (unsigned frame = 0; frame < cmd.animate.frames; ++frame) {
+    const std::string path = numberedFramePath(frame_output, frame);
+    std::vector<unsigned char> png;
+    if (lodepng::load_file(png, path) != 0) {
+      LOG(message_group::Error, "Worker did not produce frame %1$d (%2$s).", frame, path);
+      cleanup();
+      return 1;
+    }
+    std::vector<unsigned char> rgba;
+    unsigned width = 0, height = 0;
+    if (lodepng::decode(rgba, width, height, png) != 0) {
+      LOG(message_group::Error, "Can't read frame %1$d (%2$s).", frame, path);
+      cleanup();
+      return 1;
+    }
+    // Frame size comes from the frames themselves rather than from the camera, so
+    // that whatever the workers actually rendered is what gets encoded.
+    if (!opened) {
+      if (!encoder->open(cmd.output_file, width, height, cmd.animate.fps)) {
+        LOG(message_group::Error, "Can't open %1$s for writing.", cmd.output_file);
+        cleanup();
+        return 1;
+      }
+      opened = true;
+    }
+    if (!encoder->addFrame(rgba.data(), static_cast<std::size_t>(width) * 4)) {
+      LOG(message_group::Error, "Failed to encode frame %1$d.", frame);
+      cleanup();
+      return 1;
+    }
+  }
+
+  if (opened && !encoder->close()) {
+    LOG(message_group::Error, "Failed to finalize %1$s.", cmd.output_file);
+    cleanup();
+    return 1;
+  }
+  cleanup();
+  return 0;
+}
+
 int cmdline(const CommandLine& cmd)
 {
   FileFormat export_format;
@@ -675,6 +869,10 @@ int cmdline(const CommandLine& cmd)
     }
     render_variables.time = 0;
     return do_export(cmd, render_variables, export_format, root_file, nullptr);
+  } else if (cmd.animate.processes > 1) {
+    // Hand the frames to worker processes. This process renders none of them itself;
+    // it only combines what the workers produced.
+    return run_sharded_animation(cmd, export_format);
   } else {
     // export the requested number of animated frames
     const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames) / cmd.animate.num_shards;
@@ -857,6 +1055,10 @@ int openscad_main(int argc, char **argv)
   int rc = 0;
   StackCheck::inst();
 
+  // Kept for --animate-processes, which starts worker copies of this process with
+  // the same options. Captured before any parsing so it is exactly what we were given.
+  original_args.assign(argv, argv + argc);
+
 #ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
   auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
@@ -940,6 +1142,9 @@ int openscad_main(int argc, char **argv)
       "[=throwntogether] -for ThrownTogether preview png")
     ("animate", po::value<unsigned>(), "export N animated frames")
     ("animate_fps", po::value<unsigned>(), "frame rate for animation container formats (gif, apng, avi); default 30")
+    ("animate-processes", po::value<unsigned>(),
+      "render the frames of --animate in N worker processes instead of one, then combine the "
+      "results. Each worker renders its own share of the frames, so this uses N cores.")
     ("animate_sharding", po::value<std::string>(),
       "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
       "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "
