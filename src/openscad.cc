@@ -427,17 +427,26 @@ ASTResult do_ast_evaluation(const CommandLine& cmd, const RenderVariables& rende
   return {absolute_root_node, file_context, builtin_context->documentRoot()};
 }
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
-              SourceFile *root_file)
+/*
+   The half of do_export() that turns an already-evaluated AST into output.
+
+   Split out so the animation loop can run it per frame on a pre-evaluated tree
+   without duplicating it. Keep it a single body: a second copy is how a change
+   made here (a new export format, a different renderer path) silently fails to
+   apply to animation.
+
+   Runs with the working directory left where do_ast_evaluation() restored it —
+   the invocation directory — so relative output paths resolve against it. Only
+   the CSG and AST branches below change directory, deliberately, and they are
+   the reason can_render_in_parallel() excludes those two formats.
+ */
+int do_render_export(const CommandLine& cmd, const ASTResult& ast, FileFormat export_format,
+                     SourceFile *root_file)
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
 
-  EvaluationSession session{fparent.string()};
-  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-
-  ASTResult ast = do_ast_evaluation(cmd, render_variables, root_file, session, builtin_context);
   std::shared_ptr<AbstractNode> absolute_root_node = ast.root_node;
   std::shared_ptr<const FileContext> file_context = ast.file_context;
 
@@ -445,9 +454,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   if (file_context) {
     camera.updateView(file_context, true);
   }
-
-  // set CWD relative to source file
-  fs::current_path(fparent);
 
   // Do we have an explicit root node (! modifier)?
   std::shared_ptr<const AbstractNode> root_node;
@@ -557,6 +563,35 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
   }
   return 0;
+}
+
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
+              SourceFile *root_file)
+{
+  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
+  auto fparent = fpath.parent_path();
+
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+
+  const ASTResult ast = do_ast_evaluation(cmd, render_variables, root_file, session, builtin_context);
+  return do_render_export(cmd, ast, export_format, root_file);
+}
+
+/*
+   Whether frames of this format may be rendered on worker threads.
+
+   CSG and AST export change the process working directory on purpose, to make the
+   paths they write come out relative to the document. The working directory is
+   process-global, so a thread doing that moves every other thread's output too —
+   those two formats stay sequential.
+
+   An animation container format (one file collecting every frame) belongs here as
+   well when one exists: a single encoder needs its frames handed over in order.
+ */
+bool can_render_in_parallel(FileFormat export_format)
+{
+  return export_format != FileFormat::CSG && export_format != FileFormat::AST;
 }
 
 int cmdline(const CommandLine& cmd)
@@ -675,18 +710,22 @@ int cmdline(const CommandLine& cmd)
     const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames) / cmd.animate.num_shards;
     const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames) / cmd.animate.num_shards;
 
-    // Phase 1: Sequential AST Evaluation
-    LOG("Evaluating AST for all frames sequentially...");
+    /*
+       Phase 1, on this thread: evaluate every frame's AST.
+
+       Evaluation is the cheap half and is not thread-safe (it mutates the global
+       node index counter, and the Python frontend's interpreter state), so it stays
+       sequential regardless of --animate-threads. The sessions and contexts have to
+       outlive the trees they produced, hence the vectors.
+     */
     std::vector<std::unique_ptr<EvaluationSession>> frame_sessions;
     std::vector<ContextHandle<BuiltinContext>> frame_contexts;
     std::vector<ASTResult> ast_results;
-    std::vector<RenderVariables> frame_rvs;
     std::vector<CommandLine> frame_cmds;
 
     for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
       RenderVariables rv = render_variables;
       rv.time = frame * (1.0 / cmd.animate.frames);
-      frame_rvs.push_back(rv);
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
@@ -713,89 +752,26 @@ int cmdline(const CommandLine& cmd)
       frame_contexts.push_back(std::move(builtin_context));
     }
 
-    // Phase 2: Parallel Geometry & Rendering
-    LOG("Rendering frames...");
-    std::vector<std::thread> threads;
+    // Phase 2: geometry and output, one frame at a time or several at once.
     std::atomic<int> exit_code{0};
-
-    // Helper to run the rest of do_export for a pre-evaluated AST
     auto render_frame = [&](size_t idx) {
-      const CommandLine& fcmd = frame_cmds[idx];
-      const RenderVariables& frv = frame_rvs[idx];
-      ASTResult ast = ast_results[idx];
-
-      auto fpath = fcmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(fcmd.filename));
-      auto fparent = fpath.parent_path();
-
-      Camera camera = fcmd.camera;
-      if (ast.file_context) {
-        camera.updateView(ast.file_context, true);
-      }
-
-      fs::current_path(fparent);
-      std::shared_ptr<const AbstractNode> root_node;
-      const Location *nextLocation = nullptr;
-      if (!(root_node = find_root_tag(ast.root_node, &nextLocation))) {
-        root_node = ast.root_node;
-      }
-      Tree tree(root_node, fparent.string());
-
-      // start measuring render time
-      RenderStatistic renderStatistic;
-      GeometryEvaluator geomevaluator(tree);
-      std::unique_ptr<OffscreenView> glview;
-      std::shared_ptr<const Geometry> root_geom;
-      if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) &&
-          (cmd.viewOptions.renderer == RenderType::OPENCSG ||
-           cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
-        // OpenCSG or throwntogether png -> just render a preview
-        glview = prepare_preview(tree, fcmd.viewOptions, camera);
-        if (!glview) {
-          exit_code = 1;
-          return;
-        }
-      } else {
-        constexpr bool allownef = true;
-        root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
-        if (!root_geom) root_geom = std::make_shared<PolySet>(3);
-      }
-
-      const std::string input_filename = fcmd.is_stdin ? "<stdin>" : fcmd.filename;
-      const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
-      ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
-                                               input_filename, &camera, fcmd.exportOptions);
-      if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, fcmd.is_stdout, fcmd.output_file)) {
+      if (do_render_export(frame_cmds[idx], ast_results[idx], export_format, root_file) != 0) {
         exit_code = 1;
-        return;
       }
-
-      if (export_format == FileFormat::PNG) {
-        bool success = true;
-        bool const wrote = with_output(
-          fcmd.is_stdout, fcmd.output_file,
-          [&success, &root_geom, &fcmd, &camera, &glview](std::ostream& stream) {
-            if (fcmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
-                fcmd.viewOptions.renderer == RenderType::GEOMETRY) {
-              success = export_png(root_geom, fcmd.viewOptions, camera, stream);
-            } else {
-              success = export_png(*glview, stream);
-            }
-          },
-          std::ios::out | std::ios::binary);
-        if (!success || !wrote) {
-          exit_code = 1;
-          return;
-        }
-      }
-
-      renderStatistic.printAll(root_geom, camera, fcmd.summaryOptions, fcmd.summaryFile);
     };
 
-    if (cmd.animate.threads > 1 && !ast_results.empty()) {
-      // Phase 2: Sequential render of Frame 0 to prime caches
+    if (cmd.animate.threads > 1 && can_render_in_parallel(export_format) && !ast_results.empty()) {
+      /*
+         Frame 0 renders alone first. Everything in the model that does not depend
+         on $t resolves to the same geometry in every frame, so rendering one frame
+         to completion fills the GeometryCache with all of it; the workers that
+         follow hit that cache instead of recomputing the static parts N times over.
+         Starting all the threads cold would have each of them build the same
+         geometry simultaneously, which is slower than the sequential path.
+       */
       render_frame(0);
 
-      // Phase 3: Parallel render of remaining frames
+      std::vector<std::thread> threads;
       for (size_t i = 1; i < ast_results.size(); ++i) {
         if (threads.size() >= cmd.animate.threads) {
           threads.front().join();

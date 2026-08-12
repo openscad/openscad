@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <iostream>
 #include <list>
+#include <mutex>
 #include <set>
 #include <string>
 
@@ -78,9 +79,20 @@ void print_messages_pop()
   }
 }
 
+/*
+   Message output is global mutable state: the nesting stack, the repeat-suppression
+   buffer and the output handlers are all shared. Rendering can now run on several
+   threads at once (--animate-threads), and geometry evaluation warns from whichever
+   thread hit the problem, so those containers need guarding. Recursive because
+   PRINT() calls PRINT_NOCACHE().
+ */
+static std::recursive_mutex print_mutex;
+
 void PRINT(const Message& msgObj)
 {
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
+
+  const std::lock_guard<std::recursive_mutex> lock(print_mutex);
 
   if (print_messages_stack.size() > 0) {
     if (!print_messages_stack.back().empty()) {
@@ -102,6 +114,8 @@ void PRINT(const Message& msgObj)
 void PRINT_NOCACHE(const Message& msgObj)
 {
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
+
+  const std::lock_guard<std::recursive_mutex> lock(print_mutex);
 
   const auto msg = msgObj.str();
 
@@ -148,7 +162,9 @@ void PRINTDEBUG(const std::string& filename, const std::string& msg)
 
 const std::string& quoted_string(const std::string& str)
 {
-  static std::string buf;
+  // thread_local, not static: callers hold the returned reference, and rendering
+  // threads would otherwise overwrite each other's buffer.
+  static thread_local std::string buf;
   buf = str;
   boost::replace_all(buf, "\n", "\\n");
   return buf;
