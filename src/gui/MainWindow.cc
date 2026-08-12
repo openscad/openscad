@@ -2048,6 +2048,8 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     // Go to CGAL view mode
     viewModeRender();
     resetMeasurementsState(true, "Click to start measuring");
+    renderedEditor = activeEditor;
+    activeEditor->contentsRendered = true;
   } else {
     resetMeasurementsState(false, "No top level geometry; render something to enable measurements");
     LOG(message_group::UI_Warning, "No top level geometry to render");
@@ -2063,8 +2065,6 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderCompleteSoundEffect->play();
   }
 
-  renderedEditor = activeEditor;
-  activeEditor->contentsRendered = true;
   compileEnded();
 }
 

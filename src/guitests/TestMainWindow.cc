@@ -96,6 +96,9 @@ void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
 void TestMainWindow::checkCrashedWorkerRespawns()
 {
   restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QVERIFY(window->findChild<ProgressWidget *>() != nullptr);
   const auto worker = window->computeWorkerProcessId();
   QVERIFY(worker > 0);
 #ifdef Q_OS_WIN
@@ -105,6 +108,7 @@ void TestMainWindow::checkCrashedWorkerRespawns()
 #endif
   QTRY_VERIFY_WITH_TIMEOUT(
     window->computeWorkerProcessId() > 0 && window->computeWorkerProcessId() != worker, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
 }
 
 void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
