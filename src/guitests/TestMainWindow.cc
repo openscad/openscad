@@ -1,6 +1,7 @@
 #include "TestMainWindow.h"
 
 #include <QElapsedTimer>
+#include <QProcess>
 #include <QString>
 #include <QStringList>
 #include <QTest>
@@ -90,4 +91,18 @@ void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
 
   QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
   QCOMPARE(window->activeEditor->toPlainText(), source);
+}
+
+void TestMainWindow::checkCrashedWorkerRespawns()
+{
+  restoreWindowInitialState();
+  const auto worker = window->computeWorkerProcessId();
+#ifdef Q_OS_WIN
+  QCOMPARE(QProcess::execute("taskkill", {"/PID", QString::number(worker), "/F"}), 0);
+#else
+  QCOMPARE(QProcess::execute("/bin/kill", {"-KILL", QString::number(worker)}), 0);
+#endif
+  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() > 0 &&
+                             window->computeWorkerProcessId() != worker,
+                           5000);
 }

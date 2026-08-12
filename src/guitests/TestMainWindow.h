@@ -11,4 +11,5 @@ private slots:
   void checkEachWindowHasAComputeWorker();
   void checkF6UsesComputeWorkerResult();
   void checkCancelRespawnsWorkerAndPreservesEditor();
+  void checkCrashedWorkerRespawns();
 };
