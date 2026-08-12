@@ -24,11 +24,13 @@ def main():
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "model.scad"
             result = Path(directory) / "result.off"
-            source.write_text("cube(1);\n")
+            source.write_text("translate([1.2345678901234567, 0, 0]) cube(1);\n")
             worker.stdin.write(f"render\t{source}\t{result}\n")
             worker.stdin.flush()
             assert worker.stdout.readline().strip() == "done"
             assert result.read_text().startswith("OFF\n8 6 0\n")
+            vertices = result.read_text().splitlines()[2:10]
+            assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
 
         worker.stdin.write("quit\n")
         worker.stdin.flush()

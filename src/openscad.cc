@@ -689,9 +689,7 @@ static int compute_worker_render(const std::string& input, const std::string& ou
   const std::string empty;
   const ViewOptions view_options{};
   const Camera camera{};
-  const CmdLineExportOptions export_options{
-    {Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}
-  };
+  const CmdLineExportOptions export_options{{Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}};
   return cmdline(CommandLine{false,
                              input,
                              false,

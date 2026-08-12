@@ -293,6 +293,7 @@ struct ExportInfo {
   const Camera *camera;
   const Color4f defaultColor;
   const ColorScheme *colorScheme;
+  int offPrecision = 0;
 
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;

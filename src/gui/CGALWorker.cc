@@ -16,6 +16,7 @@ CGALWorker::CGALWorker()
 {
   this->sourceFile = nullptr;
   this->process = new QProcess();
+  this->process->setProcessChannelMode(QProcess::ForwardedErrorChannel);
   connect(this->process, &QProcess::readyReadStandardOutput, this, &CGALWorker::processOutput);
   startProcess();
 }

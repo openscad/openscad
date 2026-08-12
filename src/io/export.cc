@@ -218,7 +218,10 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
   case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
   case FileFormat::OBJ:        export_obj(root_geom, output); break;
-  case FileFormat::OFF:        export_off(root_geom, output); break;
+  case FileFormat::OFF:
+    if (exportInfo.offPrecision) output << std::setprecision(exportInfo.offPrecision);
+    export_off(root_geom, output);
+    break;
   case FileFormat::WRL:        export_wrl(root_geom, output); break;
   case FileFormat::AMF:        export_amf(root_geom, output); break;
   case FileFormat::_3MF:       export_3mf(root_geom, output, exportInfo); break;
