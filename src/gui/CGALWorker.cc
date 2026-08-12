@@ -1,5 +1,7 @@
 #include "gui/CGALWorker.h"
 
+#include <QCoreApplication>
+#include <QProcess>
 #include <QThread>
 #include <exception>
 #include <memory>
@@ -20,6 +22,13 @@
 
 CGALWorker::CGALWorker()
 {
+  this->process = new QProcess();
+  this->process->start(QCoreApplication::applicationFilePath(), {"--compute-worker"});
+  if (!this->process->waitForStarted()) {
+    LOG(message_group::Error, "Could not start compute worker: %1$s",
+        this->process->errorString().toStdString());
+  }
+
   this->tree = nullptr;
   this->thread = new QThread();
   if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
@@ -32,6 +41,18 @@ CGALWorker::~CGALWorker()
   this->thread->quit();
   this->thread->wait();
   delete this->thread;
+
+  this->process->write("quit\n");
+  if (!this->process->waitForFinished(1000)) {
+    this->process->kill();
+    this->process->waitForFinished();
+  }
+  delete this->process;
+}
+
+qint64 CGALWorker::processId() const
+{
+  return this->process->processId();
 }
 
 void CGALWorker::start(const Tree& tree)

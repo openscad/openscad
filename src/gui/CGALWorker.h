@@ -12,6 +12,7 @@ class CGALWorker : public QObject
 public:
   CGALWorker();
   ~CGALWorker() override;
+  qint64 processId() const;
 
 public slots:
   void start(const Tree& tree);
@@ -24,5 +25,6 @@ signals:
 
 protected:
   class QThread *thread;
+  class QProcess *process;
   const class Tree *tree;
 };

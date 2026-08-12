@@ -126,6 +126,7 @@ public:
 
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
+  qint64 computeWorkerProcessId() const;
 
 private:
   RubberBandManager rubberBandManager;

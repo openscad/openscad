@@ -615,6 +615,11 @@ MainWindow::~MainWindow()
   delete this->cgalworker;
 }
 
+qint64 MainWindow::computeWorkerProcessId() const
+{
+  return this->cgalworker->processId();
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (!tabManager->shouldClose()) {
