@@ -106,3 +106,17 @@ void TestMainWindow::checkCrashedWorkerRespawns()
   QTRY_VERIFY_WITH_TIMEOUT(
     window->computeWorkerProcessId() > 0 && window->computeWorkerProcessId() != worker, 5000);
 }
+
+void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("cube(");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QVERIFY(!window->activeEditor->contentsRendered);
+
+  window->activeEditor->setPlainText("cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 5000);
+}

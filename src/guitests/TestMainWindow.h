@@ -12,4 +12,5 @@ private slots:
   void checkF6UsesComputeWorkerResult();
   void checkCancelRespawnsWorkerAndPreservesEditor();
   void checkCrashedWorkerRespawns();
+  void checkWorkerErrorDoesNotMarkSourceRendered();
 };
