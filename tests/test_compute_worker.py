@@ -32,6 +32,12 @@ def main():
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
 
+            preview = Path(directory) / "preview.csg"
+            worker.stdin.write(f"preview\t{source}\t{preview}\n")
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "previewdone"
+            assert "multmatrix" in preview.read_text()
+
         worker.stdin.write("quit\n")
         worker.stdin.flush()
         assert worker.wait(timeout=5) == 0

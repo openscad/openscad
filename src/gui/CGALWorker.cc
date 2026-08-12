@@ -22,9 +22,12 @@ CGALWorker::CGALWorker()
           [this](int, QProcess::ExitStatus) {
             if (this->stopping) return;
             const auto interrupted = this->busy;
+            const auto request = this->request;
             this->busy = false;
+            this->request = Request::NONE;
             startProcess();
-            if (interrupted) emit done({});
+            if (interrupted && request == Request::PREVIEW) emit previewDone({});
+            else if (interrupted) emit done({});
           });
   startProcess();
 }
@@ -58,6 +61,17 @@ qint64 CGALWorker::processId() const
 
 void CGALWorker::start(const QString& source, const QString& filename)
 {
+  startRequest("render", ".off", source, filename);
+}
+
+void CGALWorker::startPreview(const QString& source, const QString& filename)
+{
+  startRequest("preview", ".csg", source, filename);
+}
+
+void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
+                              const QString& filename)
+{
   delete this->sourceFile;
   if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
 
@@ -71,23 +85,27 @@ void CGALWorker::start(const QString& source, const QString& filename)
   }
   this->sourceFile->write(source.toUtf8());
   this->sourceFile->flush();
-  this->resultPath = this->sourceFile->fileName() + ".off";
+  this->resultPath = this->sourceFile->fileName() + suffix;
+  this->request = command == "preview" ? Request::PREVIEW : Request::RENDER;
   this->busy = true;
   this->process->write(
-    QString("render\t%1\t%2\n").arg(this->sourceFile->fileName(), this->resultPath).toUtf8());
+    QString("%1\t%2\t%3\n").arg(command, this->sourceFile->fileName(), this->resultPath).toUtf8());
 }
 
 void CGALWorker::cancel()
 {
+  const auto request = this->request;
   this->stopping = true;
   if (this->process->state() != QProcess::NotRunning) {
     this->process->kill();
     this->process->waitForFinished();
   }
   this->busy = false;
+  this->request = Request::NONE;
   startProcess();
   this->stopping = false;
-  emit done({});
+  if (request == Request::PREVIEW) emit previewDone({});
+  else emit done({});
 }
 
 void CGALWorker::processOutput()
@@ -97,11 +115,20 @@ void CGALWorker::processOutput()
     if (response == "ready" || response == "pong") continue;
     if (response == "done") {
       this->busy = false;
+      this->request = Request::NONE;
       auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
       emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
+    } else if (response == "previewdone") {
+      this->busy = false;
+      this->request = Request::NONE;
+      QFile file(this->resultPath);
+      emit previewDone(file.open(QIODevice::ReadOnly) ? QString::fromUtf8(file.readAll()) : QString{});
     } else if (response == "error") {
       this->busy = false;
-      emit done({});
+      const auto request = this->request;
+      this->request = Request::NONE;
+      if (request == Request::PREVIEW) emit previewDone({});
+      else emit done({});
     }
   }
 }

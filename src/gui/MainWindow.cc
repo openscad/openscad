@@ -1872,26 +1872,48 @@ void MainWindow::on_designActionPreview_triggered()
 
 void MainWindow::actionRenderPreview()
 {
-  static bool preview_requested;
-  preview_requested = true;
+  this->previewRequested = true;
 
   if (GuiLocker::isLocked()) return;
 
   GuiLocker::lock();
-  preview_requested = false;
+  this->previewRequested = false;
 
   resetMeasurementsState(false, "Render (not preview) to enable measurements");
 
-  prepareCompile("csgRender", !animateDock->isVisible(), true);
-  compile(false, false);
+  setCurrentOutput();
+  autoReloadTimer->stop();
+  this->isPreview = true;
+  this->renderStatistic.start();
+  this->progresswidget = new ProgressWidget(this);
+  connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
+  connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
+  this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath);
+}
 
-  if (preview_requested) {
-    // if the action was called when the gui was locked, we must request it one more time
-    // however, it's not possible to call it directly NOR make the loop
-    // it must be called from the mainloop
-    QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+void MainWindow::actionPreviewDone(const QString& source)
+{
+  updateStatusBar(nullptr);
+  if (source.isEmpty()) {
+    compileEnded();
+    if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
     return;
   }
+
+  SourceFile *file = nullptr;
+  const auto filename = activeEditor->filepath.toStdString();
+  const auto text = source.toStdString() + "\n\x03\n";
+  if (!parse(file, text, filename, filename, false)) {
+    delete file;
+    compileEnded();
+    if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+    return;
+  }
+  this->rootFile.reset(file);
+  this->parsedFile = this->rootFile;
+  instantiateRoot();
+  csgRender();
+  if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
 }
 
 void MainWindow::csgRender()
@@ -3494,6 +3516,7 @@ void MainWindow::setupCoreSubsystems()
 
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
+  connect(this->cgalworker, &CGALWorker::previewDone, this, &MainWindow::actionPreviewDone);
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);

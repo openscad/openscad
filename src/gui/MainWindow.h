@@ -84,6 +84,7 @@ public:
   QTimer *consoleUpdater;
 
   bool isPreview;
+  bool previewRequested = false;
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
@@ -352,6 +353,7 @@ private slots:
   void sendToExternalTool(class ExternalToolInterface& externalToolService);
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
+  void actionPreviewDone(const QString& source);
   void cgalRender();
   void handleMeasurementClicked(QAction *clickedAction);
   void on_designCheckValidity_triggered();

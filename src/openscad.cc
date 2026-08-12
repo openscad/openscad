@@ -683,7 +683,8 @@ int cmdline(const CommandLine& cmd)
   }
 }
 
-static int compute_worker_render(const std::string& input, const std::string& output)
+static int compute_worker_export(const std::string& input, const std::string& output,
+                                 const FileFormat format)
 {
   const auto original_path = fs::path(input).parent_path();
   const std::string empty;
@@ -699,7 +700,7 @@ static int compute_worker_render(const std::string& input, const std::string& ou
                              empty,
                              view_options,
                              camera,
-                             FileFormat::OFF,
+                             format,
                              export_options,
                              {},
                              {},
@@ -712,15 +713,19 @@ static int compute_worker_main()
   for (std::string command; std::getline(std::cin, command);) {
     if (command == "ping") {
       std::cout << "pong" << std::endl;
-    } else if (command.rfind("render\t", 0) == 0) {
-      const auto separator = command.find('\t', 7);
+    } else if (command.rfind("render\t", 0) == 0 || command.rfind("preview\t", 0) == 0) {
+      const auto preview = command.rfind("preview\t", 0) == 0;
+      const auto prefix = preview ? 8 : 7;
+      const auto separator = command.find('\t', prefix);
       if (separator == std::string::npos) {
         std::cout << "error" << std::endl;
         continue;
       }
-      const auto input = command.substr(7, separator - 7);
+      const auto input = command.substr(prefix, separator - prefix);
       const auto output = command.substr(separator + 1);
-      std::cout << (compute_worker_render(input, output) == 0 ? "done" : "error") << std::endl;
+      const auto result =
+        compute_worker_export(input, output, preview ? FileFormat::CSG : FileFormat::OFF);
+      std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
     } else if (command == "quit") {
       return 0;
     }

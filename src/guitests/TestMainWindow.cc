@@ -141,3 +141,16 @@ void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
   progress->cancel();
   QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
 }
+
+void TestMainWindow::checkF5UsesComputeWorkerResult()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("#cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+#ifdef ENABLE_OPENCSG
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+#else
+  QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
+#endif
+}
