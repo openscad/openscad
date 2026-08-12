@@ -13,4 +13,5 @@ private slots:
   void checkCancelRespawnsWorkerAndPreservesEditor();
   void checkCrashedWorkerRespawns();
   void checkWorkerErrorDoesNotMarkSourceRendered();
+  void checkPreviewDispatchDoesNotBlockGui();
 };

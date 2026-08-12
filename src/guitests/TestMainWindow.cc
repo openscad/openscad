@@ -124,3 +124,20 @@ void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 5000);
 }
+
+void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
+  const auto worker = window->computeWorkerProcessId();
+
+  QElapsedTimer dispatch;
+  dispatch.start();
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QVERIFY2(dispatch.elapsed() < 250, "F5 parsed or evaluated source in the GUI process");
+
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  progress->cancel();
+  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+}
