@@ -200,6 +200,12 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::SVG) {
     exportInfo.optionsSvg = ExportSvgOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::OFF) {
+    const auto& setting = Settings::SettingsExportOff::exportOffPrecision;
+    const auto precision = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_OFF, setting);
+    if (precision >= setting.minimum() && precision <= setting.maximum()) {
+      exportInfo.offPrecision = precision;
+    }
   }
 
   return exportInfo;

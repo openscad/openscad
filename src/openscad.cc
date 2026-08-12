@@ -242,6 +242,7 @@ void help_export()
   LOG("List of settings that can be given using the -O option using the");
   LOG("format '<section>/<key>=value', e.g.:");
   LOG("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n");
+  help_export(Settings::SettingsExportOff::cmdline);
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
   help_export(Settings::SettingsExportSvg::cmdline);
@@ -688,7 +689,9 @@ static int compute_worker_render(const std::string& input, const std::string& ou
   const std::string empty;
   const ViewOptions view_options{};
   const Camera camera{};
-  const CmdLineExportOptions export_options{};
+  const CmdLineExportOptions export_options{
+    {Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}
+  };
   return cmdline(CommandLine{false,
                              input,
                              false,

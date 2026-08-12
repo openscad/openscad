@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <istream>
 #include <iterator>
+#include <limits>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -479,6 +480,9 @@ SettingsEntryString SettingsExport3mf::export3mfMetaDataLicenseTerms(SECTION_EXP
                                                                      "meta-data-license-terms", "");
 SettingsEntryString SettingsExport3mf::export3mfMetaDataRating(SECTION_EXPORT_3MF, "meta-data-rating",
                                                                "");
+
+SettingsEntryInt SettingsExportOff::exportOffPrecision(SECTION_EXPORT_OFF, "precision", 1,
+                                                       std::numeric_limits<double>::max_digits10, 0);
 
 SettingsEntryBool SettingsExportSvg::exportSvgAlwaysShowDialog(SECTION_EXPORT_SVG, "always-show-dialog",
                                                                true);

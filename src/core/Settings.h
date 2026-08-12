@@ -26,6 +26,7 @@ constexpr inline auto PROPERTY_NAME = "_settings_value";
 constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
 
 constexpr inline auto SECTION_PYTHON = "python";
+constexpr inline auto SECTION_EXPORT_OFF = "export-off";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
@@ -597,6 +598,14 @@ public:
     &export3mfMetaDataLicenseTerms,
     &export3mfMetaDataRating,
   };
+};
+
+class SettingsExportOff
+{
+public:
+  static SettingsEntryInt exportOffPrecision;
+
+  static constexpr std::array<const SettingsEntryBase *, 1> cmdline{&exportOffPrecision};
 };
 
 class SettingsExportSvg

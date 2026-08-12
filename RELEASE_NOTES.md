@@ -31,6 +31,7 @@
 **Program Features**
 
 * GUI
+  * Add opt-in full-precision OFF export with `-O export-off/precision=<1-17>`
   * Add PDF export (single page only)
   * Add jump to source code from 3D preview
   * Add Error-Log window for tracking errors and warnings

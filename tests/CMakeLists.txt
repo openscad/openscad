@@ -1552,6 +1552,23 @@ if(NOT ENABLE_MANIFOLD)
   )
 endif()
 
+#################
+# OFF precision #
+#################
+
+# `-O export-off/precision=<n>` gives a lossless OFF coordinate round-trip. Also
+# pins the default, which must stay at the iostream default or every existing
+# OFF expectation moves with it.
+if(OPENSCAD_BINPATH)
+  add_test(NAME off_precision
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_off_precision.py
+      ${OPENSCAD_BINPATH}
+      ${CMAKE_CURRENT_BINARY_DIR}/off_precision_output
+  )
+endif()
+
 #############################
 # Persistent compute worker #
 #############################
