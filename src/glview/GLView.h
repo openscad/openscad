@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "glview/Camera.h"
+#include "io/depthmap.h"
 #include "glview/ShaderUtils.h"
 #include "geometry/linalg.h"
 #include "glview/ColorMap.h"
@@ -65,6 +66,9 @@ public:
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
   [[nodiscard]] bool showDepth() const { return this->showdepth; }
   void setShowDepth(bool enabled) { this->showdepth = enabled; }
+  //! Pin the depth shading to an explicit range instead of the bounding box, so
+  //! the viewport matches an export made with the same range.
+  void setDepthOptions(const DepthmapOptions& options) { this->depthoptions = options; }
 
   virtual bool save(const char *filename) const = 0;
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
@@ -88,6 +92,7 @@ public:
   //! Shade the model by distance instead of by lighting - the viewport preview
   //! of what a depth map export will contain.
   bool showdepth{false};
+  DepthmapOptions depthoptions{};
   GLdouble modelview[16];
   GLdouble projection[16];
   std::vector<SelectedObject> selected_obj;

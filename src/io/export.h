@@ -368,9 +368,14 @@ class OffscreenView;
 
 std::string get_current_iso8601_date_time_utc();
 
-std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera);
+std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera,
+                                               const DepthmapOptions& depthOptions = {});
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
                 Camera& camera, std::ostream& output);
+//! As above, but carrying the depth options so --view=depth shades with the same
+//! range a depthmap export would encode with.
+bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, const DepthmapOptions& depthOptions, std::ostream& output);
 bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_depthmap(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
                      Camera& camera, DepthProfile profile, std::ostream& output);

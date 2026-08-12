@@ -345,3 +345,40 @@ TEST_CASE("the camera sidecar states its conventions", "[Depthmap]")
   CHECK(json.find("\"depthOrigin\": \"eye\"") != std::string::npos);
   CHECK(json.find("\"depthUnits\": \"mm\"") != std::string::npos);
 }
+
+TEST_CASE("an explicit range overrides the viewport's bounding-box range", "[Depthmap]")
+{
+  // The viewport pins its shading to the bounding box so it does not swim while
+  // the model is rotated. An explicit range is a stronger statement than that,
+  // and is what the export uses - so when one is given the viewport must defer
+  // to it, or the preview and the file disagree exactly when the user has asked
+  // for them to agree.
+  DepthmapOptions opts;
+  opts.has_explicit_range = true;
+  opts.explicit_near = 80.0;
+  opts.explicit_far = 90.0;
+
+  const auto r = resolve_depth_range(opts, 10.0, 500.0);
+  CHECK(r.start == Catch::Approx(80.0));
+  CHECK(r.end == Catch::Approx(90.0));
+}
+
+TEST_CASE("without an explicit range the viewport still uses the bounding box", "[Depthmap]")
+{
+  const DepthmapOptions opts;
+  const auto r = resolve_depth_range(opts, 90.0, 110.0);
+  CHECK(r.start == Catch::Approx(90.0));
+  CHECK(r.end == Catch::Approx(110.0));
+}
+
+TEST_CASE("a resolved range is always usable by fog", "[Depthmap]")
+{
+  // Whichever source it came from, fog divides by (end - start).
+  DepthmapOptions opts;
+  opts.has_explicit_range = true;
+  opts.explicit_near = 50.0;
+  opts.explicit_far = 50.0;  // rejected at parse time, but do not trust that here
+  CHECK(resolve_depth_range(opts, 0.0, 0.0).end > resolve_depth_range(opts, 0.0, 0.0).start);
+  CHECK(resolve_depth_range(DepthmapOptions{}, 5.0, 5.0).end >
+        resolve_depth_range(DepthmapOptions{}, 5.0, 5.0).start);
+}

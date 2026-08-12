@@ -40,6 +40,14 @@ DepthRange depth_range_for_bounds(double nearest, double farthest)
   return range;
 }
 
+DepthRange resolve_depth_range(const DepthmapOptions& options, double nearest, double farthest)
+{
+  if (!options.has_explicit_range) return depth_range_for_bounds(nearest, farthest);
+  // Reuse the same guards, so a range that reached here degenerate (it should
+  // have been rejected at parse time) still cannot make fog divide by zero.
+  return depth_range_for_bounds(options.explicit_near, options.explicit_far);
+}
+
 std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double clipNear,
                                    double clipFar, bool perspective)
 {

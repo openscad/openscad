@@ -203,7 +203,7 @@ void GLView::setupDepthShading()
       }
     }
   }
-  const auto range = depth_range_for_bounds(nearest, farthest);
+  const auto range = resolve_depth_range(this->depthoptions, nearest, farthest);
 
   const GLfloat fogcolor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
   glFogi(GL_FOG_MODE, GL_LINEAR);

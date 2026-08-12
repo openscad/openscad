@@ -96,6 +96,15 @@ struct DepthRange {
  */
 DepthRange depth_range_for_bounds(double nearest, double farthest);
 
+/*!
+   The range the viewport shading should use: an explicit range if the user gave
+   one, otherwise the bounding-box extent. An explicit range is a stronger
+   statement than "fit the model", and it is what the export honours - so the
+   viewport defers to it, or preview and file disagree exactly when the user
+   asked for them to agree.
+ */
+DepthRange resolve_depth_range(const struct DepthmapOptions& options, double nearest, double farthest);
+
 struct CameraParameters {
   double modelview[16]{};
   double projection[16]{};
