@@ -8,11 +8,6 @@
 #include "json/json.hpp"
 #include <fstream>
 #include <cstdlib>
-#include <future>
-#include <QApplication>
-#include "gui/MainWindow.h"
-#include "gui/OpenSCADApp.h"
-#include "gui/ai/ChatWidget.h"
 
 static std::string getAISettingsPath()
 {
@@ -63,6 +58,15 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   auto& profile = profiles[active_profile_name];
 
   config.endpoint = profile.value("endpoint", "");
+  if (config.endpoint.empty()) {
+    error_msg = "API endpoint is empty. Please configure a valid API URL in Preferences -> AI tab.";
+    return false;
+  }
+  if (config.endpoint.rfind("http://", 0) != 0 && config.endpoint.rfind("https://", 0) != 0) {
+    error_msg =
+      "Invalid API endpoint: '" + config.endpoint + "'. Must start with 'http://' or 'https://'";
+    return false;
+  }
   config.apiKey = profile.value("apiKey", "");
 
   if (profile.contains("params") && profile["params"].is_object()) {
@@ -77,128 +81,12 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   return true;
 }
 
-static std::string executeToolOnMainThread(const std::string& name, const std::string& arguments_json)
-{
-  auto promise = std::make_shared<std::promise<std::string>>();
-  auto future = promise->get_future();
-
-  QMetaObject::invokeMethod(
-    qApp,
-    [promise, name, arguments_json]() {
-      try {
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-
-        std::string result_val;
-
-        if (name == "get_editor_code") {
-          if (mw && mw->activeEditor) {
-            result_val = mw->activeEditor->toPlainText().toStdString();
-          } else {
-            result_val = "Error: No active editor found.";
-          }
-        } else if (name == "set_editor_code") {
-          auto args = nlohmann::json::parse(arguments_json);
-          if (!args.contains("code")) {
-            result_val = "Error: Missing required argument 'code'.";
-            promise->set_value(result_val);
-            return;
-          }
-          std::string code = args["code"].get<std::string>();
-          ChatWidget *chatWidget = nullptr;
-          if (mw) {
-            chatWidget = mw->findChild<ChatWidget *>();
-          }
-          if (chatWidget) {
-            chatWidget->proposeCodeChange(code);
-            result_val =
-              "Success: Code change proposed to the user for review. The user will review and choose "
-              "whether to apply it.";
-          } else {
-            if (mw && mw->activeEditor) {
-              mw->activeEditor->setText(QString::fromStdString(code));
-              result_val = "Success: Code set in the editor.";
-            } else {
-              result_val = "Error: No active editor found.";
-            }
-          }
-        } else if (name == "trigger_preview") {
-          ChatWidget *chatWidget = nullptr;
-          if (mw) {
-            chatWidget = mw->findChild<ChatWidget *>();
-          }
-          if (chatWidget && chatWidget->hasPendingCodeChanges()) {
-            result_val = "Info: Preview postponed because code changes are pending user review.";
-          } else {
-            if (mw) {
-              mw->actionRenderPreview();
-              result_val = "Success: Preview triggered.";
-            } else {
-              result_val = "Error: No active MainWindow found.";
-            }
-          }
-        } else {
-          result_val = "Error: Unknown tool name '" + name + "'.";
-        }
-
-        promise->set_value(result_val);
-
-        // Log the tool execution in the ChatWidget
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, result_val);
-        }
-
-      } catch (const std::exception& e) {
-        std::string err = std::string("Error parsing/executing tool: ") + e.what();
-        promise->set_value(err);
-
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, err);
-        }
-      } catch (...) {
-        std::string err = "Error: Unknown exception occurred during tool execution.";
-        promise->set_value(err);
-
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, err);
-        }
-      }
-    },
-    Qt::QueuedConnection);
-
-  return future.get();
-}
-
 class AIService::Impl
 {
 public:
   std::unique_ptr<HTTPClient> http_client;
   std::unique_ptr<AIClient> ai_client;
+  ToolExecutor tool_executor = nullptr;
 
   Impl()
   {
@@ -221,6 +109,11 @@ AIService::~AIService() = default;
 
 AIService::AIService(AIService&&) noexcept = default;
 AIService& AIService::operator=(AIService&&) noexcept = default;
+
+void AIService::registerToolExecutor(ToolExecutor executor)
+{
+  impl->tool_executor = std::move(executor);
+}
 
 void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCallback on_chunk,
                                      ErrorCallback on_error, CompleteCallback on_complete)
@@ -266,19 +159,74 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     sys_prompt = config.parameters["system_prompt"].get<std::string>();
   }
 
+  int context_limit = 10;
+  if (config.parameters.contains("context_limit") &&
+      config.parameters["context_limit"].is_number_integer()) {
+    context_limit = config.parameters["context_limit"].get<int>();
+    if (context_limit < 1) context_limit = 1;
+  }
+
   bool already_has_system = false;
   if (!history.empty() && history[0].role == "system") {
     already_has_system = true;
   }
   if (!already_has_system) {
-    ai_history.push_back({"system", sys_prompt});
+    // Append hidden OpenSCAD reference documentation to the system prompt
+    std::string ref_doc =
+      "\n\n### OpenSCAD Quick Reference\n"
+      "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
+      "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
+      "font, halign, valign)\n"
+      "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
+      "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
+      "**Boolean Ops**: union(), difference(), intersection()\n"
+      "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
+      "rotate_extrude(angle, $fn)\n"
+      "**Modules**: module name(params) { body } -- NO semicolon after definition. "
+      "Call with: name(args);\n"
+      "**Functions**: function name(params) = expression;\n"
+      "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
+      "assert(cond, msg), echo(values)\n"
+      "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
+      "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
+      "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
+      "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
+      "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
+      "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
+      "import(\"file.stl\")\n\n"
+      "### Available Tools\n"
+      "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
+      "- **set_editor_code({\"code\": \"...\"})**:  Proposes code changes for user review in a "
+      "side-by-side diff dialog. "
+      "Always use this instead of pasting code in chat.\n"
+      "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
+      "Automatically postponed if code changes are pending review.";
+    ai_history.push_back({"system", sys_prompt + ref_doc});
   }
 
-  for (const auto& msg : history) {
+  // Apply sliding window: keep last context_limit turn pairs (a turn starts with a "user" message)
+  size_t window_start = 0;
+  {
+    std::vector<size_t> turn_starts;
+    for (size_t i = 0; i < history.size(); ++i) {
+      if (history[i].role == "user") {
+        turn_starts.push_back(i);
+      }
+    }
+    if (static_cast<int>(turn_starts.size()) > context_limit) {
+      window_start = turn_starts[turn_starts.size() - context_limit];
+    }
+  }
+
+  for (size_t i = window_start; i < history.size(); ++i) {
+    const auto& msg = history[i];
     AIChatMessage am;
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    for (const auto& img : msg.images) {
+      am.images.push_back({img.mime_type, img.base64_data});
+    }
     if (!msg.tool_calls.empty()) {
       try {
         auto tcs_json = nlohmann::json::parse(msg.tool_calls);
@@ -334,7 +282,12 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     history.push_back(assistant_msg);
 
     for (const auto& tc : tool_calls) {
-      std::string result = executeToolOnMainThread(tc.name, tc.arguments);
+      std::string result;
+      if (impl->tool_executor) {
+        result = impl->tool_executor(tc.name, tc.arguments);
+      } else {
+        result = "Error: No tool executor registered.";
+      }
       ChatMessage tool_msg;
       tool_msg.role = "tool";
       tool_msg.content = result;
@@ -396,7 +349,37 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     already_has_system = true;
   }
   if (!already_has_system) {
-    ai_history.push_back({"system", sys_prompt});
+    // Append hidden OpenSCAD reference documentation to the system prompt
+    std::string ref_doc =
+      "\n\n### OpenSCAD Quick Reference\n"
+      "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
+      "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
+      "font, halign, valign)\n"
+      "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
+      "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
+      "**Boolean Ops**: union(), difference(), intersection()\n"
+      "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
+      "rotate_extrude(angle, $fn)\n"
+      "**Modules**: module name(params) { body } -- NO semicolon after definition. "
+      "Call with: name(args);\n"
+      "**Functions**: function name(params) = expression;\n"
+      "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
+      "assert(cond, msg), echo(values)\n"
+      "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
+      "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
+      "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
+      "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
+      "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
+      "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
+      "import(\"file.stl\")\n\n"
+      "### Available Tools\n"
+      "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
+      "- **set_editor_code({\"code\": \"...\"})**:  Proposes code changes for user review in a "
+      "side-by-side diff dialog. "
+      "Always use this instead of pasting code in chat.\n"
+      "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
+      "Automatically postponed if code changes are pending review.";
+    ai_history.push_back({"system", sys_prompt + ref_doc});
   }
 
   for (const auto& msg : history) {
@@ -404,6 +387,9 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    for (const auto& img : msg.images) {
+      am.images.push_back({img.mime_type, img.base64_data});
+    }
     if (!msg.tool_calls.empty()) {
       try {
         auto tcs_json = nlohmann::json::parse(msg.tool_calls);
@@ -463,6 +449,32 @@ void AIService::cancelPendingRequests()
   impl->ai_client->cancelPendingRequests();
 }
 
+int AIService::getPayloadLimit() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("payload_limit") &&
+        config.parameters["payload_limit"].is_number_integer()) {
+      return config.parameters["payload_limit"].get<int>();
+    }
+  }
+  return 50000;
+}
+
+bool AIService::getAutoAttachViewport() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("auto_attach_viewport") &&
+        config.parameters["auto_attach_viewport"].is_boolean()) {
+      return config.parameters["auto_attach_viewport"].get<bool>();
+    }
+  }
+  return false;
+}
+
 #else  // __EMSCRIPTEN__
 
 class AIService::Impl
@@ -499,6 +511,16 @@ std::string AIService::getDefaultPrompt() const
 
 void AIService::cancelPendingRequests()
 {
+}
+
+int AIService::getPayloadLimit() const
+{
+  return 50000;
+}
+
+bool AIService::getAutoAttachViewport() const
+{
+  return false;
 }
 
 #endif  // __EMSCRIPTEN__

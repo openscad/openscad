@@ -267,7 +267,25 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
   for (const auto& msg : history) {
     nlohmann::json m = nlohmann::json::object();
     m["role"] = msg.role;
-    if (!msg.content.empty() || msg.tool_calls.empty()) {
+    if (!msg.images.empty()) {
+      nlohmann::json content_arr = nlohmann::json::array();
+      if (!msg.content.empty()) {
+        nlohmann::json text_obj = nlohmann::json::object();
+        text_obj["type"] = "text";
+        text_obj["text"] = msg.content;
+        content_arr.push_back(text_obj);
+      }
+      for (const auto& img : msg.images) {
+        nlohmann::json img_obj = nlohmann::json::object();
+        img_obj["type"] = "image_url";
+        nlohmann::json url_obj = nlohmann::json::object();
+        url_obj["url"] =
+          "data:" + (img.mime_type.empty() ? "image/png" : img.mime_type) + ";base64," + img.base64_data;
+        img_obj["image_url"] = url_obj;
+        content_arr.push_back(img_obj);
+      }
+      m["content"] = content_arr;
+    } else if (!msg.content.empty() || msg.tool_calls.empty()) {
       m["content"] = msg.content;
     } else {
       m["content"] = nullptr;
@@ -293,11 +311,14 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
   }
   payload["messages"] = messages;
   payload["tools"] = getOpenSCADTools();
+  payload["tool_choice"] = "auto";
 
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools" ||
+          key == "system_prompt" || key == "default_prompt" || key == "context_limit" ||
+          key == "payload_limit" || key == "auto_attach_viewport") {
         continue;
       }
       payload[key] = el.value();
@@ -402,7 +423,25 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
   for (const auto& msg : history) {
     nlohmann::json m = nlohmann::json::object();
     m["role"] = msg.role;
-    if (!msg.content.empty() || msg.tool_calls.empty()) {
+    if (!msg.images.empty()) {
+      nlohmann::json content_arr = nlohmann::json::array();
+      if (!msg.content.empty()) {
+        nlohmann::json text_obj = nlohmann::json::object();
+        text_obj["type"] = "text";
+        text_obj["text"] = msg.content;
+        content_arr.push_back(text_obj);
+      }
+      for (const auto& img : msg.images) {
+        nlohmann::json img_obj = nlohmann::json::object();
+        img_obj["type"] = "image_url";
+        nlohmann::json url_obj = nlohmann::json::object();
+        url_obj["url"] =
+          "data:" + (img.mime_type.empty() ? "image/png" : img.mime_type) + ";base64," + img.base64_data;
+        img_obj["image_url"] = url_obj;
+        content_arr.push_back(img_obj);
+      }
+      m["content"] = content_arr;
+    } else if (!msg.content.empty() || msg.tool_calls.empty()) {
       m["content"] = msg.content;
     } else {
       m["content"] = nullptr;
@@ -428,11 +467,14 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
   }
   payload["messages"] = messages;
   payload["tools"] = getOpenSCADTools();
+  payload["tool_choice"] = "auto";
 
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools" ||
+          key == "system_prompt" || key == "default_prompt" || key == "context_limit" ||
+          key == "payload_limit" || key == "auto_attach_viewport") {
         continue;
       }
       payload[key] = el.value();
