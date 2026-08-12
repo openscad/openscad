@@ -682,6 +682,51 @@ int cmdline(const CommandLine& cmd)
   }
 }
 
+static int compute_worker_render(const std::string& input, const std::string& output)
+{
+  const auto original_path = fs::path(input).parent_path();
+  const std::string empty;
+  const ViewOptions view_options{};
+  const Camera camera{};
+  const CmdLineExportOptions export_options{};
+  return cmdline(CommandLine{false,
+                             input,
+                             false,
+                             output,
+                             original_path,
+                             empty,
+                             empty,
+                             view_options,
+                             camera,
+                             FileFormat::OFF,
+                             export_options,
+                             {},
+                             {},
+                             ""});
+}
+
+static int compute_worker_main()
+{
+  std::cout << "ready" << std::endl;
+  for (std::string command; std::getline(std::cin, command);) {
+    if (command == "ping") {
+      std::cout << "pong" << std::endl;
+    } else if (command.rfind("render\t", 0) == 0) {
+      const auto separator = command.find('\t', 7);
+      if (separator == std::string::npos) {
+        std::cout << "error" << std::endl;
+        continue;
+      }
+      const auto input = command.substr(7, separator - 7);
+      const auto output = command.substr(separator + 1);
+      std::cout << (compute_worker_render(input, output) == 0 ? "done" : "error") << std::endl;
+    } else if (command == "quit") {
+      return 0;
+    }
+  }
+  return 0;
+}
+
 template <class Seq, typename ToString>
 static std::string str_join(const Seq& seq, const std::string& sep, const ToString& toString)
 {
@@ -796,25 +841,10 @@ struct CommaSeparatedVector {
   }
 };
 
-static int compute_worker_main()
-{
-  std::cout << "ready" << std::endl;
-  for (std::string command; std::getline(std::cin, command);) {
-    if (command == "ping") {
-      std::cout << "pong" << std::endl;
-    } else if (command == "quit") {
-      return 0;
-    }
-  }
-  return 0;
-}
-
 // OpenSCAD
 int openscad_main(int argc, char **argv)
 {
-  if (argc == 2 && std::string(argv[1]) == "--compute-worker") {
-    return compute_worker_main();
-  }
+  const bool compute_worker = argc == 2 && std::string(argv[1]) == "--compute-worker";
 
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
   // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
@@ -856,6 +886,8 @@ int openscad_main(int argc, char **argv)
   CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
 #endif
   Builtins::initialize();
+
+  if (compute_worker) return compute_worker_main();
 
   auto original_path = fs::current_path();
 

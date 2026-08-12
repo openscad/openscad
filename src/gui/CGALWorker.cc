@@ -1,53 +1,44 @@
 #include "gui/CGALWorker.h"
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QProcess>
-#include <QThread>
-#include <exception>
+#include <QTemporaryFile>
+#include <filesystem>
 #include <memory>
 
-#ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/ManifoldGeometry.h"
-#endif
-
-#include "core/Tree.h"
-#include "core/progress.h"
-#include "geometry/GeometryEvaluator.h"
-#include "utils/exceptions.h"
+#include "core/AST.h"
+#include "geometry/PolySet.h"
+#include "io/import.h"
 #include "utils/printutils.h"
-
-#ifdef ENABLE_PYTHON
-#include "python/python_public.h"
-#endif
 
 CGALWorker::CGALWorker()
 {
+  this->sourceFile = nullptr;
   this->process = new QProcess();
+  connect(this->process, &QProcess::readyReadStandardOutput, this, &CGALWorker::processOutput);
+  startProcess();
+}
+
+void CGALWorker::startProcess()
+{
   this->process->start(QCoreApplication::applicationFilePath(), {"--compute-worker"});
   if (!this->process->waitForStarted()) {
     LOG(message_group::Error, "Could not start compute worker: %1$s",
         this->process->errorString().toStdString());
   }
-
-  this->tree = nullptr;
-  this->thread = new QThread();
-  if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
-  connect(this->thread, &QThread::started, this, &CGALWorker::work);
-  moveToThread(this->thread);
 }
 
 CGALWorker::~CGALWorker()
 {
-  this->thread->quit();
-  this->thread->wait();
-  delete this->thread;
-
   this->process->write("quit\n");
   if (!this->process->waitForFinished(1000)) {
     this->process->kill();
     this->process->waitForFinished();
   }
   delete this->process;
+  delete this->sourceFile;
+  if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
 }
 
 qint64 CGALWorker::processId() const
@@ -55,47 +46,46 @@ qint64 CGALWorker::processId() const
   return this->process->processId();
 }
 
-void CGALWorker::start(const Tree& tree)
+void CGALWorker::start(const QString& source, const QString& filename)
 {
-#ifdef ENABLE_PYTHON
-  python_unlock();
-#endif
-  this->tree = &tree;
-  this->thread->start();
+  delete this->sourceFile;
+  if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
+
+  const auto directory = filename.isEmpty() ? QDir::tempPath() : QFileInfo(filename).absolutePath();
+  this->sourceFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.scad");
+  if (!this->sourceFile->open()) {
+    LOG(message_group::Error, "Could not create compute worker input: %1$s",
+        this->sourceFile->errorString().toStdString());
+    emit done({});
+    return;
+  }
+  this->sourceFile->write(source.toUtf8());
+  this->sourceFile->flush();
+  this->resultPath = this->sourceFile->fileName() + ".off";
+  this->process->write(
+    QString("render\t%1\t%2\n").arg(this->sourceFile->fileName(), this->resultPath).toUtf8());
 }
 
-void CGALWorker::work()
+void CGALWorker::cancel()
 {
-  // this is a worker thread: we don't want any exceptions escaping and crashing the app.
-#ifdef ENABLE_PYTHON
-  python_lock();
-#endif
-  std::shared_ptr<const Geometry> root_geom;
-  try {
-    GeometryEvaluator evaluator(*this->tree);
-    root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
-
-#ifdef ENABLE_MANIFOLD
-    if (auto manifold = std::dynamic_pointer_cast<const ManifoldGeometry>(root_geom)) {
-      // calling status forces evaluation
-      // we should complete evaluation within the worker thread, so computation
-      // will not block the GUI.
-      if (manifold->getManifold().Status() != manifold::Manifold::Error::NoError)
-        LOG(message_group::Error, "Rendering cancelled due to unknown manifold error.");
-    }
-#endif
-  } catch (const ProgressCancelException& e) {
-    LOG("Rendering cancelled.");
-  } catch (const HardWarningException& e) {
-    LOG("Rendering cancelled on first warning.");
-  } catch (const std::exception& e) {
-    LOG(message_group::Error, "Rendering cancelled by exception %1$s", e.what());
-  } catch (...) {
-    LOG(message_group::Error, "Rendering cancelled by unknown exception.");
+  if (this->process->state() != QProcess::NotRunning) {
+    this->process->kill();
+    this->process->waitForFinished();
   }
-#ifdef ENABLE_PYTHON
-  python_unlock();
-#endif
-  emit done(root_geom);
-  thread->quit();
+  startProcess();
+  emit done({});
+}
+
+void CGALWorker::processOutput()
+{
+  while (this->process->canReadLine()) {
+    const auto response = this->process->readLine().trimmed();
+    if (response == "ready" || response == "pong") continue;
+    if (response == "done") {
+      auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
+      emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
+    } else if (response == "error") {
+      emit done({});
+    }
+  }
 }

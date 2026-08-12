@@ -1,9 +1,8 @@
 #pragma once
 
 #include <QObject>
+#include <QString>
 #include <memory>
-
-class Tree;
 
 class CGALWorker : public QObject
 {
@@ -15,16 +14,18 @@ public:
   qint64 processId() const;
 
 public slots:
-  void start(const Tree& tree);
+  void start(const QString& source, const QString& filename);
+  void cancel();
 
 protected slots:
-  void work();
+  void processOutput();
 
 signals:
   void done(std::shared_ptr<const class Geometry>);
 
 protected:
-  class QThread *thread;
   class QProcess *process;
-  const class Tree *tree;
+  class QTemporaryFile *sourceFile;
+  QString resultPath;
+  void startProcess();
 };

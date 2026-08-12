@@ -5,6 +5,7 @@
 #include <QTest>
 
 #include "gui/OpenSCADApp.h"
+#include "gui/ProgressWidget.h"
 #include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
@@ -59,4 +60,30 @@ void TestMainWindow::checkEachWindowHasAComputeWorker()
     QVERIFY(candidate->computeWorkerProcessId() != firstWorker);
     candidate->close();
   }
+}
+
+void TestMainWindow::checkF6UsesComputeWorkerResult()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
+  QCOMPARE(window->rootGeom->getDimension(), 3u);
+}
+
+void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
+{
+  restoreWindowInitialState();
+  const QString source = "for (i = [0:100000]) translate([i, 0, 0]) cube(1);";
+  window->activeEditor->setPlainText(source);
+  const auto worker = window->computeWorkerProcessId();
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  progress->cancel();
+
+  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+  QCOMPARE(window->activeEditor->toPlainText(), source);
 }

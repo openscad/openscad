@@ -2007,11 +2007,13 @@ void MainWindow::cgalRender()
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
+  connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
 
   if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
   else return;
 
-  this->cgalworker->start(this->tree);
+  this->cgalworker->start(this->activeEditor->toPlainText(),
+                          QString::fromStdString(this->rootFile->getFullpath()));
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)

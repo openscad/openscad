@@ -9,4 +9,6 @@ private slots:
   void checkOpenTabPropagateToWindow();
   void checkSaveToShouldUpdateWindowTitle();
   void checkEachWindowHasAComputeWorker();
+  void checkF6UsesComputeWorkerResult();
+  void checkCancelRespawnsWorkerAndPreservesEditor();
 };

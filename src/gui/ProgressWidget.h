@@ -27,6 +27,7 @@ private slots:
 
 signals:
   void requestShow();
+  void canceled();
 
 private:
   bool wascanceled;

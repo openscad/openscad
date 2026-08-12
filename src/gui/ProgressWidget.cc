@@ -30,6 +30,7 @@ int ProgressWidget::elapsedTime() const
 void ProgressWidget::cancel()
 {
   this->wascanceled = true;
+  emit canceled();
 }
 
 void ProgressWidget::on_stopButton_clicked()
