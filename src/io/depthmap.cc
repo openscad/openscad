@@ -176,16 +176,6 @@ std::string serialize_camera_json(const CameraParameters& cam)
 
 bool parse_depth_range(const std::string& text, double& near, double& far, std::string& error)
 {
-  const auto comma = text.find(',');
-  if (comma == std::string::npos) {
-    error = "expected 'near,far'";
-    return false;
-  }
-  if (text.find(',', comma + 1) != std::string::npos) {
-    error = "expected exactly two values";
-    return false;
-  }
-
   // stod throws on junk, which used to abort the process; check before parsing.
   auto to_double = [](std::string t, double& out) {
     const auto first = t.find_first_not_of(" \t");
@@ -199,6 +189,30 @@ bool parse_depth_range(const std::string& text, double& near, double& far, std::
       return false;
     }
   };
+
+  const auto comma = text.find(',');
+  if (comma == std::string::npos) {
+    // A single number is the far value with near defaulting to 0 - "everything
+    // past this distance is background" is the common case, and it is what
+    // most users will type first before discovering the near,far form.
+    double f = 0;
+    if (!to_double(text, f)) {
+      error = "expected a number, or 'near,far'";
+      return false;
+    }
+    if (!(0.0 < f)) {
+      error = "near must be less than far";
+      return false;
+    }
+    near = 0.0;
+    far = f;
+    error.clear();
+    return true;
+  }
+  if (text.find(',', comma + 1) != std::string::npos) {
+    error = "expected exactly two values";
+    return false;
+  }
 
   double n = 0, f = 0;
   if (!to_double(text.substr(0, comma), n) || !to_double(text.substr(comma + 1), f)) {

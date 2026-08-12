@@ -140,8 +140,9 @@ bool export_pfm(std::ostream& out, const std::vector<float>& depths, std::uint32
                 std::uint32_t height);
 
 /*!
-   Parse a "near,far" depth range. Returns false and sets `error` for anything
-   unusable - non-numeric, missing comma, inverted, or zero extent - so the
-   caller can report it rather than crash on it or silently drop it.
+   Parse a "near,far" depth range, or a single number as far with near
+   defaulting to 0. Returns false and sets `error` for anything unusable -
+   non-numeric, more than one comma, inverted, or zero extent - so the caller
+   can report it rather than crash on it or silently drop it.
  */
 bool parse_depth_range(const std::string& text, double& near, double& far, std::string& error);

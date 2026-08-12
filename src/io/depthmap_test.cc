@@ -281,11 +281,22 @@ TEST_CASE("a depth range is parsed only when it is usable", "[Depthmap]")
   CHECK(parse_depth_range(" 80 , 90 ", near, far, err));
   CHECK(near == Catch::Approx(80.0));
 
+  // A single number is the far value with near defaulting to 0 - "everything
+  // past this distance is background" is the common case, and typing ",150"
+  // isn't discoverable.
+  CHECK(parse_depth_range("150", near, far, err));
+  CHECK(near == Catch::Approx(0.0));
+  CHECK(far == Catch::Approx(150.0));
+  CHECK(parse_depth_range(" 150 ", near, far, err));
+  CHECK(far == Catch::Approx(150.0));
+
   // Each of these used to be accepted, silently ignored, or fatal.
   CHECK_FALSE(parse_depth_range("abc,def", near, far, err));  // used to abort the process
-  CHECK_FALSE(parse_depth_range("5", near, far, err));        // used to be silently dropped
+  CHECK_FALSE(parse_depth_range("abc", near, far, err));      // single non-numeric value
   CHECK_FALSE(parse_depth_range("100,50", near, far, err));   // inverted; used to paint all white
   CHECK_FALSE(parse_depth_range("80,80", near, far, err));    // zero extent divides by zero
+  CHECK_FALSE(parse_depth_range("0", near, far, err));        // far=0, implicit near=0: zero extent
+  CHECK_FALSE(parse_depth_range("-5", near, far, err));       // far<0, implicit near=0: inverted
   CHECK_FALSE(parse_depth_range("", near, far, err));
   CHECK_FALSE(parse_depth_range("80,", near, far, err));
   CHECK_FALSE(parse_depth_range("80,90,100", near, far, err));
