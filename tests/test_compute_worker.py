@@ -2,6 +2,8 @@
 
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 
 def main():
@@ -18,6 +20,16 @@ def main():
         worker.stdin.flush()
         assert worker.stdout.readline().strip() == "pong"
         assert worker.poll() is None
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "model.scad"
+            result = Path(directory) / "result.off"
+            source.write_text("cube(1);\n")
+            worker.stdin.write(f"render\t{source}\t{result}\n")
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "done"
+            assert result.read_text().startswith("OFF\n8 6 0\n")
+
         worker.stdin.write("quit\n")
         worker.stdin.flush()
         assert worker.wait(timeout=5) == 0
