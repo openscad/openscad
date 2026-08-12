@@ -101,7 +101,7 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
     for (unsigned int x = 0; x < width; ++x) {
       long idx = 4l * (y * width + x);
       double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-      double z = 100.0 / 255 * (invert ? 1 - pixel : pixel);
+      double z = 100.0 / 255 * (invert ? 255.0 - pixel : pixel);
       data[x + (width * (height - 1 - y))] = z;
       min_val = std::min(z, min_val);
     }

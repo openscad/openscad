@@ -77,5 +77,36 @@ TEST_CASE("SurfaceNode 8-bit and 16-bit PNG import", "[core][SurfaceNode]")
     fs::remove(path_16bit);
   }
 
+  SECTION("invert scales identically for 8-bit and 16-bit inputs")
+  {
+    auto path_8bit = (tmp_dir / "test_invert_8bit.png").string();
+    auto path_16bit = (tmp_dir / "test_invert_16bit.png").string();
+
+    std::vector<unsigned char> img_8bit = {64};
+    std::vector<unsigned char> png_8bit;
+    REQUIRE(lodepng::encode(png_8bit, img_8bit, 1, 1, LCT_GREY, 8) == 0);
+    lodepng::save_file(png_8bit, path_8bit);
+
+    // Not a multiple of 257, so lodepng cannot silently re-encode it as 8-bit grey.
+    const uint16_t v = 16449;
+    std::vector<unsigned char> img_16bit = {static_cast<unsigned char>((v >> 8) & 0xFF),
+                                            static_cast<unsigned char>(v & 0xFF)};
+    std::vector<unsigned char> png_16bit;
+    REQUIRE(lodepng::encode(png_16bit, img_16bit, 1, 1, LCT_GREY, 16) == 0);
+    lodepng::save_file(png_16bit, path_16bit);
+
+    SurfaceNode node;
+    node.invert = true;
+    img_data_t data_8 = node.read_png_or_dat(path_8bit);
+    img_data_t data_16 = node.read_png_or_dat(path_16bit);
+
+    // invert must mirror about the top of the range, not about 1.0.
+    CHECK(data_8[0] == Catch::Approx(100.0 / 255.0 * (255.0 - 64.0)).margin(1e-4));
+    CHECK(data_16[0] == Catch::Approx(100.0 / 65535.0 * (65535.0 - v)).margin(1e-4));
+
+    fs::remove(path_8bit);
+    fs::remove(path_16bit);
+  }
+
   fs::remove_all(tmp_dir);
 }
