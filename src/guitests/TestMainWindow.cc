@@ -1,5 +1,6 @@
 #include "TestMainWindow.h"
 
+#include <QElapsedTimer>
 #include <QString>
 #include <QStringList>
 #include <QTest>
@@ -79,7 +80,10 @@ void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
   window->activeEditor->setPlainText(source);
   const auto worker = window->computeWorkerProcessId();
 
+  QElapsedTimer dispatch;
+  dispatch.start();
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QVERIFY2(dispatch.elapsed() < 250, "F6 parsed or evaluated source in the GUI process");
   auto *progress = window->findChild<ProgressWidget *>();
   QVERIFY(progress != nullptr);
   progress->cancel();
