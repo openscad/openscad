@@ -245,6 +245,17 @@ void GLView::paintGL()
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
 
+  if (this->showdepth) {
+    // No geometry is infinitely far, exactly like the depthmap export's
+    // background pixels (which fall out for free there, since the exporter
+    // only ever reads the depth buffer). The far end of the viewport's own
+    // fog is black, so the background must read as black too, not the color
+    // scheme's normal gradient - otherwise "far" means two different things
+    // depending on whether a pixel happened to hit geometry.
+    bgcol = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    bgstopcol = bgcol;
+  }
+
   glClearColor(bgcol.r(), bgcol.g(), bgcol.b(), 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
