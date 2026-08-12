@@ -15,6 +15,7 @@ GeometryCache *GeometryCache::inst = nullptr;
 
 std::shared_ptr<const Geometry> GeometryCache::get(const std::string& id) const
 {
+  std::shared_lock lock(mutex);
   const auto& geom = this->cache[id]->geom;
 #ifdef DEBUG
   PRINTDB("Geometry Cache hit: %s (%d bytes)", id.substr(0, 40) % (geom ? geom->memsize() : 0));
@@ -24,6 +25,7 @@ std::shared_ptr<const Geometry> GeometryCache::get(const std::string& id) const
 
 bool GeometryCache::insert(const std::string& id, const std::shared_ptr<const Geometry>& geom)
 {
+  std::unique_lock lock(mutex);
   auto inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
 #if defined(ENABLE_CGAL) && defined(DEBUG)
   assert(!dynamic_cast<const CGALNefGeometry *>(geom.get()));
@@ -35,26 +37,31 @@ bool GeometryCache::insert(const std::string& id, const std::shared_ptr<const Ge
 
 size_t GeometryCache::size() const
 {
+  std::shared_lock lock(mutex);
   return cache.size();
 }
 
 size_t GeometryCache::totalCost() const
 {
+  std::shared_lock lock(mutex);
   return cache.totalCost();
 }
 
 size_t GeometryCache::maxSizeMB() const
 {
+  std::shared_lock lock(mutex);
   return this->cache.maxCost() / (1024ul * 1024ul);
 }
 
 void GeometryCache::setMaxSizeMB(size_t limit)
 {
+  std::unique_lock lock(mutex);
   this->cache.setMaxCost(limit * 1024ul * 1024ul);
 }
 
 void GeometryCache::print()
 {
+  std::shared_lock lock(mutex);
   LOG("Geometries in cache: %1$d", this->cache.size());
   LOG("Geometry cache size in bytes: %1$d", this->cache.totalCost());
 }

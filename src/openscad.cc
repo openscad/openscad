@@ -159,8 +159,9 @@ private:
 
 struct AnimateArgs {
   unsigned frames = 0;
-  unsigned num_shards = 1;
   unsigned shard = 1;
+  unsigned num_shards = 1;
+  unsigned threads = 1;
 };
 
 struct CommandLine {
@@ -298,6 +299,10 @@ AnimateArgs get_animate(const po::variables_map& vm)
   if (vm.count("animate")) {
     animate.frames = vm["animate"].as<unsigned>();
   }
+  if (vm.count("animate-threads")) {
+    animate.threads = vm["animate-threads"].as<unsigned>();
+    if (animate.threads == 0) animate.threads = 1;
+  }
   if (vm.count("animate_sharding")) {
     std::vector<std::string> strs;
     boost::split(strs, vm["animate_sharding"].as<std::string>(), boost::is_any_of("/"));
@@ -387,24 +392,22 @@ Camera get_camera(const po::variables_map& vm)
   return camera;
 }
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
-              SourceFile *root_file)
+struct ASTResult {
+  std::shared_ptr<AbstractNode> root_node;
+  std::shared_ptr<const FileContext> file_context;
+  std::string document_root;
+};
+
+ASTResult do_ast_evaluation(const CommandLine& cmd, const RenderVariables& render_variables,
+                            SourceFile *root_file, EvaluationSession& session,
+                            ContextHandle<BuiltinContext>& builtin_context)
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
-  // Avoid possibility of fs::absolute throwing when passed an empty path
   auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
-
-  // set CWD relative to source file
   fs::current_path(fparent);
 
-  EvaluationSession session{fparent.string()};
-  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   render_variables.applyToContext(builtin_context);
-
-#ifdef DEBUG
-  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
-#endif
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
@@ -420,13 +423,31 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
 #endif
 
+  fs::current_path(cmd.original_path);
+  return {absolute_root_node, file_context, builtin_context->documentRoot()};
+}
+
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
+              SourceFile *root_file)
+{
+  auto filename_str = fs::path(cmd.output_file).generic_string();
+  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
+  auto fparent = fpath.parent_path();
+
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+
+  ASTResult ast = do_ast_evaluation(cmd, render_variables, root_file, session, builtin_context);
+  std::shared_ptr<AbstractNode> absolute_root_node = ast.root_node;
+  std::shared_ptr<const FileContext> file_context = ast.file_context;
+
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
   }
 
-  // restore CWD after module instantiation finished
-  fs::current_path(cmd.original_path);
+  // set CWD relative to source file
+  fs::current_path(fparent);
 
   // Do we have an explicit root node (! modifier)?
   std::shared_ptr<const AbstractNode> root_node;
@@ -435,8 +456,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     root_node = absolute_root_node;
   }
   if (nextLocation) {
-    LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(),
-        "More than one Root Modifier (!)");
+    LOG(message_group::Warning, *nextLocation, ast.document_root, "More than one Root Modifier (!)");
   }
   Tree tree(root_node, fparent.string());
 
@@ -654,31 +674,143 @@ int cmdline(const CommandLine& cmd)
     // export the requested number of animated frames
     const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames) / cmd.animate.num_shards;
     const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames) / cmd.animate.num_shards;
+
+    // Phase 1: Sequential AST Evaluation
+    LOG("Evaluating AST for all frames sequentially...");
+    std::vector<std::unique_ptr<EvaluationSession>> frame_sessions;
+    std::vector<ContextHandle<BuiltinContext>> frame_contexts;
+    std::vector<ASTResult> ast_results;
+    std::vector<RenderVariables> frame_rvs;
+    std::vector<CommandLine> frame_cmds;
+
     for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
-      render_variables.time = frame * (1.0 / cmd.animate.frames);
+      RenderVariables rv = render_variables;
+      rv.time = frame * (1.0 / cmd.animate.frames);
+      frame_rvs.push_back(rv);
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
-
       auto frame_file = fs::path(cmd.output_file);
       auto extension = frame_file.extension();
       frame_file.replace_extension();
       frame_file += oss.str();
       frame_file.replace_extension(extension);
-      std::string const frame_str = frame_file.generic_string();
-
-      LOG("Exporting %1$s...", cmd.filename);
 
       CommandLine frame_cmd = cmd;
-      frame_cmd.output_file = frame_str;
+      frame_cmd.output_file = frame_file.generic_string();
+      frame_cmds.push_back(frame_cmd);
 
-      int const r = do_export(frame_cmd, render_variables, export_format, root_file);
-      if (r != 0) {
-        return r;
+      auto fpath =
+        frame_cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(frame_cmd.filename));
+      auto fparent = fpath.parent_path();
+
+      auto session = std::make_unique<EvaluationSession>(fparent.string());
+      ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(session.get())};
+
+      ast_results.push_back(do_ast_evaluation(frame_cmd, rv, root_file, *session, builtin_context));
+
+      frame_sessions.push_back(std::move(session));
+      frame_contexts.push_back(std::move(builtin_context));
+    }
+
+    // Phase 2: Parallel Geometry & Rendering
+    LOG("Rendering frames...");
+    std::vector<std::thread> threads;
+    std::atomic<int> exit_code{0};
+
+    // Helper to run the rest of do_export for a pre-evaluated AST
+    auto render_frame = [&](size_t idx) {
+      const CommandLine& fcmd = frame_cmds[idx];
+      const RenderVariables& frv = frame_rvs[idx];
+      ASTResult ast = ast_results[idx];
+
+      auto fpath = fcmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(fcmd.filename));
+      auto fparent = fpath.parent_path();
+
+      Camera camera = fcmd.camera;
+      if (ast.file_context) {
+        camera.updateView(ast.file_context, true);
+      }
+
+      fs::current_path(fparent);
+      std::shared_ptr<const AbstractNode> root_node;
+      const Location *nextLocation = nullptr;
+      if (!(root_node = find_root_tag(ast.root_node, &nextLocation))) {
+        root_node = ast.root_node;
+      }
+      Tree tree(root_node, fparent.string());
+
+      // start measuring render time
+      RenderStatistic renderStatistic;
+      GeometryEvaluator geomevaluator(tree);
+      std::unique_ptr<OffscreenView> glview;
+      std::shared_ptr<const Geometry> root_geom;
+      if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) &&
+          (cmd.viewOptions.renderer == RenderType::OPENCSG ||
+           cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+        // OpenCSG or throwntogether png -> just render a preview
+        glview = prepare_preview(tree, fcmd.viewOptions, camera);
+        if (!glview) {
+          exit_code = 1;
+          return;
+        }
+      } else {
+        constexpr bool allownef = true;
+        root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
+        if (!root_geom) root_geom = std::make_shared<PolySet>(3);
+      }
+
+      const std::string input_filename = fcmd.is_stdin ? "<stdin>" : fcmd.filename;
+      const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
+      ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
+                                               input_filename, &camera, fcmd.exportOptions);
+      if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, fcmd.is_stdout, fcmd.output_file)) {
+        exit_code = 1;
+        return;
+      }
+
+      if (export_format == FileFormat::PNG) {
+        bool success = true;
+        bool const wrote = with_output(
+          fcmd.is_stdout, fcmd.output_file,
+          [&success, &root_geom, &fcmd, &camera, &glview](std::ostream& stream) {
+            if (fcmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
+                fcmd.viewOptions.renderer == RenderType::GEOMETRY) {
+              success = export_png(root_geom, fcmd.viewOptions, camera, stream);
+            } else {
+              success = export_png(*glview, stream);
+            }
+          },
+          std::ios::out | std::ios::binary);
+        if (!success || !wrote) {
+          exit_code = 1;
+          return;
+        }
+      }
+
+      renderStatistic.printAll(root_geom, camera, fcmd.summaryOptions, fcmd.summaryFile);
+    };
+
+    if (cmd.animate.threads > 1 && !ast_results.empty()) {
+      // Phase 2: Sequential render of Frame 0 to prime caches
+      render_frame(0);
+
+      // Phase 3: Parallel render of remaining frames
+      for (size_t i = 1; i < ast_results.size(); ++i) {
+        if (threads.size() >= cmd.animate.threads) {
+          threads.front().join();
+          threads.erase(threads.begin());
+        }
+        threads.emplace_back(render_frame, i);
+      }
+      for (auto& t : threads) t.join();
+    } else {
+      for (size_t i = 0; i < ast_results.size(); ++i) {
+        render_frame(i);
       }
     }
 
-    return 0;
+    return exit_code.load();
   }
 }
 
@@ -889,6 +1021,7 @@ int openscad_main(int argc, char **argv)
     ("preview", po::value<std::string>()->implicit_value(""),
       "[=throwntogether] -for ThrownTogether preview png")
     ("animate", po::value<unsigned>(), "export N animated frames")
+    ("animate-threads", po::value<unsigned>(), "number of threads to use for parallel animation rendering")
     ("animate_sharding", po::value<std::string>(),
       "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
       "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "

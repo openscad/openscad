@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <shared_mutex>
 
 #include "Cache.h"
 #include "geometry/Geometry.h"
@@ -25,10 +26,17 @@ public:
   size_t totalCost() const;
   size_t maxSizeMB() const;
   void setMaxSizeMB(size_t limit);
-  void clear() { cache.clear(); }
+
+  void clear()
+  {
+    std::unique_lock lock(mutex);
+    cache.clear();
+  }
   void print();
 
 private:
+  mutable std::shared_mutex mutex;
+
   static GeometryCache *inst;
 
   struct cache_entry {
