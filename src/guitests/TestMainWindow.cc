@@ -97,12 +97,12 @@ void TestMainWindow::checkCrashedWorkerRespawns()
 {
   restoreWindowInitialState();
   const auto worker = window->computeWorkerProcessId();
+  QVERIFY(worker > 0);
 #ifdef Q_OS_WIN
   QCOMPARE(QProcess::execute("taskkill", {"/PID", QString::number(worker), "/F"}), 0);
 #else
   QCOMPARE(QProcess::execute("/bin/kill", {"-KILL", QString::number(worker)}), 0);
 #endif
-  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() > 0 &&
-                             window->computeWorkerProcessId() != worker,
-                           5000);
+  QTRY_VERIFY_WITH_TIMEOUT(
+    window->computeWorkerProcessId() > 0 && window->computeWorkerProcessId() != worker, 5000);
 }

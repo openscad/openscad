@@ -18,6 +18,14 @@ CGALWorker::CGALWorker()
   this->process = new QProcess();
   this->process->setProcessChannelMode(QProcess::ForwardedErrorChannel);
   connect(this->process, &QProcess::readyReadStandardOutput, this, &CGALWorker::processOutput);
+  connect(this->process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+          [this](int, QProcess::ExitStatus) {
+            if (this->stopping) return;
+            const auto interrupted = this->busy;
+            this->busy = false;
+            startProcess();
+            if (interrupted) emit done({});
+          });
   startProcess();
 }
 
@@ -32,6 +40,7 @@ void CGALWorker::startProcess()
 
 CGALWorker::~CGALWorker()
 {
+  this->stopping = true;
   this->process->write("quit\n");
   if (!this->process->waitForFinished(1000)) {
     this->process->kill();
@@ -63,17 +72,21 @@ void CGALWorker::start(const QString& source, const QString& filename)
   this->sourceFile->write(source.toUtf8());
   this->sourceFile->flush();
   this->resultPath = this->sourceFile->fileName() + ".off";
+  this->busy = true;
   this->process->write(
     QString("render\t%1\t%2\n").arg(this->sourceFile->fileName(), this->resultPath).toUtf8());
 }
 
 void CGALWorker::cancel()
 {
+  this->stopping = true;
   if (this->process->state() != QProcess::NotRunning) {
     this->process->kill();
     this->process->waitForFinished();
   }
+  this->busy = false;
   startProcess();
+  this->stopping = false;
   emit done({});
 }
 
@@ -83,9 +96,11 @@ void CGALWorker::processOutput()
     const auto response = this->process->readLine().trimmed();
     if (response == "ready" || response == "pong") continue;
     if (response == "done") {
+      this->busy = false;
       auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
       emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
     } else if (response == "error") {
+      this->busy = false;
       emit done({});
     }
   }

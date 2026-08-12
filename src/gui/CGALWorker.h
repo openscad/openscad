@@ -27,5 +27,7 @@ protected:
   class QProcess *process;
   class QTemporaryFile *sourceFile;
   QString resultPath;
+  bool busy = false;
+  bool stopping = false;
   void startProcess();
 };

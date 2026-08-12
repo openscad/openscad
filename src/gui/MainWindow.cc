@@ -1986,18 +1986,14 @@ void MainWindow::on_designActionRender_triggered()
 {
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
-
-  prepareCompile("cgalRender", true, false);
-  compile(false);
+  setCurrentOutput();
+  autoReloadTimer->stop();
+  this->renderStatistic.start();
+  cgalRender();
 }
 
 void MainWindow::cgalRender()
 {
-  if (!this->rootFile || !this->rootNode) {
-    compileEnded();
-    return;
-  }
-
   this->qglview->setRenderer(nullptr);
   this->geomRenderer = nullptr;
   rootGeom.reset();
@@ -2009,11 +2005,9 @@ void MainWindow::cgalRender()
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
   connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
 
-  if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
-  else return;
+  if (isClosing) return;
 
-  this->cgalworker->start(this->activeEditor->toPlainText(),
-                          QString::fromStdString(this->rootFile->getFullpath()));
+  this->cgalworker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath);
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
