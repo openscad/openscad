@@ -1552,6 +1552,24 @@ if(NOT ENABLE_MANIFOLD)
   )
 endif()
 
+######################
+# Parallel animation #
+######################
+
+# Checks that --animate-threads produces the same frames, in the same places, as a
+# sequential --animate run. Runs from a working directory other than the .scad file's,
+# which is what catches a worker thread changing the process working directory.
+if(OPENSCAD_BINPATH)
+  add_test(NAME parallel_animation
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_parallel_animation.py
+      ${OPENSCAD_BINPATH}
+      ${TEST_SCAD_DIR}/misc/parallel-animation.scad
+      ${CMAKE_CURRENT_BINARY_DIR}/parallel_animation_output
+  )
+endif()
+
 ####################
 # Extra Debug Info #
 ####################
