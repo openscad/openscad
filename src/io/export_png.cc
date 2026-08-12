@@ -12,6 +12,8 @@
 #include "glview/RenderSettings.h"
 #include "glview/Renderer.h"
 #include "io/export.h"
+#include "io/VideoEncoder.h"
+#include "io/imageutils.h"
 #include "utils/printutils.h"
 
 #ifndef NULLGL
@@ -37,17 +39,20 @@ void setupCamera(Camera& cam, const BoundingBox& bbox)
 
 }  // namespace
 
-bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
-                Camera& camera, std::ostream& output)
+namespace {
+
+//! Renders `root_geom` offscreen and returns the painted view, or null on failure.
+std::unique_ptr<OffscreenView> prepare_geom_view(const std::shared_ptr<const Geometry>& root_geom,
+                                                 const ViewOptions& options, Camera& camera)
 {
   assert(root_geom != nullptr);
-  PRINTD("export_png geom");
+  PRINTD("prepare_geom_view");
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
   } catch (const OffscreenViewException& ex) {
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
-    return false;
+    return nullptr;
   }
   std::shared_ptr<Renderer> geomRenderer;
 #if defined(USE_POLYSET_FOR_CGAL)
@@ -74,6 +79,16 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
   glview->paintGL();
+  return glview;
+}
+
+}  // namespace
+
+bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, std::ostream& output)
+{
+  const auto glview = prepare_geom_view(root_geom, options, camera);
+  if (!glview) return false;
   glview->save(output);
   return true;
 }
@@ -133,6 +148,30 @@ bool export_png(const OffscreenView& glview, std::ostream& output)
   return true;
 }
 
+bool export_video_frame(const OffscreenView& glview, VideoEncoder& encoder)
+{
+  if (!glview.ctx) return false;
+  const auto pixels = glview.ctx->getFramebuffer();
+  const size_t width = glview.ctx->width();
+  const size_t height = glview.ctx->height();
+  const size_t samplesPerPixel = 4;  // R, G, B and A
+  if (pixels.size() < samplesPerPixel * width * height) return false;
+
+  // Images read from OpenGL buffers are upside-down.
+  std::vector<uint8_t> flipped(samplesPerPixel * width * height);
+  flip_image(pixels.data(), flipped.data(), samplesPerPixel, width, height);
+
+  return encoder.addFrame(flipped.data(), samplesPerPixel * width);
+}
+
+bool export_video_frame(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                        Camera& camera, VideoEncoder& encoder)
+{
+  const auto glview = prepare_geom_view(root_geom, options, camera);
+  if (!glview) return false;
+  return export_video_frame(*glview, encoder);
+}
+
 #else  // NULLGL
 
 bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
@@ -145,6 +184,15 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   return nullptr;
 }
 bool export_png(const OffscreenView& glview, std::ostream& output)
+{
+  return false;
+}
+bool export_video_frame(const OffscreenView& glview, VideoEncoder& encoder)
+{
+  return false;
+}
+bool export_video_frame(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                        Camera& camera, VideoEncoder& encoder)
 {
   return false;
 }
