@@ -10,7 +10,7 @@ private slots:
   void checkOpeningLargeFileDoesNotParseInGui();
   void checkSaveToShouldUpdateWindowTitle();
   void checkEachWindowHasAComputeWorker();
-  void checkProcessIsolationCanBeDisabled();
+  void checkProcessIsolationRequiresRestart();
   void checkF6UsesComputeWorkerResult();
   void checkF6UsesCustomizerValues();
   void checkCooperativeCancelKeepsWorker();

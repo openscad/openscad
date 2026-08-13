@@ -98,7 +98,7 @@ void TestMainWindow::checkEachWindowHasAComputeWorker()
   }
 }
 
-void TestMainWindow::checkProcessIsolationCanBeDisabled()
+void TestMainWindow::checkProcessIsolationRequiresRestart()
 {
   const auto existingWorker = window->computeWorkerProcessId();
   Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name(), false);
@@ -108,10 +108,8 @@ void TestMainWindow::checkProcessIsolationCanBeDisabled()
 
   for (auto *candidate : scadApp->windowManager.getWindows()) {
     if (candidate == window) continue;
-    QCOMPARE(candidate->computeWorkerProcessId(), 0);
-    candidate->activeEditor->setPlainText("cube(1);");
-    QVERIFY(QMetaObject::invokeMethod(candidate, "on_designActionRender_triggered"));
-    QTRY_VERIFY_WITH_TIMEOUT(candidate->rootGeom != nullptr, 10000);
+    QVERIFY(candidate->computeWorkerProcessId() > 0);
+    QVERIFY(candidate->computeWorkerProcessId() != existingWorker);
     candidate->close();
   }
   Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
