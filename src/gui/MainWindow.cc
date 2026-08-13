@@ -2001,7 +2001,7 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     auto renderer = std::make_shared<OpenCSGRenderer>(
       this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     this->qglview->makeCurrent();
-    const auto prepared = renderer->prepare(nullptr, [this]() {
+    const auto prepared = renderer->prepare(this->qglview->edge_shader.get(), [this]() {
       QApplication::processEvents();
       this->qglview->makeCurrent();
       return this->progresswidget && !this->progresswidget->wasCanceled();
