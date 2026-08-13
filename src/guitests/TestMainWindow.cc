@@ -293,7 +293,7 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
 {
 #ifdef ENABLE_OPENCSG
   restoreWindowInitialState();
-  window->activeEditor->setPlainText("for (i = [0:4999]) translate([i, 0, 0]) cube(1);");
+  window->activeEditor->setPlainText("for (i = [0:999]) translate([i, 0, 0]) cube(1);");
 
   QTimer cancelWhenPreparing;
   cancelWhenPreparing.setInterval(1);

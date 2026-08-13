@@ -101,17 +101,24 @@ OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
 
 void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
+  prepare(shaderinfo, []() { return true; });
+}
+
+bool OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo,
+                              const std::function<bool()>& shouldContinue)
+{
   if (vertex_state_containers_.empty()) {
     if (root_products_) {
-      createCSGVBOProducts(*root_products_, false, false, shaderinfo);
+      if (!createCSGVBOProducts(*root_products_, false, false, shaderinfo, shouldContinue)) return false;
     }
     if (background_products_) {
-      createCSGVBOProducts(*background_products_, false, true, shaderinfo);
+      if (!createCSGVBOProducts(*background_products_, false, true, shaderinfo, shouldContinue)) return false;
     }
     if (highlights_products_) {
-      createCSGVBOProducts(*highlights_products_, true, false, shaderinfo);
+      if (!createCSGVBOProducts(*highlights_products_, true, false, shaderinfo, shouldContinue)) return false;
     }
   }
+  return true;
 }
 
 void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
@@ -178,13 +185,15 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 // reuse VBOs, but that requires some more careful state management.
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
-void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool highlight_mode,
+bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool highlight_mode,
                                            bool background_mode,
-                                           const ShaderUtils::ShaderInfo *shaderinfo)
+                                           const ShaderUtils::ShaderInfo *shaderinfo,
+                                           const std::function<bool()>& shouldContinue)
 {
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = true;
   for (const auto& product : products.products) {
+    if (!shouldContinue()) return false;
     std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
 
     Color4f last_color;
@@ -196,11 +205,13 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
 
     size_t num_vertices = 0;
     for (const auto& csgobj : product.intersections) {
+      if (!shouldContinue()) return false;
       if (csgobj.leaf->polyset) {
         num_vertices += calcNumVertices(csgobj);
       }
     }
     for (const auto& csgobj : product.subtractions) {
+      if (!shouldContinue()) return false;
       if (csgobj.leaf->polyset) {
         num_vertices += calcNumVertices(csgobj);
       }
@@ -351,6 +362,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     vertex_state_containers_.push_back(std::move(vertex_state_container));
   }
 #endif  // ENABLE_OPENCSG
+  return true;
 }
 
 BoundingBox OpenCSGRenderer::getBoundingBox() const

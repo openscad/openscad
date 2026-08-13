@@ -15,6 +15,7 @@
 #include "glview/VBORenderer.h"
 
 #include <cstddef>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -86,13 +87,15 @@ public:
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override = default;
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
+  bool prepare(const ShaderUtils::ShaderInfo *shaderinfo, const std::function<bool()>& shouldContinue);
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 
 private:
-  void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
-                            const ShaderUtils::ShaderInfo *shaderinfo);
+  bool createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
+                            const ShaderUtils::ShaderInfo *shaderinfo,
+                            const std::function<bool()>& shouldContinue);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;
