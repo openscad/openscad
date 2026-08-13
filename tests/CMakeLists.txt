@@ -1580,6 +1580,14 @@ if(OPENSCAD_BINPATH)
       ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker.py
       ${OPENSCAD_BINPATH}
   )
+  if(ENABLE_PYTHON)
+    add_test(NAME compute_worker_python
+      CONFIGURATIONS Default
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_python.py
+        ${OPENSCAD_BINPATH}
+    )
+  endif()
 endif()
 ####################
 # Extra Debug Info #
