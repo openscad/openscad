@@ -120,6 +120,7 @@
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
 #include "gui/ComputeWorker.h"
+#include "gui/GeometryWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
 #include "gui/ai/AIDock.h"
@@ -614,11 +615,12 @@ void MainWindow::updateReorderMode(bool reorderMode)
 MainWindow::~MainWindow()
 {
   delete this->computeWorker;
+  delete this->geometryWorker;
 }
 
 qint64 MainWindow::computeWorkerProcessId() const
 {
-  return this->computeWorker->processId();
+  return this->computeWorker ? this->computeWorker->processId() : 0;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -1810,6 +1812,10 @@ void MainWindow::parseTopLevelDocument()
 
 void MainWindow::checkAutoReload()
 {
+  if (!this->processIsolation) {
+    if (!activeEditor->filepath.isEmpty()) actionReloadRenderPreview();
+    return;
+  }
   if (activeEditor->filepath.isEmpty()) return;
   if (fileChangedOnDisk()) {
     on_designActionReloadAndPreview_triggered();
@@ -1856,6 +1862,10 @@ bool MainWindow::checkEditorModified()
 
 void MainWindow::on_designActionReloadAndPreview_triggered()
 {
+  if (!this->processIsolation) {
+    actionReloadRenderPreview();
+    return;
+  }
   if (GuiLocker::isLocked()) return;
   if (fileChangedOnDisk()) {
     if (!checkEditorModified()) return;
@@ -1915,6 +1925,18 @@ void MainWindow::on_designActionPreview_triggered()
 
 void MainWindow::actionRenderPreview()
 {
+  if (!this->processIsolation) {
+    static bool previewRequested;
+    previewRequested = true;
+    if (GuiLocker::isLocked()) return;
+    GuiLocker::lock();
+    previewRequested = false;
+    resetMeasurementsState(false, "Render (not preview) to enable measurements");
+    prepareCompile("csgRender", !animateDock->isVisible(), true);
+    compile(false, false);
+    if (previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+    return;
+  }
   this->previewRequested = true;
 
   if (GuiLocker::isLocked()) return;
@@ -2076,6 +2098,12 @@ void MainWindow::on_designAction3DPrint_triggered()
 void MainWindow::on_designActionRender_triggered()
 {
   if (GuiLocker::isLocked()) return;
+  if (!this->processIsolation) {
+    GuiLocker::lock();
+    prepareCompile("cgalRender", true, false);
+    compile(false);
+    return;
+  }
   bool python;
   QString pythonVenv;
   if (!prepareWorkerPython(python, pythonVenv)) return;
@@ -2083,10 +2111,28 @@ void MainWindow::on_designActionRender_triggered()
   setCurrentOutput();
   autoReloadTimer->stop();
   this->renderStatistic.start();
-  cgalRender(python, pythonVenv);
+  isolatedRender(python, pythonVenv);
 }
 
-void MainWindow::cgalRender(bool python, const QString& pythonVenv)
+void MainWindow::cgalRender()
+{
+  if (!this->rootFile || !this->rootNode) {
+    compileEnded();
+    return;
+  }
+  this->qglview->setRenderer(nullptr);
+  this->geomRenderer = nullptr;
+  rootGeom.reset();
+  LOG("Rendering Polygon Mesh using %1$s...",
+      renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
+  this->progresswidget = new ProgressWidget(this);
+  connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
+  if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
+  else return;
+  this->geometryWorker->start(this->tree);
+}
+
+void MainWindow::isolatedRender(bool python, const QString& pythonVenv)
 {
   this->qglview->setRenderer(nullptr);
   this->geomRenderer = nullptr;
@@ -3269,7 +3315,19 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
-  reloadedEditor->parameterWidget->setEnabled(false);
+  if (this->processIsolation) {
+    reloadedEditor->parameterWidget->setEnabled(false);
+  } else {
+    try {
+      parseDocument(reloadedEditor);
+    } catch (const HardWarningException&) {
+      exceptionCleanup();
+    } catch (const std::exception& ex) {
+      UnknownExceptionCleanup(ex.what());
+    } catch (...) {
+      UnknownExceptionCleanup();
+    }
+  }
 
   // updates the content of the Recents Files menu to integrate the one possibly
   // associated with the created editor. The reason is that an editor can be created
@@ -3578,34 +3636,40 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  this->computeWorker = new ComputeWorker();
-  connect(this->computeWorker, &ComputeWorker::done, this, &MainWindow::actionRenderDone);
-  connect(this->computeWorker, &ComputeWorker::previewDone, this, &MainWindow::actionPreviewDone);
-  connect(this->computeWorker, &ComputeWorker::progress, this, [this](int permille) {
-    if (this->progresswidget) this->progresswidget->setValue(permille);
-  });
-  connect(this->computeWorker, &ComputeWorker::diagnostic, this, [this](const QString& text) {
-    if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));
-  });
-  connect(this->computeWorker, &ComputeWorker::parametersDiscovered, this,
-          [this](const QString& source, const QString& metadata) {
-            if (this->activeEditor->toPlainText() == source) {
-              this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
-                                                                 source.toStdString());
-            }
-          });
-  connect(this->computeWorker, &ComputeWorker::dependenciesDiscovered, this,
-          [this](const QString& source, const QStringList& dependencies) {
-            if (this->activeEditor->toPlainText() != source) return;
-            this->workerDependencies.clear();
-            for (const auto& path : dependencies) {
-              const QFileInfo info(path);
-              this->workerDependencies[path] = QString("%1.%2.%3")
-                                                 .arg(info.exists())
-                                                 .arg(info.lastModified().toMSecsSinceEpoch())
-                                                 .arg(info.size());
-            }
-          });
+  this->processIsolation = Feature::ExperimentalProcessIsolation.is_enabled();
+  if (!this->processIsolation) {
+    this->geometryWorker = new GeometryWorker();
+    connect(this->geometryWorker, &GeometryWorker::done, this, &MainWindow::actionRenderDone);
+  } else {
+    this->computeWorker = new ComputeWorker();
+    connect(this->computeWorker, &ComputeWorker::done, this, &MainWindow::actionRenderDone);
+    connect(this->computeWorker, &ComputeWorker::previewDone, this, &MainWindow::actionPreviewDone);
+    connect(this->computeWorker, &ComputeWorker::progress, this, [this](int permille) {
+      if (this->progresswidget) this->progresswidget->setValue(permille);
+    });
+    connect(this->computeWorker, &ComputeWorker::diagnostic, this, [this](const QString& text) {
+      if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));
+    });
+    connect(this->computeWorker, &ComputeWorker::parametersDiscovered, this,
+            [this](const QString& source, const QString& metadata) {
+              if (this->activeEditor->toPlainText() == source) {
+                this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
+                                                                   source.toStdString());
+              }
+            });
+    connect(this->computeWorker, &ComputeWorker::dependenciesDiscovered, this,
+            [this](const QString& source, const QStringList& dependencies) {
+              if (this->activeEditor->toPlainText() != source) return;
+              this->workerDependencies.clear();
+              for (const auto& path : dependencies) {
+                const QFileInfo info(path);
+                this->workerDependencies[path] = QString("%1.%2.%3")
+                                                   .arg(info.exists())
+                                                   .arg(info.lastModified().toMSecsSinceEpoch())
+                                                   .arg(info.size());
+              }
+            });
+  }
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);

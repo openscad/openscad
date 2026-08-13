@@ -100,7 +100,9 @@ void TestMainWindow::checkEachWindowHasAComputeWorker()
 
 void TestMainWindow::checkProcessIsolationCanBeDisabled()
 {
-  Feature::ExperimentalProcessIsolation.enable(false);
+  const auto existingWorker = window->computeWorkerProcessId();
+  Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name(), false);
+  QCOMPARE(window->computeWorkerProcessId(), existingWorker);
   QVERIFY(QMetaObject::invokeMethod(window, "on_fileActionNewWindow_triggered"));
   QCOMPARE(scadApp->windowManager.getWindows().size(), 2);
 
@@ -112,7 +114,7 @@ void TestMainWindow::checkProcessIsolationCanBeDisabled()
     QTRY_VERIFY_WITH_TIMEOUT(candidate->rootGeom != nullptr, 10000);
     candidate->close();
   }
-  Feature::ExperimentalProcessIsolation.enable(true);
+  Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
 }
 
 void TestMainWindow::checkF6UsesComputeWorkerResult()

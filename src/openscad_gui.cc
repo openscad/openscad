@@ -325,6 +325,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   for (const auto& infile : inputFiles) {
     inputFilesList.append(assemblePath(original_path, infile));
   }
+#ifdef ENABLE_GUI_TESTS
+  if (gui_test != "none") Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
+#endif
   new MainWindow(inputFilesList);
   QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
     QSettingsCached{}.release();

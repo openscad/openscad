@@ -45,6 +45,7 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 
 class BuiltinContext;
 class ComputeWorker;
+class GeometryWorker;
 class CSGNode;
 class CSGProducts;
 class CsgInfo;
@@ -85,6 +86,7 @@ public:
   QTimer *consoleUpdater;
 
   bool isPreview;
+  bool processIsolation = false;
   bool previewRequested = false;
   QMap<QString, QString> workerDependencies;
 
@@ -357,7 +359,8 @@ private slots:
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void actionPreviewDone(const std::shared_ptr<CsgInfo>& products);
-  void cgalRender(bool python, const QString& pythonVenv);
+  void cgalRender();
+  void isolatedRender(bool python, const QString& pythonVenv);
   void handleMeasurementClicked(QAction *clickedAction);
   void on_designCheckValidity_triggered();
   void on_designActionDisplayAST_triggered();
@@ -465,7 +468,8 @@ private:
   bool procevents{false};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
-  ComputeWorker *computeWorker;
+  ComputeWorker *computeWorker = nullptr;
+  GeometryWorker *geometryWorker = nullptr;
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time

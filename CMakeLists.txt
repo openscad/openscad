@@ -1297,6 +1297,7 @@ set(GUI_SOURCES
   src/openscad_gui.cc
   src/gui/AutoUpdater.cc
   src/gui/ComputeWorker.cc
+  src/gui/GeometryWorker.cc
   src/gui/ViewportControl.cc
   src/gui/Console.cc
   src/gui/Dock.cc
@@ -1376,6 +1377,7 @@ set(GUI_HEADERS
     src/gui/AppleEvents.h
     src/gui/AutoUpdater.h
     src/gui/ComputeWorker.h
+    src/gui/GeometryWorker.h
     src/gui/Console.h
     src/gui/Dock.h
     src/gui/Editor.h
