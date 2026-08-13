@@ -7,6 +7,7 @@
 #include <QTemporaryFile>
 #include <QTest>
 #include <QSignalSpy>
+#include <QTimer>
 
 #include "gui/OpenSCADApp.h"
 #include "gui/Console.h"
@@ -286,6 +287,30 @@ void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
   QVERIFY(progress != nullptr);
   progress->cancel();
   QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+}
+
+void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
+{
+#ifdef ENABLE_OPENCSG
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:4999]) translate([i, 0, 0]) cube(1);");
+
+  QTimer cancelWhenPreparing;
+  cancelWhenPreparing.setInterval(1);
+  connect(&cancelWhenPreparing, &QTimer::timeout, window, [this, &cancelWhenPreparing]() {
+    auto *progress = window->findChild<ProgressWidget *>();
+    if (window->previewRenderer && progress) {
+      cancelWhenPreparing.stop();
+      progress->cancel();
+    }
+  });
+  cancelWhenPreparing.start();
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(!cancelWhenPreparing.isActive(), 10000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QVERIFY(window->previewRenderer == nullptr);
+#endif
 }
 
 void TestMainWindow::checkF5UsesComputeWorkerResult()

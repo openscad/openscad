@@ -22,6 +22,7 @@ private slots:
   void checkCrashedWorkerRespawns();
   void checkWorkerErrorDoesNotMarkSourceRendered();
   void checkPreviewDispatchDoesNotBlockGui();
+  void checkOpenCSGPreparationCanBeCanceled();
   void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
   void checkF6UsesCommandLineDefinitions();
