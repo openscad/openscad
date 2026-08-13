@@ -23,6 +23,7 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
 {
   json output = json::array();
   for (const auto& object : chain) {
+    if (!object.leaf || !object.leaf->polyset) continue;
     auto geometry = geometries.find(object.leaf->polyset.get());
     if (geometry == geometries.end()) {
       const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + ".off";
