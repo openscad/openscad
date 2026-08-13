@@ -28,15 +28,7 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
   this->requestDirectory = nullptr;
   this->process = new QProcess();
   connect(this->process, &QProcess::readyReadStandardOutput, this, &ComputeWorker::processOutput);
-  connect(this->process, &QProcess::readyReadStandardError, this, [this] {
-    auto text = QString::fromUtf8(this->process->readAllStandardError());
-    if (this->sourceFile) {
-      text.replace(this->sourceFile->fileName(), this->displayFilename);
-      text.replace(QFileInfo(this->sourceFile->fileName()).fileName(),
-                   QFileInfo(this->displayFilename).fileName());
-    }
-    emit diagnostic(text.trimmed());
-  });
+  connect(this->process, &QProcess::readyReadStandardError, this, &ComputeWorker::processStandardError);
   connect(this->process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
           [this](int, QProcess::ExitStatus) {
             if (this->stopping) return;
@@ -63,6 +55,25 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
             else if (interrupted) emit done({});
           });
   startProcess();
+}
+
+void ComputeWorker::processStandardError()
+{
+  standardErrorBuffer += this->process->readAllStandardError();
+  while (standardErrorBuffer.contains('\n')) {
+    auto line = QString::fromUtf8(standardErrorBuffer.left(standardErrorBuffer.indexOf('\n'))).trimmed();
+    standardErrorBuffer.remove(0, standardErrorBuffer.indexOf('\n') + 1);
+    if (this->sourceFile) {
+      line.replace(this->sourceFile->fileName(), this->displayFilename);
+      line.replace(QFileInfo(this->sourceFile->fileName()).fileName(),
+                   QFileInfo(this->displayFilename).fileName());
+    }
+    auto group = message_group::NONE;
+    if (line.startsWith("ECHO:")) group = message_group::Echo;
+    else if (line.startsWith("WARNING:")) group = message_group::Warning;
+    else if (line.startsWith("ERROR:")) group = message_group::Error;
+    if (!line.isEmpty()) emit output(Message(line.toStdString(), group));
+  }
 }
 
 void ComputeWorker::startProcess()

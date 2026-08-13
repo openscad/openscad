@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "core/customizer/ParameterSet.h"
+#include "utils/printutils.h"
 
 class ComputeWorker : public QObject
 {
@@ -35,6 +36,7 @@ signals:
   void done(std::shared_ptr<const class Geometry>);
   void previewDone(std::shared_ptr<class CsgInfo> products);
   void diagnostic(const QString& text);
+  void output(const Message& message);
   void progress(int permille);
   void parametersDiscovered(const QString& source, const QString& metadata);
   void dependenciesDiscovered(const QString& source, const QStringList& dependencies);
@@ -51,12 +53,14 @@ protected:
   QString displayFilename;
   QString requestSource;
   QByteArray pendingRequest;
+  QByteArray standardErrorBuffer;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   bool ready = false;
   bool busy = false;
   bool stopping = false;
   void cleanupResult();
   void processMetadata();
+  void processStandardError();
   void startProcess();
   void startRequest(const QString& command, const QString& suffix, const QString& source,
                     const QString& filename, const ParameterSet& parameters, size_t normalizationLimit,

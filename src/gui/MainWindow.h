@@ -136,6 +136,8 @@ public:
   qint64 computeWorkerProcessId() const;
 #ifdef ENABLE_GUI_TESTS
   void exitComputeWorkerForTest();
+  int compilationErrorCount() const { return compileErrors; }
+  int compilationWarningCount() const { return compileWarnings; }
 #endif
 
 private:
@@ -474,6 +476,7 @@ private:
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   ComputeWorker *computeWorker = nullptr;
+  bool computeBusy = false;
   GeometryWorker *geometryWorker = nullptr;
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
