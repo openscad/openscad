@@ -14,8 +14,8 @@
 #include "gui/parameter/ParameterWidget.h"
 #include "openscad.h"
 #include "platform/PlatformUtils.h"
-#ifdef ENABLE_PYTHON
 #include "Feature.h"
+#ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif
 
@@ -96,6 +96,23 @@ void TestMainWindow::checkEachWindowHasAComputeWorker()
     QVERIFY(candidate->computeWorkerProcessId() != firstWorker);
     candidate->close();
   }
+}
+
+void TestMainWindow::checkProcessIsolationCanBeDisabled()
+{
+  Feature::ExperimentalProcessIsolation.enable(false);
+  QVERIFY(QMetaObject::invokeMethod(window, "on_fileActionNewWindow_triggered"));
+  QCOMPARE(scadApp->windowManager.getWindows().size(), 2);
+
+  for (auto *candidate : scadApp->windowManager.getWindows()) {
+    if (candidate == window) continue;
+    QCOMPARE(candidate->computeWorkerProcessId(), 0);
+    candidate->activeEditor->setPlainText("cube(1);");
+    QVERIFY(QMetaObject::invokeMethod(candidate, "on_designActionRender_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(candidate->rootGeom != nullptr, 10000);
+    candidate->close();
+  }
+  Feature::ExperimentalProcessIsolation.enable(true);
 }
 
 void TestMainWindow::checkF6UsesComputeWorkerResult()
