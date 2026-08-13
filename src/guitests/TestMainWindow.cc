@@ -143,6 +143,21 @@ void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
   QCOMPARE(window->activeEditor->toPlainText(), source);
 }
 
+void TestMainWindow::checkCooperativeCancelKeepsWorker()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("sphere(1, $fn=31);");
+  const auto worker = window->computeWorkerProcessId();
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  progress->cancel();
+
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QCOMPARE(window->computeWorkerProcessId(), worker);
+}
+
 void TestMainWindow::checkCrashedWorkerRespawns()
 {
   restoreWindowInitialState();

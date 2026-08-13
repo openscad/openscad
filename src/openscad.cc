@@ -190,6 +190,7 @@ struct CommandLine {
   const bool python = false;
   const std::string pythonVenv = {};
   const bool workerProgress = false;
+  const std::string workerCancelFile = {};
 };
 
 namespace {
@@ -452,18 +453,22 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         "More than one Root Modifier (!)");
   }
   Tree tree(root_node, fparent.string());
-  int lastProgress = -1;
+  struct {
+    int lastProgress = -1;
+    const std::string& cancelFile;
+  } workerProgress{-1, cmd.workerCancelFile};
   if (cmd.workerProgress) {
     progress_report_prep(
       root_node,
       [](const std::shared_ptr<const AbstractNode>&, void *userdata, int mark) {
+        auto& progress = *static_cast<decltype(workerProgress) *>(userdata);
+        if (fs::exists(progress.cancelFile)) throw ProgressCancelException();
         const auto permille = std::min(999, static_cast<int>(mark * 1000.0 / progress_report_count));
-        auto& last = *static_cast<int *>(userdata);
-        if (permille <= last) return;
-        last = permille;
+        if (permille <= progress.lastProgress) return;
+        progress.lastProgress = permille;
         std::cout << "progress\t" << permille << std::endl;
       },
-      &lastProgress);
+      &workerProgress);
   }
   auto progressGuard = sg::make_scope_guard([&cmd] {
     if (cmd.workerProgress) progress_report_fin();
@@ -753,7 +758,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              time,
                              python,
                              python_venv,
-                             true});
+                             true,
+                             output + ".cancel"});
 }
 
 static int compute_worker_main()
@@ -785,10 +791,14 @@ static int compute_worker_main()
       }
       const auto python = fields.size() > 15 && fields[15] == "python";
       const auto python_venv = fields.size() > 16 ? fields[16] : std::string{};
-      const auto result = compute_worker_export(
-        fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::OFF, parameter_file, set_name,
-        csg_products_limit, time, camera, python, python_venv);
-      std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
+      try {
+        const auto result = compute_worker_export(
+          fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::OFF, parameter_file, set_name,
+          csg_products_limit, time, camera, python, python_venv);
+        std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
+      } catch (const ProgressCancelException&) {
+        std::cout << "cancelled" << std::endl;
+      }
     } else if (command == "quit") {
       return 0;
     }

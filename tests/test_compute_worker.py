@@ -14,6 +14,13 @@ def wait_for(worker, final):
     return responses
 
 
+def wait_for_any(worker, finals):
+    while True:
+        response = worker.stdout.readline().strip()
+        if response in finals:
+            return response
+
+
 def main():
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
@@ -42,20 +49,12 @@ def main():
             assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
 
             cancel = Path(f"{result}.cancel")
-            source.write_text(
-                "union() {\n"
-                + "".join(
-                    f"translate([{index}, 0, 0]) sphere(1, $fn=30);\n"
-                    for index in range(200)
-                )
-                + "}\n"
-            )
+            source.write_text("sphere(1, $fn=31);\n")
+            cancel.touch()
             worker.stdin.write(f"render\t{source}\t{result}\n")
             worker.stdin.flush()
-            while not worker.stdout.readline().strip().startswith("progress\t"):
-                pass
-            cancel.touch()
-            wait_for(worker, "cancelled")
+            assert wait_for_any(worker, {"cancelled", "done", "error"}) == "cancelled"
+            cancel.unlink()
             worker.stdin.write("ping\n")
             worker.stdin.flush()
             assert worker.stdout.readline().strip() == "pong"

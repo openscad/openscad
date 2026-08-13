@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QProcess>
 #include <QTemporaryFile>
+#include <QTimer>
 #include <filesystem>
 #include <memory>
 
@@ -76,6 +77,7 @@ void CGALWorker::cleanupResult()
   QFile::remove(this->resultPath);
   QFile::remove(this->resultPath + ".parameters.json");
   QFile::remove(this->resultPath + ".dependencies.json");
+  QFile::remove(this->resultPath + ".cancel");
   const auto products = this->resultPath + ".products.json";
   QFile::remove(products);
   for (size_t index = 0; QFile::remove(products + ".leaf-" + QString::number(index) + ".off"); ++index) {
@@ -161,18 +163,13 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
 
 void CGALWorker::cancel()
 {
-  const auto request = this->request;
-  this->stopping = true;
-  if (this->process->state() != QProcess::NotRunning) {
+  if (!this->busy) return;
+  const auto canceledResult = this->resultPath;
+  QFile(canceledResult + ".cancel").open(QIODevice::WriteOnly);
+  QTimer::singleShot(1000, this, [this, canceledResult] {
+    if (!this->busy || this->resultPath != canceledResult) return;
     this->process->kill();
-    this->process->waitForFinished();
-  }
-  this->busy = false;
-  this->request = Request::NONE;
-  startProcess();
-  this->stopping = false;
-  if (request == Request::PREVIEW) emit previewDone({});
-  else emit done({});
+  });
 }
 
 void CGALWorker::processMetadata()
@@ -213,7 +210,7 @@ void CGALWorker::processOutput()
         products.reset();
       }
       emit previewDone(std::move(products));
-    } else if (response == "error") {
+    } else if (response == "error" || response == "cancelled") {
       this->busy = false;
       const auto request = this->request;
       this->request = Request::NONE;
