@@ -61,6 +61,12 @@ def main():
             worker.stdin.flush()
             assert worker.stdout.readline().strip() == "previewdone"
             assert "multmatrix" in preview.read_text()
+            products = json.loads(Path(f"{preview}.products.json").read_text())
+            assert len(products["root"]) == 1
+            assert len(products["root"][0]["intersections"]) == 1
+            geometry = Path(products["root"][0]["intersections"][0]["geometry"])
+            assert geometry.exists()
+            assert geometry.read_text().startswith("OFF\n")
 
         worker.stdin.write("quit\n")
         worker.stdin.flush()
