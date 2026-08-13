@@ -12,6 +12,7 @@
 #include "gui/Console.h"
 #include "gui/ProgressWidget.h"
 #include "gui/parameter/ParameterWidget.h"
+#include "openscad.h"
 #include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
@@ -224,4 +225,17 @@ void TestMainWindow::checkReloadPreviewDispatchDoesNotBlockGui()
   QVERIFY(progress != nullptr);
   progress->cancel();
   QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+}
+
+void TestMainWindow::checkF6UsesCommandLineDefinitions()
+{
+  restoreWindowInitialState();
+  const auto previousCommands = commandline_commands;
+  commandline_commands = "size = 7;\n";
+  window->activeEditor->setPlainText("cube(size);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 7.0);
+  commandline_commands = previousCommands;
 }

@@ -18,4 +18,5 @@ private slots:
   void checkPreviewDispatchDoesNotBlockGui();
   void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
+  void checkF6UsesCommandLineDefinitions();
 };
