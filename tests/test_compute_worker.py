@@ -3,6 +3,7 @@
 import subprocess
 import sys
 import tempfile
+import json
 from pathlib import Path
 
 
@@ -31,6 +32,22 @@ def main():
             assert result.read_text().startswith("OFF\n8 6 0\n")
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
+
+            parameters = Path(directory) / "parameters.json"
+            parameters.write_text(
+                json.dumps(
+                    {
+                        "parameterSets": {"worker": {"size": "7"}},
+                        "fileFormatVersion": "1",
+                    }
+                )
+            )
+            source.write_text("size = 1; // [1:10]\ncube(size);\n")
+            worker.stdin.write(f"render\t{source}\t{result}\t{parameters}\tworker\n")
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "done"
+            vertices = result.read_text().splitlines()[2:10]
+            assert max(float(line.split()[0]) for line in vertices) == 7
 
             preview = Path(directory) / "preview.csg"
             worker.stdin.write(f"preview\t{source}\t{preview}\n")
