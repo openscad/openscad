@@ -29,6 +29,7 @@ signals:
   void previewDone(std::shared_ptr<class CsgInfo> products);
   void diagnostic(const QString& text);
   void parametersDiscovered(const QString& source, const QString& metadata);
+  void dependenciesDiscovered(const QString& source, const QStringList& dependencies);
 
 protected:
   class QProcess *process;
@@ -41,6 +42,7 @@ protected:
   bool busy = false;
   bool stopping = false;
   void cleanupResult();
+  void processMetadata();
   void startProcess();
   void startRequest(const QString& command, const QString& suffix, const QString& source,
                     const QString& filename, const ParameterSet& parameters,

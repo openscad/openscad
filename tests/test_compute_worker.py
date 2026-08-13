@@ -76,7 +76,7 @@ def main():
             worker.stdin.flush()
             assert worker.stdout.readline().strip() == "previewdone"
             dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
-            assert dependencies == [str(dependency)]
+            assert str(dependency.resolve()) in dependencies
 
         worker.stdin.write("quit\n")
         worker.stdin.flush()

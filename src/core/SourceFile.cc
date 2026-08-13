@@ -30,8 +30,10 @@
 #include <boost/algorithm/string.hpp>
 #include <ctime>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -112,6 +114,26 @@ time_t SourceFile::includesChanged() const
     if (mtime > latest) latest = mtime;
   }
   return latest;
+}
+
+std::vector<std::string> SourceFile::dependencyPaths() const
+{
+  std::vector<std::string> output;
+  std::set<std::string> visited;
+  std::function<void(const SourceFile *)> collect = [&](const SourceFile *file) {
+    if (!file || !visited.insert(file->getFullpath()).second) return;
+    for (const auto& include : file->includes) output.push_back(include.second);
+    for (const auto& library : file->usedlibs) {
+      auto path = fs::path(library);
+      if (!path.is_absolute()) path = find_valid_path(file->modulePath(), library);
+      if (path.empty()) continue;
+      const auto filename = path.generic_string();
+      output.push_back(filename);
+      collect(SourceFileCache::instance()->lookup(filename));
+    }
+  };
+  collect(this);
+  return output;
 }
 
 time_t SourceFile::include_modified(const std::string& filename) const

@@ -1789,8 +1789,22 @@ void MainWindow::parseTopLevelDocument()
 
 void MainWindow::checkAutoReload()
 {
-  if (!activeEditor->filepath.isEmpty()) {
-    actionReloadRenderPreview();
+  if (activeEditor->filepath.isEmpty()) return;
+  if (fileChangedOnDisk()) {
+    on_designActionReloadAndPreview_triggered();
+    return;
+  }
+  for (auto dependency = this->workerDependencies.begin(); dependency != this->workerDependencies.end();
+       ++dependency) {
+    const QFileInfo info(dependency.key());
+    const auto identity = QString("%1.%2.%3")
+                            .arg(info.exists())
+                            .arg(info.lastModified().toMSecsSinceEpoch())
+                            .arg(info.size());
+    if (identity != dependency.value()) {
+      actionRenderPreview();
+      return;
+    }
   }
 }
 
@@ -3561,6 +3575,18 @@ void MainWindow::setupCoreSubsystems()
             if (this->activeEditor->toPlainText() == source) {
               this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
                                                                  source.toStdString());
+            }
+          });
+  connect(this->cgalworker, &CGALWorker::dependenciesDiscovered, this,
+          [this](const QString& source, const QStringList& dependencies) {
+            if (this->activeEditor->toPlainText() != source) return;
+            this->workerDependencies.clear();
+            for (const auto& path : dependencies) {
+              const QFileInfo info(path);
+              this->workerDependencies[path] = QString("%1.%2.%3")
+                                                 .arg(info.exists())
+                                                 .arg(info.lastModified().toMSecsSinceEpoch())
+                                                 .arg(info.size());
             }
           });
 

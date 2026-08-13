@@ -2,6 +2,8 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QProcess>
 #include <QTemporaryFile>
 #include <filesystem>
@@ -71,6 +73,7 @@ void CGALWorker::cleanupResult()
   if (this->resultPath.isEmpty()) return;
   QFile::remove(this->resultPath);
   QFile::remove(this->resultPath + ".parameters.json");
+  QFile::remove(this->resultPath + ".dependencies.json");
   const auto products = this->resultPath + ".products.json";
   QFile::remove(products);
   for (size_t index = 0; QFile::remove(products + ".leaf-" + QString::number(index) + ".off"); ++index) {
@@ -159,6 +162,22 @@ void CGALWorker::cancel()
   else emit done({});
 }
 
+void CGALWorker::processMetadata()
+{
+  QFile parameters(this->resultPath + ".parameters.json");
+  if (parameters.open(QIODevice::ReadOnly)) {
+    emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
+  }
+  QFile dependencies(this->resultPath + ".dependencies.json");
+  if (dependencies.open(QIODevice::ReadOnly)) {
+    QStringList paths;
+    for (const auto& path : QJsonDocument::fromJson(dependencies.readAll()).array()) {
+      paths.push_back(path.toString());
+    }
+    emit dependenciesDiscovered(this->requestSource, paths);
+  }
+}
+
 void CGALWorker::processOutput()
 {
   while (this->process->canReadLine()) {
@@ -167,19 +186,13 @@ void CGALWorker::processOutput()
     if (response == "done") {
       this->busy = false;
       this->request = Request::NONE;
-      QFile parameters(this->resultPath + ".parameters.json");
-      if (parameters.open(QIODevice::ReadOnly)) {
-        emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
-      }
+      processMetadata();
       auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
       emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
     } else if (response == "previewdone") {
       this->busy = false;
       this->request = Request::NONE;
-      QFile parameters(this->resultPath + ".parameters.json");
-      if (parameters.open(QIODevice::ReadOnly)) {
-        emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
-      }
+      processMetadata();
       auto products = std::make_shared<CsgInfo>();
       if (!products->read_products((this->resultPath + ".products.json").toStdString())) {
         products.reset();

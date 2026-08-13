@@ -107,6 +107,7 @@
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
 #include "io/export.h"
+#include "json/json.hpp"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
 #include "platform/PlatformUtils.h"
@@ -182,6 +183,7 @@ struct CommandLine {
   const std::string parameterMetadataFile = {};
   const std::string csgProductsFile = {};
   const size_t csgProductsLimit = 0;
+  const std::string dependencyFile = {};
 };
 
 namespace {
@@ -653,6 +655,10 @@ int cmdline(const CommandLine& cmd)
   }
 
   root_file->handleDependencies();
+  if (!cmd.dependencyFile.empty()) {
+    std::ofstream dependencies(cmd.dependencyFile);
+    dependencies << nlohmann::json(root_file->dependencyPaths());
+  }
 
   RenderVariables render_variables = {
     .preview = fileformat::canPreview(export_format)
@@ -721,7 +727,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              "",
                              output + ".parameters.json",
                              format == FileFormat::CSG ? output + ".products.json" : "",
-                             csg_products_limit});
+                             csg_products_limit,
+                             output + ".dependencies.json"});
 }
 
 static int compute_worker_main()
