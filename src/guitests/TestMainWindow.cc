@@ -313,6 +313,19 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
 #endif
 }
 
+void TestMainWindow::checkPreviewDrawsAfterCanceledOpenCSGPreparation()
+{
+#ifdef ENABLE_OPENCSG
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->qglview->getRenderer() == window->previewRenderer.get(), 5000);
+#endif
+}
+
 void TestMainWindow::checkF5UsesComputeWorkerResult()
 {
   restoreWindowInitialState();
