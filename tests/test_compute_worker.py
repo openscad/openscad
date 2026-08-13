@@ -36,6 +36,18 @@ def main():
     except RuntimeError:
         pass
 
+    exiting_worker = subprocess.Popen(
+        [sys.argv[1], "--compute-worker"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert exiting_worker.stdout.readline().strip() == "ready"
+    exiting_worker.stdin.write("exit-for-test\n")
+    exiting_worker.stdin.flush()
+    assert exiting_worker.wait(timeout=5) == 86
+
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
         stdin=subprocess.PIPE,
