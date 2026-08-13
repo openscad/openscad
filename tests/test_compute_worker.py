@@ -41,6 +41,25 @@ def main():
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
 
+            cancel = Path(f"{result}.cancel")
+            source.write_text(
+                "union() {\n"
+                + "".join(
+                    f"translate([{index}, 0, 0]) sphere(1, $fn=30);\n"
+                    for index in range(200)
+                )
+                + "}\n"
+            )
+            worker.stdin.write(f"render\t{source}\t{result}\n")
+            worker.stdin.flush()
+            while not worker.stdout.readline().strip().startswith("progress\t"):
+                pass
+            cancel.touch()
+            wait_for(worker, "cancelled")
+            worker.stdin.write("ping\n")
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "pong"
+
             source.write_text("translate([$t, 0, 0]) cube(1);\n")
             worker.stdin.write(f"render\t{source}\t{result}\t\tworker\t0\t0.5\n")
             worker.stdin.flush()
