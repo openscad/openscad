@@ -62,7 +62,10 @@ CGALWorker::~CGALWorker()
   delete this->process;
   delete this->sourceFile;
   delete this->parameterFile;
-  if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
+  if (!this->resultPath.isEmpty()) {
+    QFile::remove(this->resultPath);
+    QFile::remove(this->resultPath + ".parameters.json");
+  }
 }
 
 qint64 CGALWorker::processId() const
@@ -87,7 +90,10 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   delete this->sourceFile;
   delete this->parameterFile;
   this->parameterFile = nullptr;
-  if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
+  if (!this->resultPath.isEmpty()) {
+    QFile::remove(this->resultPath);
+    QFile::remove(this->resultPath + ".parameters.json");
+  }
 
   const auto directory = filename.isEmpty() ? QDir::tempPath() : QFileInfo(filename).absolutePath();
   this->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
@@ -101,6 +107,7 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   }
   this->sourceFile->write(source.toUtf8());
   this->sourceFile->flush();
+  this->requestSource = source;
   QString parameterPath;
   if (!parameters.empty()) {
     this->parameterFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.json");
@@ -150,11 +157,19 @@ void CGALWorker::processOutput()
     if (response == "done") {
       this->busy = false;
       this->request = Request::NONE;
+      QFile parameters(this->resultPath + ".parameters.json");
+      if (parameters.open(QIODevice::ReadOnly)) {
+        emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
+      }
       auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
       emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
     } else if (response == "previewdone") {
       this->busy = false;
       this->request = Request::NONE;
+      QFile parameters(this->resultPath + ".parameters.json");
+      if (parameters.open(QIODevice::ReadOnly)) {
+        emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
+      }
       QFile file(this->resultPath);
       emit previewDone(file.open(QIODevice::ReadOnly) ? QString::fromUtf8(file.readAll()) : QString{});
     } else if (response == "error") {

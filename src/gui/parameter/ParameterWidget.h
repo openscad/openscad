@@ -58,6 +58,7 @@ public:
   void saveFile(const QString& scadFile);
   void saveBackupFile(const QString& scadFile);
   void setParameters(const SourceFile *sourceFile, const std::string& source);
+  void setParameters(const std::string& metadata, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
   ParameterSet exportValues() { return parameters.exportValues("worker"); }
   bool childHasFocus();

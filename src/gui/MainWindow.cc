@@ -3522,6 +3522,13 @@ void MainWindow::setupCoreSubsystems()
   connect(this->cgalworker, &CGALWorker::diagnostic, this, [this](const QString& text) {
     if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));
   });
+  connect(this->cgalworker, &CGALWorker::parametersDiscovered, this,
+          [this](const QString& source, const QString& metadata) {
+            if (this->activeEditor->toPlainText() == source) {
+              this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
+                                                                 source.toStdString());
+            }
+          });
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);

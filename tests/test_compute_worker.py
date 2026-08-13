@@ -52,6 +52,8 @@ def main():
             assert metadata[0]["name"] == "size"
             assert metadata[0]["type"] == "number"
             assert metadata[0]["max"] == 10
+            assert metadata[0]["initial"] == 1
+            assert metadata[0]["value"] == 7
 
             preview = Path(directory) / "preview.csg"
             source.write_text("translate([1, 0, 0]) cube(1);\n")

@@ -178,6 +178,7 @@ struct CommandLine {
   const AnimateArgs animate;
   const std::vector<std::string> summaryOptions;
   const std::string summaryFile;
+  const std::string parameterMetadataFile = {};
 };
 
 namespace {
@@ -625,8 +626,8 @@ int cmdline(const CommandLine& cmd)
 
   // add parameter to AST
   CommentParser::collectParameters(text.c_str(), root_file);
+  ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
   if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
-    ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
     ParameterSets sets;
     sets.readFile(cmd.parameterFile);
     for (const auto& set : sets) {
@@ -636,6 +637,10 @@ int cmdline(const CommandLine& cmd)
         break;
       }
     }
+  }
+  if (!cmd.parameterMetadataFile.empty()) {
+    std::ofstream metadata(cmd.parameterMetadataFile);
+    metadata << parameters.toJson();
   }
 
   root_file->handleDependencies();
@@ -704,7 +709,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              export_options,
                              {},
                              {},
-                             ""});
+                             "",
+                             output + ".parameters.json"});
 }
 
 static int compute_worker_main()

@@ -27,6 +27,7 @@ signals:
   void done(std::shared_ptr<const class Geometry>);
   void previewDone(const QString& source);
   void diagnostic(const QString& text);
+  void parametersDiscovered(const QString& source, const QString& metadata);
 
 protected:
   class QProcess *process;
@@ -34,6 +35,7 @@ protected:
   class QTemporaryFile *parameterFile;
   QString resultPath;
   QString displayFilename;
+  QString requestSource;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   bool busy = false;
   bool stopping = false;

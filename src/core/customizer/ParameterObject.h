@@ -172,6 +172,8 @@ class ParameterObjects : public std::vector<std::unique_ptr<ParameterObject>>
 {
 public:
   static ParameterObjects fromSourceFile(const SourceFile *sourceFile);
+  static ParameterObjects fromJson(const std::string& encoded);
+  [[nodiscard]] std::string toJson() const;
   void reset();
   void importValues(const ParameterSet& values);
   ParameterSet exportValues(const std::string& setName);

@@ -90,6 +90,7 @@ void TestMainWindow::checkF6UsesCustomizerValues()
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
   QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 7.0);
+  window->parseTopLevelDocument();  // Restore parser state for the following ModuleCache suite.
 }
 
 void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
@@ -178,4 +179,5 @@ void TestMainWindow::checkF5UsesComputeWorkerResult()
 #else
   QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
 #endif
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
 }
