@@ -7,6 +7,7 @@
 #include <QTest>
 
 #include "gui/OpenSCADApp.h"
+#include "gui/Console.h"
 #include "gui/ProgressWidget.h"
 #include "platform/PlatformUtils.h"
 
@@ -114,11 +115,13 @@ void TestMainWindow::checkCrashedWorkerRespawns()
 void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
 {
   restoreWindowInitialState();
+  window->console->clear();
   window->activeEditor->setPlainText("cube(");
 
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QVERIFY(!window->activeEditor->contentsRendered);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Parser error"), 5000);
 
   window->activeEditor->setPlainText("cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
