@@ -40,6 +40,18 @@ def main():
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 0.5
 
+            source.write_text(
+                "translate([$vpr[0] + $vpt[0] + $vpd / 100 + $vpf / 10, 0, 0]) cube(1);\n"
+            )
+            worker.stdin.write(
+                f"render\t{source}\t{result}\t\tworker\t0\t0.5"
+                "\t1\t2\t3\t10\t20\t30\t400\t50\n"
+            )
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "done"
+            vertices = result.read_text().splitlines()[2:10]
+            assert min(float(line.split()[0]) for line in vertices) == 20
+
             parameters = Path(directory) / "parameters.json"
             parameters.write_text(
                 json.dumps(
