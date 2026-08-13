@@ -10,6 +10,7 @@
 #include <QTimer>
 
 #include "gui/OpenSCADApp.h"
+#include "gui/QSettingsCached.h"
 #include "gui/Console.h"
 #include "gui/ComputeWorker.h"
 #include "gui/ProgressWidget.h"
@@ -43,6 +44,14 @@ void TestMainWindow::checkOpenTabPropagateToWindow()
 
   // The window title must also have the name of open file
   QCOMPARE(window->windowTitle(), QFileInfo(filename).fileName());
+}
+
+void TestMainWindow::checkTestResetDoesNotPersistAutoReload()
+{
+  QSettingsCached settings;
+  const auto before = settings.value("design/autoReload");
+  restoreWindowInitialState();
+  QCOMPARE(settings.value("design/autoReload"), before);
 }
 
 void TestMainWindow::checkOpeningLargeFileDoesNotParseInGui()
