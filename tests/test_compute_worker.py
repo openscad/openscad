@@ -28,7 +28,10 @@ def main():
             source.write_text("translate([1.2345678901234567, 0, 0]) cube(1);\n")
             worker.stdin.write(f"render\t{source}\t{result}\n")
             worker.stdin.flush()
-            assert worker.stdout.readline().strip() == "done"
+            responses = []
+            while not responses or responses[-1] != "done":
+                responses.append(worker.stdout.readline().strip())
+            assert any(response.startswith("progress\t") for response in responses)
             assert result.read_text().startswith("OFF\n8 6 0\n")
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
