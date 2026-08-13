@@ -40,14 +40,24 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
   connect(this->process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
           [this](int, QProcess::ExitStatus) {
             if (this->stopping) return;
-            const auto interrupted = this->busy;
+            this->ready = false;
+            const auto interrupted = this->busy && this->pendingRequest.isEmpty();
             const auto request = this->request;
-            this->busy = false;
-            this->request = Request::NONE;
+            if (interrupted) {
+              this->busy = false;
+              this->request = Request::NONE;
+            }
             if (++this->consecutiveFailures <= 3) {
               QTimer::singleShot(100 * this->consecutiveFailures, this, &ComputeWorker::startProcess);
             } else {
               emit diagnostic(tr("Compute worker stopped after repeated failures."));
+              if (!interrupted && this->busy) {
+                this->pendingRequest.clear();
+                this->busy = false;
+                this->request = Request::NONE;
+                if (request == Request::PREVIEW) emit previewDone({});
+                else emit done({});
+              }
             }
             if (interrupted && request == Request::PREVIEW) emit previewDone({});
             else if (interrupted) emit done({});
@@ -57,6 +67,7 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
 
 void ComputeWorker::startProcess()
 {
+  this->ready = false;
   connect(
     this->process, &QProcess::errorOccurred, this,
     [this](QProcess::ProcessError error) {
@@ -189,14 +200,23 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
   request["camera"] = cameraValues;
   request["python"] = python;
   request["pythonVenv"] = pythonVenv;
-  this->process->write(QJsonDocument(request).toJson(QJsonDocument::Compact) + "\n");
+  this->pendingRequest = QJsonDocument(request).toJson(QJsonDocument::Compact) + "\n";
+  if (this->ready) {
+    this->process->write(this->pendingRequest);
+    this->pendingRequest.clear();
+  }
 }
 
 void ComputeWorker::cancel()
 {
   if (!this->busy) return;
   const auto canceledResult = this->resultPath;
-  QFile(canceledResult + ".cancel").open(QIODevice::WriteOnly);
+  QFile cancelFile(canceledResult + ".cancel");
+  if (!cancelFile.open(QIODevice::WriteOnly)) {
+    emit diagnostic(tr("Could not request compute cancellation: %1").arg(cancelFile.errorString()));
+    this->process->terminate();
+    return;
+  }
   QTimer::singleShot(1000, this, [this, canceledResult] {
     if (!this->busy || this->resultPath != canceledResult) return;
     this->process->terminate();
@@ -225,6 +245,11 @@ void ComputeWorker::processOutput()
     const auto response = this->process->readLine().trimmed();
     if (response == "ready") {
       this->consecutiveFailures = 0;
+      this->ready = true;
+      if (!this->pendingRequest.isEmpty()) {
+        this->process->write(this->pendingRequest);
+        this->pendingRequest.clear();
+      }
       continue;
     }
     if (response == "pong") continue;

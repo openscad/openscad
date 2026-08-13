@@ -1,7 +1,9 @@
 #include "TestModuleCache.h"
 
+#include <QDir>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTest>
 #include <memory>
 
@@ -25,7 +27,12 @@ void TestModuleCache::testBasicCache()
 {
   restoreWindowInitialState();
 
-  QString filename = QString::fromStdString("test-tmp.scad");
+  QTemporaryFile file(QDir::tempPath() + "/openscad-module-cache-XXXXXX.scad");
+  QVERIFY(file.open());
+  QVERIFY(file.write("cube(1);\n") > 0);
+  QVERIFY(file.flush());
+  file.close();
+  const auto filename = file.fileName();
   SourceFile *previousFile{nullptr};
   SourceFile *currentFile{nullptr};
   connect(window, &MainWindow::compilationDone,
@@ -35,13 +42,13 @@ void TestModuleCache::testBasicCache()
   window->tabManager->open(filename);                 // Open use.scad
   window->actionReloadRenderPreview();                // F5
 
-  QVERIFY2(currentFile != nullptr, "The file 'test-tmp.scad' should be loaded.");
+  QVERIFY2(currentFile != nullptr, "The temporary SCAD file should be loaded.");
   previousFile = currentFile;  // save the loaded Source from the
 
   window->actionReloadRenderPreview();
   QVERIFY2(previousFile == currentFile,
            "The file should be the same as the file cache should have done its work.");
-  sleep(1);
+  QTest::qWait(1000);
 
   touchFile(filename);
   window->actionReloadRenderPreview();

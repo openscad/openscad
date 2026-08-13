@@ -21,7 +21,11 @@ int runAllTest(MainWindow *window)
             << std::endl;
   totalTestFailures += runTests<TestTabManager>(window);
   totalTestFailures += runTests<TestMainWindow>(window);
-  totalTestFailures += runTests<TestModuleCache>(window);
+  MainWindow::setProcessIsolation(false);
+  auto *legacyWindow = new MainWindow({});
+  totalTestFailures += runTests<TestModuleCache>(legacyWindow);
+  legacyWindow->close();
+  MainWindow::setProcessIsolation(true);
   std::cout << "********************************** RESULTS *********************************"
             << std::endl;
   std::cout << "Failures: " << totalTestFailures << std::endl;

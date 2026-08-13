@@ -11,6 +11,10 @@ void UXTest::setWindow(MainWindow *window_)
 
 void UXTest::restoreWindowInitialState()
 {
+  window->rootGeom.reset();
+  window->previewRenderer.reset();
+  window->thrownTogetherRenderer.reset();
+
   QString filename =
     QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/default.scad";
   window->tabManager->open(filename);

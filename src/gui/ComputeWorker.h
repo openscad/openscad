@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QByteArray>
 #include <QObject>
 #include <QString>
 #include <memory>
@@ -47,7 +48,9 @@ protected:
   QString resultPath;
   QString displayFilename;
   QString requestSource;
+  QByteArray pendingRequest;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
+  bool ready = false;
   bool busy = false;
   bool stopping = false;
   void cleanupResult();

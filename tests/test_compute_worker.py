@@ -159,9 +159,9 @@ def main():
             dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
             assert str(dependency.resolve()) in dependencies
 
-        worker.stdin.write("quit\n")
-        worker.stdin.flush()
-        assert worker.wait(timeout=5) == 0
+            worker.stdin.write("quit\n")
+            worker.stdin.flush()
+            assert worker.wait(timeout=5) == 0
     finally:
         if worker.poll() is None:
             worker.kill()
