@@ -122,6 +122,8 @@ void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QVERIFY(!window->activeEditor->contentsRendered);
   QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Parser error"), 5000);
+  QVERIFY(window->console->toPlainText().contains("test-tmp.scad"));
+  QVERIFY(!window->console->toPlainText().contains(".openscad-worker-"));
 
   window->activeEditor->setPlainText("cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
