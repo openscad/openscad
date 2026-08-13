@@ -52,6 +52,13 @@ void TestMainWindow::checkOpeningLargeFileDoesNotParseInGui()
   dispatch.start();
   window->tabManager->open(file.fileName());
   QVERIFY2(dispatch.elapsed() < 250, "Opening a file parsed source in the GUI process");
+
+  QCoreApplication::processEvents();
+  if (auto *progress = window->findChild<ProgressWidget *>()) {
+    const auto worker = window->computeWorkerProcessId();
+    progress->cancel();
+    QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+  }
 }
 
 void TestMainWindow::checkSaveToShouldUpdateWindowTitle()
