@@ -184,6 +184,7 @@ struct CommandLine {
   const std::string csgProductsFile = {};
   const size_t csgProductsLimit = 0;
   const std::string dependencyFile = {};
+  const double time = 0;
 };
 
 namespace {
@@ -669,7 +670,7 @@ int cmdline(const CommandLine& cmd)
   };
 
   if (cmd.animate.frames == 0) {
-    render_variables.time = 0;
+    render_variables.time = cmd.time;
     return do_export(cmd, render_variables, export_format, root_file);
   } else {
     // export the requested number of animated frames
@@ -705,7 +706,8 @@ int cmdline(const CommandLine& cmd)
 
 static int compute_worker_export(const std::string& input, const std::string& output,
                                  const FileFormat format, const std::string& parameter_file = {},
-                                 const std::string& set_name = {}, const size_t csg_products_limit = 0)
+                                 const std::string& set_name = {}, const size_t csg_products_limit = 0,
+                                 const double time = 0)
 {
   const auto original_path = fs::path(input).parent_path();
   const ViewOptions view_options{};
@@ -728,7 +730,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              output + ".parameters.json",
                              format == FileFormat::CSG ? output + ".products.json" : "",
                              csg_products_limit,
-                             output + ".dependencies.json"});
+                             output + ".dependencies.json",
+                             time});
 }
 
 static int compute_worker_main()
@@ -763,10 +766,17 @@ static int compute_worker_main()
       const auto csg_products_limit =
         limit_separator == std::string::npos
           ? 0
-          : boost::lexical_cast<size_t>(command.substr(limit_separator + 1));
+          : boost::lexical_cast<size_t>(command.substr(
+              limit_separator + 1, command.find('\t', limit_separator + 1) - limit_separator - 1));
+      const auto time_separator = limit_separator == std::string::npos
+                                    ? std::string::npos
+                                    : command.find('\t', limit_separator + 1);
+      const auto time = time_separator == std::string::npos
+                          ? 0
+                          : boost::lexical_cast<double>(command.substr(time_separator + 1));
       const auto result =
         compute_worker_export(input, output, preview ? FileFormat::CSG : FileFormat::OFF, parameter_file,
-                              set_name, csg_products_limit);
+                              set_name, csg_products_limit, time);
       std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
     } else if (command == "quit") {
       return 0;

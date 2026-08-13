@@ -85,20 +85,21 @@ qint64 CGALWorker::processId() const
   return this->process->processId();
 }
 
-void CGALWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters)
+void CGALWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters,
+                       double time)
 {
-  startRequest("render", ".off", source, filename, parameters);
+  startRequest("render", ".off", source, filename, parameters, 0, time);
 }
 
 void CGALWorker::startPreview(const QString& source, const QString& filename,
-                              const ParameterSet& parameters, size_t normalizationLimit)
+                              const ParameterSet& parameters, size_t normalizationLimit, double time)
 {
-  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit);
+  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit, time);
 }
 
 void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
                               const QString& filename, const ParameterSet& parameters,
-                              size_t normalizationLimit)
+                              size_t normalizationLimit, double time)
 {
   delete this->sourceFile;
   delete this->parameterFile;
@@ -135,14 +136,9 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   this->resultPath = this->sourceFile->fileName() + suffix;
   this->request = command == "preview" ? Request::PREVIEW : Request::RENDER;
   this->busy = true;
-  const auto request =
-    command == "preview" ? QString("%1\t%2\t%3\t%4\tworker\t%5\n")
-                             .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath,
-                                  QString::number(normalizationLimit))
-    : parameterPath.isEmpty()
-      ? QString("%1\t%2\t%3\n").arg(command, this->sourceFile->fileName(), this->resultPath)
-      : QString("%1\t%2\t%3\t%4\tworker\n")
-          .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath);
+  const auto request = QString("%1\t%2\t%3\t%4\tworker\t%5\t%6\n")
+                         .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath,
+                              QString::number(normalizationLimit), QString::number(time, 'g', 17));
   this->process->write(request.toUtf8());
 }
 
