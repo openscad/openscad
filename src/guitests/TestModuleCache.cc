@@ -16,8 +16,7 @@ void touchFile(const QString& filename)
 
   QFileInfo fileInfo(filename);
   QFile file(filename);
-  file.open(QIODevice::WriteOnly);
-  if (file.isOpen()) {
+  if (file.open(QIODevice::WriteOnly)) {
     file.setFileTime(timeStamp, QFileDevice::FileModificationTime);
     file.setFileTime(timeStamp, QFileDevice::FileAccessTime);
   }
