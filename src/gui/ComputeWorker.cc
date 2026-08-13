@@ -1,4 +1,4 @@
-#include "gui/CGALWorker.h"
+#include "gui/ComputeWorker.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -19,12 +19,12 @@
 #include "openscad.h"
 #include "utils/printutils.h"
 
-CGALWorker::CGALWorker()
+ComputeWorker::ComputeWorker()
 {
   this->sourceFile = nullptr;
   this->parameterFile = nullptr;
   this->process = new QProcess();
-  connect(this->process, &QProcess::readyReadStandardOutput, this, &CGALWorker::processOutput);
+  connect(this->process, &QProcess::readyReadStandardOutput, this, &ComputeWorker::processOutput);
   connect(this->process, &QProcess::readyReadStandardError, this, [this] {
     auto text = QString::fromUtf8(this->process->readAllStandardError());
     if (this->sourceFile) {
@@ -48,7 +48,7 @@ CGALWorker::CGALWorker()
   startProcess();
 }
 
-void CGALWorker::startProcess()
+void ComputeWorker::startProcess()
 {
   this->process->start(QCoreApplication::applicationFilePath(), {"--compute-worker"});
   if (!this->process->waitForStarted()) {
@@ -57,7 +57,7 @@ void CGALWorker::startProcess()
   }
 }
 
-CGALWorker::~CGALWorker()
+ComputeWorker::~ComputeWorker()
 {
   this->stopping = true;
   this->process->write("quit\n");
@@ -71,7 +71,7 @@ CGALWorker::~CGALWorker()
   cleanupResult();
 }
 
-void CGALWorker::cleanupResult()
+void ComputeWorker::cleanupResult()
 {
   if (this->resultPath.isEmpty()) return;
   QFile::remove(this->resultPath);
@@ -84,29 +84,29 @@ void CGALWorker::cleanupResult()
   }
 }
 
-qint64 CGALWorker::processId() const
+qint64 ComputeWorker::processId() const
 {
   return this->process->processId();
 }
 
-void CGALWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters,
-                       double time, const Camera& camera, bool python, const QString& pythonVenv)
+void ComputeWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters,
+                          double time, const Camera& camera, bool python, const QString& pythonVenv)
 {
   startRequest("render", ".off", source, filename, parameters, 0, time, camera, python, pythonVenv);
 }
 
-void CGALWorker::startPreview(const QString& source, const QString& filename,
-                              const ParameterSet& parameters, size_t normalizationLimit, double time,
-                              const Camera& camera, bool python, const QString& pythonVenv)
+void ComputeWorker::startPreview(const QString& source, const QString& filename,
+                                 const ParameterSet& parameters, size_t normalizationLimit, double time,
+                                 const Camera& camera, bool python, const QString& pythonVenv)
 {
   startRequest("preview", ".csg", source, filename, parameters, normalizationLimit, time, camera, python,
                pythonVenv);
 }
 
-void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
-                              const QString& filename, const ParameterSet& parameters,
-                              size_t normalizationLimit, double time, const Camera& camera, bool python,
-                              const QString& pythonVenv)
+void ComputeWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
+                                 const QString& filename, const ParameterSet& parameters,
+                                 size_t normalizationLimit, double time, const Camera& camera,
+                                 bool python, const QString& pythonVenv)
 {
   delete this->sourceFile;
   delete this->parameterFile;
@@ -161,7 +161,7 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   this->process->write(request.toUtf8());
 }
 
-void CGALWorker::cancel()
+void ComputeWorker::cancel()
 {
   if (!this->busy) return;
   const auto canceledResult = this->resultPath;
@@ -172,7 +172,7 @@ void CGALWorker::cancel()
   });
 }
 
-void CGALWorker::processMetadata()
+void ComputeWorker::processMetadata()
 {
   QFile parameters(this->resultPath + ".parameters.json");
   if (parameters.open(QIODevice::ReadOnly)) {
@@ -188,13 +188,13 @@ void CGALWorker::processMetadata()
   }
 }
 
-void CGALWorker::processOutput()
+void ComputeWorker::processOutput()
 {
   while (this->process->canReadLine()) {
     const auto response = this->process->readLine().trimmed();
     if (response == "ready" || response == "pong") continue;
     if (response.startsWith("progress\t")) {
-      emit progress(response.sliced(9).toInt());
+      emit progress(response.mid(9).toInt());
     } else if (response == "done") {
       this->busy = false;
       this->request = Request::NONE;

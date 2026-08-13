@@ -6,13 +6,13 @@
 
 #include "core/customizer/ParameterSet.h"
 
-class CGALWorker : public QObject
+class ComputeWorker : public QObject
 {
   Q_OBJECT;
 
 public:
-  CGALWorker();
-  ~CGALWorker() override;
+  ComputeWorker();
+  ~ComputeWorker() override;
   qint64 processId() const;
   void start(const QString& source, const QString& filename, const ParameterSet& parameters, double time,
              const class Camera& camera, bool python, const QString& pythonVenv);

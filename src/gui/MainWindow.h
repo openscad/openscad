@@ -44,7 +44,7 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
 class BuiltinContext;
-class CGALWorker;
+class ComputeWorker;
 class CSGNode;
 class CSGProducts;
 class CsgInfo;
@@ -465,7 +465,7 @@ private:
   bool procevents{false};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
-  CGALWorker *cgalworker;
+  ComputeWorker *computeWorker;
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time

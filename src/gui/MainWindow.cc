@@ -119,7 +119,7 @@
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
-#include "gui/CGALWorker.h"
+#include "gui/ComputeWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
 #include "gui/ai/AIDock.h"
@@ -613,12 +613,12 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  delete this->cgalworker;
+  delete this->computeWorker;
 }
 
 qint64 MainWindow::computeWorkerProcessId() const
 {
-  return this->cgalworker->processId();
+  return this->computeWorker->processId();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -1934,13 +1934,13 @@ void MainWindow::actionRenderPreview()
   this->renderStatistic.start();
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
-  connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
+  connect(this->progresswidget, &ProgressWidget::canceled, this->computeWorker, &ComputeWorker::cancel);
   const auto normalizationLimit =
     2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-  this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath,
-                                 this->activeEditor->parameterWidget->exportValues(), normalizationLimit,
-                                 this->animateWidget->getAnimTval(), this->qglview->cam, python,
-                                 pythonVenv);
+  this->computeWorker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath,
+                                    this->activeEditor->parameterWidget->exportValues(),
+                                    normalizationLimit, this->animateWidget->getAnimTval(),
+                                    this->qglview->cam, python, pythonVenv);
 }
 
 void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
@@ -2097,13 +2097,13 @@ void MainWindow::cgalRender(bool python, const QString& pythonVenv)
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
-  connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
+  connect(this->progresswidget, &ProgressWidget::canceled, this->computeWorker, &ComputeWorker::cancel);
 
   if (isClosing) return;
 
-  this->cgalworker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath,
-                          this->activeEditor->parameterWidget->exportValues(),
-                          this->animateWidget->getAnimTval(), this->qglview->cam, python, pythonVenv);
+  this->computeWorker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath,
+                             this->activeEditor->parameterWidget->exportValues(),
+                             this->animateWidget->getAnimTval(), this->qglview->cam, python, pythonVenv);
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
@@ -3578,23 +3578,23 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  this->cgalworker = new CGALWorker();
-  connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
-  connect(this->cgalworker, &CGALWorker::previewDone, this, &MainWindow::actionPreviewDone);
-  connect(this->cgalworker, &CGALWorker::progress, this, [this](int permille) {
+  this->computeWorker = new ComputeWorker();
+  connect(this->computeWorker, &ComputeWorker::done, this, &MainWindow::actionRenderDone);
+  connect(this->computeWorker, &ComputeWorker::previewDone, this, &MainWindow::actionPreviewDone);
+  connect(this->computeWorker, &ComputeWorker::progress, this, [this](int permille) {
     if (this->progresswidget) this->progresswidget->setValue(permille);
   });
-  connect(this->cgalworker, &CGALWorker::diagnostic, this, [this](const QString& text) {
+  connect(this->computeWorker, &ComputeWorker::diagnostic, this, [this](const QString& text) {
     if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));
   });
-  connect(this->cgalworker, &CGALWorker::parametersDiscovered, this,
+  connect(this->computeWorker, &ComputeWorker::parametersDiscovered, this,
           [this](const QString& source, const QString& metadata) {
             if (this->activeEditor->toPlainText() == source) {
               this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
                                                                  source.toStdString());
             }
           });
-  connect(this->cgalworker, &CGALWorker::dependenciesDiscovered, this,
+  connect(this->computeWorker, &ComputeWorker::dependenciesDiscovered, this,
           [this](const QString& source, const QStringList& dependencies) {
             if (this->activeEditor->toPlainText() != source) return;
             this->workerDependencies.clear();
