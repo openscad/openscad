@@ -24,7 +24,9 @@ with tempfile.TemporaryDirectory() as directory:
             "\t0\t0\t0\t0\t0\t0\t100\t22.5\tpython\t\n"
         )
         worker.stdin.flush()
-        assert worker.stdout.readline().strip() == "done"
+        response = ""
+        while response != "done":
+            response = worker.stdout.readline().strip()
         vertices = result.read_text().splitlines()[2:10]
         assert max(float(line.split()[0]) for line in vertices) == 7
     finally:

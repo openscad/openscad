@@ -30,6 +30,7 @@ signals:
   void done(std::shared_ptr<const class Geometry>);
   void previewDone(std::shared_ptr<class CsgInfo> products);
   void diagnostic(const QString& text);
+  void progress(int permille);
   void parametersDiscovered(const QString& source, const QString& metadata);
   void dependenciesDiscovered(const QString& source, const QStringList& dependencies);
 

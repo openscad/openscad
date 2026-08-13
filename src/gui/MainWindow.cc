@@ -3581,6 +3581,9 @@ void MainWindow::setupCoreSubsystems()
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
   connect(this->cgalworker, &CGALWorker::previewDone, this, &MainWindow::actionPreviewDone);
+  connect(this->cgalworker, &CGALWorker::progress, this, [this](int permille) {
+    if (this->progresswidget) this->progresswidget->setValue(permille);
+  });
   connect(this->cgalworker, &CGALWorker::diagnostic, this, [this](const QString& text) {
     if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));
   });

@@ -196,7 +196,9 @@ void CGALWorker::processOutput()
   while (this->process->canReadLine()) {
     const auto response = this->process->readLine().trimmed();
     if (response == "ready" || response == "pong") continue;
-    if (response == "done") {
+    if (response.startsWith("progress\t")) {
+      emit progress(response.sliced(9).toInt());
+    } else if (response == "done") {
       this->busy = false;
       this->request = Request::NONE;
       processMetadata();

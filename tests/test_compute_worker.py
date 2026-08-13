@@ -7,6 +7,13 @@ import json
 from pathlib import Path
 
 
+def wait_for(worker, final):
+    responses = []
+    while not responses or responses[-1] != final:
+        responses.append(worker.stdout.readline().strip())
+    return responses
+
+
 def main():
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
@@ -28,9 +35,7 @@ def main():
             source.write_text("translate([1.2345678901234567, 0, 0]) cube(1);\n")
             worker.stdin.write(f"render\t{source}\t{result}\n")
             worker.stdin.flush()
-            responses = []
-            while not responses or responses[-1] != "done":
-                responses.append(worker.stdout.readline().strip())
+            responses = wait_for(worker, "done")
             assert any(response.startswith("progress\t") for response in responses)
             assert result.read_text().startswith("OFF\n8 6 0\n")
             vertices = result.read_text().splitlines()[2:10]
@@ -39,7 +44,7 @@ def main():
             source.write_text("translate([$t, 0, 0]) cube(1);\n")
             worker.stdin.write(f"render\t{source}\t{result}\t\tworker\t0\t0.5\n")
             worker.stdin.flush()
-            assert worker.stdout.readline().strip() == "done"
+            wait_for(worker, "done")
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 0.5
 
@@ -51,7 +56,7 @@ def main():
                 "\t1\t2\t3\t10\t20\t30\t400\t50\n"
             )
             worker.stdin.flush()
-            assert worker.stdout.readline().strip() == "done"
+            wait_for(worker, "done")
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 20
 
@@ -67,7 +72,7 @@ def main():
             source.write_text("size = 1; // [1:10]\ncube(size);\n")
             worker.stdin.write(f"render\t{source}\t{result}\t{parameters}\tworker\n")
             worker.stdin.flush()
-            assert worker.stdout.readline().strip() == "done"
+            wait_for(worker, "done")
             vertices = result.read_text().splitlines()[2:10]
             assert max(float(line.split()[0]) for line in vertices) == 7
             metadata = json.loads(Path(f"{result}.parameters.json").read_text())
@@ -81,7 +86,7 @@ def main():
             source.write_text("#translate([1, 0, 0]) cube(1);\n")
             worker.stdin.write(f"preview\t{source}\t{preview}\n")
             worker.stdin.flush()
-            assert worker.stdout.readline().strip() == "previewdone"
+            wait_for(worker, "previewdone")
             assert "multmatrix" in preview.read_text()
             products = json.loads(Path(f"{preview}.products.json").read_text())
             assert len(products["root"]) == 1
@@ -96,7 +101,7 @@ def main():
             source.write_text("include <part.scad>\n")
             worker.stdin.write(f"preview\t{source}\t{preview}\n")
             worker.stdin.flush()
-            assert worker.stdout.readline().strip() == "previewdone"
+            wait_for(worker, "previewdone")
             dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
             assert str(dependency.resolve()) in dependencies
 

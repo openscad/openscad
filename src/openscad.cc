@@ -89,6 +89,7 @@
 #include "core/Context.h"
 #include "core/EvaluationSession.h"
 #include "core/RenderVariables.h"
+#include "core/progress.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
 #include "core/customizer/CommentParser.h"
@@ -114,6 +115,7 @@
 #include "utils/StackCheck.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
@@ -187,6 +189,7 @@ struct CommandLine {
   const double time = 0;
   const bool python = false;
   const std::string pythonVenv = {};
+  const bool workerProgress = false;
 };
 
 namespace {
@@ -439,7 +442,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   fs::current_path(cmd.original_path);
 
   // Do we have an explicit root node (! modifier)?
-  std::shared_ptr<const AbstractNode> root_node;
+  std::shared_ptr<AbstractNode> root_node;
   const Location *nextLocation = nullptr;
   if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
     root_node = absolute_root_node;
@@ -449,6 +452,22 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         "More than one Root Modifier (!)");
   }
   Tree tree(root_node, fparent.string());
+  int lastProgress = -1;
+  if (cmd.workerProgress) {
+    progress_report_prep(
+      root_node,
+      [](const std::shared_ptr<const AbstractNode>&, void *userdata, int mark) {
+        const auto permille = std::min(999, static_cast<int>(mark * 1000.0 / progress_report_count));
+        auto& last = *static_cast<int *>(userdata);
+        if (permille <= last) return;
+        last = permille;
+        std::cout << "progress\t" << permille << std::endl;
+      },
+      &lastProgress);
+  }
+  auto progressGuard = sg::make_scope_guard([&cmd] {
+    if (cmd.workerProgress) progress_report_fin();
+  });
 
   if (!cmd.csgProductsFile.empty()) {
     CsgInfo products;
@@ -733,7 +752,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              output + ".dependencies.json",
                              time,
                              python,
-                             python_venv});
+                             python_venv,
+                             true});
 }
 
 static int compute_worker_main()
