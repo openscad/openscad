@@ -707,11 +707,10 @@ int cmdline(const CommandLine& cmd)
 static int compute_worker_export(const std::string& input, const std::string& output,
                                  const FileFormat format, const std::string& parameter_file = {},
                                  const std::string& set_name = {}, const size_t csg_products_limit = 0,
-                                 const double time = 0)
+                                 const double time = 0, const Camera camera = {})
 {
   const auto original_path = fs::path(input).parent_path();
   const ViewOptions view_options{};
-  const Camera camera{};
   const CmdLineExportOptions export_options{{Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}};
   return cmdline(CommandLine{false,
                              input,
@@ -741,42 +740,29 @@ static int compute_worker_main()
     if (command == "ping") {
       std::cout << "pong" << std::endl;
     } else if (command.rfind("render\t", 0) == 0 || command.rfind("preview\t", 0) == 0) {
-      const auto preview = command.rfind("preview\t", 0) == 0;
-      const auto prefix = preview ? 8 : 7;
-      const auto separator = command.find('\t', prefix);
-      if (separator == std::string::npos) {
+      std::vector<std::string> fields;
+      boost::split(fields, command, boost::is_any_of("\t"));
+      if (fields.size() < 3) {
         std::cout << "error" << std::endl;
         continue;
       }
-      const auto input = command.substr(prefix, separator - prefix);
-      const auto parameter_separator = command.find('\t', separator + 1);
-      const auto set_separator = parameter_separator == std::string::npos
-                                   ? std::string::npos
-                                   : command.find('\t', parameter_separator + 1);
-      const auto output = command.substr(separator + 1, parameter_separator - separator - 1);
-      const auto parameter_file =
-        parameter_separator == std::string::npos
-          ? std::string{}
-          : command.substr(parameter_separator + 1, set_separator - parameter_separator - 1);
-      const auto limit_separator =
-        set_separator == std::string::npos ? std::string::npos : command.find('\t', set_separator + 1);
-      const auto set_name = set_separator == std::string::npos
-                              ? std::string{}
-                              : command.substr(set_separator + 1, limit_separator - set_separator - 1);
-      const auto csg_products_limit =
-        limit_separator == std::string::npos
-          ? 0
-          : boost::lexical_cast<size_t>(command.substr(
-              limit_separator + 1, command.find('\t', limit_separator + 1) - limit_separator - 1));
-      const auto time_separator = limit_separator == std::string::npos
-                                    ? std::string::npos
-                                    : command.find('\t', limit_separator + 1);
-      const auto time = time_separator == std::string::npos
-                          ? 0
-                          : boost::lexical_cast<double>(command.substr(time_separator + 1));
+      const auto preview = fields[0] == "preview";
+      const auto parameter_file = fields.size() > 3 ? fields[3] : std::string{};
+      const auto set_name = fields.size() > 4 ? fields[4] : std::string{};
+      const auto csg_products_limit = fields.size() > 5 ? boost::lexical_cast<size_t>(fields[5]) : 0;
+      const auto time = fields.size() > 6 ? boost::lexical_cast<double>(fields[6]) : 0;
+      Camera camera;
+      if (fields.size() > 14) {
+        camera.setVpr(boost::lexical_cast<double>(fields[7]), boost::lexical_cast<double>(fields[8]),
+                      boost::lexical_cast<double>(fields[9]));
+        camera.setVpt(boost::lexical_cast<double>(fields[10]), boost::lexical_cast<double>(fields[11]),
+                      boost::lexical_cast<double>(fields[12]));
+        camera.setVpd(boost::lexical_cast<double>(fields[13]));
+        camera.setVpf(boost::lexical_cast<double>(fields[14]));
+      }
       const auto result =
-        compute_worker_export(input, output, preview ? FileFormat::CSG : FileFormat::OFF, parameter_file,
-                              set_name, csg_products_limit, time);
+        compute_worker_export(fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::OFF,
+                              parameter_file, set_name, csg_products_limit, time, camera);
       std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
     } else if (command == "quit") {
       return 0;

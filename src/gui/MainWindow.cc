@@ -1914,7 +1914,7 @@ void MainWindow::actionRenderPreview()
     2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
   this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath,
                                  this->activeEditor->parameterWidget->exportValues(), normalizationLimit,
-                                 this->animateWidget->getAnimTval());
+                                 this->animateWidget->getAnimTval(), this->qglview->cam);
 }
 
 void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
@@ -2074,7 +2074,7 @@ void MainWindow::cgalRender()
 
   this->cgalworker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath,
                           this->activeEditor->parameterWidget->exportValues(),
-                          this->animateWidget->getAnimTval());
+                          this->animateWidget->getAnimTval(), this->qglview->cam);
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)

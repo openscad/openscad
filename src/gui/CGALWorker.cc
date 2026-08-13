@@ -12,6 +12,7 @@
 #include "core/AST.h"
 #include "core/customizer/ParameterSet.h"
 #include "geometry/PolySet.h"
+#include "glview/Camera.h"
 #include "glview/CsgInfo.h"
 #include "io/import.h"
 #include "utils/printutils.h"
@@ -86,20 +87,21 @@ qint64 CGALWorker::processId() const
 }
 
 void CGALWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters,
-                       double time)
+                       double time, const Camera& camera)
 {
-  startRequest("render", ".off", source, filename, parameters, 0, time);
+  startRequest("render", ".off", source, filename, parameters, 0, time, camera);
 }
 
 void CGALWorker::startPreview(const QString& source, const QString& filename,
-                              const ParameterSet& parameters, size_t normalizationLimit, double time)
+                              const ParameterSet& parameters, size_t normalizationLimit, double time,
+                              const Camera& camera)
 {
-  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit, time);
+  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit, time, camera);
 }
 
 void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
                               const QString& filename, const ParameterSet& parameters,
-                              size_t normalizationLimit, double time)
+                              size_t normalizationLimit, double time, const Camera& camera)
 {
   delete this->sourceFile;
   delete this->parameterFile;
@@ -136,9 +138,16 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   this->resultPath = this->sourceFile->fileName() + suffix;
   this->request = command == "preview" ? Request::PREVIEW : Request::RENDER;
   this->busy = true;
-  const auto request = QString("%1\t%2\t%3\t%4\tworker\t%5\t%6\n")
-                         .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath,
-                              QString::number(normalizationLimit), QString::number(time, 'g', 17));
+  const auto vpr = camera.getVpr();
+  const auto vpt = camera.getVpt();
+  auto request = QString("%1\t%2\t%3\t%4\tworker\t%5\t%6")
+                   .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath,
+                        QString::number(normalizationLimit), QString::number(time, 'g', 17));
+  for (const auto value :
+       {vpr.x(), vpr.y(), vpr.z(), vpt.x(), vpt.y(), vpt.z(), camera.zoomValue(), camera.fovValue()}) {
+    request += "\t" + QString::number(value, 'g', 17);
+  }
+  request += "\n";
   this->process->write(request.toUtf8());
 }
 

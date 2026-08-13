@@ -14,10 +14,10 @@ public:
   CGALWorker();
   ~CGALWorker() override;
   qint64 processId() const;
-  void start(const QString& source, const QString& filename, const ParameterSet& parameters,
-             double time);
+  void start(const QString& source, const QString& filename, const ParameterSet& parameters, double time,
+             const class Camera& camera);
   void startPreview(const QString& source, const QString& filename, const ParameterSet& parameters,
-                    size_t normalizationLimit, double time);
+                    size_t normalizationLimit, double time, const Camera& camera);
 
 public slots:
   void cancel();
@@ -47,5 +47,5 @@ protected:
   void startProcess();
   void startRequest(const QString& command, const QString& suffix, const QString& source,
                     const QString& filename, const ParameterSet& parameters, size_t normalizationLimit,
-                    double time);
+                    double time, const Camera& camera);
 };
