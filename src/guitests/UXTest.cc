@@ -1,6 +1,7 @@
 #include "UXTest.h"
 
 #include <QString>
+#include <QSignalBlocker>
 
 #include "platform/PlatformUtils.h"
 
@@ -23,5 +24,6 @@ void UXTest::restoreWindowInitialState()
     window->tabManager->closeCurrentTab();
   }
 
-  window->designActionAutoReload->setChecked(true);  // Enable auto-reload  & preview
+  const QSignalBlocker blocker(window->designActionAutoReload);
+  window->designActionAutoReload->setChecked(true);  // Enable auto-reload & preview for this test only.
 }

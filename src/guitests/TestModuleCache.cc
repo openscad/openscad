@@ -37,7 +37,8 @@ void TestModuleCache::testBasicCache()
   connect(window, &MainWindow::compilationDone,
           [&currentFile](SourceFile *file) { currentFile = file; });
 
-  window->designActionAutoReload->setChecked(false);  // Disable auto-reload  & preview
+  const QSignalBlocker blocker(window->designActionAutoReload);
+  window->designActionAutoReload->setChecked(false);  // Disable auto-reload & preview for this test only.
   window->tabManager->open(filename);                 // Open use.scad
   window->actionReloadRenderPreview();                // F5
 
