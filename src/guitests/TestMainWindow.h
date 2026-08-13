@@ -10,6 +10,8 @@ private slots:
   void checkOpeningLargeFileDoesNotParseInGui();
   void checkSaveToShouldUpdateWindowTitle();
   void checkEachWindowHasAComputeWorker();
+  void checkIsolatedWindowsCanPreviewConcurrently();
+  void checkWorkerMessageSeverity();
   void checkProcessIsolationRequiresRestart();
   void checkLegacyModeRendersWithoutComputeWorker();
   void checkUnavailableComputeWorkerDoesNotBlockOrRespawnForever();

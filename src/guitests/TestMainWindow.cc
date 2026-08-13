@@ -99,6 +99,41 @@ void TestMainWindow::checkEachWindowHasAComputeWorker()
   }
 }
 
+void TestMainWindow::checkIsolatedWindowsCanPreviewConcurrently()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QVERIFY(window->findChild<ProgressWidget *>() != nullptr);
+
+  auto *other = new MainWindow({});
+  other->activeEditor->setPlainText("cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(other, "on_designActionPreview_triggered"));
+  QVERIFY2(other->findChild<ProgressWidget *>() != nullptr,
+           "A busy isolated window blocked preview in another window");
+
+  window->findChild<ProgressWidget *>()->cancel();
+  other->findChild<ProgressWidget *>()->cancel();
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(other->findChild<ProgressWidget *>() == nullptr, 5000);
+  other->close();
+}
+
+void TestMainWindow::checkWorkerMessageSeverity()
+{
+  restoreWindowInitialState();
+  window->console->clear();
+  window->activeEditor->setPlainText(
+    "echo(\"ordinary\");\ninclude <definitely-missing.scad>\nassert(false, \"failure\");");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("ordinary"), 5000);
+  QVERIFY(window->console->toPlainText().contains("definitely-missing.scad"));
+  QVERIFY(window->console->toPlainText().contains("failure"));
+  QCOMPARE(window->compilationWarningCount(), 1);
+  QCOMPARE(window->compilationErrorCount(), 1);
+}
+
 void TestMainWindow::checkProcessIsolationRequiresRestart()
 {
   const auto existingWorker = window->computeWorkerProcessId();
