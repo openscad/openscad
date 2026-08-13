@@ -11,7 +11,7 @@ class ComputeWorker : public QObject
   Q_OBJECT;
 
 public:
-  ComputeWorker();
+  explicit ComputeWorker(const QString& program = {});
   ~ComputeWorker() override;
   qint64 processId() const;
   void start(const QString& source, const QString& filename, const ParameterSet& parameters, double time,
@@ -38,6 +38,9 @@ protected:
   class QProcess *process;
   class QTemporaryFile *sourceFile;
   class QTemporaryFile *parameterFile;
+  class QTemporaryDir *requestDirectory;
+  QString program;
+  int consecutiveFailures = 0;
   QString resultPath;
   QString displayFilename;
   QString requestSource;

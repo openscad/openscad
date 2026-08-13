@@ -31,7 +31,7 @@
 **Program Features**
 
 * GUI
-  * Add opt-in full-precision OFF export with `-O export-off/precision=<1-17>`
+  * Add experimental Process Isolation for responsive, independently cancellable window computation
   * Add PDF export (single page only)
   * Add jump to source code from 3D preview
   * Add Error-Log window for tracking errors and warnings
@@ -59,6 +59,7 @@
   * Add Find/Find Next/Find Previous to editor context menu
 
 * Command line
+  * Add opt-in full-precision OFF export with `-O export-off/precision=<1-17>`
   * Support reading scripts from STDIN
   * Support export to STDOUT
   * Add multi-export on command line

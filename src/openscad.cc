@@ -732,9 +732,11 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                                  const FileFormat format, const std::string& parameter_file = {},
                                  const std::string& set_name = {}, const size_t csg_products_limit = 0,
                                  const double time = 0, const Camera camera = {},
-                                 const bool python = false, const std::string& python_venv = {})
+                                 const bool python = false, const std::string& python_venv = {},
+                                 const std::string& working_directory = {})
 {
-  const auto original_path = fs::path(input).parent_path();
+  const auto original_path =
+    working_directory.empty() ? fs::path(input).parent_path() : fs::path(working_directory);
   const ViewOptions view_options{};
   const CmdLineExportOptions export_options{{Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}};
   return cmdline(CommandLine{false,
@@ -768,6 +770,32 @@ static int compute_worker_main()
   for (std::string command; std::getline(std::cin, command);) {
     if (command == "ping") {
       std::cout << "pong" << std::endl;
+    } else if (!command.empty() && command.front() == '{') {
+      try {
+        const auto request = nlohmann::json::parse(command);
+        const auto operation = request.at("command").get<std::string>();
+        const auto preview = operation == "preview";
+        if (!preview && operation != "render") throw std::runtime_error("unknown command");
+        Camera camera;
+        const auto values = request.value("camera", std::vector<double>{});
+        if (values.size() == 8) {
+          camera.setVpr(values[0], values[1], values[2]);
+          camera.setVpt(values[3], values[4], values[5]);
+          camera.setVpd(values[6]);
+          camera.setVpf(values[7]);
+        }
+        const auto result = compute_worker_export(
+          request.at("input").get<std::string>(), request.at("output").get<std::string>(),
+          preview ? FileFormat::CSG : FileFormat::OFF, request.value("parameterFile", std::string{}),
+          request.value("setName", std::string{}), request.value("normalizationLimit", size_t{0}),
+          request.value("time", 0.0), camera, request.value("python", false),
+          request.value("pythonVenv", std::string{}), request.value("workingDirectory", std::string{}));
+        std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
+      } catch (const ProgressCancelException&) {
+        std::cout << "cancelled" << std::endl;
+      } catch (const std::exception&) {
+        std::cout << "error" << std::endl;
+      }
     } else if (command.rfind("render\t", 0) == 0 || command.rfind("preview\t", 0) == 0) {
       std::vector<std::string> fields;
       boost::split(fields, command, boost::is_any_of("\t"));

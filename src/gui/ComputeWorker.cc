@@ -4,8 +4,10 @@
 #include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QProcess>
 #include <QTemporaryFile>
+#include <QTemporaryDir>
 #include <QTimer>
 #include <filesystem>
 #include <memory>
@@ -19,10 +21,11 @@
 #include "openscad.h"
 #include "utils/printutils.h"
 
-ComputeWorker::ComputeWorker()
+ComputeWorker::ComputeWorker(const QString& program) : program(program)
 {
   this->sourceFile = nullptr;
   this->parameterFile = nullptr;
+  this->requestDirectory = nullptr;
   this->process = new QProcess();
   connect(this->process, &QProcess::readyReadStandardOutput, this, &ComputeWorker::processOutput);
   connect(this->process, &QProcess::readyReadStandardError, this, [this] {
@@ -41,7 +44,11 @@ ComputeWorker::ComputeWorker()
             const auto request = this->request;
             this->busy = false;
             this->request = Request::NONE;
-            startProcess();
+            if (++this->consecutiveFailures <= 3) {
+              QTimer::singleShot(100 * this->consecutiveFailures, this, &ComputeWorker::startProcess);
+            } else {
+              emit diagnostic(tr("Compute worker stopped after repeated failures."));
+            }
             if (interrupted && request == Request::PREVIEW) emit previewDone({});
             else if (interrupted) emit done({});
           });
@@ -50,11 +57,15 @@ ComputeWorker::ComputeWorker()
 
 void ComputeWorker::startProcess()
 {
-  this->process->start(QCoreApplication::applicationFilePath(), {"--compute-worker"});
-  if (!this->process->waitForStarted()) {
-    LOG(message_group::Error, "Could not start compute worker: %1$s",
-        this->process->errorString().toStdString());
-  }
+  connect(
+    this->process, &QProcess::errorOccurred, this,
+    [this](QProcess::ProcessError error) {
+      if (error != QProcess::FailedToStart) return;
+      emit diagnostic(tr("Could not start compute worker: %1").arg(this->process->errorString()));
+    },
+    Qt::SingleShotConnection);
+  this->process->start(this->program.isEmpty() ? QCoreApplication::applicationFilePath() : this->program,
+                       {"--compute-worker"});
 }
 
 ComputeWorker::~ComputeWorker()
@@ -66,9 +77,10 @@ ComputeWorker::~ComputeWorker()
     this->process->waitForFinished();
   }
   delete this->process;
+  cleanupResult();
   delete this->sourceFile;
   delete this->parameterFile;
-  cleanupResult();
+  delete this->requestDirectory;
 }
 
 void ComputeWorker::cleanupResult()
@@ -108,12 +120,16 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
                                  size_t normalizationLimit, double time, const Camera& camera,
                                  bool python, const QString& pythonVenv)
 {
+  cleanupResult();
   delete this->sourceFile;
   delete this->parameterFile;
+  delete this->requestDirectory;
   this->parameterFile = nullptr;
-  cleanupResult();
+  this->requestDirectory = new QTemporaryDir(QDir::tempPath() + "/openscad-worker-XXXXXX");
 
-  const auto directory = filename.isEmpty() ? QDir::tempPath() : QFileInfo(filename).absolutePath();
+  const auto directory = this->requestDirectory->path();
+  const auto workingDirectory =
+    filename.isEmpty() ? QDir::currentPath() : QFileInfo(filename).absolutePath();
   this->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
   this->sourceFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.scad");
   if (!this->sourceFile->open()) {
@@ -149,16 +165,23 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
   this->busy = true;
   const auto vpr = camera.getVpr();
   const auto vpt = camera.getVpt();
-  auto request = QString("%1\t%2\t%3\t%4\tworker\t%5\t%6")
-                   .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath,
-                        QString::number(normalizationLimit), QString::number(time, 'g', 17));
+  QJsonObject request{{"command", command},
+                      {"input", this->sourceFile->fileName()},
+                      {"output", this->resultPath},
+                      {"workingDirectory", workingDirectory},
+                      {"parameterFile", parameterPath},
+                      {"setName", "worker"},
+                      {"normalizationLimit", static_cast<qint64>(normalizationLimit)},
+                      {"time", time}};
+  QJsonArray cameraValues;
   for (const auto value :
        {vpr.x(), vpr.y(), vpr.z(), vpt.x(), vpt.y(), vpt.z(), camera.zoomValue(), camera.fovValue()}) {
-    request += "\t" + QString::number(value, 'g', 17);
+    cameraValues.append(value);
   }
-  request += python ? "\tpython\t" + pythonVenv : "\t\t";
-  request += "\n";
-  this->process->write(request.toUtf8());
+  request["camera"] = cameraValues;
+  request["python"] = python;
+  request["pythonVenv"] = pythonVenv;
+  this->process->write(QJsonDocument(request).toJson(QJsonDocument::Compact) + "\n");
 }
 
 void ComputeWorker::cancel()
@@ -192,7 +215,11 @@ void ComputeWorker::processOutput()
 {
   while (this->process->canReadLine()) {
     const auto response = this->process->readLine().trimmed();
-    if (response == "ready" || response == "pong") continue;
+    if (response == "ready") {
+      this->consecutiveFailures = 0;
+      continue;
+    }
+    if (response == "pong") continue;
     if (response.startsWith("progress\t")) {
       emit progress(response.mid(9).toInt());
     } else if (response == "done") {
