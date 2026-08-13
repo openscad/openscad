@@ -208,6 +208,7 @@ unsigned int GuiLocker::guiLocked = 0;
 
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
+bool MainWindow::processIsolation = false;
 const int MainWindow::tabStopWidth = 15;
 QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
@@ -616,6 +617,11 @@ MainWindow::~MainWindow()
 {
   delete this->computeWorker;
   delete this->geometryWorker;
+}
+
+void MainWindow::setProcessIsolation(bool enabled)
+{
+  processIsolation = enabled;
 }
 
 qint64 MainWindow::computeWorkerProcessId() const
@@ -3636,7 +3642,6 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  this->processIsolation = Feature::ExperimentalProcessIsolation.is_enabled();
   if (!this->processIsolation) {
     this->geometryWorker = new GeometryWorker();
     connect(this->geometryWorker, &GeometryWorker::done, this, &MainWindow::actionRenderDone);

@@ -83,10 +83,11 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 public:
   Preferences *prefs;
 
+  static void setProcessIsolation(bool enabled);
+
   QTimer *consoleUpdater;
 
   bool isPreview;
-  bool processIsolation = false;
   bool previewRequested = false;
   QMap<QString, QString> workerDependencies;
 
@@ -135,6 +136,7 @@ public:
   qint64 computeWorkerProcessId() const;
 
 private:
+  static bool processIsolation;
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;

@@ -328,6 +328,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #ifdef ENABLE_GUI_TESTS
   if (gui_test != "none") Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
 #endif
+  MainWindow::setProcessIsolation(Feature::ExperimentalProcessIsolation.is_enabled());
   new MainWindow(inputFilesList);
   QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
     QSettingsCached{}.release();
