@@ -7,9 +7,11 @@
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTest>
+#include <QSignalSpy>
 
 #include "gui/OpenSCADApp.h"
 #include "gui/Console.h"
+#include "gui/ComputeWorker.h"
 #include "gui/ProgressWidget.h"
 #include "gui/parameter/ParameterWidget.h"
 #include "openscad.h"
@@ -113,6 +115,18 @@ void TestMainWindow::checkProcessIsolationRequiresRestart()
     candidate->close();
   }
   Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
+}
+
+void TestMainWindow::checkUnavailableComputeWorkerDoesNotBlockOrRespawnForever()
+{
+  QElapsedTimer elapsed;
+  elapsed.start();
+  ComputeWorker unavailableWorker("/definitely/missing/openscad");
+  QVERIFY2(elapsed.elapsed() < 250, "Starting a compute worker blocked the GUI thread");
+  QSignalSpy diagnostics(&unavailableWorker, &ComputeWorker::diagnostic);
+  QTest::qWait(1000);
+  QCOMPARE(unavailableWorker.processId(), 0);
+  QVERIFY(diagnostics.size() <= 1);
 }
 
 void TestMainWindow::checkF6UsesComputeWorkerResult()

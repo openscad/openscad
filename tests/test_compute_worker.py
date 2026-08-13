@@ -4,24 +4,38 @@ import subprocess
 import sys
 import tempfile
 import json
+import io
 from pathlib import Path
 
 
 def wait_for(worker, final):
     responses = []
     while not responses or responses[-1] != final:
-        responses.append(worker.stdout.readline().strip())
+        response = worker.stdout.readline()
+        if not response:
+            raise RuntimeError("compute worker exited before replying")
+        responses.append(response.strip())
     return responses
 
 
 def wait_for_any(worker, finals):
     while True:
-        response = worker.stdout.readline().strip()
+        response = worker.stdout.readline()
+        if not response:
+            raise RuntimeError("compute worker exited before replying")
+        response = response.strip()
         if response in finals:
             return response
 
 
 def main():
+    dead_worker = type("DeadWorker", (), {"stdout": io.StringIO("")})()
+    try:
+        wait_for(dead_worker, "done")
+        raise AssertionError("EOF should fail immediately")
+    except RuntimeError:
+        pass
+
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
         stdin=subprocess.PIPE,
@@ -40,7 +54,17 @@ def main():
             source = Path(directory) / "model.scad"
             result = Path(directory) / "result.off"
             source.write_text("translate([1.2345678901234567, 0, 0]) cube(1);\n")
-            worker.stdin.write(f"render\t{source}\t{result}\n")
+            worker.stdin.write(
+                json.dumps(
+                    {
+                        "command": "render",
+                        "input": str(source),
+                        "output": str(result),
+                        "pythonVenv": "ignored\tpath\nwith controls",
+                    }
+                )
+                + "\n"
+            )
             worker.stdin.flush()
             responses = wait_for(worker, "done")
             assert any(response.startswith("progress\t") for response in responses)
