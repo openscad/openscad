@@ -332,7 +332,7 @@ void TestMainWindow::checkOpenCSGPreparationUsesViewportColorScheme()
 {
 #ifdef ENABLE_OPENCSG
   restoreWindowInitialState();
-  window->setColorScheme("Starnight");
+  window->qglview->setColorScheme("Starnight");
   window->activeEditor->setPlainText("cube(1);");
 
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));

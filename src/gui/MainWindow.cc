@@ -2000,6 +2000,7 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
 #ifdef ENABLE_OPENCSG
     auto renderer = std::make_shared<OpenCSGRenderer>(
       this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+    renderer->setColorScheme(this->qglview->colorScheme());
     this->qglview->makeCurrent();
     const auto prepared = renderer->prepare(this->qglview->edge_shader.get(), [this]() {
       QApplication::processEvents();
