@@ -1838,9 +1838,7 @@ void MainWindow::on_designActionReloadAndPreview_triggered()
   if (GuiLocker::isLocked()) return;
   if (fileChangedOnDisk()) {
     if (!checkEditorModified()) return;
-    this->workerReloading = true;
     const auto refreshed = tabManager->refreshDocument();
-    this->workerReloading = false;
     if (!refreshed) return;
     if (GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) this->raise();
   }
@@ -3241,21 +3239,7 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
-  if (this->workerReloading) {
-    reloadedEditor->parameterWidget->setEnabled(false);
-  } else {
-    try {
-      // when a new editor is created, it is important to compile the initial geometry
-      // so the customizer panels are ok.
-      parseDocument(reloadedEditor);
-    } catch (const HardWarningException&) {
-      exceptionCleanup();
-    } catch (const std::exception& ex) {
-      UnknownExceptionCleanup(ex.what());
-    } catch (...) {
-      UnknownExceptionCleanup();
-    }
-  }
+  reloadedEditor->parameterWidget->setEnabled(false);
 
   // updates the content of the Recents Files menu to integrate the one possibly
   // associated with the created editor. The reason is that an editor can be created
