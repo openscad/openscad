@@ -16,8 +16,16 @@ CGALWorker::CGALWorker()
 {
   this->sourceFile = nullptr;
   this->process = new QProcess();
-  this->process->setProcessChannelMode(QProcess::ForwardedErrorChannel);
   connect(this->process, &QProcess::readyReadStandardOutput, this, &CGALWorker::processOutput);
+  connect(this->process, &QProcess::readyReadStandardError, this, [this] {
+    auto text = QString::fromUtf8(this->process->readAllStandardError());
+    if (this->sourceFile) {
+      text.replace(this->sourceFile->fileName(), this->displayFilename);
+      text.replace(QFileInfo(this->sourceFile->fileName()).fileName(),
+                   QFileInfo(this->displayFilename).fileName());
+    }
+    emit diagnostic(text.trimmed());
+  });
   connect(this->process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
           [this](int, QProcess::ExitStatus) {
             if (this->stopping) return;
@@ -76,6 +84,7 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
 
   const auto directory = filename.isEmpty() ? QDir::tempPath() : QFileInfo(filename).absolutePath();
+  this->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
   this->sourceFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.scad");
   if (!this->sourceFile->open()) {
     LOG(message_group::Error, "Could not create compute worker input: %1$s",

@@ -24,11 +24,13 @@ protected slots:
 signals:
   void done(std::shared_ptr<const class Geometry>);
   void previewDone(const QString& source);
+  void diagnostic(const QString& text);
 
 protected:
   class QProcess *process;
   class QTemporaryFile *sourceFile;
   QString resultPath;
+  QString displayFilename;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   bool busy = false;
   bool stopping = false;

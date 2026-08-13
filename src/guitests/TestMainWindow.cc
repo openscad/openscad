@@ -116,13 +116,16 @@ void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
 {
   restoreWindowInitialState();
   window->console->clear();
+  const auto documentName = window->activeEditor->filepath.isEmpty()
+                              ? QString("Untitled.scad")
+                              : QFileInfo(window->activeEditor->filepath).fileName();
   window->activeEditor->setPlainText("cube(");
 
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QVERIFY(!window->activeEditor->contentsRendered);
   QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Parser error"), 5000);
-  QVERIFY(window->console->toPlainText().contains("test-tmp.scad"));
+  QVERIFY(window->console->toPlainText().contains(documentName));
   QVERIFY(!window->console->toPlainText().contains(".openscad-worker-"));
 
   window->activeEditor->setPlainText("cube(1);");
