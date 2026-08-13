@@ -69,6 +69,15 @@ def main():
             assert geometry.exists()
             assert geometry.read_text().startswith("OFF\n")
 
+            dependency = Path(directory) / "part.scad"
+            dependency.write_text("cube(2);\n")
+            source.write_text("include <part.scad>\n")
+            worker.stdin.write(f"preview\t{source}\t{preview}\n")
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "previewdone"
+            dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
+            assert dependencies == [str(dependency)]
+
         worker.stdin.write("quit\n")
         worker.stdin.flush()
         assert worker.wait(timeout=5) == 0
