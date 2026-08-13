@@ -122,10 +122,15 @@ void TestMainWindow::checkLegacyModeRendersWithoutComputeWorker()
   auto *legacyWindow = new MainWindow({});
   QCOMPARE(legacyWindow->computeWorkerProcessId(), 0);
   legacyWindow->activeEditor->setPlainText("cube(1);");
-  QVERIFY(QMetaObject::invokeMethod(legacyWindow, "on_designActionRender_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(legacyWindow->rootGeom != nullptr, 10000);
+  const auto invoked = QMetaObject::invokeMethod(legacyWindow, "on_designActionRender_triggered");
+  QElapsedTimer timer;
+  timer.start();
+  while (legacyWindow->rootGeom == nullptr && timer.elapsed() < 30000) QTest::qWait(50);
+  const auto rendered = legacyWindow->rootGeom != nullptr;
   legacyWindow->close();
   MainWindow::setProcessIsolation(true);
+  QVERIFY(invoked);
+  QVERIFY(rendered);
 }
 
 void TestMainWindow::checkUnavailableComputeWorkerDoesNotBlockOrRespawnForever()
