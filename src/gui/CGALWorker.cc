@@ -88,21 +88,23 @@ qint64 CGALWorker::processId() const
 }
 
 void CGALWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters,
-                       double time, const Camera& camera)
+                       double time, const Camera& camera, bool python, const QString& pythonVenv)
 {
-  startRequest("render", ".off", source, filename, parameters, 0, time, camera);
+  startRequest("render", ".off", source, filename, parameters, 0, time, camera, python, pythonVenv);
 }
 
 void CGALWorker::startPreview(const QString& source, const QString& filename,
                               const ParameterSet& parameters, size_t normalizationLimit, double time,
-                              const Camera& camera)
+                              const Camera& camera, bool python, const QString& pythonVenv)
 {
-  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit, time, camera);
+  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit, time, camera, python,
+               pythonVenv);
 }
 
 void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
                               const QString& filename, const ParameterSet& parameters,
-                              size_t normalizationLimit, double time, const Camera& camera)
+                              size_t normalizationLimit, double time, const Camera& camera, bool python,
+                              const QString& pythonVenv)
 {
   delete this->sourceFile;
   delete this->parameterFile;
@@ -120,8 +122,10 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
     return;
   }
   this->sourceFile->write(source.toUtf8());
-  this->sourceFile->write("\n\x03\n");
-  this->sourceFile->write(QByteArray::fromStdString(commandline_commands));
+  if (!python) {
+    this->sourceFile->write("\n\x03\n");
+    this->sourceFile->write(QByteArray::fromStdString(commandline_commands));
+  }
   this->sourceFile->flush();
   this->requestSource = source;
   QString parameterPath;
@@ -150,6 +154,7 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
        {vpr.x(), vpr.y(), vpr.z(), vpt.x(), vpt.y(), vpt.z(), camera.zoomValue(), camera.fovValue()}) {
     request += "\t" + QString::number(value, 'g', 17);
   }
+  request += python ? "\tpython\t" + pythonVenv : "\t\t";
   request += "\n";
   this->process->write(request.toUtf8());
 }

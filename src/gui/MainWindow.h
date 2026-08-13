@@ -102,6 +102,7 @@ public:
   std::string untrusted_edit_document_name;
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
+  bool prepareWorkerPython(bool& python, QString& pythonVenv);
   Tree tree;
   EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
@@ -356,7 +357,7 @@ private slots:
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void actionPreviewDone(const std::shared_ptr<CsgInfo>& products);
-  void cgalRender();
+  void cgalRender(bool python, const QString& pythonVenv);
   void handleMeasurementClicked(QAction *clickedAction);
   void on_designCheckValidity_triggered();
   void on_designActionDisplayAST_triggered();

@@ -14,6 +14,10 @@
 #include "gui/parameter/ParameterWidget.h"
 #include "openscad.h"
 #include "platform/PlatformUtils.h"
+#ifdef ENABLE_PYTHON
+#include "Feature.h"
+#include "python/python_public.h"
+#endif
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
 {
@@ -239,3 +243,22 @@ void TestMainWindow::checkF6UsesCommandLineDefinitions()
   QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 7.0);
   commandline_commands = previousCommands;
 }
+
+#ifdef ENABLE_PYTHON
+void TestMainWindow::checkF6UsesTrustedPythonWorker()
+{
+  restoreWindowInitialState();
+  QTemporaryFile file(QDir::tempPath() + "/openscad-python-XXXXXX.py");
+  QVERIFY(file.open());
+  QVERIFY(file.write("from openscad import cube, show\nshow(cube([7, 1, 1]))\n") > 0);
+  QVERIFY(file.flush());
+  window->tabManager->open(file.fileName());
+  Feature::enable_feature(Feature::ExperimentalPythonEngine.get_name());
+  python_trusted = true;
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 7.0);
+  python_trusted = false;
+}
+#endif

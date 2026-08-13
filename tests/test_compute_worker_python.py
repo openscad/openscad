@@ -9,7 +9,7 @@ from pathlib import Path
 with tempfile.TemporaryDirectory() as directory:
     source = Path(directory) / "model.py"
     result = Path(directory) / "result.off"
-    source.write_text("from openscad import cube, show\nshow(cube([7, 1, 1]))\n")
+    source.write_text("from openscad import cube, show\nshow(cube([t * 14, 1, 1]))\n")
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
         stdin=subprocess.PIPE,
@@ -20,7 +20,7 @@ with tempfile.TemporaryDirectory() as directory:
     try:
         assert worker.stdout.readline().strip() == "ready"
         worker.stdin.write(
-            f"render\t{source}\t{result}\t\tworker\t0\t0"
+            f"render\t{source}\t{result}\t\tworker\t0\t0.5"
             "\t0\t0\t0\t0\t0\t0\t100\t22.5\tpython\t\n"
         )
         worker.stdin.flush()

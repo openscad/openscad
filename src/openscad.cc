@@ -185,6 +185,8 @@ struct CommandLine {
   const size_t csgProductsLimit = 0;
   const std::string dependencyFile = {};
   const double time = 0;
+  const bool python = false;
+  const std::string pythonVenv = {};
 };
 
 namespace {
@@ -609,16 +611,14 @@ int cmdline(const CommandLine& cmd)
 
 #ifdef ENABLE_PYTHON
   python_active = false;
-  if (cmd.filename.c_str() != NULL) {
-    if (boost::algorithm::ends_with(cmd.filename, ".py")) {
-      if (python_trusted == true) python_active = true;
-      else LOG("Python is not enabled");
-    }
+  if (cmd.python || boost::algorithm::ends_with(cmd.filename, ".py")) {
+    if (cmd.python || python_trusted) python_active = true;
+    else LOG("Python is not enabled");
   }
 
   if (python_active) {
     auto fulltext_py = text;
-    initPython("", 0.0);
+    initPython(cmd.pythonVenv, cmd.time);
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(error.c_str());
     text = "\n";
@@ -707,7 +707,8 @@ int cmdline(const CommandLine& cmd)
 static int compute_worker_export(const std::string& input, const std::string& output,
                                  const FileFormat format, const std::string& parameter_file = {},
                                  const std::string& set_name = {}, const size_t csg_products_limit = 0,
-                                 const double time = 0, const Camera camera = {})
+                                 const double time = 0, const Camera camera = {},
+                                 const bool python = false, const std::string& python_venv = {})
 {
   const auto original_path = fs::path(input).parent_path();
   const ViewOptions view_options{};
@@ -730,7 +731,9 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              format == FileFormat::CSG ? output + ".products.json" : "",
                              csg_products_limit,
                              output + ".dependencies.json",
-                             time});
+                             time,
+                             python,
+                             python_venv});
 }
 
 static int compute_worker_main()
@@ -760,9 +763,11 @@ static int compute_worker_main()
         camera.setVpd(boost::lexical_cast<double>(fields[13]));
         camera.setVpf(boost::lexical_cast<double>(fields[14]));
       }
-      const auto result =
-        compute_worker_export(fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::OFF,
-                              parameter_file, set_name, csg_products_limit, time, camera);
+      const auto python = fields.size() > 15 && fields[15] == "python";
+      const auto python_venv = fields.size() > 16 ? fields[16] : std::string{};
+      const auto result = compute_worker_export(
+        fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::OFF, parameter_file, set_name,
+        csg_products_limit, time, camera, python, python_venv);
       std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
     } else if (command == "quit") {
       return 0;

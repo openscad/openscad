@@ -1723,6 +1723,27 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
 }
 #endif  // ifdef ENABLE_PYTHON
 
+bool MainWindow::prepareWorkerPython(bool& python, QString& pythonVenv)
+{
+  python = false;
+  pythonVenv.clear();
+  if (!this->activeEditor->filepath.endsWith(".py", Qt::CaseInsensitive)) return true;
+#ifdef ENABLE_PYTHON
+  const auto source = this->activeEditor->toPlainText().toStdString();
+  const auto filename = this->activeEditor->filepath.toStdString();
+  if (!Feature::ExperimentalPythonEngine.is_enabled() || !trust_python_file(filename, source)) {
+    LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    return false;
+  }
+  python = true;
+  pythonVenv = QString::fromStdString(venvBinDirFromSettings());
+  return true;
+#else
+  LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+  return false;
+#endif
+}
+
 std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
@@ -1898,6 +1919,10 @@ void MainWindow::actionRenderPreview()
 
   if (GuiLocker::isLocked()) return;
 
+  bool python;
+  QString pythonVenv;
+  if (!prepareWorkerPython(python, pythonVenv)) return;
+
   GuiLocker::lock();
   this->previewRequested = false;
 
@@ -1914,7 +1939,8 @@ void MainWindow::actionRenderPreview()
     2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
   this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath,
                                  this->activeEditor->parameterWidget->exportValues(), normalizationLimit,
-                                 this->animateWidget->getAnimTval(), this->qglview->cam);
+                                 this->animateWidget->getAnimTval(), this->qglview->cam, python,
+                                 pythonVenv);
 }
 
 void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
@@ -2050,14 +2076,17 @@ void MainWindow::on_designAction3DPrint_triggered()
 void MainWindow::on_designActionRender_triggered()
 {
   if (GuiLocker::isLocked()) return;
+  bool python;
+  QString pythonVenv;
+  if (!prepareWorkerPython(python, pythonVenv)) return;
   GuiLocker::lock();
   setCurrentOutput();
   autoReloadTimer->stop();
   this->renderStatistic.start();
-  cgalRender();
+  cgalRender(python, pythonVenv);
 }
 
-void MainWindow::cgalRender()
+void MainWindow::cgalRender(bool python, const QString& pythonVenv)
 {
   this->qglview->setRenderer(nullptr);
   this->geomRenderer = nullptr;
@@ -2074,7 +2103,7 @@ void MainWindow::cgalRender()
 
   this->cgalworker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath,
                           this->activeEditor->parameterWidget->exportValues(),
-                          this->animateWidget->getAnimTval(), this->qglview->cam);
+                          this->animateWidget->getAnimTval(), this->qglview->cam, python, pythonVenv);
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)

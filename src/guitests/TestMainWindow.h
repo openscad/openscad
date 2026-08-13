@@ -19,4 +19,7 @@ private slots:
   void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
   void checkF6UsesCommandLineDefinitions();
+#ifdef ENABLE_PYTHON
+  void checkF6UsesTrustedPythonWorker();
+#endif
 };
