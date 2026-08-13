@@ -24,6 +24,7 @@ private slots:
   void checkPreviewDispatchDoesNotBlockGui();
   void checkOpenCSGPreparationCanBeCanceled();
   void checkPreviewDrawsAfterCanceledOpenCSGPreparation();
+  void checkOpenCSGPreparationUsesViewportColorScheme();
   void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
   void checkF6UsesCommandLineDefinitions();

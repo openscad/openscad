@@ -14,6 +14,8 @@
 #include "gui/ComputeWorker.h"
 #include "gui/ProgressWidget.h"
 #include "gui/parameter/ParameterWidget.h"
+#include "glview/ColorMap.h"
+#include "glview/Renderer.h"
 #include "openscad.h"
 #include "platform/PlatformUtils.h"
 #include "Feature.h"
@@ -323,6 +325,24 @@ void TestMainWindow::checkPreviewDrawsAfterCanceledOpenCSGPreparation()
   QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
   QTRY_VERIFY_WITH_TIMEOUT(window->qglview->getRenderer() == window->previewRenderer.get(), 5000);
+#endif
+}
+
+void TestMainWindow::checkOpenCSGPreparationUsesViewportColorScheme()
+{
+#ifdef ENABLE_OPENCSG
+  restoreWindowInitialState();
+  window->setColorScheme("Starnight");
+  window->activeEditor->setPlainText("cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+
+  Color4f actual;
+  QVERIFY(window->previewRenderer->getColorSchemeColor(Renderer::ColorMode::MATERIAL, actual));
+  const auto scheme = ColorMap::instance().findColorScheme("Starnight");
+  QVERIFY(scheme != nullptr);
+  QCOMPARE(actual, ColorMap::getColor(*scheme, RenderColor::OPENCSG_FACE_FRONT_COLOR));
 #endif
 }
 
