@@ -117,6 +117,18 @@ void TestMainWindow::checkProcessIsolationRequiresRestart()
   Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
 }
 
+void TestMainWindow::checkLegacyModeRendersWithoutComputeWorker()
+{
+  MainWindow::setProcessIsolation(false);
+  auto *legacyWindow = new MainWindow({});
+  QCOMPARE(legacyWindow->computeWorkerProcessId(), 0);
+  legacyWindow->activeEditor->setPlainText("cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(legacyWindow, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(legacyWindow->rootGeom != nullptr, 10000);
+  legacyWindow->close();
+  MainWindow::setProcessIsolation(true);
+}
+
 void TestMainWindow::checkUnavailableComputeWorkerDoesNotBlockOrRespawnForever()
 {
   QElapsedTimer elapsed;

@@ -2005,10 +2005,6 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     viewModeThrownTogether();
 #endif
   }
-  if (animateWidget->dumpPictures()) {
-    animateWidget->nextFrame();
-    animateWidget->saveFrame(this->qglview->grabFrame());
-  }
   compileEnded();
   if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
 }

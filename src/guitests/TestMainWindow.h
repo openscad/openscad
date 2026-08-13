@@ -11,6 +11,7 @@ private slots:
   void checkSaveToShouldUpdateWindowTitle();
   void checkEachWindowHasAComputeWorker();
   void checkProcessIsolationRequiresRestart();
+  void checkLegacyModeRendersWithoutComputeWorker();
   void checkUnavailableComputeWorkerDoesNotBlockOrRespawnForever();
   void checkF6UsesComputeWorkerResult();
   void checkF6UsesCustomizerValues();
