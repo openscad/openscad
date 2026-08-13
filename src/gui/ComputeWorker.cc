@@ -68,13 +68,13 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
 void ComputeWorker::startProcess()
 {
   this->ready = false;
-  connect(
-    this->process, &QProcess::errorOccurred, this,
-    [this](QProcess::ProcessError error) {
+  disconnect(this->startErrorConnection);
+  this->startErrorConnection =
+    connect(this->process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
       if (error != QProcess::FailedToStart) return;
+      disconnect(this->startErrorConnection);
       emit diagnostic(tr("Could not start compute worker: %1").arg(this->process->errorString()));
-    },
-    Qt::SingleShotConnection);
+    });
   this->process->start(this->program.isEmpty() ? QCoreApplication::applicationFilePath() : this->program,
                        {"--compute-worker"});
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QByteArray>
+#include <QMetaObject>
 #include <QObject>
 #include <QString>
 #include <memory>
@@ -43,6 +44,7 @@ protected:
   class QTemporaryFile *sourceFile;
   class QTemporaryFile *parameterFile;
   class QTemporaryDir *requestDirectory;
+  QMetaObject::Connection startErrorConnection;
   QString program;
   int consecutiveFailures = 0;
   QString resultPath;
