@@ -15,6 +15,7 @@
 #include "glview/Camera.h"
 #include "glview/CsgInfo.h"
 #include "io/import.h"
+#include "openscad.h"
 #include "utils/printutils.h"
 
 CGALWorker::CGALWorker()
@@ -119,6 +120,8 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
     return;
   }
   this->sourceFile->write(source.toUtf8());
+  this->sourceFile->write("\n\x03\n");
+  this->sourceFile->write(QByteArray::fromStdString(commandline_commands));
   this->sourceFile->flush();
   this->requestSource = source;
   QString parameterPath;
