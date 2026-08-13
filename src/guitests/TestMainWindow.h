@@ -7,6 +7,7 @@ class TestMainWindow : public UXTest
   Q_OBJECT;
 private slots:
   void checkOpenTabPropagateToWindow();
+  void checkOpeningLargeFileDoesNotParseInGui();
   void checkSaveToShouldUpdateWindowTitle();
   void checkEachWindowHasAComputeWorker();
   void checkF6UsesComputeWorkerResult();

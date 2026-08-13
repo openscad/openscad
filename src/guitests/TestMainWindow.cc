@@ -5,6 +5,7 @@
 #include <QProcess>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTest>
 
 #include "gui/OpenSCADApp.h"
@@ -33,6 +34,24 @@ void TestMainWindow::checkOpenTabPropagateToWindow()
 
   // The window title must also have the name of open file
   QCOMPARE(window->windowTitle(), QFileInfo(filename).fileName());
+}
+
+void TestMainWindow::checkOpeningLargeFileDoesNotParseInGui()
+{
+  restoreWindowInitialState();
+
+  QTemporaryFile file(QDir::tempPath() + "/openscad-large-XXXXXX.scad");
+  QVERIFY(file.open());
+  QByteArray source;
+  source.reserve(900000);
+  for (int i = 0; i < 100000; ++i) source.append("cube(1);\n");
+  QCOMPARE(file.write(source), source.size());
+  QVERIFY(file.flush());
+
+  QElapsedTimer dispatch;
+  dispatch.start();
+  window->tabManager->open(file.fileName());
+  QVERIFY2(dispatch.elapsed() < 250, "Opening a file parsed source in the GUI process");
 }
 
 void TestMainWindow::checkSaveToShouldUpdateWindowTitle()
