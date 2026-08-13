@@ -102,6 +102,7 @@
 #include "geometry/PolySet.h"
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
+#include "glview/CsgInfo.h"
 #include "glview/OffscreenView.h"
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
@@ -179,6 +180,8 @@ struct CommandLine {
   const std::vector<std::string> summaryOptions;
   const std::string summaryFile;
   const std::string parameterMetadataFile = {};
+  const std::string csgProductsFile = {};
+  const size_t csgProductsLimit = 0;
 };
 
 namespace {
@@ -442,6 +445,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
   Tree tree(root_node, fparent.string());
 
+  if (!cmd.csgProductsFile.empty()) {
+    CsgInfo products;
+    products.compile_products(tree, cmd.csgProductsLimit);
+    if (!products.write_products(cmd.csgProductsFile)) return 1;
+  }
+
   if (export_format == FileFormat::CSG) {
     // https://github.com/openscad/openscad/issues/128
     // When I use the csg ouptput from the command line the paths in 'import'
@@ -690,7 +699,7 @@ int cmdline(const CommandLine& cmd)
 
 static int compute_worker_export(const std::string& input, const std::string& output,
                                  const FileFormat format, const std::string& parameter_file = {},
-                                 const std::string& set_name = {})
+                                 const std::string& set_name = {}, const size_t csg_products_limit = 0)
 {
   const auto original_path = fs::path(input).parent_path();
   const ViewOptions view_options{};
@@ -710,7 +719,9 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              {},
                              {},
                              "",
-                             output + ".parameters.json"});
+                             output + ".parameters.json",
+                             format == FileFormat::CSG ? output + ".products.json" : "",
+                             csg_products_limit});
 }
 
 static int compute_worker_main()
@@ -737,10 +748,18 @@ static int compute_worker_main()
         parameter_separator == std::string::npos
           ? std::string{}
           : command.substr(parameter_separator + 1, set_separator - parameter_separator - 1);
-      const auto set_name =
-        set_separator == std::string::npos ? std::string{} : command.substr(set_separator + 1);
-      const auto result = compute_worker_export(
-        input, output, preview ? FileFormat::CSG : FileFormat::OFF, parameter_file, set_name);
+      const auto limit_separator =
+        set_separator == std::string::npos ? std::string::npos : command.find('\t', set_separator + 1);
+      const auto set_name = set_separator == std::string::npos
+                              ? std::string{}
+                              : command.substr(set_separator + 1, limit_separator - set_separator - 1);
+      const auto csg_products_limit =
+        limit_separator == std::string::npos
+          ? 0
+          : boost::lexical_cast<size_t>(command.substr(limit_separator + 1));
+      const auto result =
+        compute_worker_export(input, output, preview ? FileFormat::CSG : FileFormat::OFF, parameter_file,
+                              set_name, csg_products_limit);
       std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
     } else if (command == "quit") {
       return 0;

@@ -56,7 +56,7 @@ def main():
             assert metadata[0]["value"] == 7
 
             preview = Path(directory) / "preview.csg"
-            source.write_text("translate([1, 0, 0]) cube(1);\n")
+            source.write_text("#translate([1, 0, 0]) cube(1);\n")
             worker.stdin.write(f"preview\t{source}\t{preview}\n")
             worker.stdin.flush()
             assert worker.stdout.readline().strip() == "previewdone"
@@ -64,6 +64,7 @@ def main():
             products = json.loads(Path(f"{preview}.products.json").read_text())
             assert len(products["root"]) == 1
             assert len(products["root"][0]["intersections"]) == 1
+            assert len(products["highlights"]) == 1
             geometry = Path(products["root"][0]["intersections"][0]["geometry"])
             assert geometry.exists()
             assert geometry.read_text().startswith("OFF\n")

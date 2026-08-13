@@ -47,6 +47,7 @@ class BuiltinContext;
 class CGALWorker;
 class CSGNode;
 class CSGProducts;
+class CsgInfo;
 class FontListDialog;
 class LibraryInfoDialog;
 class Preferences;
@@ -353,7 +354,7 @@ private slots:
   void sendToExternalTool(class ExternalToolInterface& externalToolService);
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
-  void actionPreviewDone(const QString& source);
+  void actionPreviewDone(const std::shared_ptr<CsgInfo>& products);
   void cgalRender();
   void handleMeasurementClicked(QAction *clickedAction);
   void on_designCheckValidity_triggered();

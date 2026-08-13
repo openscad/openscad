@@ -15,7 +15,8 @@ public:
   ~CGALWorker() override;
   qint64 processId() const;
   void start(const QString& source, const QString& filename, const ParameterSet& parameters);
-  void startPreview(const QString& source, const QString& filename, const ParameterSet& parameters);
+  void startPreview(const QString& source, const QString& filename, const ParameterSet& parameters,
+                    size_t normalizationLimit);
 
 public slots:
   void cancel();
@@ -25,7 +26,7 @@ protected slots:
 
 signals:
   void done(std::shared_ptr<const class Geometry>);
-  void previewDone(const QString& source);
+  void previewDone(std::shared_ptr<class CsgInfo> products);
   void diagnostic(const QString& text);
   void parametersDiscovered(const QString& source, const QString& metadata);
 
@@ -39,7 +40,9 @@ protected:
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   bool busy = false;
   bool stopping = false;
+  void cleanupResult();
   void startProcess();
   void startRequest(const QString& command, const QString& suffix, const QString& source,
-                    const QString& filename, const ParameterSet& parameters);
+                    const QString& filename, const ParameterSet& parameters,
+                    size_t normalizationLimit = 0);
 };

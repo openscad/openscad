@@ -22,7 +22,10 @@ public:
   std::shared_ptr<CSGProducts> highlights_products;
   std::shared_ptr<CSGProducts> background_products;
 
-  bool compile_products(const Tree& tree)
+  bool write_products(const std::string& filename) const;
+  bool read_products(const std::string& filename);
+
+  bool compile_products(const Tree& tree, size_t normalization_limit = 0)
   {
     auto& root_node = tree.root();
     GeometryEvaluator geomevaluator(tree);
@@ -32,7 +35,8 @@ public:
     std::vector<std::shared_ptr<CSGNode>> backgroundNodes = evaluator.getBackgroundNodes();
 
     LOG("Compiling design (CSG Products normalization)...");
-    CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
+    CSGTreeNormalizer normalizer(normalization_limit ? normalization_limit
+                                                     : RenderSettings::inst()->openCSGTermLimit);
     if (csgRoot) {
       const std::shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
       if (normalizedRoot) {

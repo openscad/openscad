@@ -112,6 +112,7 @@
 #include "geometry/GeometryEvaluator.h"
 #include "glview/PolySetRenderer.h"
 #include "glview/RenderSettings.h"
+#include "glview/CsgInfo.h"
 #if not defined(USE_POLYSET_FOR_CGAL)
 #include "glview/cgal/CGALRenderer.h"
 #endif
@@ -1888,32 +1889,52 @@ void MainWindow::actionRenderPreview()
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
   connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
+  const auto normalizationLimit =
+    2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
   this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath,
-                                 this->activeEditor->parameterWidget->exportValues());
+                                 this->activeEditor->parameterWidget->exportValues(),
+                                 normalizationLimit);
 }
 
-void MainWindow::actionPreviewDone(const QString& source)
+void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
 {
   updateStatusBar(nullptr);
-  if (source.isEmpty()) {
+  if (!products) {
     compileEnded();
     if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
     return;
   }
 
-  SourceFile *file = nullptr;
-  const auto filename = activeEditor->filepath.toStdString();
-  const auto text = source.toStdString() + "\n\x03\n";
-  if (!parse(file, text, filename, filename, false)) {
-    delete file;
-    compileEnded();
-    if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
-    return;
+  this->rootProduct = products->root_products;
+  this->highlightsProducts = products->highlights_products;
+  this->backgroundProducts = products->background_products;
+  const auto limit = GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+  if (this->rootProduct && this->rootProduct->size() > limit) {
+    LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
+    LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
+    this->previewRenderer.reset();
+  } else {
+#ifdef ENABLE_OPENCSG
+    this->previewRenderer = std::make_shared<OpenCSGRenderer>(
+      this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+#endif
   }
-  this->rootFile.reset(file);
-  this->parsedFile = this->rootFile;
-  instantiateRoot();
-  csgRender();
+  this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
+    this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+
+  if (viewActionThrownTogether->isChecked()) viewModeThrownTogether();
+  else {
+#ifdef ENABLE_OPENCSG
+    viewModePreview();
+#else
+    viewModeThrownTogether();
+#endif
+  }
+  if (animateWidget->dumpPictures()) {
+    animateWidget->nextFrame();
+    animateWidget->saveFrame(this->qglview->grabFrame());
+  }
+  compileEnded();
   if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
 }
 

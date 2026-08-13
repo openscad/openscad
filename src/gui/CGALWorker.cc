@@ -10,6 +10,7 @@
 #include "core/AST.h"
 #include "core/customizer/ParameterSet.h"
 #include "geometry/PolySet.h"
+#include "glview/CsgInfo.h"
 #include "io/import.h"
 #include "utils/printutils.h"
 
@@ -62,9 +63,17 @@ CGALWorker::~CGALWorker()
   delete this->process;
   delete this->sourceFile;
   delete this->parameterFile;
-  if (!this->resultPath.isEmpty()) {
-    QFile::remove(this->resultPath);
-    QFile::remove(this->resultPath + ".parameters.json");
+  cleanupResult();
+}
+
+void CGALWorker::cleanupResult()
+{
+  if (this->resultPath.isEmpty()) return;
+  QFile::remove(this->resultPath);
+  QFile::remove(this->resultPath + ".parameters.json");
+  const auto products = this->resultPath + ".products.json";
+  QFile::remove(products);
+  for (size_t index = 0; QFile::remove(products + ".leaf-" + QString::number(index) + ".off"); ++index) {
   }
 }
 
@@ -79,21 +88,19 @@ void CGALWorker::start(const QString& source, const QString& filename, const Par
 }
 
 void CGALWorker::startPreview(const QString& source, const QString& filename,
-                              const ParameterSet& parameters)
+                              const ParameterSet& parameters, size_t normalizationLimit)
 {
-  startRequest("preview", ".csg", source, filename, parameters);
+  startRequest("preview", ".csg", source, filename, parameters, normalizationLimit);
 }
 
 void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
-                              const QString& filename, const ParameterSet& parameters)
+                              const QString& filename, const ParameterSet& parameters,
+                              size_t normalizationLimit)
 {
   delete this->sourceFile;
   delete this->parameterFile;
   this->parameterFile = nullptr;
-  if (!this->resultPath.isEmpty()) {
-    QFile::remove(this->resultPath);
-    QFile::remove(this->resultPath + ".parameters.json");
-  }
+  cleanupResult();
 
   const auto directory = filename.isEmpty() ? QDir::tempPath() : QFileInfo(filename).absolutePath();
   this->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
@@ -126,7 +133,10 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   this->request = command == "preview" ? Request::PREVIEW : Request::RENDER;
   this->busy = true;
   const auto request =
-    parameterPath.isEmpty()
+    command == "preview" ? QString("%1\t%2\t%3\t%4\tworker\t%5\n")
+                             .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath,
+                                  QString::number(normalizationLimit))
+    : parameterPath.isEmpty()
       ? QString("%1\t%2\t%3\n").arg(command, this->sourceFile->fileName(), this->resultPath)
       : QString("%1\t%2\t%3\t%4\tworker\n")
           .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath);
@@ -170,8 +180,11 @@ void CGALWorker::processOutput()
       if (parameters.open(QIODevice::ReadOnly)) {
         emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
       }
-      QFile file(this->resultPath);
-      emit previewDone(file.open(QIODevice::ReadOnly) ? QString::fromUtf8(file.readAll()) : QString{});
+      auto products = std::make_shared<CsgInfo>();
+      if (!products->read_products((this->resultPath + ".products.json").toStdString())) {
+        products.reset();
+      }
+      emit previewDone(std::move(products));
     } else if (response == "error") {
       this->busy = false;
       const auto request = this->request;
