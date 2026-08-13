@@ -81,7 +81,8 @@ void TestMainWindow::checkF6UsesCustomizerValues()
 {
   restoreWindowInitialState();
   window->activeEditor->setPlainText("size = 1; // [1:10]\ncube(size);");
-  window->parseTopLevelDocument();
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
   auto *spinBox = window->activeEditor->parameterWidget->findChild<QDoubleSpinBox *>("doubleSpinBox");
   QVERIFY(spinBox != nullptr);
   spinBox->setValue(7);

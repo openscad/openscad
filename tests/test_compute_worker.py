@@ -48,6 +48,10 @@ def main():
             assert worker.stdout.readline().strip() == "done"
             vertices = result.read_text().splitlines()[2:10]
             assert max(float(line.split()[0]) for line in vertices) == 7
+            metadata = json.loads(Path(f"{result}.parameters.json").read_text())
+            assert metadata[0]["name"] == "size"
+            assert metadata[0]["type"] == "number"
+            assert metadata[0]["max"] == 10
 
             preview = Path(directory) / "preview.csg"
             source.write_text("translate([1, 0, 0]) cube(1);\n")
