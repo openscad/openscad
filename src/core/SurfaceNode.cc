@@ -90,27 +90,8 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   return node;
 }
 
-void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width,
+void SurfaceNode::convert_image(img_data_t& data, const std::vector<uint8_t>& img, unsigned int width,
                                 unsigned int height) const
-{
-  data.width = width;
-  data.height = height;
-  data.resize((size_t)width * height);
-  double min_val = 200;
-  for (unsigned int y = 0; y < height; ++y) {
-    for (unsigned int x = 0; x < width; ++x) {
-      long idx = 4l * (y * width + x);
-      double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-      double z = 100.0 / 255 * (invert ? 255.0 - pixel : pixel);
-      data[x + (width * (height - 1 - y))] = z;
-      min_val = std::min(z, min_val);
-    }
-  }
-  data.min_val = min_val;
-}
-
-void SurfaceNode::convert_image_16bit(img_data_t& data, std::vector<uint8_t>& img, unsigned int width,
-                                      unsigned int height) const
 {
   data.width = width;
   data.height = height;
@@ -123,7 +104,7 @@ void SurfaceNode::convert_image_16bit(img_data_t& data, std::vector<uint8_t>& im
       uint16_t g = (static_cast<uint16_t>(img[idx + 2]) << 8) | img[idx + 3];
       uint16_t b = (static_cast<uint16_t>(img[idx + 4]) << 8) | img[idx + 5];
       double pixel = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-      double z = 100.0 / 65535.0 * (invert ? 65535.0 - pixel : pixel);
+      double z = 100.0 / 65535.0 * (invert ? 0.0 - pixel : pixel);
       data[x + (width * (height - 1 - y))] = z;
       min_val = std::min(z, min_val);
     }
@@ -169,16 +150,11 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
     return data;
   }
 
-  bool is_16bit = (state.info_png.color.bitdepth == 16);
+  state.info_raw.colortype = LCT_RGBA;
+  state.info_raw.bitdepth = 16;
 
   std::vector<uint8_t> img;
-  if (is_16bit) {
-    state.info_raw.colortype = LCT_RGBA;
-    state.info_raw.bitdepth = 16;
-    error = lodepng::decode(img, width, height, state, png);
-  } else {
-    error = lodepng::decode(img, width, height, png);
-  }
+  error = lodepng::decode(img, width, height, state, png);
 
   if (error) {
     LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
@@ -186,11 +162,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
     return data;
   }
 
-  if (is_16bit) {
-    convert_image_16bit(data, img, width, height);
-  } else {
-    convert_image(data, img, width, height);
-  }
+  convert_image(data, img, width, height);
 
   return data;
 }
