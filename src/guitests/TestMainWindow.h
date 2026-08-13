@@ -10,6 +10,7 @@ private slots:
   void checkSaveToShouldUpdateWindowTitle();
   void checkEachWindowHasAComputeWorker();
   void checkF6UsesComputeWorkerResult();
+  void checkF6UsesCustomizerValues();
   void checkCancelRespawnsWorkerAndPreservesEditor();
   void checkCrashedWorkerRespawns();
   void checkWorkerErrorDoesNotMarkSourceRendered();

@@ -50,6 +50,7 @@ def main():
             assert max(float(line.split()[0]) for line in vertices) == 7
 
             preview = Path(directory) / "preview.csg"
+            source.write_text("translate([1, 0, 0]) cube(1);\n")
             worker.stdin.write(f"preview\t{source}\t{preview}\n")
             worker.stdin.flush()
             assert worker.stdout.readline().strip() == "previewdone"

@@ -4,6 +4,8 @@
 #include <QString>
 #include <memory>
 
+#include "core/customizer/ParameterSet.h"
+
 class CGALWorker : public QObject
 {
   Q_OBJECT;
@@ -12,10 +14,10 @@ public:
   CGALWorker();
   ~CGALWorker() override;
   qint64 processId() const;
+  void start(const QString& source, const QString& filename, const ParameterSet& parameters);
+  void startPreview(const QString& source, const QString& filename, const ParameterSet& parameters);
 
 public slots:
-  void start(const QString& source, const QString& filename);
-  void startPreview(const QString& source, const QString& filename);
   void cancel();
 
 protected slots:
@@ -29,6 +31,7 @@ signals:
 protected:
   class QProcess *process;
   class QTemporaryFile *sourceFile;
+  class QTemporaryFile *parameterFile;
   QString resultPath;
   QString displayFilename;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
@@ -36,5 +39,5 @@ protected:
   bool stopping = false;
   void startProcess();
   void startRequest(const QString& command, const QString& suffix, const QString& source,
-                    const QString& filename);
+                    const QString& filename, const ParameterSet& parameters);
 };

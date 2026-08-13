@@ -1,6 +1,7 @@
 #include "TestMainWindow.h"
 
 #include <QElapsedTimer>
+#include <QDoubleSpinBox>
 #include <QProcess>
 #include <QString>
 #include <QStringList>
@@ -9,6 +10,7 @@
 #include "gui/OpenSCADApp.h"
 #include "gui/Console.h"
 #include "gui/ProgressWidget.h"
+#include "gui/parameter/ParameterWidget.h"
 #include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
@@ -73,6 +75,20 @@ void TestMainWindow::checkF6UsesComputeWorkerResult()
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
   QCOMPARE(window->rootGeom->getDimension(), 3u);
+}
+
+void TestMainWindow::checkF6UsesCustomizerValues()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("size = 1; // [1:10]\ncube(size);");
+  window->parseTopLevelDocument();
+  auto *spinBox = window->activeEditor->parameterWidget->findChild<QDoubleSpinBox *>("doubleSpinBox");
+  QVERIFY(spinBox != nullptr);
+  spinBox->setValue(7);
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 7.0);
 }
 
 void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()

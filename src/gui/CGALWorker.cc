@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "core/AST.h"
+#include "core/customizer/ParameterSet.h"
 #include "geometry/PolySet.h"
 #include "io/import.h"
 #include "utils/printutils.h"
@@ -15,6 +16,7 @@
 CGALWorker::CGALWorker()
 {
   this->sourceFile = nullptr;
+  this->parameterFile = nullptr;
   this->process = new QProcess();
   connect(this->process, &QProcess::readyReadStandardOutput, this, &CGALWorker::processOutput);
   connect(this->process, &QProcess::readyReadStandardError, this, [this] {
@@ -59,6 +61,7 @@ CGALWorker::~CGALWorker()
   }
   delete this->process;
   delete this->sourceFile;
+  delete this->parameterFile;
   if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
 }
 
@@ -67,20 +70,23 @@ qint64 CGALWorker::processId() const
   return this->process->processId();
 }
 
-void CGALWorker::start(const QString& source, const QString& filename)
+void CGALWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters)
 {
-  startRequest("render", ".off", source, filename);
+  startRequest("render", ".off", source, filename, parameters);
 }
 
-void CGALWorker::startPreview(const QString& source, const QString& filename)
+void CGALWorker::startPreview(const QString& source, const QString& filename,
+                              const ParameterSet& parameters)
 {
-  startRequest("preview", ".csg", source, filename);
+  startRequest("preview", ".csg", source, filename, parameters);
 }
 
 void CGALWorker::startRequest(const QString& command, const QString& suffix, const QString& source,
-                              const QString& filename)
+                              const QString& filename, const ParameterSet& parameters)
 {
   delete this->sourceFile;
+  delete this->parameterFile;
+  this->parameterFile = nullptr;
   if (!this->resultPath.isEmpty()) QFile::remove(this->resultPath);
 
   const auto directory = filename.isEmpty() ? QDir::tempPath() : QFileInfo(filename).absolutePath();
@@ -89,16 +95,35 @@ void CGALWorker::startRequest(const QString& command, const QString& suffix, con
   if (!this->sourceFile->open()) {
     LOG(message_group::Error, "Could not create compute worker input: %1$s",
         this->sourceFile->errorString().toStdString());
-    emit done({});
+    if (command == "preview") emit previewDone({});
+    else emit done({});
     return;
   }
   this->sourceFile->write(source.toUtf8());
   this->sourceFile->flush();
+  QString parameterPath;
+  if (!parameters.empty()) {
+    this->parameterFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.json");
+    if (!this->parameterFile->open()) {
+      if (command == "preview") emit previewDone({});
+      else emit done({});
+      return;
+    }
+    parameterPath = this->parameterFile->fileName();
+    this->parameterFile->close();
+    ParameterSets sets;
+    sets.push_back(parameters);
+    sets.writeFile(parameterPath.toStdString());
+  }
   this->resultPath = this->sourceFile->fileName() + suffix;
   this->request = command == "preview" ? Request::PREVIEW : Request::RENDER;
   this->busy = true;
-  this->process->write(
-    QString("%1\t%2\t%3\n").arg(command, this->sourceFile->fileName(), this->resultPath).toUtf8());
+  const auto request =
+    parameterPath.isEmpty()
+      ? QString("%1\t%2\t%3\n").arg(command, this->sourceFile->fileName(), this->resultPath)
+      : QString("%1\t%2\t%3\t%4\tworker\n")
+          .arg(command, this->sourceFile->fileName(), this->resultPath, parameterPath);
+  this->process->write(request.toUtf8());
 }
 
 void CGALWorker::cancel()

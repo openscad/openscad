@@ -1888,7 +1888,8 @@ void MainWindow::actionRenderPreview()
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
   connect(this->progresswidget, &ProgressWidget::canceled, this->cgalworker, &CGALWorker::cancel);
-  this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath);
+  this->cgalworker->startPreview(this->activeEditor->toPlainText(), this->activeEditor->filepath,
+                                 this->activeEditor->parameterWidget->exportValues());
 }
 
 void MainWindow::actionPreviewDone(const QString& source)
@@ -2029,7 +2030,8 @@ void MainWindow::cgalRender()
 
   if (isClosing) return;
 
-  this->cgalworker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath);
+  this->cgalworker->start(this->activeEditor->toPlainText(), this->activeEditor->filepath,
+                          this->activeEditor->parameterWidget->exportValues());
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)

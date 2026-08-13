@@ -684,10 +684,10 @@ int cmdline(const CommandLine& cmd)
 }
 
 static int compute_worker_export(const std::string& input, const std::string& output,
-                                 const FileFormat format)
+                                 const FileFormat format, const std::string& parameter_file = {},
+                                 const std::string& set_name = {})
 {
   const auto original_path = fs::path(input).parent_path();
-  const std::string empty;
   const ViewOptions view_options{};
   const Camera camera{};
   const CmdLineExportOptions export_options{{Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}};
@@ -696,8 +696,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              false,
                              output,
                              original_path,
-                             empty,
-                             empty,
+                             parameter_file,
+                             set_name,
                              view_options,
                              camera,
                              format,
@@ -722,9 +722,19 @@ static int compute_worker_main()
         continue;
       }
       const auto input = command.substr(prefix, separator - prefix);
-      const auto output = command.substr(separator + 1);
-      const auto result =
-        compute_worker_export(input, output, preview ? FileFormat::CSG : FileFormat::OFF);
+      const auto parameter_separator = command.find('\t', separator + 1);
+      const auto set_separator = parameter_separator == std::string::npos
+                                   ? std::string::npos
+                                   : command.find('\t', parameter_separator + 1);
+      const auto output = command.substr(separator + 1, parameter_separator - separator - 1);
+      const auto parameter_file =
+        parameter_separator == std::string::npos
+          ? std::string{}
+          : command.substr(parameter_separator + 1, set_separator - parameter_separator - 1);
+      const auto set_name =
+        set_separator == std::string::npos ? std::string{} : command.substr(set_separator + 1);
+      const auto result = compute_worker_export(
+        input, output, preview ? FileFormat::CSG : FileFormat::OFF, parameter_file, set_name);
       std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
     } else if (command == "quit") {
       return 0;
