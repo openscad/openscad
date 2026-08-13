@@ -86,6 +86,7 @@ public:
 
   bool isPreview;
   bool previewRequested = false;
+  bool workerReloading = false;
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;

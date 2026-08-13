@@ -1821,7 +1821,16 @@ bool MainWindow::checkEditorModified()
 
 void MainWindow::on_designActionReloadAndPreview_triggered()
 {
-  actionReloadRenderPreview();
+  if (GuiLocker::isLocked()) return;
+  if (fileChangedOnDisk()) {
+    if (!checkEditorModified()) return;
+    this->workerReloading = true;
+    const auto refreshed = tabManager->refreshDocument();
+    this->workerReloading = false;
+    if (!refreshed) return;
+    if (GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) this->raise();
+  }
+  actionRenderPreview();
 }
 
 void MainWindow::actionReloadRenderPreview()
@@ -3218,16 +3227,20 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
-  try {
-    // when a new editor is created, it is important to compile the initial geometry
-    // so the customizer panels are ok.
-    parseDocument(reloadedEditor);
-  } catch (const HardWarningException&) {
-    exceptionCleanup();
-  } catch (const std::exception& ex) {
-    UnknownExceptionCleanup(ex.what());
-  } catch (...) {
-    UnknownExceptionCleanup();
+  if (this->workerReloading) {
+    reloadedEditor->parameterWidget->setEnabled(false);
+  } else {
+    try {
+      // when a new editor is created, it is important to compile the initial geometry
+      // so the customizer panels are ok.
+      parseDocument(reloadedEditor);
+    } catch (const HardWarningException&) {
+      exceptionCleanup();
+    } catch (const std::exception& ex) {
+      UnknownExceptionCleanup(ex.what());
+    } catch (...) {
+      UnknownExceptionCleanup();
+    }
   }
 
   // updates the content of the Recents Files menu to integrate the one possibly
