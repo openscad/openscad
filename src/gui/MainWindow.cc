@@ -1998,22 +1998,23 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     this->previewRenderer.reset();
   } else {
 #ifdef ENABLE_OPENCSG
-    this->previewRenderer = std::make_shared<OpenCSGRenderer>(
+    auto renderer = std::make_shared<OpenCSGRenderer>(
       this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     this->qglview->makeCurrent();
-    const auto prepared = std::static_pointer_cast<OpenCSGRenderer>(this->previewRenderer)
-                            ->prepare(nullptr, [this]() {
-                              QApplication::processEvents();
-                              this->qglview->makeCurrent();
-                              return this->progresswidget && !this->progresswidget->wasCanceled();
-                            });
-    this->qglview->doneCurrent();
+    const auto prepared = renderer->prepare(nullptr, [this]() {
+      QApplication::processEvents();
+      this->qglview->makeCurrent();
+      return this->progresswidget && !this->progresswidget->wasCanceled();
+    });
     if (!prepared) {
-      this->previewRenderer.reset();
+      renderer.reset();
+      this->qglview->doneCurrent();
       updateStatusBar(nullptr);
       compileEnded();
       return;
     }
+    this->qglview->doneCurrent();
+    this->previewRenderer = std::move(renderer);
 #endif
   }
   this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
