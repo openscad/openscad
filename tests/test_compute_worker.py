@@ -33,6 +33,13 @@ def main():
             vertices = result.read_text().splitlines()[2:10]
             assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
 
+            source.write_text("translate([$t, 0, 0]) cube(1);\n")
+            worker.stdin.write(f"render\t{source}\t{result}\t\tworker\t0\t0.5\n")
+            worker.stdin.flush()
+            assert worker.stdout.readline().strip() == "done"
+            vertices = result.read_text().splitlines()[2:10]
+            assert min(float(line.split()[0]) for line in vertices) == 0.5
+
             parameters = Path(directory) / "parameters.json"
             parameters.write_text(
                 json.dumps(
