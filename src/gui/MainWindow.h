@@ -134,6 +134,9 @@ public:
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
   qint64 computeWorkerProcessId() const;
+#ifdef ENABLE_GUI_TESTS
+  void exitComputeWorkerForTest();
+#endif
 
 private:
   static bool processIsolation;

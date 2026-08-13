@@ -629,6 +629,13 @@ qint64 MainWindow::computeWorkerProcessId() const
   return this->computeWorker ? this->computeWorker->processId() : 0;
 }
 
+#ifdef ENABLE_GUI_TESTS
+void MainWindow::exitComputeWorkerForTest()
+{
+  if (this->computeWorker) this->computeWorker->exitForTest();
+}
+#endif
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (!tabManager->shouldClose()) {

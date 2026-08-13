@@ -73,7 +73,8 @@ ComputeWorker::~ComputeWorker()
   this->stopping = true;
   this->process->write("quit\n");
   if (!this->process->waitForFinished(1000)) {
-    this->process->kill();
+    this->process->terminate();
+    if (!this->process->waitForFinished(1000)) this->process->kill();
     this->process->waitForFinished();
   }
   delete this->process;
@@ -100,6 +101,13 @@ qint64 ComputeWorker::processId() const
 {
   return this->process->processId();
 }
+
+#ifdef ENABLE_GUI_TESTS
+void ComputeWorker::exitForTest()
+{
+  this->process->write("exit-for-test\n");
+}
+#endif
 
 void ComputeWorker::start(const QString& source, const QString& filename, const ParameterSet& parameters,
                           double time, const Camera& camera, bool python, const QString& pythonVenv)
@@ -191,7 +199,7 @@ void ComputeWorker::cancel()
   QFile(canceledResult + ".cancel").open(QIODevice::WriteOnly);
   QTimer::singleShot(1000, this, [this, canceledResult] {
     if (!this->busy || this->resultPath != canceledResult) return;
-    this->process->kill();
+    this->process->terminate();
   });
 }
 

@@ -770,6 +770,8 @@ static int compute_worker_main()
   for (std::string command; std::getline(std::cin, command);) {
     if (command == "ping") {
       std::cout << "pong" << std::endl;
+    } else if (command == "exit-for-test") {
+      return 86;
     } else if (!command.empty() && command.front() == '{') {
       try {
         const auto request = nlohmann::json::parse(command);

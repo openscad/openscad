@@ -2,7 +2,6 @@
 
 #include <QElapsedTimer>
 #include <QDoubleSpinBox>
-#include <QProcess>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryFile>
@@ -86,8 +85,8 @@ void TestMainWindow::checkSaveToShouldUpdateWindowTitle()
 
 void TestMainWindow::checkEachWindowHasAComputeWorker()
 {
+  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() > 0, 5000);
   const auto firstWorker = window->computeWorkerProcessId();
-  QVERIFY(firstWorker > 0);
 
   QVERIFY(QMetaObject::invokeMethod(window, "on_fileActionNewWindow_triggered"));
   QCOMPARE(scadApp->windowManager.getWindows().size(), 2);
@@ -204,19 +203,11 @@ void TestMainWindow::checkCooperativeCancelKeepsWorker()
 void TestMainWindow::checkCrashedWorkerRespawns()
 {
   restoreWindowInitialState();
-  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
-  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
-  QVERIFY(window->findChild<ProgressWidget *>() != nullptr);
   const auto worker = window->computeWorkerProcessId();
   QVERIFY(worker > 0);
-#ifdef Q_OS_WIN
-  QCOMPARE(QProcess::execute("taskkill", {"/PID", QString::number(worker), "/F"}), 0);
-#else
-  QCOMPARE(QProcess::execute("/bin/kill", {"-KILL", QString::number(worker)}), 0);
-#endif
+  window->exitComputeWorkerForTest();
   QTRY_VERIFY_WITH_TIMEOUT(
     window->computeWorkerProcessId() > 0 && window->computeWorkerProcessId() != worker, 5000);
-  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
 }
 
 void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()

@@ -14,6 +14,9 @@ public:
   explicit ComputeWorker(const QString& program = {});
   ~ComputeWorker() override;
   qint64 processId() const;
+#ifdef ENABLE_GUI_TESTS
+  void exitForTest();
+#endif
   void start(const QString& source, const QString& filename, const ParameterSet& parameters, double time,
              const class Camera& camera, bool python, const QString& pythonVenv);
   void startPreview(const QString& source, const QString& filename, const ParameterSet& parameters,
