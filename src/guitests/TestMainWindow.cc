@@ -181,3 +181,21 @@ void TestMainWindow::checkF5UsesComputeWorkerResult()
 #endif
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
 }
+
+void TestMainWindow::checkReloadPreviewDispatchDoesNotBlockGui()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
+  window->lastCompiledDoc.clear();
+  const auto worker = window->computeWorkerProcessId();
+
+  QElapsedTimer dispatch;
+  dispatch.start();
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionReloadAndPreview_triggered"));
+  QVERIFY2(dispatch.elapsed() < 250, "Reload and Preview parsed source in the GUI process");
+
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  progress->cancel();
+  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+}

@@ -15,5 +15,6 @@ private slots:
   void checkCrashedWorkerRespawns();
   void checkWorkerErrorDoesNotMarkSourceRendered();
   void checkPreviewDispatchDoesNotBlockGui();
+  void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
 };
