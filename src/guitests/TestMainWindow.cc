@@ -368,6 +368,16 @@ void TestMainWindow::checkWorkerCompletionDoesNotFinishPreviewProgress()
 #endif
 }
 
+void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
+{
+  ProgressWidget progress;
+  QCOMPARE(progress.findChildren<QProgressBar *>().size(), 2);
+  progress.startGuiProgress(10);
+  QCOMPARE(progress.guiValue(), 0);
+  progress.setGuiValue(5);
+  QCOMPARE(progress.guiValue(), 5);
+}
+
 void TestMainWindow::checkPreviewDrawsAfterCanceledOpenCSGPreparation()
 {
 #ifdef ENABLE_OPENCSG
