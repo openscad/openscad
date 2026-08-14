@@ -374,10 +374,10 @@ void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
   ProgressWidget progress;
   const auto bars = progress.findChildren<QProgressBar *>();
   QCOMPARE(bars.size(), 2);
-  QVERIFY(std::all_of(bars.begin(), bars.end(), [](const auto *bar) {
-    return bar->styleSheet().contains("border-radius");
-  }));
+  QVERIFY(progress.progressBar->styleSheet().isEmpty());
   progress.startGuiProgress(10);
+  QCOMPARE(progress.findChild<QStackedLayout *>()->currentWidget(), progress.guiProgressBar);
+  QCOMPARE(progress.guiProgressBar->palette().color(QPalette::Highlight), QColor(Qt::red));
   QCOMPARE(progress.guiValue(), 0);
   progress.setGuiValue(5);
   QCOMPARE(progress.guiValue(), 5);
