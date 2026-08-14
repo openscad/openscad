@@ -41,6 +41,7 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
     }
     output.push_back({{"geometry", geometry->second},
                       {"matrix", std::move(matrix)},
+                      {"convexity", object.leaf->polyset ? object.leaf->polyset->getConvexity() : 1},
                       {"color",
                        {object.leaf->color.r(), object.leaf->color.g(), object.leaf->color.b(),
                         object.leaf->color.a()}},
@@ -74,6 +75,9 @@ std::vector<CSGChainObject> read_chain(const json& input,
     auto geometry = geometries.find(path);
     if (geometry == geometries.end()) {
       auto imported = import_off(path, Location::NONE);
+      if (imported && item.contains("convexity")) {
+        imported->setConvexity(item["convexity"].get<int>());
+      }
       geometry = geometries.emplace(path, std::shared_ptr<const PolySet>(std::move(imported))).first;
     }
     Transform3d matrix = Transform3d::Identity();
@@ -121,6 +125,14 @@ bool CsgInfo::write_products(const std::string& filename) const
     output["nodes"].push_back({{"index", node.index}, {"parent", node.parent}, {"name", node.name},
                                {"file", node.file}, {"line", node.line}, {"column", node.column}});
   }
+  if (camera_info.has_camera) {
+    output["camera"] = {
+      {"vpr", {camera_info.vpr[0], camera_info.vpr[1], camera_info.vpr[2]}},
+      {"vpt", {camera_info.vpt[0], camera_info.vpt[1], camera_info.vpt[2]}},
+      {"vpd", camera_info.vpd},
+      {"vpf", camera_info.vpf}
+    };
+  }
   std::ofstream stream(fs::u8path(filename));
   stream << output;
   return stream.good();
@@ -140,6 +152,18 @@ bool CsgInfo::read_products(const std::string& filename,
   for (const auto& node : input.value("nodes", json::array())) {
     source_nodes.push_back({node["index"], node["parent"], node["name"], node["file"], node["line"],
                             node["column"]});
+  }
+  if (input.contains("camera")) {
+    const auto& cam = input["camera"];
+    camera_info.has_camera = true;
+    camera_info.vpr[0] = cam["vpr"][0].get<double>();
+    camera_info.vpr[1] = cam["vpr"][1].get<double>();
+    camera_info.vpr[2] = cam["vpr"][2].get<double>();
+    camera_info.vpt[0] = cam["vpt"][0].get<double>();
+    camera_info.vpt[1] = cam["vpt"][1].get<double>();
+    camera_info.vpt[2] = cam["vpt"][2].get<double>();
+    camera_info.vpd = cam.value("vpd", 0.0);
+    camera_info.vpf = cam.value("vpf", 0.0);
   }
   return !continue_loading || continue_loading();
 }

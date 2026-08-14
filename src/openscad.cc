@@ -478,6 +478,15 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   if (!cmd.csgProductsFile.empty()) {
     CsgInfo products;
+    products.camera_info.has_camera = true;
+    products.camera_info.vpr[0] = camera.getVpr().x();
+    products.camera_info.vpr[1] = camera.getVpr().y();
+    products.camera_info.vpr[2] = camera.getVpr().z();
+    products.camera_info.vpt[0] = camera.getVpt().x();
+    products.camera_info.vpt[1] = camera.getVpt().y();
+    products.camera_info.vpt[2] = camera.getVpt().z();
+    products.camera_info.vpd = camera.zoomValue();
+    products.camera_info.vpf = camera.fovValue();
     products.compile_products(tree, cmd.csgProductsLimit);
     if (!products.write_products(cmd.csgProductsFile)) return 1;
   }

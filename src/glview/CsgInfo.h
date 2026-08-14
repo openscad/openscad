@@ -27,11 +27,19 @@ public:
     int line;
     int column;
   };
+  struct CameraInfo {
+    bool has_camera = false;
+    double vpr[3] = {0, 0, 0};
+    double vpt[3] = {0, 0, 0};
+    double vpd = 0;
+    double vpf = 0;
+  };
   CsgInfo() = default;
   std::shared_ptr<class CSGProducts> root_products;
   std::shared_ptr<CSGProducts> highlights_products;
   std::shared_ptr<CSGProducts> background_products;
   std::vector<SourceNode> source_nodes;
+  CameraInfo camera_info;
 
   bool write_products(const std::string& filename) const;
   bool read_products(const std::string& filename, const std::function<bool()>& continue_loading = {});

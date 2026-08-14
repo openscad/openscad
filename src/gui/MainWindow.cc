@@ -1997,6 +1997,14 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
   this->highlightsProducts = products->highlights_products;
   this->backgroundProducts = products->background_products;
   this->previewSourceNodes = products->source_nodes;
+  if (products->camera_info.has_camera) {
+    this->qglview->cam.setVpr(products->camera_info.vpr[0], products->camera_info.vpr[1],
+                              products->camera_info.vpr[2]);
+    this->qglview->cam.setVpt(products->camera_info.vpt[0], products->camera_info.vpt[1],
+                              products->camera_info.vpt[2]);
+    if (products->camera_info.vpd > 0) this->qglview->cam.setVpd(products->camera_info.vpd);
+    if (products->camera_info.vpf > 0) this->qglview->cam.setVpf(products->camera_info.vpf);
+  }
   const auto productWork = [](const auto& products) {
     size_t work = 0;
     if (products) {
