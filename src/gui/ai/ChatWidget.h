@@ -73,4 +73,6 @@ private:
   QWidget *diffBannerWidget = nullptr;
   CollapsibleBubble *activeToolBubble = nullptr;
   std::vector<ImageAttachment> pendingAttachments;
+  bool agenticMode = true;          // true = agentic (auto-loop), false = interactive review
+  bool pendingAutoPreview = false;  // fire preview automatically after user accepts diff
 };

@@ -2,6 +2,7 @@
 #include "gui/qtgettext.h"
 #include "json/json.hpp"
 #include <future>
+#include <algorithm>
 #include <QScrollBar>
 #include <QFrame>
 #include <QLabel>
@@ -24,6 +25,8 @@
 #include "gui/ai/CollapsibleBubble.h"
 #include "gui/ai/ViewportGrabber.h"
 #include "gui/QGLView.h"
+#include "glview/Camera.h"
+#include "gui/Console.h"
 
 // MessageBubble implementation
 MessageBubble::MessageBubble(const QString& text, bool isUser,
@@ -143,6 +146,7 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   connect(clearButton, &QPushButton::clicked, this, &ChatWidget::onClearPressed);
   connect(analyzeScreenButton, &QPushButton::clicked, this, &ChatWidget::onAnalyzeScreenPressed);
   connect(attachImageButton, &QPushButton::clicked, this, &ChatWidget::onAttachImagePressed);
+  connect(agentModeCheckBox, &QCheckBox::toggled, this, [this](bool checked) { agenticMode = checked; });
 
   // Setup chat options menu
   QMenu *chatMenu = new QMenu(this);
@@ -242,14 +246,19 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
     if (result == QDialog::Accepted) {
       if (mw && mw->activeEditor) {
         mw->activeEditor->setText(QString::fromStdString(proposedCode));
-        if (dlg.shouldTriggerPreview()) {
+        // In interactive mode, fire preview automatically after acceptance
+        // (regardless of the dialog's own checkbox since the model already
+        // called trigger_preview and it was deferred).
+        if (pendingAutoPreview || dlg.shouldTriggerPreview()) {
           mw->actionRenderPreview();
         }
+        pendingAutoPreview = false;
       }
       proposedCode = "";
       originalCode = "";
       diffBannerWidget->hide();
     } else if (result == 2) {  // Discarded Changes
+      pendingAutoPreview = false;
       proposedCode = "";
       originalCode = "";
       diffBannerWidget->hide();
@@ -332,6 +341,7 @@ void ChatWidget::onSendPressed()
 
   auto alive = this->aliveState;
 
+  agentModeCheckBox->setEnabled(false);
   aiService->chatCompletionStream(
     history,
     [this, alive](const std::string& chunk) {
@@ -380,6 +390,7 @@ void ChatWidget::onSendPressed()
         activeAIBubble = nullptr;
         activeResponseText = nullptr;
         this->enableInput(true);
+        this->agentModeCheckBox->setEnabled(true);
       });
     },
     [this, alive]() {
@@ -416,8 +427,10 @@ void ChatWidget::onSendPressed()
         activeAIBubble = nullptr;
         activeResponseText = nullptr;
         this->enableInput(true);
+        this->agentModeCheckBox->setEnabled(true);
       });
-    });
+    },
+    !agenticMode);
 }
 
 void ChatWidget::startNewResponseTurn()
@@ -646,11 +659,17 @@ void ChatWidget::logToolExecution(const std::string& name, const std::string& re
     detail = tr("Tool: get_editor_code\nResult: Read %1 lines.")
                .arg(QString::fromStdString(result).count('\n'));
   } else if (name == "set_editor_code") {
-    summary = tr("Proposed code changes");
-    detail = tr("Tool: set_editor_code\nResult: Proposed changes to the active editor.");
+    summary = tr("Applied code changes");
+    detail = tr("Tool: set_editor_code\nResult: Applied code changes to the active editor.");
   } else if (name == "trigger_preview") {
     summary = tr("Triggered render preview");
     detail = QString::fromStdString("Tool: trigger_preview\nResult: " + result);
+  } else if (name == "get_viewport") {
+    summary = tr("Inspected 3D Viewport");
+    detail = QString::fromStdString("Tool: get_viewport\nResult: " + result);
+  } else if (name == "set_camera") {
+    summary = tr("Adjusted Camera View");
+    detail = QString::fromStdString("Tool: set_camera\nResult: " + result);
   } else {
     summary = tr("Executed tool: %1").arg(QString::fromStdString(name));
     detail = QString::fromStdString("Tool: " + name + "\nResult: " + result);
@@ -707,22 +726,116 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
       result_val = "Error: Proposed code change is too large (" + std::to_string(code.size()) +
                    " bytes). The maximum allowed size is " + std::to_string(limit) + " bytes.";
     } else {
-      this->proposeCodeChange(code);
-      result_val =
-        "Success: Code change proposed to the user for review. The user will review and choose whether "
-        "to "
-        "apply it.";
+      if (mw && mw->activeEditor) {
+        if (agenticMode) {
+          // Agentic mode: apply directly so the loop can validate immediately
+          mw->activeEditor->setPlainText(QString::fromStdString(code));
+          result_val = "Success: Code applied directly to the active editor.";
+        } else {
+          // Interactive mode: stage a diff for user review
+          this->proposeCodeChange(code);
+          result_val =
+            "Success: Code change proposed for user review. "
+            "The diff banner is now visible. "
+            "Do NOT call trigger_preview — it will fire automatically after the user accepts.";
+        }
+      } else {
+        result_val = "Error: No active editor found.";
+      }
     }
   } else if (name == "trigger_preview") {
-    if (this->hasPendingCodeChanges()) {
-      result_val = "Info: Preview postponed because code changes are pending user review.";
-    } else {
-      if (mw) {
-        mw->actionRenderPreview();
-        result_val = "Success: Preview triggered.";
-      } else {
-        result_val = "Error: No active MainWindow found.";
+    if (hasPendingCodeChanges()) {
+      // In interactive mode, the model called trigger_preview but code is
+      // pending user review. Defer the preview and auto-fire it on acceptance.
+      pendingAutoPreview = true;
+      result_val =
+        "Postponed: Code changes are pending user review. "
+        "The preview will fire automatically once the user accepts the diff.";
+    } else if (mw) {
+      mw->actionRenderPreview();
+      int new_errors = mw->compileErrors;
+      int new_warnings = mw->compileWarnings;
+      QString console_text = mw->console ? mw->console->toPlainText() : "";
+      QStringList lines = console_text.split('\n', Qt::SkipEmptyParts);
+      QString recent_console;
+      int start_idx = std::max(0, static_cast<int>(lines.size()) - 15);
+      for (int i = start_idx; i < lines.size(); ++i) {
+        recent_console += lines[i] + "\n";
       }
+
+      std::stringstream ss;
+      if (new_errors > 0) {
+        ss << "Error: Compilation failed with " << new_errors << " error(s) and " << new_warnings
+           << " warning(s).\n";
+        if (!recent_console.isEmpty()) {
+          ss << "Recent console output:\n" << recent_console.toStdString();
+        }
+      } else if (new_warnings > 0) {
+        ss << "Success with Warnings: Render completed with 0 errors and " << new_warnings
+           << " warning(s).\n";
+        if (!recent_console.isEmpty()) {
+          ss << "Recent console output:\n" << recent_console.toStdString();
+        }
+      } else {
+        ss << "Success: Render completed with 0 errors and 0 warnings.\n";
+        if (!recent_console.isEmpty()) {
+          ss << "Recent console output:\n" << recent_console.toStdString();
+        }
+      }
+      result_val = ss.str();
+    } else {
+      result_val = "Error: No active MainWindow found.";
+    }
+  } else if (name == "get_viewport") {
+    if (mw && mw->qglview) {
+      const Camera& cam = mw->qglview->cam;
+      std::string meta = ViewportGrabber::serializeCameraMetadata(cam);
+      std::string img_b64 = ViewportGrabber::captureViewportBase64(mw->qglview, 1024);
+      if (!img_b64.empty()) {
+        this->pendingAttachments.push_back({"image/png", img_b64});
+        this->updateAttachmentPreviewBar();
+        meta += "\n(Captured viewport snapshot and attached to pending message context)";
+      }
+      result_val = meta;
+    } else {
+      result_val = "Error: 3D viewport non-existent or inactive.";
+    }
+  } else if (name == "set_camera") {
+    if (mw && mw->qglview) {
+      try {
+        auto args = nlohmann::json::parse(arguments_json);
+        Camera cam = mw->qglview->cam;
+        if (args.contains("vpt") && args["vpt"].is_array() && args["vpt"].size() == 3) {
+          cam.setVpt(args["vpt"][0].get<double>(), args["vpt"][1].get<double>(),
+                     args["vpt"][2].get<double>());
+        }
+        if (args.contains("vpr") && args["vpr"].is_array() && args["vpr"].size() == 3) {
+          cam.setVpr(args["vpr"][0].get<double>(), args["vpr"][1].get<double>(),
+                     args["vpr"][2].get<double>());
+        }
+        if (args.contains("vpd") && args["vpd"].is_number()) {
+          cam.setVpd(args["vpd"].get<double>());
+        }
+        if (args.contains("vpf") && args["vpf"].is_number()) {
+          cam.setVpf(args["vpf"].get<double>());
+        }
+        if (args.contains("projection") && args["projection"].is_string()) {
+          std::string proj = args["projection"].get<std::string>();
+          if (proj == "ortho" || proj == "orthogonal" || proj == "ORTHOGONAL") {
+            cam.projection = Camera::ProjectionType::ORTHOGONAL;
+          } else if (proj == "perspective" || proj == "PERSPECTIVE") {
+            cam.projection = Camera::ProjectionType::PERSPECTIVE;
+          }
+        }
+        mw->qglview->setCamera(cam);
+        mw->qglview->update();
+        result_val = "Success: Updated 3D viewport camera settings.\n" +
+                     ViewportGrabber::serializeCameraMetadata(cam);
+      } catch (const std::exception& e) {
+        result_val = std::string("Error parsing set_camera arguments: ") + e.what();
+      }
+    } else {
+      result_val = "Error: 3D viewport non-existent or inactive.";
     }
   } else {
     result_val = "Error: Unknown tool name '" + name + "'.";
@@ -941,11 +1054,17 @@ void ChatWidget::rebuildChatUI()
                 detail = tr("Tool: get_editor_code\nResult: Read %1 lines.")
                            .arg(QString::fromStdString(result).count('\n'));
               } else if (name == "set_editor_code") {
-                summary = tr("Proposed code changes");
-                detail = tr("Tool: set_editor_code\nResult: Proposed changes to the active editor.");
+                summary = tr("Applied code changes");
+                detail = tr("Tool: set_editor_code\nResult: Applied code changes to the active editor.");
               } else if (name == "trigger_preview") {
                 summary = tr("Triggered render preview");
                 detail = QString::fromStdString("Tool: trigger_preview\nResult: " + result);
+              } else if (name == "get_viewport") {
+                summary = tr("Inspected 3D Viewport");
+                detail = QString::fromStdString("Tool: get_viewport\nResult: " + result);
+              } else if (name == "set_camera") {
+                summary = tr("Adjusted Camera View");
+                detail = QString::fromStdString("Tool: set_camera\nResult: " + result);
               } else {
                 summary = tr("Executed tool: %1").arg(QString::fromStdString(name));
                 detail = QString::fromStdString("Tool: " + name + "\nResult: " + result);
