@@ -144,6 +144,10 @@ def main():
             assert "multmatrix" in preview.read_text()
             products = json.loads(Path(f"{preview}.products.json").read_text())
             assert len(products["root"]) == 1
+            assert any(
+                node["name"] == "cube" and node["file"] == str(source.resolve())
+                for node in products["nodes"]
+            )
             assert len(products["root"][0]["intersections"]) == 1
             assert len(products["highlights"]) == 1
             geometry = Path(products["root"][0]["intersections"][0]["geometry"])
