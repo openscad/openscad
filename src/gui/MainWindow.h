@@ -89,6 +89,7 @@ public:
 
   bool isPreview;
   bool previewRequested = false;
+  QString activePreviewSource;
   QMap<QString, QString> workerDependencies;
 
   QTimer *autoReloadTimer;

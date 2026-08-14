@@ -324,7 +324,7 @@ void TestMainWindow::checkEditedPreviewRequestReplacesActivePreview()
   window->activeEditor->setPlainText("cube(2);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
   QVERIFY(progress->wasCanceled());
-  QTRY_VERIFY_WITH_TIMEOUT(window->rootProduct != nullptr, 10000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
   QCOMPARE(window->activeEditor->toPlainText(), QString("cube(2);"));
 }
 
