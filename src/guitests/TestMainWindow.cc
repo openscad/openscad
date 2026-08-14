@@ -300,6 +300,34 @@ void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
   QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
 }
 
+void TestMainWindow::checkIdenticalPreviewRequestIsDebounced()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QVERIFY(!progress->wasCanceled());
+  progress->cancel();
+}
+
+void TestMainWindow::checkEditedPreviewRequestReplacesActivePreview()
+{
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  window->activeEditor->setPlainText("cube(2);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QVERIFY(progress->wasCanceled());
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootProduct != nullptr, 10000);
+  QCOMPARE(window->activeEditor->toPlainText(), QString("cube(2);"));
+}
+
 void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
 {
 #ifdef ENABLE_OPENCSG

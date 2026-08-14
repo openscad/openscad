@@ -23,6 +23,8 @@ private slots:
   void checkCrashedWorkerRespawns();
   void checkWorkerErrorDoesNotMarkSourceRendered();
   void checkPreviewDispatchDoesNotBlockGui();
+  void checkIdenticalPreviewRequestIsDebounced();
+  void checkEditedPreviewRequestReplacesActivePreview();
   void checkOpenCSGPreparationCanBeCanceled();
   void checkPreviewDrawsAfterCanceledOpenCSGPreparation();
   void checkOpenCSGPreparationUsesViewportColorScheme();
