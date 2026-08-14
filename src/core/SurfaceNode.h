@@ -70,7 +70,7 @@ class SurfaceNode : public LeafNode
 {
 public:
   VISITABLE();
-  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SurfaceNode(const ModuleInstantiation *mi = nullptr) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "surface"; }
 
@@ -80,11 +80,13 @@ public:
   int convexity{1};
 
   std::unique_ptr<const Geometry> createGeometry() const override;
+  // Public, and default-constructible above, so surface_node_test.cc can exercise image
+  // decoding without building a module instantiation.
+  img_data_t read_png_or_dat(std::string filename) const;
 
 private:
-  void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width,
+  void convert_image(img_data_t& data, const std::vector<uint8_t>& img, unsigned int width,
                      unsigned int height) const;
   bool is_png(std::vector<uint8_t>& img) const;
   img_data_t read_dat(std::string filename) const;
-  img_data_t read_png_or_dat(std::string filename) const;
 };
