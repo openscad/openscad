@@ -3,12 +3,12 @@
 # Verify the experimental `transparent-compositing` feature exports a transparent PNG that is
 # actually correct for partially transparent geometry.
 #
-# The property under test: compositing the transparent export over the background colour must
+# The property under test: compositing the transparent export over the background color must
 # reproduce the ordinary opaque render, pixel for pixel. That is the whole point of a transparent
 # background -- if it does not hold, the exported image cannot be placed on any other background
-# without colour errors and halos.
+# without color errors and halos.
 #
-# Without the feature this fails, because the buffer is cleared to the *background colour* with
+# Without the feature this fails, because the buffer is cleared to the *background color* with
 # alpha 0 and blending is straight (non-premultiplied), so semi-transparent fragments end up with
 # the background matted into their RGB and an alpha that is not their coverage.
 #
@@ -69,8 +69,8 @@ def main():
     def img_px(x, y):
         return img[y][x * ch:(x + 1) * ch]
 
-    # Take the background colour from the reference render's corner rather than hardcoding a
-    # colour scheme.
+    # Take the background color from the reference render's corner rather than hardcoding a
+    # color scheme.
     bg = ref_px(0, 0)
 
     partial = 0
