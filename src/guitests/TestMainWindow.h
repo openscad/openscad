@@ -26,6 +26,7 @@ private slots:
   void checkIdenticalPreviewRequestIsDebounced();
   void checkEditedPreviewRequestReplacesActivePreview();
   void checkOpenCSGPreparationCanBeCanceled();
+  void checkWorkerCompletionDoesNotFinishPreviewProgress();
   void checkPreviewDrawsAfterCanceledOpenCSGPreparation();
   void checkOpenCSGPreparationUsesViewportColorScheme();
   void checkReloadPreviewDispatchDoesNotBlockGui();

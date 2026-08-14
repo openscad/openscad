@@ -352,6 +352,22 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
 #endif
 }
 
+void TestMainWindow::checkWorkerCompletionDoesNotFinishPreviewProgress()
+{
+#ifdef ENABLE_OPENCSG
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText("for (i = [0:999]) translate([i, 0, 0]) cube(1);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  auto *progress = window->findChild<ProgressWidget *>();
+  QVERIFY(progress != nullptr);
+  QTRY_VERIFY_WITH_TIMEOUT(progress->value() > 0, 10000);
+  QVERIFY(progress->value() < 1000);
+  progress->cancel();
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+#endif
+}
+
 void TestMainWindow::checkPreviewDrawsAfterCanceledOpenCSGPreparation()
 {
 #ifdef ENABLE_OPENCSG
