@@ -17,6 +17,14 @@ ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
   this->guiProgressBar->setParent(container);
   overlay->addWidget(this->progressBar);
   overlay->addWidget(this->guiProgressBar);
+  const auto blue = this->progressBar->palette().color(QPalette::Highlight).name();
+  const auto groove = QString(
+    "QProgressBar { border: 1px solid palette(mid); border-radius: 5px; background: palette(base); } ");
+  this->progressBar->setStyleSheet(
+    groove + QString("QProgressBar::chunk { background: %1; border-radius: 4px; }").arg(blue));
+  this->guiProgressBar->setStyleSheet(
+    "QProgressBar { border: 1px solid transparent; border-radius: 5px; background: transparent; } "
+    "QProgressBar::chunk { background: #c33; border-radius: 4px; }");
   setRange(0, 1000);
   setValue(0);
   this->wascanceled = false;
