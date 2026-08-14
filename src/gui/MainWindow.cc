@@ -1992,6 +1992,7 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
     return;
   }
+  this->progresswidget->setValue(900);
 
   this->rootProduct = products->root_products;
   this->highlightsProducts = products->highlights_products;
@@ -3680,7 +3681,7 @@ void MainWindow::setupCoreSubsystems()
     connect(this->computeWorker, &ComputeWorker::done, this, &MainWindow::actionRenderDone);
     connect(this->computeWorker, &ComputeWorker::previewDone, this, &MainWindow::actionPreviewDone);
     connect(this->computeWorker, &ComputeWorker::progress, this, [this](int permille) {
-      if (this->progresswidget) this->progresswidget->setValue(permille);
+      if (this->progresswidget) this->progresswidget->setValue(permille * 9 / 10);
     });
     connect(this->computeWorker, &ComputeWorker::diagnostic, this, [this](const QString& text) {
       if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));
