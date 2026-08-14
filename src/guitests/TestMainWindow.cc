@@ -372,7 +372,11 @@ void TestMainWindow::checkWorkerCompletionDoesNotFinishPreviewProgress()
 void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
 {
   ProgressWidget progress;
-  QCOMPARE(progress.findChildren<QProgressBar *>().size(), 2);
+  const auto bars = progress.findChildren<QProgressBar *>();
+  QCOMPARE(bars.size(), 2);
+  QVERIFY(std::all_of(bars.begin(), bars.end(), [](const auto *bar) {
+    return bar->styleSheet().contains("border-radius");
+  }));
   progress.startGuiProgress(10);
   QCOMPARE(progress.guiValue(), 0);
   progress.setGuiValue(5);
