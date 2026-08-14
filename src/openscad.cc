@@ -479,6 +479,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   if (!cmd.csgProductsFile.empty()) {
     CsgInfo products;
     products.camera_info.has_camera = true;
+    products.camera_info.noauto = !camera.viewall && !camera.autocenter;
     products.camera_info.vpr[0] = camera.getVpr().x();
     products.camera_info.vpr[1] = camera.getVpr().y();
     products.camera_info.vpr[2] = camera.getVpr().z();

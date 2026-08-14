@@ -127,6 +127,7 @@ bool CsgInfo::write_products(const std::string& filename) const
   }
   if (camera_info.has_camera) {
     output["camera"] = {
+      {"noauto", camera_info.noauto},
       {"vpr", {camera_info.vpr[0], camera_info.vpr[1], camera_info.vpr[2]}},
       {"vpt", {camera_info.vpt[0], camera_info.vpt[1], camera_info.vpt[2]}},
       {"vpd", camera_info.vpd},
@@ -156,6 +157,7 @@ bool CsgInfo::read_products(const std::string& filename,
   if (input.contains("camera")) {
     const auto& cam = input["camera"];
     camera_info.has_camera = true;
+    camera_info.noauto = cam.value("noauto", false);
     camera_info.vpr[0] = cam["vpr"][0].get<double>();
     camera_info.vpr[1] = cam["vpr"][1].get<double>();
     camera_info.vpr[2] = cam["vpr"][2].get<double>();

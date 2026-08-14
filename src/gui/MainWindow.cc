@@ -2004,6 +2004,10 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
                               products->camera_info.vpt[2]);
     if (products->camera_info.vpd > 0) this->qglview->cam.setVpd(products->camera_info.vpd);
     if (products->camera_info.vpf > 0) this->qglview->cam.setVpf(products->camera_info.vpf);
+    if (products->camera_info.noauto) {
+      this->qglview->cam.viewall = false;
+      this->qglview->cam.autocenter = false;
+    }
   }
   const auto productWork = [](const auto& products) {
     size_t work = 0;

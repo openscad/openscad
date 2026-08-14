@@ -29,6 +29,7 @@ public:
   };
   struct CameraInfo {
     bool has_camera = false;
+    bool noauto = false;
     double vpr[3] = {0, 0, 0};
     double vpt[3] = {0, 0, 0};
     double vpd = 0;
