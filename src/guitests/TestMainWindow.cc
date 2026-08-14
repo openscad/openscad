@@ -8,6 +8,7 @@
 #include <QTemporaryFile>
 #include <QTest>
 #include <QSignalSpy>
+#include <QStackedLayout>
 #include <QTimer>
 
 #include "gui/OpenSCADApp.h"

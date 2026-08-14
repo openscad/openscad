@@ -17,14 +17,12 @@ ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
   this->guiProgressBar->setParent(container);
   overlay->addWidget(this->progressBar);
   overlay->addWidget(this->guiProgressBar);
-  const auto blue = this->progressBar->palette().color(QPalette::Highlight).name();
-  const auto groove = QString(
-    "QProgressBar { border: 1px solid palette(mid); border-radius: 5px; background: palette(base); } ");
-  this->progressBar->setStyleSheet(
-    groove + QString("QProgressBar::chunk { background: %1; border-radius: 4px; }").arg(blue));
-  this->guiProgressBar->setStyleSheet(
-    "QProgressBar { border: 1px solid transparent; border-radius: 5px; background: transparent; } "
-    "QProgressBar::chunk { background: #c33; border-radius: 4px; }");
+  auto redPalette = this->guiProgressBar->palette();
+  redPalette.setColor(QPalette::Highlight, Qt::red);
+  redPalette.setColor(QPalette::Base, Qt::transparent);
+  redPalette.setColor(QPalette::Window, Qt::transparent);
+  this->guiProgressBar->setPalette(redPalette);
+  this->guiProgressBar->setAttribute(Qt::WA_TranslucentBackground);
   setRange(0, 1000);
   setValue(0);
   this->wascanceled = false;
@@ -82,6 +80,10 @@ void ProgressWidget::startGuiProgress(int maximum)
   this->guiProgressBar->setRange(0, maximum);
   this->guiProgressBar->setValue(0);
   this->guiProgressBar->show();
+  if (auto *overlay = qobject_cast<QStackedLayout *>(this->guiProgressBar->parentWidget()->layout())) {
+    overlay->setCurrentWidget(this->guiProgressBar);
+  }
+  this->guiProgressBar->raise();
 }
 
 void ProgressWidget::setGuiValue(int progress)
