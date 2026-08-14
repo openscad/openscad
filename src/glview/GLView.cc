@@ -275,14 +275,44 @@ void GLView::paintGL()
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
 
-      glBegin(GL_QUADS);
-      glColor4f(bgcol.r(), bgcol.g(), bgcol.b(), 1.0f);
-      glVertex2f(-1.0f, +1.0f);
-      glVertex2f(+1.0f, +1.0f);
-      glColor4f(bgstopcol.r(), bgstopcol.g(), bgstopcol.b(), 1.0f);
-      glVertex2f(+1.0f, -1.0f);
-      glVertex2f(-1.0f, -1.0f);
-      glEnd();
+      if (bgcol.a() < 1.0f) {
+        GLint vp[4];
+        glGetIntegerv(GL_VIEWPORT, vp);
+        const int vp_w = vp[2] > 0 ? vp[2] : 800;
+        const int vp_h = vp[3] > 0 ? vp[3] : 600;
+        const int size = 16;
+        const int cols = (vp_w + size - 1) / size;
+        const int rows = (vp_h + size - 1) / size;
+
+        glBegin(GL_QUADS);
+        for (int r = 0; r < rows; ++r) {
+          float y1 = 1.0f - 2.0f * (r * size) / vp_h;
+          float y2 = 1.0f - 2.0f * std::min((r + 1) * size, vp_h) / vp_h;
+          for (int c = 0; c < cols; ++c) {
+            float x1 = -1.0f + 2.0f * (c * size) / vp_w;
+            float x2 = -1.0f + 2.0f * std::min((c + 1) * size, vp_w) / vp_w;
+            if ((r + c) % 2 == 0) {
+              glColor4f(0.85f, 0.85f, 0.85f, 1.0f);
+            } else {
+              glColor4f(0.70f, 0.70f, 0.70f, 1.0f);
+            }
+            glVertex2f(x1, y1);
+            glVertex2f(x2, y1);
+            glVertex2f(x2, y2);
+            glVertex2f(x1, y2);
+          }
+        }
+        glEnd();
+      } else {
+        glBegin(GL_QUADS);
+        glColor4f(bgcol.r(), bgcol.g(), bgcol.b(), 1.0f);
+        glVertex2f(-1.0f, +1.0f);
+        glVertex2f(+1.0f, +1.0f);
+        glColor4f(bgstopcol.r(), bgstopcol.g(), bgstopcol.b(), 1.0f);
+        glVertex2f(+1.0f, -1.0f);
+        glVertex2f(-1.0f, -1.0f);
+        glEnd();
+      }
 
       glEnable(GL_DEPTH_TEST);
     }
