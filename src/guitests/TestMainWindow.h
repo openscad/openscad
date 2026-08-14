@@ -21,6 +21,7 @@ private slots:
   void checkCooperativeCancelKeepsWorker();
   void checkCancelRespawnsWorkerAndPreservesEditor();
   void checkCrashedWorkerRespawns();
+  void checkQueuedRequestsAreNotDroppedBeforeWorkerReady();
   void checkWorkerErrorDoesNotMarkSourceRendered();
   void checkPreviewDispatchDoesNotBlockGui();
   void checkIdenticalPreviewRequestIsDebounced();

@@ -92,6 +92,7 @@
 #include "core/progress.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
+#include "core/StatCache.h"
 #include "core/customizer/CommentParser.h"
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
@@ -439,10 +440,10 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   Camera camera = cmd.camera;
   bool has_script_camera = false;
   if (file_context) {
-    has_script_camera = file_context->lookup_local_variable("$vpr") != nullptr ||
-                        file_context->lookup_local_variable("$vpt") != nullptr ||
-                        file_context->lookup_local_variable("$vpd") != nullptr ||
-                        file_context->lookup_local_variable("$vpf") != nullptr;
+    has_script_camera = static_cast<bool>(file_context->lookup_local_variable("$vpr")) ||
+                        static_cast<bool>(file_context->lookup_local_variable("$vpt")) ||
+                        static_cast<bool>(file_context->lookup_local_variable("$vpd")) ||
+                        static_cast<bool>(file_context->lookup_local_variable("$vpf"));
     camera.updateView(file_context, true);
   }
 
@@ -754,6 +755,15 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                                  const std::string& working_directory = {},
                                  const std::string& source_file = {})
 {
+  // The worker process is persistent, so StatCache — which memoizes stat() by path with no
+  // invalidation of its own — would otherwise keep reporting the mtime an included file had
+  // when it was first read, and edits to use/include'd files would never reach a preview.
+  // SourceFileCache invalidates on mtime and so is correct again once this is cleared; the
+  // geometry caches are keyed by the node tree dump and are correct across requests, so
+  // neither is cleared here — doing so would discard the per-window cache this feature exists
+  // to provide.
+  StatCache::clear();
+
   const auto original_path =
     working_directory.empty() ? fs::path(input).parent_path() : fs::path(working_directory);
   const fs::path document_path =

@@ -9,6 +9,7 @@
 #include <QTemporaryFile>
 #include <QTemporaryDir>
 #include <QTimer>
+#include <algorithm>
 #include <filesystem>
 #include <memory>
 
@@ -32,12 +33,18 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
           [this](int, QProcess::ExitStatus) {
             if (this->stopping) return;
             this->ready = false;
-            const auto interrupted = this->busy && this->pendingRequest.isEmpty();
+            // Requests already written to the dead process are lost with it. Requests still
+            // buffered in pendingRequest have not been written yet and will be resent to the
+            // replacement worker, so their contexts must stay on the deque. Dropping that
+            // distinction desynchronizes activeRequests from the worker permanently.
+            const auto pending = std::min(this->pendingCount, this->activeRequests.size());
+            const auto lost = this->activeRequests.size() - pending;
+            const auto interrupted = lost > 0;
             const auto request = this->request;
             if (interrupted) {
-              this->busy = false;
-              this->request = Request::NONE;
-              this->activeRequests.clear();
+              this->activeRequests.erase(this->activeRequests.begin(),
+                                         this->activeRequests.begin() + lost);
+              updateBusyState();
             }
             if (++this->consecutiveFailures <= 3) {
               QTimer::singleShot(100 * this->consecutiveFailures, this, &ComputeWorker::startProcess);
@@ -45,6 +52,7 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
               emit diagnostic(tr("Compute worker stopped after repeated failures."));
               if (!interrupted && this->busy) {
                 this->pendingRequest.clear();
+                this->pendingCount = 0;
                 this->busy = false;
                 this->request = Request::NONE;
                 this->activeRequests.clear();
@@ -174,6 +182,7 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
     req->sourceFile->write(QByteArray::fromStdString(commandline_commands));
   }
   req->sourceFile->flush();
+  req->sourceFile->close();
   req->requestSource = source;
   QString parameterPath;
   if (!parameters.empty()) {
@@ -219,11 +228,32 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
   request["features"] = features;
   request["python"] = python;
   request["pythonVenv"] = pythonVenv;
-  this->pendingRequest = QJsonDocument(request).toJson(QJsonDocument::Compact) + "\n";
-  if (this->ready) {
-    this->process->write(this->pendingRequest);
-    this->pendingRequest.clear();
+  // Append, never assign: activeRequests is a queue, so a second request started while
+  // the worker is not ready yet (startup, or the respawn window) must not replace the
+  // first. Losing one leaves an orphan context that misaligns every later response.
+  this->pendingRequest += QJsonDocument(request).toJson(QJsonDocument::Compact) + "\n";
+  ++this->pendingCount;
+  flushPendingRequests();
+}
+
+void ComputeWorker::updateBusyState()
+{
+  this->busy = !this->activeRequests.empty();
+  if (!this->busy) {
+    this->request = Request::NONE;
+    return;
   }
+  this->request = this->activeRequests.front()->type == RequestContext::Type::PREVIEW ?
+                    Request::PREVIEW :
+                    Request::RENDER;
+}
+
+void ComputeWorker::flushPendingRequests()
+{
+  if (!this->ready || this->pendingRequest.isEmpty()) return;
+  this->process->write(this->pendingRequest);
+  this->pendingRequest.clear();
+  this->pendingCount = 0;
 }
 
 void ComputeWorker::cancel()
@@ -270,10 +300,7 @@ void ComputeWorker::processOutput()
     if (response == "ready") {
       this->consecutiveFailures = 0;
       this->ready = true;
-      if (!this->pendingRequest.isEmpty()) {
-        this->process->write(this->pendingRequest);
-        this->pendingRequest.clear();
-      }
+      flushPendingRequests();
       continue;
     }
     if (response == "pong") continue;
@@ -281,12 +308,17 @@ void ComputeWorker::processOutput()
       emit progress(response.mid(9).toInt());
     } else if (response == "done" || response == "previewdone" || response == "error" || response == "cancelled") {
       std::shared_ptr<RequestContext> req;
-      if (!this->activeRequests.empty()) {
+      if (this->activeRequests.empty()) {
+        // The worker answered a request we have no record of: the queue and the worker
+        // have drifted apart, which shows up as a stale or blank preview.
+        LOG(message_group::Error,
+            "Compute worker sent an unexpected '%1$s' response with no request outstanding.",
+            response.toStdString());
+      } else {
         req = this->activeRequests.front();
         this->activeRequests.pop_front();
       }
-      this->busy = !this->activeRequests.empty();
-      this->request = this->busy ? (this->activeRequests.front()->type == RequestContext::Type::PREVIEW ? Request::PREVIEW : Request::RENDER) : Request::NONE;
+      updateBusyState();
 
       if (req) {
         processMetadata(req);

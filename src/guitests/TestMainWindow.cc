@@ -5,6 +5,7 @@
 #include <QDoubleSpinBox>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryDir>
 #include <QTemporaryFile>
 #include <QTest>
 #include <QSignalSpy>
@@ -17,6 +18,7 @@
 #include "gui/ComputeWorker.h"
 #include "gui/ProgressWidget.h"
 #include "gui/parameter/ParameterWidget.h"
+#include "glview/Camera.h"
 #include "glview/ColorMap.h"
 #include "glview/Renderer.h"
 #include "openscad.h"
@@ -262,6 +264,57 @@ void TestMainWindow::checkCrashedWorkerRespawns()
   window->exitComputeWorkerForTest();
   QTRY_VERIFY_WITH_TIMEOUT(
     window->computeWorkerProcessId() > 0 && window->computeWorkerProcessId() != worker, 5000);
+}
+
+void TestMainWindow::checkQueuedRequestsAreNotDroppedBeforeWorkerReady()
+{
+  restoreWindowInitialState();
+
+  // A stub worker that delays "ready" long enough that both requests below are
+  // necessarily queued while ComputeWorker::ready is still false, and that records
+  // every command line it actually receives.
+  QTemporaryDir directory;
+  QVERIFY(directory.isValid());
+  const auto received = directory.filePath("received.txt");
+  const auto stub = directory.filePath("stub-worker.sh");
+  {
+    QFile script(stub);
+    QVERIFY(script.open(QIODevice::WriteOnly));
+    script.write(QString("#!/bin/sh\n"
+                         "sleep 1\n"
+                         "echo ready\n"
+                         "while IFS= read -r line; do\n"
+                         "  [ \"$line\" = quit ] && exit 0\n"
+                         "  printf '%s\\n' \"$line\" >> '%1'\n"
+                         "done\n")
+                   .arg(received)
+                   .toUtf8());
+  }
+  QVERIFY(QFile::setPermissions(stub, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+
+  ComputeWorker worker(stub);
+  const ParameterSet parameters;
+  const Camera camera;
+  // Both dispatched before returning to the event loop, so neither can have been
+  // written to the process yet: this is the worker-startup / respawn window.
+  worker.startPreview("cube(1);", {}, parameters, 0, 0.0, camera, false, {});
+  worker.startPreview("cube(2);", {}, parameters, 0, 0.0, camera, false, {});
+
+  QStringList commands;
+  QTRY_VERIFY_WITH_TIMEOUT(
+    [&] {
+      QFile file(received);
+      if (!file.open(QIODevice::ReadOnly)) return false;
+      commands = QString::fromUtf8(file.readAll()).split('\n', Qt::SkipEmptyParts);
+      return commands.size() >= 2;
+    }(),
+    10000);
+
+  // Both queued requests must reach the worker. Dropping one leaves an orphan
+  // RequestContext on the deque, so every later response is matched to the wrong
+  // request and the worker never reports itself idle again.
+  QCOMPARE(commands.size(), 2);
+  QVERIFY(commands[0] != commands[1]);
 }
 
 void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()

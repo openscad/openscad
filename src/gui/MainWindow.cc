@@ -955,8 +955,10 @@ void MainWindow::compileDone(bool didchange)
 void MainWindow::compileEnded()
 {
   clearCurrentOutput();
-  if (this->processIsolation) this->computeBusy = false;
-  else GuiLocker::unlock();
+  if (this->processIsolation) {
+    this->computeBusy = false;
+    this->activePreviewSource.clear();
+  } else GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 #ifdef ENABLE_GUI_TESTS
   emit compilationDone(this->rootFile.get());
@@ -2041,6 +2043,8 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     });
     if (!prepared) {
       renderer.reset();
+      this->previewRenderer.reset();
+      this->qglview->setRenderer(nullptr);
       this->qglview->doneCurrent();
       updateStatusBar(nullptr);
       compileEnded();

@@ -60,6 +60,9 @@ protected:
   QString program;
   int consecutiveFailures = 0;
   QByteArray pendingRequest;
+  // How many activeRequests entries are still buffered in pendingRequest, i.e. queued
+  // but not yet written to the worker process.
+  size_t pendingCount = 0;
   QByteArray standardErrorBuffer;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   std::deque<std::shared_ptr<RequestContext>> activeRequests;
@@ -71,6 +74,8 @@ protected:
   void processMetadata(const std::shared_ptr<RequestContext>& req);
   void processStandardError();
   void startProcess();
+  void flushPendingRequests();
+  void updateBusyState();
   void startRequest(const QString& command, const QString& suffix, const QString& source,
                     const QString& filename, const ParameterSet& parameters, size_t normalizationLimit,
                     double time, const Camera& camera, bool python, const QString& pythonVenv);
