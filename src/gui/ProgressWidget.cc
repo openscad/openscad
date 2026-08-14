@@ -1,23 +1,11 @@
 #include "gui/ProgressWidget.h"
 
 #include <QTimer>
-#include <QVBoxLayout>
 #include <QWidget>
 
 ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
-  this->horizontalLayout->removeWidget(this->guiProgressBar);
-  auto *layout = new QVBoxLayout();
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->setSpacing(2);
-  this->horizontalLayout->replaceWidget(this->progressBar, new QWidget(this));
-  auto *container = this->horizontalLayout->itemAt(0)->widget();
-  container->setLayout(layout);
-  this->progressBar->setParent(container);
-  this->guiProgressBar->setParent(container);
-  layout->addWidget(this->progressBar);
-  layout->addWidget(this->guiProgressBar);
   auto redPalette = this->guiProgressBar->palette();
   redPalette.setColor(QPalette::Highlight, Qt::red);
   redPalette.setColor(QPalette::Base, Qt::transparent);
