@@ -18,6 +18,7 @@
 #include "geometry/PolySet.h"
 #include "glview/Camera.h"
 #include "glview/CsgInfo.h"
+#include "glview/RenderSettings.h"
 #include "io/import.h"
 #include "openscad.h"
 #include "utils/printutils.h"
@@ -205,6 +206,7 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
                       {"parameterFile", parameterPath},
                       {"setName", "worker"},
                       {"normalizationLimit", static_cast<qint64>(normalizationLimit)},
+                      {"colorscheme", QString::fromStdString(RenderSettings::inst()->colorscheme)},
                       {"time", time}};
   QJsonArray cameraValues;
   for (const auto value :

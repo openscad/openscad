@@ -800,6 +800,9 @@ static int compute_worker_main()
         for (const auto& feature : request.value("features", std::vector<std::string>{})) {
           Feature::enable_feature(feature);
         }
+        if (request.contains("colorscheme")) {
+          set_render_color_scheme(request["colorscheme"].get<std::string>(), false);
+        }
         Camera camera;
         const auto values = request.value("camera", std::vector<double>{});
         if (values.size() == 8) {
