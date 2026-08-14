@@ -1,22 +1,23 @@
 #include "gui/ProgressWidget.h"
 
 #include <QTimer>
-#include <QStackedLayout>
+#include <QVBoxLayout>
 #include <QWidget>
 
 ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
   this->horizontalLayout->removeWidget(this->guiProgressBar);
-  auto *overlay = new QStackedLayout();
-  overlay->setStackingMode(QStackedLayout::StackAll);
+  auto *layout = new QVBoxLayout();
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setSpacing(2);
   this->horizontalLayout->replaceWidget(this->progressBar, new QWidget(this));
   auto *container = this->horizontalLayout->itemAt(0)->widget();
-  container->setLayout(overlay);
+  container->setLayout(layout);
   this->progressBar->setParent(container);
   this->guiProgressBar->setParent(container);
-  overlay->addWidget(this->progressBar);
-  overlay->addWidget(this->guiProgressBar);
+  layout->addWidget(this->progressBar);
+  layout->addWidget(this->guiProgressBar);
   auto redPalette = this->guiProgressBar->palette();
   redPalette.setColor(QPalette::Highlight, Qt::red);
   redPalette.setColor(QPalette::Base, Qt::transparent);
@@ -80,14 +81,10 @@ int ProgressWidget::guiValue() const
 
 void ProgressWidget::startGuiProgress(int maximum)
 {
-  this->progressBar->hide();
+  this->progressBar->show();
   this->guiProgressBar->setRange(0, maximum);
   this->guiProgressBar->setValue(0);
   this->guiProgressBar->show();
-  if (auto *overlay = qobject_cast<QStackedLayout *>(this->guiProgressBar->parentWidget()->layout())) {
-    overlay->setCurrentWidget(this->guiProgressBar);
-  }
-  this->guiProgressBar->raise();
 }
 
 void ProgressWidget::setGuiValue(int progress)

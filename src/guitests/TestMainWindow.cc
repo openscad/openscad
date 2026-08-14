@@ -8,7 +8,7 @@
 #include <QTemporaryFile>
 #include <QTest>
 #include <QSignalSpy>
-#include <QStackedLayout>
+#include <QVBoxLayout>
 #include <QTimer>
 
 #include "gui/OpenSCADApp.h"
@@ -377,7 +377,7 @@ void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
   QCOMPARE(bars.size(), 2);
   QVERIFY(progress.progressBar->styleSheet().isEmpty());
   progress.startGuiProgress(10);
-  QCOMPARE(progress.findChild<QStackedLayout *>()->currentWidget(), progress.guiProgressBar);
+  QCOMPARE(progress.findChild<QVBoxLayout *>()->indexOf(progress.guiProgressBar), 1);
   QCOMPARE(progress.guiProgressBar->palette().color(QPalette::Highlight), QColor(Qt::red));
   QCOMPARE(progress.guiValue(), 0);
   progress.setGuiValue(5);
