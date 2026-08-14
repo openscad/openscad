@@ -9,6 +9,19 @@
 #include "core/customizer/ParameterSet.h"
 #include "utils/printutils.h"
 
+#include <deque>
+
+struct RequestContext {
+  enum class Type { RENDER, PREVIEW } type = Type::PREVIEW;
+  std::shared_ptr<class QTemporaryDir> requestDirectory;
+  std::shared_ptr<class QTemporaryFile> sourceFile;
+  std::shared_ptr<class QTemporaryFile> parameterFile;
+  QString resultPath;
+  QString requestSource;
+  QString displayFilename;
+  bool canceled = false;
+};
+
 class ComputeWorker : public QObject
 {
   Q_OBJECT;
@@ -43,24 +56,19 @@ signals:
 
 protected:
   class QProcess *process;
-  class QTemporaryFile *sourceFile;
-  class QTemporaryFile *parameterFile;
-  class QTemporaryDir *requestDirectory;
   QMetaObject::Connection startErrorConnection;
   QString program;
   int consecutiveFailures = 0;
-  QString resultPath;
-  QString displayFilename;
-  QString requestSource;
   QByteArray pendingRequest;
   QByteArray standardErrorBuffer;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
+  std::deque<std::shared_ptr<RequestContext>> activeRequests;
   bool ready = false;
   bool busy = false;
   bool canceled = false;
   bool stopping = false;
-  void cleanupResult();
-  void processMetadata();
+  static void cleanupResult(const QString& resultPath);
+  void processMetadata(const std::shared_ptr<RequestContext>& req);
   void processStandardError();
   void startProcess();
   void startRequest(const QString& command, const QString& suffix, const QString& source,

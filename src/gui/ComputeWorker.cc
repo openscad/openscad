@@ -25,9 +25,6 @@
 
 ComputeWorker::ComputeWorker(const QString& program) : program(program)
 {
-  this->sourceFile = nullptr;
-  this->parameterFile = nullptr;
-  this->requestDirectory = nullptr;
   this->process = new QProcess();
   connect(this->process, &QProcess::readyReadStandardOutput, this, &ComputeWorker::processOutput);
   connect(this->process, &QProcess::readyReadStandardError, this, &ComputeWorker::processStandardError);
@@ -40,6 +37,7 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
             if (interrupted) {
               this->busy = false;
               this->request = Request::NONE;
+              this->activeRequests.clear();
             }
             if (++this->consecutiveFailures <= 3) {
               QTimer::singleShot(100 * this->consecutiveFailures, this, &ComputeWorker::startProcess);
@@ -49,6 +47,7 @@ ComputeWorker::ComputeWorker(const QString& program) : program(program)
                 this->pendingRequest.clear();
                 this->busy = false;
                 this->request = Request::NONE;
+                this->activeRequests.clear();
                 if (request == Request::PREVIEW) emit previewDone({});
                 else emit done({});
               }
@@ -65,10 +64,11 @@ void ComputeWorker::processStandardError()
   while (standardErrorBuffer.contains('\n')) {
     auto line = QString::fromUtf8(standardErrorBuffer.left(standardErrorBuffer.indexOf('\n'))).trimmed();
     standardErrorBuffer.remove(0, standardErrorBuffer.indexOf('\n') + 1);
-    if (this->sourceFile) {
-      line.replace(this->sourceFile->fileName(), this->displayFilename);
-      line.replace(QFileInfo(this->sourceFile->fileName()).fileName(),
-                   QFileInfo(this->displayFilename).fileName());
+    if (!this->activeRequests.empty() && this->activeRequests.front()->sourceFile) {
+      const auto& sf = this->activeRequests.front()->sourceFile;
+      const auto& df = this->activeRequests.front()->displayFilename;
+      line.replace(sf->fileName(), df);
+      line.replace(QFileInfo(sf->fileName()).fileName(), QFileInfo(df).fileName());
     }
     auto group = message_group::NONE;
     if (line.startsWith("ECHO:")) group = message_group::Echo;
@@ -102,20 +102,20 @@ ComputeWorker::~ComputeWorker()
     this->process->waitForFinished();
   }
   delete this->process;
-  cleanupResult();
-  delete this->sourceFile;
-  delete this->parameterFile;
-  delete this->requestDirectory;
+  for (const auto& req : this->activeRequests) {
+    if (req) cleanupResult(req->resultPath);
+  }
+  this->activeRequests.clear();
 }
 
-void ComputeWorker::cleanupResult()
+void ComputeWorker::cleanupResult(const QString& resultPath)
 {
-  if (this->resultPath.isEmpty()) return;
-  QFile::remove(this->resultPath);
-  QFile::remove(this->resultPath + ".parameters.json");
-  QFile::remove(this->resultPath + ".dependencies.json");
-  QFile::remove(this->resultPath + ".cancel");
-  const auto products = this->resultPath + ".products.json";
+  if (resultPath.isEmpty()) return;
+  QFile::remove(resultPath);
+  QFile::remove(resultPath + ".parameters.json");
+  QFile::remove(resultPath + ".dependencies.json");
+  QFile::remove(resultPath + ".cancel");
+  const auto products = resultPath + ".products.json";
   QFile::remove(products);
   for (size_t index = 0; QFile::remove(products + ".leaf-" + QString::number(index) + ".off"); ++index) {
   }
@@ -153,54 +153,52 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
                                  bool python, const QString& pythonVenv)
 {
   this->canceled = false;
-  cleanupResult();
-  delete this->sourceFile;
-  delete this->parameterFile;
-  delete this->requestDirectory;
-  this->parameterFile = nullptr;
-  this->requestDirectory = new QTemporaryDir(QDir::tempPath() + "/openscad-worker-XXXXXX");
-
-  const auto directory = this->requestDirectory->path();
+  auto req = std::make_shared<RequestContext>();
+  req->type = command == "preview" ? RequestContext::Type::PREVIEW : RequestContext::Type::RENDER;
+  req->requestDirectory = std::make_shared<QTemporaryDir>(QDir::tempPath() + "/openscad-worker-XXXXXX");
+  const auto directory = req->requestDirectory->path();
   const auto workingDirectory =
     filename.isEmpty() ? QDir::currentPath() : QFileInfo(filename).absolutePath();
-  this->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
-  this->sourceFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.scad");
-  if (!this->sourceFile->open()) {
+  req->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
+  req->sourceFile = std::make_shared<QTemporaryFile>(directory + "/.openscad-worker-XXXXXX.scad");
+  if (!req->sourceFile->open()) {
     LOG(message_group::Error, "Could not create compute worker input: %1$s",
-        this->sourceFile->errorString().toStdString());
+        req->sourceFile->errorString().toStdString());
     if (command == "preview") emit previewDone({});
     else emit done({});
     return;
   }
-  this->sourceFile->write(source.toUtf8());
+  req->sourceFile->write(source.toUtf8());
   if (!python) {
-    this->sourceFile->write("\n\x03\n");
-    this->sourceFile->write(QByteArray::fromStdString(commandline_commands));
+    req->sourceFile->write("\n\x03\n");
+    req->sourceFile->write(QByteArray::fromStdString(commandline_commands));
   }
-  this->sourceFile->flush();
-  this->requestSource = source;
+  req->sourceFile->flush();
+  req->requestSource = source;
   QString parameterPath;
   if (!parameters.empty()) {
-    this->parameterFile = new QTemporaryFile(directory + "/.openscad-worker-XXXXXX.json");
-    if (!this->parameterFile->open()) {
+    req->parameterFile = std::make_shared<QTemporaryFile>(directory + "/.openscad-worker-XXXXXX.json");
+    if (!req->parameterFile->open()) {
       if (command == "preview") emit previewDone({});
       else emit done({});
       return;
     }
-    parameterPath = this->parameterFile->fileName();
-    this->parameterFile->close();
+    parameterPath = req->parameterFile->fileName();
+    req->parameterFile->close();
     ParameterSets sets;
     sets.push_back(parameters);
     sets.writeFile(parameterPath.toStdString());
   }
-  this->resultPath = this->sourceFile->fileName() + suffix;
+  req->resultPath = req->sourceFile->fileName() + suffix;
   this->request = command == "preview" ? Request::PREVIEW : Request::RENDER;
   this->busy = true;
+  this->activeRequests.push_back(req);
+
   const auto vpr = camera.getVpr();
   const auto vpt = camera.getVpt();
   QJsonObject request{{"command", command},
-                      {"input", this->sourceFile->fileName()},
-                      {"output", this->resultPath},
+                      {"input", req->sourceFile->fileName()},
+                      {"output", req->resultPath},
                       {"workingDirectory", workingDirectory},
                       {"sourcePath", filename.isEmpty() ? workingDirectory + "/Untitled.scad" : filename},
                       {"parameterFile", parameterPath},
@@ -231,33 +229,37 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
 void ComputeWorker::cancel()
 {
   this->canceled = true;
-  if (!this->busy) return;
-  const auto canceledResult = this->resultPath;
-  QFile cancelFile(canceledResult + ".cancel");
-  if (!cancelFile.open(QIODevice::WriteOnly)) {
-    emit diagnostic(tr("Could not request compute cancellation: %1").arg(cancelFile.errorString()));
-    this->process->terminate();
-    return;
+  for (const auto& req : this->activeRequests) {
+    if (req) {
+      req->canceled = true;
+      QFile cancelFile(req->resultPath + ".cancel");
+      cancelFile.open(QIODevice::WriteOnly);
+    }
   }
-  QTimer::singleShot(1000, this, [this, canceledResult] {
-    if (!this->busy || this->resultPath != canceledResult) return;
-    this->process->terminate();
-  });
+  if (!this->busy) return;
+  if (!this->activeRequests.empty()) {
+    const auto activePath = this->activeRequests.front()->resultPath;
+    QTimer::singleShot(1000, this, [this, activePath] {
+      if (!this->busy || this->activeRequests.empty() || this->activeRequests.front()->resultPath != activePath) return;
+      this->process->terminate();
+    });
+  }
 }
 
-void ComputeWorker::processMetadata()
+void ComputeWorker::processMetadata(const std::shared_ptr<RequestContext>& req)
 {
-  QFile parameters(this->resultPath + ".parameters.json");
+  if (!req) return;
+  QFile parameters(req->resultPath + ".parameters.json");
   if (parameters.open(QIODevice::ReadOnly)) {
-    emit parametersDiscovered(this->requestSource, QString::fromUtf8(parameters.readAll()));
+    emit parametersDiscovered(req->requestSource, QString::fromUtf8(parameters.readAll()));
   }
-  QFile dependencies(this->resultPath + ".dependencies.json");
+  QFile dependencies(req->resultPath + ".dependencies.json");
   if (dependencies.open(QIODevice::ReadOnly)) {
     QStringList paths;
     for (const auto& path : QJsonDocument::fromJson(dependencies.readAll()).array()) {
       paths.push_back(path.toString());
     }
-    emit dependenciesDiscovered(this->requestSource, paths);
+    emit dependenciesDiscovered(req->requestSource, paths);
   }
 }
 
@@ -277,30 +279,39 @@ void ComputeWorker::processOutput()
     if (response == "pong") continue;
     if (response.startsWith("progress\t")) {
       emit progress(response.mid(9).toInt());
-    } else if (response == "done") {
-      this->busy = false;
-      this->request = Request::NONE;
-      processMetadata();
-      auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
-      emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
-    } else if (response == "previewdone") {
-      processMetadata();
-      auto products = std::make_shared<CsgInfo>();
-      if (!products->read_products((this->resultPath + ".products.json").toStdString(), [this]() {
-            QCoreApplication::processEvents();
-            return !this->canceled;
-          })) {
-        products.reset();
+    } else if (response == "done" || response == "previewdone" || response == "error" || response == "cancelled") {
+      std::shared_ptr<RequestContext> req;
+      if (!this->activeRequests.empty()) {
+        req = this->activeRequests.front();
+        this->activeRequests.pop_front();
       }
-      this->busy = false;
-      this->request = Request::NONE;
-      emit previewDone(std::move(products));
-    } else if (response == "error" || response == "cancelled") {
-      this->busy = false;
-      const auto request = this->request;
-      this->request = Request::NONE;
-      if (request == Request::PREVIEW) emit previewDone({});
-      else emit done({});
+      this->busy = !this->activeRequests.empty();
+      this->request = this->busy ? (this->activeRequests.front()->type == RequestContext::Type::PREVIEW ? Request::PREVIEW : Request::RENDER) : Request::NONE;
+
+      if (req) {
+        processMetadata(req);
+        if (response == "done") {
+          auto geometry = import_off(req->resultPath.toStdString(), Location::NONE);
+          emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
+        } else if (response == "previewdone") {
+          if (!req->canceled) {
+            auto products = std::make_shared<CsgInfo>();
+            if (!products->read_products((req->resultPath + ".products.json").toStdString(), [this, req]() {
+                  QCoreApplication::processEvents();
+                  return !req->canceled;
+                })) {
+              products.reset();
+            }
+            emit previewDone(std::move(products));
+          } else {
+            emit previewDone({});
+          }
+        } else {
+          if (req->type == RequestContext::Type::PREVIEW) emit previewDone({});
+          else emit done({});
+        }
+        cleanupResult(req->resultPath);
+      }
     }
   }
 }
