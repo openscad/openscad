@@ -77,6 +77,7 @@ int ProgressWidget::guiValue() const
 
 void ProgressWidget::startGuiProgress(int maximum)
 {
+  this->progressBar->hide();
   this->guiProgressBar->setRange(0, maximum);
   this->guiProgressBar->setValue(0);
   this->guiProgressBar->show();
