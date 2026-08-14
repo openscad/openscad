@@ -1,5 +1,6 @@
 #include "glview/ColorMap.h"
 #include "core/ColorUtil.h"
+#include "core/Settings.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
@@ -218,6 +219,10 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
+  if ((rc == RenderColor::BACKGROUND_COLOR || rc == RenderColor::BACKGROUND_STOP_COLOR) &&
+      Settings::Settings::transparentColorSchemeBackground.value()) {
+    return {0.0f, 0.0f, 0.0f, 0.0f};
+  }
   if (cs.count(rc)) return cs.at(rc);
   if (ColorMap::instance().defaultColorScheme().count(rc))
     return ColorMap::instance().defaultColorScheme().at(rc);

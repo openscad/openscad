@@ -775,6 +775,15 @@ void Preferences::on_checkBoxShowWarningsIn3dView_toggled(bool val)
   writeSettings();
 }
 
+void Preferences::on_checkBoxTransparentColorSchemeBackground_toggled(bool val)
+{
+  Settings::Settings::transparentColorSchemeBackground.setValue(val);
+  writeSettings();
+  if (this->colorSchemeChooser->currentItem()) {
+    emit colorSchemeChanged(this->colorSchemeChooser->currentItem()->text());
+  }
+}
+
 void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
 {
   Settings::Settings::mouseCentricZoom.setValue(val);
@@ -2024,6 +2033,8 @@ void Preferences::updateGUI()
   initUpdateCheckBox(this->checkBoxEnableBraceMatching, Settings::Settings::enableBraceMatching);
   initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
   initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
+  initUpdateCheckBox(this->checkBoxTransparentColorSchemeBackground,
+                     Settings::Settings::transparentColorSchemeBackground);
   initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
   initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
 
