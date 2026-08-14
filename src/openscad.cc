@@ -191,6 +191,7 @@ struct CommandLine {
   const std::string pythonVenv = {};
   const bool workerProgress = false;
   const std::string workerCancelFile = {};
+  const std::string sourceFile = {};
 };
 
 namespace {
@@ -406,7 +407,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   // Avoid possibility of fs::absolute throwing when passed an empty path
-  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
+  const auto& source_file = cmd.sourceFile.empty() ? cmd.filename : cmd.sourceFile;
+  auto fpath = source_file.empty() ? fs::current_path() : fs::absolute(fs::path(source_file));
   auto fparent = fpath.parent_path();
 
   // set CWD relative to source file
@@ -548,7 +550,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       }
     }
 
-    const std::string input_filename = cmd.is_stdin ? "<stdin>" : cmd.filename;
+    const std::string input_filename = cmd.is_stdin ? "<stdin>" : source_file;
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
@@ -581,6 +583,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
 int cmdline(const CommandLine& cmd)
 {
+  const auto& source_file = cmd.sourceFile.empty() ? cmd.filename : cmd.sourceFile;
   FileFormat export_format;
 
   // Determine output file format and assign it to formatName
@@ -635,7 +638,7 @@ int cmdline(const CommandLine& cmd)
 
 #ifdef ENABLE_PYTHON
   python_active = false;
-  if (cmd.python || boost::algorithm::ends_with(cmd.filename, ".py")) {
+  if (cmd.python || boost::algorithm::ends_with(source_file, ".py")) {
     if (cmd.python || python_trusted) python_active = true;
     else LOG("Python is not enabled");
   }
@@ -651,7 +654,7 @@ int cmdline(const CommandLine& cmd)
   text += "\n\x03\n" + commandline_commands;
 
   SourceFile *root_file = nullptr;
-  if (!parse(root_file, text, cmd.filename, cmd.filename, false)) {
+  if (!parse(root_file, text, source_file, source_file, false)) {
     delete root_file;  // parse failed
     root_file = nullptr;
   }
@@ -733,10 +736,13 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                                  const std::string& set_name = {}, const size_t csg_products_limit = 0,
                                  const double time = 0, const Camera camera = {},
                                  const bool python = false, const std::string& python_venv = {},
-                                 const std::string& working_directory = {})
+                                 const std::string& working_directory = {},
+                                 const std::string& source_file = {})
 {
   const auto original_path =
     working_directory.empty() ? fs::path(input).parent_path() : fs::path(working_directory);
+  const fs::path document_path =
+    source_file.empty() ? original_path / fs::path(input).filename() : fs::path(source_file);
   const ViewOptions view_options{};
   const CmdLineExportOptions export_options{{Settings::SECTION_EXPORT_OFF, {{"precision", "17"}}}};
   return cmdline(CommandLine{false,
@@ -761,7 +767,8 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              python,
                              python_venv,
                              true,
-                             output + ".cancel"});
+                             output + ".cancel",
+                             document_path.string()});
 }
 
 static int compute_worker_main()
@@ -791,7 +798,8 @@ static int compute_worker_main()
           preview ? FileFormat::CSG : FileFormat::OFF, request.value("parameterFile", std::string{}),
           request.value("setName", std::string{}), request.value("normalizationLimit", size_t{0}),
           request.value("time", 0.0), camera, request.value("python", false),
-          request.value("pythonVenv", std::string{}), request.value("workingDirectory", std::string{}));
+          request.value("pythonVenv", std::string{}), request.value("workingDirectory", std::string{}),
+          request.value("sourcePath", std::string{}));
         std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
       } catch (const ProgressCancelException&) {
         std::cout << "cancelled" << std::endl;
