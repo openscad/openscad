@@ -145,6 +145,25 @@ public:
     o.vertices_vbo_ = 0;
     o.elements_vbo_ = 0;
   }
+  VertexStateContainer& operator=(VertexStateContainer&& o) noexcept
+  {
+    if (this != &o) {
+      if (vertices_vbo_) {
+        GL_TRACE("glDeleteBuffers(1, %p)", &vertices_vbo_);
+        GL_CHECKD(glDeleteBuffers(1, &vertices_vbo_));
+      }
+      if (elements_vbo_) {
+        GL_TRACE("glDeleteBuffers(1, %p)", &elements_vbo_);
+        GL_CHECKD(glDeleteBuffers(1, &elements_vbo_));
+      }
+      vertices_vbo_ = o.vertices_vbo_;
+      elements_vbo_ = o.elements_vbo_;
+      vertex_states_ = std::move(o.vertex_states_);
+      o.vertices_vbo_ = 0;
+      o.elements_vbo_ = 0;
+    }
+    return *this;
+  }
 
   virtual ~VertexStateContainer()
   {
