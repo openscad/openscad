@@ -20,6 +20,9 @@ public slots:
   void setRange(int minimum, int maximum);
   void setValue(int progress);
   int value() const;
+  int guiValue() const;
+  void startGuiProgress(int maximum);
+  void setGuiValue(int progress);
   void cancel();
 
 private slots:

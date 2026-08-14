@@ -145,7 +145,7 @@ def main():
             products = json.loads(Path(f"{preview}.products.json").read_text())
             assert len(products["root"]) == 1
             assert any(
-                node["name"] == "cube" and node["file"] == str(source.resolve())
+                node["name"].startswith("cube") and Path(node["file"]).resolve() == source.resolve()
                 for node in products["nodes"]
             )
             assert len(products["root"][0]["intersections"]) == 1

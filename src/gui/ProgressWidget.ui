@@ -31,6 +31,15 @@
     </widget>
    </item>
    <item>
+    <widget class="QProgressBar" name="guiProgressBar">
+     <property name="visible"><bool>false</bool></property>
+     <property name="maximum"><number>1000</number></property>
+     <property name="value"><number>0</number></property>
+     <property name="textVisible"><bool>false</bool></property>
+     <property name="styleSheet"><string>QProgressBar { background: transparent; border: 0; } QProgressBar::chunk { background-color: #c33; }</string></property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="stopButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

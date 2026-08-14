@@ -37,6 +37,7 @@
 #include "core/Context.h"
 #include "core/SourceFile.h"
 #include "glview/Camera.h"
+#include "glview/CsgInfo.h"
 #include "glview/Renderer.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -48,7 +49,6 @@ class ComputeWorker;
 class GeometryWorker;
 class CSGNode;
 class CSGProducts;
-class CsgInfo;
 class FontListDialog;
 class LibraryInfoDialog;
 class Preferences;
@@ -107,6 +107,7 @@ public:
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
   bool prepareWorkerPython(bool& python, QString& pythonVenv);
+  std::vector<CsgInfo::SourceNode> previewSelectionPath(int index) const;
   Tree tree;
   EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
@@ -470,6 +471,7 @@ private:
   std::shared_ptr<CSGProducts> rootProduct;
   std::shared_ptr<CSGProducts> highlightsProducts;
   std::shared_ptr<CSGProducts> backgroundProducts;
+  std::vector<CsgInfo::SourceNode> previewSourceNodes;
   int currentlySelectedObject{-1};
 
   char const *afterCompileSlot;

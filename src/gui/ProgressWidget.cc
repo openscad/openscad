@@ -1,11 +1,22 @@
 #include "gui/ProgressWidget.h"
 
 #include <QTimer>
+#include <QStackedLayout>
 #include <QWidget>
 
 ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
+  this->horizontalLayout->removeWidget(this->guiProgressBar);
+  auto *overlay = new QStackedLayout();
+  overlay->setStackingMode(QStackedLayout::StackAll);
+  this->horizontalLayout->replaceWidget(this->progressBar, new QWidget(this));
+  auto *container = this->horizontalLayout->itemAt(0)->widget();
+  container->setLayout(overlay);
+  this->progressBar->setParent(container);
+  this->guiProgressBar->setParent(container);
+  overlay->addWidget(this->progressBar);
+  overlay->addWidget(this->guiProgressBar);
   setRange(0, 1000);
   setValue(0);
   this->wascanceled = false;
@@ -51,4 +62,21 @@ void ProgressWidget::setValue(int progress)
 int ProgressWidget::value() const
 {
   return this->progressBar->value();
+}
+
+int ProgressWidget::guiValue() const
+{
+  return this->guiProgressBar->value();
+}
+
+void ProgressWidget::startGuiProgress(int maximum)
+{
+  this->guiProgressBar->setRange(0, maximum);
+  this->guiProgressBar->setValue(0);
+  this->guiProgressBar->show();
+}
+
+void ProgressWidget::setGuiValue(int progress)
+{
+  this->guiProgressBar->setValue(progress);
 }

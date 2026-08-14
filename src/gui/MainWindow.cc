@@ -1992,11 +1992,23 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
     return;
   }
-  this->progresswidget->setValue(900);
-
+  this->progresswidget->setValue(1000);
   this->rootProduct = products->root_products;
   this->highlightsProducts = products->highlights_products;
   this->backgroundProducts = products->background_products;
+  this->previewSourceNodes = products->source_nodes;
+  const auto productWork = [](const auto& products) {
+    size_t work = 0;
+    if (products) {
+      for (const auto& product : products->products) {
+        work += 1 + product.intersections.size() + product.subtractions.size();
+      }
+    }
+    return work;
+  };
+  const auto guiWork = productWork(this->rootProduct) + productWork(this->highlightsProducts) +
+                       productWork(this->backgroundProducts);
+  this->progresswidget->startGuiProgress(std::max<size_t>(1, guiWork));
   const auto limit = GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
   if (this->rootProduct && this->rootProduct->size() > limit) {
     LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
@@ -2008,9 +2020,11 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
       this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     renderer->setColorScheme(this->qglview->colorScheme());
     this->qglview->makeCurrent();
-    const auto prepared = renderer->prepare(this->qglview->edge_shader.get(), [this]() {
+    size_t guiProgress = 0;
+    const auto prepared = renderer->prepare(this->qglview->edge_shader.get(), [this, &guiProgress, guiWork]() {
       QApplication::processEvents();
       this->qglview->makeCurrent();
+      this->progresswidget->setGuiValue(std::min(++guiProgress, guiWork));
       return this->progresswidget && !this->progresswidget->wasCanceled();
     });
     if (!prepared) {
@@ -2310,12 +2324,28 @@ void MainWindow::rightClick(QPoint position)
   if (!this->rootProduct) {
     return;
   }
-  if (!this->rootNode) {
-    return;
-  }
-
   // Select the object at mouse coordinates
   const int index = this->qglview->pickObject(position);
+  if (!this->rootNode) {
+    const auto path = previewSelectionPath(index);
+    if (path.empty()) return;
+    QMenu tracemenu(this);
+    for (const auto& step : path) {
+      auto label = QString::fromStdString(step.name);
+      if (!step.file.empty()) {
+        label += QString(" (%1:%2)").arg(QFileInfo(QString::fromStdString(step.file)).fileName()).arg(step.line);
+      }
+      auto action = tracemenu.addAction(label);
+      if (!step.file.empty()) {
+        connect(action, &QAction::triggered, this, [this, step]() {
+          tabManager->open(QString::fromStdString(step.file));
+          activeEditor->setCursorPosition(step.line - 1, step.column - 1);
+        });
+      }
+    }
+    tracemenu.exec(this->qglview->mapToGlobal(position));
+    return;
+  }
   std::deque<std::shared_ptr<const AbstractNode>> path;
   const std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
@@ -2402,6 +2432,19 @@ void MainWindow::rightClick(QPoint position)
   } else {
     clearAllSelectionIndicators();
   }
+}
+
+std::vector<CsgInfo::SourceNode> MainWindow::previewSelectionPath(int index) const
+{
+  std::vector<CsgInfo::SourceNode> path;
+  while (index >= 0) {
+    const auto node = std::find_if(previewSourceNodes.begin(), previewSourceNodes.end(),
+                                   [index](const auto& item) { return item.index == index; });
+    if (node == previewSourceNodes.end()) break;
+    path.push_back(*node);
+    index = node->parent;
+  }
+  return path;
 }
 
 void MainWindow::measureFinished()
@@ -3681,7 +3724,7 @@ void MainWindow::setupCoreSubsystems()
     connect(this->computeWorker, &ComputeWorker::done, this, &MainWindow::actionRenderDone);
     connect(this->computeWorker, &ComputeWorker::previewDone, this, &MainWindow::actionPreviewDone);
     connect(this->computeWorker, &ComputeWorker::progress, this, [this](int permille) {
-      if (this->progresswidget) this->progresswidget->setValue(permille * 9 / 10);
+      if (this->progresswidget) this->progresswidget->setValue(permille);
     });
     connect(this->computeWorker, &ComputeWorker::diagnostic, this, [this](const QString& text) {
       if (!text.isEmpty()) this->consoleOutput(Message(text.toStdString(), message_group::Error));

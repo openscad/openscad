@@ -116,6 +116,11 @@ bool CsgInfo::write_products(const std::string& filename) const
   json output{{"root", ::write_products(root_products, filename, geometries)},
               {"highlights", ::write_products(highlights_products, filename, geometries)},
               {"background", ::write_products(background_products, filename, geometries)}};
+  output["nodes"] = json::array();
+  for (const auto& node : source_nodes) {
+    output["nodes"].push_back({{"index", node.index}, {"parent", node.parent}, {"name", node.name},
+                               {"file", node.file}, {"line", node.line}, {"column", node.column}});
+  }
   std::ofstream stream(fs::u8path(filename));
   stream << output;
   return stream.good();
@@ -132,5 +137,9 @@ bool CsgInfo::read_products(const std::string& filename,
   root_products = ::read_products(input["root"], geometries, continue_loading);
   highlights_products = ::read_products(input["highlights"], geometries, continue_loading);
   background_products = ::read_products(input["background"], geometries, continue_loading);
+  for (const auto& node : input.value("nodes", json::array())) {
+    source_nodes.push_back({node["index"], node["parent"], node["name"], node["file"], node["line"],
+                            node["column"]});
+  }
   return !continue_loading || continue_loading();
 }

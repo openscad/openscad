@@ -1,6 +1,7 @@
 #include "TestMainWindow.h"
 
 #include <QElapsedTimer>
+#include <QProgressBar>
 #include <QDoubleSpinBox>
 #include <QString>
 #include <QStringList>
