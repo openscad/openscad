@@ -64,10 +64,12 @@ json write_products(const std::shared_ptr<CSGProducts>& products, const std::str
 }
 
 std::vector<CSGChainObject> read_chain(const json& input,
-                                       std::map<std::string, std::shared_ptr<const PolySet>>& geometries)
+                                       std::map<std::string, std::shared_ptr<const PolySet>>& geometries,
+                                       const std::function<bool()>& continue_loading)
 {
   std::vector<CSGChainObject> output;
   for (const auto& item : input) {
+    if (continue_loading && !continue_loading()) return {};
     const auto path = item["geometry"].get<std::string>();
     auto geometry = geometries.find(path);
     if (geometry == geometries.end()) {
@@ -91,15 +93,16 @@ std::vector<CSGChainObject> read_chain(const json& input,
 }
 
 std::shared_ptr<CSGProducts> read_products(
-  const json& input, std::map<std::string, std::shared_ptr<const PolySet>>& geometries)
+  const json& input, std::map<std::string, std::shared_ptr<const PolySet>>& geometries,
+  const std::function<bool()>& continue_loading)
 {
   if (input.empty()) return {};
   auto output = std::make_shared<CSGProducts>();
   output->products.clear();
   for (const auto& item : input) {
     CSGProduct product;
-    product.intersections = read_chain(item["intersections"], geometries);
-    product.subtractions = read_chain(item["subtractions"], geometries);
+    product.intersections = read_chain(item["intersections"], geometries, continue_loading);
+    product.subtractions = read_chain(item["subtractions"], geometries, continue_loading);
     output->products.push_back(std::move(product));
   }
   return output;
@@ -118,15 +121,16 @@ bool CsgInfo::write_products(const std::string& filename) const
   return stream.good();
 }
 
-bool CsgInfo::read_products(const std::string& filename)
+bool CsgInfo::read_products(const std::string& filename,
+                            const std::function<bool()>& continue_loading)
 {
   std::ifstream stream(fs::u8path(filename));
   json input;
   stream >> input;
   if (!stream.good() && !stream.eof()) return false;
   std::map<std::string, std::shared_ptr<const PolySet>> geometries;
-  root_products = ::read_products(input["root"], geometries);
-  highlights_products = ::read_products(input["highlights"], geometries);
-  background_products = ::read_products(input["background"], geometries);
-  return true;
+  root_products = ::read_products(input["root"], geometries, continue_loading);
+  highlights_products = ::read_products(input["highlights"], geometries, continue_loading);
+  background_products = ::read_products(input["background"], geometries, continue_loading);
+  return !continue_loading || continue_loading();
 }

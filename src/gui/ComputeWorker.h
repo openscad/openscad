@@ -57,6 +57,7 @@ protected:
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   bool ready = false;
   bool busy = false;
+  bool canceled = false;
   bool stopping = false;
   void cleanupResult();
   void processMetadata();

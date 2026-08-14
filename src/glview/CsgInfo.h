@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 #include <vector>
 
 #include "core/CSGNode.h"
@@ -23,7 +24,7 @@ public:
   std::shared_ptr<CSGProducts> background_products;
 
   bool write_products(const std::string& filename) const;
-  bool read_products(const std::string& filename);
+  bool read_products(const std::string& filename, const std::function<bool()>& continue_loading = {});
 
   bool compile_products(const Tree& tree, size_t normalization_limit = 0)
   {

@@ -151,6 +151,7 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
                                  size_t normalizationLimit, double time, const Camera& camera,
                                  bool python, const QString& pythonVenv)
 {
+  this->canceled = false;
   cleanupResult();
   delete this->sourceFile;
   delete this->parameterFile;
@@ -227,6 +228,7 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
 
 void ComputeWorker::cancel()
 {
+  this->canceled = true;
   if (!this->busy) return;
   const auto canceledResult = this->resultPath;
   QFile cancelFile(canceledResult + ".cancel");
@@ -280,13 +282,16 @@ void ComputeWorker::processOutput()
       auto geometry = import_off(this->resultPath.toStdString(), Location::NONE);
       emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
     } else if (response == "previewdone") {
-      this->busy = false;
-      this->request = Request::NONE;
       processMetadata();
       auto products = std::make_shared<CsgInfo>();
-      if (!products->read_products((this->resultPath + ".products.json").toStdString())) {
+      if (!products->read_products((this->resultPath + ".products.json").toStdString(), [this]() {
+            QCoreApplication::processEvents();
+            return !this->canceled;
+          })) {
         products.reset();
       }
+      this->busy = false;
+      this->request = Request::NONE;
       emit previewDone(std::move(products));
     } else if (response == "error" || response == "cancelled") {
       this->busy = false;
