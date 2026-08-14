@@ -6,15 +6,10 @@
 ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
-  auto redPalette = this->guiProgressBar->palette();
-  redPalette.setColor(QPalette::Highlight, Qt::red);
-  redPalette.setColor(QPalette::Base, Qt::transparent);
-  redPalette.setColor(QPalette::Window, Qt::transparent);
-  this->guiProgressBar->setPalette(redPalette);
-  this->guiProgressBar->setAttribute(Qt::WA_TranslucentBackground);
-  this->guiProgressBar->setStyleSheet(
-    "QProgressBar { border: 1px solid palette(mid); border-radius: 5px; background: palette(base); } "
-    "QProgressBar::chunk { background-color: #e00000; border-radius: 4px; }");
+  this->horizontalLayout->setStretchFactor(this->progressBar, 1);
+  this->horizontalLayout->setStretchFactor(this->guiProgressBar, 1);
+  this->progressBar->show();
+  this->guiProgressBar->show();
   setRange(0, 1000);
   setValue(0);
   this->wascanceled = false;

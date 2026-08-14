@@ -376,9 +376,9 @@ void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
   const auto bars = progress.findChildren<QProgressBar *>();
   QCOMPARE(bars.size(), 2);
   QVERIFY(progress.progressBar->styleSheet().isEmpty());
+  QVERIFY(progress.guiProgressBar->styleSheet().isEmpty());
   progress.startGuiProgress(10);
   QVERIFY(progress.guiProgressBar->isVisible());
-  QCOMPARE(progress.guiProgressBar->palette().color(QPalette::Highlight), QColor(Qt::red));
   QCOMPARE(progress.guiValue(), 0);
   progress.setGuiValue(5);
   QCOMPARE(progress.guiValue(), 5);
