@@ -437,7 +437,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 #endif
 
   Camera camera = cmd.camera;
+  bool has_script_camera = false;
   if (file_context) {
+    has_script_camera = file_context->lookup_local_variable("$vpr") != nullptr ||
+                        file_context->lookup_local_variable("$vpt") != nullptr ||
+                        file_context->lookup_local_variable("$vpd") != nullptr ||
+                        file_context->lookup_local_variable("$vpf") != nullptr;
     camera.updateView(file_context, true);
   }
 
@@ -478,7 +483,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   if (!cmd.csgProductsFile.empty()) {
     CsgInfo products;
-    products.camera_info.has_camera = true;
+    products.camera_info.has_camera = has_script_camera;
     products.camera_info.noauto = !camera.viewall && !camera.autocenter;
     products.camera_info.vpr[0] = camera.getVpr().x();
     products.camera_info.vpr[1] = camera.getVpr().y();
