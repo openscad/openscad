@@ -2309,6 +2309,9 @@ void MainWindow::rightClick(QPoint position)
   if (!this->rootProduct) {
     return;
   }
+  if (!this->rootNode) {
+    return;
+  }
 
   // Select the object at mouse coordinates
   const int index = this->qglview->pickObject(position);

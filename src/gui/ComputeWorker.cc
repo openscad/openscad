@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 
+#include "Feature.h"
 #include "core/AST.h"
 #include "core/customizer/ParameterSet.h"
 #include "geometry/PolySet.h"
@@ -210,6 +211,11 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
     cameraValues.append(value);
   }
   request["camera"] = cameraValues;
+  QJsonArray features;
+  for (const auto feature : boost::make_iterator_range(Feature::begin(), Feature::end())) {
+    if (feature->is_enabled()) features.append(QString::fromStdString(feature->get_name()));
+  }
+  request["features"] = features;
   request["python"] = python;
   request["pythonVenv"] = pythonVenv;
   this->pendingRequest = QJsonDocument(request).toJson(QJsonDocument::Compact) + "\n";

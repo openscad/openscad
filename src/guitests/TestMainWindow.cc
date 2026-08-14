@@ -402,7 +402,7 @@ void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()
   restoreWindowInitialState();
   window->activeEditor->setPlainText("cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(window->rootProduct != nullptr, 10000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
   QVERIFY(QMetaObject::invokeMethod(window, "rightClick", Q_ARG(QPoint, QPoint(1, 1))));
 }
 
