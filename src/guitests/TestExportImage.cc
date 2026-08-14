@@ -59,7 +59,7 @@ void TestExportImage::checkRepeatedGrabsDoNotAccumulate()
   restoreWindowInitialState();
 
   // Transparent frames must not composite onto the previous frame. GLView::paintGL clears the
-  // colour buffer unconditionally at the top, and QOpenGLWidget defaults to NoPartialUpdate, so
+  // color buffer unconditionally at the top, and QOpenGLWidget defaults to NoPartialUpdate, so
   // nothing should carry over -- but accumulation is invisible until it isn't, and it would show up
   // as alpha creeping toward opaque over successive grabs.
   const QImage first = window->qglview->grabFrame(true).copy();
