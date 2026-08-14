@@ -185,6 +185,22 @@ def main():
             wait_for(worker, "done")
             assert imported_result.read_text().startswith("OFF\n3 1 0\n")
 
+            source.write_text("use <MCAD/boxes.scad>\nroundedBox([2, 2, 2], 0.2, true);\n")
+            request["input"] = str(source)
+            request["output"] = str(result)
+            worker.stdin.write(json.dumps(request) + "\n")
+            worker.stdin.flush()
+            wait_for(worker, "done")
+            assert len(result.read_text().splitlines()) > 10
+
+            source.write_text("translate([1, 2, 3].zyx) cube(1);\n")
+            request["features"] = ["vector-swizzle"]
+            worker.stdin.write(json.dumps(request) + "\n")
+            worker.stdin.flush()
+            wait_for(worker, "done")
+            vertices = result.read_text().splitlines()[2:10]
+            assert min(float(line.split()[0]) for line in vertices) == 3
+
             worker.stdin.write("quit\n")
             worker.stdin.flush()
             assert worker.wait(timeout=5) == 0
