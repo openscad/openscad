@@ -150,14 +150,40 @@ def main():
             assert geometry.exists()
             assert geometry.read_text().startswith("OFF\n")
 
-            dependency = Path(directory) / "part.scad"
-            dependency.write_text("cube(2);\n")
-            source.write_text("include <part.scad>\n")
-            worker.stdin.write(f"preview\t{source}\t{preview}\n")
+            document = Path(directory) / "document"
+            document.mkdir()
+            dependency = document / "part.scad"
+            dependency.write_text("module part() { cube(2); }\n")
+            for directive in ("include <part.scad>\npart();\n", "use <part.scad>\npart();\n"):
+                source.write_text(directive)
+                request = {
+                    "command": "preview",
+                    "input": str(source),
+                    "output": str(preview),
+                    "workingDirectory": str(document),
+                }
+                worker.stdin.write(json.dumps(request) + "\n")
+                worker.stdin.flush()
+                wait_for(worker, "previewdone")
+                dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
+                assert str(dependency.resolve()) in dependencies
+
+            imported = document / "part.stl"
+            imported.write_text(
+                "solid part\n"
+                "facet normal 0 0 1\nouter loop\n"
+                "vertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\n"
+                "endloop\nendfacet\nendsolid part\n"
+            )
+            source.write_text('import("part.stl");\n')
+            imported_result = Path(directory) / "import.off"
+            request["command"] = "render"
+            request["input"] = str(source)
+            request["output"] = str(imported_result)
+            worker.stdin.write(json.dumps(request) + "\n")
             worker.stdin.flush()
-            wait_for(worker, "previewdone")
-            dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
-            assert str(dependency.resolve()) in dependencies
+            wait_for(worker, "done")
+            assert imported_result.read_text().startswith("OFF\n3 1 0\n")
 
             worker.stdin.write("quit\n")
             worker.stdin.flush()
