@@ -149,6 +149,8 @@ std::istream& operator>>(std::istream& stream, LocalAppParameter& param)
 
 SettingsEntryBool Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", true);
 SettingsEntryBool Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true);
+SettingsEntryBool Settings::transparentColorSchemeBackground("3dview",
+                                                             "transparentColorSchemeBackground", false);
 SettingsEntryBool Settings::exportPngTransparentBackground(SECTION_EXPORT_PNG, "transparent-background",
                                                            false);
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);

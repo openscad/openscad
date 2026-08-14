@@ -386,6 +386,7 @@ class Settings
 public:
   static SettingsEntryBool showWarningsIn3dView;
   static SettingsEntryBool mouseCentricZoom;
+  static SettingsEntryBool transparentColorSchemeBackground;
   static SettingsEntryBool exportPngTransparentBackground;
   static SettingsEntryInt indentationWidth;
   static SettingsEntryInt tabWidth;
