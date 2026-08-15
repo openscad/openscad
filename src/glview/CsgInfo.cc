@@ -133,17 +133,19 @@ bool CsgInfo::write_products(const std::string& filename) const
               {"background", ::write_products(background_products, filename, geometries)}};
   output["nodes"] = json::array();
   for (const auto& node : source_nodes) {
-    output["nodes"].push_back({{"index", node.index}, {"parent", node.parent}, {"name", node.name},
-                               {"file", node.file}, {"line", node.line}, {"column", node.column}});
+    output["nodes"].push_back({{"index", node.index},
+                               {"parent", node.parent},
+                               {"name", node.name},
+                               {"file", node.file},
+                               {"line", node.line},
+                               {"column", node.column}});
   }
   if (camera_info.has_camera) {
-    output["camera"] = {
-      {"noauto", camera_info.noauto},
-      {"vpr", {camera_info.vpr[0], camera_info.vpr[1], camera_info.vpr[2]}},
-      {"vpt", {camera_info.vpt[0], camera_info.vpt[1], camera_info.vpt[2]}},
-      {"vpd", camera_info.vpd},
-      {"vpf", camera_info.vpf}
-    };
+    output["camera"] = {{"noauto", camera_info.noauto},
+                        {"vpr", {camera_info.vpr[0], camera_info.vpr[1], camera_info.vpr[2]}},
+                        {"vpt", {camera_info.vpt[0], camera_info.vpt[1], camera_info.vpt[2]}},
+                        {"vpd", camera_info.vpd},
+                        {"vpf", camera_info.vpf}};
   }
   std::ofstream stream(fs::u8path(filename));
   stream << output;
@@ -158,8 +160,7 @@ bool CsgInfo::write_products(const std::string& filename) const
   return true;
 }
 
-bool CsgInfo::read_products(const std::string& filename,
-                            const std::function<bool()>& continue_loading)
+bool CsgInfo::read_products(const std::string& filename, const std::function<bool()>& continue_loading)
 {
   std::ifstream stream(fs::u8path(filename));
   json input;
@@ -181,8 +182,8 @@ bool CsgInfo::read_products(const std::string& filename,
   highlights_products = ::read_products(input["highlights"], geometries, continue_loading);
   background_products = ::read_products(input["background"], geometries, continue_loading);
   for (const auto& node : input.value("nodes", json::array())) {
-    source_nodes.push_back({node["index"], node["parent"], node["name"], node["file"], node["line"],
-                            node["column"]});
+    source_nodes.push_back(
+      {node["index"], node["parent"], node["name"], node["file"], node["line"], node["column"]});
   }
   if (input.contains("camera")) {
     const auto& cam = input["camera"];

@@ -112,10 +112,12 @@ bool OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo,
       if (!createCSGVBOProducts(*root_products_, false, false, shaderinfo, shouldContinue)) return false;
     }
     if (background_products_) {
-      if (!createCSGVBOProducts(*background_products_, false, true, shaderinfo, shouldContinue)) return false;
+      if (!createCSGVBOProducts(*background_products_, false, true, shaderinfo, shouldContinue))
+        return false;
     }
     if (highlights_products_) {
-      if (!createCSGVBOProducts(*highlights_products_, true, false, shaderinfo, shouldContinue)) return false;
+      if (!createCSGVBOProducts(*highlights_products_, true, false, shaderinfo, shouldContinue))
+        return false;
     }
   }
   return true;

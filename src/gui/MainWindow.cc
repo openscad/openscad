@@ -1980,10 +1980,9 @@ void MainWindow::actionRenderPreview()
   connect(this->progresswidget, &ProgressWidget::canceled, this->computeWorker, &ComputeWorker::cancel);
   const auto normalizationLimit =
     2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-  this->computeWorker->startPreview(source, this->activeEditor->filepath,
-                                    this->activeEditor->parameterWidget->exportValues(),
-                                    normalizationLimit, this->animateWidget->getAnimTval(),
-                                    this->qglview->cam, python, pythonVenv);
+  this->computeWorker->startPreview(
+    source, this->activeEditor->filepath, this->activeEditor->parameterWidget->exportValues(),
+    normalizationLimit, this->animateWidget->getAnimTval(), this->qglview->cam, python, pythonVenv);
 }
 
 void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
@@ -2030,17 +2029,18 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     this->previewRenderer.reset();
   } else {
 #ifdef ENABLE_OPENCSG
-    auto renderer = std::make_shared<OpenCSGRenderer>(
-      this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+    auto renderer = std::make_shared<OpenCSGRenderer>(this->rootProduct, this->highlightsProducts,
+                                                      this->backgroundProducts);
     renderer->setColorScheme(this->qglview->colorScheme());
     this->qglview->makeCurrent();
     size_t guiProgress = 0;
-    const auto prepared = renderer->prepare(this->qglview->edge_shader.get(), [this, &guiProgress, guiWork]() {
-      QApplication::processEvents();
-      this->qglview->makeCurrent();
-      this->progresswidget->setGuiValue(std::min(++guiProgress, guiWork));
-      return this->progresswidget && !this->progresswidget->wasCanceled();
-    });
+    const auto prepared =
+      renderer->prepare(this->qglview->edge_shader.get(), [this, &guiProgress, guiWork]() {
+        QApplication::processEvents();
+        this->qglview->makeCurrent();
+        this->progresswidget->setGuiValue(std::min(++guiProgress, guiWork));
+        return this->progresswidget && !this->progresswidget->wasCanceled();
+      });
     if (!prepared) {
       renderer.reset();
       this->previewRenderer.reset();
@@ -2349,7 +2349,9 @@ void MainWindow::rightClick(QPoint position)
     for (const auto& step : path) {
       auto label = QString::fromStdString(step.name);
       if (!step.file.empty()) {
-        label += QString(" (%1:%2)").arg(QFileInfo(QString::fromStdString(step.file)).fileName()).arg(step.line);
+        label += QString(" (%1:%2)")
+                   .arg(QFileInfo(QString::fromStdString(step.file)).fileName())
+                   .arg(step.line);
       }
       auto action = tracemenu.addAction(label);
       if (!step.file.empty()) {

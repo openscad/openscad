@@ -38,9 +38,10 @@ void TestModuleCache::testBasicCache()
           [&currentFile](SourceFile *file) { currentFile = file; });
 
   const QSignalBlocker blocker(window->designActionAutoReload);
-  window->designActionAutoReload->setChecked(false);  // Disable auto-reload & preview for this test only.
-  window->tabManager->open(filename);                 // Open use.scad
-  window->actionReloadRenderPreview();                // F5
+  window->designActionAutoReload->setChecked(
+    false);                             // Disable auto-reload & preview for this test only.
+  window->tabManager->open(filename);   // Open use.scad
+  window->actionReloadRenderPreview();  // F5
 
   QVERIFY2(currentFile != nullptr, "The temporary SCAD file should be loaded.");
   previousFile = currentFile;  // save the loaded Source from the

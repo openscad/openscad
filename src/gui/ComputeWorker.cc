@@ -205,16 +205,17 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
 
   const auto vpr = camera.getVpr();
   const auto vpt = camera.getVpt();
-  QJsonObject request{{"command", command},
-                      {"input", req->sourceFile->fileName()},
-                      {"output", req->resultPath},
-                      {"workingDirectory", workingDirectory},
-                      {"sourcePath", filename.isEmpty() ? workingDirectory + "/Untitled.scad" : filename},
-                      {"parameterFile", parameterPath},
-                      {"setName", "worker"},
-                      {"normalizationLimit", static_cast<qint64>(normalizationLimit)},
-                      {"colorscheme", QString::fromStdString(RenderSettings::inst()->colorscheme)},
-                      {"time", time}};
+  QJsonObject request{
+    {"command", command},
+    {"input", req->sourceFile->fileName()},
+    {"output", req->resultPath},
+    {"workingDirectory", workingDirectory},
+    {"sourcePath", filename.isEmpty() ? workingDirectory + "/Untitled.scad" : filename},
+    {"parameterFile", parameterPath},
+    {"setName", "worker"},
+    {"normalizationLimit", static_cast<qint64>(normalizationLimit)},
+    {"colorscheme", QString::fromStdString(RenderSettings::inst()->colorscheme)},
+    {"time", time}};
   QJsonArray cameraValues;
   for (const auto value :
        {vpr.x(), vpr.y(), vpr.z(), vpt.x(), vpt.y(), vpt.z(), camera.zoomValue(), camera.fovValue()}) {
@@ -243,9 +244,8 @@ void ComputeWorker::updateBusyState()
     this->request = Request::NONE;
     return;
   }
-  this->request = this->activeRequests.front()->type == RequestContext::Type::PREVIEW ?
-                    Request::PREVIEW :
-                    Request::RENDER;
+  this->request = this->activeRequests.front()->type == RequestContext::Type::PREVIEW ? Request::PREVIEW
+                                                                                      : Request::RENDER;
 }
 
 void ComputeWorker::flushPendingRequests()
@@ -270,7 +270,9 @@ void ComputeWorker::cancel()
   if (!this->activeRequests.empty()) {
     const auto activePath = this->activeRequests.front()->resultPath;
     QTimer::singleShot(1000, this, [this, activePath] {
-      if (!this->busy || this->activeRequests.empty() || this->activeRequests.front()->resultPath != activePath) return;
+      if (!this->busy || this->activeRequests.empty() ||
+          this->activeRequests.front()->resultPath != activePath)
+        return;
       this->process->terminate();
     });
   }
@@ -306,7 +308,8 @@ void ComputeWorker::processOutput()
     if (response == "pong") continue;
     if (response.startsWith("progress\t")) {
       emit progress(response.mid(9).toInt());
-    } else if (response == "done" || response == "previewdone" || response == "error" || response == "cancelled") {
+    } else if (response == "done" || response == "previewdone" || response == "error" ||
+               response == "cancelled") {
       std::shared_ptr<RequestContext> req;
       if (this->activeRequests.empty()) {
         // The worker answered a request we have no record of: the queue and the worker
@@ -328,10 +331,11 @@ void ComputeWorker::processOutput()
         } else if (response == "previewdone") {
           if (!req->canceled) {
             auto products = std::make_shared<CsgInfo>();
-            if (!products->read_products((req->resultPath + ".products.json").toStdString(), [this, req]() {
-                  QCoreApplication::processEvents();
-                  return !req->canceled;
-                })) {
+            if (!products->read_products((req->resultPath + ".products.json").toStdString(),
+                                         [this, req]() {
+                                           QCoreApplication::processEvents();
+                                           return !req->canceled;
+                                         })) {
               products.reset();
             }
             emit previewDone(std::move(products));
