@@ -167,8 +167,8 @@ TEST_CASE("compute-worker IPC transport cost breakdown", "[.][ipc-bench]")
 
     WARN(triangles << " triangles | ascii " << text.size() / 1024 << " KiB, binary "
                    << binary.size() / 1024 << " KiB\n"
-                   << "  serialize " << serializeMs << " ms, write " << writeMs << " ms, read "
-                   << readMs << " ms, import(read+parse) " << importMs << " ms\n"
+                   << "  serialize " << serializeMs << " ms, write " << writeMs << " ms, read " << readMs
+                   << " ms, import(read+parse) " << importMs << " ms\n"
                    << "  binary encode " << binaryOutMs << " ms, decode " << binaryInMs << " ms");
   }
 }
