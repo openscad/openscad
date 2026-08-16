@@ -1111,6 +1111,7 @@ set(CORE_SOURCES
   src/io/import_off.cc
   src/io/import_stl.cc
   src/io/import_svg.cc
+  src/io/ipc_geometry.cc
   src/platform/PlatformUtils.cc
   src/utils/StackCheck.h
   src/utils/calc.cc
@@ -1577,6 +1578,7 @@ elseif(WIN32)
 endif()
 
 file(GLOB_RECURSE TEST_SOURCES
+  "src/io/*_test.cc"
   "src/utils/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
