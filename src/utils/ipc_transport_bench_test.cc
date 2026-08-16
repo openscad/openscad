@@ -14,7 +14,9 @@
 //   ./OpenSCADUnitTests "[ipc-bench]" -s
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -103,16 +105,11 @@ std::shared_ptr<PolySet> fromBinary(const std::vector<char>& buffer)
   return ps;
 }
 
-}  // namespace
-
-TEST_CASE("compute-worker IPC transport cost breakdown", "[.][ipc-bench]")
+// One model's worth of transport timings, reported the same way for synthetic and real meshes.
+void measure(const std::string& label, const std::shared_ptr<const PolySet>& mesh,
+             const std::string& path)
 {
-  for (const size_t triangles : {size_t{5000}, size_t{200000}, size_t{1000000}}) {
-    const auto mesh = makeMesh(triangles);
-    const auto path = (std::filesystem::temp_directory_path() /
-                       ("openscad-ipc-bench-" + std::to_string(triangles) + ".off"))
-                        .string();
-
+  {
     auto start = Clock::now();
     std::ostringstream ascii;
     ascii << std::setprecision(std::numeric_limits<double>::max_digits10);
@@ -165,10 +162,49 @@ TEST_CASE("compute-worker IPC transport cost breakdown", "[.][ipc-bench]")
     REQUIRE(bool(decoded->vertices == mesh->vertices));
     REQUIRE(bool(decoded->indices == mesh->indices));
 
-    WARN(triangles << " triangles | ascii " << text.size() / 1024 << " KiB, binary "
-                   << binary.size() / 1024 << " KiB\n"
-                   << "  serialize " << serializeMs << " ms, write " << writeMs << " ms, read " << readMs
-                   << " ms, import(read+parse) " << importMs << " ms\n"
-                   << "  binary encode " << binaryOutMs << " ms, decode " << binaryInMs << " ms");
+    WARN(label << " | " << mesh->numFacets() << " facets, " << mesh->vertices.size()
+               << " vertices | ascii " << text.size() / 1024 << " KiB, binary " << binary.size() / 1024
+               << " KiB\n"
+               << "  serialize " << serializeMs << " ms, write " << writeMs << " ms, read " << readMs
+               << " ms, import(read+parse) " << importMs << " ms\n"
+               << "  binary encode " << binaryOutMs << " ms, decode " << binaryInMs << " ms");
+  }
+}
+
+}  // namespace
+
+TEST_CASE("compute-worker IPC transport cost breakdown", "[.][ipc-bench]")
+{
+  for (const size_t triangles : {size_t{5000}, size_t{200000}, size_t{1000000}}) {
+    measure(std::to_string(triangles) + " synthetic triangles", makeMesh(triangles),
+            (std::filesystem::temp_directory_path() /
+             ("openscad-ipc-bench-" + std::to_string(triangles) + ".off"))
+              .string());
+  }
+}
+
+// Real models, rendered to OFF beforehand by the CLI. Synthetic meshes deliberately use
+// irrational coordinates, which is the worst case for ASCII width; real models mix in round
+// numbers, so this is the check that the conclusion survives realistic data.
+//
+//   OPENSCAD_IPC_BENCH_OFF=/path/a.off:/path/b.off ./OpenSCADUnitTests "[ipc-bench-real]"
+TEST_CASE("compute-worker IPC transport cost on real models", "[.][ipc-bench-real]")
+{
+  const auto *const paths = std::getenv("OPENSCAD_IPC_BENCH_OFF");
+  if (!paths || !*paths) {
+    WARN("Set OPENSCAD_IPC_BENCH_OFF to a ':'-separated list of pre-rendered .off files.");
+    return;
+  }
+  std::string list(paths);
+  size_t start = 0;
+  while (start <= list.size()) {
+    const auto end = std::min(list.find(':', start), list.size());
+    const auto path = list.substr(start, end - start);
+    start = end + 1;
+    if (path.empty()) continue;
+    auto mesh = import_off(path, Location::NONE);
+    REQUIRE(mesh);
+    measure(std::filesystem::path(path).filename().string(), std::move(mesh),
+            path + ".ipc-bench-roundtrip.off");
   }
 }
