@@ -130,12 +130,18 @@ TEST_CASE("compute-worker IPC transport cost breakdown", "[.][ipc-bench]")
     const auto writeMs = msSince(start);
 
     start = Clock::now();
+    size_t bytesRead = 0;
     {
+      // Block read, not istreambuf_iterator: the point is to measure moving the bytes, and a
+      // character-at-a-time iterator measures the iterator instead. (First cut of this
+      // benchmark did that and reported the read as 200x the write.)
       std::ifstream stream(path, std::ios::binary);
-      std::string back((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-      REQUIRE(back.size() == text.size());
+      std::string back(text.size(), '\0');
+      stream.read(back.data(), back.size());
+      bytesRead = stream.gcount();
     }
     const auto readMs = msSince(start);
+    REQUIRE(bytesRead == text.size());
 
     start = Clock::now();
     const auto imported = import_off(path, Location::NONE);
@@ -152,8 +158,12 @@ TEST_CASE("compute-worker IPC transport cost breakdown", "[.][ipc-bench]")
 
     // Binary must be bit-exact; ASCII at max_digits10 is expected to be too, and if it ever
     // is not, that is a fidelity argument for binary on top of the timing one.
-    REQUIRE(decoded->vertices == mesh->vertices);
+    // Compared as a bool, not as the containers themselves: a failing container REQUIRE
+    // expands both sides into the report, which for a million triangles is unreadable.
+    REQUIRE(decoded->vertices.size() == mesh->vertices.size());
     REQUIRE(decoded->indices.size() == mesh->indices.size());
+    REQUIRE(bool(decoded->vertices == mesh->vertices));
+    REQUIRE(bool(decoded->indices == mesh->indices));
 
     WARN(triangles << " triangles | ascii " << text.size() / 1024 << " KiB, binary "
                    << binary.size() / 1024 << " KiB\n"
