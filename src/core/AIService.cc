@@ -87,6 +87,7 @@ public:
   std::unique_ptr<HTTPClient> http_client;
   std::unique_ptr<AIClient> ai_client;
   ToolExecutor tool_executor = nullptr;
+  HistoryDrainCallback history_drain_callback = nullptr;
 
   Impl()
   {
@@ -113,6 +114,11 @@ AIService& AIService::operator=(AIService&&) noexcept = default;
 void AIService::registerToolExecutor(ToolExecutor executor)
 {
   impl->tool_executor = std::move(executor);
+}
+
+void AIService::registerHistoryDrainCallback(HistoryDrainCallback callback)
+{
+  impl->history_drain_callback = std::move(callback);
 }
 
 void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCallback on_chunk,
@@ -326,6 +332,13 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       tool_msg.content = result;
       tool_msg.tool_call_id = tc.id;
       history.push_back(tool_msg);
+    }
+
+    // Allow the UI layer to inject additional context messages (e.g. a
+    // viewport snapshot captured after trigger_preview) into history before
+    // the next recursive LLM call.
+    if (impl->history_drain_callback) {
+      impl->history_drain_callback(history);
     }
 
     if (current_auto_turn + 1 >= effective_max_turns) {

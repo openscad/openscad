@@ -182,6 +182,20 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
     return future.get();
   });
 
+  // Register history drain callback: after each tool round, inject any pending
+  // viewport snapshot into history so the model sees it on the next turn.
+  aiService->registerHistoryDrainCallback([this](std::vector<ChatMessage>& hist) {
+    QMetaObject::invokeMethod(
+      qApp,
+      [this, &hist]() {
+        if (pendingViewportSnapshot.has_value()) {
+          hist.push_back(std::move(*pendingViewportSnapshot));
+          pendingViewportSnapshot.reset();
+        }
+      },
+      Qt::DirectConnection);
+  });
+
   // Initial welcome greeting
   addMessage(_("Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
                "\"draw a sphere\" or \"create a box with a hole\"."),
@@ -404,9 +418,10 @@ void ChatWidget::onSendPressed()
           }
         } else if (activeResponseText) {
           this->history.push_back({"assistant", *activeResponseText});
-          // Fallback: If no tool was executed during this turn, extract code blocks from assistant text
-          // and propose change
-          if (!this->hasPendingCodeChanges()) {
+          // Fallback: only in interactive mode — if the model wrote a code block in
+          // chat text without calling set_editor_code, extract and propose it.
+          // In agentic mode this never runs, preventing spurious diff dialogs.
+          if (!agenticMode && !this->hasPendingCodeChanges()) {
             std::string text = *activeResponseText;
             size_t start = text.find("```");
             if (start != std::string::npos) {
@@ -783,6 +798,28 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
         }
       }
       result_val = ss.str();
+      // After a successful render, capture the viewport and attach it to history
+      // as a user-role message so the model can see the rendered result in the
+      // next agentic turn. This avoids the pendingAttachments path which only
+      // fires on explicit user sends.
+      if (mw->qglview) {
+        std::string img_b64 = ViewportGrabber::captureViewportBase64(mw->qglview, 512);
+        if (!img_b64.empty()) {
+          ChatMessage snap_msg;
+          snap_msg.role = "user";
+          snap_msg.content = "[Viewport snapshot after trigger_preview]";
+          snap_msg.images.push_back({"image/png", img_b64});
+          // This message is appended to history inside executeTool, which is
+          // called synchronously from AIService's on_complete_wrapper before the
+          // recursive chatCompletionStream call, so it will be included.
+          // We return the image caption in result_val for tool message content.
+          result_val += "\n(Viewport snapshot captured and attached for visual inspection.)";
+          // Store for AIService to inject; we can't push to this->history directly
+          // here because AIService owns the history vector passed by reference.
+          // Instead, store it and append in the next on_complete_wrapper iteration.
+          this->pendingViewportSnapshot = snap_msg;
+        }
+      }
     } else {
       result_val = "Error: No active MainWindow found.";
     }
@@ -792,9 +829,23 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
       std::string meta = ViewportGrabber::serializeCameraMetadata(cam);
       std::string img_b64 = ViewportGrabber::captureViewportBase64(mw->qglview, 1024);
       if (!img_b64.empty()) {
-        this->pendingAttachments.push_back({"image/png", img_b64});
-        this->updateAttachmentPreviewBar();
-        meta += "\n(Captured viewport snapshot and attached to pending message context)";
+        if (agenticMode) {
+          // In agentic mode: return image inline via pendingViewportSnapshot so
+          // it reaches the model in the next turn rather than polluting the
+          // user-send attachment queue.
+          ChatMessage snap_msg;
+          snap_msg.role = "user";
+          snap_msg.content = "[Viewport snapshot from get_viewport]";
+          snap_msg.images.push_back({"image/png", img_b64});
+          this->pendingViewportSnapshot = snap_msg;
+          meta += "\n(Viewport snapshot captured and will be included in the next model context.)";
+        } else {
+          // Interactive mode: attach to the pending attachments bar so the user
+          // can see the image was captured and it goes with the next user send.
+          this->pendingAttachments.push_back({"image/png", img_b64});
+          this->updateAttachmentPreviewBar();
+          meta += "\n(Captured viewport snapshot and attached to pending message context)";
+        }
       }
       result_val = meta;
     } else {
