@@ -26,8 +26,8 @@ std::string tempPath(const std::string& name)
 std::shared_ptr<PolySet> sampleMesh()
 {
   auto ps = std::make_shared<PolySet>(3);
-  ps->vertices = {{0, 0, 0},      {1, 0, 0},      {1, 1, 0},          {0, 1, 0},
-                  {0.5, 0.5, 1},  {-1.25e-9, 2, 3}, {1e17, -1e17, 0.1}};
+  ps->vertices = {{0, 0, 0},     {1, 0, 0},        {1, 1, 0},         {0, 1, 0},
+                  {0.5, 0.5, 1}, {-1.25e-9, 2, 3}, {1e17, -1e17, 0.1}};
   ps->indices = {{0, 1, 2, 3}, {0, 1, 4}, {1, 2, 4}, {5, 6, 4, 0, 1}};
   ps->setConvexity(7);
   return ps;
