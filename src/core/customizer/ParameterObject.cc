@@ -53,12 +53,12 @@ boost::property_tree::ptree BoolParameter::exportValue() const
   return output;
 }
 
-json BoolParameter::jsonValue() const
+json BoolParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "boolean";
   o["initial"] = defaultValue;
-  o["value"] = value;
+  if (withCurrentValue) o["value"] = value;
   return o;
 }
 
@@ -98,12 +98,12 @@ boost::property_tree::ptree StringParameter::exportValue() const
   return output;
 }
 
-json StringParameter::jsonValue() const
+json StringParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "string";
   o["initial"] = defaultValue;
-  o["value"] = value;
+  if (withCurrentValue) o["value"] = value;
   if (maximumSize.is_initialized()) {
     o["maxLength"] = maximumSize.get();
   }
@@ -140,12 +140,12 @@ boost::property_tree::ptree NumberParameter::exportValue() const
   return output;
 }
 
-json NumberParameter::jsonValue() const
+json NumberParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "number";
   o["initial"] = defaultValue;
-  o["value"] = value;
+  if (withCurrentValue) o["value"] = value;
 
   if (maximum.is_initialized()) {
     o["max"] = maximum.get();
@@ -221,12 +221,12 @@ boost::property_tree::ptree VectorParameter::exportValue() const
   return output;
 }
 
-json VectorParameter::jsonValue() const
+json VectorParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "number";
   o["initial"] = defaultValue;
-  o["value"] = value;
+  if (withCurrentValue) o["value"] = value;
 
   if (maximum.is_initialized()) {
     o["max"] = maximum.get();
@@ -280,7 +280,7 @@ boost::property_tree::ptree EnumParameter::exportValue() const
   return output;
 }
 
-json EnumParameter::jsonValue() const
+json EnumParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   if (set_enum_value(o, "initial", items[defaultValueIndex])) {
@@ -288,7 +288,7 @@ json EnumParameter::jsonValue() const
   } else {
     o["type"] = "string";
   }
-  set_enum_value(o, "value", items[valueIndex]);
+  if (withCurrentValue) set_enum_value(o, "value", items[valueIndex]);
 
   json options;
   for (const auto& item : items) {
@@ -550,7 +550,7 @@ std::string ParameterObjects::toJson() const
 {
   json output = json::array();
   for (const auto& parameter : *this) {
-    auto item = parameter->jsonValue();
+    auto item = parameter->jsonValue(true);
     item["name"] = parameter->name();
     item["description"] = parameter->description();
     item["group"] = parameter->group();

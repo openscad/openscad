@@ -30,7 +30,11 @@ public:
   virtual void reset() = 0;
   virtual bool importValue(boost::property_tree::ptree encodedValue, bool store) = 0;
   [[nodiscard]] virtual boost::property_tree::ptree exportValue() const = 0;
-  [[nodiscard]] virtual json jsonValue() const = 0;
+  // withCurrentValue distinguishes the two consumers: the compute worker needs the value the
+  // user currently has set so the Customizer can be restored across the process boundary, while
+  // `--export-format param` is a published format whose output must not change. Emitting the
+  // value unconditionally broke export-param_issue6597.
+  [[nodiscard]] virtual json jsonValue(bool withCurrentValue = false) const = 0;
   virtual void apply(Assignment *assignment) const = 0;
 
 protected:
@@ -59,7 +63,7 @@ public:
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   bool value;
@@ -75,7 +79,7 @@ public:
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   std::string value;
@@ -101,7 +105,7 @@ public:
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   double value;
@@ -129,7 +133,7 @@ public:
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   std::vector<double> value;
@@ -160,7 +164,7 @@ public:
   void reset() override { valueIndex = defaultValueIndex; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   int valueIndex;
