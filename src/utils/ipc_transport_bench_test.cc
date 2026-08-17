@@ -29,6 +29,7 @@
 #include "geometry/PolySet.h"
 #include "io/export.h"
 #include "io/import.h"
+#include "io/ipc_geometry.h"
 
 namespace {
 
@@ -202,7 +203,18 @@ TEST_CASE("compute-worker IPC transport cost on real models", "[.][ipc-bench-rea
     const auto path = list.substr(start, end - start);
     start = end + 1;
     if (path.empty()) continue;
-    auto mesh = import_off(path, Location::NONE);
+    // Time whichever importer the payload actually calls for, so a baseline (.off) build and
+    // a binary build can both be pointed at their own worker output and compared directly.
+    std::ifstream probe(path, std::ios::binary);
+    char magic[4]{};
+    probe.read(magic, sizeof(magic));
+    probe.close();
+    const bool binaryPayload = std::string(magic, 4) == "OSIG";
+    auto start = Clock::now();
+    auto mesh = binaryPayload ? import_ipc_geometry(path) : import_off(path, Location::NONE);
+    WARN(std::filesystem::path(path).filename().string()
+         << " | decode as " << (binaryPayload ? "binary" : "ASCII OFF") << ": " << msSince(start)
+         << " ms");
     REQUIRE(mesh);
     measure(std::filesystem::path(path).filename().string(), std::move(mesh),
             path + ".ipc-bench-roundtrip.off");
