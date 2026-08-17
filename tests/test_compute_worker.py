@@ -31,6 +31,15 @@ def read_ipc_geometry(path):
         offset += 4
         polygons.append(list(struct.unpack_from(f"<{count}i", data, offset)))
         offset += 4 * count
+    offset += 16 * color_count + 4 * color_index_count
+    # Exact, not >=: this is the end-to-end guard against a payload written through a text-mode
+    # stream. On Windows that rewrites every 0x0A byte -- which ordinary doubles contain -- as
+    # 0x0D 0x0A, so the file is longer than its own header describes and every field after the
+    # first newline byte decodes as garbage. A same-machine round trip cannot catch it; this can,
+    # because it reads the worker's real output on the platform where it breaks.
+    assert offset == len(data), (
+        f"{path}: header describes {offset} bytes but the file holds {len(data)}"
+    )
     return vertices, polygons
 
 

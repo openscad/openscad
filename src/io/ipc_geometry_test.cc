@@ -124,3 +124,87 @@ TEST_CASE("binary IPC geometry rejects damaged payloads", "[ipc][geometry]")
 
   std::filesystem::remove(path);
 }
+
+// The payload's layout is only ever exercised by a same-machine round trip, which cannot fail
+// on byte order (both ends share it) and cannot fail on padding (both ends share the struct).
+// These tests pin the layout to fixed bytes instead, so CI catches the changes that a round
+// trip is structurally blind to:
+//
+//   * a field added, reordered, or resized in Header;
+//   * padding introduced by changing a member's type;
+//   * a stream opened in text mode, which on Windows rewrites every 0x0A byte in the payload
+//     to 0x0D 0x0A and corrupts any double or index containing that byte.
+//
+// Byte order itself is asserted rather than handled: the format is documented same-machine, and
+// every platform this project builds on is little-endian. If OpenSCAD is ever ported to a
+// big-endian target, this test is the thing that should fail and force the decision.
+namespace {
+
+bool isLittleEndian()
+{
+  const uint32_t one = 1;
+  return *reinterpret_cast<const unsigned char *>(&one) == 1;
+}
+
+}  // namespace
+
+TEST_CASE("binary IPC geometry has a fixed on-disk layout", "[ipc][geometry]")
+{
+  REQUIRE(isLittleEndian());
+
+  PolySet mesh(3);
+  mesh.vertices = {{1.0, 2.0, 3.0}};
+  mesh.indices = {{0}};
+  mesh.setConvexity(1);
+
+  std::ostringstream stream(std::ios::binary);
+  export_ipc_geometry(mesh, stream);
+  const auto bytes = stream.str();
+
+  // 40-byte header + one vertex (3 doubles) + one polygon (count + one index).
+  REQUIRE(bytes.size() == 40 + 24 + 8);
+
+  const std::vector<unsigned char> expected{
+    0x4f, 0x53, 0x49, 0x47,                          // magic "OSIG"
+    0x01, 0x00, 0x00, 0x00,                          // version 1
+    0x03, 0x00, 0x00, 0x00,                          // dimension 3
+    0x01, 0x00, 0x00, 0x00,                          // convexity 1
+    0x00, 0x00, 0x00, 0x00,                          // flags: not triangular, not manifold
+    0x01, 0x00, 0x00, 0x00,                          // 1 vertex
+    0x01, 0x00, 0x00, 0x00,                          // 1 polygon
+    0x01, 0x00, 0x00, 0x00,                          // 1 index in total
+    0x00, 0x00, 0x00, 0x00,                          // no colors
+    0x00, 0x00, 0x00, 0x00,                          // no color indices
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f,  // 1.0
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40,  // 2.0
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40,  // 3.0
+    0x01, 0x00, 0x00, 0x00,                          // polygon vertex count
+    0x00, 0x00, 0x00, 0x00,                          // index 0
+  };
+  REQUIRE(bytes.size() == expected.size());
+  REQUIRE(std::equal(bytes.begin(), bytes.end(), expected.begin(), [](char actual, unsigned char want) {
+    return static_cast<unsigned char>(actual) == want;
+  }));
+}
+
+TEST_CASE("binary IPC geometry is not mangled by text-mode translation", "[ipc][geometry]")
+{
+  // 0x0A appears inside ordinary doubles, so a stream opened without std::ios::binary silently
+  // grows the payload on Windows and every later field decodes as garbage. 3.25 and 2053.0 both
+  // encode a literal newline byte, which makes that failure deterministic rather than lucky:
+  //   3.25   -> 00 00 00 00 00 00 0a 40
+  //   2053.0 -> 00 00 00 00 00 0a a0 40
+  PolySet mesh(3);
+  mesh.vertices = {{3.25, 2053.0, 0.0}};
+  mesh.indices = {{0}};
+  const auto path = tempPath("newline.bin");
+  REQUIRE(writeToFile(mesh, path));
+
+  const auto onDisk = std::filesystem::file_size(path);
+  REQUIRE(onDisk == 40 + 24 + 8);
+
+  const auto read = import_ipc_geometry(path);
+  REQUIRE(read);
+  REQUIRE(bool(read->vertices == mesh.vertices));
+  std::filesystem::remove(path);
+}
