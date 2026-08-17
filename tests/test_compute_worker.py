@@ -67,7 +67,7 @@ def main():
 
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "model.scad"
-            result = Path(directory) / "result.off"
+            result = Path(directory) / "result.osig"
             source.write_text("translate([1.2345678901234567, 0, 0]) cube(1);\n")
             worker.stdin.write(
                 json.dumps(
@@ -184,7 +184,7 @@ def main():
                 "endloop\nendfacet\nendsolid part\n"
             )
             source.write_text('import("part.stl");\n')
-            imported_result = Path(directory) / "import.off"
+            imported_result = Path(directory) / "import.osig"
             request["command"] = "render"
             request["input"] = str(source)
             request["output"] = str(imported_result)

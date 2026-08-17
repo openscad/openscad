@@ -5,10 +5,13 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ipc_geometry_payload import read_ipc_geometry  # noqa: E402
+
 
 with tempfile.TemporaryDirectory() as directory:
     source = Path(directory) / "model.py"
-    result = Path(directory) / "result.off"
+    result = Path(directory) / "result.osig"
     source.write_text("from openscad import cube, show\nshow(cube([t * 14, 1, 1]))\n")
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
@@ -27,8 +30,8 @@ with tempfile.TemporaryDirectory() as directory:
         response = ""
         while response != "done":
             response = worker.stdout.readline().strip()
-        vertices = result.read_text().splitlines()[2:10]
-        assert max(float(line.split()[0]) for line in vertices) == 7
+        vertices = read_ipc_geometry(result).vertices
+        assert max(vertex[0] for vertex in vertices) == 7
     finally:
         if worker.poll() is None:
             worker.kill()
