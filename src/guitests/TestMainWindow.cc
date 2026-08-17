@@ -446,24 +446,35 @@ void TestMainWindow::checkWorkerCompletionDoesNotFinishPreviewProgress()
 
 void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
 {
-  ProgressWidget progress;
-  const auto bars = progress.findChildren<QProgressBar *>();
+  ProgressWidget render;
+  const auto bars = render.findChildren<QProgressBar *>();
   QCOMPARE(bars.size(), 2);
-  QVERIFY(progress.progressBar->styleSheet().isEmpty());
-  QVERIFY(progress.guiProgressBar->styleSheet().isEmpty());
-  // A render (F6) never calls startGuiProgress, so until something does, the panel must show
-  // one full-width bar rather than a half-width bar beside a permanently empty one. The shape
-  // of the panel is then itself the indicator of which kind of operation is running.
-  QVERIFY(!progress.progressBar->isHidden());
-  QVERIFY(progress.guiProgressBar->isHidden());
-  progress.startGuiProgress(10);
-  // isVisible() is false for any child of a top-level widget that was never
-  // shown, which this one is not; isHidden() is what "startGuiProgress showed
-  // the bar" actually means here.
-  QVERIFY(!progress.guiProgressBar->isHidden());
-  QCOMPARE(progress.guiValue(), 0);
-  progress.setGuiValue(5);
-  QCOMPARE(progress.guiValue(), 5);
+  QVERIFY(render.progressBar->styleSheet().isEmpty());
+  QVERIFY(render.guiProgressBar->styleSheet().isEmpty());
+  // A render (F6) has a single phase, so it shows one full-width bar and never a permanently
+  // empty second one. The shape of the panel is itself the indicator of which kind of
+  // operation is running.
+  QVERIFY(!render.progressBar->isHidden());
+  QVERIFY(render.guiProgressBar->isHidden());
+
+  // A preview (F5) has two phases -- the worker's, then the GUI's -- and must show both bars
+  // from the start. Revealing the second one only once the worker phase finished made the first
+  // bar shrink mid-operation, which reads as the layout glitching rather than as a second phase
+  // beginning.
+  // isVisible() is false for any child of a top-level widget that was never shown, which this
+  // one is not; isHidden() is what "the bar is showing" actually means here.
+  ProgressWidget preview(nullptr, true);
+  QVERIFY(!preview.progressBar->isHidden());
+  QVERIFY(!preview.guiProgressBar->isHidden());
+  QCOMPARE(preview.guiValue(), 0);
+
+  // startGuiProgress supplies the real maximum once the worker's products are in. It is no
+  // longer what makes the bar appear, and it must not disturb one that is already showing.
+  preview.startGuiProgress(10);
+  QVERIFY(!preview.guiProgressBar->isHidden());
+  QCOMPARE(preview.guiValue(), 0);
+  preview.setGuiValue(5);
+  QCOMPARE(preview.guiValue(), 5);
 }
 
 void TestMainWindow::checkPreviewDrawsAfterCanceledOpenCSGPreparation()

@@ -1990,7 +1990,9 @@ void MainWindow::actionRenderPreview()
   autoReloadTimer->stop();
   this->isPreview = true;
   this->renderStatistic.start();
-  this->progresswidget = new ProgressWidget(this);
+  // A preview has a GUI-side phase after the worker's, so both bars show for the whole
+  // operation; startGuiProgress() below fills in the real range once the products arrive.
+  this->progresswidget = new ProgressWidget(this, true);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
   connect(this->progresswidget, &ProgressWidget::canceled, this->computeWorker, &ComputeWorker::cancel);
   const auto normalizationLimit =
