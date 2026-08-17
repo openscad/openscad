@@ -268,8 +268,11 @@ void TestMainWindow::checkCrashedWorkerRespawns()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
+  // Wait for a live worker rather than sampling one: the preceding test kills this window's
+  // worker, and the replacement is started on a short timer, so the PID is briefly 0. Reading
+  // it immediately made this test pass or fail on timing alone.
+  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() > 0, 5000);
   const auto worker = window->computeWorkerProcessId();
-  QVERIFY(worker > 0);
   window->exitComputeWorkerForTest();
   QTRY_VERIFY_WITH_TIMEOUT(
     window->computeWorkerProcessId() > 0 && window->computeWorkerProcessId() != worker, 5000);
@@ -448,6 +451,11 @@ void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
   QCOMPARE(bars.size(), 2);
   QVERIFY(progress.progressBar->styleSheet().isEmpty());
   QVERIFY(progress.guiProgressBar->styleSheet().isEmpty());
+  // A render (F6) never calls startGuiProgress, so until something does, the panel must show
+  // one full-width bar rather than a half-width bar beside a permanently empty one. The shape
+  // of the panel is then itself the indicator of which kind of operation is running.
+  QVERIFY(!progress.progressBar->isHidden());
+  QVERIFY(progress.guiProgressBar->isHidden());
   progress.startGuiProgress(10);
   // isVisible() is false for any child of a top-level widget that was never
   // shown, which this one is not; isHidden() is what "startGuiProgress showed

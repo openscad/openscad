@@ -9,7 +9,10 @@ ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
   this->horizontalLayout->setStretchFactor(this->progressBar, 1);
   this->horizontalLayout->setStretchFactor(this->guiProgressBar, 1);
   this->progressBar->show();
-  this->guiProgressBar->show();
+  // Hidden until there is GUI-side work to report, which only a preview has. A render then
+  // shows a single full-width bar, and the panel's shape tells the user which kind of
+  // operation is running before they read any numbers.
+  this->guiProgressBar->hide();
   setRange(0, 1000);
   setValue(0);
   this->wascanceled = false;
