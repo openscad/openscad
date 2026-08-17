@@ -2,10 +2,13 @@
 
 # Export parity between legacy in-process rendering and process isolation.
 #
-# In isolated mode an F6 result reaches the GUI as an OFF file that is imported
-# back into a PolySet, so an export taken after F6 goes through a round trip
-# that legacy mode does not perform. This test asserts the round trip is
-# export-invisible.
+# In isolated mode an F6 result reaches the GUI as a binary payload that is decoded
+# back into a PolySet, so an export taken after F6 goes through a round trip that
+# legacy mode does not perform. This test asserts the round trip is export-invisible.
+#
+# OpenSCAD cannot `import()` the internal payload -- it is not a user-facing format --
+# so the payload is decoded and re-emitted as OFF at full precision to stand in for
+# what the GUI viewport holds. That keeps every assertion below unchanged.
 #
 # STL and OFF come out byte-identical. AMF and 3MF are indexed formats and the
 # round trip renumbers vertices, so those are compared as geometry: the same
@@ -18,6 +21,9 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ipc_geometry_payload import read_ipc_geometry, write_off  # noqa: E402
 
 MODEL = """
 $fn = 24;
@@ -86,7 +92,7 @@ def main():
             source = directory / "model.scad"
             source.write_text(MODEL)
 
-            handback = directory / "result.off"
+            handback = directory / "result.osig"
             worker.stdin.write(
                 json.dumps(
                     {
@@ -100,11 +106,15 @@ def main():
             )
             worker.stdin.flush()
             wait_for(worker, "done")
-            assert handback.read_text().startswith("OFF")
+            payload = read_ipc_geometry(handback)
+            assert payload.vertices and payload.polygons
 
-            # What the GUI viewport holds in isolated mode: the imported OFF.
+            # What the GUI viewport holds in isolated mode, expressed as something
+            # OpenSCAD can read back.
+            decoded = directory / "decoded.off"
+            write_off(payload, decoded)
             imported = directory / "imported.scad"
-            imported.write_text(f'import("{handback.name}");\n')
+            imported.write_text(f'import("{decoded.name}");\n')
 
             for extension in ("stl", "off", "amf", "3mf"):
                 direct = directory / f"direct.{extension}"
