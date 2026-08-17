@@ -9,6 +9,7 @@ the worker wrote a file *and* sent a copy over the channel.
 """
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -54,6 +55,30 @@ def main():
             # rather than just the result path, so a stray sidecar or leaf file is caught too.
             leftovers = sorted(path.name for path in Path(directory).iterdir())
             assert leftovers == ["model.scad"], leftovers
+
+        # The worker must not still be sitting in the caller's directory once the request is
+        # done. do_export() chdirs to the source file's parent, which is harmless for a one-shot
+        # CLI that then exits but not for a persistent worker: on Windows a process's current
+        # directory is an open handle on it, so the directory cannot be removed and cleanup fails
+        # with WinError 32.
+        #
+        # This assertion can only fail on Windows -- POSIX happily unlinks a directory that is
+        # some process's cwd -- so a green run here on macOS or Linux proves nothing. It is a
+        # regression guard for CI, not local evidence.
+        directory = tempfile.mkdtemp()
+        source = Path(directory) / "model.scad"
+        result = Path(directory) / "result.osig"
+        source.write_text("cube(1);\n")
+        request = {"command": "render", "input": str(source), "output": str(result)}
+        worker.stdin.write((json.dumps(request) + "\n").encode())
+        worker.stdin.flush()
+        collect(worker, "done")
+        try:
+            shutil.rmtree(directory)
+        except OSError as error:
+            raise AssertionError(
+                f"the worker is still holding {directory} after serving a request from it: {error}"
+            ) from error
 
         # A preview sends several payloads -- products.json plus one per distinct leaf PolySet
         # -- and none of them may touch the disk either.

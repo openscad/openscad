@@ -813,13 +813,27 @@ template <typename F>
 static int compute_worker_request(const F& run)
 {
   ipc_payload_sink::begin();
+  // do_export() chdirs to the source file's parent and does not change back, which is harmless
+  // for a one-shot CLI that exits immediately afterwards. This process does not exit: it would
+  // otherwise sit in the caller's directory until the next request moved it somewhere else. On
+  // Windows a process's current directory is an open handle on it, so the caller could not delete
+  // its own temporary directory -- which is what failed three tests in CI at `eaafb7be2`.
+  std::error_code directory_error;
+  const auto entry_directory = fs::current_path(directory_error);
   int result = 1;
+  const auto restore_directory = [&] {
+    if (directory_error) return;
+    std::error_code ignored;
+    fs::current_path(entry_directory, ignored);
+  };
   try {
     result = run();
   } catch (...) {
+    restore_directory();
     ipc_payload_sink::end();
     throw;
   }
+  restore_directory();
   if (result == 0) ipc_payload_sink::flush_to(std::cout);
   ipc_payload_sink::end();
   return result;
