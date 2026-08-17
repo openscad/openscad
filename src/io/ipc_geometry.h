@@ -9,7 +9,7 @@ class PolySet;
 
 // Suffix for the per-leaf payloads a preview writes. The writer in CsgInfo.cc and the cleanup
 // loop in ComputeWorker::cleanupResult() must agree on it, or every preview leaks one file per
-// leaf -- 428 of them for a model like `extruder illustration.scad`.
+// distinct leaf PolySet -- 25 of them for a model like `extruder illustration.scad`.
 inline constexpr auto kIpcGeometrySuffix = ".osig";
 
 // Binary geometry transport between a window and its private compute worker (feature 32).
