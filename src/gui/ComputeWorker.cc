@@ -97,6 +97,13 @@ void ComputeWorker::processStandardError()
 void ComputeWorker::startProcess()
 {
   this->ready = false;
+  // A worker killed mid-payload leaves a half-read frame and a non-zero byte count behind. The
+  // replacement's first response would be consumed as the remainder of that payload, so the
+  // response stream has to start clean -- this is the respawn path a crash recovery goes through.
+  this->outputBuffer.clear();
+  this->payloadRemaining = 0;
+  this->payloadReader = {};
+  this->pendingPayloads.clear();
   disconnect(this->startErrorConnection);
   this->startErrorConnection =
     connect(this->process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
