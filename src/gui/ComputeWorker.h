@@ -66,6 +66,9 @@ protected:
   QByteArray standardErrorBuffer;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   std::deque<std::shared_ptr<RequestContext>> activeRequests;
+  // Most recently completed request, kept only so its temporary filename can
+  // still be rewritten out of diagnostics that arrive after its response.
+  std::shared_ptr<RequestContext> lastRetiredRequest;
   bool ready = false;
   bool busy = false;
   bool canceled = false;

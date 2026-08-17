@@ -72,12 +72,19 @@ void ComputeWorker::processStandardError()
   while (standardErrorBuffer.contains('\n')) {
     auto line = QString::fromUtf8(standardErrorBuffer.left(standardErrorBuffer.indexOf('\n'))).trimmed();
     standardErrorBuffer.remove(0, standardErrorBuffer.indexOf('\n') + 1);
-    if (!this->activeRequests.empty() && this->activeRequests.front()->sourceFile) {
-      const auto& sf = this->activeRequests.front()->sourceFile;
-      const auto& df = this->activeRequests.front()->displayFilename;
-      line.replace(sf->fileName(), df);
-      line.replace(QFileInfo(sf->fileName()).fileName(), QFileInfo(df).fileName());
-    }
+    // stdout and stderr are separate channels, so a request's trailing diagnostics
+    // can arrive after its "done" has already popped it off the queue. Rewriting
+    // against the front request alone therefore leaks the worker's temporary
+    // filename into the console whenever that race is lost — substitute every
+    // request whose name could still be in flight.
+    auto rewrite = [&line](const std::shared_ptr<RequestContext>& req) {
+      if (!req || !req->sourceFile) return;
+      line.replace(req->sourceFile->fileName(), req->displayFilename);
+      line.replace(QFileInfo(req->sourceFile->fileName()).fileName(),
+                   QFileInfo(req->displayFilename).fileName());
+    };
+    rewrite(this->lastRetiredRequest);
+    for (const auto& req : this->activeRequests) rewrite(req);
     auto group = message_group::NONE;
     if (line.startsWith("ECHO:")) group = message_group::Echo;
     else if (line.startsWith("WARNING:")) group = message_group::Warning;
@@ -319,6 +326,7 @@ void ComputeWorker::processOutput()
             response.toStdString());
       } else {
         req = this->activeRequests.front();
+        this->lastRetiredRequest = req;
         this->activeRequests.pop_front();
       }
       updateBusyState();

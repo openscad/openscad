@@ -23,12 +23,13 @@ int runAllTest(MainWindow *window)
             << std::endl;
   totalTestFailures += runTests<TestTabManager>(window);
   totalTestFailures += runTests<TestMainWindow>(window);
+  const bool isolated = MainWindow::isProcessIsolation();
   MainWindow::setProcessIsolation(false);
   auto *legacyWindow = new MainWindow({});
   totalTestFailures += runTests<TestModuleCache>(legacyWindow);
   legacyWindow->close();
   QCoreApplication::sendPostedEvents(legacyWindow, QEvent::DeferredDelete);
-  MainWindow::setProcessIsolation(true);
+  MainWindow::setProcessIsolation(isolated);
   std::cout << "********************************** RESULTS *********************************"
             << std::endl;
   std::cout << "Failures: " << totalTestFailures << std::endl;

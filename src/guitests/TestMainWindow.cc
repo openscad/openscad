@@ -60,6 +60,7 @@ void TestMainWindow::checkTestResetDoesNotPersistAutoReload()
 
 void TestMainWindow::checkOpeningLargeFileDoesNotParseInGui()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
 
   QTemporaryFile file(QDir::tempPath() + "/openscad-large-XXXXXX.scad");
@@ -101,6 +102,7 @@ void TestMainWindow::checkSaveToShouldUpdateWindowTitle()
 
 void TestMainWindow::checkEachWindowHasAComputeWorker()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() > 0, 5000);
   const auto firstWorker = window->computeWorkerProcessId();
 
@@ -117,6 +119,7 @@ void TestMainWindow::checkEachWindowHasAComputeWorker()
 
 void TestMainWindow::checkIsolatedWindowsCanPreviewConcurrently()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
@@ -137,6 +140,7 @@ void TestMainWindow::checkIsolatedWindowsCanPreviewConcurrently()
 
 void TestMainWindow::checkWorkerMessageSeverity()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->console->clear();
   window->activeEditor->setPlainText(
@@ -152,6 +156,7 @@ void TestMainWindow::checkWorkerMessageSeverity()
 
 void TestMainWindow::checkProcessIsolationRequiresRestart()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   const auto existingWorker = window->computeWorkerProcessId();
   Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name(), false);
   QCOMPARE(window->computeWorkerProcessId(), existingWorker);
@@ -169,6 +174,7 @@ void TestMainWindow::checkProcessIsolationRequiresRestart()
 
 void TestMainWindow::checkLegacyModeRendersWithoutComputeWorker()
 {
+  const bool isolated = MainWindow::isProcessIsolation();
   MainWindow::setProcessIsolation(false);
   auto *legacyWindow = new MainWindow({});
   QCOMPARE(legacyWindow->computeWorkerProcessId(), 0);
@@ -179,7 +185,7 @@ void TestMainWindow::checkLegacyModeRendersWithoutComputeWorker()
   while (legacyWindow->rootGeom == nullptr && timer.elapsed() < 30000) QTest::qWait(50);
   const auto rendered = legacyWindow->rootGeom != nullptr;
   legacyWindow->close();
-  MainWindow::setProcessIsolation(true);
+  MainWindow::setProcessIsolation(isolated);
   QVERIFY(invoked);
   QVERIFY(rendered);
 }
@@ -224,6 +230,7 @@ void TestMainWindow::checkF6UsesCustomizerValues()
 
 void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   const QString source = "for (i = [0:100000]) translate([i, 0, 0]) cube(1);";
   window->activeEditor->setPlainText(source);
@@ -243,6 +250,7 @@ void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
 
 void TestMainWindow::checkCooperativeCancelKeepsWorker()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("sphere(1, $fn=31);");
   const auto worker = window->computeWorkerProcessId();
@@ -258,6 +266,7 @@ void TestMainWindow::checkCooperativeCancelKeepsWorker()
 
 void TestMainWindow::checkCrashedWorkerRespawns()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   const auto worker = window->computeWorkerProcessId();
   QVERIFY(worker > 0);
@@ -340,6 +349,7 @@ void TestMainWindow::checkWorkerErrorDoesNotMarkSourceRendered()
 
 void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
   const auto worker = window->computeWorkerProcessId();
@@ -357,6 +367,7 @@ void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
 
 void TestMainWindow::checkIdenticalPreviewRequestIsDebounced()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
 
@@ -370,6 +381,7 @@ void TestMainWindow::checkIdenticalPreviewRequestIsDebounced()
 
 void TestMainWindow::checkEditedPreviewRequestReplacesActivePreview()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
 
@@ -385,6 +397,7 @@ void TestMainWindow::checkEditedPreviewRequestReplacesActivePreview()
 
 void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
 #ifdef ENABLE_OPENCSG
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:999]) translate([i, 0, 0]) cube(1);");
@@ -392,8 +405,12 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
   QTimer cancelWhenPreparing;
   cancelWhenPreparing.setInterval(1);
   connect(&cancelWhenPreparing, &QTimer::timeout, window, [this, &cancelWhenPreparing]() {
+    // MainWindow::compileCSG() only assigns previewRenderer *after* prepare()
+    // returns, so waiting for it here waits for a window that never opens. A
+    // non-zero GUI progress value is raised from inside the prepare callback,
+    // which is exactly the moment this test wants to cancel in.
     auto *progress = window->findChild<ProgressWidget *>();
-    if (window->previewRenderer && progress) {
+    if (progress && progress->guiValue() > 0) {
       cancelWhenPreparing.stop();
       progress->cancel();
     }
@@ -409,6 +426,7 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
 
 void TestMainWindow::checkWorkerCompletionDoesNotFinishPreviewProgress()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
 #ifdef ENABLE_OPENCSG
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:999]) translate([i, 0, 0]) cube(1);");
@@ -431,7 +449,10 @@ void TestMainWindow::checkPreviewShowsSeparateGuiProgress()
   QVERIFY(progress.progressBar->styleSheet().isEmpty());
   QVERIFY(progress.guiProgressBar->styleSheet().isEmpty());
   progress.startGuiProgress(10);
-  QVERIFY(progress.guiProgressBar->isVisible());
+  // isVisible() is false for any child of a top-level widget that was never
+  // shown, which this one is not; isHidden() is what "startGuiProgress showed
+  // the bar" actually means here.
+  QVERIFY(!progress.guiProgressBar->isHidden());
   QCOMPARE(progress.guiValue(), 0);
   progress.setGuiValue(5);
   QCOMPARE(progress.guiValue(), 5);
@@ -484,6 +505,7 @@ void TestMainWindow::checkF5UsesComputeWorkerResult()
 
 void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
@@ -493,6 +515,7 @@ void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()
 
 void TestMainWindow::checkReloadPreviewDispatchDoesNotBlockGui()
 {
+  SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
   window->lastCompiledDoc.clear();

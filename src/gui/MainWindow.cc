@@ -208,7 +208,7 @@ unsigned int GuiLocker::guiLocked = 0;
 
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
-bool MainWindow::processIsolation = false;
+bool MainWindow::processIsolationDefault = false;
 const int MainWindow::tabStopWidth = 15;
 QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
@@ -621,7 +621,21 @@ MainWindow::~MainWindow()
 
 void MainWindow::setProcessIsolation(bool enabled)
 {
-  processIsolation = enabled;
+  processIsolationDefault = enabled;
+}
+
+bool MainWindow::isProcessIsolation()
+{
+  return processIsolationDefault;
+}
+
+// compile() zeroes these per compile, but the isolated paths never reach it, so
+// without this the status bar reports counts accumulated across every compile
+// since the window opened.
+void MainWindow::resetCompileMessageCounts()
+{
+  this->compileErrors = 0;
+  this->compileWarnings = 0;
 }
 
 qint64 MainWindow::computeWorkerProcessId() const
@@ -1968,6 +1982,7 @@ void MainWindow::actionRenderPreview()
   this->computeBusy = true;
   this->previewRequested = false;
   this->activePreviewSource = source;
+  resetCompileMessageCounts();
 
   resetMeasurementsState(false, "Render (not preview) to enable measurements");
 
@@ -2172,6 +2187,7 @@ void MainWindow::on_designActionRender_triggered()
   QString pythonVenv;
   if (!prepareWorkerPython(python, pythonVenv)) return;
   this->computeBusy = true;
+  resetCompileMessageCounts();
   setCurrentOutput();
   autoReloadTimer->stop();
   this->renderStatistic.start();

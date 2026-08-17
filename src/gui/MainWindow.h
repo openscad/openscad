@@ -83,7 +83,12 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 public:
   Preferences *prefs;
 
+  // Process isolation is fixed for a window's whole life: it is latched from the
+  // application-wide default when the window is constructed, so changing the
+  // setting only affects windows opened afterwards. Nothing may observe it
+  // changing mid-compile.
   static void setProcessIsolation(bool enabled);
+  static bool isProcessIsolation();
 
   QTimer *consoleUpdater;
 
@@ -130,8 +135,9 @@ public:
 
   Measurement::Measurement meas;
 
-  int compileErrors;
-  int compileWarnings;
+  const bool processIsolation = processIsolationDefault;
+  int compileErrors = 0;
+  int compileWarnings = 0;
 
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
@@ -143,7 +149,7 @@ public:
 #endif
 
 private:
-  static bool processIsolation;
+  static bool processIsolationDefault;
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;
@@ -237,6 +243,7 @@ private:
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
+  void resetCompileMessageCounts();
   void compileCSG();
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);

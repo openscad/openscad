@@ -326,7 +326,14 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     inputFilesList.append(assemblePath(original_path, infile));
   }
 #ifdef ENABLE_GUI_TESTS
-  if (gui_test != "none") Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name());
+  // The suite runs isolated by default; set OPENSCAD_GUI_TEST_LEGACY=1 to run the
+  // same tests against the in-process path users get with the feature disabled.
+  // Forced either way: the flag can also be on from the user's saved preferences,
+  // so legacy mode has to disable it explicitly rather than just decline to enable it.
+  if (gui_test != "none") {
+    Feature::enable_feature(Feature::ExperimentalProcessIsolation.get_name(),
+                            !qEnvironmentVariableIsSet("OPENSCAD_GUI_TEST_LEGACY"));
+  }
 #endif
   MainWindow::setProcessIsolation(Feature::ExperimentalProcessIsolation.is_enabled());
   new MainWindow(inputFilesList);
