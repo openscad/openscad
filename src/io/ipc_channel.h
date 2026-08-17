@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <functional>
+#include <ostream>
 #include <string>
 
 // Framing for the compute worker's payload channel (feature 32).
@@ -36,6 +38,39 @@ struct IpcMessage {
 };
 
 std::string frame_ipc_message(const std::string& name, const std::string& payload);
+
+// Resolves a payload name to its bytes, or null if there is no such payload. The receiving side
+// installs one so readers that used to open a path read from the channel's messages instead;
+// an empty resolver means "read the filesystem", which is what every non-worker caller does.
+using IpcPayloadResolver = std::function<const std::string *(const std::string&)>;
+
+// Worker side of the same idea. While a request is being served, the writers that would create
+// the worker's output files hand their bytes here instead, keyed by the path they would have
+// written. Naming messages after those paths is what lets products.json go on referring to its
+// leaves by path with no change to how it is written or read.
+//
+// A bare namespace with process state, rather than an object threaded through the export
+// machinery: reaching the writers means passing something through cmdline() and do_export(),
+// whose signatures are shared with eight other feature branches. The worker is one request at a
+// time in one process, so there is nothing here for a second caller to collide with.
+namespace ipc_payload_sink {
+
+// False everywhere except inside a compute worker serving a request, which is what keeps the
+// ordinary CLI and GUI export paths writing real files.
+bool collecting();
+// Starts a request, discarding anything a previous failed one left behind.
+void begin();
+void end();
+// A stream to write the named payload into. The reference stays valid until end().
+std::ostream& open(const std::string& name);
+// Not named emit(): Qt defines that as a macro expanding to nothing, and this header reaches
+// Qt translation units through CsgInfo.h.
+// Writes every collected payload to `out` as `payload\t<size>\n` followed by that many framed
+// bytes, then clears them. The count lets the reader switch out of line mode for exactly that
+// many bytes, which is what allows payloads containing newlines to share the response stream.
+void flush_to(std::ostream& out);
+
+}  // namespace ipc_payload_sink
 
 // Accumulates fragments as they arrive off the channel and yields whole messages in order.
 // A channel read has no relationship to a message boundary: an 8 MiB payload arrives in however

@@ -11,6 +11,7 @@
 #include "geometry/PolySet.h"
 #include "io/export.h"
 #include "io/import.h"
+#include "io/ipc_channel.h"
 #include "io/ipc_geometry.h"
 #include "json/json.hpp"
 #include "utils/printutils.h"
@@ -29,10 +30,16 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
     auto geometry = geometries.find(object.leaf->polyset.get());
     if (geometry == geometries.end()) {
       const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + kIpcGeometrySuffix;
-      std::ofstream stream(fs::u8path(path), std::ios::binary);
-      export_ipc_geometry(*object.leaf->polyset, stream);
-      stream.flush();
-      stream.close();
+      // In a compute worker the leaf goes back over the response channel under this same path,
+      // so the reference written into the products below needs no special case at either end.
+      if (ipc_payload_sink::collecting()) {
+        export_ipc_geometry(*object.leaf->polyset, ipc_payload_sink::open(path));
+      } else {
+        std::ofstream stream(fs::u8path(path), std::ios::binary);
+        export_ipc_geometry(*object.leaf->polyset, stream);
+        stream.flush();
+        stream.close();
+      }
       geometry = geometries.emplace(object.leaf->polyset.get(), path).first;
     }
 
@@ -69,7 +76,8 @@ json write_products(const std::shared_ptr<CSGProducts>& products, const std::str
 
 std::vector<CSGChainObject> read_chain(const json& input,
                                        std::map<std::string, std::shared_ptr<const PolySet>>& geometries,
-                                       const std::function<bool()>& continue_loading)
+                                       const std::function<bool()>& continue_loading,
+                                       const IpcPayloadResolver& resolve)
 {
   std::vector<CSGChainObject> output;
   for (const auto& item : input) {
@@ -77,7 +85,16 @@ std::vector<CSGChainObject> read_chain(const json& input,
     const auto path = item["geometry"].get<std::string>();
     auto geometry = geometries.find(path);
     if (geometry == geometries.end()) {
-      auto imported = import_ipc_geometry(path);
+      // Same path either way: it is the name the worker gave the payload, and also the file
+      // it would have written, so nothing about how products.json refers to leaves changes.
+      std::unique_ptr<PolySet> imported;
+      if (resolve) {
+        if (const auto *payload = resolve(path)) {
+          imported = import_ipc_geometry_buffer(payload->data(), payload->size(), path);
+        }
+      } else {
+        imported = import_ipc_geometry(path);
+      }
       if (!imported) {
         // Abort rather than emplacing a null PolySet, which renders as a silently missing
         // object. Name the leaf that failed: an empty viewport is otherwise indistinguishable
@@ -109,15 +126,15 @@ std::vector<CSGChainObject> read_chain(const json& input,
 
 std::shared_ptr<CSGProducts> read_products(
   const json& input, std::map<std::string, std::shared_ptr<const PolySet>>& geometries,
-  const std::function<bool()>& continue_loading)
+  const std::function<bool()>& continue_loading, const IpcPayloadResolver& resolve)
 {
   if (input.empty()) return {};
   auto output = std::make_shared<CSGProducts>();
   output->products.clear();
   for (const auto& item : input) {
     CSGProduct product;
-    product.intersections = read_chain(item["intersections"], geometries, continue_loading);
-    product.subtractions = read_chain(item["subtractions"], geometries, continue_loading);
+    product.intersections = read_chain(item["intersections"], geometries, continue_loading, resolve);
+    product.subtractions = read_chain(item["subtractions"], geometries, continue_loading, resolve);
     output->products.push_back(std::move(product));
   }
   return output;
@@ -147,6 +164,10 @@ bool CsgInfo::write_products(const std::string& filename) const
                         {"vpd", camera_info.vpd},
                         {"vpf", camera_info.vpf}};
   }
+  if (ipc_payload_sink::collecting()) {
+    ipc_payload_sink::open(filename) << output;
+    return true;
+  }
   std::ofstream stream(fs::u8path(filename));
   stream << output;
   // Close before checking: the destructor would otherwise flush after good() was read, so a
@@ -160,27 +181,38 @@ bool CsgInfo::write_products(const std::string& filename) const
   return true;
 }
 
-bool CsgInfo::read_products(const std::string& filename, const std::function<bool()>& continue_loading)
+bool CsgInfo::read_products(const std::string& filename, const std::function<bool()>& continue_loading,
+                            const IpcPayloadResolver& resolve)
 {
-  std::ifstream stream(fs::u8path(filename));
   json input;
   // A truncated or absent products file is exactly what a crashed or half-flushed worker
   // leaves behind; nlohmann throws on it, and this runs inside a Qt slot where an escaping
   // exception would take the window down instead of reporting a failed preview.
+  const std::string *payload = resolve ? resolve(filename) : nullptr;
+  if (resolve && !payload) {
+    LOG(message_group::Error, "Compute worker returned no preview products for '%1$s'.", filename);
+    return false;
+  }
+  std::ifstream stream;
+  if (!payload) stream.open(fs::u8path(filename));
   try {
-    stream >> input;
+    if (payload) {
+      input = json::parse(*payload);
+    } else {
+      stream >> input;
+    }
   } catch (const json::exception& e) {
     LOG(message_group::Error, "Could not parse preview products in '%1$s': %2$s", filename, e.what());
     return false;
   }
-  if (!stream.good() && !stream.eof()) {
+  if (!payload && !stream.good() && !stream.eof()) {
     LOG(message_group::Error, "Could not read preview products from '%1$s'.", filename);
     return false;
   }
   std::map<std::string, std::shared_ptr<const PolySet>> geometries;
-  root_products = ::read_products(input["root"], geometries, continue_loading);
-  highlights_products = ::read_products(input["highlights"], geometries, continue_loading);
-  background_products = ::read_products(input["background"], geometries, continue_loading);
+  root_products = ::read_products(input["root"], geometries, continue_loading, resolve);
+  highlights_products = ::read_products(input["highlights"], geometries, continue_loading, resolve);
+  background_products = ::read_products(input["background"], geometries, continue_loading, resolve);
   for (const auto& node : input.value("nodes", json::array())) {
     source_nodes.push_back(
       {node["index"], node["parent"], node["name"], node["file"], node["line"], node["column"]});

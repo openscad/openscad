@@ -1,6 +1,7 @@
 #include "io/ipc_channel.h"
 
 #include <cstring>
+#include <sstream>
 #include <utility>
 
 // Frame layout: [uint64 nameSize][name][uint64 payloadSize][payload].
@@ -82,6 +83,62 @@ void IpcMessageReader::append(const char *data, std::size_t size)
   // message completes -- so accumulating one in many small reads does not repeatedly shuffle it.
   this->buffer.erase(0, offset);
 }
+
+namespace ipc_payload_sink {
+
+namespace {
+
+// A deque so `open()`'s reference survives later opens: a preview opens products.json and then
+// one payload per leaf, and the first stream is still being referred to while the rest appear.
+// Insertion order is kept so the response stream is deterministic, which matters for tests.
+std::deque<std::pair<std::string, std::ostringstream>> payloads;
+bool active = false;
+
+}  // namespace
+
+bool collecting()
+{
+  return active;
+}
+
+void begin()
+{
+  payloads.clear();
+  active = true;
+}
+
+void end()
+{
+  payloads.clear();
+  active = false;
+}
+
+std::ostream& open(const std::string& name)
+{
+  for (auto& entry : payloads) {
+    if (entry.first == name) {
+      // Reopening a name replaces it, matching what opening a file with trunc would do.
+      entry.second.str({});
+      entry.second.clear();
+      return entry.second;
+    }
+  }
+  payloads.emplace_back(name, std::ostringstream(std::ios::binary));
+  return payloads.back().second;
+}
+
+void flush_to(std::ostream& out)
+{
+  for (auto& entry : payloads) {
+    const auto framed = frame_ipc_message(entry.first, entry.second.str());
+    out << "payload\t" << framed.size() << "\n";
+    out.write(framed.data(), static_cast<std::streamsize>(framed.size()));
+  }
+  out.flush();
+  payloads.clear();
+}
+
+}  // namespace ipc_payload_sink
 
 bool IpcMessageReader::next(IpcMessage& message)
 {

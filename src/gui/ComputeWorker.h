@@ -7,9 +7,12 @@
 #include <memory>
 
 #include "core/customizer/ParameterSet.h"
+#include "io/ipc_channel.h"
 #include "utils/printutils.h"
 
 #include <deque>
+#include <map>
+#include <string>
 
 struct RequestContext {
   enum class Type { RENDER, PREVIEW } type = Type::PREVIEW;
@@ -64,6 +67,16 @@ protected:
   // but not yet written to the worker process.
   size_t pendingCount = 0;
   QByteArray standardErrorBuffer;
+  // Responses are read as bytes rather than by line: a payload shares this stream with the
+  // control lines and contains newlines of its own, so the reader switches to counting bytes
+  // for the length a "payload" line announces (feature 32).
+  QByteArray outputBuffer;
+  qint64 payloadRemaining = 0;
+  IpcMessageReader payloadReader;
+  // Payloads received since the last terminating response, keyed by the path the worker would
+  // have written. Attached to a request when its "done"/"previewdone" arrives, because that is
+  // what identifies which request they belonged to.
+  std::map<std::string, std::string> pendingPayloads;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   std::deque<std::shared_ptr<RequestContext>> activeRequests;
   // Most recently completed request, kept only so its temporary filename can
@@ -74,7 +87,7 @@ protected:
   bool canceled = false;
   bool stopping = false;
   static void cleanupResult(const QString& resultPath);
-  void processMetadata(const std::shared_ptr<RequestContext>& req);
+  void processMetadata(const std::shared_ptr<RequestContext>& req, const IpcPayloadResolver& resolve);
   void processStandardError();
   void startProcess();
   void flushPendingRequests();

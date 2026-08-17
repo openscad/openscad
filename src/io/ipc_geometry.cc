@@ -132,8 +132,14 @@ std::unique_ptr<PolySet> import_ipc_geometry(const std::string& filename)
     stream.read(buffer.data(), buffer.size());
     if (static_cast<size_t>(stream.gcount()) != buffer.size()) return {};
   }
+  return import_ipc_geometry_buffer(buffer.data(), buffer.size(), filename);
+}
 
-  Cursor cursor(buffer.data(), buffer.size());
+std::unique_ptr<PolySet> import_ipc_geometry_buffer(const char *data, const std::size_t size,
+                                                    const std::string& name)
+{
+  const auto& filename = name;
+  Cursor cursor(data, size);
   Header header{};
   if (!cursor.read(header)) return {};
   if (header.magic != kMagic || header.version != kVersion) {

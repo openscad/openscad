@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "core/CSGNode.h"
+#include "io/ipc_channel.h"
 #include "core/CSGTreeEvaluator.h"
 #include "core/Tree.h"
 #include "geometry/GeometryEvaluator.h"
@@ -43,7 +44,11 @@ public:
   CameraInfo camera_info;
 
   bool write_products(const std::string& filename) const;
-  bool read_products(const std::string& filename, const std::function<bool()>& continue_loading = {});
+  // `resolve`, when set, supplies payload bytes by name instead of reading them from disk --
+  // the products themselves and every leaf they refer to. That is how a compute worker's
+  // preview arrives now (see io/ipc_channel.h); an empty resolver reads files as before.
+  bool read_products(const std::string& filename, const std::function<bool()>& continue_loading = {},
+                     const IpcPayloadResolver& resolve = {});
 
   bool compile_products(const Tree& tree, size_t normalization_limit = 0)
   {

@@ -22,10 +22,15 @@ inline constexpr auto kIpcGeometrySuffix = ".osig";
 // or move between machines; that is what the OFF/3MF exporters are for.
 //
 // Measured against the previous full-precision ASCII OFF transport, this is 44-94x faster
-// per payload; the filesystem itself was never more than ~0.5% of the cost, which is why the
-// file carrier is retained and only the encoding changed.
+// per payload; the filesystem itself was never more than ~0.5% of the cost, so the encoding is
+// where the speed came from. The file carrier it originally used has since been replaced by the
+// response channel in ipc_channel.h, which is why the buffer form below is the one the worker
+// transport uses; the path form remains for tests and for reading a payload off disk.
 // Writer side matches the other exporters (ostream in, nothing returned) so it can be reached
 // through the ordinary FileFormat dispatch; the reader matches import_off's shape.
 void export_ipc_geometry(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_ipc_geometry(const PolySet& polyset, std::ostream& output);
 std::unique_ptr<PolySet> import_ipc_geometry(const std::string& filename);
+// The same decode from bytes already in memory. `name` only says which payload failed.
+std::unique_ptr<PolySet> import_ipc_geometry_buffer(const char *data, std::size_t size,
+                                                    const std::string& name);

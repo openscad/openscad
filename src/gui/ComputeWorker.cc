@@ -127,15 +127,10 @@ ComputeWorker::~ComputeWorker()
 void ComputeWorker::cleanupResult(const QString& resultPath)
 {
   if (resultPath.isEmpty()) return;
-  QFile::remove(resultPath);
-  QFile::remove(resultPath + ".parameters.json");
-  QFile::remove(resultPath + ".dependencies.json");
+  // Only the cancel flag is still a file. The results -- geometry, products, per-leaf payloads
+  // and the metadata sidecars -- come back over the response channel and were never written
+  // (feature 32), so there is nothing else here to remove.
   QFile::remove(resultPath + ".cancel");
-  const auto products = resultPath + ".products.json";
-  QFile::remove(products);
-  for (size_t index = 0;
-       QFile::remove(products + ".leaf-" + QString::number(index) + kIpcGeometrySuffix); ++index) {
-  }
 }
 
 qint64 ComputeWorker::processId() const
@@ -287,17 +282,16 @@ void ComputeWorker::cancel()
   }
 }
 
-void ComputeWorker::processMetadata(const std::shared_ptr<RequestContext>& req)
+void ComputeWorker::processMetadata(const std::shared_ptr<RequestContext>& req,
+                                    const IpcPayloadResolver& resolve)
 {
   if (!req) return;
-  QFile parameters(req->resultPath + ".parameters.json");
-  if (parameters.open(QIODevice::ReadOnly)) {
-    emit parametersDiscovered(req->requestSource, QString::fromUtf8(parameters.readAll()));
+  if (const auto *parameters = resolve((req->resultPath + ".parameters.json").toStdString())) {
+    emit parametersDiscovered(req->requestSource, QString::fromStdString(*parameters));
   }
-  QFile dependencies(req->resultPath + ".dependencies.json");
-  if (dependencies.open(QIODevice::ReadOnly)) {
+  if (const auto *dependencies = resolve((req->resultPath + ".dependencies.json").toStdString())) {
     QStringList paths;
-    for (const auto& path : QJsonDocument::fromJson(dependencies.readAll()).array()) {
+    for (const auto& path : QJsonDocument::fromJson(QByteArray::fromStdString(*dependencies)).array()) {
       paths.push_back(path.toString());
     }
     emit dependenciesDiscovered(req->requestSource, paths);
@@ -306,8 +300,37 @@ void ComputeWorker::processMetadata(const std::shared_ptr<RequestContext>& req)
 
 void ComputeWorker::processOutput()
 {
-  while (this->process->canReadLine()) {
-    const auto response = this->process->readLine().trimmed();
+  this->outputBuffer += this->process->readAll();
+  while (true) {
+    // Payload mode: consume exactly the announced byte count, whatever it contains. Doing this
+    // by line would split a payload at the first newline in the mesh data.
+    if (this->payloadRemaining > 0) {
+      const auto take = std::min<qint64>(this->payloadRemaining, this->outputBuffer.size());
+      if (take == 0) return;
+      this->payloadReader.append(this->outputBuffer.constData(), static_cast<size_t>(take));
+      this->outputBuffer.remove(0, static_cast<int>(take));
+      this->payloadRemaining -= take;
+      if (this->payloadRemaining == 0) {
+        IpcMessage message;
+        while (this->payloadReader.next(message)) {
+          this->pendingPayloads[message.name] = std::move(message.payload);
+        }
+        if (this->payloadReader.failed()) {
+          LOG(message_group::Error, "Compute worker sent a malformed payload.");
+        }
+      }
+      continue;
+    }
+
+    const auto newline = this->outputBuffer.indexOf('\n');
+    if (newline < 0) return;
+    const auto response = this->outputBuffer.left(newline).trimmed();
+    this->outputBuffer.remove(0, newline + 1);
+
+    if (response.startsWith("payload\t")) {
+      this->payloadRemaining = response.mid(8).toLongLong();
+      continue;
+    }
     if (response == "ready") {
       this->consecutiveFailures = 0;
       this->ready = true;
@@ -333,10 +356,26 @@ void ComputeWorker::processOutput()
       }
       updateBusyState();
 
+      // Payloads arrive ahead of the response that terminates their request, so whatever has
+      // accumulated belongs to this one. Taken by move so a failed request cannot leave its
+      // payloads behind to be misread as the next one's.
+      const auto payloads = std::exchange(this->pendingPayloads, {});
+      const IpcPayloadResolver resolve = [&payloads](const std::string& name) -> const std::string * {
+        const auto found = payloads.find(name);
+        return found == payloads.end() ? nullptr : &found->second;
+      };
+
       if (req) {
-        processMetadata(req);
+        processMetadata(req, resolve);
         if (response == "done") {
-          auto geometry = import_ipc_geometry(req->resultPath.toStdString());
+          const auto *payload = resolve(req->resultPath.toStdString());
+          std::unique_ptr<PolySet> geometry;
+          if (payload) {
+            geometry = import_ipc_geometry_buffer(payload->data(), payload->size(),
+                                                  req->resultPath.toStdString());
+          } else {
+            LOG(message_group::Error, "Compute worker returned no geometry for the render.");
+          }
           emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
         } else if (response == "previewdone") {
           if (!req->canceled) {
@@ -345,7 +384,8 @@ void ComputeWorker::processOutput()
                                          [this, req]() {
                                            QCoreApplication::processEvents();
                                            return !req->canceled;
-                                         })) {
+                                         },
+                                         resolve)) {
               products.reset();
             }
             emit previewDone(std::move(products));
