@@ -1,11 +1,37 @@
 #!/usr/bin/env python3
 
+import struct
 import subprocess
 import sys
 import tempfile
 import json
 import io
 from pathlib import Path
+
+
+def read_ipc_geometry(path):
+    """Decode the binary compute-worker geometry payload (src/io/ipc_geometry.cc).
+
+    Kept deliberately dumb and independent of the C++ struct: if the layout changes,
+    this test should fail rather than follow along.
+    """
+    data = Path(path).read_bytes()
+    magic, version, dimension, convexity, flags, vertex_count, polygon_count, index_count, \
+        color_count, color_index_count = struct.unpack_from("<IIIiIIIIII", data, 0)
+    assert magic == 0x4749534F, f"bad magic {magic:#x} in {path}"
+    assert version == 1, f"unexpected payload version {version}"
+    offset = struct.calcsize("<IIIiIIIIII")
+    vertices = []
+    for _ in range(vertex_count):
+        vertices.append(struct.unpack_from("<3d", data, offset))
+        offset += 24
+    polygons = []
+    for _ in range(polygon_count):
+        (count,) = struct.unpack_from("<I", data, offset)
+        offset += 4
+        polygons.append(list(struct.unpack_from(f"<{count}i", data, offset)))
+        offset += 4 * count
+    return vertices, polygons
 
 
 def wait_for(worker, final):
@@ -80,9 +106,9 @@ def main():
             worker.stdin.flush()
             responses = wait_for(worker, "done")
             assert any(response.startswith("progress\t") for response in responses)
-            assert result.read_text().startswith("OFF\n8 6 0\n")
-            vertices = result.read_text().splitlines()[2:10]
-            assert min(float(line.split()[0]) for line in vertices) == 1.2345678901234567
+            vertices, polygons = read_ipc_geometry(result)
+            assert (len(vertices), len(polygons)) == (8, 6)
+            assert min(vertex[0] for vertex in vertices) == 1.2345678901234567
 
             cancel = Path(f"{result}.cancel")
             source.write_text("sphere(1, $fn=31);\n")
@@ -99,8 +125,8 @@ def main():
             worker.stdin.write(f"render\t{source}\t{result}\t\tworker\t0\t0.5\n")
             worker.stdin.flush()
             wait_for(worker, "done")
-            vertices = result.read_text().splitlines()[2:10]
-            assert min(float(line.split()[0]) for line in vertices) == 0.5
+            vertices, _ = read_ipc_geometry(result)
+            assert min(vertex[0] for vertex in vertices) == 0.5
 
             source.write_text(
                 "translate([$vpr[0] + $vpt[0] + $vpd / 100 + $vpf / 10, 0, 0]) cube(1);\n"
@@ -111,8 +137,8 @@ def main():
             )
             worker.stdin.flush()
             wait_for(worker, "done")
-            vertices = result.read_text().splitlines()[2:10]
-            assert min(float(line.split()[0]) for line in vertices) == 20
+            vertices, _ = read_ipc_geometry(result)
+            assert min(vertex[0] for vertex in vertices) == 20
 
             parameters = Path(directory) / "parameters.json"
             parameters.write_text(
@@ -127,8 +153,8 @@ def main():
             worker.stdin.write(f"render\t{source}\t{result}\t{parameters}\tworker\n")
             worker.stdin.flush()
             wait_for(worker, "done")
-            vertices = result.read_text().splitlines()[2:10]
-            assert max(float(line.split()[0]) for line in vertices) == 7
+            vertices, _ = read_ipc_geometry(result)
+            assert max(vertex[0] for vertex in vertices) == 7
             metadata = json.loads(Path(f"{result}.parameters.json").read_text())
             assert metadata[0]["name"] == "size"
             assert metadata[0]["type"] == "number"
@@ -152,7 +178,7 @@ def main():
             assert len(products["highlights"]) == 1
             geometry = Path(products["root"][0]["intersections"][0]["geometry"])
             assert geometry.exists()
-            assert geometry.read_text().startswith("OFF\n")
+            assert read_ipc_geometry(geometry)[0]
 
             document = Path(directory) / "document"
             document.mkdir()
@@ -187,7 +213,8 @@ def main():
             worker.stdin.write(json.dumps(request) + "\n")
             worker.stdin.flush()
             wait_for(worker, "done")
-            assert imported_result.read_text().startswith("OFF\n3 1 0\n")
+            vertices, polygons = read_ipc_geometry(imported_result)
+            assert (len(vertices), len(polygons)) == (3, 1)
 
             source.write_text("use <MCAD/boxes.scad>\nroundedBox([2, 2, 2], 0.2, true);\n")
             request["input"] = str(source)
@@ -195,15 +222,15 @@ def main():
             worker.stdin.write(json.dumps(request) + "\n")
             worker.stdin.flush()
             wait_for(worker, "done")
-            assert len(result.read_text().splitlines()) > 10
+            assert len(read_ipc_geometry(result)[1]) > 10
 
             source.write_text("translate([1, 2, 3].zyx) cube(1);\n")
             request["features"] = ["vector-swizzle"]
             worker.stdin.write(json.dumps(request) + "\n")
             worker.stdin.flush()
             wait_for(worker, "done")
-            vertices = result.read_text().splitlines()[2:10]
-            assert min(float(line.split()[0]) for line in vertices) == 3
+            vertices, _ = read_ipc_geometry(result)
+            assert min(vertex[0] for vertex in vertices) == 3
 
             worker.stdin.write("quit\n")
             worker.stdin.flush()
