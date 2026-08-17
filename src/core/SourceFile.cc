@@ -122,21 +122,17 @@ std::vector<std::string> SourceFile::dependencyPaths() const
   std::set<std::string> visited;
   std::function<void(const SourceFile *)> collect = [&](const SourceFile *file) {
     if (!file || !visited.insert(file->getFullpath()).second) return;
-    // Native separators, not generic: these paths cross to the GUI and get compared against
-    // paths the platform produced. On Windows generic_string() yields "C:/dir/part.scad"
-    // while QFileInfo and the test suite say "C:\dir\part.scad", so the comparison never
-    // matches and a watched dependency silently stops triggering a reload.
-    for (const auto& include : file->includes) {
-      output.push_back(fs::path(include.second).make_preferred().string());
-    }
+    // Paths go out in generic form. Consumers must compare them as paths, not as strings:
+    // Windows spells the same file "C:/dir/part.scad" or "C:\dir\part.scad" depending on who
+    // is asking, and QFileInfo accepts either. A string comparison here is what made the
+    // worker protocol test pass under MSYS2's Python and fail under CI's native Python.
+    for (const auto& include : file->includes) output.push_back(include.second);
     for (const auto& library : file->usedlibs) {
       auto path = fs::path(library);
       if (!path.is_absolute()) path = find_valid_path(file->modulePath(), library);
       if (path.empty()) continue;
-      // The source file cache is keyed by the generic form used at parse time, so look up
-      // with that and hand only the native form outwards.
       const auto filename = path.generic_string();
-      output.push_back(fs::path(path).make_preferred().string());
+      output.push_back(filename);
       collect(SourceFileCache::instance()->lookup(filename));
     }
   };

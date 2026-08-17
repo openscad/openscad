@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -9,6 +10,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ipc_geometry_payload import read_ipc_geometry  # noqa: E402
+
+
+def same_path(path, candidates):
+    """True when `path` is one of `candidates`, comparing as paths rather than text."""
+    want = os.path.normcase(os.path.realpath(path))
+    return any(want == os.path.normcase(os.path.realpath(candidate)) for candidate in candidates)
 
 
 def wait_for(worker, final):
@@ -174,7 +181,10 @@ def main():
                 worker.stdin.flush()
                 wait_for(worker, "previewdone")
                 dependencies = json.loads(Path(f"{preview}.dependencies.json").read_text())
-                assert str(dependency.resolve()) in dependencies
+                # Compared as paths, not strings: on Windows the worker and the test can spell
+                # the same file "C:/dir/part.scad" or "C:\\dir\\part.scad" depending on which
+                # Python is running the suite, and both are correct.
+                assert same_path(dependency, dependencies), (dependency, dependencies)
 
             imported = document / "part.stl"
             imported.write_text(
