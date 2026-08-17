@@ -335,7 +335,18 @@ void ComputeWorker::processOutput()
     this->outputBuffer.remove(0, newline + 1);
 
     if (response.startsWith("payload\t")) {
-      this->payloadRemaining = response.mid(8).toLongLong();
+      bool valid = false;
+      const auto announced = response.mid(8).toLongLong(&valid);
+      // An unparseable or implausible count would otherwise leave the reader waiting for bytes
+      // that never come, which looks exactly like a worker that has hung. Same ceiling the
+      // framing itself enforces, for the same reason.
+      if (!valid || announced < 0 || static_cast<quint64>(announced) > kIpcMaxMessageSize) {
+        LOG(message_group::Error, "Compute worker announced an unusable payload size '%1$s'.",
+            response.mid(8).toStdString());
+        this->process->kill();
+        return;
+      }
+      this->payloadRemaining = announced;
       continue;
     }
     if (response == "ready") {
