@@ -828,11 +828,11 @@ static int compute_worker_main()
         }
         const auto result = compute_worker_export(
           request.at("input").get<std::string>(), request.at("output").get<std::string>(),
-          preview ? FileFormat::CSG : FileFormat::OFF, request.value("parameterFile", std::string{}),
-          request.value("setName", std::string{}), request.value("normalizationLimit", size_t{0}),
-          request.value("time", 0.0), camera, request.value("python", false),
-          request.value("pythonVenv", std::string{}), request.value("workingDirectory", std::string{}),
-          request.value("sourcePath", std::string{}));
+          preview ? FileFormat::CSG : FileFormat::IPC_GEOMETRY,
+          request.value("parameterFile", std::string{}), request.value("setName", std::string{}),
+          request.value("normalizationLimit", size_t{0}), request.value("time", 0.0), camera,
+          request.value("python", false), request.value("pythonVenv", std::string{}),
+          request.value("workingDirectory", std::string{}), request.value("sourcePath", std::string{}));
         std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
       } catch (const ProgressCancelException&) {
         std::cout << "cancelled" << std::endl;
@@ -864,8 +864,8 @@ static int compute_worker_main()
       const auto python_venv = fields.size() > 16 ? fields[16] : std::string{};
       try {
         const auto result = compute_worker_export(
-          fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::OFF, parameter_file, set_name,
-          csg_products_limit, time, camera, python, python_venv);
+          fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::IPC_GEOMETRY, parameter_file,
+          set_name, csg_products_limit, time, camera, python, python_venv);
         std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
       } catch (const ProgressCancelException&) {
         std::cout << "cancelled" << std::endl;

@@ -21,6 +21,7 @@
 #include "glview/CsgInfo.h"
 #include "glview/RenderSettings.h"
 #include "io/import.h"
+#include "io/ipc_geometry.h"
 #include "openscad.h"
 #include "utils/printutils.h"
 
@@ -132,7 +133,8 @@ void ComputeWorker::cleanupResult(const QString& resultPath)
   QFile::remove(resultPath + ".cancel");
   const auto products = resultPath + ".products.json";
   QFile::remove(products);
-  for (size_t index = 0; QFile::remove(products + ".leaf-" + QString::number(index) + ".off"); ++index) {
+  for (size_t index = 0;
+       QFile::remove(products + ".leaf-" + QString::number(index) + kIpcGeometrySuffix); ++index) {
   }
 }
 
@@ -334,7 +336,7 @@ void ComputeWorker::processOutput()
       if (req) {
         processMetadata(req);
         if (response == "done") {
-          auto geometry = import_off(req->resultPath.toStdString(), Location::NONE);
+          auto geometry = import_ipc_geometry(req->resultPath.toStdString());
           emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
         } else if (response == "previewdone") {
           if (!req->canceled) {

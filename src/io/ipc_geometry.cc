@@ -4,9 +4,11 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <ostream>
 #include <vector>
 
 #include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
 
 namespace fs = std::filesystem;
@@ -67,7 +69,14 @@ private:
 
 }  // namespace
 
-bool write_ipc_geometry(const PolySet& polyset, const std::string& filename)
+void export_ipc_geometry(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+{
+  // Same normalization the OFF exporter applies, so switching formats does not change which
+  // geometry the GUI receives -- only how it is encoded.
+  export_ipc_geometry(*PolySetUtils::getGeometryAsPolySet(geom), output);
+}
+
+void export_ipc_geometry(const PolySet& polyset, std::ostream& output)
 {
   uint32_t indexCount = 0;
   for (const auto& face : polyset.indices) indexCount += face.size();
@@ -109,20 +118,10 @@ bool write_ipc_geometry(const PolySet& polyset, const std::string& filename)
   }
   for (const auto index : polyset.color_indices) append(buffer, static_cast<int32_t>(index));
 
-  std::ofstream stream(fs::u8path(filename), std::ios::binary);
-  stream.write(buffer.data(), buffer.size());
-  // Closed before the check: the destructor would otherwise flush after good() was read, so a
-  // short write would be reported as success and the GUI handed a truncated mesh.
-  stream.flush();
-  stream.close();
-  if (!stream.good()) {
-    LOG(message_group::Error, "Could not write compute worker geometry to '%1$s'.", filename);
-    return false;
-  }
-  return true;
+  output.write(buffer.data(), buffer.size());
 }
 
-std::unique_ptr<PolySet> read_ipc_geometry(const std::string& filename)
+std::unique_ptr<PolySet> import_ipc_geometry(const std::string& filename)
 {
   std::error_code error;
   const auto size = fs::file_size(fs::u8path(filename), error);

@@ -20,6 +20,17 @@ std::string tempPath(const std::string& name)
   return (std::filesystem::temp_directory_path() / ("openscad-ipc-test-" + name)).string();
 }
 
+// The production writer takes an ostream, like every other exporter; the tests want a file,
+// because the reader takes a path and a truncation test needs something to truncate.
+bool writeToFile(const PolySet& polyset, const std::string& path)
+{
+  std::ofstream stream(path, std::ios::binary);
+  export_ipc_geometry(polyset, stream);
+  stream.flush();
+  stream.close();
+  return stream.good();
+}
+
 // Deliberately not all triangles: PolySet holds arbitrary n-gons, and the transport has to
 // survive them. A format that quietly assumed triangles would pass a triangle-only test and
 // then drop faces on the first quad a real preview produced.
@@ -39,9 +50,9 @@ TEST_CASE("binary IPC geometry survives a round trip", "[ipc][geometry]")
 {
   const auto mesh = sampleMesh();
   const auto path = tempPath("roundtrip.bin");
-  REQUIRE(write_ipc_geometry(*mesh, path));
+  REQUIRE(writeToFile(*mesh, path));
 
-  const auto read = read_ipc_geometry(path);
+  const auto read = import_ipc_geometry(path);
   REQUIRE(read);
   // Bit-exact, not approximately equal: the whole point of the binary format is that the
   // GUI sees the doubles the worker computed, with no decimal detour.
@@ -57,9 +68,9 @@ TEST_CASE("binary IPC geometry carries per-face colors", "[ipc][geometry]")
   mesh->colors = {Color4f(1.0f, 0.0f, 0.0f, 1.0f), Color4f(0.25f, 0.5f, 0.75f, 0.125f)};
   mesh->color_indices = {0, -1, 1, 0};
   const auto path = tempPath("colors.bin");
-  REQUIRE(write_ipc_geometry(*mesh, path));
+  REQUIRE(writeToFile(*mesh, path));
 
-  const auto read = read_ipc_geometry(path);
+  const auto read = import_ipc_geometry(path);
   REQUIRE(read);
   REQUIRE(read->color_indices == mesh->color_indices);
   REQUIRE(read->colors.size() == mesh->colors.size());
@@ -73,8 +84,8 @@ TEST_CASE("binary IPC geometry round-trips an empty mesh", "[ipc][geometry]")
 {
   const PolySet empty(3);
   const auto path = tempPath("empty.bin");
-  REQUIRE(write_ipc_geometry(empty, path));
-  const auto read = read_ipc_geometry(path);
+  REQUIRE(writeToFile(empty, path));
+  const auto read = import_ipc_geometry(path);
   REQUIRE(read);
   REQUIRE(read->vertices.empty());
   REQUIRE(read->indices.empty());
@@ -85,7 +96,7 @@ TEST_CASE("binary IPC geometry rejects damaged payloads", "[ipc][geometry]")
 {
   const auto mesh = sampleMesh();
   const auto path = tempPath("damaged.bin");
-  REQUIRE(write_ipc_geometry(*mesh, path));
+  REQUIRE(writeToFile(*mesh, path));
   const auto size = std::filesystem::file_size(path);
 
   SECTION("truncated")
@@ -93,7 +104,7 @@ TEST_CASE("binary IPC geometry rejects damaged payloads", "[ipc][geometry]")
     // A worker killed mid-write is the normal case here, not an exotic one: feature 31 hard-kills
     // the worker on Stop. A short read must fail, not hand back a half mesh.
     std::filesystem::resize_file(path, size / 2);
-    REQUIRE(!read_ipc_geometry(path));
+    REQUIRE(!import_ipc_geometry(path));
   }
 
   SECTION("wrong magic")
@@ -102,13 +113,13 @@ TEST_CASE("binary IPC geometry rejects damaged payloads", "[ipc][geometry]")
     stream.seekp(0);
     stream.write("XXXX", 4);
     stream.close();
-    REQUIRE(!read_ipc_geometry(path));
+    REQUIRE(!import_ipc_geometry(path));
   }
 
   SECTION("absent")
   {
     std::filesystem::remove(path);
-    REQUIRE(!read_ipc_geometry(path));
+    REQUIRE(!import_ipc_geometry(path));
   }
 
   std::filesystem::remove(path);

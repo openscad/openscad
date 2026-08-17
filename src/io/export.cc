@@ -25,6 +25,7 @@
  */
 
 #include "io/export.h"
+#include "io/ipc_geometry.h"
 
 #include <algorithm>
 #include <cassert>
@@ -169,7 +170,10 @@ bool is3D(FileFormat format)
   return format == FileFormat::ASCII_STL || format == FileFormat::BINARY_STL ||
          format == FileFormat::OBJ || format == FileFormat::OFF || format == FileFormat::WRL ||
          format == FileFormat::AMF || format == FileFormat::_3MF || format == FileFormat::NEFDBG ||
-         format == FileFormat::NEF3 || format == FileFormat::POV;
+         format == FileFormat::NEF3 || format == FileFormat::POV ||
+         // Internal worker transport: 3D for dispatch purposes, but absent from the identifier
+         // table, so all3D() (which iterates that table) still never offers it to a user.
+         format == FileFormat::IPC_GEOMETRY;
 }
 
 bool is2D(FileFormat format)
@@ -222,13 +226,14 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
     if (exportInfo.offPrecision) output << std::setprecision(exportInfo.offPrecision);
     export_off(root_geom, output);
     break;
-  case FileFormat::WRL:  export_wrl(root_geom, output); break;
-  case FileFormat::AMF:  export_amf(root_geom, output); break;
-  case FileFormat::_3MF: export_3mf(root_geom, output, exportInfo); break;
-  case FileFormat::DXF:  export_dxf(root_geom, output); break;
-  case FileFormat::SVG:  export_svg(root_geom, output, exportInfo); break;
-  case FileFormat::PDF:  export_pdf(root_geom, output, exportInfo); break;
-  case FileFormat::POV:  export_pov(root_geom, output, exportInfo); break;
+  case FileFormat::WRL:          export_wrl(root_geom, output); break;
+  case FileFormat::AMF:          export_amf(root_geom, output); break;
+  case FileFormat::_3MF:         export_3mf(root_geom, output, exportInfo); break;
+  case FileFormat::DXF:          export_dxf(root_geom, output); break;
+  case FileFormat::SVG:          export_svg(root_geom, output, exportInfo); break;
+  case FileFormat::PDF:          export_pdf(root_geom, output, exportInfo); break;
+  case FileFormat::POV:          export_pov(root_geom, output, exportInfo); break;
+  case FileFormat::IPC_GEOMETRY: export_ipc_geometry(root_geom, output); break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
   case FileFormat::NEF3:   export_nef3(root_geom, output); break;
@@ -251,7 +256,7 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL ||
-      exportInfo.format == FileFormat::PDF) {
+      exportInfo.format == FileFormat::PDF || exportInfo.format == FileFormat::IPC_GEOMETRY) {
     mode |= std::ios::binary;
   }
   const std::filesystem::path path(filename);

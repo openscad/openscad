@@ -11,6 +11,7 @@
 #include "geometry/PolySet.h"
 #include "io/export.h"
 #include "io/import.h"
+#include "io/ipc_geometry.h"
 #include "json/json.hpp"
 #include "utils/printutils.h"
 
@@ -27,10 +28,9 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
     if (!object.leaf || !object.leaf->polyset) continue;
     auto geometry = geometries.find(object.leaf->polyset.get());
     if (geometry == geometries.end()) {
-      const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + ".off";
-      std::ofstream stream(fs::u8path(path));
-      stream << std::setprecision(std::numeric_limits<double>::max_digits10);
-      export_off(object.leaf->polyset, stream);
+      const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + kIpcGeometrySuffix;
+      std::ofstream stream(fs::u8path(path), std::ios::binary);
+      export_ipc_geometry(*object.leaf->polyset, stream);
       stream.flush();
       stream.close();
       geometry = geometries.emplace(object.leaf->polyset.get(), path).first;
@@ -77,7 +77,7 @@ std::vector<CSGChainObject> read_chain(const json& input,
     const auto path = item["geometry"].get<std::string>();
     auto geometry = geometries.find(path);
     if (geometry == geometries.end()) {
-      auto imported = import_off(path, Location::NONE);
+      auto imported = import_ipc_geometry(path);
       if (!imported) {
         // Abort rather than emplacing a null PolySet, which renders as a silently missing
         // object. Name the leaf that failed: an empty viewport is otherwise indistinguishable
