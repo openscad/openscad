@@ -15,6 +15,7 @@
 #include "glview/VBORenderer.h"
 
 #include <cstddef>
+#include <chrono>
 #include <functional>
 #include <string>
 #include <vector>
@@ -82,6 +83,16 @@ private:
 class OpenCSGRenderer : public VBORenderer
 {
 public:
+  // ponytail: measurement scaffolding for the "concurrent window work" investigation --
+  // splits prepare() into the three costs that decide whether threading is worth it.
+  // Remove (or fold into the real change) once the numbers are recorded.
+  struct PrepTimings {
+    std::chrono::steady_clock::duration surface{};  // create_surface: CPU, GL-free, threadable
+    std::chrono::steady_clock::duration cont{};     // shouldContinue: processEvents + makeCurrent
+    std::chrono::steady_clock::duration gl{};       // allocateBuffers + createInterleavedVBOs
+    size_t leaves{};
+  };
+
   OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
@@ -95,7 +106,7 @@ public:
 private:
   bool createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
                             const ShaderUtils::ShaderInfo *shaderinfo,
-                            const std::function<bool()>& shouldContinue);
+                            const std::function<bool()>& shouldContinue, PrepTimings& timings);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;

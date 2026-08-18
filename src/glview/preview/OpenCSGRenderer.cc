@@ -32,16 +32,27 @@
 #include "glview/system-gl.h"
 
 #include "Feature.h"
+#include "utils/printutils.h"
 #include <cassert>
+#include <cstdint>
+#include <cstdio>
 #include <memory>
 #include <memory.h>
 #include <cstddef>
 #include <utility>
 #include <vector>
+#include <chrono>
 
 #ifdef ENABLE_OPENCSG
 
 namespace {
+
+// ponytail: accumulate elapsed time into a duration for the prepare() phase measurement.
+struct ScopedAccum {
+  std::chrono::steady_clock::duration& d;
+  const std::chrono::steady_clock::time_point t0{std::chrono::steady_clock::now()};
+  ~ScopedAccum() { d += std::chrono::steady_clock::now() - t0; }
+};
 
 class OpenCSGVBOPrim : public OpenCSG::Primitive
 {
@@ -107,20 +118,38 @@ void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 bool OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo,
                               const std::function<bool()>& shouldContinue)
 {
+  PrepTimings timings;
+  const auto t0 = std::chrono::steady_clock::now();
+  bool ok = true;
   if (vertex_state_containers_.empty()) {
-    if (root_products_) {
-      if (!createCSGVBOProducts(*root_products_, false, false, shaderinfo, shouldContinue)) return false;
+    if (root_products_ &&
+        !createCSGVBOProducts(*root_products_, false, false, shaderinfo, shouldContinue, timings)) {
+      ok = false;
     }
-    if (background_products_) {
-      if (!createCSGVBOProducts(*background_products_, false, true, shaderinfo, shouldContinue))
-        return false;
+    if (ok && background_products_ &&
+        !createCSGVBOProducts(*background_products_, false, true, shaderinfo, shouldContinue, timings)) {
+      ok = false;
     }
-    if (highlights_products_) {
-      if (!createCSGVBOProducts(*highlights_products_, true, false, shaderinfo, shouldContinue))
-        return false;
+    if (ok && highlights_products_ &&
+        !createCSGVBOProducts(*highlights_products_, true, false, shaderinfo, shouldContinue, timings)) {
+      ok = false;
     }
   }
-  return true;
+  // ponytail: measurement only -- see PrepTimings in the header.
+  const auto ms = [](std::chrono::steady_clock::duration d) {
+    return std::chrono::duration<double, std::milli>(d).count();
+  };
+  // ponytail: stderr too -- the GUI console swallows this when scripting a measurement run.
+  fprintf(stderr, "PREPARE renderer=%04x leaves=%zu total=%.1f surface=%.1f continue=%.1f gl=%.1f\n",
+          static_cast<unsigned>(reinterpret_cast<uintptr_t>(this) & 0xffff), timings.leaves,
+          ms(std::chrono::steady_clock::now() - t0), ms(timings.surface), ms(timings.cont),
+          ms(timings.gl));
+  LOG(
+    "prepare(): total %1$.1f ms = create_surface %2$.1f + shouldContinue %3$.1f + GL upload "
+    "%4$.1f (%5$d leaves, renderer #%6$d)",
+    ms(std::chrono::steady_clock::now() - t0), ms(timings.surface), ms(timings.cont), ms(timings.gl),
+    static_cast<int>(timings.leaves), static_cast<int>(reinterpret_cast<uintptr_t>(this) & 0xffff));
+  return ok;
 }
 
 void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
@@ -190,12 +219,16 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool highlight_mode,
                                            bool background_mode,
                                            const ShaderUtils::ShaderInfo *shaderinfo,
-                                           const std::function<bool()>& shouldContinue)
+                                           const std::function<bool()>& shouldContinue,
+                                           PrepTimings& timings)
 {
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = true;
   for (const auto& product : products.products) {
-    if (!shouldContinue()) return false;
+    {
+      ScopedAccum a{timings.cont};
+      if (!shouldContinue()) return false;
+    }
     std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
 
     Color4f last_color;
@@ -207,19 +240,28 @@ bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
 
     size_t num_vertices = 0;
     for (const auto& csgobj : product.intersections) {
-      if (!shouldContinue()) return false;
+      {
+        ScopedAccum a{timings.cont};
+        if (!shouldContinue()) return false;
+      }
       if (csgobj.leaf->polyset) {
         num_vertices += calcNumVertices(csgobj);
       }
     }
     for (const auto& csgobj : product.subtractions) {
-      if (!shouldContinue()) return false;
+      {
+        ScopedAccum a{timings.cont};
+        if (!shouldContinue()) return false;
+      }
       if (csgobj.leaf->polyset) {
         num_vertices += calcNumVertices(csgobj);
       }
     }
 
-    vbo_builder.allocateBuffers(num_vertices);
+    {
+      ScopedAccum a{timings.gl};
+      vbo_builder.allocateBuffers(num_vertices);
+    }
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
@@ -247,8 +289,12 @@ bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
 
         if (color.a() == 1.0f) {
           // object is opaque, draw normally
-          vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
-                                     enable_barycentric, override_color);
+          ++timings.leaves;
+          {
+            ScopedAccum surface_timer{timings.surface};
+            vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
+                                       enable_barycentric, override_color);
+          }
           if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
             vertex_state_container->addPrimitive(
@@ -265,8 +311,12 @@ bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
           });
           vertex_states.emplace_back(std::move(cull));
 
-          vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
-                                     enable_barycentric, override_color);
+          ++timings.leaves;
+          {
+            ScopedAccum surface_timer{timings.surface};
+            vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
+                                       enable_barycentric, override_color);
+          }
           if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
 
@@ -334,8 +384,12 @@ bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
           // Scale 2D negative objects 10% in the Z direction to avoid z fighting
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
-        vbo_builder.create_surface(*csgobj.leaf->polyset, tmp, last_color, enable_barycentric,
-                                   override_color);
+        ++timings.leaves;
+        {
+          ScopedAccum surface_timer{timings.surface};
+          vbo_builder.create_surface(*csgobj.leaf->polyset, tmp, last_color, enable_barycentric,
+                                     override_color);
+        }
         if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
           csg_vs->setCsgObjectIndex(csgobj.leaf->index);
           vertex_state_container->addPrimitive(
@@ -360,7 +414,10 @@ bool OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-    vbo_builder.createInterleavedVBOs();
+    {
+      ScopedAccum a{timings.gl};
+      vbo_builder.createInterleavedVBOs();
+    }
     vertex_state_containers_.push_back(std::move(vertex_state_container));
   }
 #endif  // ENABLE_OPENCSG
