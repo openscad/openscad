@@ -10,6 +10,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <QVBoxLayout>
+#include <QThread>
 #include <QTimer>
 
 #include "gui/OpenSCADApp.h"
@@ -136,6 +137,61 @@ void TestMainWindow::checkIsolatedWindowsCanPreviewConcurrently()
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QTRY_VERIFY_WITH_TIMEOUT(other->findChild<ProgressWidget *>() == nullptr, 5000);
   other->close();
+}
+
+// Two windows previewing at once must not take twice as long as one. The OpenCSG
+// preparation phase (VBOBuilder::create_surface over every CSG leaf) is CPU-bound,
+// GL-free and per-window, so it belongs off the main thread; while it ran on it, the
+// second window's preparation could only start after the first one's had finished, and
+// this measured a ~2x wall-clock cost for two windows.
+//
+// The model is deliberately mesh-heavy per leaf (36 leaves at $fn=64): that puts ~87%
+// of the preparation phase in create_surface, so the ratio measures the phase this test
+// is about rather than per-leaf progress overhead. Timing-based, so the threshold is
+// loose -- 1.5x sits between the ~1.7x this fails at when preparation is serialized and
+// the ~1.1x it passes at when it is not.
+void TestMainWindow::checkWindowsPrepareOpenCSGConcurrently()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  if (QThread::idealThreadCount() < 2) QSKIP("needs more than one core");
+  restoreWindowInitialState();
+
+  const auto model = [](int row) {
+    return QString(
+             "for (i = [0:17]) translate([i * 12, %1, 0]) difference() { sphere(6, $fn = 64); "
+             "cylinder(h = 20, r = 3, center = true, $fn = 64); }")
+      .arg(row * 12);
+  };
+  const auto previewAndWait = [](std::initializer_list<MainWindow *> windows) {
+    QElapsedTimer timer;
+    timer.start();
+    for (auto *w : windows) {
+      if (!QMetaObject::invokeMethod(w, "on_designActionPreview_triggered")) return qint64{-1};
+    }
+    for (auto *w : windows) {
+      if (!QTest::qWaitFor([w]() { return w->findChild<ProgressWidget *>() == nullptr; }, 120000)) {
+        return qint64{-1};
+      }
+    }
+    return timer.elapsed();
+  };
+
+  window->activeEditor->setPlainText(model(0));
+  const qint64 single = previewAndWait({window});
+  QVERIFY2(single > 200, "baseline preview was too fast to measure -- model too small?");
+
+  auto *other = new MainWindow({});
+  window->activeEditor->setPlainText(model(1));
+  other->activeEditor->setPlainText(model(2));
+  const qint64 concurrent = previewAndWait({window, other});
+  other->close();
+
+  QVERIFY2(concurrent > 0 && concurrent < single * 3 / 2,
+           qPrintable(QString("two windows took %1 ms against %2 ms for one (%3x); the GUI-side "
+                              "preparation phase is still serializing on the main thread")
+                        .arg(concurrent)
+                        .arg(single)
+                        .arg(static_cast<double>(concurrent) / single, 0, 'f', 2)));
 }
 
 void TestMainWindow::checkWorkerMessageSeverity()

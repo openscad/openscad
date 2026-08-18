@@ -27,6 +27,7 @@ private slots:
   void checkIdenticalPreviewRequestIsDebounced();
   void checkEditedPreviewRequestReplacesActivePreview();
   void checkOpenCSGPreparationCanBeCanceled();
+  void checkWindowsPrepareOpenCSGConcurrently();
   void checkWorkerCompletionDoesNotFinishPreviewProgress();
   void checkPreviewShowsSeparateGuiProgress();
   void checkPreviewDrawsAfterCanceledOpenCSGPreparation();
