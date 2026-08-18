@@ -503,7 +503,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     products.camera_info.vpt[2] = camera.getVpt().z();
     products.camera_info.vpd = camera.zoomValue();
     products.camera_info.vpf = camera.fovValue();
-    products.compile_products(tree, cmd.csgProductsLimit);
+    products.compile_products(tree, cmd.csgProductsLimit, cmd.csgProductsFile);
     if (!products.write_products(cmd.csgProductsFile)) return 1;
   }
 

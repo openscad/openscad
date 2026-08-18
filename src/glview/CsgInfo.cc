@@ -22,25 +22,34 @@ namespace fs = std::filesystem;
 namespace {
 
 json write_chain(const std::vector<CSGChainObject>& chain, const std::string& filename,
-                 std::map<const PolySet *, std::string>& geometries)
+                 std::map<const PolySet *, std::string>& geometries,
+                 const std::map<const PolySet *, std::string>& streamed)
 {
   json output = json::array();
   for (const auto& object : chain) {
     if (!object.leaf || !object.leaf->polyset) continue;
     auto geometry = geometries.find(object.leaf->polyset.get());
     if (geometry == geometries.end()) {
-      const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + kIpcGeometrySuffix;
-      // In a compute worker the leaf goes back over the response channel under this same path,
-      // so the reference written into the products below needs no special case at either end.
-      if (ipc_payload_sink::collecting()) {
-        export_ipc_geometry(*object.leaf->polyset, ipc_payload_sink::open(path));
+      const auto already = streamed.find(object.leaf->polyset.get());
+      if (already != streamed.end()) {
+        // Sent during evaluation (feature 34). Reference the name it went out under rather than
+        // serializing the same mesh a second time.
+        geometry = geometries.emplace(object.leaf->polyset.get(), already->second).first;
       } else {
-        std::ofstream stream(fs::u8path(path), std::ios::binary);
-        export_ipc_geometry(*object.leaf->polyset, stream);
-        stream.flush();
-        stream.close();
+        const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + kIpcGeometrySuffix;
+        // Not streamed: either this is not a compute worker, or the leaf reached the products
+        // without passing through the evaluator hook. Write it under the same naming scheme, so
+        // the reference the products carry needs no special case at either end.
+        if (ipc_payload_sink::collecting()) {
+          export_ipc_geometry(*object.leaf->polyset, ipc_payload_sink::open(path));
+        } else {
+          std::ofstream stream(fs::u8path(path), std::ios::binary);
+          export_ipc_geometry(*object.leaf->polyset, stream);
+          stream.flush();
+          stream.close();
+        }
+        geometry = geometries.emplace(object.leaf->polyset.get(), path).first;
       }
-      geometry = geometries.emplace(object.leaf->polyset.get(), path).first;
     }
 
     json matrix = json::array();
@@ -63,13 +72,15 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
 }
 
 json write_products(const std::shared_ptr<CSGProducts>& products, const std::string& filename,
-                    std::map<const PolySet *, std::string>& geometries)
+                    std::map<const PolySet *, std::string>& geometries,
+                    const std::map<const PolySet *, std::string>& streamed)
 {
   json output = json::array();
   if (!products) return output;
   for (const auto& product : products->products) {
-    output.push_back({{"intersections", write_chain(product.intersections, filename, geometries)},
-                      {"subtractions", write_chain(product.subtractions, filename, geometries)}});
+    output.push_back(
+      {{"intersections", write_chain(product.intersections, filename, geometries, streamed)},
+       {"subtractions", write_chain(product.subtractions, filename, geometries, streamed)}});
   }
   return output;
 }
@@ -145,9 +156,10 @@ std::shared_ptr<CSGProducts> read_products(
 bool CsgInfo::write_products(const std::string& filename) const
 {
   std::map<const PolySet *, std::string> geometries;
-  json output{{"root", ::write_products(root_products, filename, geometries)},
-              {"highlights", ::write_products(highlights_products, filename, geometries)},
-              {"background", ::write_products(background_products, filename, geometries)}};
+  json output{
+    {"root", ::write_products(root_products, filename, geometries, streamed_leaves)},
+    {"highlights", ::write_products(highlights_products, filename, geometries, streamed_leaves)},
+    {"background", ::write_products(background_products, filename, geometries, streamed_leaves)}};
   output["nodes"] = json::array();
   for (const auto& node : source_nodes) {
     output["nodes"].push_back({{"index", node.index},

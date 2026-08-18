@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <list>
 #include <map>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -38,6 +39,15 @@ public:
 
   std::shared_ptr<CSGNode> buildCSGTree(const AbstractNode& node);
 
+  // Called with each leaf's PolySet as it becomes available during the walk, before the tree is
+  // normalized. The compute worker uses this to send a leaf over its response channel the moment
+  // it exists, instead of after every leaf has been evaluated (feature 34); nothing else sets it.
+  // Kept as a callback so core/ does not gain a dependency on io/.
+  void setLeafCallback(std::function<void(const std::shared_ptr<const PolySet>&)> callback)
+  {
+    this->leafCallback = std::move(callback);
+  }
+
   [[nodiscard]] const std::shared_ptr<CSGNode>& getRootNode() const { return this->rootNode; }
   [[nodiscard]] const std::vector<std::shared_ptr<CSGNode>>& getHighlightNodes() const
   {
@@ -49,6 +59,7 @@ public:
   }
 
 private:
+  std::function<void(const std::shared_ptr<const PolySet>&)> leafCallback;
   void addToParent(const State& state, const AbstractNode& node);
   void applyToChildren(State& state, const AbstractNode& node, OpenSCADOperator op);
   std::shared_ptr<CSGNode> evaluateCSGNodeFromGeometry(State& state,
