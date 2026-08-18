@@ -635,6 +635,118 @@ void TestMainWindow::checkF5DuringAnInFlightPreviewShowsTheEditedModel()
   QCOMPARE(window->previewProductsForTest()->getBoundingBox().max().x(), 30.0);
 }
 
+// Edit, preview, edit, preview -- many times, checking what is actually ON SCREEN each round.
+// The user reports the view intermittently keeping the previous model until F5 is pressed again.
+// Asserting on rootProduct cannot see that: the products can be correct while the view still
+// draws the old ones. This grabs the GL framebuffer and counts drawn pixels instead.
+void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->show();
+  QTest::qWaitForWindowExposed(window);
+
+  const auto drawnPixels = [this] {
+    window->qglview->update();
+    QApplication::processEvents();
+    const auto image = window->qglview->grabFramebuffer();
+    const auto background = image.pixel(0, 0);
+    qint64 drawn = 0;
+    for (int y = 0; y < image.height(); ++y) {
+      for (int x = 0; x < image.width(); ++x) {
+        if (image.pixel(x, y) != background) ++drawn;
+      }
+    }
+    return drawn;
+  };
+
+  // Two models whose silhouettes differ a lot, so "which one is on screen" is unambiguous.
+  const QString small = "cube(6, center = true);";
+  const QString large = "cube(60, center = true);";
+  const auto preview = [this](const QString& source) {
+    window->previewRenderer.reset();
+    window->activeEditor->setPlainText(source);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 20000);
+  };
+
+  // The real app polls for auto-reload every 200ms while the user works; restoreWindowInitialState()
+  // ticks the menu item with signals blocked, so the timer is NOT running in the other tests. The
+  // reported symptom appears during ordinary edit/preview loops, where it IS running -- a poll can
+  // land between an edit and its preview, so the test has to include that traffic.
+  window->on_designActionAutoReload_toggled(true);
+
+  preview(large);
+  const auto largePixels = drawnPixels();
+  preview(small);
+  const auto smallPixels = drawnPixels();
+  if (largePixels == 0 || largePixels <= smallPixels) {
+    QSKIP("this display cannot distinguish the two models -- no usable framebuffer to assert on");
+  }
+  const auto threshold = (largePixels + smallPixels) / 2;
+
+  // The reported failure is intermittent, so one round proves nothing.
+  for (int cycle = 0; cycle < 12; ++cycle) {
+    const bool wantLarge = cycle % 2 == 0;
+    preview(wantLarge ? large : small);
+    const auto drawn = drawnPixels();
+    const bool showsLarge = drawn > threshold;
+    QVERIFY2(showsLarge == wantLarge,
+             qPrintable(QString("cycle %1: asked for the %2 cube, screen shows the %3 one "
+                                "(%4 pixels drawn, large=%5 small=%6)")
+                          .arg(cycle)
+                          .arg(wantLarge ? "large" : "small")
+                          .arg(showsLarge ? "large" : "small")
+                          .arg(drawn)
+                          .arg(largePixels)
+                          .arg(smallPixels)));
+  }
+
+  // A person does not wait for quiescence before typing the next edit. Interrupt each preview at a
+  // different point, so the second request lands during dispatch, during computation, and during
+  // the GUI-side OpenCSG preparation across the run.
+  for (int cycle = 0; cycle < 12; ++cycle) {
+    window->activeEditor->setPlainText(cycle % 2 == 0 ? small : large);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTest::qWait(5 + cycle * 13);
+
+    const bool wantLarge = cycle % 2 == 0;
+    window->previewRenderer.reset();
+    window->activeEditor->setPlainText(wantLarge ? large : small);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 20000);
+    // Nothing else is in flight now, so the screen must agree with the last edit.
+    QTRY_VERIFY_WITH_TIMEOUT(!window->computeBusyForTest(), 20000);
+
+    const auto drawn = drawnPixels();
+    const bool showsLarge = drawn > threshold;
+    QVERIFY2(showsLarge == wantLarge,
+             qPrintable(QString("interrupted cycle %1 (waited %2ms): asked for the %3 cube, screen "
+                                "shows the %4 one (%5 pixels, large=%6 small=%7)")
+                          .arg(cycle)
+                          .arg(5 + cycle * 13)
+                          .arg(wantLarge ? "large" : "small")
+                          .arg(showsLarge ? "large" : "small")
+                          .arg(drawn)
+                          .arg(largePixels)
+                          .arg(smallPixels)));
+  }
+}
+
+void TestMainWindow::checkCustomizerIsUsableAfterAnIsolatedRender()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->activeEditor->parameterWidget->setEnabled(false);
+
+  window->activeEditor->setPlainText("size = 10; // [10:100]\ncube(size);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->activeEditor->parameterWidget->isEnabled(), 5000);
+}
+
 void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();

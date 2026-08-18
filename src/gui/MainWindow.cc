@@ -3778,6 +3778,9 @@ void MainWindow::setupCoreSubsystems()
               if (this->activeEditor->toPlainText() == source) {
                 this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
                                                                    source.toStdString());
+                // Isolated mode never runs parseDocument(), which is where the widget is enabled
+                // in legacy mode, so without this the Customizer stays greyed out forever.
+                this->activeEditor->parameterWidget->setEnabled(true);
               }
             });
     connect(this->computeWorker, &ComputeWorker::dependenciesDiscovered, this,

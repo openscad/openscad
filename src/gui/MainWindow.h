@@ -146,6 +146,7 @@ public:
   void exitComputeWorkerForTest();
   int compilationErrorCount() const { return compileErrors; }
   const std::shared_ptr<CSGProducts>& previewProductsForTest() const { return rootProduct; }
+  bool computeBusyForTest() const { return computeBusy; }
   int compilationWarningCount() const { return compileWarnings; }
 #endif
 
