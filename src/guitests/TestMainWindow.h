@@ -32,6 +32,7 @@ private slots:
   void checkPreviewDrawsAfterCanceledOpenCSGPreparation();
   void checkOpenCSGPreparationUsesViewportColorScheme();
   void checkReloadPreviewDispatchDoesNotBlockGui();
+  void checkStreamingPreviewBenchmark();
   void checkStreamingPreviewProducesSameResult();
   void checkF5UsesComputeWorkerResult();
   void checkRightClickAfterIsolatedPreviewDoesNotCrash();

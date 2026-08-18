@@ -497,6 +497,36 @@ void TestMainWindow::checkOpenCSGPreparationUsesViewportColorScheme()
 #endif
 }
 
+// Benchmark for feature 34, skipped unless OPENSCAD_STREAMING_BENCH names a .scad file;
+// OPENSCAD_STREAMING_BENCH_FLAG picks the flag state. Kept because this number has to be
+// re-measured after any change to the GUI-side preview phase, and rebuilding the harness each
+// time costs more than carrying it.
+//
+// One preview, one process, one flag state -- deliberately. An earlier cut ran both states in a
+// single process and reported streaming 9.8% faster, which it could not distinguish from the
+// second preview simply reusing the first one's caches. Separate processes remove that entirely.
+// The two processes are then launched concurrently so both meet the same machine load; running
+// them one after another lets anything that starts in between masquerade as an effect.
+void TestMainWindow::checkStreamingPreviewBenchmark()
+{
+  const auto model = qEnvironmentVariable("OPENSCAD_STREAMING_BENCH");
+  if (model.isEmpty()) QSKIP("set OPENSCAD_STREAMING_BENCH to a .scad path to run this");
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  const auto streaming = qEnvironmentVariable("OPENSCAD_STREAMING_BENCH_FLAG") == "1";
+
+  Feature::enable_feature(Feature::ExperimentalStreamingPreview.get_name(), streaming);
+  restoreWindowInitialState();
+  window->tabManager->open(model);
+  QElapsedTimer timer;
+  timer.start();
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 3600000);
+  const auto ms = timer.elapsed();
+
+  qDebug("STREAMING BENCH streaming=%d %lld ms %zu products", streaming ? 1 : 0, ms,
+         window->previewProductCount());
+}
+
 void TestMainWindow::checkStreamingPreviewProducesSameResult()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();
