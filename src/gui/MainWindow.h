@@ -145,6 +145,7 @@ public:
 #ifdef ENABLE_GUI_TESTS
   void exitComputeWorkerForTest();
   int compilationErrorCount() const { return compileErrors; }
+  const std::shared_ptr<CSGProducts>& previewProductsForTest() const { return rootProduct; }
   int compilationWarningCount() const { return compileWarnings; }
 #endif
 

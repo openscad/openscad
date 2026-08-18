@@ -35,6 +35,8 @@ private slots:
   void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
   void checkPreviewReportsRenderingTime();
+  void checkEditedSourcePreviewsOnTheFirstF5();
+  void checkF5DuringAnInFlightPreviewShowsTheEditedModel();
   void checkRightClickAfterIsolatedPreviewDoesNotCrash();
   void checkF6UsesCommandLineDefinitions();
 #ifdef ENABLE_PYTHON

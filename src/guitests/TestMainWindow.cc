@@ -589,6 +589,52 @@ void TestMainWindow::checkPreviewReportsRenderingTime()
            "isolated preview did not report its rendering time");
 }
 
+// One F5 after an edit must show the edited model. The user reports seeing the previous geometry
+// until F5 is pressed a second time, which would mean the preview displayed is one request stale.
+void TestMainWindow::checkEditedSourcePreviewsOnTheFirstF5()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+
+  const auto previewAndMeasure = [this](const QString& source, double& width) {
+    window->previewRenderer.reset();
+    window->activeEditor->setPlainText(source);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+    QVERIFY(window->previewProductsForTest() != nullptr);
+    width = window->previewProductsForTest()->getBoundingBox().max().x();
+  };
+
+  double first = 0, second = 0;
+  previewAndMeasure("cube(10);", first);
+  QCOMPARE(first, 10.0);
+  previewAndMeasure("cube(30);", second);
+  QCOMPARE(second, 30.0);
+}
+
+// F5 pressed while a previous preview is still running. The second request must be the one that
+// ends up on screen; if the in-flight one wins, the user sees the model they just edited away from
+// and has to press F5 again -- which is the reported symptom.
+void TestMainWindow::checkF5DuringAnInFlightPreviewShowsTheEditedModel()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->previewRenderer.reset();
+
+  // Slow enough that the second F5 lands while it is still being computed.
+  window->activeEditor->setPlainText("for (i = [0:400]) translate([i, 0, 0]) sphere(1, $fn = 40);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+
+  window->activeEditor->setPlainText("cube(30);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 60000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 60000);
+  QVERIFY(window->previewProductsForTest() != nullptr);
+  QCOMPARE(window->previewProductsForTest()->getBoundingBox().max().x(), 30.0);
+}
+
 void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();

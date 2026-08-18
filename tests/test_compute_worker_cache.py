@@ -37,6 +37,12 @@ MODEL = "for (i = [0:60]) rotate([0, 0, i * 6]) translate([10, 0, 0]) sphere(3, 
 MAX_CACHED_FRACTION = 0.25
 
 
+# The worker speaks bytes, not text: on branches that carry the binary geometry transport a reply
+# line can be followed by "payload\t<n>\n" and exactly n raw bytes, which is not valid UTF-8 and
+# kills a text-mode reader. Skipping those frames keeps this test readable on every branch.
+TERMINAL = (b"done", b"previewdone", b"error", b"cancelled")
+
+
 def render(worker, request):
     start = time.monotonic()
     worker.stdin.write(request)
@@ -46,9 +52,12 @@ def render(worker, request):
         if not response:
             raise RuntimeError("compute worker exited before replying")
         response = response.strip()
-        if response in ("done", "previewdone", "error", "cancelled"):
+        if response.startswith(b"payload\t"):
+            worker.stdout.read(int(response[len(b"payload\t"):]))
+            continue
+        if response in TERMINAL:
             break
-    assert response in ("done", "previewdone"), f"worker replied {response}"
+    assert response in (b"done", b"previewdone"), f"worker replied {response!r}"
     return time.monotonic() - start
 
 
@@ -59,10 +68,9 @@ def render_twice(binary, extra):
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
     )
     try:
-        assert worker.stdout.readline().strip() == "ready"
+        assert worker.stdout.readline().strip() == b"ready"
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "model.scad"
             source.write_text(MODEL)
@@ -73,10 +81,10 @@ def render_twice(binary, extra):
                     "output": str(Path(directory) / "result.off"),
                     **extra,
                 }
-            ) + "\n"
+            ).encode() + b"\n"
             cold = render(worker, request)
             warm = min(render(worker, request) for _ in range(2))
-        worker.stdin.write("quit\n")
+        worker.stdin.write(b"quit\n")
         worker.stdin.flush()
         assert worker.wait(timeout=10) == 0
         return cold, warm
@@ -109,10 +117,9 @@ def main():
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
     )
     try:
-        assert worker.stdout.readline().strip() == "ready"
+        assert worker.stdout.readline().strip() == b"ready"
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "model.scad"
             source.write_text(MODEL)
@@ -122,7 +129,7 @@ def main():
                     "input": str(source),
                     "output": str(Path(directory) / "result.off"),
                 }
-            ) + "\n"
+            ).encode() + b"\n"
 
             # The request is byte-identical each time, which is the point: the source has not
             # changed, so the node tree dump has not changed, so the cache key has not changed.
@@ -149,7 +156,7 @@ def main():
                 f"holding it, most likely as its current directory"
             )
 
-        worker.stdin.write("quit\n")
+        worker.stdin.write(b"quit\n")
         worker.stdin.flush()
         assert worker.wait(timeout=10) == 0
     finally:
