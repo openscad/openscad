@@ -851,8 +851,22 @@ static int compute_worker_main()
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
   parser_init();
+  // do_export() chdir()s into the document's directory and leaves the process there. The worker
+  // is persistent, so without this it holds a handle on whichever directory it last rendered from
+  // for the rest of its life -- on Windows that directory cannot then be renamed or removed by
+  // anyone, which is how a request's temporary directory outlives the request.
+  const auto worker_path = fs::current_path();
   std::cout << "ready" << std::endl;
   for (std::string command; std::getline(std::cin, command);) {
+    // Every exit from this iteration restores it, including the error and cancellation paths.
+    struct RestorePath {
+      const fs::path& path;
+      ~RestorePath()
+      {
+        std::error_code ignored;
+        fs::current_path(path, ignored);
+      }
+    } const restore_path{worker_path};
     if (command == "ping") {
       std::cout << "pong" << std::endl;
     } else if (command == "exit-for-test") {
