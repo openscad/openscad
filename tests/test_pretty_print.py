@@ -205,13 +205,16 @@ def png_encode64(fname, width=512, data=None, alt=''):
 
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    # The ctest command may not finish before the LastTest.log.tmp* is flushed,
-    # so read that file if it exists.
-    logfilename = next(pathlib.Path(logpath).glob('LastTest.log*'), None)
-    if not os.path.isfile(logfilename):
-        print('can\'t find and/or open logfile', logfilename)
+    # ctest may not have flushed LastTest.log by the time this post-test hook runs, in which case
+    # the current run is in LastTest.log.tmp<random> instead. Take the newest of the two rather
+    # than the first the glob happens to yield: an interrupted run leaves its temp file behind
+    # forever, and picking that describes a run from days ago -- or fails outright on an output
+    # type it contains.
+    candidates = [path for path in pathlib.Path(logpath).glob('LastTest.log*') if path.is_file()]
+    if not candidates:
+        print('can\'t find and/or open logfile in', logpath)
         sys.exit()
-    return str(logfilename)
+    return str(max(candidates, key=lambda path: path.stat().st_mtime))
 
 # --- Templating ---
 

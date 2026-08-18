@@ -1552,6 +1552,16 @@ if(NOT ENABLE_MANIFOLD)
   )
 endif()
 
+###############################
+# Test harness's own behaviour #
+###############################
+
+# Needs no OpenSCAD binary: it exercises test_pretty_print.py's log-file selection directly.
+add_test(NAME pretty_print_logfile
+  CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print_logfile.py
+)
+
 ####################
 # Extra Debug Info #
 ####################
