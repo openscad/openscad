@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include <QEvent>
 #include <QFile>
+#include <QFutureWatcher>
 #include <QIODevice>
 #include <QIcon>
 #include <QLabel>
@@ -26,8 +27,12 @@
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
+#include <atomic>
 #include <ctime>
 #include <memory>
+#ifdef ENABLE_OPENCSG
+#include "glview/preview/OpenCSGRenderer.h"
+#endif
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -124,6 +129,20 @@ public:
   std::shared_ptr<Renderer> previewRenderer;
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
+
+#ifdef ENABLE_OPENCSG
+  // OpenCSG preparation runs its CPU-bound part on a worker thread so that windows do not
+  // serialize on the GUI thread; these hold the in-flight state between the two GL halves.
+  // The worker only ever reads openCSGPrepareCanceled and writes openCSGPrepareProgress --
+  // it must not touch any widget.
+  std::shared_ptr<OpenCSGRenderer> preparingRenderer;
+  std::vector<OpenCSGRenderer::PendingProduct> preparingProducts;
+  QFutureWatcher<bool> *openCSGPrepareWatcher{nullptr};
+  QTimer *openCSGPrepareProgressTimer{nullptr};
+  std::atomic<bool> openCSGPrepareCanceled{false};
+  std::atomic<size_t> openCSGPrepareProgress{0};
+  size_t openCSGPrepareWork{0};
+#endif
 
   QString lastCompiledDoc;
 
@@ -375,6 +394,11 @@ private slots:
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void actionPreviewDone(const std::shared_ptr<CsgInfo>& products);
+#ifdef ENABLE_OPENCSG
+  void startOpenCSGPreparation(size_t guiWork);
+  void finishOpenCSGPreparation();
+#endif
+  void previewReady();
   void cgalRender();
   void isolatedRender(bool python, const QString& pythonVenv);
   void handleMeasurementClicked(QAction *clickedAction);
