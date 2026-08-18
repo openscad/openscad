@@ -20,6 +20,7 @@ edits", which is the operation a user experiences as instant or not.
 """
 
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -84,6 +85,17 @@ def main():
             assert best < cold * MAX_CACHED_FRACTION, (
                 f"repeat render of unchanged source took {best:.3f}s against a cold {cold:.3f}s "
                 f"({best / cold:.1%}); the worker's geometry cache is not being hit"
+            )
+
+            # do_export() chdir()s into the document's directory, so a persistent worker used to
+            # sit in the last directory it rendered from forever. On Windows a process's CWD is an
+            # open handle and nothing can then remove that directory -- which is how this test
+            # failed there while every assertion above passed. The worker is deliberately still
+            # running here: that is the state in which the directory has to be removable.
+            shutil.rmtree(directory)
+            assert not Path(directory).exists(), (
+                f"{directory} survived removal while the worker was still running; the worker is "
+                f"holding it, most likely as its current directory"
             )
 
         worker.stdin.write("quit\n")
