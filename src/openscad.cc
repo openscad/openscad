@@ -812,7 +812,7 @@ static int compute_worker_export(const std::string& input, const std::string& ou
 template <typename F>
 static int compute_worker_request(const F& run)
 {
-  ipc_payload_sink::begin();
+  ipc_payload_sink::begin(std::cout);
   // do_export() chdirs to the source file's parent and does not change back, which is harmless
   // for a one-shot CLI that exits immediately afterwards. This process does not exit: it would
   // otherwise sit in the caller's directory until the next request moved it somewhere else. On
@@ -834,7 +834,10 @@ static int compute_worker_request(const F& run)
     throw;
   }
   restore_directory();
-  if (result == 0) ipc_payload_sink::flush_to(std::cout);
+  // Payloads went out as they completed; this sends the last one. On failure the partial payloads
+  // already on the wire are the receiver's to discard -- it keys them to a request and only uses
+  // them when that request's terminating line says the request succeeded.
+  if (result == 0) ipc_payload_sink::flush_pending();
   ipc_payload_sink::end();
   return result;
 }

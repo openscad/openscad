@@ -95,11 +95,22 @@ namespace ipc_payload_sink {
 
 namespace {
 
-// A deque so `open()`'s reference survives later opens: a preview opens products.json and then
-// one payload per leaf, and the first stream is still being referred to while the rest appear.
-// Insertion order is kept so the response stream is deterministic, which matters for tests.
+// A deque so `open()`'s reference survives the entries flushed before it: insertion order is also
+// send order, which keeps the response stream deterministic.
 std::deque<std::pair<std::string, std::ostringstream>> payloads;
+std::ostream *response = nullptr;
 bool active = false;
+
+void send(const std::string& name, const std::string& body)
+{
+  if (!response) return;
+  const auto framed = frame_ipc_message(name, body);
+  *response << "payload\t" << framed.size() << "\n";
+  response->write(framed.data(), static_cast<std::streamsize>(framed.size()));
+  // Flushed per payload rather than per request: an unflushed payload sitting in this process's
+  // stdio buffer is exactly the wait this feature exists to remove.
+  response->flush();
+}
 
 }  // namespace
 
@@ -108,41 +119,40 @@ bool collecting()
   return active;
 }
 
-void begin()
+void begin(std::ostream& out)
 {
   payloads.clear();
+  response = &out;
   active = true;
 }
 
 void end()
 {
   payloads.clear();
+  response = nullptr;
   active = false;
 }
 
 std::ostream& open(const std::string& raw_name)
 {
   const auto name = ipc_payload_name(raw_name);
-  for (auto& entry : payloads) {
-    if (entry.first == name) {
-      // Reopening a name replaces it, matching what opening a file with trunc would do.
-      entry.second.str({});
-      entry.second.clear();
-      return entry.second;
-    }
+  // Reopening the payload currently being written truncates it, matching what opening a file with
+  // trunc would do. A name that has already been sent cannot be truncated -- see the header.
+  if (!payloads.empty() && payloads.back().first == name) {
+    payloads.back().second.str({});
+    payloads.back().second.clear();
+    return payloads.back().second;
   }
+  // Opening a new payload means every earlier one is finished, so send them now instead of
+  // holding the lot until the request ends.
+  flush_pending();
   payloads.emplace_back(name, std::ostringstream(std::ios::binary));
   return payloads.back().second;
 }
 
-void flush_to(std::ostream& out)
+void flush_pending()
 {
-  for (auto& entry : payloads) {
-    const auto framed = frame_ipc_message(entry.first, entry.second.str());
-    out << "payload\t" << framed.size() << "\n";
-    out.write(framed.data(), static_cast<std::streamsize>(framed.size()));
-  }
-  out.flush();
+  for (auto& entry : payloads) send(entry.first, entry.second.str());
   payloads.clear();
 }
 

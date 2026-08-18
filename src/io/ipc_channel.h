@@ -65,17 +65,26 @@ namespace ipc_payload_sink {
 // False everywhere except inside a compute worker serving a request, which is what keeps the
 // ordinary CLI and GUI export paths writing real files.
 bool collecting();
-// Starts a request, discarding anything a previous failed one left behind.
-void begin();
+// Starts a request, discarding anything a previous failed one left behind. `out` is where payloads
+// are written as they complete -- the worker's response stream (feature 34): a payload is sent the
+// moment the next one is opened, rather than all of them being held until the request finishes, so
+// the receiving side can begin work while the worker is still going.
+void begin(std::ostream& out);
 void end();
-// A stream to write the named payload into. The reference stays valid until end().
+// A stream to write the named payload into.
+//
+// Opening a payload declares every previously opened one complete and sends it, so **the
+// reference returned by an earlier open() must not be written to afterwards**. Every writer today
+// opens a payload and fills it within the same expression or call, which is what makes this safe;
+// a writer that interleaved two payloads would need this rethought.
 std::ostream& open(const std::string& name);
 // Not named emit(): Qt defines that as a macro expanding to nothing, and this header reaches
 // Qt translation units through CsgInfo.h.
-// Writes every collected payload to `out` as `payload\t<size>\n` followed by that many framed
-// bytes, then clears them. The count lets the reader switch out of line mode for exactly that
-// many bytes, which is what allows payloads containing newlines to share the response stream.
-void flush_to(std::ostream& out);
+// Sends whatever has not been sent yet -- in practice the final payload, since the rest went out
+// as they completed. Each is written as `payload\t<size>\n` followed by that many framed bytes;
+// the count lets the reader switch out of line mode for exactly that many bytes, which is what
+// allows payloads containing newlines to share the response stream.
+void flush_pending();
 
 }  // namespace ipc_payload_sink
 
