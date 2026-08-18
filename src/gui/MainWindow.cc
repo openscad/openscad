@@ -2082,6 +2082,12 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     viewModeThrownTogether();
 #endif
   }
+  LOG("Compile and preview finished.");
+  // The legacy path prints this from compileCSG(); the isolated one ends here instead. The time
+  // covers the whole preview the user waited for -- the worker's evaluation and the GUI-side
+  // OpenCSG preparation both. Cache statistics are deliberately not printed alongside it: the
+  // caches that matter live in the worker process, and the GUI's own are empty.
+  renderStatistic.printRenderingTime();
   updateStatusBar(nullptr);
   compileEnded();
   if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);

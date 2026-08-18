@@ -212,6 +212,49 @@ void TestMainWindow::checkF6UsesComputeWorkerResult()
   QCOMPARE(window->rootGeom->getDimension(), 3u);
 }
 
+// A second F6 on unchanged source must be answered from the worker's geometry cache, and the
+// saving must survive the trip back into the GUI. The worker process is persistent precisely so
+// that it can be; only the worker side of that was guarded, and a regression is invisible from
+// the outside -- the render is still correct, just as slow as the first one.
+void TestMainWindow::checkRepeatedF6IsServedFromWorkerCache()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  // Heavy enough that a re-evaluation is unmistakable next to the fixed cost of shipping the
+  // result back into the GUI process, which every render pays cached or not.
+  window->activeEditor->setPlainText(
+    "for (i = [0:60]) rotate([0, 0, i * 6]) translate([10, 0, 0]) sphere(3, $fn = 40);");
+
+  // The macros below return void on failure, so the elapsed time comes back through a reference.
+  const auto render = [this](qint64& elapsed) {
+    window->rootGeom.reset();
+    QElapsedTimer timer;
+    timer.start();
+    QVERIFY2(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"), "F6 dispatch failed");
+    QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 120000);
+    elapsed = timer.elapsed();
+  };
+
+  // Lazy union is off for the measurement. With it on, every top-level object comes back as its
+  // own product and the GUI-side half of a render -- transferring each one and preparing a
+  // renderer for it -- costs several seconds either way, which swamps whatever the worker saved
+  // and would make this a test of that cost instead of a test of the cache.
+  const auto lazyUnion = Feature::ExperimentalLazyUnion.is_enabled();
+  Feature::enable_feature(Feature::ExperimentalLazyUnion.get_name(), false);
+  qint64 cold = 0, warm = 0;
+  render(cold);
+  render(warm);
+  Feature::enable_feature(Feature::ExperimentalLazyUnion.get_name(), lazyUnion);
+  QVERIFY(cold > 0);
+  QVERIFY(warm > 0);
+  qDebug() << "cold F6:" << cold << "ms, warm F6:" << warm << "ms";
+  QVERIFY2(warm < cold / 2,
+           qPrintable(QString("repeat F6 on unchanged source took %1ms against a cold %2ms; the "
+                              "compute worker's geometry cache is not being hit")
+                        .arg(warm)
+                        .arg(cold)));
+}
+
 void TestMainWindow::checkF6UsesCustomizerValues()
 {
   restoreWindowInitialState();
@@ -520,6 +563,30 @@ void TestMainWindow::checkF5UsesComputeWorkerResult()
   QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
 #endif
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+}
+
+// The legacy preview path ends in compileCSG(), which logs "Compile and preview finished." and the
+// total rendering time. The isolated path ends in actionPreviewDone() instead, and was logging
+// neither, so an isolated F5 left the console with no indication of how long it took.
+void TestMainWindow::checkPreviewReportsRenderingTime()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->previewRenderer.reset();
+  window->console->clear();
+  window->activeEditor->setPlainText("#cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+#ifdef ENABLE_OPENCSG
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+#else
+  QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
+#endif
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+  // The console is fed through queued signals, so give it a moment to catch up.
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Compile and preview finished."),
+                           5000);
+  QVERIFY2(window->console->toPlainText().contains("Total rendering time:"),
+           "isolated preview did not report its rendering time");
 }
 
 void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()

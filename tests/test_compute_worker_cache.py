@@ -51,6 +51,57 @@ def render(worker, request):
     return time.monotonic() - start
 
 
+def render_twice(binary, extra):
+    """Cold and best-warm seconds for the model, in a fresh worker, with extra request fields."""
+    worker = subprocess.Popen(
+        [binary, "--compute-worker"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        assert worker.stdout.readline().strip() == "ready"
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "model.scad"
+            source.write_text(MODEL)
+            request = json.dumps(
+                {
+                    "command": "render",
+                    "input": str(source),
+                    "output": str(Path(directory) / "result.off"),
+                    **extra,
+                }
+            ) + "\n"
+            cold = render(worker, request)
+            warm = min(render(worker, request) for _ in range(2))
+        worker.stdin.write("quit\n")
+        worker.stdin.flush()
+        assert worker.wait(timeout=10) == 0
+        return cold, warm
+    finally:
+        if worker.poll() is None:
+            worker.kill()
+
+
+def check_cache_size_is_honoured(binary):
+    """The worker must apply the cache sizes the GUI sends it.
+
+    GeometryCache defaults to 100MB and the worker never used to change it, so the user's
+    configured polyset cache size had no effect in isolated mode -- a model whose geometry
+    exceeds 100MB was evicted and fully re-evaluated on every render while the same model in
+    legacy mode, with a larger configured cache, was not. Sending a 1MB cache is the small,
+    fast way to assert the plumbing exists: the model below does not fit in it, so nothing can
+    be reused, and a worker that ignores the field caches it happily instead.
+    """
+    cold, warm = render_twice(binary, {"polysetCacheSizeMB": 1, "cgalCacheSizeMB": 1})
+    print(f"1MB cache: cold {cold:.3f}s, warm {warm:.3f}s ({warm / cold:.1%})")
+    assert warm > cold * MAX_CACHED_FRACTION, (
+        f"a 1MB geometry cache still served the repeat render in {warm:.3f}s against a cold "
+        f"{cold:.3f}s; the worker is ignoring the cache sizes in the request"
+    )
+
+
 def main():
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
@@ -92,6 +143,7 @@ def main():
     finally:
         if worker.poll() is None:
             worker.kill()
+    check_cache_size_is_honoured(sys.argv[1])
 
 
 if __name__ == "__main__":
