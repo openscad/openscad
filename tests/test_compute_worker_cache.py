@@ -62,7 +62,7 @@ def render_twice(binary, extra):
     )
     try:
         assert worker.stdout.readline().strip() == "ready"
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             source = Path(directory) / "model.scad"
             source.write_text(MODEL)
             request = json.dumps(
@@ -112,7 +112,7 @@ def main():
     )
     try:
         assert worker.stdout.readline().strip() == "ready"
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             source = Path(directory) / "model.scad"
             source.write_text(MODEL)
             request = json.dumps(
