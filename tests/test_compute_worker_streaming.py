@@ -21,10 +21,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ipc_worker_channel import read_message  # noqa: E402
 
-# Enough distinct leaves that the export spans several progress reports, and cheap enough to stay
-# a test rather than a benchmark. Each sphere is its own leaf PolySet.
+# Every sphere must be a *distinct* PolySet: leaves are deduplicated by PolySet pointer, so forty
+# identical spheres collapse to a single leaf payload and prove nothing. Varying $fn keeps them
+# distinct while staying cheap.
 MODEL = "\n".join(
-    f"translate([{i * 3}, 0, 0]) sphere(1, $fn = 48);" for i in range(40)
+    f"translate([{i * 3}, 0, 0]) sphere(1, $fn = {12 + i});" for i in range(40)
 ) + "\n"
 
 
@@ -54,7 +55,11 @@ def main():
             while True:
                 message = read_message(worker)
                 if message[0] == "payload":
-                    order.append("payload")
+                    # Only geometry counts. The metadata sidecars are written before evaluation
+                    # even starts, so counting them would let this pass while every mesh still
+                    # arrived at the end -- which is exactly how the first version of this test
+                    # fooled itself.
+                    order.append("payload" if message[1].endswith(".osig") else "metadata")
                     continue
                 if message[1].startswith("progress\t"):
                     order.append("progress")
@@ -63,15 +68,17 @@ def main():
                     assert message[1] == "previewdone", f"worker replied {message[1]}"
                     break
 
-            assert "payload" in order, "the preview sent no payloads at all"
+            assert "payload" in order, "the preview sent no geometry payloads at all"
             assert "progress" in order, "the worker reported no progress; the model is too cheap"
             first_payload = order.index("payload")
             last_progress = len(order) - 1 - order[::-1].index("progress")
             assert first_payload < last_progress, (
-                "every payload arrived after the worker's last progress report, so the GUI phase "
+                "every geometry payload arrived after the worker's last progress report, so the "
+                "GUI phase "
                 "cannot start until the whole worker phase is done "
                 f"(first payload at {first_payload}, last progress at {last_progress}, "
-                f"{order.count('payload')} payloads, {order.count('progress')} progress reports)"
+                f"{order.count('payload')} geometry payloads, {order.count('metadata')} metadata, "
+                f"{order.count('progress')} progress reports)"
             )
 
         worker.stdin.write(b"quit\n")
