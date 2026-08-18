@@ -10,6 +10,7 @@
 #include <QTemporaryDir>
 #include <QTimer>
 #include <algorithm>
+#include <cstring>
 #include <filesystem>
 #include <memory>
 
@@ -104,6 +105,7 @@ void ComputeWorker::startProcess()
   this->payloadRemaining = 0;
   this->payloadReader = {};
   this->pendingPayloads.clear();
+  this->decodedLeaves.clear();
   disconnect(this->startErrorConnection);
   this->startErrorConnection =
     connect(this->process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
@@ -174,6 +176,7 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
   this->canceled = false;
   auto req = std::make_shared<RequestContext>();
   req->type = command == "preview" ? RequestContext::Type::PREVIEW : RequestContext::Type::RENDER;
+  req->streaming = Feature::ExperimentalStreamingPreview.is_enabled();
   req->requestDirectory = std::make_shared<QTemporaryDir>(QDir::tempPath() + "/openscad-worker-XXXXXX");
   const auto directory = req->requestDirectory->path();
   const auto workingDirectory =
@@ -320,7 +323,21 @@ void ComputeWorker::processOutput()
       if (this->payloadRemaining == 0) {
         IpcMessage message;
         while (this->payloadReader.next(message)) {
-          this->pendingPayloads[ipc_payload_name(message.name)] = std::move(message.payload);
+          const auto name = ipc_payload_name(message.name);
+          // Decode a leaf the moment it lands, while the worker is still evaluating the rest.
+          // Only for a request dispatched with streaming on, and only for geometry -- the
+          // products index and the metadata sidecars are cheap and are consumed at the end.
+          const auto streamingRequest =
+            !this->activeRequests.empty() && this->activeRequests.front()->streaming;
+          if (streamingRequest && name.size() > std::strlen(kIpcGeometrySuffix) &&
+              name.compare(name.size() - std::strlen(kIpcGeometrySuffix),
+                           std::strlen(kIpcGeometrySuffix), kIpcGeometrySuffix) == 0) {
+            if (auto leaf =
+                  import_ipc_geometry_buffer(message.payload.data(), message.payload.size(), name)) {
+              this->decodedLeaves[name] = std::shared_ptr<const PolySet>(std::move(leaf));
+            }
+          }
+          this->pendingPayloads[name] = std::move(message.payload);
         }
         if (this->payloadReader.failed()) {
           LOG(message_group::Error, "Compute worker sent a malformed payload.");
@@ -378,6 +395,12 @@ void ComputeWorker::processOutput()
       // accumulated belongs to this one. Taken by move so a failed request cannot leave its
       // payloads behind to be misread as the next one's.
       const auto payloads = std::exchange(this->pendingPayloads, {});
+      const auto leaves = std::exchange(this->decodedLeaves, {});
+      const IpcGeometryResolver decoded =
+        [&leaves](const std::string& name) -> std::shared_ptr<const PolySet> {
+        const auto found = leaves.find(ipc_payload_name(name));
+        return found == leaves.end() ? nullptr : found->second;
+      };
       // Normalised on lookup exactly as the sink normalises on write, so the two ends agree
       // regardless of which spelling of the path each of them was handed.
       const IpcPayloadResolver resolve = [&payloads](const std::string& name) -> const std::string * {
@@ -405,7 +428,7 @@ void ComputeWorker::processOutput()
                                            QCoreApplication::processEvents();
                                            return !req->canceled;
                                          },
-                                         resolve)) {
+                                         resolve, decoded)) {
               products.reset();
             }
             emit previewDone(std::move(products));

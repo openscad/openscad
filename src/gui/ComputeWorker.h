@@ -22,6 +22,10 @@ struct RequestContext {
   QString resultPath;
   QString requestSource;
   QString displayFilename;
+  // Snapshotted at dispatch, never re-read from the global feature when the response arrives: a
+  // preview already running keeps the setting it started with even if the user toggles the flag
+  // while it is in flight.
+  bool streaming = false;
   bool canceled = false;
 };
 
@@ -77,6 +81,9 @@ protected:
   // have written. Attached to a request when its "done"/"previewdone" arrives, because that is
   // what identifies which request they belonged to.
   std::map<std::string, std::string> pendingPayloads;
+  // Leaves decoded as they arrived, so the decode overlaps the worker's remaining evaluation
+  // instead of happening all at once after `previewdone` (feature 34).
+  std::map<std::string, std::shared_ptr<const class PolySet>> decodedLeaves;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   std::deque<std::shared_ptr<RequestContext>> activeRequests;
   // Most recently completed request, kept only so its temporary filename can

@@ -146,6 +146,9 @@ public:
   void exitComputeWorkerForTest();
   int compilationErrorCount() const { return compileErrors; }
   int compilationWarningCount() const { return compileWarnings; }
+  // Size of the normalized preview product list, for tests that need to compare two previews
+  // without reaching into private state.
+  size_t previewProductCount() const { return rootProduct ? rootProduct->size() : 0; }
 #endif
 
 private:

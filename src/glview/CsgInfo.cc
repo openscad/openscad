@@ -88,7 +88,8 @@ json write_products(const std::shared_ptr<CSGProducts>& products, const std::str
 std::vector<CSGChainObject> read_chain(const json& input,
                                        std::map<std::string, std::shared_ptr<const PolySet>>& geometries,
                                        const std::function<bool()>& continue_loading,
-                                       const IpcPayloadResolver& resolve)
+                                       const IpcPayloadResolver& resolve,
+                                       const IpcGeometryResolver& decoded)
 {
   std::vector<CSGChainObject> output;
   for (const auto& item : input) {
@@ -96,17 +97,26 @@ std::vector<CSGChainObject> read_chain(const json& input,
     const auto path = item["geometry"].get<std::string>();
     auto geometry = geometries.find(path);
     if (geometry == geometries.end()) {
+      bool continue_to_placement = false;
+      // Already decoded while the worker was still evaluating the rest of the preview
+      // (feature 34), so there is nothing left to do for this leaf.
+      if (decoded) {
+        if (auto ready = decoded(path)) {
+          geometry = geometries.emplace(path, std::move(ready)).first;
+          continue_to_placement = true;
+        }
+      }
       // Same path either way: it is the name the worker gave the payload, and also the file
       // it would have written, so nothing about how products.json refers to leaves changes.
       std::unique_ptr<PolySet> imported;
-      if (resolve) {
+      if (!continue_to_placement && resolve) {
         if (const auto *payload = resolve(path)) {
           imported = import_ipc_geometry_buffer(payload->data(), payload->size(), path);
         }
-      } else {
+      } else if (!continue_to_placement) {
         imported = import_ipc_geometry(path);
       }
-      if (!imported) {
+      if (!continue_to_placement && !imported) {
         // Abort rather than emplacing a null PolySet, which renders as a silently missing
         // object. Name the leaf that failed: an empty viewport is otherwise indistinguishable
         // from a model that legitimately produced no geometry.
@@ -114,10 +124,12 @@ std::vector<CSGChainObject> read_chain(const json& input,
             "Could not read compute worker geometry '%1$s'; the preview is incomplete.", path);
         return {};
       }
-      if (item.contains("convexity")) {
-        imported->setConvexity(item["convexity"].get<int>());
+      if (!continue_to_placement) {
+        if (item.contains("convexity")) {
+          imported->setConvexity(item["convexity"].get<int>());
+        }
+        geometry = geometries.emplace(path, std::shared_ptr<const PolySet>(std::move(imported))).first;
       }
-      geometry = geometries.emplace(path, std::shared_ptr<const PolySet>(std::move(imported))).first;
     }
     Transform3d matrix = Transform3d::Identity();
     for (int row = 0; row < 4; ++row) {
@@ -137,15 +149,18 @@ std::vector<CSGChainObject> read_chain(const json& input,
 
 std::shared_ptr<CSGProducts> read_products(
   const json& input, std::map<std::string, std::shared_ptr<const PolySet>>& geometries,
-  const std::function<bool()>& continue_loading, const IpcPayloadResolver& resolve)
+  const std::function<bool()>& continue_loading, const IpcPayloadResolver& resolve,
+  const IpcGeometryResolver& decoded)
 {
   if (input.empty()) return {};
   auto output = std::make_shared<CSGProducts>();
   output->products.clear();
   for (const auto& item : input) {
     CSGProduct product;
-    product.intersections = read_chain(item["intersections"], geometries, continue_loading, resolve);
-    product.subtractions = read_chain(item["subtractions"], geometries, continue_loading, resolve);
+    product.intersections =
+      read_chain(item["intersections"], geometries, continue_loading, resolve, decoded);
+    product.subtractions =
+      read_chain(item["subtractions"], geometries, continue_loading, resolve, decoded);
     output->products.push_back(std::move(product));
   }
   return output;
@@ -194,7 +209,7 @@ bool CsgInfo::write_products(const std::string& filename) const
 }
 
 bool CsgInfo::read_products(const std::string& filename, const std::function<bool()>& continue_loading,
-                            const IpcPayloadResolver& resolve)
+                            const IpcPayloadResolver& resolve, const IpcGeometryResolver& decoded)
 {
   json input;
   // A truncated or absent products file is exactly what a crashed or half-flushed worker
@@ -222,9 +237,11 @@ bool CsgInfo::read_products(const std::string& filename, const std::function<boo
     return false;
   }
   std::map<std::string, std::shared_ptr<const PolySet>> geometries;
-  root_products = ::read_products(input["root"], geometries, continue_loading, resolve);
-  highlights_products = ::read_products(input["highlights"], geometries, continue_loading, resolve);
-  background_products = ::read_products(input["background"], geometries, continue_loading, resolve);
+  root_products = ::read_products(input["root"], geometries, continue_loading, resolve, decoded);
+  highlights_products =
+    ::read_products(input["highlights"], geometries, continue_loading, resolve, decoded);
+  background_products =
+    ::read_products(input["background"], geometries, continue_loading, resolve, decoded);
   for (const auto& node : input.value("nodes", json::array())) {
     source_nodes.push_back(
       {node["index"], node["parent"], node["name"], node["file"], node["line"], node["column"]});

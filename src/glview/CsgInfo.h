@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "Feature.h"
 #include "core/CSGNode.h"
 #include "io/ipc_channel.h"
 #include "io/ipc_geometry.h"
@@ -53,8 +54,11 @@ public:
   // `resolve`, when set, supplies payload bytes by name instead of reading them from disk --
   // the products themselves and every leaf they refer to. That is how a compute worker's
   // preview arrives now (see io/ipc_channel.h); an empty resolver reads files as before.
+  // `decoded`, when set, supplies leaf geometry that the receiving side already turned into a
+  // PolySet as it arrived over the channel (feature 34), so the work is not repeated here. A name
+  // it does not know falls through to `resolve`, and then to the filesystem.
   bool read_products(const std::string& filename, const std::function<bool()>& continue_loading = {},
-                     const IpcPayloadResolver& resolve = {});
+                     const IpcPayloadResolver& resolve = {}, const IpcGeometryResolver& decoded = {});
 
   // `products_file`, when set and when a compute worker is collecting payloads, makes each leaf
   // be sent as soon as its geometry is evaluated rather than after the whole walk finishes. The
@@ -72,7 +76,11 @@ public:
     collect_source_nodes(collect_source_nodes, root_node, -1);
     GeometryEvaluator geomevaluator(tree);
     CSGTreeEvaluator evaluator(tree, &geomevaluator);
-    if (!products_file.empty() && ipc_payload_sink::collecting()) {
+    // Gated on the feature as well as the sink: the worker is told which features are enabled on
+    // every request, so turning this on or off takes effect from the next preview and a preview
+    // already in flight keeps whatever it was dispatched with.
+    if (!products_file.empty() && ipc_payload_sink::collecting() &&
+        Feature::ExperimentalStreamingPreview.is_enabled()) {
       evaluator.setLeafCallback([this, &products_file](const std::shared_ptr<const PolySet>& ps) {
         // Deduplicated by PolySet identity, exactly as write_chain does, so a mesh shared by
         // several leaves is sent once and referenced many times.

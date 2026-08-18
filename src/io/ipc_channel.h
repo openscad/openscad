@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <memory>
 #include <ostream>
 #include <string>
 
@@ -50,6 +51,11 @@ std::string ipc_payload_name(std::string name);
 // installs one so readers that used to open a path read from the channel's messages instead;
 // an empty resolver means "read the filesystem", which is what every non-worker caller does.
 using IpcPayloadResolver = std::function<const std::string *(const std::string&)>;
+
+// Supplies a leaf that the receiving side already decoded as it arrived, so the decode is not
+// repeated when the products are read. Null for a name it has not decoded.
+class PolySet;
+using IpcGeometryResolver = std::function<std::shared_ptr<const PolySet>(const std::string&)>;
 
 // Worker side of the same idea. While a request is being served, the writers that would create
 // the worker's output files hand their bytes here instead, keyed by the path they would have

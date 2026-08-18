@@ -29,6 +29,43 @@ MODEL = "\n".join(
 ) + "\n"
 
 
+def leaf_order(worker, directory, features):
+    """Message order for one preview, as a list of 'payload' / 'metadata' / 'progress'."""
+    source = Path(directory) / "model.scad"
+    source.write_text(MODEL)
+    request = json.dumps({
+        "command": "preview",
+        "input": str(source),
+        "output": str(Path(directory) / "preview.csg"),
+        "normalizationLimit": 2000,
+        "features": features,
+    }) + "\n"
+    worker.stdin.write(request.encode())
+    worker.stdin.flush()
+
+    order = []
+    while True:
+        message = read_message(worker)
+        if message[0] == "payload":
+            # Only geometry counts. The metadata sidecars are written before evaluation even
+            # starts, so counting them would let this pass while every mesh still arrived at the
+            # end -- which is exactly how the first version of this test fooled itself.
+            order.append("payload" if message[1].endswith(".osig") else "metadata")
+            continue
+        if message[1].startswith("progress\t"):
+            order.append("progress")
+            continue
+        if message[1] in ("previewdone", "done", "error", "cancelled"):
+            assert message[1] == "previewdone", f"worker replied {message[1]}"
+            return order
+
+
+def positions(order):
+    assert "payload" in order, "the preview sent no geometry payloads at all"
+    assert "progress" in order, "the worker reported no progress; the model is too cheap"
+    return order.index("payload"), len(order) - 1 - order[::-1].index("progress")
+
+
 def main():
     worker = subprocess.Popen(
         [sys.argv[1], "--compute-worker"],
@@ -38,44 +75,24 @@ def main():
     )
     try:
         assert worker.stdout.readline().strip() == b"ready"
+
+        # Without the feature, the old behaviour must be intact: every leaf after the last
+        # progress report. This is what the flag has to be able to fall back to.
         with tempfile.TemporaryDirectory() as directory:
-            source = Path(directory) / "model.scad"
-            source.write_text(MODEL)
-            request = json.dumps({
-                "command": "preview",
-                "input": str(source),
-                "output": str(Path(directory) / "preview.csg"),
-                "normalizationLimit": 2000,
-            }) + "\n"
-            worker.stdin.write(request.encode())
-            worker.stdin.flush()
+            order = leaf_order(worker, directory, [])
+            first_payload, last_progress = positions(order)
+            assert first_payload > last_progress, (
+                "geometry streamed with the feature disabled; the flag is not gating anything "
+                f"(first payload at {first_payload}, last progress at {last_progress})"
+            )
 
-            # Record the order messages arrive in, not their contents.
-            order = []
-            while True:
-                message = read_message(worker)
-                if message[0] == "payload":
-                    # Only geometry counts. The metadata sidecars are written before evaluation
-                    # even starts, so counting them would let this pass while every mesh still
-                    # arrived at the end -- which is exactly how the first version of this test
-                    # fooled itself.
-                    order.append("payload" if message[1].endswith(".osig") else "metadata")
-                    continue
-                if message[1].startswith("progress\t"):
-                    order.append("progress")
-                    continue
-                if message[1] in ("previewdone", "done", "error", "cancelled"):
-                    assert message[1] == "previewdone", f"worker replied {message[1]}"
-                    break
-
-            assert "payload" in order, "the preview sent no geometry payloads at all"
-            assert "progress" in order, "the worker reported no progress; the model is too cheap"
-            first_payload = order.index("payload")
-            last_progress = len(order) - 1 - order[::-1].index("progress")
+        # With it, leaves interleave with the evaluation that produces them.
+        with tempfile.TemporaryDirectory() as directory:
+            order = leaf_order(worker, directory, ["streaming-preview"])
+            first_payload, last_progress = positions(order)
             assert first_payload < last_progress, (
                 "every geometry payload arrived after the worker's last progress report, so the "
-                "GUI phase "
-                "cannot start until the whole worker phase is done "
+                "GUI phase cannot start until the whole worker phase is done "
                 f"(first payload at {first_payload}, last progress at {last_progress}, "
                 f"{order.count('payload')} geometry payloads, {order.count('metadata')} metadata, "
                 f"{order.count('progress')} progress reports)"
