@@ -39,6 +39,8 @@ private slots:
   void checkF5DuringAnInFlightPreviewShowsTheEditedModel();
   void checkRepeatedEditPreviewCyclesDrawTheEditedModel();
   void checkCustomizerIsUsableAfterAnIsolatedRender();
+  void checkUntouchedCustomizerDoesNotOverrideEditedText();
+  void checkEditingAPlainTopLevelVariableTakesEffect();
   void checkRightClickAfterIsolatedPreviewDoesNotCrash();
   void checkF6UsesCommandLineDefinitions();
 #ifdef ENABLE_PYTHON

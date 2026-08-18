@@ -735,6 +735,64 @@ void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
   }
 }
 
+// The Customizer's policy is that once the user touches a value it wins until the document closes.
+// A value the user has NEVER touched must not win: editing the variable's default in the text has
+// to take effect on the first render, as it does in legacy mode. Isolated mode used to send the
+// widget's values unconditionally, so every edit rendered one step behind -- and F6 then exported
+// that stale mesh. Both halves are asserted here, and no isolation skip: legacy must agree.
+void TestMainWindow::checkUntouchedCustomizerDoesNotOverrideEditedText()
+{
+  restoreWindowInitialState();
+
+  // A Customizer value outlives a complete source replacement, so this uses a name no other test
+  // touches -- "size" would leak 70 into checkF6UsesCommandLineDefinitions, which sets size via -D.
+  window->activeEditor->setPlainText("outrank_size = 10; // [10:100]\ncube(outrank_size);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 10.0);
+
+  // An untouched Customizer must not override the edit: legacy renders 40 here, and isolated mode
+  // rendered 10 until this was fixed.
+  window->rootGeom.reset();
+  window->activeEditor->setPlainText("outrank_size = 40; // [10:100]\ncube(outrank_size);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 40.0);
+
+  // ...and the Customizer does, which is the escape hatch the user needs to be able to reach.
+  // Look the widget up now, not earlier: setParameters() rebuilds them whenever the source
+  // changes, so a pointer taken before the render above is dangling by this point.
+  window->rootGeom.reset();
+  auto *spinBox = window->activeEditor->parameterWidget->findChild<QDoubleSpinBox *>("doubleSpinBox");
+  QVERIFY(spinBox != nullptr);
+  spinBox->setValue(70);
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 70.0);
+}
+// A plain top-level variable with no customizer annotation at all. Every top-level assignment is a
+// Customizer parameter in OpenSCAD whether or not it carries a comment, so if the widget's values
+// are exported unconditionally this goes stale exactly like an annotated one -- with the Customizer
+// pane closed and never touched, which is how the user hit it.
+void TestMainWindow::checkEditingAPlainTopLevelVariableTakesEffect()
+{
+  // (no isolation skip: the point is to compare isolated and legacy)
+  restoreWindowInitialState();
+
+  // A name no other test has used: a Customizer value set under one name outlives a complete
+  // source replacement, so reusing "size" here would inherit the previous test's 70.
+  window->activeEditor->setPlainText("plain_width = 10;\ncube(plain_width);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 10.0);
+
+  window->rootGeom.reset();
+  window->activeEditor->setPlainText("plain_width = 40;\ncube(plain_width);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 40.0);
+}
+
 void TestMainWindow::checkCustomizerIsUsableAfterAnIsolatedRender()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();

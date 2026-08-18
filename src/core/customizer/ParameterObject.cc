@@ -658,6 +658,16 @@ ParameterSet ParameterObjects::exportValues(const std::string& setName)
   return output;
 }
 
+ParameterSet ParameterObjects::exportModifiedValues(const std::string& setName)
+{
+  ParameterSet output;
+  output.setName(setName);
+  for (const auto& parameter : *this) {
+    if (parameter->isModified()) output[parameter->name()] = parameter->exportValue();
+  }
+  return output;
+}
+
 void ParameterObjects::apply(SourceFile *sourceFile) const
 {
   std::map<std::string, ParameterObject *> namedParameters;
