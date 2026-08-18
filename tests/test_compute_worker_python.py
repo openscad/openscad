@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ipc_geometry_payload import decode_ipc_geometry  # noqa: E402
-from ipc_worker_channel import collect  # noqa: E402
+from ipc_worker_channel import collect, payload_name  # noqa: E402
 
 
 with tempfile.TemporaryDirectory() as directory:
@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory() as directory:
         worker.stdin.flush()
         # The result comes back over the response channel rather than as a file (feature 32).
         _, payloads = collect(worker, "done")
-        vertices = decode_ipc_geometry(payloads[str(result)]).vertices
+        vertices = decode_ipc_geometry(payloads[payload_name(result)]).vertices
         assert max(vertex[0] for vertex in vertices) == 7
     finally:
         if worker.poll() is None:

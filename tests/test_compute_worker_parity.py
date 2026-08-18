@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ipc_geometry_payload import decode_ipc_geometry, write_off  # noqa: E402
-from ipc_worker_channel import read_message  # noqa: E402
+from ipc_worker_channel import payload_name, read_message  # noqa: E402
 
 MODEL = """
 $fn = 24;
@@ -113,7 +113,7 @@ def main():
             # The handback never reaches the filesystem now; it arrives named for the path the
             # request asked for (feature 32).
             assert not handback.exists(), handback
-            payload = decode_ipc_geometry(payloads[str(handback)])
+            payload = decode_ipc_geometry(payloads[payload_name(handback)])
             assert payload.vertices and payload.polygons
 
             # What the GUI viewport holds in isolated mode, expressed as something

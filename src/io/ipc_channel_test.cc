@@ -149,3 +149,23 @@ TEST_CASE("ipc channel rejects an implausible length prefix instead of allocatin
   CHECK_FALSE(reader.next(message));
   CHECK(reader.failed());
 }
+
+TEST_CASE("ipc payload names ignore path separator spelling", "[ipc-channel]")
+{
+  // The two ends spell the same path differently on Windows: the geometry payload is named
+  // through fs::path::generic_string() (openscad.cc), giving forward slashes, while the metadata
+  // sidecars are plain string concatenations carrying whatever the caller sent -- backslashes,
+  // from a Qt or Python path. The receiving side then looked up one spelling and missed the
+  // other, so a render's parameters and dependencies silently never arrived. CI caught it as
+  // three failing tests at `f59f7818f`; in the GUI it would have been quietly missing metadata.
+  //
+  // These names are pure identifiers -- nothing ever opens them -- so folding the separators
+  // unconditionally is safe, and it is done on both the writing and the reading side so the two
+  // cannot drift apart again. The only names this could collide are two that differ solely in
+  // '\' versus '/' within one directory, which cannot arise from a single worker request.
+  CHECK(ipc_payload_name(R"(D:\a\tmp\result.osig)") == "D:/a/tmp/result.osig");
+  CHECK(ipc_payload_name("D:/a/tmp/result.osig") == "D:/a/tmp/result.osig");
+  CHECK(ipc_payload_name(R"(D:\a/tmp\mixed.osig)") == "D:/a/tmp/mixed.osig");
+  CHECK(ipc_payload_name("/tmp/posix/result.osig") == "/tmp/posix/result.osig");
+  CHECK(ipc_payload_name("").empty());
+}

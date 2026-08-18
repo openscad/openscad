@@ -60,3 +60,14 @@ def collect(worker, final):
         else:
             payloads[message[1]] = message[2]
     return lines, payloads
+
+
+def payload_name(name):
+    """Canonical form of a payload name, matching ipc_payload_name() in src/io/ipc_channel.cc.
+
+    The worker names payloads after the file it would have written, but the two ends reach that
+    name by different routes and spell separators differently on Windows. Both sides fold to '/'
+    so a lookup cannot miss; tests must use this on the key they look up, since a Python path on
+    Windows renders with backslashes.
+    """
+    return str(name).replace("\\", "/")

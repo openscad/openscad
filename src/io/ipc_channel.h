@@ -39,6 +39,13 @@ struct IpcMessage {
 
 std::string frame_ipc_message(const std::string& name, const std::string& payload);
 
+// Canonical form of a payload name. Payload names are identifiers, never opened, and the two ends
+// reach them by different routes that spell separators differently on Windows -- the geometry name
+// arrives via fs::path::generic_string() with forward slashes, the metadata sidecars via plain
+// concatenation of whatever the caller sent. Folding both to '/' here, and using this on the
+// writing and the reading side alike, is what stops them drifting apart.
+std::string ipc_payload_name(std::string name);
+
 // Resolves a payload name to its bytes, or null if there is no such payload. The receiving side
 // installs one so readers that used to open a path read from the channel's messages instead;
 // an empty resolver means "read the filesystem", which is what every non-worker caller does.

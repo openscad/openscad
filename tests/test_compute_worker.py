@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ipc_geometry_payload import decode_ipc_geometry  # noqa: E402
-from ipc_worker_channel import collect, read_message  # noqa: E402
+from ipc_worker_channel import collect, payload_name, read_message  # noqa: E402
 
 # Payloads returned by the most recent wait_for(). The worker no longer writes its results to
 # files (feature 32), so what used to be read back off disk is looked up here by the path the
@@ -91,7 +91,7 @@ def main():
             )
             responses = wait_for(worker, "done")
             assert any(response.startswith("progress\t") for response in responses)
-            payload = decode_ipc_geometry(PAYLOADS[str(result)])
+            payload = decode_ipc_geometry(PAYLOADS[payload_name(result)])
             vertices, polygons = payload.vertices, payload.polygons
             assert (len(vertices), len(polygons)) == (8, 6)
             assert min(vertex[0] for vertex in vertices) == 1.2345678901234567
@@ -108,7 +108,7 @@ def main():
             source.write_text("translate([$t, 0, 0]) cube(1);\n")
             send(worker, f"render\t{source}\t{result}\t\tworker\t0\t0.5\n")
             wait_for(worker, "done")
-            vertices = decode_ipc_geometry(PAYLOADS[str(result)]).vertices
+            vertices = decode_ipc_geometry(PAYLOADS[payload_name(result)]).vertices
             assert min(vertex[0] for vertex in vertices) == 0.5
 
             source.write_text(
@@ -120,7 +120,7 @@ def main():
                 "\t1\t2\t3\t10\t20\t30\t400\t50\n",
             )
             wait_for(worker, "done")
-            vertices = decode_ipc_geometry(PAYLOADS[str(result)]).vertices
+            vertices = decode_ipc_geometry(PAYLOADS[payload_name(result)]).vertices
             assert min(vertex[0] for vertex in vertices) == 20
 
             parameters = Path(directory) / "parameters.json"
@@ -135,9 +135,9 @@ def main():
             source.write_text("size = 1; // [1:10]\ncube(size);\n")
             send(worker, f"render\t{source}\t{result}\t{parameters}\tworker\n")
             wait_for(worker, "done")
-            vertices = decode_ipc_geometry(PAYLOADS[str(result)]).vertices
+            vertices = decode_ipc_geometry(PAYLOADS[payload_name(result)]).vertices
             assert max(vertex[0] for vertex in vertices) == 7
-            metadata = json.loads(PAYLOADS[f"{result}.parameters.json"].decode())
+            metadata = json.loads(PAYLOADS[payload_name(f"{result}.parameters.json")].decode())
             assert metadata[0]["name"] == "size"
             assert metadata[0]["type"] == "number"
             assert metadata[0]["max"] == 10
@@ -148,8 +148,8 @@ def main():
             source.write_text("#translate([1, 0, 0]) cube(1);\n")
             send(worker, f"preview\t{source}\t{preview}\n")
             wait_for(worker, "previewdone")
-            assert "multmatrix" in PAYLOADS[str(preview)].decode()
-            products = json.loads(PAYLOADS[f"{preview}.products.json"].decode())
+            assert "multmatrix" in PAYLOADS[payload_name(preview)].decode()
+            products = json.loads(PAYLOADS[payload_name(f"{preview}.products.json")].decode())
             assert len(products["root"]) == 1
             assert any(
                 node["name"].startswith("cube") and Path(node["file"]).resolve() == source.resolve()
@@ -158,8 +158,8 @@ def main():
             assert len(products["root"][0]["intersections"]) == 1
             assert len(products["highlights"]) == 1
             geometry = products["root"][0]["intersections"][0]["geometry"]
-            assert geometry in PAYLOADS, sorted(PAYLOADS)
-            assert decode_ipc_geometry(PAYLOADS[geometry]).vertices
+            assert payload_name(geometry) in PAYLOADS, sorted(PAYLOADS)
+            assert decode_ipc_geometry(PAYLOADS[payload_name(geometry)]).vertices
 
             document = Path(directory) / "document"
             document.mkdir()
@@ -175,7 +175,7 @@ def main():
                 }
                 send(worker, json.dumps(request) + "\n")
                 wait_for(worker, "previewdone")
-                dependencies = json.loads(PAYLOADS[f"{preview}.dependencies.json"].decode())
+                dependencies = json.loads(PAYLOADS[payload_name(f"{preview}.dependencies.json")].decode())
                 # Compared as paths, not strings: on Windows the worker and the test can spell
                 # the same file "C:/dir/part.scad" or "C:\\dir\\part.scad" depending on which
                 # Python is running the suite, and both are correct.
@@ -195,7 +195,7 @@ def main():
             request["output"] = str(imported_result)
             send(worker, json.dumps(request) + "\n")
             wait_for(worker, "done")
-            payload = decode_ipc_geometry(PAYLOADS[str(imported_result)])
+            payload = decode_ipc_geometry(PAYLOADS[payload_name(imported_result)])
             vertices, polygons = payload.vertices, payload.polygons
             assert (len(vertices), len(polygons)) == (3, 1)
 
@@ -204,13 +204,13 @@ def main():
             request["output"] = str(result)
             send(worker, json.dumps(request) + "\n")
             wait_for(worker, "done")
-            assert len(decode_ipc_geometry(PAYLOADS[str(result)]).polygons) > 10
+            assert len(decode_ipc_geometry(PAYLOADS[payload_name(result)]).polygons) > 10
 
             source.write_text("translate([1, 2, 3].zyx) cube(1);\n")
             request["features"] = ["vector-swizzle"]
             send(worker, json.dumps(request) + "\n")
             wait_for(worker, "done")
-            vertices = decode_ipc_geometry(PAYLOADS[str(result)]).vertices
+            vertices = decode_ipc_geometry(PAYLOADS[payload_name(result)]).vertices
             assert min(vertex[0] for vertex in vertices) == 3
 
             send(worker, "quit\n")

@@ -1,5 +1,6 @@
 #include "io/ipc_channel.h"
 
+#include <algorithm>
 #include <cstring>
 #include <sstream>
 #include <utility>
@@ -37,6 +38,12 @@ std::string frame_ipc_message(const std::string& name, const std::string& payloa
   appendSize(framed, payload.size());
   framed += payload;
   return framed;
+}
+
+std::string ipc_payload_name(std::string name)
+{
+  std::replace(name.begin(), name.end(), '\\', '/');
+  return name;
 }
 
 void IpcMessageReader::append(const char *data, std::size_t size)
@@ -113,8 +120,9 @@ void end()
   active = false;
 }
 
-std::ostream& open(const std::string& name)
+std::ostream& open(const std::string& raw_name)
 {
+  const auto name = ipc_payload_name(raw_name);
   for (auto& entry : payloads) {
     if (entry.first == name) {
       // Reopening a name replaces it, matching what opening a file with trunc would do.

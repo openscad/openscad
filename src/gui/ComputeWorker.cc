@@ -320,7 +320,7 @@ void ComputeWorker::processOutput()
       if (this->payloadRemaining == 0) {
         IpcMessage message;
         while (this->payloadReader.next(message)) {
-          this->pendingPayloads[message.name] = std::move(message.payload);
+          this->pendingPayloads[ipc_payload_name(message.name)] = std::move(message.payload);
         }
         if (this->payloadReader.failed()) {
           LOG(message_group::Error, "Compute worker sent a malformed payload.");
@@ -378,8 +378,10 @@ void ComputeWorker::processOutput()
       // accumulated belongs to this one. Taken by move so a failed request cannot leave its
       // payloads behind to be misread as the next one's.
       const auto payloads = std::exchange(this->pendingPayloads, {});
+      // Normalised on lookup exactly as the sink normalises on write, so the two ends agree
+      // regardless of which spelling of the path each of them was handed.
       const IpcPayloadResolver resolve = [&payloads](const std::string& name) -> const std::string * {
-        const auto found = payloads.find(name);
+        const auto found = payloads.find(ipc_payload_name(name));
         return found == payloads.end() ? nullptr : &found->second;
       };
 
