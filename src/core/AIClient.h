@@ -15,11 +15,17 @@ struct AIToolCall {
   std::string arguments;
 };
 
+struct AIImageAttachment {
+  std::string mime_type;    // e.g. "image/png"
+  std::string base64_data;  // raw base64 string
+};
+
 struct AIChatMessage {
   std::string role;
   std::string content;
   std::string tool_call_id;
   std::vector<AIToolCall> tool_calls;
+  std::vector<AIImageAttachment> images;
 };
 
 struct AIProfileConfig {

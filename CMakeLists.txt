@@ -1362,6 +1362,7 @@ set(GUI_SOURCES
   src/gui/ai/AIDock.cc
   src/gui/ai/ChatWidget.cc
   src/gui/ai/ChatInputEdit.cc
+  src/gui/ai/ViewportGrabber.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
@@ -1580,7 +1581,6 @@ file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
   "src/io/*_test.cc"
-  "src/glview/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
