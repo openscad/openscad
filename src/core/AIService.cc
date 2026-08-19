@@ -8,11 +8,6 @@
 #include "json/json.hpp"
 #include <fstream>
 #include <cstdlib>
-#include <future>
-#include <QApplication>
-#include "gui/MainWindow.h"
-#include "gui/OpenSCADApp.h"
-#include "gui/ai/ChatWidget.h"
 
 static std::string getAISettingsPath()
 {
@@ -63,6 +58,15 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   auto& profile = profiles[active_profile_name];
 
   config.endpoint = profile.value("endpoint", "");
+  if (config.endpoint.empty()) {
+    error_msg = "API endpoint is empty. Please configure a valid API URL in Preferences -> AI tab.";
+    return false;
+  }
+  if (config.endpoint.rfind("http://", 0) != 0 && config.endpoint.rfind("https://", 0) != 0) {
+    error_msg =
+      "Invalid API endpoint: '" + config.endpoint + "'. Must start with 'http://' or 'https://'";
+    return false;
+  }
   config.apiKey = profile.value("apiKey", "");
 
   if (profile.contains("params") && profile["params"].is_object()) {
@@ -77,128 +81,13 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   return true;
 }
 
-static std::string executeToolOnMainThread(const std::string& name, const std::string& arguments_json)
-{
-  auto promise = std::make_shared<std::promise<std::string>>();
-  auto future = promise->get_future();
-
-  QMetaObject::invokeMethod(
-    qApp,
-    [promise, name, arguments_json]() {
-      try {
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-
-        std::string result_val;
-
-        if (name == "get_editor_code") {
-          if (mw && mw->activeEditor) {
-            result_val = mw->activeEditor->toPlainText().toStdString();
-          } else {
-            result_val = "Error: No active editor found.";
-          }
-        } else if (name == "set_editor_code") {
-          auto args = nlohmann::json::parse(arguments_json);
-          if (!args.contains("code")) {
-            result_val = "Error: Missing required argument 'code'.";
-            promise->set_value(result_val);
-            return;
-          }
-          std::string code = args["code"].get<std::string>();
-          ChatWidget *chatWidget = nullptr;
-          if (mw) {
-            chatWidget = mw->findChild<ChatWidget *>();
-          }
-          if (chatWidget) {
-            chatWidget->proposeCodeChange(code);
-            result_val =
-              "Success: Code change proposed to the user for review. The user will review and choose "
-              "whether to apply it.";
-          } else {
-            if (mw && mw->activeEditor) {
-              mw->activeEditor->setText(QString::fromStdString(code));
-              result_val = "Success: Code set in the editor.";
-            } else {
-              result_val = "Error: No active editor found.";
-            }
-          }
-        } else if (name == "trigger_preview") {
-          ChatWidget *chatWidget = nullptr;
-          if (mw) {
-            chatWidget = mw->findChild<ChatWidget *>();
-          }
-          if (chatWidget && chatWidget->hasPendingCodeChanges()) {
-            result_val = "Info: Preview postponed because code changes are pending user review.";
-          } else {
-            if (mw) {
-              mw->actionRenderPreview();
-              result_val = "Success: Preview triggered.";
-            } else {
-              result_val = "Error: No active MainWindow found.";
-            }
-          }
-        } else {
-          result_val = "Error: Unknown tool name '" + name + "'.";
-        }
-
-        promise->set_value(result_val);
-
-        // Log the tool execution in the ChatWidget
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, result_val);
-        }
-
-      } catch (const std::exception& e) {
-        std::string err = std::string("Error parsing/executing tool: ") + e.what();
-        promise->set_value(err);
-
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, err);
-        }
-      } catch (...) {
-        std::string err = "Error: Unknown exception occurred during tool execution.";
-        promise->set_value(err);
-
-        MainWindow *mw = nullptr;
-        for (auto *win : scadApp->windowManager.getWindows()) {
-          mw = win;
-          break;
-        }
-        ChatWidget *chatWidget = nullptr;
-        if (mw) {
-          chatWidget = mw->findChild<ChatWidget *>();
-        }
-        if (chatWidget) {
-          chatWidget->logToolExecution(name, err);
-        }
-      }
-    },
-    Qt::QueuedConnection);
-
-  return future.get();
-}
-
 class AIService::Impl
 {
 public:
   std::unique_ptr<HTTPClient> http_client;
   std::unique_ptr<AIClient> ai_client;
+  ToolExecutor tool_executor = nullptr;
+  HistoryDrainCallback history_drain_callback = nullptr;
 
   Impl()
   {
@@ -222,8 +111,19 @@ AIService::~AIService() = default;
 AIService::AIService(AIService&&) noexcept = default;
 AIService& AIService::operator=(AIService&&) noexcept = default;
 
+void AIService::registerToolExecutor(ToolExecutor executor)
+{
+  impl->tool_executor = std::move(executor);
+}
+
+void AIService::registerHistoryDrainCallback(HistoryDrainCallback callback)
+{
+  impl->history_drain_callback = std::move(callback);
+}
+
 void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCallback on_chunk,
-                                     ErrorCallback on_error, CompleteCallback on_complete)
+                                     ErrorCallback on_error, CompleteCallback on_complete,
+                                     bool interactiveMode, int current_auto_turn)
 {
   AIProfileConfig config;
   std::string error_msg;
@@ -232,6 +132,13 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       on_error(error_msg);
     }
     return;
+  }
+
+  int max_auto_turns = 5;
+  if (config.parameters.contains("max_auto_turns") &&
+      config.parameters["max_auto_turns"].is_number_integer()) {
+    max_auto_turns = config.parameters["max_auto_turns"].get<int>();
+    if (max_auto_turns < 1) max_auto_turns = 1;
   }
 
   std::vector<AIChatMessage> ai_history;
@@ -250,12 +157,12 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     "`cube(10);`) MUST end with a semicolon. Semicolons are NOT used after module definitions `module "
     "name() { ... }` or after blocks `{ ... }`.\n"
     "3. **Tool Workflow**:\n"
-    "   - YOU MUST USE `set_editor_code` to propose any code changes so they are set for user review.\n"
+    "   - YOU MUST USE `set_editor_code` to apply code changes. Behaviour differs by mode (see below).\n"
     "   - You can output code blocks in markdown format in the chat for explanation, but you MUST also "
-    "call the `set_editor_code` tool so the changes are set for review and can be applied "
-    "automatically.\n"
+    "call `set_editor_code` to update the script.\n"
     "   - Use `get_editor_code()` if you need to see the latest script state.\n"
-    "   - Use `trigger_preview()` once after setting the code to validate the result.\n"
+    "   - Use `trigger_preview()` after setting code to validate compilation and check for errors.\n"
+    "   - Use `get_viewport()` and `set_camera(...)` to inspect or adjust 3D view camera angles.\n"
     "4. **Response and Engagement**: Explain the reasoning behind your proposed code changes. Output "
     "standard text to explain your thoughts and keep the user engaged while proposing code changes via "
     "tools.\n"
@@ -266,19 +173,93 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     sys_prompt = config.parameters["system_prompt"].get<std::string>();
   }
 
+  // Append mode-specific instructions so the model understands its operating context
+  if (interactiveMode) {
+    sys_prompt +=
+      "\n\n### Current Operating Mode: INTERACTIVE REVIEW\n"
+      "You are in interactive review mode. Follow these rules strictly:\n"
+      "- Read the script with `get_editor_code()` if needed, then call `set_editor_code` ONCE with "
+      "your proposed changes.\n"
+      "- After calling `set_editor_code`, STOP. Do NOT call `trigger_preview` yourself. "
+      "The user will review your diff and the preview will fire automatically upon acceptance.\n"
+      "- Do NOT loop or call further tools after proposing code.";
+  } else {
+    sys_prompt +=
+      "\n\n### Current Operating Mode: AUTONOMOUS AGENTIC\n"
+      "You are in autonomous mode. Follow these rules:\n"
+      "- Apply code changes directly with `set_editor_code`, then immediately call `trigger_preview` "
+      "to validate the result.\n"
+      "- If `trigger_preview` reports errors, read the error messages and call `set_editor_code` again "
+      "with a fix. Repeat until the code compiles cleanly or you exhaust your turn limit.";
+  }
+
+  int context_limit = 10;
+  if (config.parameters.contains("context_limit") &&
+      config.parameters["context_limit"].is_number_integer()) {
+    context_limit = config.parameters["context_limit"].get<int>();
+    if (context_limit < 1) context_limit = 1;
+  }
+
   bool already_has_system = false;
   if (!history.empty() && history[0].role == "system") {
     already_has_system = true;
   }
   if (!already_has_system) {
-    ai_history.push_back({"system", sys_prompt});
+    // Append hidden OpenSCAD reference documentation to the system prompt
+    std::string ref_doc =
+      "\n\n### OpenSCAD Quick Reference\n"
+      "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
+      "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
+      "font, halign, valign)\n"
+      "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
+      "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
+      "**Boolean Ops**: union(), difference(), intersection()\n"
+      "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
+      "rotate_extrude(angle, $fn)\n"
+      "**Modules**: module name(params) { body } -- NO semicolon after definition. "
+      "Call with: name(args);\n"
+      "**Functions**: function name(params) = expression;\n"
+      "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
+      "assert(cond, msg), echo(values)\n"
+      "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
+      "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
+      "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
+      "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
+      "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
+      "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
+      "import(\"file.stl\")\n\n"
+      "### Available Tools\n"
+      "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
+      "- **set_editor_code({\"code\": \"...\"})**: Applies code changes directly to active editor.\n"
+      "- **trigger_preview()**: Renders current editor code and returns compile errors/warnings.\n"
+      "- **get_viewport()**: Returns 3D viewport camera parameters (vpt, vpr, vpd, vpf, projection).\n"
+      "- **set_camera({\"vpt\": [x,y,z], \"vpr\": [x,y,z], ...})**: Sets 3D view camera vectors.";
+    ai_history.push_back({"system", sys_prompt + ref_doc});
   }
 
-  for (const auto& msg : history) {
+  // Apply sliding window: keep last context_limit turn pairs (a turn starts with a "user" message)
+  size_t window_start = 0;
+  {
+    std::vector<size_t> turn_starts;
+    for (size_t i = 0; i < history.size(); ++i) {
+      if (history[i].role == "user") {
+        turn_starts.push_back(i);
+      }
+    }
+    if (static_cast<int>(turn_starts.size()) > context_limit) {
+      window_start = turn_starts[turn_starts.size() - context_limit];
+    }
+  }
+
+  for (size_t i = window_start; i < history.size(); ++i) {
+    const auto& msg = history[i];
     AIChatMessage am;
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    for (const auto& img : msg.images) {
+      am.images.push_back({img.mime_type, img.base64_data});
+    }
     if (!msg.tool_calls.empty()) {
       try {
         auto tcs_json = nlohmann::json::parse(msg.tool_calls);
@@ -307,8 +288,14 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     ai_history.push_back(am);
   }
 
-  auto on_complete_wrapper = [this, config, &history, on_chunk, on_error, on_complete,
-                              sys_prompt](const std::vector<AIToolCall>& tool_calls) {
+  // In interactive mode the model gets at most 2 LLM calls: one to call tools
+  // (e.g. get_editor_code then set_editor_code) and one final response after
+  // seeing those results. We enforce this by capping the effective turn limit.
+  const int effective_max_turns = interactiveMode ? std::min(max_auto_turns, 2) : max_auto_turns;
+
+  auto on_complete_wrapper = [this, config, &history, on_chunk, on_error, on_complete, current_auto_turn,
+                              effective_max_turns,
+                              interactiveMode](const std::vector<AIToolCall>& tool_calls) {
     if (tool_calls.empty()) {
       if (on_complete) {
         on_complete();
@@ -334,7 +321,12 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     history.push_back(assistant_msg);
 
     for (const auto& tc : tool_calls) {
-      std::string result = executeToolOnMainThread(tc.name, tc.arguments);
+      std::string result;
+      if (impl->tool_executor) {
+        result = impl->tool_executor(tc.name, tc.arguments);
+      } else {
+        result = "Error: No tool executor registered.";
+      }
       ChatMessage tool_msg;
       tool_msg.role = "tool";
       tool_msg.content = result;
@@ -342,7 +334,22 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       history.push_back(tool_msg);
     }
 
-    chatCompletionStream(history, on_chunk, on_error, on_complete);
+    // Allow the UI layer to inject additional context messages (e.g. a
+    // viewport snapshot captured after trigger_preview) into history before
+    // the next recursive LLM call.
+    if (impl->history_drain_callback) {
+      impl->history_drain_callback(history);
+    }
+
+    if (current_auto_turn + 1 >= effective_max_turns) {
+      if (on_complete) {
+        on_complete();
+      }
+      return;
+    }
+
+    chatCompletionStream(history, on_chunk, on_error, on_complete, interactiveMode,
+                         current_auto_turn + 1);
   };
 
   impl->ai_client->sendChatCompletionStream(config, ai_history, on_chunk, on_error, on_complete_wrapper);
@@ -396,7 +403,37 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     already_has_system = true;
   }
   if (!already_has_system) {
-    ai_history.push_back({"system", sys_prompt});
+    // Append hidden OpenSCAD reference documentation to the system prompt
+    std::string ref_doc =
+      "\n\n### OpenSCAD Quick Reference\n"
+      "**3D Primitives**: cube([x,y,z], center), sphere(r, $fn), cylinder(h, r1, r2, center, $fn)\n"
+      "**2D Primitives**: circle(r, $fn), square([x,y], center), polygon(points, paths), text(t, size, "
+      "font, halign, valign)\n"
+      "**Transforms**: translate([x,y,z]), rotate([x,y,z]), scale([x,y,z]), mirror([x,y,z]), "
+      "multmatrix(m), color(c, alpha), offset(r|delta, chamfer), hull(), minkowski()\n"
+      "**Boolean Ops**: union(), difference(), intersection()\n"
+      "**Extrusion**: linear_extrude(height, center, twist, slices, scale, $fn), "
+      "rotate_extrude(angle, $fn)\n"
+      "**Modules**: module name(params) { body } -- NO semicolon after definition. "
+      "Call with: name(args);\n"
+      "**Functions**: function name(params) = expression;\n"
+      "**Control**: for(i=[start:step:end]), if(cond), let(assignments), each, "
+      "assert(cond, msg), echo(values)\n"
+      "**Math**: sin, cos, tan, asin, acos, atan, atan2, abs, ceil, floor, round, "
+      "sqrt, pow, exp, ln, log, min, max, norm, cross\n"
+      "**List Ops**: concat, len, lookup, str, chr, ord, search, flatten\n"
+      "**Special Vars**: $fn (fragments), $fa (fragment angle), $fs (fragment size), "
+      "$t (animation), $vpr/$vpt/$vpd/$vpf (viewport)\n"
+      "**Import/Use**: use <file.scad> (functions/modules only), include <file.scad> (full), "
+      "import(\"file.stl\")\n\n"
+      "### Available Tools\n"
+      "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
+      "- **set_editor_code({\"code\": \"...\"})**:  Proposes code changes for user review in a "
+      "side-by-side diff dialog. "
+      "Always use this instead of pasting code in chat.\n"
+      "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
+      "Automatically postponed if code changes are pending review.";
+    ai_history.push_back({"system", sys_prompt + ref_doc});
   }
 
   for (const auto& msg : history) {
@@ -404,6 +441,9 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    for (const auto& img : msg.images) {
+      am.images.push_back({img.mime_type, img.base64_data});
+    }
     if (!msg.tool_calls.empty()) {
       try {
         auto tcs_json = nlohmann::json::parse(msg.tool_calls);
@@ -463,6 +503,46 @@ void AIService::cancelPendingRequests()
   impl->ai_client->cancelPendingRequests();
 }
 
+int AIService::getPayloadLimit() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("payload_limit") &&
+        config.parameters["payload_limit"].is_number_integer()) {
+      return config.parameters["payload_limit"].get<int>();
+    }
+  }
+  return 50000;
+}
+
+bool AIService::getAutoAttachViewport() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("auto_attach_viewport") &&
+        config.parameters["auto_attach_viewport"].is_boolean()) {
+      return config.parameters["auto_attach_viewport"].get<bool>();
+    }
+  }
+  return false;
+}
+
+int AIService::getMaxAutoTurns() const
+{
+  AIProfileConfig config;
+  std::string error_msg;
+  if (loadActiveProfile(config, error_msg)) {
+    if (config.parameters.contains("max_auto_turns") &&
+        config.parameters["max_auto_turns"].is_number_integer()) {
+      int val = config.parameters["max_auto_turns"].get<int>();
+      if (val >= 1) return val;
+    }
+  }
+  return 5;
+}
+
 #else  // __EMSCRIPTEN__
 
 class AIService::Impl
@@ -478,7 +558,7 @@ AIService::AIService(AIService&&) noexcept = default;
 AIService& AIService::operator=(AIService&&) noexcept = default;
 
 void AIService::chatCompletionStream(std::vector<ChatMessage>&, ChunkCallback, ErrorCallback on_error,
-                                     CompleteCallback)
+                                     CompleteCallback, bool, int)
 {
   if (on_error) {
     on_error("AI service is not supported on WebAssembly.");
@@ -499,6 +579,21 @@ std::string AIService::getDefaultPrompt() const
 
 void AIService::cancelPendingRequests()
 {
+}
+
+int AIService::getPayloadLimit() const
+{
+  return 50000;
+}
+
+bool AIService::getAutoAttachViewport() const
+{
+  return false;
+}
+
+int AIService::getMaxAutoTurns() const
+{
+  return 5;
 }
 
 #endif  // __EMSCRIPTEN__

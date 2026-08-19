@@ -2,10 +2,11 @@
 .venv
 .uuid
 .cache/
-.vs/
-.vscode/
+/.vs/
+/.vscode/
+/.idea/
+/.zed/
 *.code-workspace
-.idea/
 .clangd/
 /*.scad
 **/out*.*
