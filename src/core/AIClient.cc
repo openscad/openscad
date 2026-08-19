@@ -252,6 +252,62 @@ nlohmann::json getOpenSCADTools()
   trigger_preview["function"] = tp_fn;
   tools.push_back(trigger_preview);
 
+  nlohmann::json get_viewport = nlohmann::json::object();
+  get_viewport["type"] = "function";
+  nlohmann::json gv_fn = nlohmann::json::object();
+  gv_fn["name"] = "get_viewport";
+  gv_fn["description"] =
+    "Retrieve the current 3D viewport camera parameters (vpt, vpr, vpd, vpf, projection).";
+  nlohmann::json gv_params = nlohmann::json::object();
+  gv_params["type"] = "object";
+  gv_params["properties"] = nlohmann::json::object();
+  gv_fn["parameters"] = gv_params;
+  get_viewport["function"] = gv_fn;
+  tools.push_back(get_viewport);
+
+  nlohmann::json set_camera = nlohmann::json::object();
+  set_camera["type"] = "function";
+  nlohmann::json sc_fn = nlohmann::json::object();
+  sc_fn["name"] = "set_camera";
+  sc_fn["description"] =
+    "Set the 3D viewport camera translation (vpt), rotation (vpr), distance (vpd), field of view (vpf), "
+    "or projection mode.";
+  nlohmann::json sc_params = nlohmann::json::object();
+  sc_params["type"] = "object";
+  nlohmann::json sc_props = nlohmann::json::object();
+
+  nlohmann::json vpt_arr = nlohmann::json::object();
+  vpt_arr["type"] = "array";
+  vpt_arr["description"] = "Translation vector [x, y, z] (vpt).";
+  vpt_arr["items"] = nlohmann::json::object({{"type", "number"}});
+  sc_props["vpt"] = vpt_arr;
+
+  nlohmann::json vpr_arr = nlohmann::json::object();
+  vpr_arr["type"] = "array";
+  vpr_arr["description"] = "Rotation angles in degrees [x, y, z] (vpr).";
+  vpr_arr["items"] = nlohmann::json::object({{"type", "number"}});
+  sc_props["vpr"] = vpr_arr;
+
+  nlohmann::json vpd_num = nlohmann::json::object();
+  vpd_num["type"] = "number";
+  vpd_num["description"] = "Camera distance (vpd).";
+  sc_props["vpd"] = vpd_num;
+
+  nlohmann::json vpf_num = nlohmann::json::object();
+  vpf_num["type"] = "number";
+  vpf_num["description"] = "Field of view angle (vpf).";
+  sc_props["vpf"] = vpf_num;
+
+  nlohmann::json proj_str = nlohmann::json::object();
+  proj_str["type"] = "string";
+  proj_str["description"] = "Projection mode: 'ortho' / 'orthogonal' or 'perspective'.";
+  sc_props["projection"] = proj_str;
+
+  sc_params["properties"] = sc_props;
+  sc_fn["parameters"] = sc_params;
+  set_camera["function"] = sc_fn;
+  tools.push_back(set_camera);
+
   return tools;
 }
 
@@ -267,7 +323,25 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
   for (const auto& msg : history) {
     nlohmann::json m = nlohmann::json::object();
     m["role"] = msg.role;
-    if (!msg.content.empty() || msg.tool_calls.empty()) {
+    if (!msg.images.empty()) {
+      nlohmann::json content_arr = nlohmann::json::array();
+      if (!msg.content.empty()) {
+        nlohmann::json text_obj = nlohmann::json::object();
+        text_obj["type"] = "text";
+        text_obj["text"] = msg.content;
+        content_arr.push_back(text_obj);
+      }
+      for (const auto& img : msg.images) {
+        nlohmann::json img_obj = nlohmann::json::object();
+        img_obj["type"] = "image_url";
+        nlohmann::json url_obj = nlohmann::json::object();
+        url_obj["url"] =
+          "data:" + (img.mime_type.empty() ? "image/png" : img.mime_type) + ";base64," + img.base64_data;
+        img_obj["image_url"] = url_obj;
+        content_arr.push_back(img_obj);
+      }
+      m["content"] = content_arr;
+    } else if (!msg.content.empty() || msg.tool_calls.empty()) {
       m["content"] = msg.content;
     } else {
       m["content"] = nullptr;
@@ -293,11 +367,14 @@ void AIClient::sendChatCompletion(const AIProfileConfig& config,
   }
   payload["messages"] = messages;
   payload["tools"] = getOpenSCADTools();
+  payload["tool_choice"] = "auto";
 
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools" ||
+          key == "system_prompt" || key == "default_prompt" || key == "context_limit" ||
+          key == "payload_limit" || key == "auto_attach_viewport" || key == "max_auto_turns") {
         continue;
       }
       payload[key] = el.value();
@@ -402,7 +479,25 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
   for (const auto& msg : history) {
     nlohmann::json m = nlohmann::json::object();
     m["role"] = msg.role;
-    if (!msg.content.empty() || msg.tool_calls.empty()) {
+    if (!msg.images.empty()) {
+      nlohmann::json content_arr = nlohmann::json::array();
+      if (!msg.content.empty()) {
+        nlohmann::json text_obj = nlohmann::json::object();
+        text_obj["type"] = "text";
+        text_obj["text"] = msg.content;
+        content_arr.push_back(text_obj);
+      }
+      for (const auto& img : msg.images) {
+        nlohmann::json img_obj = nlohmann::json::object();
+        img_obj["type"] = "image_url";
+        nlohmann::json url_obj = nlohmann::json::object();
+        url_obj["url"] =
+          "data:" + (img.mime_type.empty() ? "image/png" : img.mime_type) + ";base64," + img.base64_data;
+        img_obj["image_url"] = url_obj;
+        content_arr.push_back(img_obj);
+      }
+      m["content"] = content_arr;
+    } else if (!msg.content.empty() || msg.tool_calls.empty()) {
       m["content"] = msg.content;
     } else {
       m["content"] = nullptr;
@@ -428,11 +523,14 @@ void AIClient::sendChatCompletionStream(const AIProfileConfig& config,
   }
   payload["messages"] = messages;
   payload["tools"] = getOpenSCADTools();
+  payload["tool_choice"] = "auto";
 
   if (config.parameters.is_object()) {
     for (auto& el : config.parameters.items()) {
       const std::string& key = el.key();
-      if (key == "model" || key == "stream" || key == "messages" || key == "tools") {
+      if (key == "model" || key == "stream" || key == "messages" || key == "tools" ||
+          key == "system_prompt" || key == "default_prompt" || key == "context_limit" ||
+          key == "payload_limit" || key == "auto_attach_viewport" || key == "max_auto_turns") {
         continue;
       }
       payload[key] = el.value();

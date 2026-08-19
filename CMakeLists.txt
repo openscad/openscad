@@ -1364,6 +1364,7 @@ set(GUI_SOURCES
   src/gui/ai/AIDock.cc
   src/gui/ai/ChatWidget.cc
   src/gui/ai/ChatInputEdit.cc
+  src/gui/ai/ViewportGrabber.cc
   ${INPUT_DRIVER_SOURCES}
   )
 

@@ -584,7 +584,7 @@ bool TabManager::refreshDocument()
     }
   }
   if (file_opened) {
-    parent->fileChangedOnDisk();
+    this->parent->fileChangedOnDisk();
   }
   return file_opened;
 }
