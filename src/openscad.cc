@@ -720,9 +720,16 @@ int run_sharded_animation(const CommandLine& cmd, FileFormat export_format)
       cleanup();
       return 1;
     }
-    std::vector<unsigned char> rgba;
+    // Only the header is read here. Whether the pixels have to be decoded at all is
+    // the encoder's business - APNG copies the frame's compressed data across as it
+    // stands, which at 4K is the difference between seconds per frame and none.
     unsigned width = 0, height = 0;
-    if (lodepng::decode(rgba, width, height, png) != 0) {
+    LodePNGState inspect_state;
+    lodepng_state_init(&inspect_state);
+    const unsigned inspect_error =
+      lodepng_inspect(&width, &height, &inspect_state, png.data(), png.size());
+    lodepng_state_cleanup(&inspect_state);
+    if (inspect_error != 0) {
       LOG(message_group::Error, "Can't read frame %1$d (%2$s).", frame, path);
       cleanup();
       return 1;
@@ -737,7 +744,7 @@ int run_sharded_animation(const CommandLine& cmd, FileFormat export_format)
       }
       opened = true;
     }
-    if (!encoder->addFrame(rgba.data(), static_cast<std::size_t>(width) * 4)) {
+    if (!encoder->addPngFrame(png.data(), png.size())) {
       LOG(message_group::Error, "Failed to encode frame %1$d.", frame);
       cleanup();
       return 1;

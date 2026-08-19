@@ -64,6 +64,33 @@ void appendChunk(std::string& out, const char type[4], const std::string& payloa
 }
 
 /*!
+   Walks a complete PNG's chunk list, concatenating the IDAT payloads into
+   `frameData` -- the image's entire zlib stream, which is exactly what one APNG
+   frame carries. `ihdr`, if non-null, receives the 13-byte IHDR payload. False if
+   the chunk structure is malformed or there is no image data.
+ */
+bool splitPng(const uint8_t *png, size_t pngSize, std::string *frameData, std::string *ihdr)
+{
+  frameData->clear();
+  // Walk the chunk list, skipping the 8-byte signature.
+  size_t pos = 8;
+  while (pos + 12 <= pngSize) {
+    const uint32_t length = (png[pos] << 24) | (png[pos + 1] << 16) | (png[pos + 2] << 8) | png[pos + 3];
+    if (pos + 12 + length > pngSize) return false;
+    const char *type = reinterpret_cast<const char *>(png + pos + 4);
+    const char *data = reinterpret_cast<const char *>(png + pos + 8);
+
+    if (std::memcmp(type, "IDAT", 4) == 0) {
+      frameData->append(data, length);
+    } else if (ihdr != nullptr && std::memcmp(type, "IHDR", 4) == 0) {
+      ihdr->assign(data, length);
+    }
+    pos += 12 + length;
+  }
+  return !frameData->empty();
+}
+
+/*!
    Encodes one tightly-packed RGBA frame to a standalone PNG via lodepng and returns
    the concatenated IDAT payload -- i.e. the frame's complete zlib stream. `ihdr`, if
    non-null, receives the 13-byte IHDR payload. Returns false on encoder failure.
@@ -96,23 +123,7 @@ bool encodeFrameData(const std::vector<uint8_t>& rgba, unsigned width, unsigned 
   }
   const std::unique_ptr<unsigned char, decltype(&free)> owned(png, &free);
 
-  frameData->clear();
-  // Walk the chunk list, skipping the 8-byte signature.
-  size_t pos = 8;
-  while (pos + 12 <= pngSize) {
-    const uint32_t length = (png[pos] << 24) | (png[pos + 1] << 16) | (png[pos + 2] << 8) | png[pos + 3];
-    if (pos + 12 + length > pngSize) return false;
-    const char *type = reinterpret_cast<const char *>(png + pos + 4);
-    const char *data = reinterpret_cast<const char *>(png + pos + 8);
-
-    if (std::memcmp(type, "IDAT", 4) == 0) {
-      frameData->append(data, length);
-    } else if (ihdr != nullptr && std::memcmp(type, "IHDR", 4) == 0) {
-      ihdr->assign(data, length);
-    }
-    pos += 12 + length;
-  }
-  return !frameData->empty();
+  return splitPng(png, pngSize, frameData, ihdr);
 }
 
 class ApngEncoder : public VideoEncoder
@@ -149,6 +160,13 @@ public:
       return false;
     }
 
+    appendFrameChunks(frameData);
+    return true;
+  }
+
+  //! Emits one frame's fcTL plus its image data, as IDAT for frame 0 and fdAT after.
+  void appendFrameChunks(const std::string& frameData)
+  {
     // fcTL: sequence, size, offset, delay as a rational, dispose/blend ops.
     std::string fctl;
     appendBE32(fctl, sequence_++);
@@ -173,6 +191,38 @@ public:
     }
 
     ++frames_;
+  }
+
+  /*
+     A worker's frame arrives as a PNG, and an APNG frame *is* a PNG's zlib stream --
+     so the compressed data can be lifted straight across. The base class would
+     decode to RGBA and re-deflate it, which at 4K costs seconds per frame and is
+     pure waste: it is the same image either way.
+
+     The catch is that APNG carries one IHDR for the whole file, so this only works
+     while every frame agrees on it. The first frame's IHDR becomes the file's; a
+     later frame that disagrees -- or anything interlaced, where a frame is not a
+     single sequential stream -- falls back to decode-and-re-encode rather than
+     producing a file whose later frames are misinterpreted.
+   */
+  bool addPngFrame(const uint8_t *png, std::size_t size) override
+  {
+    if (!out_.is_open() || png == nullptr) return false;
+
+    std::string incomingIhdr;
+    std::string frameData;
+    if (!splitPng(png, size, &frameData, &incomingIhdr) || incomingIhdr.size() != 13) {
+      return VideoEncoder::addPngFrame(png, size);
+    }
+    // IHDR is width(4) height(4) depth(1) colortype(1) compression(1) filter(1) interlace(1).
+    if (incomingIhdr[12] != 0) return VideoEncoder::addPngFrame(png, size);
+    if (frames_ == 0) {
+      ihdr_ = incomingIhdr;
+    } else if (incomingIhdr != ihdr_) {
+      return VideoEncoder::addPngFrame(png, size);
+    }
+
+    appendFrameChunks(frameData);
     return true;
   }
 

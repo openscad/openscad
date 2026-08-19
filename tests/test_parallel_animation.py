@@ -27,6 +27,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import zlib
 
 FRAMES = 8
 PROCESSES = 4
@@ -145,6 +146,102 @@ def check_still_sequence(openscad, scad_file, output_dir):
         fail("all frames are identical - $t was not applied per frame")
 
 
+def png_chunks(data):
+    """Yields (type, payload) for each chunk, skipping the 8-byte signature."""
+    pos = 8
+    while pos + 12 <= len(data):
+        (length,) = struct.unpack(">I", data[pos:pos + 4])
+        yield data[pos + 4:pos + 8], data[pos + 8:pos + 8 + length]
+        pos += 12 + length
+
+
+def decode_first_frame(data):
+    """Decodes an APNG's first frame - which is a plain IDAT precisely so that a
+    non-APNG decoder still sees an image - to (width, height, rows of RGB tuples).
+
+    Deliberately hand-rolled rather than pulled from Pillow: the regression suite's
+    venv is not guaranteed here, and this only has to handle what OpenSCAD emits -
+    8-bit, non-interlaced, colortype 2 (RGB) or 6 (RGBA)."""
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        fail("apng: bad signature")
+    idat = b""
+    width = height = colortype = None
+    for ctype, payload in png_chunks(data):
+        if ctype == b"IHDR":
+            width, height, depth, colortype, _, _, interlace = struct.unpack(">IIBBBBB", payload)
+            if depth != 8 or interlace != 0 or colortype not in (2, 6):
+                fail("apng: unexpected IHDR (depth %d, colortype %d, interlace %d) - this "
+                     "decoder only handles what OpenSCAD writes" % (depth, colortype, interlace))
+        elif ctype == b"IDAT":
+            idat += payload
+    if width is None:
+        fail("apng: no IHDR")
+    if not idat:
+        fail("apng: no IDAT - the first frame must be stored as IDAT")
+
+    channels = 3 if colortype == 2 else 4
+    raw = zlib.decompress(idat)
+    stride = width * channels
+    rows = []
+    previous = bytearray(stride)
+    pos = 0
+    for _ in range(height):
+        method = raw[pos]
+        line = bytearray(raw[pos + 1:pos + 1 + stride])
+        pos += 1 + stride
+        for i in range(stride):
+            a = line[i - channels] if i >= channels else 0
+            b = previous[i]
+            c = previous[i - channels] if i >= channels else 0
+            if method == 0:
+                pass
+            elif method == 1:
+                line[i] = (line[i] + a) & 0xff
+            elif method == 2:
+                line[i] = (line[i] + b) & 0xff
+            elif method == 3:
+                line[i] = (line[i] + (a + b) // 2) & 0xff
+            elif method == 4:
+                p = a + b - c
+                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                pred = a if (pa <= pb and pa <= pc) else (b if pb <= pc else c)
+                line[i] = (line[i] + pred) & 0xff
+            else:
+                fail("apng: unknown filter type %d" % method)
+        # Compare on RGB only: the two paths legitimately differ on whether an opaque
+        # alpha channel is stored at all, which is what this test must tolerate.
+        rows.append([tuple(line[x * channels:x * channels + 3]) for x in range(width)])
+        previous = line
+    return width, height, rows
+
+
+def check_container_pixels_match(openscad, scad_file, output_dir):
+    """The parent may hand a worker's PNG to the encoder without decoding and
+    re-encoding it. That shortcut is only safe if the pixels survive it, and a broken
+    passthrough produces a structurally valid file full of garbage - which the
+    frame-count check above would happily pass. So decode a frame and compare.
+
+    Frame 0 only: it is the one stored as a plain IDAT, and a wrong passthrough
+    corrupts every frame identically."""
+    ref = "pixref.apng"
+    par = "pixpar.apng"
+    run(openscad, scad_file, output_dir, ref)
+    run(openscad, scad_file, output_dir, par, processes=PROCESSES)
+
+    with open(os.path.join(output_dir, ref), "rb") as fh:
+        ref_w, ref_h, ref_rows = decode_first_frame(fh.read())
+    with open(os.path.join(output_dir, par), "rb") as fh:
+        par_w, par_h, par_rows = decode_first_frame(fh.read())
+
+    if (ref_w, ref_h) != (par_w, par_h):
+        fail("parallel apng is %dx%d, sequential is %dx%d" % (par_w, par_h, ref_w, ref_h))
+    for y, (ref_row, par_row) in enumerate(zip(ref_rows, par_rows)):
+        if ref_row != par_row:
+            bad = next(x for x, (a, b) in enumerate(zip(ref_row, par_row)) if a != b)
+            fail("parallel apng frame 0 differs from the sequential one at (%d,%d): "
+                 "%s vs %s" % (bad, y, par_row[bad], ref_row[bad]))
+
+
 def check_sharding_container_rejected(openscad, scad_file, output_dir):
     """--animate_sharding renders only a slice of the frames. Handed straight to a
     container format (no --animate-processes in between to catch it), that slice
@@ -188,6 +285,7 @@ def main():
     check_no_fork_bomb(openscad, scad_file, output_dir)
     check_container(openscad, scad_file, output_dir, "gif")
     check_container(openscad, scad_file, output_dir, "apng")
+    check_container_pixels_match(openscad, scad_file, output_dir)
     check_sharding_container_rejected(openscad, scad_file, output_dir)
 
     print("PASS: %d frames across %d processes match the sequential run "

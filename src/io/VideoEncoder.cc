@@ -6,11 +6,22 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
+
+#include "lodepng/lodepng.h"
 
 // Defined by the per-container implementations alongside this file.
 std::unique_ptr<VideoEncoder> createGifEncoder();
 std::unique_ptr<VideoEncoder> createApngEncoder();
 std::unique_ptr<VideoEncoder> createAviEncoder();
+
+bool VideoEncoder::addPngFrame(const uint8_t *png, std::size_t size)
+{
+  std::vector<unsigned char> rgba;
+  unsigned width = 0, height = 0;
+  if (lodepng::decode(rgba, width, height, png, size) != 0) return false;
+  return addFrame(rgba.data(), static_cast<std::size_t>(width) * 4);
+}
 
 std::unique_ptr<VideoEncoder> VideoEncoder::create(const std::string& suffix)
 {

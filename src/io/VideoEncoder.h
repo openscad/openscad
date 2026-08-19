@@ -38,6 +38,16 @@ public:
    */
   virtual bool addFrame(const uint8_t *rgba, std::size_t stride) = 0;
 
+  /*!
+     Appends one frame supplied as a complete in-memory PNG file.
+
+     Exists for --animate-processes, where the workers hand their frames over as PNGs
+     already. The default decodes to RGBA and calls addFrame(), which is all a
+     pixel-oriented encoder can do; APNG overrides it to copy the compressed data
+     across untouched, since its frames are PNG zlib streams to begin with.
+   */
+  virtual bool addPngFrame(const uint8_t *png, std::size_t size);
+
   //! Finalizes the stream. No further frames may be added.
   virtual bool close() = 0;
 
