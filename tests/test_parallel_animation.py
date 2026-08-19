@@ -286,6 +286,46 @@ def check_sharding_container_warns(openscad, scad_file, output_dir):
                  % (suffix, expected_frames - 1, output))
 
 
+def check_sharding_with_processes(openscad, scad_file, output_dir):
+    """The render-farm case: shard across machines, and use several processes within
+    each machine. The two split the same frame list at different levels, so the
+    per-worker shard index has to be composed - worker j of P on machine s of m covers
+    global shard (s-1)*P + j of m*P.
+
+    Deliberately uses counts that do not divide evenly (8 frames, 3 machines, 2
+    processes), because that is where an off-by-one in the composition hides: every
+    boundary is a different integer-division rounding. The union of all shards must be
+    byte-identical to a plain single-process run, with no frame missing or rendered
+    twice."""
+    shards, processes = 3, 2
+
+    run(openscad, scad_file, output_dir, "farmref.png")
+    reference = frame_names("farmref.png")
+
+    for s in range(1, shards + 1):
+        cmd = [openscad, "-o", "farm.png", "--imgsize=" + IMGSIZE,
+               "--animate", str(FRAMES), "--animate_sharding", "%d/%d" % (s, shards),
+               "--animate-processes", str(processes), scad_file]
+        result = subprocess.run(cmd, cwd=output_dir, capture_output=True, text=True)
+        if result.returncode != 0:
+            fail("shard %d/%d with --animate-processes %d exited %d\nstdout:\n%s\nstderr:\n%s"
+                 % (s, shards, processes, result.returncode, result.stdout, result.stderr))
+
+    # Every frame present exactly once, and identical to the unsharded render.
+    produced = sorted(glob.glob(os.path.join(output_dir, "farm0*.png")))
+    expected = frame_names("farm.png")
+    if len(produced) != FRAMES:
+        fail("sharded+parallel run produced %d frames, expected %d: %s"
+             % (len(produced), FRAMES, " ".join(os.path.basename(p) for p in produced)))
+    for ref_name, farm_name in zip(reference, expected):
+        farm_path = os.path.join(output_dir, farm_name)
+        if not os.path.exists(farm_path):
+            fail("%s missing - a frame fell between two shards" % farm_name)
+        if not filecmp.cmp(os.path.join(output_dir, ref_name), farm_path, shallow=False):
+            fail("%s differs from the unsharded %s - the shard composition is off"
+                 % (farm_name, ref_name))
+
+
 def check_no_fork_bomb(openscad, scad_file, output_dir):
     """A worker must never spawn workers of its own. Asking for one process is the
     degenerate case and has to behave exactly like not asking at all."""
@@ -313,6 +353,7 @@ def main():
     check_container(openscad, scad_file, output_dir, "apng")
     check_container_pixels_match(openscad, scad_file, output_dir)
     check_sharding_container_warns(openscad, scad_file, output_dir)
+    check_sharding_with_processes(openscad, scad_file, output_dir)
 
     print("PASS: %d frames across %d processes match the sequential run "
           "(png sequence, gif, apng)" % (FRAMES, PROCESSES))

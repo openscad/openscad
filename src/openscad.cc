@@ -596,7 +596,10 @@ std::vector<std::string> worker_command_line(const std::string& executable,
   for (size_t i = 1; i < original_args.size(); ++i) {
     const std::string& arg = original_args[i];
     bool dropped = false;
-    for (const std::string name : {"--animate-processes", "--o"}) {
+    // --animate_sharding is dropped and reissued below: the worker's shard index is
+    // composed from this process's own shard, so passing the original through would
+    // both be wrong and make boost reject the duplicate option.
+    for (const std::string name : {"--animate-processes", "--animate_sharding", "--o"}) {
       if (arg == name) {  // value is the next argument
         ++i;
         dropped = true;
@@ -665,17 +668,25 @@ int run_sharded_animation(const CommandLine& cmd, FileFormat export_format)
     LOG(message_group::Error, "--animate-processes can't write to stdout.");
     return 1;
   }
-  if (cmd.animate.num_shards != 1) {
-    LOG(message_group::Error,
-        "--animate-processes and --animate_sharding can't be combined; "
-        "--animate_sharding is what the workers are given.");
-    return 1;
+
+  /*
+     This process may itself be one shard of a larger render spread across machines,
+     so the frames to cover are this shard's range rather than the whole animation.
+     For an unsharded run that is simply [0, frames).
+   */
+  const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames) / cmd.animate.num_shards;
+  const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames) / cmd.animate.num_shards;
+  const unsigned shard_frames = limit_frame - start_frame;
+  if (shard_frames == 0) {
+    LOG(message_group::Warning, "--animate_sharding %1$d/%2$d covers no frames of %3$d.",
+        cmd.animate.shard, cmd.animate.num_shards, cmd.animate.frames);
+    return 0;
   }
 
   // More workers than frames would leave some with nothing to do. One worker is a
   // legitimate outcome of that clamp and still works - it renders every frame and
   // the parent muxes as usual.
-  const unsigned workers = std::min(cmd.animate.processes, cmd.animate.frames);
+  const unsigned workers = std::min(cmd.animate.processes, shard_frames);
 
   const bool container = fileformat::isAnimation(export_format);
   fs::path temp_dir;
@@ -686,14 +697,32 @@ int run_sharded_animation(const CommandLine& cmd, FileFormat export_format)
     frame_output = (temp_dir / "frame.png").generic_string();
   }
 
-  const std::string executable = boost::dll::program_location().generic_string();
-  std::vector<std::vector<std::string>> commands;
-  commands.reserve(workers);
-  for (unsigned shard = 1; shard <= workers; ++shard) {
-    commands.push_back(worker_command_line(executable, frame_output, shard, workers));
+  if (container && cmd.animate.num_shards != 1) {
+    LOG(message_group::Warning,
+        "--animate_sharding %1$d/%2$d writes only frames %3$d-%4$d of %5$d to this %6$s. "
+        "The file is one slice of the animation, not the whole of it; concatenate the "
+        "shards in order to reassemble it.",
+        cmd.animate.shard, cmd.animate.num_shards, start_frame, limit_frame - 1, cmd.animate.frames,
+        fileformat::info(export_format).description);
   }
 
-  LOG("Rendering %1$d frames in %2$d processes...", cmd.animate.frames, workers);
+  /*
+     Sharding and worker processes split the same frame list at two levels, so the
+     indices compose: worker j of P on shard s of m is global shard (s-1)*P + j of m*P.
+     Because every boundary is the same integer division, the composed range for j=1
+     starts exactly where this shard starts and for j=P ends exactly where it ends -
+     no frame is dropped or rendered twice for any combination of frames, m and P.
+   */
+  const std::string executable = boost::dll::program_location().generic_string();
+  const unsigned global_shards = cmd.animate.num_shards * workers;
+  std::vector<std::vector<std::string>> commands;
+  commands.reserve(workers);
+  for (unsigned worker = 1; worker <= workers; ++worker) {
+    const unsigned global_shard = (cmd.animate.shard - 1) * workers + worker;
+    commands.push_back(worker_command_line(executable, frame_output, global_shard, global_shards));
+  }
+
+  LOG("Rendering %1$d frames in %2$d processes...", shard_frames, workers);
   const bool spawned = Subprocess::runAllAndWait(commands);
 
   auto cleanup = [&temp_dir]() {
@@ -712,7 +741,9 @@ int run_sharded_animation(const CommandLine& cmd, FileFormat export_format)
   assert(encoder != nullptr);
 
   bool opened = false;
-  for (unsigned frame = 0; frame < cmd.animate.frames; ++frame) {
+  // Workers number their output by global frame index, so a shard's files start at
+  // start_frame rather than at zero.
+  for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
     const std::string path = numberedFramePath(frame_output, frame);
     std::vector<unsigned char> png;
     if (lodepng::load_file(png, path) != 0) {
@@ -907,8 +938,8 @@ int cmdline(const CommandLine& cmd)
             "--animate_sharding %1$d/%2$d writes only frames %3$d-%4$d of %5$d to this %6$s. "
             "The file is one slice of the animation, not the whole of it; concatenate the "
             "shards in order to reassemble it.",
-            cmd.animate.shard, cmd.animate.num_shards, start_frame, limit_frame - 1,
-            cmd.animate.frames, fileformat::info(export_format).description);
+            cmd.animate.shard, cmd.animate.num_shards, start_frame, limit_frame - 1, cmd.animate.frames,
+            fileformat::info(export_format).description);
       }
       encoder = VideoEncoder::create(fileformat::toSuffix(export_format));
       assert(encoder != nullptr);
