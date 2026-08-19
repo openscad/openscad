@@ -242,5 +242,24 @@ bool export_depthmap(const OffscreenView& glview, DepthProfile profile, std::ost
 {
   return false;
 }
+bool export_depthmap(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                     Camera& camera, const DepthmapOptions& depthOptions, std::ostream& output)
+{
+  return false;
+}
+bool export_depthmap(const OffscreenView& glview, const DepthmapOptions& depthOptions,
+                     std::ostream& output)
+{
+  return false;
+}
+bool export_pfm(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, std::ostream& output)
+{
+  return false;
+}
+bool export_pfm(const OffscreenView& glview, std::ostream& output)
+{
+  return false;
+}
 
 #endif  // NULLGL

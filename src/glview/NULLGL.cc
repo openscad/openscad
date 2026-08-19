@@ -43,6 +43,10 @@ std::vector<uint8_t> OpenGLContext::getFramebuffer() const
 {
   return {};
 }
+std::vector<float> OpenGLContext::getDepthbuffer() const
+{
+  return {};
+}
 void FBO::destroy()
 {
 }
