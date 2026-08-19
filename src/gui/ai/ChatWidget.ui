@@ -276,6 +276,19 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QCheckBox" name="agentModeCheckBox">
+           <property name="toolTip">
+            <string>Agentic mode: allow the AI to call tools in multiple automatic turns per request</string>
+           </property>
+           <property name="text">
+            <string>Agentic</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
