@@ -42,11 +42,11 @@ void setupCamera(Camera& cam, const BoundingBox& bbox)
 namespace {
 
 //! Renders `root_geom` offscreen and returns the painted view, or null on failure.
-std::unique_ptr<OffscreenView> prepare_geom_view(const std::shared_ptr<const Geometry>& root_geom,
+std::unique_ptr<OffscreenView> prepare_geometry_view(const std::shared_ptr<const Geometry>& root_geom,
                                                  const ViewOptions& options, Camera& camera)
 {
   assert(root_geom != nullptr);
-  PRINTD("prepare_geom_view");
+  PRINTD("prepare_geometry_view");
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
@@ -87,7 +87,7 @@ std::unique_ptr<OffscreenView> prepare_geom_view(const std::shared_ptr<const Geo
 bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
                 Camera& camera, std::ostream& output)
 {
-  const auto glview = prepare_geom_view(root_geom, options, camera);
+  const auto glview = prepare_geometry_view(root_geom, options, camera);
   if (!glview) return false;
   glview->save(output);
   return true;
@@ -167,7 +167,7 @@ bool export_video_frame(const OffscreenView& glview, VideoEncoder& encoder)
 bool export_video_frame(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
                         Camera& camera, VideoEncoder& encoder)
 {
-  const auto glview = prepare_geom_view(root_geom, options, camera);
+  const auto glview = prepare_geometry_view(root_geom, options, camera);
   if (!glview) return false;
   return export_video_frame(*glview, encoder);
 }
