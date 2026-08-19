@@ -145,6 +145,24 @@ def check_still_sequence(openscad, scad_file, output_dir):
         fail("all frames are identical - $t was not applied per frame")
 
 
+def check_sharding_container_rejected(openscad, scad_file, output_dir):
+    """--animate_sharding renders only a slice of the frames. Handed straight to a
+    container format (no --animate-processes in between to catch it), that slice
+    would get muxed as if it were the whole animation - a silently truncated GIF/APNG
+    with no error. Must be rejected outright instead."""
+    for suffix in ("gif", "apng"):
+        cmd = [openscad, "-o", "shard." + suffix, "--imgsize=" + IMGSIZE,
+               "--animate", str(FRAMES), "--animate_sharding", "1/2", scad_file]
+        result = subprocess.run(cmd, cwd=output_dir, capture_output=True, text=True)
+        if result.returncode == 0:
+            fail("--animate_sharding combined with %s output was accepted instead of "
+                 "rejected\nstdout:\n%s\nstderr:\n%s" % (suffix, result.stdout, result.stderr))
+        produced = os.path.join(output_dir, "shard." + suffix)
+        if os.path.exists(produced):
+            fail("%s was written despite the rejected --animate_sharding + %s combination"
+                 % (produced, suffix))
+
+
 def check_no_fork_bomb(openscad, scad_file, output_dir):
     """A worker must never spawn workers of its own. Asking for one process is the
     degenerate case and has to behave exactly like not asking at all."""
@@ -170,6 +188,7 @@ def main():
     check_no_fork_bomb(openscad, scad_file, output_dir)
     check_container(openscad, scad_file, output_dir, "gif")
     check_container(openscad, scad_file, output_dir, "apng")
+    check_sharding_container_rejected(openscad, scad_file, output_dir)
 
     print("PASS: %d frames across %d processes match the sequential run "
           "(png sequence, gif, apng)" % (FRAMES, PROCESSES))

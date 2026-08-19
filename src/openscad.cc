@@ -888,6 +888,17 @@ int cmdline(const CommandLine& cmd)
         LOG(message_group::Error, "Animation output cannot be written to stdout.");
         return 1;
       }
+      // A shard renders only its slice of the frames, but the encoder writes one
+      // complete animation - so the result would be a silently truncated file.
+      // Shard to a still-image sequence and combine it separately, or use
+      // --animate-processes, which shards internally and muxes here in the parent.
+      if (cmd.animate.num_shards != 1) {
+        LOG(message_group::Error,
+            "--animate_sharding can't be combined with %1$s output: a shard is only part "
+            "of the animation. Render a PNG sequence instead, or use --animate-processes.",
+            fileformat::info(export_format).description);
+        return 1;
+      }
       encoder = VideoEncoder::create(fileformat::toSuffix(export_format));
       assert(encoder != nullptr);
       if (!encoder->open(cmd.output_file, cmd.camera.pixel_width, cmd.camera.pixel_height,
