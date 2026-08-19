@@ -43,7 +43,7 @@ namespace {
 
 //! Renders `root_geom` offscreen and returns the painted view, or null on failure.
 std::unique_ptr<OffscreenView> prepare_geometry_view(const std::shared_ptr<const Geometry>& root_geom,
-                                                 const ViewOptions& options, Camera& camera)
+                                                     const ViewOptions& options, Camera& camera)
 {
   assert(root_geom != nullptr);
   PRINTD("prepare_geometry_view");
