@@ -242,22 +242,48 @@ def check_container_pixels_match(openscad, scad_file, output_dir):
                  "%s vs %s" % (bad, y, par_row[bad], ref_row[bad]))
 
 
-def check_sharding_container_rejected(openscad, scad_file, output_dir):
-    """--animate_sharding renders only a slice of the frames. Handed straight to a
-    container format (no --animate-processes in between to catch it), that slice
-    would get muxed as if it were the whole animation - a silently truncated GIF/APNG
-    with no error. Must be rejected outright instead."""
-    for suffix in ("gif", "apng"):
-        cmd = [openscad, "-o", "shard." + suffix, "--imgsize=" + IMGSIZE,
+def check_sharding_container_warns(openscad, scad_file, output_dir):
+    """--animate_sharding renders a *contiguous* slice of the frames, so a container
+    holding one shard is a valid animation of part of the timeline - concatenating the
+    shards in order reproduces the whole thing. That is a legitimate way to spread a
+    render across machines, so it must keep working.
+
+    What is not acceptable is doing it silently: a truncated file is indistinguishable
+    from a complete one, and exit code 0 says nothing happened. So the run must
+    succeed, write the file, and warn - naming the frames the file actually holds."""
+    for suffix, expected_frames in (("gif", FRAMES // 2), ("apng", FRAMES // 2)):
+        name = "shard." + suffix
+        cmd = [openscad, "-o", name, "--imgsize=" + IMGSIZE,
                "--animate", str(FRAMES), "--animate_sharding", "1/2", scad_file]
         result = subprocess.run(cmd, cwd=output_dir, capture_output=True, text=True)
-        if result.returncode == 0:
-            fail("--animate_sharding combined with %s output was accepted instead of "
-                 "rejected\nstdout:\n%s\nstderr:\n%s" % (suffix, result.stdout, result.stderr))
-        produced = os.path.join(output_dir, "shard." + suffix)
-        if os.path.exists(produced):
-            fail("%s was written despite the rejected --animate_sharding + %s combination"
-                 % (produced, suffix))
+        if result.returncode != 0:
+            fail("--animate_sharding with %s output exited %d; it should warn and "
+                 "succeed\nstdout:\n%s\nstderr:\n%s"
+                 % (suffix, result.returncode, result.stdout, result.stderr))
+
+        produced = os.path.join(output_dir, name)
+        if not os.path.exists(produced) or os.path.getsize(produced) == 0:
+            fail("%s was not written - the shard's own frames should still be encoded" % produced)
+
+        # The file must hold exactly this shard's slice, not the whole animation.
+        with open(produced, "rb") as fh:
+            data = fh.read()
+        held = (gif_frame_count if suffix == "gif" else apng_frame_count)(data)
+        if held != expected_frames:
+            fail("%s holds %d frames, expected this shard's %d"
+                 % (name, held, expected_frames))
+
+        # Silence is the actual bug being guarded against.
+        output = result.stdout + result.stderr
+        if "WARNING" not in output.upper():
+            fail("no warning issued for --animate_sharding + %s; a partial container "
+                 "must not be written silently\nstdout:\n%s\nstderr:\n%s"
+                 % (suffix, result.stdout, result.stderr))
+        # A warning that does not say which frames landed is not actionable.
+        if "0" not in output or str(expected_frames - 1) not in output:
+            fail("the warning for %s does not name the frame range it wrote "
+                 "(expected 0-%d to appear)\noutput:\n%s"
+                 % (suffix, expected_frames - 1, output))
 
 
 def check_no_fork_bomb(openscad, scad_file, output_dir):
@@ -286,7 +312,7 @@ def main():
     check_container(openscad, scad_file, output_dir, "gif")
     check_container(openscad, scad_file, output_dir, "apng")
     check_container_pixels_match(openscad, scad_file, output_dir)
-    check_sharding_container_rejected(openscad, scad_file, output_dir)
+    check_sharding_container_warns(openscad, scad_file, output_dir)
 
     print("PASS: %d frames across %d processes match the sequential run "
           "(png sequence, gif, apng)" % (FRAMES, PROCESSES))

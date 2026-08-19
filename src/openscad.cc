@@ -895,16 +895,20 @@ int cmdline(const CommandLine& cmd)
         LOG(message_group::Error, "Animation output cannot be written to stdout.");
         return 1;
       }
-      // A shard renders only its slice of the frames, but the encoder writes one
-      // complete animation - so the result would be a silently truncated file.
-      // Shard to a still-image sequence and combine it separately, or use
-      // --animate-processes, which shards internally and muxes here in the parent.
+      /*
+         A shard is a *contiguous* range of frames, so a container holding one is a valid
+         animation of part of the timeline, and the shards concatenate in order - which is
+         a legitimate way to spread a render across machines. What is not acceptable is
+         doing it silently: a truncated file is indistinguishable from a complete one. So
+         warn, naming the frames this file actually holds, and carry on.
+       */
       if (cmd.animate.num_shards != 1) {
-        LOG(message_group::Error,
-            "--animate_sharding can't be combined with %1$s output: a shard is only part "
-            "of the animation. Render a PNG sequence instead, or use --animate-processes.",
-            fileformat::info(export_format).description);
-        return 1;
+        LOG(message_group::Warning,
+            "--animate_sharding %1$d/%2$d writes only frames %3$d-%4$d of %5$d to this %6$s. "
+            "The file is one slice of the animation, not the whole of it; concatenate the "
+            "shards in order to reassemble it.",
+            cmd.animate.shard, cmd.animate.num_shards, start_frame, limit_frame - 1,
+            cmd.animate.frames, fileformat::info(export_format).description);
       }
       encoder = VideoEncoder::create(fileformat::toSuffix(export_format));
       assert(encoder != nullptr);
