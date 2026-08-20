@@ -312,3 +312,25 @@ bool export_pfm(std::ostream& out, const std::vector<float>& depths, std::uint32
   }
   return out.good();
 }
+
+EyeDepthExtent eye_depth_extent(const double bboxMin[3], const double bboxMax[3],
+                                const double modelview[16])
+{
+  EyeDepthExtent extent;
+  bool first = true;
+  for (int i = 0; i < 8; ++i) {
+    const double corner[3] = {i & 1 ? bboxMax[0] : bboxMin[0], i & 2 ? bboxMax[1] : bboxMin[1],
+                              i & 4 ? bboxMax[2] : bboxMin[2]};
+    // Eye-space z from the modelview; distance in front of the eye is -z.
+    const double dist =
+      -(modelview[2] * corner[0] + modelview[6] * corner[1] + modelview[10] * corner[2] + modelview[14]);
+    if (first) {
+      extent.nearest = extent.farthest = dist;
+      first = false;
+    } else {
+      extent.nearest = std::min(extent.nearest, dist);
+      extent.farthest = std::max(extent.farthest, dist);
+    }
+  }
+  return extent;
+}

@@ -79,6 +79,32 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
 std::vector<float> linearize_depth(const std::vector<float>& windowDepth, double clipNear,
                                    double clipFar, bool perspective);
 
+/*!
+   The eye-space depth extent of an axis-aligned bounding box, under a given
+   column-major GL modelview.
+
+   Measured per view, from the box's eight corners, which makes it **orientation
+   dependent**: a 200x8x8 model reports an extent of 8 seen side-on and 200 seen
+   end-on, and a cube's extent grows by sqrt(3) between face-on and corner-on.
+   The viewport shading normalizes across whatever this returns, so the same
+   geometry grades over a different range as the model is turned - visible on
+   long models as the image rebalancing when the long axis swings toward the
+   camera (reported from dogfooding, 2026-08-20).
+
+   That is a deliberate trade rather than an oversight: an orientation-invariant
+   alternative (a bounding sphere) reports the same extent in every view but
+   overestimates badly for anything not cube-shaped, and the wasted range shows
+   up directly as washed-out contrast. `-O depthmap/range=near,far` opts out
+   entirely, and is the answer when frames must be comparable to each other.
+ */
+struct EyeDepthExtent {
+  double nearest = 0.0;
+  double farthest = 0.0;
+};
+
+EyeDepthExtent eye_depth_extent(const double bboxMin[3], const double bboxMax[3],
+                                const double modelview[16]);
+
 //! Eye-space distances that the viewport depth shading maps across.
 struct DepthRange {
   double start = 0.0;

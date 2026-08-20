@@ -185,23 +185,15 @@ void GLView::setupDepthShading()
   double farthest = 1.0;
   const BoundingBox bbox = this->renderer ? this->renderer->getBoundingBox() : BoundingBox();
   if (!bbox.isEmpty()) {
-    bool first = true;
-    for (int i = 0; i < 8; ++i) {
-      const Vector3d corner(i & 1 ? bbox.max().x() : bbox.min().x(),
-                            i & 2 ? bbox.max().y() : bbox.min().y(),
-                            i & 4 ? bbox.max().z() : bbox.min().z());
-      // Eye-space z from the modelview matrix setupCamera() just captured;
-      // distance in front of the eye is -z.
-      const double dist = -(this->modelview[2] * corner.x() + this->modelview[6] * corner.y() +
-                            this->modelview[10] * corner.z() + this->modelview[14]);
-      if (first) {
-        nearest = farthest = dist;
-        first = false;
-      } else {
-        nearest = std::min(nearest, dist);
-        farthest = std::max(farthest, dist);
-      }
-    }
+    // eye_depth_extent() rather than an inline loop, so the orientation
+    // dependence this has - and which shows up on long models as the shading
+    // rebalancing when the long axis turns toward the camera - is covered by
+    // unit tests instead of living untestable inside a paint.
+    const double bmin[3] = {bbox.min().x(), bbox.min().y(), bbox.min().z()};
+    const double bmax[3] = {bbox.max().x(), bbox.max().y(), bbox.max().z()};
+    const auto extent = eye_depth_extent(bmin, bmax, this->modelview);
+    nearest = extent.nearest;
+    farthest = extent.farthest;
   }
   const auto range = resolve_depth_range(this->depthoptions, nearest, farthest);
 
