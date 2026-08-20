@@ -112,6 +112,31 @@ struct DepthRange {
 };
 
 /*!
+   The depth range the shading normalizes across: the model's bounding sphere,
+   with its diameter capped at the distance from the camera to the sphere centre.
+
+   **Orientation invariant by construction**, which is the point - a sphere
+   presents the same depth extent from every direction, so turning the model no
+   longer rebalances the image. That invariance is not free and the cost is not
+   an implementation detail: any range that is both deterministic and
+   rotation-invariant must be at least the largest extent the box can present,
+   which *is* the sphere diameter. On a long model (measured on a 43 x 711 x 60
+   one) the side view therefore grades over ~16x more range than its own depth
+   needs, leaving roughly 15 of the 255 grey levels in use. That is the accepted
+   trade; `-O depthmap/range=near,far` overrides it, and the metric profile does
+   not use a range at all.
+
+   **The cap** (`R' = min(R, d/2)`) keeps the near end off the eye: a model
+   larger than its own viewing distance would otherwise put `start` behind the
+   camera, where the gradient stops meaning anything. When the cap binds, geometry
+   outside the range is clamped rather than wrapped - near of `start` reads pure
+   white, beyond `end` pure black - so an out-of-range surface saturates instead
+   of reversing.
+ */
+DepthRange capped_sphere_range(const double bboxMin[3], const double bboxMax[3],
+                               const double modelview[16]);
+
+/*!
    The depth-to-grey mapping for the viewport, built from the eye-space depth
    extent of the model's bounding box - pinned to the model, not recomputed from
    what happens to be on screen, so the shading does not swim as the model is
@@ -145,6 +170,10 @@ std::string serialize_camera_json(const CameraParameters& cam);
 
 struct DepthmapOptions {
   DepthProfile profile = DepthProfile::metric;
+  //! True when the range below was derived from the model rather than typed by
+  //! the user. Only affects how a clamping warning is worded - a user who did
+  //! not ask for a range should not be told their request clipped something.
+  bool range_from_model = false;
   std::string camera_sidecar_path;
   bool has_explicit_range = false;
   double explicit_near = 0.0;

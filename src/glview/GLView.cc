@@ -181,21 +181,19 @@ void GLView::setupDepthShading()
   // Use the bounding box's actual eye-space depth extent rather than a bounding
   // sphere: a sphere overestimates badly for anything not cube-shaped, and the
   // wasted range shows up directly as washed-out contrast.
-  double nearest = 0.0;
-  double farthest = 1.0;
+  // The model's bounding sphere, capped at the viewing distance - orientation
+  // invariant, so turning the model no longer rebalances the shading. An
+  // explicit -O depthmap/range= still wins over it.
+  DepthRange range{0.0, 1.0};
   const BoundingBox bbox = this->renderer ? this->renderer->getBoundingBox() : BoundingBox();
   if (!bbox.isEmpty()) {
-    // eye_depth_extent() rather than an inline loop, so the orientation
-    // dependence this has - and which shows up on long models as the shading
-    // rebalancing when the long axis turns toward the camera - is covered by
-    // unit tests instead of living untestable inside a paint.
     const double bmin[3] = {bbox.min().x(), bbox.min().y(), bbox.min().z()};
     const double bmax[3] = {bbox.max().x(), bbox.max().y(), bbox.max().z()};
-    const auto extent = eye_depth_extent(bmin, bmax, this->modelview);
-    nearest = extent.nearest;
-    farthest = extent.farthest;
+    range = capped_sphere_range(bmin, bmax, this->modelview);
   }
-  const auto range = resolve_depth_range(this->depthoptions, nearest, farthest);
+  if (this->depthoptions.has_explicit_range) {
+    range = resolve_depth_range(this->depthoptions, range.start, range.end);
+  }
 
   const GLfloat fogcolor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
   glFogi(GL_FOG_MODE, GL_LINEAR);

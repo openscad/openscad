@@ -1,12 +1,17 @@
 // A deliberately long model for the depth map, staggered so that depth is
 // actually visible end-on.
 //
-// The viewport and export normalize depth across the bounding box's extent along
-// the current view axis, which is orientation dependent: this model's extent is
-// 200 seen end-on and ~50 seen side-on, so the same geometry grades over a very
-// different range in the two views. Reported from dogfooding on "extruder
-// illustration", which has this shape - measured there as a 3.3x swing in mean
-// brightness across three views.
+// Depth is normalized across the model's bounding sphere, capped at the viewing
+// distance, so the range is the same from every direction. These two views exist
+// to hold that: end-on and side-on must grade against one range, not two. Before
+// that change the range was the bounding box's extent along the view axis - 200
+// end-on against ~50 side-on here - and the shading visibly rebalanced as the
+// model turned (reported from dogfooding on "extruder illustration", measured
+// there as a 3.3x swing in mean brightness across three views).
+//
+// The side view is deliberately the unflattering one: an orientation-invariant
+// range costs contrast exactly where the model is thin in depth, and that cost
+// should be visible in the suite rather than only in the argument for it.
 //
 // The rungs are offset laterally on purpose. An earlier version of this file put
 // everything on the axis, and end-on the nearest element simply occluded all the

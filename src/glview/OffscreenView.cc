@@ -161,7 +161,29 @@ bool OffscreenView::saveDepth(std::ostream& output, const DepthmapOptions& optio
   const bool perspective = this->cam.projection == Camera::ProjectionType::PERSPECTIVE;
   const auto mm =
     linearize_depth(this->ctx->getDepthbuffer(), this->clipNear, this->clipFar, perspective);
-  const auto image = encode_depthmap(mm, this->ctx->width(), this->ctx->height(), options);
+
+  // Without an explicit range, normalize across the same capped bounding sphere
+  // the viewport shades with, rather than across whatever happens to be visible.
+  // Two reasons: preview and file agree, and the range no longer moves with the
+  // camera - two renders of one model are comparable to each other. Geometry
+  // outside it clamps (nearer than start is pure white, beyond end pure black)
+  // instead of being re-normalized into a gradient that can run backwards.
+  DepthmapOptions effective = options;
+  if (!effective.has_explicit_range && this->renderer) {
+    const BoundingBox bbox = this->renderer->getBoundingBox();
+    if (!bbox.isEmpty()) {
+      const double bmin[3] = {bbox.min().x(), bbox.min().y(), bbox.min().z()};
+      const double bmax[3] = {bbox.max().x(), bbox.max().y(), bbox.max().z()};
+      double mv[16];
+      for (int i = 0; i < 16; ++i) mv[i] = static_cast<double>(this->modelview[i]);
+      const DepthRange r = capped_sphere_range(bmin, bmax, mv);
+      effective.has_explicit_range = true;
+      effective.explicit_near = r.start;
+      effective.explicit_far = r.end;
+      effective.range_from_model = true;
+    }
+  }
+  const auto image = encode_depthmap(mm, this->ctx->width(), this->ctx->height(), effective);
 
   // Same as the colour path: buffers read from OpenGL are upside-down.
   std::vector<uint8_t> flipped(image.pixels.size());
@@ -170,8 +192,9 @@ bool OffscreenView::saveDepth(std::ostream& output, const DepthmapOptions& optio
 
   if (image.clipped) {
     LOG(message_group::Warning,
-        "Depthmap: geometry outside the requested range %1$.3f - %2$.3f mm was clamped.",
-        options.explicit_near, options.explicit_far);
+        "Depthmap: geometry outside the %1$s range %2$.3f - %3$.3f mm was clamped.",
+        effective.range_from_model ? "model's" : "requested", effective.explicit_near,
+        effective.explicit_far);
   }
   if (options.profile == DepthProfile::metric) {
     LOG("Depthmap: %1$.3f - %2$.3f mm from the camera, %3$g units per mm.", image.minDepth,
