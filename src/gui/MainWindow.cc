@@ -55,6 +55,7 @@
 #include <QProcess>
 #include <QProgressDialog>
 #include <QScreen>
+#include <QSemaphore>
 #include <QSettings>  //Include QSettings for direct operations on settings arrays
 #include <QSignalMapper>
 #include <QSoundEffect>
@@ -645,9 +646,35 @@ qint64 MainWindow::computeWorkerProcessId() const
 }
 
 #ifdef ENABLE_GUI_TESTS
+namespace {
+QSemaphore openCSGPreparationsStarted;
+QSemaphore openCSGPreparationsProceed;
+std::atomic<bool> holdOpenCSGPreparations{false};
+}  // namespace
+
 void MainWindow::exitComputeWorkerForTest()
 {
   if (this->computeWorker) this->computeWorker->exitForTest();
+}
+
+void MainWindow::holdOpenCSGPreparationsForTest()
+{
+  while (openCSGPreparationsStarted.tryAcquire()) {
+  }
+  while (openCSGPreparationsProceed.tryAcquire()) {
+  }
+  holdOpenCSGPreparations = true;
+}
+
+int MainWindow::heldOpenCSGPreparationsForTest()
+{
+  return openCSGPreparationsStarted.available();
+}
+
+void MainWindow::releaseOpenCSGPreparationsForTest()
+{
+  holdOpenCSGPreparations = false;
+  openCSGPreparationsProceed.release(openCSGPreparationsStarted.available());
 }
 #endif
 
@@ -2100,6 +2127,12 @@ void MainWindow::startOpenCSGPreparation(size_t guiWork)
   }
   auto *renderer_ptr = this->preparingRenderer.get();
   this->openCSGPrepareWatcher->setFuture(QtConcurrent::run([this, renderer_ptr]() {
+#ifdef ENABLE_GUI_TESTS
+    if (holdOpenCSGPreparations) {
+      openCSGPreparationsStarted.release();
+      openCSGPreparationsProceed.acquire();
+    }
+#endif
     return renderer_ptr->buildProducts(this->preparingProducts, [this]() {
       ++this->openCSGPrepareProgress;
       return !this->openCSGPrepareCanceled;

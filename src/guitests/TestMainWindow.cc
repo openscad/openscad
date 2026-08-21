@@ -138,17 +138,8 @@ void TestMainWindow::checkIsolatedWindowsCanPreviewConcurrently()
   other->close();
 }
 
-// Two windows previewing at once must not take twice as long as one. The OpenCSG
-// preparation phase (VBOBuilder::create_surface over every CSG leaf) is CPU-bound,
-// GL-free and per-window, so it belongs off the main thread; while it ran on it, the
-// second window's preparation could only start after the first one's had finished, and
-// this measured a ~2x wall-clock cost for two windows.
-//
-// The model is deliberately mesh-heavy per leaf (36 leaves at $fn=64): that puts ~87%
-// of the preparation phase in create_surface, so the ratio measures the phase this test
-// is about rather than per-leaf progress overhead. Timing-based, so the threshold is
-// loose -- 1.5x sits between the ~1.7x this fails at when preparation is serialized and
-// the ~1.1x it passes at when it is not.
+// Hold the CPU-bound half of each window's preparation at a test barrier and observe that both
+// enter it. This proves overlap directly without confusing parallelism with a wall-clock ratio.
 void TestMainWindow::checkWindowsPrepareOpenCSGConcurrently()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();
@@ -161,36 +152,22 @@ void TestMainWindow::checkWindowsPrepareOpenCSGConcurrently()
              "cylinder(h = 20, r = 3, center = true, $fn = 64); }")
       .arg(row * 12);
   };
-  const auto previewAndWait = [](std::initializer_list<MainWindow *> windows) {
-    QElapsedTimer timer;
-    timer.start();
-    for (auto *w : windows) {
-      if (!QMetaObject::invokeMethod(w, "on_designActionPreview_triggered")) return qint64{-1};
-    }
-    for (auto *w : windows) {
-      if (!QTest::qWaitFor([w]() { return w->findChild<ProgressWidget *>() == nullptr; }, 120000)) {
-        return qint64{-1};
-      }
-    }
-    return timer.elapsed();
-  };
-
-  window->activeEditor->setPlainText(model(0));
-  const qint64 single = previewAndWait({window});
-  QVERIFY2(single > 200, "baseline preview was too fast to measure -- model too small?");
-
   auto *other = new MainWindow({});
   window->activeEditor->setPlainText(model(1));
   other->activeEditor->setPlainText(model(2));
-  const qint64 concurrent = previewAndWait({window, other});
-  other->close();
+  MainWindow::holdOpenCSGPreparationsForTest();
+  const bool firstStarted = QMetaObject::invokeMethod(window, "on_designActionPreview_triggered");
+  const bool secondStarted = QMetaObject::invokeMethod(other, "on_designActionPreview_triggered");
+  const bool overlapped =
+    QTest::qWaitFor([]() { return MainWindow::heldOpenCSGPreparationsForTest() == 2; }, 10000);
+  MainWindow::releaseOpenCSGPreparationsForTest();
 
-  QVERIFY2(concurrent > 0 && concurrent < single * 3 / 2,
-           qPrintable(QString("two windows took %1 ms against %2 ms for one (%3x); the GUI-side "
-                              "preparation phase is still serializing on the main thread")
-                        .arg(concurrent)
-                        .arg(single)
-                        .arg(static_cast<double>(concurrent) / single, 0, 'f', 2)));
+  QVERIFY(firstStarted);
+  QVERIFY(secondStarted);
+  QVERIFY2(overlapped, "both windows did not enter CPU-side OpenCSG preparation concurrently");
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 120000);
+  QTRY_VERIFY_WITH_TIMEOUT(other->findChild<ProgressWidget *>() == nullptr, 120000);
+  other->close();
 }
 
 void TestMainWindow::checkWorkerMessageSeverity()
@@ -500,23 +477,17 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:999]) translate([i, 0, 0]) cube(1);");
 
-  QTimer cancelWhenPreparing;
-  cancelWhenPreparing.setInterval(1);
-  connect(&cancelWhenPreparing, &QTimer::timeout, window, [this, &cancelWhenPreparing]() {
-    // MainWindow::compileCSG() only assigns previewRenderer *after* prepare()
-    // returns, so waiting for it here waits for a window that never opens. A
-    // non-zero GUI progress value is raised from inside the prepare callback,
-    // which is exactly the moment this test wants to cancel in.
-    auto *progress = window->findChild<ProgressWidget *>();
-    if (progress && progress->guiValue() > 0) {
-      cancelWhenPreparing.stop();
-      progress->cancel();
-    }
-  });
-  cancelWhenPreparing.start();
+  MainWindow::holdOpenCSGPreparationsForTest();
+  const bool started = QMetaObject::invokeMethod(window, "on_designActionPreview_triggered");
+  const bool enteredPreparation =
+    QTest::qWaitFor([]() { return MainWindow::heldOpenCSGPreparationsForTest() == 1; }, 10000);
+  auto *progress = window->findChild<ProgressWidget *>();
+  if (progress) progress->cancel();
+  MainWindow::releaseOpenCSGPreparationsForTest();
 
-  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(!cancelWhenPreparing.isActive(), 10000);
+  QVERIFY(started);
+  QVERIFY2(enteredPreparation, "preview never entered CPU-side OpenCSG preparation");
+  QVERIFY(progress != nullptr);
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QVERIFY(window->previewRenderer == nullptr);
 #endif

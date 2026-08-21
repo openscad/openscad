@@ -163,6 +163,9 @@ public:
   qint64 computeWorkerProcessId() const;
 #ifdef ENABLE_GUI_TESTS
   void exitComputeWorkerForTest();
+  static void holdOpenCSGPreparationsForTest();
+  static int heldOpenCSGPreparationsForTest();
+  static void releaseOpenCSGPreparationsForTest();
   int compilationErrorCount() const { return compileErrors; }
   const std::shared_ptr<CSGProducts>& previewProductsForTest() const { return rootProduct; }
   bool computeBusyForTest() const { return computeBusy; }
