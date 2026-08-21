@@ -2146,6 +2146,12 @@ void MainWindow::previewReady()
     viewModeThrownTogether();
 #endif
   }
+  LOG("Compile and preview finished.");
+  // The legacy path prints this from compileCSG(); the isolated one ends here instead. The time
+  // covers the whole preview the user waited for -- the worker's evaluation and the GUI-side
+  // OpenCSG preparation both. Cache statistics are deliberately not printed alongside it: the
+  // caches that matter live in the worker process, and the GUI's own are empty.
+  renderStatistic.printRenderingTime();
   updateStatusBar(nullptr);
   compileEnded();
   if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
@@ -3836,6 +3842,9 @@ void MainWindow::setupCoreSubsystems()
               if (this->activeEditor->toPlainText() == source) {
                 this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
                                                                    source.toStdString());
+                // Isolated mode never runs parseDocument(), which is where the widget is enabled
+                // in legacy mode, so without this the Customizer stays greyed out forever.
+                this->activeEditor->parameterWidget->setEnabled(true);
               }
             });
     connect(this->computeWorker, &ComputeWorker::dependenciesDiscovered, this,

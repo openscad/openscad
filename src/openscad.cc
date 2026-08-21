@@ -93,6 +93,10 @@
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
 #include "core/StatCache.h"
+#include "geometry/GeometryCache.h"
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/CGALCache.h"
+#endif
 #include "core/customizer/CommentParser.h"
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
@@ -829,6 +833,17 @@ static int compute_worker_main()
         for (const auto& feature : request.value("features", std::vector<std::string>{})) {
           Feature::enable_feature(feature);
         }
+        // The worker holds the caches that make a repeat render cheap, but it is the GUI that
+        // owns the user's configured sizes. Without these the worker sits on the 100MB default
+        // and a model larger than that is evicted and fully re-evaluated every single time.
+        if (request.contains("polysetCacheSizeMB")) {
+          GeometryCache::instance()->setMaxSizeMB(request["polysetCacheSizeMB"].get<size_t>());
+        }
+#ifdef ENABLE_CGAL
+        if (request.contains("cgalCacheSizeMB")) {
+          CGALCache::instance()->setMaxSizeMB(request["cgalCacheSizeMB"].get<size_t>());
+        }
+#endif
         if (request.contains("colorscheme")) {
           set_render_color_scheme(request["colorscheme"].get<std::string>(), false);
         }

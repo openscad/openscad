@@ -17,6 +17,7 @@ private slots:
   void checkLegacyModeRendersWithoutComputeWorker();
   void checkUnavailableComputeWorkerDoesNotBlockOrRespawnForever();
   void checkF6UsesComputeWorkerResult();
+  void checkRepeatedF6IsServedFromWorkerCache();
   void checkF6UsesCustomizerValues();
   void checkCooperativeCancelKeepsWorker();
   void checkCancelRespawnsWorkerAndPreservesEditor();
@@ -34,6 +35,13 @@ private slots:
   void checkOpenCSGPreparationUsesViewportColorScheme();
   void checkReloadPreviewDispatchDoesNotBlockGui();
   void checkF5UsesComputeWorkerResult();
+  void checkPreviewReportsRenderingTime();
+  void checkEditedSourcePreviewsOnTheFirstF5();
+  void checkF5DuringAnInFlightPreviewShowsTheEditedModel();
+  void checkRepeatedEditPreviewCyclesDrawTheEditedModel();
+  void checkCustomizerIsUsableAfterAnIsolatedRender();
+  void checkUntouchedCustomizerDoesNotOverrideEditedText();
+  void checkEditingAPlainTopLevelVariableTakesEffect();
   void checkRightClickAfterIsolatedPreviewDoesNotCrash();
   void checkF6UsesCommandLineDefinitions();
 #ifdef ENABLE_PYTHON

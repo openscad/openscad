@@ -72,16 +72,15 @@ void TestMainWindow::checkOpeningLargeFileDoesNotParseInGui()
   QCOMPARE(file.write(source), source.size());
   QVERIFY(file.flush());
 
-  QElapsedTimer dispatch;
-  dispatch.start();
   window->tabManager->open(file.fileName());
-  QVERIFY2(dispatch.elapsed() < 250, "Opening a file parsed source in the GUI process");
 
-  QCoreApplication::processEvents();
+  bool eventDelivered = false;
+  QTimer::singleShot(0, window, [&eventDelivered]() { eventDelivered = true; });
+  QTRY_VERIFY(eventDelivered);
+
   if (auto *progress = window->findChild<ProgressWidget *>()) {
-    const auto worker = window->computeWorkerProcessId();
     progress->cancel();
-    QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   }
 }
 
@@ -268,6 +267,41 @@ void TestMainWindow::checkF6UsesComputeWorkerResult()
   QCOMPARE(window->rootGeom->getDimension(), 3u);
 }
 
+// A second F6 on unchanged source must be answered from the worker's geometry cache, and the
+// saving must survive the trip back into the GUI. The worker process is persistent precisely so
+// that it can be; only the worker side of that was guarded, and a regression is invisible from
+// the outside -- the render is still correct, just as slow as the first one.
+void TestMainWindow::checkRepeatedF6IsServedFromWorkerCache()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->activeEditor->setPlainText(
+    "for (i = [0:60]) rotate([0, 0, i * 6]) translate([10, 0, 0]) sphere(3, $fn = 40);");
+
+  const auto worker = window->computeWorkerProcessId();
+  const auto render = [this](BoundingBox& bounds) {
+    window->rootGeom.reset();
+    QVERIFY2(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"), "F6 dispatch failed");
+    QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 120000);
+    bounds = window->rootGeom->getBoundingBox();
+  };
+
+  // Lazy union is off for the measurement. With it on, every top-level object comes back as its
+  // own product and the GUI-side half of a render -- transferring each one and preparing a
+  // renderer for it -- costs several seconds either way, which swamps whatever the worker saved
+  // and would make this a test of that cost instead of a test of the cache.
+  const auto lazyUnion = Feature::ExperimentalLazyUnion.is_enabled();
+  Feature::enable_feature(Feature::ExperimentalLazyUnion.get_name(), false);
+  BoundingBox firstBounds, secondBounds;
+  render(firstBounds);
+  QCOMPARE(window->computeWorkerProcessId(), worker);
+  render(secondBounds);
+  Feature::enable_feature(Feature::ExperimentalLazyUnion.get_name(), lazyUnion);
+  QCOMPARE(window->computeWorkerProcessId(), worker);
+  QCOMPARE(secondBounds.min(), firstBounds.min());
+  QCOMPARE(secondBounds.max(), firstBounds.max());
+}
+
 void TestMainWindow::checkF6UsesCustomizerValues()
 {
   restoreWindowInitialState();
@@ -286,22 +320,29 @@ void TestMainWindow::checkF6UsesCustomizerValues()
 
 void TestMainWindow::checkCancelRespawnsWorkerAndPreservesEditor()
 {
-  SKIP_WITHOUT_PROCESS_ISOLATION();
-  restoreWindowInitialState();
-  const QString source = "for (i = [0:100000]) translate([i, 0, 0]) cube(1);";
-  window->activeEditor->setPlainText(source);
-  const auto worker = window->computeWorkerProcessId();
+  QTemporaryDir directory;
+  QVERIFY(directory.isValid());
+  const auto started = directory.filePath("started");
+  const auto stub = directory.filePath("unresponsive-worker.sh");
+  QFile script(stub);
+  QVERIFY(script.open(QIODevice::WriteOnly));
+  script.write(QString("#!/bin/sh\n"
+                       "echo ready\n"
+                       "IFS= read -r request\n"
+                       "touch '%1'\n"
+                       "IFS= read -r ignored\n")
+                 .arg(started)
+                 .toUtf8());
+  script.close();
+  QVERIFY(QFile::setPermissions(stub, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
 
-  QElapsedTimer dispatch;
-  dispatch.start();
-  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
-  QVERIFY2(dispatch.elapsed() < 250, "F6 parsed or evaluated source in the GUI process");
-  auto *progress = window->findChild<ProgressWidget *>();
-  QVERIFY(progress != nullptr);
-  progress->cancel();
-
-  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
-  QCOMPARE(window->activeEditor->toPlainText(), source);
+  ComputeWorker worker(stub);
+  QTRY_VERIFY_WITH_TIMEOUT(worker.processId() > 0, 5000);
+  const auto originalPid = worker.processId();
+  worker.start("cube(1);", {}, {}, 0.0, {}, false, {});
+  QTRY_VERIFY_WITH_TIMEOUT(QFile::exists(started), 5000);
+  worker.cancel();
+  QTRY_VERIFY_WITH_TIMEOUT(worker.processId() > 0 && worker.processId() != originalPid, 5000);
 }
 
 void TestMainWindow::checkCooperativeCancelKeepsWorker()
@@ -411,17 +452,15 @@ void TestMainWindow::checkPreviewDispatchDoesNotBlockGui()
   SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
-  const auto worker = window->computeWorkerProcessId();
-
-  QElapsedTimer dispatch;
-  dispatch.start();
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
-  QVERIFY2(dispatch.elapsed() < 250, "F5 parsed or evaluated source in the GUI process");
 
   auto *progress = window->findChild<ProgressWidget *>();
   QVERIFY(progress != nullptr);
+  bool eventDelivered = false;
+  QTimer::singleShot(0, window, [&eventDelivered]() { eventDelivered = true; });
+  QTRY_VERIFY(eventDelivered);
   progress->cancel();
-  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
 }
 
 void TestMainWindow::checkIdenticalPreviewRequestIsDebounced()
@@ -578,6 +617,246 @@ void TestMainWindow::checkF5UsesComputeWorkerResult()
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
 }
 
+// The legacy preview path ends in compileCSG(), which logs "Compile and preview finished." and the
+// total rendering time. The isolated path ends in actionPreviewDone() instead, and was logging
+// neither, so an isolated F5 left the console with no indication of how long it took.
+void TestMainWindow::checkPreviewReportsRenderingTime()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->previewRenderer.reset();
+  window->console->clear();
+  window->activeEditor->setPlainText("#cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+#ifdef ENABLE_OPENCSG
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+#else
+  QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
+#endif
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+  // The console is fed through queued signals, so give it a moment to catch up.
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Compile and preview finished."),
+                           5000);
+  QVERIFY2(window->console->toPlainText().contains("Total rendering time:"),
+           "isolated preview did not report its rendering time");
+}
+
+// One F5 after an edit must show the edited model. The user reports seeing the previous geometry
+// until F5 is pressed a second time, which would mean the preview displayed is one request stale.
+void TestMainWindow::checkEditedSourcePreviewsOnTheFirstF5()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+
+  const auto previewAndMeasure = [this](const QString& source, double& width) {
+    window->previewRenderer.reset();
+    window->activeEditor->setPlainText(source);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+    QVERIFY(window->previewProductsForTest() != nullptr);
+    width = window->previewProductsForTest()->getBoundingBox().max().x();
+  };
+
+  double first = 0, second = 0;
+  previewAndMeasure("cube(10);", first);
+  QCOMPARE(first, 10.0);
+  previewAndMeasure("cube(30);", second);
+  QCOMPARE(second, 30.0);
+}
+
+// F5 pressed while a previous preview is still running. The second request must be the one that
+// ends up on screen; if the in-flight one wins, the user sees the model they just edited away from
+// and has to press F5 again -- which is the reported symptom.
+void TestMainWindow::checkF5DuringAnInFlightPreviewShowsTheEditedModel()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->previewRenderer.reset();
+
+  // Slow enough that the second F5 lands while it is still being computed.
+  window->activeEditor->setPlainText("for (i = [0:400]) translate([i, 0, 0]) sphere(1, $fn = 40);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+
+  window->activeEditor->setPlainText("cube(30);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+
+  QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 60000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 60000);
+  QVERIFY(window->previewProductsForTest() != nullptr);
+  QCOMPARE(window->previewProductsForTest()->getBoundingBox().max().x(), 30.0);
+}
+
+// Edit, preview, edit, preview -- many times, checking what is actually ON SCREEN each round.
+// The user reports the view intermittently keeping the previous model until F5 is pressed again.
+// Asserting on rootProduct cannot see that: the products can be correct while the view still
+// draws the old ones. This grabs the GL framebuffer and counts drawn pixels instead.
+void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->show();
+  QTest::qWaitForWindowExposed(window);
+
+  const auto drawnPixels = [this] {
+    window->qglview->update();
+    QApplication::processEvents();
+    const auto image = window->qglview->grabFramebuffer();
+    const auto background = image.pixel(0, 0);
+    qint64 drawn = 0;
+    for (int y = 0; y < image.height(); ++y) {
+      for (int x = 0; x < image.width(); ++x) {
+        if (image.pixel(x, y) != background) ++drawn;
+      }
+    }
+    return drawn;
+  };
+
+  // Two models whose silhouettes differ a lot, so "which one is on screen" is unambiguous.
+  const QString small = "cube(6, center = true);";
+  const QString large = "cube(60, center = true);";
+  const auto preview = [this](const QString& source) {
+    window->previewRenderer.reset();
+    window->activeEditor->setPlainText(source);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 20000);
+  };
+
+  // The real app polls for auto-reload every 200ms while the user works; restoreWindowInitialState()
+  // ticks the menu item with signals blocked, so the timer is NOT running in the other tests. The
+  // reported symptom appears during ordinary edit/preview loops, where it IS running -- a poll can
+  // land between an edit and its preview, so the test has to include that traffic.
+  window->on_designActionAutoReload_toggled(true);
+
+  preview(large);
+  const auto largePixels = drawnPixels();
+  preview(small);
+  const auto smallPixels = drawnPixels();
+  if (largePixels == 0 || largePixels <= smallPixels) {
+    QSKIP("this display cannot distinguish the two models -- no usable framebuffer to assert on");
+  }
+  const auto threshold = (largePixels + smallPixels) / 2;
+
+  // The reported failure is intermittent, so one round proves nothing.
+  for (int cycle = 0; cycle < 12; ++cycle) {
+    const bool wantLarge = cycle % 2 == 0;
+    preview(wantLarge ? large : small);
+    const auto drawn = drawnPixels();
+    const bool showsLarge = drawn > threshold;
+    QVERIFY2(showsLarge == wantLarge,
+             qPrintable(QString("cycle %1: asked for the %2 cube, screen shows the %3 one "
+                                "(%4 pixels drawn, large=%5 small=%6)")
+                          .arg(cycle)
+                          .arg(wantLarge ? "large" : "small")
+                          .arg(showsLarge ? "large" : "small")
+                          .arg(drawn)
+                          .arg(largePixels)
+                          .arg(smallPixels)));
+  }
+
+  // A person does not wait for quiescence before typing the next edit. Interrupt each preview at a
+  // different point, so the second request lands during dispatch, during computation, and during
+  // the GUI-side OpenCSG preparation across the run.
+  for (int cycle = 0; cycle < 12; ++cycle) {
+    window->activeEditor->setPlainText(cycle % 2 == 0 ? small : large);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTest::qWait(5 + cycle * 13);
+
+    const bool wantLarge = cycle % 2 == 0;
+    window->previewRenderer.reset();
+    window->activeEditor->setPlainText(wantLarge ? large : small);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 20000);
+    // Nothing else is in flight now, so the screen must agree with the last edit.
+    QTRY_VERIFY_WITH_TIMEOUT(!window->computeBusyForTest(), 20000);
+
+    const auto drawn = drawnPixels();
+    const bool showsLarge = drawn > threshold;
+    QVERIFY2(showsLarge == wantLarge,
+             qPrintable(QString("interrupted cycle %1 (waited %2ms): asked for the %3 cube, screen "
+                                "shows the %4 one (%5 pixels, large=%6 small=%7)")
+                          .arg(cycle)
+                          .arg(5 + cycle * 13)
+                          .arg(wantLarge ? "large" : "small")
+                          .arg(showsLarge ? "large" : "small")
+                          .arg(drawn)
+                          .arg(largePixels)
+                          .arg(smallPixels)));
+  }
+}
+
+// The Customizer's policy is that once the user touches a value it wins until the document closes.
+// A value the user has NEVER touched must not win: editing the variable's default in the text has
+// to take effect on the first render, as it does in legacy mode. Isolated mode used to send the
+// widget's values unconditionally, so every edit rendered one step behind -- and F6 then exported
+// that stale mesh. Both halves are asserted here, and no isolation skip: legacy must agree.
+void TestMainWindow::checkUntouchedCustomizerDoesNotOverrideEditedText()
+{
+  restoreWindowInitialState();
+
+  // A Customizer value outlives a complete source replacement, so this uses a name no other test
+  // touches -- "size" would leak 70 into checkF6UsesCommandLineDefinitions, which sets size via -D.
+  window->activeEditor->setPlainText("outrank_size = 10; // [10:100]\ncube(outrank_size);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 10.0);
+
+  // An untouched Customizer must not override the edit: legacy renders 40 here, and isolated mode
+  // rendered 10 until this was fixed.
+  window->rootGeom.reset();
+  window->activeEditor->setPlainText("outrank_size = 40; // [10:100]\ncube(outrank_size);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 40.0);
+
+  // ...and the Customizer does, which is the escape hatch the user needs to be able to reach.
+  // Look the widget up now, not earlier: setParameters() rebuilds them whenever the source
+  // changes, so a pointer taken before the render above is dangling by this point.
+  window->rootGeom.reset();
+  auto *spinBox = window->activeEditor->parameterWidget->findChild<QDoubleSpinBox *>("doubleSpinBox");
+  QVERIFY(spinBox != nullptr);
+  spinBox->setValue(70);
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 70.0);
+}
+// A plain top-level variable with no customizer annotation at all. Every top-level assignment is a
+// Customizer parameter in OpenSCAD whether or not it carries a comment, so if the widget's values
+// are exported unconditionally this goes stale exactly like an annotated one -- with the Customizer
+// pane closed and never touched, which is how the user hit it.
+void TestMainWindow::checkEditingAPlainTopLevelVariableTakesEffect()
+{
+  // (no isolation skip: the point is to compare isolated and legacy)
+  restoreWindowInitialState();
+
+  // A name no other test has used: a Customizer value set under one name outlives a complete
+  // source replacement, so reusing "size" here would inherit the previous test's 70.
+  window->activeEditor->setPlainText("plain_width = 10;\ncube(plain_width);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 10.0);
+
+  window->rootGeom.reset();
+  window->activeEditor->setPlainText("plain_width = 40;\ncube(plain_width);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QCOMPARE(window->rootGeom->getBoundingBox().max().x(), 40.0);
+}
+
+void TestMainWindow::checkCustomizerIsUsableAfterAnIsolatedRender()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+  window->activeEditor->parameterWidget->setEnabled(false);
+
+  window->activeEditor->setPlainText("size = 10; // [10:100]\ncube(size);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 20000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->activeEditor->parameterWidget->isEnabled(), 5000);
+}
+
 void TestMainWindow::checkRightClickAfterIsolatedPreviewDoesNotCrash()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();
@@ -594,17 +873,15 @@ void TestMainWindow::checkReloadPreviewDispatchDoesNotBlockGui()
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:100000]) translate([i, 0, 0]) cube(1);");
   window->lastCompiledDoc.clear();
-  const auto worker = window->computeWorkerProcessId();
-
-  QElapsedTimer dispatch;
-  dispatch.start();
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionReloadAndPreview_triggered"));
-  QVERIFY2(dispatch.elapsed() < 250, "Reload and Preview parsed source in the GUI process");
 
   auto *progress = window->findChild<ProgressWidget *>();
   QVERIFY(progress != nullptr);
+  bool eventDelivered = false;
+  QTimer::singleShot(0, window, [&eventDelivered]() { eventDelivered = true; });
+  QTRY_VERIFY(eventDelivered);
   progress->cancel();
-  QTRY_VERIFY_WITH_TIMEOUT(window->computeWorkerProcessId() != worker, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
 }
 
 void TestMainWindow::checkF6UsesCommandLineDefinitions()

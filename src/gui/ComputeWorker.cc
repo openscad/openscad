@@ -20,6 +20,7 @@
 #include "glview/Camera.h"
 #include "glview/CsgInfo.h"
 #include "glview/RenderSettings.h"
+#include "gui/Preferences.h"
 #include "io/import.h"
 #include "io/ipc_geometry.h"
 #include "openscad.h"
@@ -224,6 +225,12 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
     {"setName", "worker"},
     {"normalizationLimit", static_cast<qint64>(normalizationLimit)},
     {"colorscheme", QString::fromStdString(RenderSettings::inst()->colorscheme)},
+    // The worker does the evaluating, so it is the worker's caches that have to be the size the
+    // user configured; it has no access to the preferences itself.
+    {"polysetCacheSizeMB",
+     static_cast<qint64>(GlobalPreferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt())},
+    {"cgalCacheSizeMB",
+     static_cast<qint64>(GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt())},
     {"time", time}};
   QJsonArray cameraValues;
   for (const auto value :
