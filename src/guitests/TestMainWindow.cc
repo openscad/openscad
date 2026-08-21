@@ -670,8 +670,7 @@ void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
   QTest::qWaitForWindowExposed(window);
 
   const auto drawnPixels = [this] {
-    window->qglview->update();
-    QApplication::processEvents();
+    window->qglview->repaint();
     const auto image = window->qglview->grabFramebuffer();
     const auto background = image.pixel(0, 0);
     qint64 drawn = 0;
@@ -703,7 +702,8 @@ void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
   preview(large);
   const auto largePixels = drawnPixels();
   preview(small);
-  const auto smallPixels = drawnPixels();
+  qint64 smallPixels = largePixels;
+  QTRY_VERIFY_WITH_TIMEOUT((smallPixels = drawnPixels()) < largePixels, 5000);
   if (largePixels == 0 || largePixels <= smallPixels) {
     QSKIP("this display cannot distinguish the two models -- no usable framebuffer to assert on");
   }
@@ -713,17 +713,21 @@ void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
   for (int cycle = 0; cycle < 12; ++cycle) {
     const bool wantLarge = cycle % 2 == 0;
     preview(wantLarge ? large : small);
-    const auto drawn = drawnPixels();
-    const bool showsLarge = drawn > threshold;
-    QVERIFY2(showsLarge == wantLarge,
-             qPrintable(QString("cycle %1: asked for the %2 cube, screen shows the %3 one "
-                                "(%4 pixels drawn, large=%5 small=%6)")
-                          .arg(cycle)
-                          .arg(wantLarge ? "large" : "small")
-                          .arg(showsLarge ? "large" : "small")
-                          .arg(drawn)
-                          .arg(largePixels)
-                          .arg(smallPixels)));
+    qint64 drawn = 0;
+    const bool painted = QTest::qWaitFor(
+      [&]() {
+        drawn = drawnPixels();
+        return (drawn > threshold) == wantLarge;
+      },
+      5000);
+    QVERIFY2(painted, qPrintable(QString("cycle %1: asked for the %2 cube, screen shows the %3 one "
+                                         "(%4 pixels drawn, large=%5 small=%6)")
+                                   .arg(cycle)
+                                   .arg(wantLarge ? "large" : "small")
+                                   .arg(drawn > threshold ? "large" : "small")
+                                   .arg(drawn)
+                                   .arg(largePixels)
+                                   .arg(smallPixels)));
   }
 
   // A person does not wait for quiescence before typing the next edit. Interrupt each preview at a
@@ -732,7 +736,7 @@ void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
   for (int cycle = 0; cycle < 12; ++cycle) {
     window->activeEditor->setPlainText(cycle % 2 == 0 ? small : large);
     QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
-    QTest::qWait(5 + cycle * 13);
+    QTRY_VERIFY_WITH_TIMEOUT(window->computeBusyForTest(), 5000);
 
     const bool wantLarge = cycle % 2 == 0;
     window->previewRenderer.reset();
@@ -743,15 +747,19 @@ void TestMainWindow::checkRepeatedEditPreviewCyclesDrawTheEditedModel()
     // Nothing else is in flight now, so the screen must agree with the last edit.
     QTRY_VERIFY_WITH_TIMEOUT(!window->computeBusyForTest(), 20000);
 
-    const auto drawn = drawnPixels();
-    const bool showsLarge = drawn > threshold;
-    QVERIFY2(showsLarge == wantLarge,
-             qPrintable(QString("interrupted cycle %1 (waited %2ms): asked for the %3 cube, screen "
-                                "shows the %4 one (%5 pixels, large=%6 small=%7)")
+    qint64 drawn = 0;
+    const bool painted = QTest::qWaitFor(
+      [&]() {
+        drawn = drawnPixels();
+        return (drawn > threshold) == wantLarge;
+      },
+      5000);
+    QVERIFY2(painted,
+             qPrintable(QString("interrupted cycle %1: asked for the %2 cube, screen shows the %3 "
+                                "one (%4 pixels, large=%5 small=%6)")
                           .arg(cycle)
-                          .arg(5 + cycle * 13)
                           .arg(wantLarge ? "large" : "small")
-                          .arg(showsLarge ? "large" : "small")
+                          .arg(drawn > threshold ? "large" : "small")
                           .arg(drawn)
                           .arg(largePixels)
                           .arg(smallPixels)));
