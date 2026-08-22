@@ -1569,6 +1569,16 @@ if(OPENSCAD_BINPATH)
   )
 endif()
 
+###############################
+# Test harness's own behaviour #
+###############################
+
+# Needs no OpenSCAD binary: it exercises test_pretty_print.py's log-file selection directly.
+add_test(NAME pretty_print_logfile
+  CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print_logfile.py
+)
+
 #############################
 # Persistent compute worker #
 #############################
@@ -1596,6 +1606,12 @@ if(OPENSCAD_BINPATH)
     CONFIGURATIONS Default
     COMMAND ${Python3_EXECUTABLE}
       ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_streaming.py
+      ${OPENSCAD_BINPATH}
+  )
+  add_test(NAME compute_worker_cache
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_cache.py
       ${OPENSCAD_BINPATH}
   )
   if(ENABLE_PYTHON)

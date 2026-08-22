@@ -60,7 +60,8 @@ public:
   void setParameters(const SourceFile *sourceFile, const std::string& source);
   void setParameters(const std::string& metadata, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
-  ParameterSet exportValues() { return parameters.exportValues("worker"); }
+  // Only what the user actually changed: see ParameterObject::isModified().
+  ParameterSet exportValues() { return parameters.exportModifiedValues("worker"); }
   bool childHasFocus();
   bool isModified() const { return modified; }
 

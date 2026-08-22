@@ -1990,7 +1990,9 @@ void MainWindow::actionRenderPreview()
   autoReloadTimer->stop();
   this->isPreview = true;
   this->renderStatistic.start();
-  this->progresswidget = new ProgressWidget(this);
+  // A preview has a GUI-side phase after the worker's, so both bars show for the whole
+  // operation; startGuiProgress() below fills in the real range once the products arrive.
+  this->progresswidget = new ProgressWidget(this, true);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
   connect(this->progresswidget, &ProgressWidget::canceled, this->computeWorker, &ComputeWorker::cancel);
   const auto normalizationLimit =
@@ -2080,6 +2082,12 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
     viewModeThrownTogether();
 #endif
   }
+  LOG("Compile and preview finished.");
+  // The legacy path prints this from compileCSG(); the isolated one ends here instead. The time
+  // covers the whole preview the user waited for -- the worker's evaluation and the GUI-side
+  // OpenCSG preparation both. Cache statistics are deliberately not printed alongside it: the
+  // caches that matter live in the worker process, and the GUI's own are empty.
+  renderStatistic.printRenderingTime();
   updateStatusBar(nullptr);
   compileEnded();
   if (this->previewRequested) QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
@@ -3770,6 +3778,9 @@ void MainWindow::setupCoreSubsystems()
               if (this->activeEditor->toPlainText() == source) {
                 this->activeEditor->parameterWidget->setParameters(metadata.toStdString(),
                                                                    source.toStdString());
+                // Isolated mode never runs parseDocument(), which is where the widget is enabled
+                // in legacy mode, so without this the Customizer stays greyed out forever.
+                this->activeEditor->parameterWidget->setEnabled(true);
               }
             });
     connect(this->computeWorker, &ComputeWorker::dependenciesDiscovered, this,
