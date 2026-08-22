@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QTemporaryFile>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -51,6 +52,13 @@ bool isCollapsible(const message_group group)
          group == message_group::Deprecated || group == message_group::Parser_Error ||
          group == message_group::UI_Error || group == message_group::UI_Warning ||
          group == message_group::Export_Error || group == message_group::Export_Warning;
+}
+
+QString diagnosticShape(QString message)
+{
+  static const QRegularExpression number(
+    R"((?<![A-Za-z_])[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?(?![A-Za-z_]))");
+  return message.replace(number, "#");
 }
 
 }  // namespace
@@ -393,15 +401,19 @@ void ComputeWorker::processOutput()
         emit output(message);
         continue;
       }
-      const auto duplicate = std::find_if((*request)->diagnostics.begin(), (*request)->diagnostics.end(),
-                                          [&message](const RequestContext::Diagnostic& candidate) {
-                                            return candidate.message.group == message.group &&
-                                                   candidate.message.str() == message.str();
-                                          });
+      const auto shape = diagnosticShape(messageText);
+      const auto duplicate =
+        std::find_if((*request)->diagnostics.begin(), (*request)->diagnostics.end(),
+                     [&message, &shape](const RequestContext::Diagnostic& candidate) {
+                       return candidate.message.group == message.group &&
+                              candidate.message.loc.fileName() == message.loc.fileName() &&
+                              candidate.message.loc.firstLine() == message.loc.firstLine() &&
+                              candidate.shape == shape;
+                     });
       if (duplicate != (*request)->diagnostics.end()) {
         ++duplicate->count;
       } else {
-        (*request)->diagnostics.push_back({message, 1});
+        (*request)->diagnostics.push_back({message, shape, 1});
         emit output(message);
       }
     } else if (response.startsWith("diagnostics-end\t")) {

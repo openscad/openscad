@@ -15,6 +15,7 @@
 struct RequestContext {
   struct Diagnostic {
     Message message;
+    QString shape;
     size_t count = 1;
   };
 
