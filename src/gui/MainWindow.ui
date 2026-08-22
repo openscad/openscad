@@ -903,7 +903,7 @@
     <string>Mo&amp;ve Line Up</string>
    </property>
    <property name="shortcut">
-    <string>Alt+Up</string>
+    <string>Ctrl+Alt+Up</string>
    </property>
   </action>
   <action name="editActionMoveLineDown">
@@ -911,7 +911,7 @@
     <string>Mo&amp;ve Line Down</string>
    </property>
    <property name="shortcut">
-    <string>Alt+Down</string>
+    <string>Ctrl+Alt+Down</string>
    </property>
   </action>
   <action name="editActionNextTab">
