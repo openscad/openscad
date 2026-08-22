@@ -883,7 +883,6 @@ static int compute_worker_main()
   parser_init();
   WorkerDiagnostics diagnostics;
   set_output_handler(&WorkerDiagnostics::output, nullptr, &diagnostics);
-  OpenSCAD::suppressRepeatedMessages = false;
   // do_export() chdir()s into the document's directory and leaves the process there. The worker
   // is persistent, so without this it holds a handle on whichever directory it last rendered from
   // for the rest of its life -- on Windows that directory cannot then be renamed or removed by
@@ -907,8 +906,6 @@ static int compute_worker_main()
     } else if (!command.empty() && command.front() == '{') {
       try {
         const auto request = nlohmann::json::parse(command);
-        diagnostics.begin(request.value("requestId", uint64_t{0}));
-        auto diagnosticsGuard = sg::make_scope_guard([&diagnostics] { diagnostics.finish(); });
         const auto operation = request.at("command").get<std::string>();
         const auto preview = operation == "preview";
         if (!preview && operation != "render") throw std::runtime_error("unknown command");
@@ -916,6 +913,10 @@ static int compute_worker_main()
         for (const auto& feature : request.value("features", std::vector<std::string>{})) {
           Feature::enable_feature(feature);
         }
+        const auto structuredDiagnostics = Feature::ExperimentalStructuredDiagnostics.is_enabled();
+        OpenSCAD::suppressRepeatedMessages = !structuredDiagnostics;
+        if (structuredDiagnostics) diagnostics.begin(request.value("requestId", uint64_t{0}));
+        auto diagnosticsGuard = sg::make_scope_guard([&diagnostics] { diagnostics.finish(); });
         // The worker holds the caches that make a repeat render cheap, but it is the GUI that
         // owns the user's configured sizes. Without these the worker sits on the 100MB default
         // and a model larger than that is evicted and fully re-evaluated every single time.

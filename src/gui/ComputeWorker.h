@@ -30,7 +30,6 @@ struct RequestContext {
   bool canceled = false;
   bool diagnosticsEnded = false;
   bool collapseDiagnostics = true;
-  bool collapseDiagnosticFamilies = false;
   QString unabridgedDiagnostics;
   std::vector<Diagnostic> diagnostics;
 };

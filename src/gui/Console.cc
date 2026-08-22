@@ -45,6 +45,7 @@
 #include <cassert>
 #include <cmath>
 
+#include "Feature.h"
 #include "gui/MainWindow.h"
 #include "gui/Preferences.h"
 #include "gui/QSettingsCached.h"
@@ -62,6 +63,13 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this, &Console::setConsoleFont);
   this->actionCollapseDiagnostics->setChecked(
     GlobalPreferences::inst()->getValue("advanced/collapseDiagnostics").toBool());
+  const auto updateExperimentalActions = [this] {
+    const auto enabled = Feature::ExperimentalStructuredDiagnostics.is_enabled();
+    this->actionCollapseDiagnostics->setVisible(enabled);
+    this->actionSaveUnabridged->setVisible(enabled);
+  };
+  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this, updateExperimentalActions);
+  updateExperimentalActions();
 }
 
 void Console::focusInEvent(QFocusEvent * /*event*/)

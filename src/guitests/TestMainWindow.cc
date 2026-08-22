@@ -146,6 +146,18 @@ void TestMainWindow::checkWorkerMessageSeverity()
   auto *collapse = window->console->findChild<QAction *>("actionCollapseDiagnostics");
   QVERIFY(collapse != nullptr);
   collapse->setChecked(true);
+  Feature::enable_feature(Feature::ExperimentalStructuredDiagnostics.get_name(), false);
+  window->tabManager->open(QString::fromStdString(PlatformUtils::resourceBasePath()) +
+                           "/tests/basic-ux/empty.scad");
+  window->activeEditor->setPlainText("for (i = [0:7]) echo(missing);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Ignoring unknown variable"), 5000);
+  QVERIFY(!window->console->toPlainText().contains("occurred 8 times"));
+  QVERIFY(window->console->unabridgedText().isEmpty());
+
+  Feature::enable_feature(Feature::ExperimentalStructuredDiagnostics.get_name());
+  window->console->clear();
   window->activeEditor->setPlainText(
     "echo(\"ordinary\");\n"
     "for (i = [0:7]) echo(missing);\n"
@@ -172,25 +184,14 @@ void TestMainWindow::checkWorkerMessageSeverity()
   QVERIFY(!window->console->toPlainText().contains("occurred"));
   collapse->setChecked(true);
 
-  const auto familyCollapse = Feature::ExperimentalDiagnosticFamilies.is_enabled();
-  Feature::enable_feature(Feature::ExperimentalDiagnosticFamilies.get_name(), false);
   window->console->clear();
   window->activeEditor->setPlainText("for (i = [1:3]) rotate([i, i, i, i]) cube(1);");
-  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
-  QTRY_COMPARE_WITH_TIMEOUT(window->console->toPlainText().count("Problem converting rotate"), 3, 5000);
-  QVERIFY(!window->console->toPlainText().contains("occurred 3 times"));
-
-  Feature::enable_feature(Feature::ExperimentalDiagnosticFamilies.get_name());
-  window->console->clear();
-  window->activeEditor->setPlainText("for (i = [2:4]) rotate([i, i, i, i]) cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("occurred 3 times"), 5000);
   QCOMPARE(window->console->toPlainText().count("Problem converting rotate"), 2);
   QCOMPARE(window->console->unabridgedText().count("Problem converting rotate"), 3);
   QCOMPARE(window->compilationWarningCount(), 3);
-  Feature::enable_feature(Feature::ExperimentalDiagnosticFamilies.get_name(), familyCollapse);
 
   window->activeEditor->setPlainText("assert(false, \"failure\");");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
@@ -253,7 +254,10 @@ void TestMainWindow::checkF6UsesComputeWorkerResult()
   window->activeEditor->setPlainText("cube(1);");
 
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
+  QElapsedTimer timer;
+  timer.start();
+  while (window->rootGeom == nullptr && timer.elapsed() < 10000) QTest::qWait(50);
+  QVERIFY2(window->rootGeom != nullptr, qPrintable(window->console->toPlainText()));
   QCOMPARE(window->rootGeom->getDimension(), 3u);
 }
 

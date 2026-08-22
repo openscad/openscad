@@ -108,6 +108,7 @@ def main():
                         "input": str(source),
                         "output": str(Path(directory) / "diagnostics.csg"),
                         "requestId": 17,
+                        "features": ["structured-diagnostics"],
                     }
                 )
                 + "\n"
