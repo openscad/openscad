@@ -49,6 +49,9 @@ const Feature Feature::ExperimentalDiscretizationByError(
 const Feature Feature::ExperimentalAiFeatures("ai-features",
                                               "Enable AI features (Note: AI integration is under "
                                               "development and does not connect to external APIs yet).");
+const Feature Feature::ExperimentalUnicodeIdentifiers(
+  "unicode-identifiers",
+  "Allow non-ASCII characters in identifiers, following Unicode Standard Annex #31.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
