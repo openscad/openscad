@@ -48,7 +48,7 @@ namespace {
 
 struct OpenCSGVBOCacheKey {
   struct Item {
-    const PolySet *polyset;
+    std::shared_ptr<const PolySet> polyset;
     double matrix[16];
     float color[4];
     bool is_intersection;
@@ -286,7 +286,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
         OpenCSGVBOCacheKey::Item item;
-        item.polyset = csgobj.leaf->polyset.get();
+        item.polyset = csgobj.leaf->polyset;
         std::copy(csgobj.leaf->matrix.data(), csgobj.leaf->matrix.data() + 16, item.matrix);
         item.color[0] = csgobj.leaf->color.r();
         item.color[1] = csgobj.leaf->color.g();
@@ -299,7 +299,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->polyset) {
         OpenCSGVBOCacheKey::Item item;
-        item.polyset = csgobj.leaf->polyset.get();
+        item.polyset = csgobj.leaf->polyset;
         std::copy(csgobj.leaf->matrix.data(), csgobj.leaf->matrix.data() + 16, item.matrix);
         item.color[0] = csgobj.leaf->color.r();
         item.color[1] = csgobj.leaf->color.g();
