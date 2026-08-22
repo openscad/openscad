@@ -51,6 +51,8 @@ const Feature Feature::ExperimentalAiFeatures("ai-features",
                                               "development and does not connect to external APIs yet).");
 const Feature Feature::ExperimentalProcessIsolation(
   "process-isolation", "Run each window's computation in an isolated process (requires restart).");
+const Feature Feature::ExperimentalDiagnosticFamilies(
+  "diagnostic-families", "Collapse structurally similar diagnostics reported on the same source line.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(

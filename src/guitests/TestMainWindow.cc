@@ -172,14 +172,25 @@ void TestMainWindow::checkWorkerMessageSeverity()
   QVERIFY(!window->console->toPlainText().contains("occurred"));
   collapse->setChecked(true);
 
+  const auto familyCollapse = Feature::ExperimentalDiagnosticFamilies.is_enabled();
+  Feature::enable_feature(Feature::ExperimentalDiagnosticFamilies.get_name(), false);
   window->console->clear();
   window->activeEditor->setPlainText("for (i = [1:3]) rotate([i, i, i, i]) cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_COMPARE_WITH_TIMEOUT(window->console->toPlainText().count("Problem converting rotate"), 3, 5000);
+  QVERIFY(!window->console->toPlainText().contains("occurred 3 times"));
+
+  Feature::enable_feature(Feature::ExperimentalDiagnosticFamilies.get_name());
+  window->console->clear();
+  window->activeEditor->setPlainText("for (i = [2:4]) rotate([i, i, i, i]) cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("occurred 3 times"), 5000);
   QCOMPARE(window->console->toPlainText().count("Problem converting rotate"), 2);
   QCOMPARE(window->console->unabridgedText().count("Problem converting rotate"), 3);
   QCOMPARE(window->compilationWarningCount(), 3);
+  Feature::enable_feature(Feature::ExperimentalDiagnosticFamilies.get_name(), familyCollapse);
 
   window->activeEditor->setPlainText("assert(false, \"failure\");");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));

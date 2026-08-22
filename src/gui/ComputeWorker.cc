@@ -212,6 +212,7 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
   req->id = ++this->nextRequestId;
   req->collapseDiagnostics =
     GlobalPreferences::inst()->getValue("advanced/collapseDiagnostics").toBool();
+  req->collapseDiagnosticFamilies = Feature::ExperimentalDiagnosticFamilies.is_enabled();
   req->type = command == "preview" ? RequestContext::Type::PREVIEW : RequestContext::Type::RENDER;
   req->requestDirectory = std::make_shared<QTemporaryDir>(QDir::tempPath() + "/openscad-worker-XXXXXX");
   const auto directory = req->requestDirectory->path();
@@ -401,7 +402,8 @@ void ComputeWorker::processOutput()
         emit output(message);
         continue;
       }
-      const auto shape = diagnosticShape(messageText);
+      const auto shape =
+        (*request)->collapseDiagnosticFamilies ? diagnosticShape(messageText) : messageText;
       const auto duplicate =
         std::find_if((*request)->diagnostics.begin(), (*request)->diagnostics.end(),
                      [&message, &shape](const RequestContext::Diagnostic& candidate) {
