@@ -79,12 +79,17 @@ struct Message {
   Location loc;
   std::string docPath;
   enum message_group group;
+  size_t occurrences;
 
-  Message() : msg(""), loc(Location::NONE), docPath(""), group(message_group::NONE) {}
+  Message() : msg(""), loc(Location::NONE), docPath(""), group(message_group::NONE), occurrences(1) {}
 
   Message(std::string msg, message_group group = message_group::NONE, Location loc = Location::NONE,
-          std::string docPath = "")
-    : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
+          std::string docPath = "", size_t occurrences = 1)
+    : msg(std::move(msg)),
+      loc(std::move(loc)),
+      docPath(std::move(docPath)),
+      group(group),
+      occurrences(occurrences)
   {
   }
 
@@ -112,6 +117,7 @@ extern int traceDepth;
 extern bool traceUsermoduleParameters;
 extern bool parameterCheck;
 extern bool rangeCheck;
+extern bool suppressRepeatedMessages;
 }  // namespace OpenSCAD
 
 void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata);

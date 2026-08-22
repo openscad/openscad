@@ -4,6 +4,7 @@
 #include <QMetaObject>
 #include <QObject>
 #include <QString>
+#include <vector>
 #include <memory>
 
 #include "core/customizer/ParameterSet.h"
@@ -12,7 +13,13 @@
 #include <deque>
 
 struct RequestContext {
+  struct Diagnostic {
+    Message message;
+    size_t count = 1;
+  };
+
   enum class Type { RENDER, PREVIEW } type = Type::PREVIEW;
+  quint64 id = 0;
   std::shared_ptr<class QTemporaryDir> requestDirectory;
   std::shared_ptr<class QTemporaryFile> sourceFile;
   std::shared_ptr<class QTemporaryFile> parameterFile;
@@ -20,6 +27,10 @@ struct RequestContext {
   QString requestSource;
   QString displayFilename;
   bool canceled = false;
+  bool diagnosticsEnded = false;
+  bool collapseDiagnostics = true;
+  QString unabridgedDiagnostics;
+  std::vector<Diagnostic> diagnostics;
 };
 
 class ComputeWorker : public QObject
@@ -50,6 +61,7 @@ signals:
   void previewDone(std::shared_ptr<class CsgInfo> products);
   void diagnostic(const QString& text);
   void output(const Message& message);
+  void unabridgedOutput(const QString& text);
   void progress(int permille);
   void parametersDiscovered(const QString& source, const QString& metadata);
   void dependenciesDiscovered(const QString& source, const QStringList& dependencies);
@@ -63,6 +75,7 @@ protected:
   // How many activeRequests entries are still buffered in pendingRequest, i.e. queued
   // but not yet written to the worker process.
   size_t pendingCount = 0;
+  quint64 nextRequestId = 0;
   QByteArray standardErrorBuffer;
   enum class Request { NONE, RENDER, PREVIEW } request = Request::NONE;
   std::deque<std::shared_ptr<RequestContext>> activeRequests;

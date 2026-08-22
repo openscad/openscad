@@ -800,9 +800,90 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              document_path.string()});
 }
 
+class WorkerDiagnostics
+{
+public:
+  void begin(uint64_t id)
+  {
+    requestId = id;
+    sequence = 0;
+    active = true;
+  }
+
+  void finish() noexcept
+  {
+    if (!active) return;
+    flush();
+    std::cout << "diagnostics-end\t" << requestId << std::endl;
+    active = false;
+  }
+
+  static void output(const Message& message, void *userdata)
+  {
+    auto& self = *static_cast<WorkerDiagnostics *>(userdata);
+    if (!self.active) {
+      std::cerr << message.str() << '\n';
+      return;
+    }
+
+    const auto& loc = message.loc;
+    nlohmann::json record{{"version", 1},
+                          {"requestId", self.requestId},
+                          {"sequence", self.sequence++},
+                          {"group", groupName(message.group)},
+                          {"message", message.msg},
+                          {"documentPath", message.docPath},
+                          {"location",
+                           {{"file", loc.fileName()},
+                            {"line", loc.firstLine()},
+                            {"column", loc.firstColumn()},
+                            {"lastLine", loc.lastLine()},
+                            {"lastColumn", loc.lastColumn()}}}};
+    self.buffer += "diagnostic\t" + record.dump() + "\n";
+    if (self.buffer.size() >= 16 * 1024) self.flush();
+  }
+
+private:
+  static std::string groupName(message_group group)
+  {
+    switch (group) {
+    case message_group::Error:          return "error";
+    case message_group::Warning:        return "warning";
+    case message_group::Echo:           return "echo";
+    case message_group::Trace:          return "trace";
+    case message_group::Deprecated:     return "deprecated";
+    case message_group::Parser_Error:   return "parser-error";
+    case message_group::UI_Error:       return "ui-error";
+    case message_group::UI_Warning:     return "ui-warning";
+    case message_group::Font_Warning:   return "font-warning";
+    case message_group::Export_Error:   return "export-error";
+    case message_group::Export_Warning: return "export-warning";
+    case message_group::HtmlLink:       return "html-link";
+    case message_group::NONE:           return "none";
+    }
+    return "none";
+  }
+
+  void flush()
+  {
+    if (buffer.empty()) return;
+    std::cout << buffer;
+    std::cout.flush();
+    buffer.clear();
+  }
+
+  uint64_t requestId = 0;
+  uint64_t sequence = 0;
+  bool active = false;
+  std::string buffer;
+};
+
 static int compute_worker_main()
 {
   parser_init();
+  WorkerDiagnostics diagnostics;
+  set_output_handler(&WorkerDiagnostics::output, nullptr, &diagnostics);
+  OpenSCAD::suppressRepeatedMessages = false;
   // do_export() chdir()s into the document's directory and leaves the process there. The worker
   // is persistent, so without this it holds a handle on whichever directory it last rendered from
   // for the rest of its life -- on Windows that directory cannot then be renamed or removed by
@@ -826,6 +907,8 @@ static int compute_worker_main()
     } else if (!command.empty() && command.front() == '{') {
       try {
         const auto request = nlohmann::json::parse(command);
+        diagnostics.begin(request.value("requestId", uint64_t{0}));
+        auto diagnosticsGuard = sg::make_scope_guard([&diagnostics] { diagnostics.finish(); });
         const auto operation = request.at("command").get<std::string>();
         const auto preview = operation == "preview";
         if (!preview && operation != "render") throw std::runtime_error("unknown command");
@@ -862,6 +945,8 @@ static int compute_worker_main()
           request.value("normalizationLimit", size_t{0}), request.value("time", 0.0), camera,
           request.value("python", false), request.value("pythonVenv", std::string{}),
           request.value("workingDirectory", std::string{}), request.value("sourcePath", std::string{}));
+        diagnostics.finish();
+        diagnosticsGuard.dismiss();
         std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
       } catch (const ProgressCancelException&) {
         std::cout << "cancelled" << std::endl;

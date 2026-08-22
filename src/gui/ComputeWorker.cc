@@ -26,6 +26,35 @@
 #include "openscad.h"
 #include "utils/printutils.h"
 
+namespace {
+
+message_group messageGroup(const QString& group)
+{
+  if (group == "error") return message_group::Error;
+  if (group == "warning") return message_group::Warning;
+  if (group == "echo") return message_group::Echo;
+  if (group == "trace") return message_group::Trace;
+  if (group == "deprecated") return message_group::Deprecated;
+  if (group == "parser-error") return message_group::Parser_Error;
+  if (group == "ui-error") return message_group::UI_Error;
+  if (group == "ui-warning") return message_group::UI_Warning;
+  if (group == "font-warning") return message_group::Font_Warning;
+  if (group == "export-error") return message_group::Export_Error;
+  if (group == "export-warning") return message_group::Export_Warning;
+  if (group == "html-link") return message_group::HtmlLink;
+  return message_group::NONE;
+}
+
+bool isCollapsible(const message_group group)
+{
+  return group == message_group::Warning || group == message_group::Error ||
+         group == message_group::Deprecated || group == message_group::Parser_Error ||
+         group == message_group::UI_Error || group == message_group::UI_Warning ||
+         group == message_group::Export_Error || group == message_group::Export_Warning;
+}
+
+}  // namespace
+
 ComputeWorker::ComputeWorker(const QString& program) : program(program)
 {
   this->process = new QProcess();
@@ -172,11 +201,19 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
 {
   this->canceled = false;
   auto req = std::make_shared<RequestContext>();
+  req->id = ++this->nextRequestId;
+  req->collapseDiagnostics =
+    GlobalPreferences::inst()->getValue("advanced/collapseDiagnostics").toBool();
   req->type = command == "preview" ? RequestContext::Type::PREVIEW : RequestContext::Type::RENDER;
   req->requestDirectory = std::make_shared<QTemporaryDir>(QDir::tempPath() + "/openscad-worker-XXXXXX");
   const auto directory = req->requestDirectory->path();
-  const auto workingDirectory =
-    filename.isEmpty() ? QDir::currentPath() : QFileInfo(filename).absolutePath();
+  const auto sourceInfo = QFileInfo(filename);
+  auto workingDirectory = filename.isEmpty() ? QDir::currentPath() : sourceInfo.absolutePath();
+  if (!QDir(workingDirectory).exists()) workingDirectory = QDir::homePath();
+  const auto sourcePath =
+    filename.isEmpty() || !QDir(sourceInfo.absolutePath()).exists()
+      ? QDir(workingDirectory).filePath(filename.isEmpty() ? "Untitled.scad" : sourceInfo.fileName())
+      : filename;
   req->displayFilename = filename.isEmpty() ? QString("Untitled.scad") : filename;
   req->sourceFile = std::make_shared<QTemporaryFile>(directory + "/.openscad-worker-XXXXXX.scad");
   if (!req->sourceFile->open()) {
@@ -216,11 +253,12 @@ void ComputeWorker::startRequest(const QString& command, const QString& suffix, 
   const auto vpr = camera.getVpr();
   const auto vpt = camera.getVpt();
   QJsonObject request{
+    {"requestId", static_cast<qint64>(req->id)},
     {"command", command},
     {"input", req->sourceFile->fileName()},
     {"output", req->resultPath},
     {"workingDirectory", workingDirectory},
-    {"sourcePath", filename.isEmpty() ? workingDirectory + "/Untitled.scad" : filename},
+    {"sourcePath", sourcePath},
     {"parameterFile", parameterPath},
     {"setName", "worker"},
     {"normalizationLimit", static_cast<qint64>(normalizationLimit)},
@@ -324,6 +362,64 @@ void ComputeWorker::processOutput()
     if (response == "pong") continue;
     if (response.startsWith("progress\t")) {
       emit progress(response.mid(9).toInt());
+    } else if (response.startsWith("diagnostic\t")) {
+      const auto record = QJsonDocument::fromJson(response.mid(11)).object();
+      const auto requestId = static_cast<quint64>(record["requestId"].toDouble());
+      const auto request = std::find_if(this->activeRequests.begin(), this->activeRequests.end(),
+                                        [requestId](const std::shared_ptr<RequestContext>& candidate) {
+                                          return candidate && candidate->id == requestId;
+                                        });
+      if (request == this->activeRequests.end()) continue;
+
+      const auto location = record["location"].toObject();
+      auto filename = location["file"].toString();
+      if ((*request)->sourceFile && filename == (*request)->sourceFile->fileName()) {
+        filename = (*request)->displayFilename;
+      }
+      auto messageText = record["message"].toString();
+      if ((*request)->sourceFile) {
+        messageText.replace((*request)->sourceFile->fileName(), (*request)->displayFilename);
+      }
+      auto path = filename.isEmpty() ? std::shared_ptr<std::filesystem::path>{}
+                                     : std::make_shared<std::filesystem::path>(filename.toStdString());
+      Message message(messageText.toStdString(), messageGroup(record["group"].toString()),
+                      Location(location["line"].toInt(), location["column"].toInt(),
+                               location["lastLine"].toInt(), location["lastColumn"].toInt(), path),
+                      (*request)->displayFilename.toStdString());
+      (*request)->unabridgedDiagnostics += QString::fromStdString(message.str()) + '\n';
+
+      const auto collapsible = isCollapsible(message.group);
+      if (!collapsible || !(*request)->collapseDiagnostics) {
+        emit output(message);
+        continue;
+      }
+      const auto duplicate = std::find_if((*request)->diagnostics.begin(), (*request)->diagnostics.end(),
+                                          [&message](const RequestContext::Diagnostic& candidate) {
+                                            return candidate.message.group == message.group &&
+                                                   candidate.message.str() == message.str();
+                                          });
+      if (duplicate != (*request)->diagnostics.end()) {
+        ++duplicate->count;
+      } else {
+        (*request)->diagnostics.push_back({message, 1});
+        emit output(message);
+      }
+    } else if (response.startsWith("diagnostics-end\t")) {
+      const auto requestId = response.mid(16).toULongLong();
+      const auto request = std::find_if(this->activeRequests.begin(), this->activeRequests.end(),
+                                        [requestId](const std::shared_ptr<RequestContext>& candidate) {
+                                          return candidate && candidate->id == requestId;
+                                        });
+      if (request == this->activeRequests.end()) continue;
+      (*request)->diagnosticsEnded = true;
+      emit unabridgedOutput((*request)->unabridgedDiagnostics);
+      for (const auto& diagnostic : (*request)->diagnostics) {
+        if (diagnostic.count < 2) continue;
+        emit output(
+          Message(diagnostic.message.msg + " (occurred " + std::to_string(diagnostic.count) + " times)",
+                  diagnostic.message.group, diagnostic.message.loc, diagnostic.message.docPath,
+                  diagnostic.count - 1));
+      }
     } else if (response == "done" || response == "previewdone" || response == "error" ||
                response == "cancelled") {
       std::shared_ptr<RequestContext> req;

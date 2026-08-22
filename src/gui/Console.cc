@@ -47,6 +47,7 @@
 
 #include "gui/MainWindow.h"
 #include "gui/Preferences.h"
+#include "gui/QSettingsCached.h"
 #include "gui/UIUtils.h"
 #include "utils/printutils.h"
 
@@ -59,6 +60,8 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   this->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
 
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this, &Console::setConsoleFont);
+  this->actionCollapseDiagnostics->setChecked(
+    GlobalPreferences::inst()->getValue("advanced/collapseDiagnostics").toBool());
 }
 
 void Console::focusInEvent(QFocusEvent * /*event*/)
@@ -178,8 +181,25 @@ void Console::on_actionClear_triggered()
 void Console::clear()
 {
   this->msgBuffer.clear();
+  this->unabridged.clear();
   this->document()->clear();
   this->appendCursor = this->textCursor();
+}
+
+void Console::on_actionSaveUnabridged_triggered()
+{
+  const auto fileName = QFileDialog::getSaveFileName(this, _("Save unabridged console content"));
+  QFile file(fileName);
+  if (file.open(QIODevice::ReadWrite)) {
+    QTextStream stream(&file);
+    stream << this->unabridged;
+  }
+}
+
+void Console::on_actionCollapseDiagnostics_toggled(bool checked)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/collapseDiagnostics", checked);
 }
 
 void Console::on_actionSaveAs_triggered()
@@ -201,10 +221,14 @@ void Console::contextMenuEvent(QContextMenuEvent *event)
   const bool hasContent = this->document()->characterCount() > 1;
   this->actionClear->setEnabled(hasContent);
   this->actionSaveAs->setEnabled(hasContent);
+  this->actionSaveUnabridged->setEnabled(!this->unabridged.isEmpty());
   QMenu *menu = createStandardContextMenu();
   menu->insertAction(menu->actions().at(0), this->actionClear);
   menu->addSeparator();
   menu->addAction(this->actionSaveAs);
+  menu->addAction(this->actionSaveUnabridged);
+  menu->addSeparator();
+  menu->addAction(this->actionCollapseDiagnostics);
   menu->exec(event->globalPos());
   delete menu;
 }

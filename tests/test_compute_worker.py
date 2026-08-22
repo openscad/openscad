@@ -95,6 +95,47 @@ def main():
             assert (len(vertices), len(polygons)) == (8, 6)
             assert min(vertex[0] for vertex in vertices) == 1.2345678901234567
 
+            source.write_text(
+                'echo("first");\n'
+                'echo("second");\n'
+                'include <definitely-missing.scad>\n'
+                'cube(1);\n'
+            )
+            worker.stdin.write(
+                json.dumps(
+                    {
+                        "command": "preview",
+                        "input": str(source),
+                        "output": str(Path(directory) / "diagnostics.csg"),
+                        "requestId": 17,
+                    }
+                )
+                + "\n"
+            )
+            worker.stdin.flush()
+            responses = wait_for(worker, "previewdone")
+            diagnostic_lines = [
+                response.removeprefix("diagnostic\t")
+                for response in responses
+                if response.startswith("diagnostic\t")
+            ]
+            diagnostics = [json.loads(line) for line in diagnostic_lines]
+            assert [
+                record["message"] for record in diagnostics if record["group"] == "echo"
+            ] == ['"first"', '"second"'], diagnostics
+            assert all(record["requestId"] == 17 for record in diagnostics)
+            assert [record["sequence"] for record in diagnostics] == list(range(len(diagnostics)))
+            assert any(
+                record["group"] == "warning"
+                and "definitely-missing.scad" in record["message"]
+                and record["location"]["line"] == 3
+                for record in diagnostics
+            )
+            end = responses.index("diagnostics-end\t17")
+            assert all(index < end for index, response in enumerate(responses) if response.startswith("diagnostic\t"))
+            assert end < responses.index("previewdone")
+            assert worker.stderr.read(0) == ""
+
             cancel = Path(f"{result}.cancel")
             source.write_text("sphere(1, $fn=31);\n")
             cancel.touch()

@@ -143,14 +143,39 @@ void TestMainWindow::checkWorkerMessageSeverity()
   SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->console->clear();
+  auto *collapse = window->console->findChild<QAction *>("actionCollapseDiagnostics");
+  QVERIFY(collapse != nullptr);
+  collapse->setChecked(true);
   window->activeEditor->setPlainText(
-    "echo(\"ordinary\");\ninclude <definitely-missing.scad>\nassert(false, \"failure\");");
+    "echo(\"ordinary\");\n"
+    "for (i = [0:7]) echo(missing);\n"
+    "cube(1);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
-  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("ordinary"), 5000);
-  QVERIFY(window->console->toPlainText().contains("definitely-missing.scad"));
-  QVERIFY(window->console->toPlainText().contains("failure"));
-  QCOMPARE(window->compilationWarningCount(), 1);
+  QElapsedTimer outputTimer;
+  outputTimer.start();
+  while (!window->console->toPlainText().contains("ordinary") && outputTimer.elapsed() < 5000) {
+    QTest::qWait(50);
+  }
+  QVERIFY2(window->console->toPlainText().contains("ordinary"),
+           qPrintable(QString("console output: %1").arg(window->console->toPlainText())));
+  QVERIFY(window->console->toPlainText().contains("occurred 8 times"));
+  QCOMPARE(window->console->unabridgedText().count("Ignoring unknown variable"), 8);
+  QCOMPARE(window->compilationWarningCount(), 8);
+
+  collapse->setChecked(false);
+  window->console->clear();
+  window->activeEditor->setPlainText("for (i = [0:2]) echo(missing);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_COMPARE_WITH_TIMEOUT(window->console->toPlainText().count("Ignoring unknown variable"), 3, 5000);
+  QVERIFY(!window->console->toPlainText().contains("occurred"));
+  collapse->setChecked(true);
+
+  window->activeEditor->setPlainText("assert(false, \"failure\");");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("failure"), 5000);
   QCOMPARE(window->compilationErrorCount(), 1);
 }
 
