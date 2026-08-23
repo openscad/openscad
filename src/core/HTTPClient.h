@@ -1,10 +1,22 @@
-#ifndef OPENSCAD_HTTPCLIENT_H
-#define OPENSCAD_HTTPCLIENT_H
+#pragma once
 
 #include <string>
 #include <map>
 #include <functional>
 #include <memory>
+
+struct ParsedURL {
+  std::string scheme;
+  std::string userinfo;
+  std::string host;
+  int port;
+  std::string target;
+  std::string host_header;
+  std::string error;
+  bool ipv6{};
+};
+
+ParsedURL parseURL(const std::string& url);
 
 class HTTPClient
 {
@@ -43,5 +55,3 @@ private:
   class Impl;
   std::unique_ptr<Impl> impl;
 };
-
-#endif  // OPENSCAD_HTTPCLIENT_H
