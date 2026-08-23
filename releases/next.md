@@ -122,6 +122,7 @@
 * Removed deprecated -s and -x cmd-line options #5733
 * Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
 * Removed deprecated child() and assign() modules.
+* Removed deprecated trangles= parameter to polyhedron() #6825
 
 **Misc:**
 
