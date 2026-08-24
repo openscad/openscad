@@ -1746,9 +1746,6 @@ msgstr "重置视图"
 msgid "Export as S&VG..."
 msgstr "导出为 SVG(&V)..."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr "导出为 AMF(&A)..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 msgid "Export as &3MF..."

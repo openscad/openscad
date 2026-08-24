@@ -1753,9 +1753,6 @@ msgstr "Ans&icht zurücksetzen"
 msgid "Export as S&VG..."
 msgstr "S&VG exportieren..."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr "&AMF exportieren..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 msgid "Export as &3MF..."
