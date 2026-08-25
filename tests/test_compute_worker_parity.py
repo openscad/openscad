@@ -23,7 +23,8 @@ import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ipc_geometry_payload import read_ipc_geometry, write_off  # noqa: E402
+from ipc_geometry_payload import decode_ipc_geometry, write_off  # noqa: E402
+from ipc_worker_channel import payload_name, read_message  # noqa: E402
 
 MODEL = """
 $fn = 24;
@@ -45,15 +46,17 @@ def openscad(binary, *args):
 
 
 def wait_for(worker, final):
+    """Read until `final`, returning the payloads the worker sent for the request."""
+    payloads = {}
     while True:
-        response = worker.stdout.readline()
-        if not response:
-            raise RuntimeError("compute worker exited before replying")
-        response = response.strip()
-        if response == final:
-            return
-        if response in ("error", "cancelled"):
-            raise RuntimeError(f"compute worker replied {response}")
+        message = read_message(worker)
+        if message[0] == "payload":
+            payloads[message[1]] = message[2]
+            continue
+        if message[1] == final:
+            return payloads
+        if message[1] in ("error", "cancelled"):
+            raise RuntimeError(f"compute worker replied {message[1]}")
 
 
 def triangles(text, vertex_pattern, triangle_pattern):
@@ -82,10 +85,9 @@ def main():
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
     )
     try:
-        assert worker.stdout.readline().strip() == "ready"
+        assert worker.stdout.readline().strip() == b"ready"
 
         with tempfile.TemporaryDirectory() as directory:
             directory = Path(directory)
@@ -94,19 +96,24 @@ def main():
 
             handback = directory / "result.osig"
             worker.stdin.write(
-                json.dumps(
-                    {
-                        "command": "render",
-                        "input": str(source),
-                        "output": str(handback),
-                        "workingDirectory": str(directory),
-                    }
-                )
-                + "\n"
+                (
+                    json.dumps(
+                        {
+                            "command": "render",
+                            "input": str(source),
+                            "output": str(handback),
+                            "workingDirectory": str(directory),
+                        }
+                    )
+                    + "\n"
+                ).encode()
             )
             worker.stdin.flush()
-            wait_for(worker, "done")
-            payload = read_ipc_geometry(handback)
+            payloads = wait_for(worker, "done")
+            # The handback never reaches the filesystem now; it arrives named for the path the
+            # request asked for (feature 32).
+            assert not handback.exists(), handback
+            payload = decode_ipc_geometry(payloads[payload_name(handback)])
             assert payload.vertices and payload.polygons
 
             # What the GUI viewport holds in isolated mode, expressed as something
@@ -127,7 +134,7 @@ def main():
                 else:
                     assert geometry(direct) == geometry(through_worker), message
 
-            worker.stdin.write("quit\n")
+            worker.stdin.write(b"quit\n")
             worker.stdin.flush()
             assert worker.wait(timeout=5) == 0
     finally:

@@ -596,6 +596,73 @@ void TestMainWindow::checkOpenCSGPreparationUsesViewportColorScheme()
 #endif
 }
 
+// Benchmark for feature 34, skipped unless OPENSCAD_STREAMING_BENCH names a .scad file;
+// OPENSCAD_STREAMING_BENCH_FLAG picks the flag state. Kept because this number has to be
+// re-measured after any change to the GUI-side preview phase, and rebuilding the harness each
+// time costs more than carrying it.
+//
+// One preview, one process, one flag state -- deliberately. An earlier cut ran both states in a
+// single process and reported streaming 9.8% faster, which it could not distinguish from the
+// second preview simply reusing the first one's caches. Separate processes remove that entirely.
+// The two processes are then launched concurrently so both meet the same machine load; running
+// them one after another lets anything that starts in between masquerade as an effect.
+void TestMainWindow::checkStreamingPreviewBenchmark()
+{
+  const auto model = qEnvironmentVariable("OPENSCAD_STREAMING_BENCH");
+  if (model.isEmpty()) QSKIP("set OPENSCAD_STREAMING_BENCH to a .scad path to run this");
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  const auto streaming = qEnvironmentVariable("OPENSCAD_STREAMING_BENCH_FLAG") == "1";
+
+  Feature::enable_feature(Feature::ExperimentalStreamingPreview.get_name(), streaming);
+  restoreWindowInitialState();
+  window->tabManager->open(model);
+  QElapsedTimer timer;
+  timer.start();
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 3600000);
+  const auto ms = timer.elapsed();
+
+  qDebug("STREAMING BENCH streaming=%d %lld ms %zu products", streaming ? 1 : 0, ms,
+         window->previewProductCount());
+}
+
+void TestMainWindow::checkStreamingPreviewProducesSameResult()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  // The flag changes when leaf geometry is decoded, never what it decodes to. A preview with it
+  // on must produce the same renderer state as one with it off; if it does not, the streamed
+  // decode path and the read-at-the-end path have diverged.
+  //
+  // It also covers the no-restart claim: the flag is read when a preview is dispatched, so
+  // toggling it between two previews in one window has to take effect without restarting.
+  const auto wasEnabled = Feature::ExperimentalStreamingPreview.is_enabled();
+  // Void, because QVERIFY expands to a bare `return;` and cannot live in a lambda that returns
+  // a value. The count comes back through the out-parameter instead.
+  const auto previewOnce = [this](size_t& products) {
+    restoreWindowInitialState();
+    window->activeEditor->setPlainText("#cube(1); translate([2, 0, 0]) sphere(1, $fn = 12);");
+    QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+#ifdef ENABLE_OPENCSG
+    QTRY_VERIFY_WITH_TIMEOUT(window->previewRenderer != nullptr, 10000);
+#else
+    QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
+#endif
+    QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 10000);
+    products = window->previewProductCount();
+  };
+
+  size_t withoutStreaming = 0;
+  size_t withStreaming = 0;
+  Feature::enable_feature(Feature::ExperimentalStreamingPreview.get_name(), false);
+  previewOnce(withoutStreaming);
+  Feature::enable_feature(Feature::ExperimentalStreamingPreview.get_name());
+  previewOnce(withStreaming);
+  Feature::enable_feature(Feature::ExperimentalStreamingPreview.get_name(), wasEnabled);
+
+  QVERIFY(withoutStreaming > 0);
+  QCOMPARE(withStreaming, withoutStreaming);
+}
+
 void TestMainWindow::checkF5UsesComputeWorkerResult()
 {
   restoreWindowInitialState();

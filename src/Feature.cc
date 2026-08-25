@@ -51,6 +51,11 @@ const Feature Feature::ExperimentalAiFeatures("ai-features",
                                               "development and does not connect to external APIs yet).");
 const Feature Feature::ExperimentalProcessIsolation(
   "process-isolation", "Run each window's computation in an isolated process (requires restart).");
+const Feature Feature::ExperimentalStreamingPreview(
+  "streaming-preview",
+  "Start processing preview geometry as the isolated compute worker produces it, rather than "
+  "waiting for the whole preview to finish. Requires process isolation; has no effect without it. "
+  "Takes effect on the next preview -- one already running keeps the setting it started with.");
 const Feature Feature::ExperimentalStructuredDiagnostics(
   "structured-diagnostics",
   "Stream, collapse, and retain unabridged diagnostics from isolated compute workers.");

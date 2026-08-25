@@ -19,7 +19,15 @@ HEADER = "<IIIiIIIIII"
 
 def read_ipc_geometry(path):
     """Return the decoded Payload from a payload file, checking it is intact."""
-    data = Path(path).read_bytes()
+    return decode_ipc_geometry(Path(path).read_bytes(), path)
+
+
+def decode_ipc_geometry(data, path="<channel>"):
+    """Return the decoded Payload from payload bytes, checking they are intact.
+
+    Payloads arrive over the response channel rather than from a file (feature 32); `path` is
+    only used to say which one failed.
+    """
     (magic, version, _dimension, _convexity, _flags, vertex_count, polygon_count,
      _index_count, color_count, color_index_count) = struct.unpack_from(HEADER, data, 0)
     assert magic == MAGIC, f"bad magic {magic:#x} in {path}"

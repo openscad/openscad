@@ -113,6 +113,7 @@
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
 #include "io/export.h"
+#include "io/ipc_channel.h"
 #include "json/json.hpp"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
@@ -229,6 +230,8 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
     return false;
   }
 
+  // exportFileByName routes to the payload sink itself when a compute worker is collecting, so
+  // there is nothing to special-case here.
   if (is_stdout) {
     exportFileStdOut(root_geom, exportInfo);
   } else {
@@ -293,6 +296,12 @@ template <typename F>
 bool with_output(const bool is_stdout, const std::string& filename, const F& f,
                  std::ios::openmode mode = std::ios::out)
 {
+  // A compute worker returns its outputs over the response channel instead of writing them,
+  // so the same writers feed a buffer named for the file they would have created (feature 32).
+  if (ipc_payload_sink::collecting()) {
+    f(ipc_payload_sink::open(filename));
+    return true;
+  }
   if (is_stdout) {
 #ifdef _WIN32
     if ((mode & std::ios::binary) != 0) {
@@ -498,7 +507,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     products.camera_info.vpt[2] = camera.getVpt().z();
     products.camera_info.vpd = camera.zoomValue();
     products.camera_info.vpf = camera.fovValue();
-    products.compile_products(tree, cmd.csgProductsLimit);
+    products.compile_products(tree, cmd.csgProductsLimit, cmd.csgProductsFile);
     if (!products.write_products(cmd.csgProductsFile)) return 1;
   }
 
@@ -698,14 +707,15 @@ int cmdline(const CommandLine& cmd)
     }
   }
   if (!cmd.parameterMetadataFile.empty()) {
-    std::ofstream metadata(cmd.parameterMetadataFile);
-    metadata << parameters.toJson();
+    with_output(false, cmd.parameterMetadataFile,
+                [&parameters](std::ostream& stream) { stream << parameters.toJson(); });
   }
 
   root_file->handleDependencies();
   if (!cmd.dependencyFile.empty()) {
-    std::ofstream dependencies(cmd.dependencyFile);
-    dependencies << nlohmann::json(root_file->dependencyPaths());
+    with_output(false, cmd.dependencyFile, [&root_file](std::ostream& stream) {
+      stream << nlohmann::json(root_file->dependencyPaths());
+    });
   }
 
   RenderVariables render_variables = {
@@ -800,6 +810,42 @@ static int compute_worker_export(const std::string& input, const std::string& ou
                              document_path.string()});
 }
 
+// Serves one request with the payload sink collecting, so everything the request would have
+// written comes back as framed messages on the response stream instead. The payloads are emitted
+// before the terminating control line, so a reader that has seen "done" has already seen them.
+template <typename F>
+static int compute_worker_request(const F& run)
+{
+  ipc_payload_sink::begin(std::cout);
+  // do_export() chdirs to the source file's parent and does not change back, which is harmless
+  // for a one-shot CLI that exits immediately afterwards. This process does not exit: it would
+  // otherwise sit in the caller's directory until the next request moved it somewhere else. On
+  // Windows a process's current directory is an open handle on it, so the caller could not delete
+  // its own temporary directory -- which is what failed three tests in CI at `eaafb7be2`.
+  std::error_code directory_error;
+  const auto entry_directory = fs::current_path(directory_error);
+  int result = 1;
+  const auto restore_directory = [&] {
+    if (directory_error) return;
+    std::error_code ignored;
+    fs::current_path(entry_directory, ignored);
+  };
+  try {
+    result = run();
+  } catch (...) {
+    restore_directory();
+    ipc_payload_sink::end();
+    throw;
+  }
+  restore_directory();
+  // Payloads went out as they completed; this sends the last one. On failure the partial payloads
+  // already on the wire are the receiver's to discard -- it keys them to a request and only uses
+  // them when that request's terminating line says the request succeeded.
+  if (result == 0) ipc_payload_sink::flush_pending();
+  ipc_payload_sink::end();
+  return result;
+}
+
 class WorkerDiagnostics
 {
 public:
@@ -880,6 +926,12 @@ private:
 
 static int compute_worker_main()
 {
+#ifdef _WIN32
+  // Payloads share this stream with the control lines, so it must not be translated. Control
+  // lines lose their CRLF as a result, which the readers already tolerate: ComputeWorker trims
+  // each line and Python opens the pipe with universal newlines.
+  _setmode(_fileno(stdout), _O_BINARY);
+#endif
   parser_init();
   WorkerDiagnostics diagnostics;
   set_output_handler(&WorkerDiagnostics::output, nullptr, &diagnostics);
@@ -939,13 +991,17 @@ static int compute_worker_main()
           camera.setVpd(values[6]);
           camera.setVpf(values[7]);
         }
-        const auto result = compute_worker_export(
-          request.at("input").get<std::string>(), request.at("output").get<std::string>(),
-          preview ? FileFormat::CSG : FileFormat::IPC_GEOMETRY,
-          request.value("parameterFile", std::string{}), request.value("setName", std::string{}),
-          request.value("normalizationLimit", size_t{0}), request.value("time", 0.0), camera,
-          request.value("python", false), request.value("pythonVenv", std::string{}),
-          request.value("workingDirectory", std::string{}), request.value("sourcePath", std::string{}));
+        const auto result = compute_worker_request([&] {
+          return compute_worker_export(
+            request.at("input").get<std::string>(), request.at("output").get<std::string>(),
+            preview ? FileFormat::CSG : FileFormat::IPC_GEOMETRY,
+            request.value("parameterFile", std::string{}), request.value("setName", std::string{}),
+            request.value("normalizationLimit", size_t{0}), request.value("time", 0.0), camera,
+            request.value("python", false), request.value("pythonVenv", std::string{}),
+            request.value("workingDirectory", std::string{}),
+            request.value("sourcePath", std::string{}));
+        });
+        // After the payload sink has closed, so the end marker cannot land inside a payload frame.
         diagnostics.finish();
         diagnosticsGuard.dismiss();
         std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
@@ -978,9 +1034,11 @@ static int compute_worker_main()
       const auto python = fields.size() > 15 && fields[15] == "python";
       const auto python_venv = fields.size() > 16 ? fields[16] : std::string{};
       try {
-        const auto result = compute_worker_export(
-          fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::IPC_GEOMETRY, parameter_file,
-          set_name, csg_products_limit, time, camera, python, python_venv);
+        const auto result = compute_worker_request([&] {
+          return compute_worker_export(
+            fields[1], fields[2], preview ? FileFormat::CSG : FileFormat::IPC_GEOMETRY, parameter_file,
+            set_name, csg_products_limit, time, camera, python, python_venv);
+        });
         std::cout << (result == 0 ? preview ? "previewdone" : "done" : "error") << std::endl;
       } catch (const ProgressCancelException&) {
         std::cout << "cancelled" << std::endl;

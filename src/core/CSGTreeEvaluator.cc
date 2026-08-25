@@ -234,6 +234,10 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
     }
   }
 
+  // Hand the leaf over the moment it exists. Normalization has not run yet, so this is the
+  // earliest point a consumer could begin work on it -- which is the whole point of the hook.
+  if (this->leafCallback && ps) this->leafCallback(ps);
+
   std::shared_ptr<CSGNode> t(
     new CSGLeaf(ps, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);

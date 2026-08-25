@@ -148,6 +148,9 @@ public:
   const std::shared_ptr<CSGProducts>& previewProductsForTest() const { return rootProduct; }
   bool computeBusyForTest() const { return computeBusy; }
   int compilationWarningCount() const { return compileWarnings; }
+  // Size of the normalized preview product list, for tests that need to compare two previews
+  // without reaching into private state.
+  size_t previewProductCount() const { return rootProduct ? rootProduct->size() : 0; }
 #endif
 
 private:
