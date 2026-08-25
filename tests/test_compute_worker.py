@@ -102,7 +102,8 @@ def main():
                 'include <definitely-missing.scad>\n'
                 'cube(1);\n'
             )
-            worker.stdin.write(
+            send(
+                worker,
                 json.dumps(
                     {
                         "command": "preview",
@@ -112,9 +113,8 @@ def main():
                         "features": ["structured-diagnostics"],
                     }
                 )
-                + "\n"
+                + "\n",
             )
-            worker.stdin.flush()
             responses = wait_for(worker, "previewdone")
             diagnostic_lines = [
                 response.removeprefix("diagnostic\t")
@@ -136,7 +136,7 @@ def main():
             end = responses.index("diagnostics-end\t17")
             assert all(index < end for index, response in enumerate(responses) if response.startswith("diagnostic\t"))
             assert end < responses.index("previewdone")
-            assert worker.stderr.read(0) == ""
+            assert worker.stderr.read(0) == b""
 
             cancel = Path(f"{result}.cancel")
             source.write_text("sphere(1, $fn=31);\n")

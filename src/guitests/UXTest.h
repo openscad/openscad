@@ -13,6 +13,13 @@
     if (!MainWindow::isProcessIsolation()) QSKIP("requires process isolation"); \
   } while (false)
 
+// The inverse, for tests that assert on the in-process path users get with the
+// feature off.
+#define SKIP_WITH_PROCESS_ISOLATION()                                              \
+  do {                                                                             \
+    if (MainWindow::isProcessIsolation()) QSKIP("asserts on the non-isolated path"); \
+  } while (false)
+
 class UXTest : public QObject
 {
   Q_OBJECT;

@@ -170,6 +170,32 @@ void TestMainWindow::checkWindowsPrepareOpenCSGConcurrently()
   other->close();
 }
 
+// The off-GUI-thread preparation is what lets two isolated windows work at once, but it is a
+// threading change in the common preview path, so it is gated on process isolation. With the
+// feature off the preparation must run inline on the GUI thread, which means the worker-thread
+// hold below is never reached and the preview finishes regardless of it.
+void TestMainWindow::checkLegacyPreviewPreparesOnGuiThread()
+{
+  SKIP_WITH_PROCESS_ISOLATION();
+  restoreWindowInitialState();
+
+  window->activeEditor->setPlainText(
+    "difference() { sphere(6, $fn = 64); cylinder(h = 20, r = 3, center = true, $fn = 64); }");
+  window->previewRenderer.reset();
+  MainWindow::holdOpenCSGPreparationsForTest();
+  const bool started = QMetaObject::invokeMethod(window, "on_designActionPreview_triggered");
+  // previewRenderer is only assigned once preparation has finished, so this cannot pass by
+  // running before preparation starts the way a progress-widget check can.
+  const bool finished =
+    QTest::qWaitFor([this]() { return window->previewRenderer != nullptr; }, 60000);
+  const int held = MainWindow::heldOpenCSGPreparationsForTest();
+  MainWindow::releaseOpenCSGPreparationsForTest();
+
+  QVERIFY(started);
+  QCOMPARE(held, 0);
+  QVERIFY2(finished, "the legacy preview did not finish; preparation went to a worker thread");
+}
+
 void TestMainWindow::checkWorkerMessageSeverity()
 {
   SKIP_WITHOUT_PROCESS_ISOLATION();
