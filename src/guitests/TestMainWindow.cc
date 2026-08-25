@@ -186,8 +186,7 @@ void TestMainWindow::checkLegacyPreviewPreparesOnGuiThread()
   const bool started = QMetaObject::invokeMethod(window, "on_designActionPreview_triggered");
   // previewRenderer is only assigned once preparation has finished, so this cannot pass by
   // running before preparation starts the way a progress-widget check can.
-  const bool finished =
-    QTest::qWaitFor([this]() { return window->previewRenderer != nullptr; }, 60000);
+  const bool finished = QTest::qWaitFor([this]() { return window->previewRenderer != nullptr; }, 60000);
   const int held = MainWindow::heldOpenCSGPreparationsForTest();
   MainWindow::releaseOpenCSGPreparationsForTest();
 
