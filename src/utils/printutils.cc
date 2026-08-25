@@ -27,6 +27,7 @@ int OpenSCAD::traceDepth = 12;
 bool OpenSCAD::traceUsermoduleParameters = true;
 bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
+bool OpenSCAD::suppressRepeatedMessages = true;
 
 namespace {
 
@@ -105,8 +106,9 @@ void PRINT_NOCACHE(const Message& msgObj)
 
   const auto msg = msgObj.str();
 
-  if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
-      msgObj.group == message_group::Trace) {
+  if (OpenSCAD::suppressRepeatedMessages &&
+      (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
+       msgObj.group == message_group::Trace)) {
     size_t i;
     for (i = 0; i < lastmessages.size(); ++i) {
       if (lastmessages[i] != msg) break;

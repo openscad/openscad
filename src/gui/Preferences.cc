@@ -225,6 +225,7 @@ void Preferences::init()
   this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
   this->defaultmap["advanced/consoleAutoClear"] = false;
+  this->defaultmap["advanced/collapseDiagnostics"] = true;
   this->defaultmap["advanced/enableHardwarnings"] = false;
   this->defaultmap["advanced/traceDepth"] = 12;
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;

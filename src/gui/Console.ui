@@ -26,6 +26,22 @@
     <string>Save console content to file</string>
    </property>
   </action>
+  <action name="actionSaveUnabridged">
+   <property name="text">
+    <string>Save Unabridged As...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the complete, uncollapsed diagnostic output to file</string>
+   </property>
+  </action>
+  <action name="actionCollapseDiagnostics">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Collapse Repeated Diagnostics</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

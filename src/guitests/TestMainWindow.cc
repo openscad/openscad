@@ -142,14 +142,60 @@ void TestMainWindow::checkWorkerMessageSeverity()
   SKIP_WITHOUT_PROCESS_ISOLATION();
   restoreWindowInitialState();
   window->console->clear();
-  window->activeEditor->setPlainText(
-    "echo(\"ordinary\");\ninclude <definitely-missing.scad>\nassert(false, \"failure\");");
+  auto *collapse = window->console->findChild<QAction *>("actionCollapseDiagnostics");
+  QVERIFY(collapse != nullptr);
+  collapse->setChecked(true);
+  Feature::enable_feature(Feature::ExperimentalStructuredDiagnostics.get_name(), false);
+  window->tabManager->open(QString::fromStdString(PlatformUtils::resourceBasePath()) +
+                           "/tests/basic-ux/empty.scad");
+  window->activeEditor->setPlainText("for (i = [0:7]) echo(missing);");
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
-  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("ordinary"), 5000);
-  QVERIFY(window->console->toPlainText().contains("definitely-missing.scad"));
-  QVERIFY(window->console->toPlainText().contains("failure"));
-  QCOMPARE(window->compilationWarningCount(), 1);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("Ignoring unknown variable"), 5000);
+  QVERIFY(!window->console->toPlainText().contains("occurred 8 times"));
+  QVERIFY(window->console->unabridgedText().isEmpty());
+
+  Feature::enable_feature(Feature::ExperimentalStructuredDiagnostics.get_name());
+  window->console->clear();
+  window->activeEditor->setPlainText(
+    "echo(\"ordinary\");\n"
+    "for (i = [0:7]) echo(missing);\n"
+    "cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QElapsedTimer outputTimer;
+  outputTimer.start();
+  while (!window->console->toPlainText().contains("ordinary") && outputTimer.elapsed() < 5000) {
+    QTest::qWait(50);
+  }
+  QVERIFY2(window->console->toPlainText().contains("ordinary"),
+           qPrintable(QString("console output: %1").arg(window->console->toPlainText())));
+  QVERIFY(window->console->toPlainText().contains("occurred 8 times"));
+  QCOMPARE(window->console->unabridgedText().count("Ignoring unknown variable"), 8);
+  QCOMPARE(window->compilationWarningCount(), 8);
+
+  collapse->setChecked(false);
+  window->console->clear();
+  window->activeEditor->setPlainText("for (i = [0:2]) echo(missing);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_COMPARE_WITH_TIMEOUT(window->console->toPlainText().count("Ignoring unknown variable"), 3, 5000);
+  QVERIFY(!window->console->toPlainText().contains("occurred"));
+  collapse->setChecked(true);
+
+  window->console->clear();
+  window->activeEditor->setPlainText("for (i = [1:3]) rotate([i, i, i, i]) cube(1);");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("occurred 3 times"), 5000);
+  QCOMPARE(window->console->toPlainText().count("Problem converting rotate"), 2);
+  QCOMPARE(window->console->unabridgedText().count("Problem converting rotate"), 3);
+  QCOMPARE(window->compilationWarningCount(), 3);
+
+  window->activeEditor->setPlainText("assert(false, \"failure\");");
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
+  QTRY_VERIFY_WITH_TIMEOUT(window->console->toPlainText().contains("failure"), 5000);
   QCOMPARE(window->compilationErrorCount(), 1);
 }
 
@@ -207,7 +253,10 @@ void TestMainWindow::checkF6UsesComputeWorkerResult()
   window->activeEditor->setPlainText("cube(1);");
 
   QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(window->rootGeom != nullptr, 10000);
+  QElapsedTimer timer;
+  timer.start();
+  while (window->rootGeom == nullptr && timer.elapsed() < 10000) QTest::qWait(50);
+  QVERIFY2(window->rootGeom != nullptr, qPrintable(window->console->toPlainText()));
   QCOMPARE(window->rootGeom->getDimension(), 3u);
 }
 

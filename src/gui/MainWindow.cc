@@ -3636,9 +3636,9 @@ void MainWindow::consoleOutput(const Message& msgObj)
 {
   this->console->addMessage(msgObj);
   if (msgObj.group == message_group::Warning || msgObj.group == message_group::Deprecated) {
-    ++this->compileWarnings;
+    this->compileWarnings += msgObj.occurrences;
   } else if (msgObj.group == message_group::Error) {
-    ++this->compileErrors;
+    this->compileErrors += msgObj.occurrences;
   }
   // FIXME: scad parsing/evaluation should be done on separate thread so as not to block the gui.
   // Then processEvents should no longer be needed here.
@@ -3773,6 +3773,8 @@ void MainWindow::setupCoreSubsystems()
     });
     connect(this->computeWorker, &ComputeWorker::output, this,
             qOverload<const Message&>(&MainWindow::consoleOutput));
+    connect(this->computeWorker, &ComputeWorker::unabridgedOutput, this->console,
+            &Console::setUnabridgedText);
     connect(this->computeWorker, &ComputeWorker::parametersDiscovered, this,
             [this](const QString& source, const QString& metadata) {
               if (this->activeEditor->toPlainText() == source) {

@@ -57,6 +57,7 @@ class Console : public QPlainTextEdit, public Ui::Console
 private:
   static constexpr int MAX_LINES = 5000;
   std::vector<ConsoleMessageBlock> msgBuffer;
+  QString unabridged;
   QTextCursor appendCursor;  // keep a cursor always at the end of document.
 
 public:
@@ -85,6 +86,7 @@ public:
   void focusInEvent(QFocusEvent *event) override;
   void addMessage(const Message& msg);
   void addHtml(const QString& html);
+  QString unabridgedText() const { return this->unabridged; }
 
 signals:
   void linkActivated(QString);
@@ -95,6 +97,9 @@ public slots:
   void on_actionClear_triggered();
   void clear();
   void on_actionSaveAs_triggered();
+  void on_actionSaveUnabridged_triggered();
+  void on_actionCollapseDiagnostics_toggled(bool checked);
+  void setUnabridgedText(const QString& text) { this->unabridged = text; }
   void hyperlinkClicked(const QString& loc);
   void setConsoleFont(const QString& fontFamily, uint ptSize);
   void update();
