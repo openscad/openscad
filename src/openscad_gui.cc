@@ -73,6 +73,7 @@
 #endif
 #include "gui/LaunchingScreen.h"
 #include "gui/MainWindow.h"
+#include <QTimer>
 #include "gui/OpenSCADApp.h"
 #include "gui/Preferences.h"
 #include "gui/QSettingsCached.h"
@@ -336,7 +337,19 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 #endif
   MainWindow::setProcessIsolation(Feature::ExperimentalProcessIsolation.is_enabled());
-  new MainWindow(inputFilesList);
+  // ponytail: measurement scaffolding -- CLI files normally become tabs in one window, which
+  // cannot exercise concurrent per-window work. Set OPENSCAD_WINDOW_PER_FILE=1 to get one
+  // window per file instead. Remove once the row-35 numbers are recorded.
+  if (qEnvironmentVariableIsSet("OPENSCAD_WINDOW_PER_FILE") && !inputFilesList.isEmpty()) {
+    for (const auto& f : inputFilesList) {
+      auto *w = new MainWindow(QStringList(f));
+      // All three fire from the same event-loop pass, which is exactly the situation being measured.
+      QTimer::singleShot(4000, w,
+                         [w]() { QMetaObject::invokeMethod(w, "on_designActionPreview_triggered"); });
+    }
+  } else {
+    new MainWindow(inputFilesList);
+  }
   QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
     QSettingsCached{}.release();
 #ifdef Q_OS_MACOS

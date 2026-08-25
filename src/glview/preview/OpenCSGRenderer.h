@@ -13,6 +13,7 @@
 #include "core/CSGNode.h"
 
 #include "glview/VBORenderer.h"
+#include "glview/VBOBuilder.h"
 
 #include <cstddef>
 #include <functional>
@@ -82,20 +83,40 @@ private:
 class OpenCSGRenderer : public VBORenderer
 {
 public:
+  // The preparation phase, split so most of it can run off the GUI thread.
+  //
+  // beginPrepare() and finishPrepare() make GL calls and must run on the thread that
+  // owns the context, with it current. buildProducts() is pure CPU work over the CSG
+  // leaves -- ~85% of the phase -- and touches no GL and no widgets, so a window can run
+  // it on a worker thread and stop blocking every other window's preparation.
+  struct PendingProduct {
+    std::unique_ptr<OpenCSGVBOProduct> container;
+    std::unique_ptr<VBOBuilder> builder;
+    const CSGProduct *product{nullptr};
+    bool highlight_mode{false};
+    bool background_mode{false};
+    const ShaderUtils::ShaderInfo *shaderinfo{nullptr};
+  };
   OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override = default;
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
   bool prepare(const ShaderUtils::ShaderInfo *shaderinfo, const std::function<bool()>& shouldContinue);
+
+  // GL, context must be current.
+  std::vector<PendingProduct> beginPrepare(const ShaderUtils::ShaderInfo *shaderinfo);
+  // No GL, no widgets: safe on a worker thread. shouldContinue() is polled between leaves
+  // and must be thread-safe -- it must not touch Qt widgets or pump the event loop.
+  bool buildProducts(std::vector<PendingProduct>& pending, const std::function<bool()>& shouldContinue);
+  // GL, context must be current. Consumes pending.
+  void finishPrepare(std::vector<PendingProduct>& pending);
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 
 private:
-  bool createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
-                            const ShaderUtils::ShaderInfo *shaderinfo,
-                            const std::function<bool()>& shouldContinue);
+  bool buildProduct(PendingProduct& pending, const std::function<bool()>& shouldContinue);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;

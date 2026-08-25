@@ -55,6 +55,7 @@
 #include <QProcess>
 #include <QProgressDialog>
 #include <QScreen>
+#include <QSemaphore>
 #include <QSettings>  //Include QSettings for direct operations on settings arrays
 #include <QSignalMapper>
 #include <QSoundEffect>
@@ -66,6 +67,7 @@
 #include <QTextStream>
 #include <QTime>
 #include <QTimer>
+#include <QtConcurrent>
 #include <QToolBar>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -644,9 +646,35 @@ qint64 MainWindow::computeWorkerProcessId() const
 }
 
 #ifdef ENABLE_GUI_TESTS
+namespace {
+QSemaphore openCSGPreparationsStarted;
+QSemaphore openCSGPreparationsProceed;
+std::atomic<bool> holdOpenCSGPreparations{false};
+}  // namespace
+
 void MainWindow::exitComputeWorkerForTest()
 {
   if (this->computeWorker) this->computeWorker->exitForTest();
+}
+
+void MainWindow::holdOpenCSGPreparationsForTest()
+{
+  while (openCSGPreparationsStarted.tryAcquire()) {
+  }
+  while (openCSGPreparationsProceed.tryAcquire()) {
+  }
+  holdOpenCSGPreparations = true;
+}
+
+int MainWindow::heldOpenCSGPreparationsForTest()
+{
+  return openCSGPreparationsStarted.available();
+}
+
+void MainWindow::releaseOpenCSGPreparationsForTest()
+{
+  holdOpenCSGPreparations = false;
+  openCSGPreparationsProceed.release(openCSGPreparationsStarted.available());
 }
 #endif
 
@@ -2043,34 +2071,103 @@ void MainWindow::actionPreviewDone(const std::shared_ptr<CsgInfo>& products)
   if (this->rootProduct && this->rootProduct->size() > limit) {
     LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
     LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
+#ifdef ENABLE_OPENCSG
     this->previewRenderer.reset();
+#endif
   } else {
 #ifdef ENABLE_OPENCSG
-    auto renderer = std::make_shared<OpenCSGRenderer>(this->rootProduct, this->highlightsProducts,
-                                                      this->backgroundProducts);
-    renderer->setColorScheme(this->qglview->colorScheme());
-    this->qglview->makeCurrent();
-    size_t guiProgress = 0;
-    const auto prepared =
-      renderer->prepare(this->qglview->edge_shader.get(), [this, &guiProgress, guiWork]() {
-        QApplication::processEvents();
-        this->qglview->makeCurrent();
-        this->progresswidget->setGuiValue(std::min(++guiProgress, guiWork));
-        return this->progresswidget && !this->progresswidget->wasCanceled();
-      });
-    if (!prepared) {
-      renderer.reset();
-      this->previewRenderer.reset();
-      this->qglview->setRenderer(nullptr);
-      this->qglview->doneCurrent();
-      updateStatusBar(nullptr);
-      compileEnded();
-      return;
-    }
-    this->qglview->doneCurrent();
-    this->previewRenderer = std::move(renderer);
+    startOpenCSGPreparation(guiWork);
+    return;  // continues in finishOpenCSGPreparation() once the worker thread is done
 #endif
   }
+  previewReady();
+}
+
+#ifdef ENABLE_OPENCSG
+// Preparing the OpenCSG products is two GL calls' worth of work wrapped around a lot of
+// plain CPU work (building each leaf's vertex array in host memory). Only the GL halves
+// need this window's context, so the middle runs on a worker thread: while it does, the
+// GUI thread is free and another window can prepare at the same time. Previously the whole
+// phase sat on the GUI thread and pumped the event loop per leaf, which made two windows
+// take twice as long as one.
+void MainWindow::startOpenCSGPreparation(size_t guiWork)
+{
+  auto renderer = std::make_shared<OpenCSGRenderer>(this->rootProduct, this->highlightsProducts,
+                                                    this->backgroundProducts);
+  renderer->setColorScheme(this->qglview->colorScheme());
+  this->qglview->makeCurrent();
+  this->preparingProducts = renderer->beginPrepare(this->qglview->edge_shader.get());
+  this->qglview->doneCurrent();
+
+  this->preparingRenderer = std::move(renderer);
+  this->openCSGPrepareCanceled = false;
+  this->openCSGPrepareProgress = 0;
+  this->openCSGPrepareWork = guiWork;
+
+  if (this->progresswidget) {
+    connect(this->progresswidget, &ProgressWidget::canceled, this,
+            [this]() { this->openCSGPrepareCanceled = true; });
+  }
+  // The worker cannot touch widgets, so progress is a counter it bumps and the GUI thread polls.
+  if (!this->openCSGPrepareProgressTimer) {
+    this->openCSGPrepareProgressTimer = new QTimer(this);
+    connect(this->openCSGPrepareProgressTimer, &QTimer::timeout, this, [this]() {
+      if (this->progresswidget) {
+        this->progresswidget->setGuiValue(
+          std::min(this->openCSGPrepareProgress.load(), this->openCSGPrepareWork));
+      }
+    });
+  }
+  this->openCSGPrepareProgressTimer->start(50);
+
+  if (!this->openCSGPrepareWatcher) {
+    this->openCSGPrepareWatcher = new QFutureWatcher<bool>(this);
+    connect(this->openCSGPrepareWatcher, &QFutureWatcher<bool>::finished, this,
+            &MainWindow::finishOpenCSGPreparation);
+  }
+  auto *renderer_ptr = this->preparingRenderer.get();
+  this->openCSGPrepareWatcher->setFuture(QtConcurrent::run([this, renderer_ptr]() {
+#ifdef ENABLE_GUI_TESTS
+    if (holdOpenCSGPreparations) {
+      openCSGPreparationsStarted.release();
+      openCSGPreparationsProceed.acquire();
+    }
+#endif
+    return renderer_ptr->buildProducts(this->preparingProducts, [this]() {
+      ++this->openCSGPrepareProgress;
+      return !this->openCSGPrepareCanceled;
+    });
+  }));
+}
+
+void MainWindow::finishOpenCSGPreparation()
+{
+  this->openCSGPrepareProgressTimer->stop();
+  const bool prepared = this->openCSGPrepareWatcher->result();
+  auto renderer = std::move(this->preparingRenderer);
+  this->preparingRenderer.reset();
+
+  if (!prepared) {
+    this->preparingProducts.clear();
+    this->previewRenderer.reset();
+    this->qglview->setRenderer(nullptr);
+    updateStatusBar(nullptr);
+    compileEnded();
+    return;
+  }
+
+  this->qglview->makeCurrent();
+  renderer->finishPrepare(this->preparingProducts);
+  this->qglview->doneCurrent();
+  this->previewRenderer = std::move(renderer);
+  previewReady();
+}
+#endif  // ENABLE_OPENCSG
+
+// The tail of a preview, shared by the OpenCSG path (after its worker thread finishes) and
+// by the paths that never build OpenCSG products at all.
+void MainWindow::previewReady()
+{
   this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
     this->rootProduct, this->highlightsProducts, this->backgroundProducts);
 

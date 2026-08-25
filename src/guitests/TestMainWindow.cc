@@ -10,6 +10,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <QVBoxLayout>
+#include <QThread>
 #include <QTimer>
 
 #include "gui/OpenSCADApp.h"
@@ -134,6 +135,38 @@ void TestMainWindow::checkIsolatedWindowsCanPreviewConcurrently()
   other->findChild<ProgressWidget *>()->cancel();
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QTRY_VERIFY_WITH_TIMEOUT(other->findChild<ProgressWidget *>() == nullptr, 5000);
+  other->close();
+}
+
+// Hold the CPU-bound half of each window's preparation at a test barrier and observe that both
+// enter it. This proves overlap directly without confusing parallelism with a wall-clock ratio.
+void TestMainWindow::checkWindowsPrepareOpenCSGConcurrently()
+{
+  SKIP_WITHOUT_PROCESS_ISOLATION();
+  if (QThread::idealThreadCount() < 2) QSKIP("needs more than one core");
+  restoreWindowInitialState();
+
+  const auto model = [](int row) {
+    return QString(
+             "for (i = [0:17]) translate([i * 12, %1, 0]) difference() { sphere(6, $fn = 64); "
+             "cylinder(h = 20, r = 3, center = true, $fn = 64); }")
+      .arg(row * 12);
+  };
+  auto *other = new MainWindow({});
+  window->activeEditor->setPlainText(model(1));
+  other->activeEditor->setPlainText(model(2));
+  MainWindow::holdOpenCSGPreparationsForTest();
+  const bool firstStarted = QMetaObject::invokeMethod(window, "on_designActionPreview_triggered");
+  const bool secondStarted = QMetaObject::invokeMethod(other, "on_designActionPreview_triggered");
+  const bool overlapped =
+    QTest::qWaitFor([]() { return MainWindow::heldOpenCSGPreparationsForTest() == 2; }, 10000);
+  MainWindow::releaseOpenCSGPreparationsForTest();
+
+  QVERIFY(firstStarted);
+  QVERIFY(secondStarted);
+  QVERIFY2(overlapped, "both windows did not enter CPU-side OpenCSG preparation concurrently");
+  QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 120000);
+  QTRY_VERIFY_WITH_TIMEOUT(other->findChild<ProgressWidget *>() == nullptr, 120000);
   other->close();
 }
 
@@ -493,23 +526,17 @@ void TestMainWindow::checkOpenCSGPreparationCanBeCanceled()
   restoreWindowInitialState();
   window->activeEditor->setPlainText("for (i = [0:999]) translate([i, 0, 0]) cube(1);");
 
-  QTimer cancelWhenPreparing;
-  cancelWhenPreparing.setInterval(1);
-  connect(&cancelWhenPreparing, &QTimer::timeout, window, [this, &cancelWhenPreparing]() {
-    // MainWindow::compileCSG() only assigns previewRenderer *after* prepare()
-    // returns, so waiting for it here waits for a window that never opens. A
-    // non-zero GUI progress value is raised from inside the prepare callback,
-    // which is exactly the moment this test wants to cancel in.
-    auto *progress = window->findChild<ProgressWidget *>();
-    if (progress && progress->guiValue() > 0) {
-      cancelWhenPreparing.stop();
-      progress->cancel();
-    }
-  });
-  cancelWhenPreparing.start();
+  MainWindow::holdOpenCSGPreparationsForTest();
+  const bool started = QMetaObject::invokeMethod(window, "on_designActionPreview_triggered");
+  const bool enteredPreparation =
+    QTest::qWaitFor([]() { return MainWindow::heldOpenCSGPreparationsForTest() == 1; }, 10000);
+  auto *progress = window->findChild<ProgressWidget *>();
+  if (progress) progress->cancel();
+  MainWindow::releaseOpenCSGPreparationsForTest();
 
-  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
-  QTRY_VERIFY_WITH_TIMEOUT(!cancelWhenPreparing.isActive(), 10000);
+  QVERIFY(started);
+  QVERIFY2(enteredPreparation, "preview never entered CPU-side OpenCSG preparation");
+  QVERIFY(progress != nullptr);
   QTRY_VERIFY_WITH_TIMEOUT(window->findChild<ProgressWidget *>() == nullptr, 5000);
   QVERIFY(window->previewRenderer == nullptr);
 #endif
