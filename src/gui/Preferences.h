@@ -232,6 +232,7 @@ private:
   nlohmann::json inMemoryAISettings;
   QTimer *aiSaveTimer = nullptr;
   QString currentLoadedProfileName;
+  bool printPageSetupDone{false};
 };
 
 class GlobalPreferences

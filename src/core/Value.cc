@@ -369,6 +369,7 @@ bool Value::getPositiveInt(unsigned int& v) const
 
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const
 {
+  // Caution:  throws if the value is not STRING.
   return std::get<str_utf8_wrapper>(this->value);
 }
 

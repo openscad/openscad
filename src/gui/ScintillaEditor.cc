@@ -502,6 +502,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setPaper(paperColor);
 
     const auto& colors = pt.get_child("colors");
+    const QColor marginBackgroundColor(readColor(colors, "margin-background", paperColor));
+    const QColor marginForegroundColor(readColor(colors, "margin-foreground", textColor));
 
     newLexer->setColor(readColor(colors, "operator", textColor), ScadLexer2::Operator);
     newLexer->setColor(readColor(colors, "comment", textColor), ScadLexer2::Comment);
@@ -583,8 +585,13 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 
     qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)),
                                    errMarkerNumber);
-    qsci->setMarkerBackgroundColor(readColor(colors, "bookmark-marker", QColor(150, 200, 255, 100)),
-                                   bmMarkerNumber);  // light blue
+
+    // Set both the foreground (outline) and background (fill) colors for bookmarks to the
+    // bookmark color.  Otherwise the colored part is really small.
+    const QColor bmColor(
+      readColor(colors, "bookmark-marker", QColor(150, 200, 255, 100)));  // light blue
+    qsci->setMarkerBackgroundColor(bmColor, bmMarkerNumber);
+    qsci->setMarkerForegroundColor(bmColor, bmMarkerNumber);
     qsci->setMarkerBackgroundColor(readColor(colors, "reference-marker1", QColor(11, 156, 49, 100)),
                                    selectionMarkerLevelNumber);
     qsci->setMarkerBackgroundColor(readColor(colors, "reference-marker2", QColor(11, 156, 49, 50)),
@@ -597,8 +604,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                                    selectionMarkerLevelNumber + 4);
     qsci->setMarkerBackgroundColor(readColor(colors, "reference-marker6", QColor(11, 156, 49, 50)),
                                    selectionMarkerLevelNumber + 5);
-    qsci->setMarkerBackgroundColor(readColor(colors, "bookmark-marker", QColor(150, 200, 255, 50)),
-                                   bmMarkerNumber);  // light blue
+
     qsci->setIndicatorForegroundColor(
       readColor(colors, "selected-highlight-indicator", QColor(11, 156, 49, 100)),
       selectionIndicatorIsActiveNumber);  // light green
@@ -647,10 +653,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
       readColor(colors, "hyperlink-indicator-hover", QColor(139, 24, 168, 100)),
       hyperlinkIndicatorNumber);  // violet
     qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
-    qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
-    qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
-    qsci->setFoldMarginColors(readColor(colors, "margin-background", paperColor),
-                              readColor(colors, "margin-background", paperColor));
+    qsci->setMarginsBackgroundColor(marginBackgroundColor);
+    qsci->setMarginsForegroundColor(marginForegroundColor);
+    qsci->setFoldMarginColors(marginBackgroundColor, marginBackgroundColor);
     qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
     qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
     qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
@@ -658,6 +663,38 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
     qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
     qsci->setEdgeColor(readColor(colors, "edge", textColor));
+
+    const auto folderMarkers = {
+      QsciScintilla::SC_MARKNUM_FOLDEROPEN,     // Outermost [-]
+      QsciScintilla::SC_MARKNUM_FOLDER,         // Outermost [+]
+      QsciScintilla::SC_MARKNUM_FOLDERSUB,      // Vertical line alongside block
+      QsciScintilla::SC_MARKNUM_FOLDERTAIL,     // Tail at the end of outermost block
+      QsciScintilla::SC_MARKNUM_FOLDEREND,      // Inner [+]
+      QsciScintilla::SC_MARKNUM_FOLDEROPENMID,  // Inner [-]
+      QsciScintilla::SC_MARKNUM_FOLDERMIDTAIL,  // Tail at the end of inner block
+    };
+
+    // Note:  You should be able to use setMarkerBackgroundColor, but QScintilla never marks
+    // SC_MARKNUM_FOLDER<whatever> as allocated, and so the request is silently rejected. Ref
+    // QsciScintilla::setMarkerBackgroundColor(), which rejects unallocated marker numbers, and
+    // QsciScintilla::setFoldMarker(), which directly calls SCI_MARKERDEFINE instead of calling
+    // QsciScintilla::markerDefine().
+
+    // Note:  For some reason, Scintilla considers the lines, boxes, and symbols associated with
+    // line folding to be "background", and the interior of the boxes (not the symbols) to be
+    // "foreground".
+
+    // Note:  There are hints in the Scintilla source that the selected-background color is sometimes
+    // used, but I haven't been able to find any cases.  Make it red so that it's more obvious
+    // if it's ever used.
+
+    for (auto m : folderMarkers) {
+      // Only the [+] and [-] markers need FORE, but it doesn't hurt to set on the others too.
+      qsci->SendScintilla(QsciScintilla::SCI_MARKERSETBACK, m, marginForegroundColor);
+      qsci->SendScintilla(QsciScintilla::SCI_MARKERSETFORE, m, marginBackgroundColor);
+      qsci->SendScintilla(QsciScintilla::SCI_MARKERSETBACKSELECTED, m, QColor(Qt::red));
+    }
+
   } catch (const std::exception& e) {
     noColor();
   }
@@ -677,7 +714,6 @@ void ScintillaEditor::noColor()
   qsci->setMarkerBackgroundColor(QColor(11, 156, 49, 50), selectionMarkerLevelNumber + 3);
   qsci->setMarkerBackgroundColor(QColor(11, 156, 49, 50), selectionMarkerLevelNumber + 4);
   qsci->setMarkerBackgroundColor(QColor(11, 156, 49, 50), selectionMarkerLevelNumber + 5);
-  qsci->setMarkerBackgroundColor(QColor(150, 200, 255, 100), bmMarkerNumber);  // light blue
   qsci->setIndicatorForegroundColor(QColor(11, 156, 49, 100), selectionIndicatorIsActiveNumber);
   qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsActiveNumber);
   qsci->setIndicatorForegroundColor(QColor(11, 156, 49, 50), selectionIndicatorIsActiveNumber + 1);
@@ -1639,4 +1675,14 @@ void ScintillaEditor::correctUserVarNamesForCompletionFromInputText(
 {
   api->correctUserVarNamesForCompletionFromInputText(
     flagAutoCompleteIncludeVariables, flagAutoCompleteIncludeModules, flagAutoCompleteIncludeFunctions);
+}
+
+void ScintillaEditor::moveLineUp()
+{
+  qsci->SendScintilla(QsciScintilla::SCI_MOVESELECTEDLINESUP);
+}
+
+void ScintillaEditor::moveLineDown()
+{
+  qsci->SendScintilla(QsciScintilla::SCI_MOVESELECTEDLINESDOWN);
 }

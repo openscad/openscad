@@ -1363,6 +1363,7 @@ set(GUI_SOURCES
   src/gui/ai/AIDock.cc
   src/gui/ai/ChatWidget.cc
   src/gui/ai/ChatInputEdit.cc
+  src/gui/ai/ViewportGrabber.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
@@ -1581,6 +1582,7 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/io/*_test.cc"
   "src/utils/*_test.cc"
+  "src/core/*_test.cc"
 )
 # Feature.cc sits at the top of src/, and a recursive glob there would also sweep in the Qt-only
 # tests under src/gui/ that GUI_TEST_SOURCES owns.

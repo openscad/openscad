@@ -299,6 +299,16 @@ void TabManager::uncommentSelection()
   editor->uncommentSelection();
 }
 
+void TabManager::moveLineUp()
+{
+  editor->moveLineUp();
+}
+
+void TabManager::moveLineDown()
+{
+  editor->moveLineDown();
+}
+
 void TabManager::toggleBookmark()
 {
   editor->toggleBookmark();
@@ -584,7 +594,7 @@ bool TabManager::refreshDocument()
     }
   }
   if (file_opened) {
-    parent->fileChangedOnDisk();
+    this->parent->fileChangedOnDisk();
   }
   return file_opened;
 }

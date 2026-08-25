@@ -4030,6 +4030,8 @@ void MainWindow::setupEditor(const QStringList& filenames)
   connect(this->editActionUnindent, &QAction::triggered, tabManager, &TabManager::unindentSelection);
   connect(this->editActionComment, &QAction::triggered, tabManager, &TabManager::commentSelection);
   connect(this->editActionUncomment, &QAction::triggered, tabManager, &TabManager::uncommentSelection);
+  connect(this->editActionMoveLineUp, &QAction::triggered, tabManager, &TabManager::moveLineUp);
+  connect(this->editActionMoveLineDown, &QAction::triggered, tabManager, &TabManager::moveLineDown);
 
   connect(this->editActionToggleBookmark, &QAction::triggered, tabManager, &TabManager::toggleBookmark);
   connect(this->editActionNextBookmark, &QAction::triggered, tabManager, &TabManager::nextBookmark);
@@ -4174,11 +4176,11 @@ void MainWindow::setupDocks()
     {editorDock, _("&Editor")},
     {consoleDock, _("&Console")},
     {parameterDock, _("C&ustomizer")},
-    {errorLogDock, _("Error-&Log")},
+    {errorLogDock, _("Error &Log")},
     {animateDock, _("&Animate")},
     {fontListDock, _("&Font List")},
     {colorListDock, _("C&olor List")},
-    {viewportControlDock, _("&Viewport-Control")},
+    {viewportControlDock, _("&Viewport Control")},
     {aiDock,_("&AI Chat")}
   };
   // clang-format off
