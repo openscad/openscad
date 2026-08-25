@@ -110,7 +110,9 @@ def main():
                         "input": str(source),
                         "output": str(Path(directory) / "diagnostics.csg"),
                         "requestId": 17,
-                        "features": ["structured-diagnostics"],
+                        # The GUI sends every enabled feature, and a dependent feature is only
+                        # enabled when what it depends on is; the worker sees the same pair.
+                        "features": ["process-isolation", "structured-diagnostics"],
                     }
                 )
                 + "\n",

@@ -42,6 +42,10 @@ public:
   [[nodiscard]] bool is_enabled() const;
   void enable(bool status);
 
+  // The feature this one is meaningless without, or nullptr. A dependent feature reports itself
+  // disabled while its dependency is off, so no caller has to check the pair.
+  [[nodiscard]] const Feature *get_dependency() const { return dependency; }
+
   static iterator begin();
   static iterator end();
 
@@ -52,6 +56,8 @@ public:
 private:
   bool enabled{false};
 
+  const Feature *dependency{nullptr};
+
   const std::string name;
   const std::string description;
 
@@ -60,6 +66,7 @@ private:
   static list_t feature_list;
 
   Feature(const std::string& name, std::string description, bool hidden = false);
+  Feature(const std::string& name, std::string description, const Feature *dependency);
   virtual ~Feature() = default;
 };
 

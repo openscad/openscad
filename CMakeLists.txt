@@ -1582,6 +1582,9 @@ file(GLOB_RECURSE TEST_SOURCES
   "src/io/*_test.cc"
   "src/utils/*_test.cc"
 )
+# Feature.cc sits at the top of src/, and a recursive glob there would also sweep in the Qt-only
+# tests under src/gui/ that GUI_TEST_SOURCES owns.
+list(APPEND TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Feature_test.cc")
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
 )

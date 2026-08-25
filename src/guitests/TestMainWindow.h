@@ -30,6 +30,7 @@ private slots:
   void checkOpenCSGPreparationCanBeCanceled();
   void checkWindowsPrepareOpenCSGConcurrently();
   void checkLegacyPreviewPreparesOnGuiThread();
+  void checkDependentFeatureCheckBoxesFollowProcessIsolation();
   void checkWorkerCompletionDoesNotFinishPreviewProgress();
   void checkPreviewShowsSeparateGuiProgress();
   void checkPreviewDrawsAfterCanceledOpenCSGPreparation();

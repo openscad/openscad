@@ -88,7 +88,7 @@ def main():
 
         # With it, leaves interleave with the evaluation that produces them.
         with tempfile.TemporaryDirectory() as directory:
-            order = leaf_order(worker, directory, ["streaming-preview"])
+            order = leaf_order(worker, directory, ["process-isolation", "streaming-preview"])
             first_payload, last_progress = positions(order)
             assert first_payload < last_progress, (
                 "every geometry payload arrived after the worker's last progress report, so the "
