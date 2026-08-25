@@ -11,4 +11,5 @@ private slots:
   void checkTransparentGrabIsRestoredAfterwards();
   void checkRepeatedGrabsDoNotAccumulate();
   void checkCompositingKeepsTheDefaultGrabOpaqueAndUnchanged();
+  void checkGrabAfterAModalDialogIsStillTransparent();
 };

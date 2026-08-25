@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <QImage>
+#include <QApplication>
+#include <QDialog>
 #include <QTest>
 
 #include "gui/QGLView.h"
@@ -105,4 +107,55 @@ void TestExportImage::checkCompositingKeepsTheDefaultGrabOpaqueAndUnchanged()
     }
   }
   QVERIFY2(worst <= 2, qPrintable(QString("compositing changed the ordinary grab by %1").arg(worst)));
+}
+
+namespace {
+
+// restoreWindowInitialState() opens the file and returns; it does not wait for the preview to be
+// built. The other tests here only assert on background corners, so they pass whether or not the
+// model has appeared -- this one compares whole frames, so it has to wait for the render to
+// settle first. Settled means two successive grabs agree.
+QImage settledTransparentFrame(QGLView *view)
+{
+  // Settled means several consecutive grabs agree, not just two: an async render that has not
+  // started yet produces a run of identical empty frames, which a two-frame check accepts.
+  QImage previous = view->grabFrame(true).copy();
+  int stable = 0;
+  for (int i = 0; i < 200; ++i) {
+    qApp->processEvents();
+    QTest::qWait(50);
+    QImage current = view->grabFrame(true).copy();
+    stable = (current == previous) ? stable + 1 : 0;
+    previous = std::move(current);
+    if (stable >= 8) break;
+  }
+  return previous;
+}
+
+}  // namespace
+
+void TestExportImage::checkGrabAfterAModalDialogIsStillTransparent()
+{
+  restoreWindowInitialState();
+
+  // The Export Image flow asks for transparency through the save panel's format popup, so the
+  // frame can only be grabbed once that panel has closed -- it used to be grabbed beforehand,
+  // guarded by a comment about keeping the dialog out of the image. grabFramebuffer() repaints
+  // into its own framebuffer object rather than reading the screen, so nothing on screen can
+  // reach the image and the order is free. This pins that: a grab taken after a modal dialog has
+  // come and gone must be byte-identical to one taken before it.
+  const QImage before = settledTransparentFrame(window->qglview);
+
+  QDialog modal(window);
+  modal.setModal(true);
+  modal.show();
+  QVERIFY(QTest::qWaitForWindowExposed(&modal));
+  modal.close();
+  qApp->processEvents();
+
+  const QImage after = window->qglview->grabFrame(true).copy();
+
+  QCOMPARE(after.size(), before.size());
+  QCOMPARE(qAlpha(after.pixel(0, 0)), 0);
+  QCOMPARE(after, before);
 }
