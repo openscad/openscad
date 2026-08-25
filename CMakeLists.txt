@@ -1305,7 +1305,6 @@ set(GUI_SOURCES
   src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/ExportSvgDialog.cc
-  src/gui/ExportPngDialog.cc
   src/gui/OctoPrintApiKeyDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
@@ -1385,7 +1384,6 @@ set(GUI_HEADERS
     src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/ExportSvgDialog.h
-    src/gui/ExportPngDialog.h
     src/gui/OctoPrintApiKeyDialog.h
     src/gui/FontList.h
     src/gui/ColorList.h
@@ -1450,7 +1448,6 @@ set(GUI_UIS
     src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
     src/gui/ExportSvgDialog.ui
-    src/gui/ExportPngDialog.ui
     src/gui/OctoPrintApiKeyDialog.ui
     src/gui/FontList.ui
     src/gui/ColorList.ui
