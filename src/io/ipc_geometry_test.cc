@@ -12,6 +12,7 @@
 #include <string>
 
 #include "geometry/Geometry.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 
 namespace {
@@ -213,6 +214,81 @@ TEST_CASE("binary IPC geometry keeps a single body unwrapped", "[ipc][geometry]"
   REQUIRE(read);
   REQUIRE(std::dynamic_pointer_cast<const PolySet>(read));
   REQUIRE_FALSE(std::dynamic_pointer_cast<const GeometryList>(read));
+
+  std::filesystem::remove(path);
+}
+
+TEST_CASE("binary IPC geometry carries opaque per-body metadata", "[ipc][geometry]")
+{
+  // The point of the channel: the transport stores and returns these pairs without knowing what
+  // they mean, so a feature can annotate a body without any change here. Materials is the first
+  // caller, but nothing in the transport mentions materials.
+  auto first = std::make_shared<PolySet>(3);
+  first->vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+  first->indices = {{0, 1, 2}};
+  first->setMetadata("material", "PLA");
+  first->setMetadata("anything", "at all");
+  auto second = std::make_shared<PolySet>(3);
+  second->vertices = {{5, 0, 0}, {6, 0, 0}, {5, 1, 0}};
+  second->indices = {{0, 1, 2}};
+  second->setMetadata("material", "PETG");
+
+  Geometry::Geometries bodies;
+  bodies.emplace_back(nullptr, first);
+  bodies.emplace_back(nullptr, second);
+  const std::shared_ptr<const Geometry> list = std::make_shared<GeometryList>(bodies);
+
+  const auto path = tempPath("metadata.bin");
+  {
+    std::ofstream stream(path, std::ios::binary);
+    export_ipc_geometry(list, stream);
+  }
+
+  const auto read = import_ipc_geometry(path);
+  REQUIRE(read);
+  const auto readList = std::dynamic_pointer_cast<const GeometryList>(read);
+  REQUIRE(readList);
+  REQUIRE(readList->getChildren().size() == 2);
+  auto it = readList->getChildren().begin();
+  REQUIRE(it->second->getMetadata("material") == "PLA");
+  REQUIRE(it->second->getMetadata("anything") == "at all");
+  REQUIRE((++it)->second->getMetadata("material") == "PETG");
+  // An absent key is empty, not a crash.
+  REQUIRE(it->second->getMetadata("absent").empty());
+
+  std::filesystem::remove(path);
+}
+
+TEST_CASE("binary IPC geometry round-trips a 2D body", "[ipc][geometry]")
+{
+  // A 2D result used to be forced through the mesh path, which cannot represent outlines.
+  auto polygon = std::make_shared<Polygon2d>();
+  Outline2d outer;
+  outer.vertices = {{0, 0}, {10, 0}, {10, 10}, {0, 10}};
+  polygon->addOutline(outer);
+  Outline2d hole;
+  hole.vertices = {{2, 2}, {4, 2}, {4, 4}};
+  hole.positive = false;
+  polygon->addOutline(hole);
+  polygon->setSanitized(true);
+  polygon->setMetadata("material", "PLA");
+
+  const auto path = tempPath("polygon2d.bin");
+  {
+    std::ofstream stream(path, std::ios::binary);
+    export_ipc_geometry(std::shared_ptr<const Geometry>(polygon), stream);
+  }
+
+  const auto read = import_ipc_geometry(path);
+  REQUIRE(read);
+  const auto readPolygon = std::dynamic_pointer_cast<const Polygon2d>(read);
+  REQUIRE(readPolygon);
+  REQUIRE(readPolygon->outlines().size() == 2);
+  REQUIRE(readPolygon->isSanitized());
+  REQUIRE(readPolygon->getDimension() == 2);
+  REQUIRE(bool(readPolygon->outlines()[0].vertices == outer.vertices));
+  REQUIRE_FALSE(readPolygon->outlines()[1].positive);
+  REQUIRE(readPolygon->getMetadata("material") == "PLA");
 
   std::filesystem::remove(path);
 }

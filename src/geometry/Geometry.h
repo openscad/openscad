@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -41,6 +42,17 @@ public:
   [[nodiscard]] virtual size_t numFacets() const = 0;
   [[nodiscard]] unsigned int getConvexity() const { return convexity; }
   void setConvexity(int c) { this->convexity = c; }
+
+  // Free-form annotations that ride along with the geometry, including across the compute
+  // worker transport. The transport copies them verbatim and never interprets them, so a
+  // feature can carry per-body data to the GUI without the IPC layer knowing it exists.
+  [[nodiscard]] const std::map<std::string, std::string>& getMetadata() const { return this->metadata; }
+  void setMetadata(const std::string& key, std::string value) { this->metadata[key] = std::move(value); }
+  [[nodiscard]] std::string getMetadata(const std::string& key) const
+  {
+    const auto it = this->metadata.find(key);
+    return it == this->metadata.end() ? std::string{} : it->second;
+  }
   virtual void setColor(const Color4f& c) {}
 
   virtual void transform(const Transform3d& /*mat*/) { assert(!"transform not implemented!"); }
@@ -53,6 +65,7 @@ public:
 
 protected:
   int convexity{1};
+  std::map<std::string, std::string> metadata;
 };
 
 /**

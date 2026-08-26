@@ -10,11 +10,14 @@ import struct
 from collections import namedtuple
 from pathlib import Path
 
-Payload = namedtuple("Payload", "vertices polygons colors color_indices")
+Payload = namedtuple("Payload", "vertices polygons colors color_indices metadata")
 
 MAGIC = 0x4749534F  # "OSIG"
-VERSION = 1
-HEADER = "<IIIiIIIIII"
+VERSION = 3
+LIST_HEADER = "<IIII"
+HEADER = "<IiIIIIII"
+KIND_POLYSET = 0
+KIND_POLYGON2D = 1
 
 
 def read_ipc_geometry(path):
@@ -23,16 +26,62 @@ def read_ipc_geometry(path):
 
 
 def decode_ipc_geometry(data, path="<channel>"):
-    """Return the decoded Payload from payload bytes, checking they are intact.
+    """Return the decoded Payload for a single-body payload; see decode_ipc_bodies."""
+    bodies = decode_ipc_bodies(data, path)
+    assert len(bodies) == 1, f"{path}: expected one body, got {len(bodies)}"
+    return bodies[0]
+
+
+def _read_string(data, offset):
+    (length,) = struct.unpack_from("<I", data, offset)
+    offset += 4
+    return data[offset:offset + length].decode("utf-8"), offset + length
+
+
+def _read_metadata(data, offset):
+    (count,) = struct.unpack_from("<I", data, offset)
+    offset += 4
+    metadata = {}
+    for _ in range(count):
+        key, offset = _read_string(data, offset)
+        value, offset = _read_string(data, offset)
+        metadata[key] = value
+    return metadata, offset
+
+
+def decode_ipc_bodies(data, path="<channel>"):
+    """Return a list of Payloads, one per body.
 
     Payloads arrive over the response channel rather than from a file (feature 32); `path` is
     only used to say which one failed.
     """
-    (magic, version, _dimension, _convexity, _flags, vertex_count, polygon_count,
-     _index_count, color_count, color_index_count) = struct.unpack_from(HEADER, data, 0)
+    magic, version, body_count, _reserved = struct.unpack_from(LIST_HEADER, data, 0)
     assert magic == MAGIC, f"bad magic {magic:#x} in {path}"
     assert version == VERSION, f"unexpected payload version {version}"
-    offset = struct.calcsize(HEADER)
+    offset = struct.calcsize(LIST_HEADER)
+    bodies = []
+    for _ in range(body_count):
+        (kind,) = struct.unpack_from("<I", data, offset)
+        offset += 4
+        metadata, offset = _read_metadata(data, offset)
+        assert kind == KIND_POLYSET, f"{path}: 2D bodies are not decoded here (kind {kind})"
+        body, offset = _decode_polyset(data, offset, metadata)
+        bodies.append(body)
+    # Exact, not >=: this is the end-to-end guard against a payload written through a text-mode
+    # stream. On Windows that rewrites every 0x0A byte -- which ordinary doubles contain -- as
+    # 0x0D 0x0A, so the file is longer than its own header describes and every field after the
+    # first newline byte decodes as garbage. A same-machine round trip cannot catch it; this can,
+    # because it reads the worker's real output on the platform where it breaks.
+    assert offset == len(data), (
+        f"{path}: header describes {offset} bytes but the file holds {len(data)}"
+    )
+    return bodies
+
+
+def _decode_polyset(data, offset, metadata):
+    (_dimension, _convexity, _flags, vertex_count, polygon_count,
+     _index_count, color_count, color_index_count) = struct.unpack_from(HEADER, data, offset)
+    offset += struct.calcsize(HEADER)
     vertices = []
     for _ in range(vertex_count):
         vertices.append(struct.unpack_from("<3d", data, offset))
@@ -49,15 +98,7 @@ def decode_ipc_geometry(data, path="<channel>"):
         offset += 16
     color_indices = list(struct.unpack_from(f"<{color_index_count}i", data, offset))
     offset += 4 * color_index_count
-    # Exact, not >=: this is the end-to-end guard against a payload written through a text-mode
-    # stream. On Windows that rewrites every 0x0A byte -- which ordinary doubles contain -- as
-    # 0x0D 0x0A, so the file is longer than its own header describes and every field after the
-    # first newline byte decodes as garbage. A same-machine round trip cannot catch it; this can,
-    # because it reads the worker's real output on the platform where it breaks.
-    assert offset == len(data), (
-        f"{path}: header describes {offset} bytes but the file holds {len(data)}"
-    )
-    return Payload(vertices, polygons, colors, color_indices)
+    return Payload(vertices, polygons, colors, color_indices, metadata), offset
 
 
 def write_off(payload, path):
