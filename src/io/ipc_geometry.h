@@ -30,7 +30,15 @@ inline constexpr auto kIpcGeometrySuffix = ".osig";
 // through the ordinary FileFormat dispatch; the reader matches import_off's shape.
 void export_ipc_geometry(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_ipc_geometry(const PolySet& polyset, std::ostream& output);
-std::unique_ptr<PolySet> import_ipc_geometry(const std::string& filename);
+std::shared_ptr<const Geometry> import_ipc_geometry(const std::string& filename);
 // The same decode from bytes already in memory. `name` only says which payload failed.
-std::unique_ptr<PolySet> import_ipc_geometry_buffer(const char *data, std::size_t size,
-                                                    const std::string& name);
+// Returns a bare PolySet for a single body, or a GeometryList when the payload carries several.
+std::shared_ptr<const Geometry> import_ipc_geometry_buffer(const char *data, std::size_t size,
+                                                           const std::string& name);
+
+// Preview leaves are always written as a single body. These decode that case directly, without
+// the list wrapper, so the caller keeps a mutable PolySet it can adjust (convexity) and no mesh
+// has to be copied.
+std::unique_ptr<PolySet> import_ipc_polyset(const std::string& filename);
+std::unique_ptr<PolySet> import_ipc_polyset_buffer(const char *data, std::size_t size,
+                                                   const std::string& name);

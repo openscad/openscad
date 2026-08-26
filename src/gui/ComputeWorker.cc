@@ -386,7 +386,7 @@ void ComputeWorker::processOutput()
               name.compare(name.size() - std::strlen(kIpcGeometrySuffix),
                            std::strlen(kIpcGeometrySuffix), kIpcGeometrySuffix) == 0) {
             if (auto leaf =
-                  import_ipc_geometry_buffer(message.payload.data(), message.payload.size(), name)) {
+                  import_ipc_polyset_buffer(message.payload.data(), message.payload.size(), name)) {
               this->decodedLeaves[name] = std::shared_ptr<const PolySet>(std::move(leaf));
             }
           }
@@ -527,14 +527,14 @@ void ComputeWorker::processOutput()
         processMetadata(req, resolve);
         if (response == "done") {
           const auto *payload = resolve(req->resultPath.toStdString());
-          std::unique_ptr<PolySet> geometry;
+          std::shared_ptr<const Geometry> geometry;
           if (payload) {
             geometry = import_ipc_geometry_buffer(payload->data(), payload->size(),
                                                   req->resultPath.toStdString());
           } else {
             LOG(message_group::Error, "Compute worker returned no geometry for the render.");
           }
-          emit done(std::shared_ptr<const Geometry>(std::move(geometry)));
+          emit done(std::move(geometry));
         } else if (response == "previewdone") {
           if (!req->canceled) {
             auto products = std::make_shared<CsgInfo>();

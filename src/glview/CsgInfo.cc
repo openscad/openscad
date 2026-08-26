@@ -111,10 +111,10 @@ std::vector<CSGChainObject> read_chain(const json& input,
       std::unique_ptr<PolySet> imported;
       if (!continue_to_placement && resolve) {
         if (const auto *payload = resolve(path)) {
-          imported = import_ipc_geometry_buffer(payload->data(), payload->size(), path);
+          imported = import_ipc_polyset_buffer(payload->data(), payload->size(), path);
         }
       } else if (!continue_to_placement) {
-        imported = import_ipc_geometry(path);
+        imported = import_ipc_polyset(path);
       }
       if (!continue_to_placement && !imported) {
         // Abort rather than emplacing a null PolySet, which renders as a silently missing

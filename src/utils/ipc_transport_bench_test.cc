@@ -211,7 +211,7 @@ TEST_CASE("compute-worker IPC transport cost on real models", "[.][ipc-bench-rea
     probe.close();
     const bool binaryPayload = std::string(magic, 4) == "OSIG";
     auto start = Clock::now();
-    auto mesh = binaryPayload ? import_ipc_geometry(path) : import_off(path, Location::NONE);
+    auto mesh = binaryPayload ? import_ipc_polyset(path) : import_off(path, Location::NONE);
     WARN(std::filesystem::path(path).filename().string()
          << " | decode as " << (binaryPayload ? "binary" : "ASCII OFF") << ": " << msSince(start)
          << " ms");
