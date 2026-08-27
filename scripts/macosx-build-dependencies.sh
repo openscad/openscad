@@ -64,6 +64,9 @@ PACKAGES=(
     # https://github.com/harfbuzz/harfbuzz/releases
     "harfbuzz 11.4.1 1"
 
+    # https://github.com/openssl/openssl/releases
+    "openssl 3.6.3 1"
+
     # https://github.com/nih-at/libzip/releases
     "libzip 1.11.4"
 
@@ -534,6 +537,65 @@ build_freetype()
   fi
 
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
+}
+
+build_openssl()
+{
+  version=$1
+  OPENSSL_DIR="openssl-$version"
+  OPENSSL_FILENAME="${OPENSSL_DIR}.tar.gz"
+
+  cd "$BASEDIR/src"
+  rm -rf "$OPENSSL_DIR"
+  if [ ! -f "$OPENSSL_FILENAME" ]; then
+    curl -LO "https://github.com/openssl/openssl/releases/download/openssl-$version/$OPENSSL_FILENAME"
+  fi
+  tar xzf "$OPENSSL_FILENAME"
+
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    arch_build_dir="${OPENSSL_DIR}-${arch}"
+    rm -rf "$arch_build_dir"
+    cp -R "$OPENSSL_DIR" "$arch_build_dir"
+    cd "$arch_build_dir"
+
+    case "$arch" in
+      arm64) openssl_target="darwin64-arm64-cc" ;;
+      x86_64) openssl_target="darwin64-x86_64-cc" ;;
+      *) echo "Unsupported OpenSSL architecture: $arch" >&2; exit 1 ;;
+    esac
+
+    CFLAGS="-arch $arch -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+    CXXFLAGS="-arch $arch -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+    LDFLAGS="-arch $arch -mmacosx-version-min=$MAC_OSX_VERSION_MIN" \
+    ./Configure "$openssl_target" shared no-tests no-module \
+      --prefix="$DEPLOYDIR" \
+      --openssldir="$DEPLOYDIR/ssl"
+    make -j"$NUMCPU"
+    make install_sw DESTDIR="$PWD/install"
+    cd ..
+  done
+
+  cp -R "${OPENSSL_DIR}-${ARCHS[0]}/install/$DEPLOYDIR/"* "$DEPLOYDIR"
+
+  if (( ${#ARCHS[@]} > 1 )); then
+    SSL_DYLIBS=()
+    CRYPTO_DYLIBS=()
+    for arch in ${ARCHS[*]}; do
+      SSL_DYLIBS+=("${OPENSSL_DIR}-${arch}/install/$DEPLOYDIR/lib/libssl.3.dylib")
+      CRYPTO_DYLIBS+=("${OPENSSL_DIR}-${arch}/install/$DEPLOYDIR/lib/libcrypto.3.dylib")
+    done
+    lipo -create "${SSL_DYLIBS[@]}" -output "$DEPLOYDIR/lib/libssl.3.dylib"
+    lipo -create "${CRYPTO_DYLIBS[@]}" -output "$DEPLOYDIR/lib/libcrypto.3.dylib"
+  fi
+
+  rm -f "$DEPLOYDIR/lib/libssl.a" "$DEPLOYDIR/lib/libcrypto.a"
+
+  ln -sf libssl.3.dylib "$DEPLOYDIR/lib/libssl.dylib"
+  ln -sf libcrypto.3.dylib "$DEPLOYDIR/lib/libcrypto.dylib"
+  install_name_tool -id @rpath/libssl.3.dylib "$DEPLOYDIR/lib/libssl.3.dylib"
+  install_name_tool -id @rpath/libcrypto.3.dylib "$DEPLOYDIR/lib/libcrypto.3.dylib"
+  install_name_tool -change "$DEPLOYDIR/lib/libcrypto.3.dylib" @rpath/libcrypto.3.dylib "$DEPLOYDIR/lib/libssl.3.dylib"
 }
 
 build_libzip()
