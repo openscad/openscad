@@ -2264,13 +2264,6 @@
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="launcherBox">
-                 <property name="text">
-                  <string>Show Welcome Screen</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QCheckBox" name="localizationCheckBox">
                  <property name="text">
                   <string>Enable user interface localization (requires restart of OpenSCAD)</string>
@@ -2886,6 +2879,13 @@
            <string>Dialog visibility</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_19">
+           <item>
+            <widget class="QCheckBox" name="launcherBox">
+             <property name="text">
+              <string>Always show Welcome screen</string>
+             </property>
+            </widget>
+           </item>
            <item>
             <widget class="QCheckBox" name="checkBoxAlwaysShowExportPdfDialog">
              <property name="text">
