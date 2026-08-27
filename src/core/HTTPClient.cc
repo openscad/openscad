@@ -1,4 +1,6 @@
 #include "HTTPClient.h"
+#include <string>
+#include "platform/PlatformUtils.h"
 
 #ifndef __EMSCRIPTEN__
 
@@ -10,13 +12,14 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/error.hpp>
 #include <boost/asio/ssl/stream.hpp>
+#include <boost/lexical_cast.hpp>
 #include <thread>
 #include <mutex>
 #include <set>
 #include <cctype>
 #include <algorithm>
 #include <chrono>
-#include <iostream>
+#include <utility>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -25,16 +28,47 @@
 #include <openssl/x509.h>
 #endif
 
-// URL parsing helper structure
-struct ParsedURL {
-  std::string scheme;
-  std::string host;
-  std::string port;
-  std::string target;
-  std::string error;
-};
+namespace {
 
-static ParsedURL parseURL(const std::string& url)
+int validatePort(const std::string& port)
+{
+  try {
+    int value = boost::lexical_cast<int>(port);
+    if (value >= 1 && value <= 65535) {
+      return value;
+    }
+    return 0;
+  } catch (const boost::bad_lexical_cast&) {
+    return 0;
+  }
+}
+
+std::string makeHostHeader(const ParsedURL& parsed)
+{
+  std::string host;
+
+  if (parsed.ipv6 && parsed.host.find(':') != std::string::npos) {
+    host = "[" + parsed.host + "]";
+  } else {
+    host = parsed.host;
+  }
+
+  if (parsed.scheme == "http" && parsed.port == 80) {
+    return host;
+  }
+
+  if (parsed.scheme == "https" && parsed.port == 443) {
+    return host;
+  }
+
+  host += ":" + std::to_string(parsed.port);
+  return host;
+}
+
+}  // namespace
+
+// Revisit when boost 1.81 is minimum, see https://www.boost.org/library/1.81.0/url/
+ParsedURL parseURL(const std::string& url)
 {
   ParsedURL parsed;
   size_t scheme_end = url.find("://");
@@ -65,18 +99,62 @@ static ParsedURL parseURL(const std::string& url)
     parsed.target = rest.substr(path_start);
   }
 
-  size_t port_start = host_port.find(':');
-  if (port_start == std::string::npos) {
-    parsed.host = host_port;
-    parsed.port = (parsed.scheme == "https") ? "443" : "80";
+  // userinfo is separated from the host by the last '@' in the authority
+  size_t at_pos = host_port.rfind('@');
+  if (at_pos != std::string::npos) {
+    parsed.userinfo = host_port.substr(0, at_pos);
+    host_port = host_port.substr(at_pos + 1);
+  }
+
+  std::string port;
+  if (!host_port.empty() && host_port.front() == '[') {
+    // Bracketed IPv6 literal, e.g. [::1] or [2001:db8::1]:8080
+    parsed.ipv6 = true;
+    size_t close = host_port.find(']');
+    if (close == std::string::npos) {
+      parsed.error = "Invalid URL: missing ']' after IPv6 address";
+      return parsed;
+    }
+    std::string host = host_port.substr(1, close - 1);
+    if (host.empty()) {
+      parsed.error = "Invalid URL: host is empty";
+      return parsed;
+    }
+    size_t after = close + 1;
+    if (after < host_port.size()) {
+      if (host_port[after] != ':') {
+        parsed.error = "Invalid URL: invalid character after IPv6 address";
+        return parsed;
+      }
+      port = host_port.substr(after + 1);
+    }
+    parsed.host = std::move(host);
+    if (port.empty()) {
+      port = (parsed.scheme == "https") ? "443" : "80";
+    }
   } else {
-    parsed.host = host_port.substr(0, port_start);
-    parsed.port = host_port.substr(port_start + 1);
+    size_t port_start = host_port.find(':');
+    if (port_start == std::string::npos) {
+      parsed.host = host_port;
+      port = (parsed.scheme == "https") ? "443" : "80";
+    } else {
+      parsed.host = host_port.substr(0, port_start);
+      port = host_port.substr(port_start + 1);
+    }
   }
 
   if (parsed.host.empty()) {
     parsed.error = "Invalid URL: host is empty";
+    return parsed;
   }
+
+  parsed.port = validatePort(port);
+  if (parsed.port == 0) {
+    parsed.error = "Invalid URL: invalid port '" + port + "'";
+    return parsed;
+  }
+
+  parsed.host_header = makeHostHeader(parsed);
 
   return parsed;
 }
@@ -133,21 +211,21 @@ template <bool IsSSL>
 class Session : public CancelableSession, public std::enable_shared_from_this<Session<IsSSL>>
 {
 public:
-  using StreamType = typename std::conditional<IsSSL, boost::asio::ssl::stream<boost::beast::tcp_stream>,
-                                               boost::beast::tcp_stream>::type;
+  using StreamType = std::conditional_t<IsSSL, boost::asio::ssl::stream<boost::beast::tcp_stream>,
+                                        boost::beast::tcp_stream>;
 
   Session(boost::asio::io_context& io_ctx, SessionRegistry *registry,
           boost::asio::ssl::context *ssl_ctx,  // null if !IsSSL
-          const std::string& host, const std::string& port, const std::string& target,
+          std::string host, int port, std::string target,
           boost::beast::http::request<boost::beast::http::string_body> req,
           HTTPClient::ResponseCallback on_response, HTTPClient::ChunkCallback on_chunk,
           HTTPClient::ErrorCallback on_error, HTTPClient::CompleteCallback on_complete)
-    : resolver_(boost::asio::make_strand(io_ctx)),
+    : registry_(registry),
+      resolver_(boost::asio::make_strand(io_ctx)),
       stream_(create_stream(io_ctx, ssl_ctx)),
-      registry_(registry),
-      host_(host),
+      host_(std::move(host)),
       port_(port),
-      target_(target),
+      target_(std::move(target)),
       req_(std::move(req)),
       on_response_(std::move(on_response)),
       on_chunk_(std::move(on_chunk)),
@@ -164,16 +242,22 @@ public:
     }
 
     if constexpr (IsSSL) {
-      if (!SSL_set_tlsext_host_name(stream_.native_handle(), host_.c_str())) {
-        boost::beast::error_code ec{static_cast<int>(::ERR_get_error()),
-                                    boost::asio::error::get_ssl_category()};
-        fail(ec, "SNI set_host_name");
-        return;
+      // SNI is only defined for hostnames (RFC 6066); omit it for IP literals.
+      boost::system::error_code ip_ec;
+      boost::asio::ip::make_address(host_, ip_ec);
+      if (ip_ec) {
+        if (!SSL_set_tlsext_host_name(stream_.native_handle(), host_.c_str())) {
+          boost::beast::error_code ec{static_cast<int>(::ERR_get_error()),
+                                      boost::asio::error::get_ssl_category()};
+          fail(ec, "SNI set_host_name");
+          return;
+        }
       }
     }
 
     resolver_.async_resolve(
-      host_, port_, boost::beast::bind_front_handler(&Session::on_resolve, this->shared_from_this()));
+      host_, std::to_string(port_),
+      boost::beast::bind_front_handler(&Session::on_resolve, this->shared_from_this()));
   }
 
   void cancel() override
@@ -188,7 +272,7 @@ private:
   boost::asio::ip::tcp::resolver resolver_;
   StreamType stream_;
   std::string host_;
-  std::string port_;
+  int port_;
   std::string target_;
   boost::beast::http::request<boost::beast::http::string_body> req_;
   boost::beast::flat_buffer buffer_;
@@ -473,8 +557,8 @@ void HTTPClient::asyncGet(const std::string& url, const Headers& headers, Respon
 
   boost::beast::http::request<boost::beast::http::string_body> req{boost::beast::http::verb::get,
                                                                    parsed.target, 11};
-  req.set(boost::beast::http::field::host, parsed.host);
-  req.set(boost::beast::http::field::user_agent, "OpenSCAD/AI-Service");
+  req.set(boost::beast::http::field::host, parsed.host_header);
+  req.set(boost::beast::http::field::user_agent, PlatformUtils::user_agent());
   for (const auto& header : headers) {
     req.set(header.first, header.second);
   }
@@ -515,8 +599,8 @@ void HTTPClient::asyncPost(const std::string& url, const Headers& headers, const
 
   boost::beast::http::request<boost::beast::http::string_body> req{boost::beast::http::verb::post,
                                                                    parsed.target, 11};
-  req.set(boost::beast::http::field::host, parsed.host);
-  req.set(boost::beast::http::field::user_agent, "OpenSCAD/AI-Service");
+  req.set(boost::beast::http::field::host, parsed.host_header);
+  req.set(boost::beast::http::field::user_agent, PlatformUtils::user_agent());
   req.set(boost::beast::http::field::content_type, "application/json");
   for (const auto& header : headers) {
     req.set(header.first, header.second);
@@ -561,8 +645,8 @@ void HTTPClient::asyncPostStream(const std::string& url, const Headers& headers,
 
   boost::beast::http::request<boost::beast::http::string_body> req{boost::beast::http::verb::post,
                                                                    parsed.target, 11};
-  req.set(boost::beast::http::field::host, parsed.host);
-  req.set(boost::beast::http::field::user_agent, "OpenSCAD/AI-Service");
+  req.set(boost::beast::http::field::host, parsed.host_header);
+  req.set(boost::beast::http::field::user_agent, PlatformUtils::user_agent());
   req.set(boost::beast::http::field::content_type, "application/json");
   for (const auto& header : headers) {
     req.set(header.first, header.second);
