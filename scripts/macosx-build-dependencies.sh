@@ -65,7 +65,7 @@ PACKAGES=(
     "harfbuzz 11.4.1 1"
 
     # https://github.com/openssl/openssl/releases
-    "openssl 3.6.3"
+    "openssl 3.6.3 1"
 
     # https://github.com/nih-at/libzip/releases
     "libzip 1.11.4"
