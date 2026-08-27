@@ -1,0 +1,29 @@
+Fix a crash (SIGBUS) when the macOS 26+ accessibility stack queries the
+editor's text with an out-of-range or empty range.
+
+QsciAccessibleScintillaBase::textRange() creates a QByteArray sized from
+the position range without validating it.  The macOS accessibility
+bridge can pass degenerate or reversed offsets, producing a range where
+end <= start.  The resulting empty QByteArray's data() points at shared
+read-only storage inside QtCore, and SCI_GETTEXTRANGE writes its NUL
+terminator through it: EXC_BAD_ACCESS / KERN_PROTECTION_FAILURE.
+
+See https://github.com/openscad/openscad/issues/6933
+
+diff -ru QScintilla_src-2.14.1/src/SciAccessibility.cpp QScintilla_src-2.14.1-fixed/src/SciAccessibility.cpp
+--- QScintilla_src-2.14.1/src/SciAccessibility.cpp
++++ QScintilla_src-2.14.1-fixed/src/SciAccessibility.cpp
+@@ -354,6 +354,13 @@
+ QString QsciAccessibleScintillaBase::textRange(QsciScintillaBase *sb,
+         int start_position, int end_position)
+ {
++    // Reject invalid or empty ranges, eg. from degenerate or reversed
++    // offsets in an accessibility query.  Otherwise the QByteArray below
++    // would be empty and data() would return a pointer to shared read-only
++    // storage, which SCI_GETTEXTRANGE then writes through.
++    if (start_position < 0 || end_position <= start_position)
++        return QString();
++
+     QByteArray bytes(end_position - start_position + 1, '\0');
+
+     sb->SendScintilla(QsciScintillaBase::SCI_GETTEXTRANGE, start_position,
