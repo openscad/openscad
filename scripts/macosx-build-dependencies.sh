@@ -101,7 +101,7 @@ PACKAGES=(
     "opencsg 1.8.2"
 
     # https://riverbankcomputing.com/software/qscintilla/download
-    "qscintilla 2.14.1"
+    "qscintilla 2.14.1 1"
 
     # https://github.com/uxlfoundation/oneTBB/releases
     "onetbb 2022.3.0"
@@ -277,7 +277,9 @@ build_qscintilla()
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
-  cd QScintilla_src-$version/src
+  cd QScintilla_src-$version
+  patch -p1 < $OPENSCADDIR/patches/qscintilla-$version-a11y-textrange-crash.patch
+  cd src
   qmake qscintilla.pro QMAKE_APPLE_DEVICE_ARCHS="${ARCHS[*]}"
   make -j"$NUMCPU" install
 }
