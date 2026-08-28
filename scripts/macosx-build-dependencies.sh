@@ -101,7 +101,7 @@ PACKAGES=(
     "opencsg 1.8.2"
 
     # https://riverbankcomputing.com/software/qscintilla/download
-    "qscintilla 2.14.1"
+    "qscintilla 2.14.1 1"
 
     # https://github.com/uxlfoundation/oneTBB/releases
     "onetbb 2022.3.0"
