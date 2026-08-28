@@ -1,0 +1,110 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_PYTHON": "ON",
+        "EXPERIMENTAL": "ON",
+        "USE_BUILTIN_OPENCSG": "ON",
+        "USE_MIMALLOC": "OFF",
+        "USE_QT6": "ON",
+        "CMAKE_PREFIX_PATH": "$env{QT_ROOT_DIR}",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      },
+      "environment": {
+        "VCPKG_DEFAULT_TRIPLET": "x64-windows",
+        "VCPKG_DEFAULT_HOST_TRIPLET": "x64-windows"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-debug",
+      "displayName": "Windows MSVC Debug",
+      "description": "Debug build using MSVC compiler with pre-built libraries",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "displayName": "Windows MSVC Release",
+      "description": "Release build using MSVC compiler with pre-built libraries",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-msvc-relwithdebinfo",
+      "displayName": "Windows MSVC RelWithDebInfo",
+      "description": "RelWithDebInfo build using MSVC compiler with pre-built libraries",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc-release",
+      "configuration": "Release",
+      "jobs": 4
+    },
+    {
+      "name": "windows-msvc-relwithdebinfo",
+      "configurePreset": "windows-msvc-relwithdebinfo",
+      "configuration": "RelWithDebInfo"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc-debug",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 4
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc-release",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 4
+      }
+    }
+  ]
+}
