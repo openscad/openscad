@@ -95,7 +95,7 @@ PACKAGES=(
     "cgal 6.1"
 
     # https://download.qt.io/official_releases/qt/6.8/
-    "qt6 6.8.3"
+    "qt6 6.8.4"
 
     # https://opencsg.org/news.html
     "opencsg 1.8.2"
@@ -246,13 +246,13 @@ build_qt6()
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-src-$version
-  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
-    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
   fi
-  tar xjf qt-everywhere-src-$version.tar.xz
+  tar xjf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
 
-  patch -p1 < $OPENSCADDIR/patches/qt6/qt-6.8.3-AGL-macos.patch
+  patch -p1 < $OPENSCADDIR/patches/qt6/qyieldcpu.patch
 
   mkdir build
   cd build
