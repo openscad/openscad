@@ -95,13 +95,13 @@ PACKAGES=(
     "cgal 6.1"
 
     # https://download.qt.io/official_releases/qt/6.8/
-    "qt6 6.8.3"
+    "qt6 6.8.4"
 
     # https://opencsg.org/news.html
     "opencsg 1.8.2"
 
     # https://riverbankcomputing.com/software/qscintilla/download
-    "qscintilla 2.14.1"
+    "qscintilla 2.14.1 1"
 
     # https://github.com/uxlfoundation/oneTBB/releases
     "onetbb 2022.3.0"
@@ -246,13 +246,13 @@ build_qt6()
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-src-$version
-  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
-    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
   fi
-  tar xjf qt-everywhere-src-$version.tar.xz
+  tar xjf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
 
-  patch -p1 < $OPENSCADDIR/patches/qt6/qt-6.8.3-AGL-macos.patch
+  patch -p1 < $OPENSCADDIR/patches/qt6/qyieldcpu.patch
 
   mkdir build
   cd build
@@ -277,7 +277,9 @@ build_qscintilla()
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
-  cd QScintilla_src-$version/src
+  cd QScintilla_src-$version
+  patch -p1 < $OPENSCADDIR/patches/qscintilla-$version-a11y-textrange-crash.patch
+  cd src
   qmake qscintilla.pro QMAKE_APPLE_DEVICE_ARCHS="${ARCHS[*]}"
   make -j"$NUMCPU" install
 }
