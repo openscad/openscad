@@ -185,8 +185,20 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
 #endif
 #ifdef ENABLE_CGAL
-    return ResultObject::constResult(std::shared_ptr<const Geometry>(
-      CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
+    LOG(message_group::NONE, "DEBUG: Calling CGALUtils::applyUnion3D with %1$d children",
+        actualchildren.size());
+    auto cgal_result = CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end());
+    LOG(message_group::NONE, "DEBUG: CGALUtils::applyUnion3D completed, result is %1$s",
+        cgal_result ? "valid" : "null");
+
+    if (cgal_result) {
+      LOG(message_group::NONE, "DEBUG: Result isEmpty: %1$s, creating ResultObject",
+          cgal_result->isEmpty() ? "true" : "false");
+    }
+
+    auto result = ResultObject::constResult(std::shared_ptr<const Geometry>(std::move(cgal_result)));
+    LOG(message_group::NONE, "DEBUG: ResultObject created, returning from UNION operation");
+    return result;
 #else
     assert(false && "No boolean backend available");
 #endif

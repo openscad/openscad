@@ -48,7 +48,7 @@ do_build() {
 
 do_test_examples() {
 	echo "do_test_examples()"
-	CTEST_ARGS="-C Examples"
+	CTEST_ARGS="-L Examples"
 }
 
 do_test() {
