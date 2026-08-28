@@ -41,7 +41,7 @@ PACKAGES=(
     "double_conversion 3.3.1"
 
     # https://www.boost.org/releases/latest/
-    "boost 1.88.0"
+    "boost 1.92.0"
 
     # https://gitlab.com/libeigen/eigen/-/releases
     "eigen 3.4.0"
