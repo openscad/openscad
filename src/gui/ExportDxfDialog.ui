@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ExportDxfDialog</class>
+ <widget class="QDialog" name="ExportDxfDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>320</width>
+    <height>120</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Export DXF Options</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBoxVersion">
+     <property name="title">
+      <string>DXF Format Version</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayoutVersion">
+      <item>
+       <widget class="QLabel" name="labelVersion">
+        <property name="text">
+         <string>Version:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBoxVersion">
+        <property name="toolTip">
+         <string>Select the DXF format version to export. Legacy preserves the original OpenSCAD output.</string>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayoutDialogButtons">
+     <item>
+      <widget class="QCheckBox" name="checkBoxAlwaysShowDialog">
+       <property name="text">
+        <string>Always show dialog</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacerDialogButtons">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonOk">
+       <property name="text">
+        <string>OK</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>comboBoxVersion</tabstop>
+  <tabstop>checkBoxAlwaysShowDialog</tabstop>  
+  <tabstop>pushButtonCancel</tabstop>
+  <tabstop>pushButtonOk</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButtonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>ExportDxfDialog</receiver>
+   <slot>accept()</slot>
+  </connection>
+  <connection>
+   <sender>pushButtonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>ExportDxfDialog</receiver>
+   <slot>reject()</slot>
+  </connection>
+ </connections>
+</ui>
