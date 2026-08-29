@@ -102,7 +102,7 @@ bool encodeFrameData(const std::vector<uint8_t>& rgba, unsigned width, unsigned 
      auto_convert must stay off. It picks the smallest lossless representation per
      call, so a solid red frame becomes a 1-bit palette image and a solid green one
      gets a different palette -- but APNG has a single IHDR and PLTE for the whole
-     file, so the frames would all render in frame 0's colours. Forcing RGBA8 keeps
+     file, so the frames would all render in frame 0's colors. Forcing RGBA8 keeps
      every frame's IHDR identical and means there is no PLTE to carry.
    */
   LodePNGState state;
