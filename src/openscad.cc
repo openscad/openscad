@@ -245,6 +245,7 @@ void help_export()
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
   help_export(Settings::SettingsExportSvg::cmdline);
+  help_export(Settings::SettingsExportDxf::cmdline);
   exit(0);
 }
 
@@ -512,10 +513,10 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
+
     if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
     }
-
     if (export_format == FileFormat::PNG) {
       bool success = true;
       bool const wrote = with_output(
@@ -911,6 +912,7 @@ int openscad_main(int argc, char **argv)
                     }) +
            "\n")
             .c_str())
+
     ("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
