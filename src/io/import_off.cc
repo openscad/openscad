@@ -24,11 +24,11 @@
 #include "utils/printutils.h"
 
 // Set limit for reserving vector sizes. Using 10⁸ should be
-// plenty for reading files of 1GB. Also this is not a hard
+// plenty for reading files of 100MB. Also this is not a hard
 // limit, but an initial reserve limit preventing malformed
 // files attacking memory allocation with bogus header info.
-constexpr unsigned long max_reserve_vertices = 100'000'000;
-constexpr unsigned long max_reserve_faces = 100'000'000;
+constexpr unsigned long max_reserve_vertices = 10'000'000;
+constexpr unsigned long max_reserve_faces = 10'000'000;
 
 // References:
 // http://www.geomview.org/docs/html/OFF.html
