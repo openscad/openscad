@@ -327,6 +327,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/assert-fail3-test.scad
   ${TEST_SCAD_DIR}/misc/assert-fail4-test.scad
   ${TEST_SCAD_DIR}/misc/assert-fail5-test.scad
+  ${TEST_SCAD_DIR}/misc/assert-fail6-test.scad
+  ${TEST_SCAD_DIR}/misc/assert-fail7-test.scad
   ${TEST_SCAD_DIR}/misc/for-c-style-infinite-loop.scad
   ${TEST_SCAD_DIR}/misc/parser-tests.scad
   ${TEST_SCAD_DIR}/misc/builtin-tests.scad
