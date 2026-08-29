@@ -183,11 +183,9 @@ std::unique_ptr<PolySet> applyHull3D(const Geometry::Geometries& children)
       });
 #endif  // ENABLE_MANIFOLD
     } else if (const auto *ps = dynamic_cast<const PolySet *>(chgeom.get())) {
-      addCapacity(ps->indices.size() * 3);
-      for (const auto& p : ps->indices) {
-        for (const auto& ind : p) {
-          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(ps->vertices[ind]));
-        }
+      addCapacity(ps->vertices.size());
+      for (const auto& v : ps->vertices) {
+        addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(v));
       }
     }
   }
