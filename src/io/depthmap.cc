@@ -338,18 +338,18 @@ EyeDepthExtent eye_depth_extent(const double bboxMin[3], const double bboxMax[3]
 DepthRange capped_sphere_range(const double bboxMin[3], const double bboxMax[3],
                                const double modelview[16])
 {
-  double centre[3];
+  double center[3];
   double radius2 = 0.0;
   for (int i = 0; i < 3; ++i) {
-    centre[i] = 0.5 * (bboxMin[i] + bboxMax[i]);
+    center[i] = 0.5 * (bboxMin[i] + bboxMax[i]);
     const double half = 0.5 * (bboxMax[i] - bboxMin[i]);
     radius2 += half * half;
   }
   const double radius = std::sqrt(radius2);
 
-  // Distance from the eye to the sphere centre; -z is in front of the eye.
+  // Distance from the eye to the sphere center; -z is in front of the eye.
   const double dist =
-    -(modelview[2] * centre[0] + modelview[6] * centre[1] + modelview[10] * centre[2] + modelview[14]);
+    -(modelview[2] * center[0] + modelview[6] * center[1] + modelview[10] * center[2] + modelview[14]);
 
   // Cap the diameter at the viewing distance, so the near end stays in front of
   // the eye however large the model is relative to the camera.

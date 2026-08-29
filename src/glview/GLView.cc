@@ -165,9 +165,9 @@ void GLView::setupCamera()
    Shade the model by distance instead of by lighting, so the viewport shows what
    a depth map export will contain.
 
-   This is GL_LINEAR fog with a black fog colour over white geometry: fog blends
+   This is GL_LINEAR fog with a black fog color over white geometry: fog blends
    f*white + (1-f)*black where f is linear in eye-space distance, so the fragment
-   colour *is* the depth. Nothing is read back and no shader is involved.
+   color *is* the depth. Nothing is read back and no shader is involved.
 
    Fog distance is eye-space and already linear, so unlike the export path this
    needs none of linearize_depth()'s unprojection - and none of its precision
@@ -204,8 +204,8 @@ void GLView::setupDepthShading()
 
   // Fog blends f*C + (1-f)*fogcolour, so the result is only depth if C is
   // constant. glColor3f is not enough: the VBO renderers supply per-vertex
-  // colours, which win with lighting off. Instead keep lighting on, take
-  // GL_COLOR_MATERIAL out (so vertex colours stop feeding the material), and
+  // colors, which win with lighting off. Instead keep lighting on, take
+  // GL_COLOR_MATERIAL out (so vertex colors stop feeding the material), and
   // make the material purely emissive white - emission ignores normals, so
   // every fragment comes out the same white regardless of orientation.
   const GLfloat white[4] = {1.0f, 1.0f, 1.0f, 1.0f};

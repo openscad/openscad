@@ -24,7 +24,7 @@ public:
   ~OffscreenView() override;
   bool save(std::ostream& output) const;
   //! Write the depth buffer as a PNG in the given profile, rather than the
-  //! colour buffer. Must be called after paintGL(), like save().
+  //! color buffer. Must be called after paintGL(), like save().
   bool saveDepth(std::ostream& output, DepthProfile profile) const;
   bool saveDepth(std::ostream& output, const DepthmapOptions& options) const;
   // TODO: Do we need to worry about deletion order?

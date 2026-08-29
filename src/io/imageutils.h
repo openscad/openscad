@@ -8,7 +8,7 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
 /*!
    Write a 16-bit greyscale PNG. Samples are big-endian, as PNG stores them.
 
-   Always lodepng, on every platform: the CoreGraphics writer used for colour
+   Always lodepng, on every platform: the CoreGraphics writer used for color
    output on macOS is 8 bits per component, and lodepng is compiled
    unconditionally, so there is no reason to fork this per platform.
  */

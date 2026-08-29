@@ -23,7 +23,7 @@ std::uint16_t grey16(const DepthImage& img, size_t pixel)
 
 }  // namespace
 
-TEST_CASE("metric profile encodes linear millimetres, near dark", "[Depthmap]")
+TEST_CASE("metric profile encodes linear millimeters, near dark", "[Depthmap]")
 {
   // A 2x2 buffer: three depths plus one background pixel.
   const std::vector<float> depths = {10.0f, 20.0f, 100.0f, BG};
@@ -32,7 +32,7 @@ TEST_CASE("metric profile encodes linear millimetres, near dark", "[Depthmap]")
   REQUIRE(img.bytesPerPixel == 2);
   REQUIRE(img.pixels.size() == 4 * 2);
 
-  // Value is the distance itself, so it survives a round trip to millimetres.
+  // Value is the distance itself, so it survives a round trip to millimeters.
   CHECK(grey16(img, 0) == 10);
   CHECK(grey16(img, 1) == 20);
   CHECK(grey16(img, 2) == 100);
@@ -353,7 +353,7 @@ TEST_CASE("the camera sidecar states its conventions", "[Depthmap]")
   // plausible-looking transposed reconstruction. Say it in the file.
   CHECK(json.find("\"matrixOrder\": \"column-major\"") != std::string::npos);
   CHECK(json.find("\"handedness\": \"right\"") != std::string::npos);
-  // Depth is measured from the eye in both projections, and in millimetres.
+  // Depth is measured from the eye in both projections, and in millimeters.
   CHECK(json.find("\"depthOrigin\": \"eye\"") != std::string::npos);
   CHECK(json.find("\"depthUnits\": \"mm\"") != std::string::npos);
 }
@@ -463,7 +463,7 @@ TEST_CASE("a long model measures its length when pointed at the camera", "[Depth
   CHECK((endOn.farthest - endOn.nearest) / (sideOn.farthest - sideOn.nearest) == Catch::Approx(25.0));
 }
 
-TEST_CASE("eye depth extent is measured from the box, not its centre", "[Depthmap]")
+TEST_CASE("eye depth extent is measured from the box, not its center", "[Depthmap]")
 {
   // A bounding sphere would report the same extent in every orientation - the
   // stable alternative, rejected for cost in contrast. Recorded as a test so the
@@ -542,7 +542,7 @@ TEST_CASE("the sphere range never collapses or inverts", "[Depthmap]")
   const auto degenerate = capped_sphere_range(p, p, viewDownZ(10.0).data());
   CHECK(degenerate.end > degenerate.start);
 
-  // Centre behind the eye: nothing sensible to normalize across, but it must
+  // Center behind the eye: nothing sensible to normalize across, but it must
   // still hand back a usable, positive, non-inverted range rather than NaN.
   const auto behind = capped_sphere_range(p, p, viewDownZ(-10.0).data());
   CHECK(behind.end > behind.start);

@@ -869,7 +869,7 @@ endif()
 # Depth map orientation dependence. The visual profile normalizes across the
 # bounding box's depth extent along the current view axis, so a long model grades
 # over a very different range end-on than side-on. Both views are pinned: the
-# behaviour is a deliberate trade (see eye_depth_extent() in src/io/depthmap.h),
+# behavior is a deliberate trade (see eye_depth_extent() in src/io/depthmap.h),
 # and a silent change to either one is a change users will see.
 set(DEPTHMAP_ELONGATED ${TEST_SCAD_DIR}/misc/depthmap-elongated.scad)
 add_cmdline_test(export-depthmap-endon  OPENSCAD SUFFIX png FILES ${DEPTHMAP_ELONGATED} ARGS --export-format=depthmap -O depthmap/profile=visual --camera=0,0,0,90,0,90,400)

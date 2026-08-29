@@ -11,14 +11,14 @@
    every axis except the curve:
 
    - metric: 16-bit big-endian grey, linear distance from the camera in
-     millimetres scaled by DEPTHMAP_METRIC_SCALE, near = dark, background =
+     millimeters scaled by DEPTHMAP_METRIC_SCALE, near = dark, background =
      65535 (farthest). Read directly by Kinect/OpenNI-style tooling, ROS,
      Open3D and PCL.
    - visual: 8-bit RGB grey, normalized across the model's own depth extent,
      near = bright, background = black. This is what ControlNet depth and
      general image tooling expect, having been trained on MiDaS output.
 
-   The input is linear distance **from the near plane** in millimetres, not from
+   The input is linear distance **from the near plane** in millimeters, not from
    the eye: the eye sits at Camera::zoomValue() along -Y and --viewall moves it,
    so eye-relative values would shift with the zoom level and the same model
    would encode differently at two zooms. Pixels with no geometry are marked by
@@ -31,7 +31,7 @@ enum class DepthProfile : std::uint8_t {
   visual,
 };
 
-//! Units per millimetre in the metric profile: 1 => 1mm, matching the
+//! Units per millimeter in the metric profile: 1 => 1mm, matching the
 //! prevailing Kinect/ROS convention. (TUM's 5000-per-metre variant exists but
 //! is a dataset-specific correction, not a convention to follow.)
 inline constexpr double DEPTHMAP_METRIC_SCALE = 1.0;
@@ -41,7 +41,7 @@ struct DepthImage {
   std::vector<std::uint8_t> pixels;
   //! Bytes per pixel: 2 for metric (16-bit grey), 3 for visual (8-bit RGB).
   std::uint8_t bytesPerPixel = 0;
-  //! The finite depth extent actually found, in millimetres. Both are 0 when
+  //! The finite depth extent actually found, in millimeters. Both are 0 when
   //! the buffer held no geometry at all. These stay truthful even when an
   //! explicit range is in force - reporting the requested range back would hide
   //! precisely the fact an explicit range most needs to surface.
@@ -52,7 +52,7 @@ struct DepthImage {
 };
 
 /*!
-   Encode linear camera-space depths (millimetres, non-finite where there is no
+   Encode linear camera-space depths (millimeters, non-finite where there is no
    geometry) into pixels for the given profile.
  */
 DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width, std::uint32_t height,
@@ -60,7 +60,7 @@ DepthImage encode_depthmap(const std::vector<float>& depths, std::uint32_t width
 
 /*!
    Convert window-space depth (as glReadPixels(GL_DEPTH_COMPONENT) returns it,
-   in [0,1]) to millimetres.
+   in [0,1]) to millimeters.
 
    Distance is measured from the eye in both projections, so the same model
    exports the same numbers however it is projected, and matches what the
@@ -113,7 +113,7 @@ struct DepthRange {
 
 /*!
    The depth range the shading normalizes across: the model's bounding sphere,
-   with its diameter capped at the distance from the camera to the sphere centre.
+   with its diameter capped at the distance from the camera to the sphere center.
 
    **Orientation invariant by construction**, which is the point - a sphere
    presents the same depth extent from every direction, so turning the model no
@@ -150,7 +150,7 @@ DepthRange depth_range_for_bounds(double nearest, double farthest);
 /*!
    The range the viewport shading should use: an explicit range if the user gave
    one, otherwise the bounding-box extent. An explicit range is a stronger
-   statement than "fit the model", and it is what the export honours - so the
+   statement than "fit the model", and it is what the export honors - so the
    viewport defers to it, or preview and file disagree exactly when the user
    asked for them to agree.
  */

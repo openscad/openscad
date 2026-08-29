@@ -185,7 +185,7 @@ bool OffscreenView::saveDepth(std::ostream& output, const DepthmapOptions& optio
   }
   const auto image = encode_depthmap(mm, this->ctx->width(), this->ctx->height(), effective);
 
-  // Same as the colour path: buffers read from OpenGL are upside-down.
+  // Same as the color path: buffers read from OpenGL are upside-down.
   std::vector<uint8_t> flipped(image.pixels.size());
   flip_image(image.pixels.data(), flipped.data(), image.bytesPerPixel, this->ctx->width(),
              this->ctx->height());

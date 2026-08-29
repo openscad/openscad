@@ -1065,9 +1065,9 @@ void MainWindow::compileCSG()
       renderStatistic.printCacheStatistic();
       this->processEvents();
     } catch (const ProgressCancelException&) {
-      LOG("CSG generation cancelled.");
+      LOG("CSG generation canceled.");
     } catch (const HardWarningException&) {
-      LOG("CSG generation cancelled due to hardwarning being enabled.");
+      LOG("CSG generation canceled due to hardwarning being enabled.");
     }
     progress_report_fin();
     updateStatusBar(nullptr);

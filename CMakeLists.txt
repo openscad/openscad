@@ -172,7 +172,7 @@ if (MINGW)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -gsplit-dwarf;            # Put most DWARF in .dwo side files
         -fno-omit-frame-pointer;  # Better backtraces
@@ -205,7 +205,7 @@ if (MINGW)
 
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -fstandalone-debug;       # Emit complete type info for headers/templates
         -fno-omit-frame-pointer;  # Better backtraces
