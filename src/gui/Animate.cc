@@ -306,7 +306,7 @@ void Animate::startDump()
   if (wasRunning) animateTimer->start();
 
   if (path.isEmpty()) {
-    // Cancelled: untick the box rather than silently recording to nowhere.
+    // Canceled: untick the box rather than silently recording to nowhere.
     e_dump->setChecked(false);
     return;
   }

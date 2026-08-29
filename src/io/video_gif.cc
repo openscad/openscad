@@ -21,7 +21,7 @@ namespace {
 
 /*
    Dithering is on. A shaded 3D render is mostly smooth gradients, and GIF's 256
-   colours band badly across them; the cost is a second pass over each frame, which is
+   colors band badly across them; the cost is a second pass over each frame, which is
    nothing next to rendering it.
  */
 constexpr bool DITHER = true;

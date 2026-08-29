@@ -30,7 +30,7 @@ constexpr unsigned HEIGHT = 4;
 constexpr unsigned FPS = 10;
 constexpr unsigned FRAMES = 3;
 
-//! One solid-colour RGBA frame, tightly packed.
+//! One solid-color RGBA frame, tightly packed.
 std::vector<uint8_t> solidFrame(uint8_t r, uint8_t g, uint8_t b)
 {
   std::vector<uint8_t> px(static_cast<size_t>(WIDTH) * HEIGHT * 4);
@@ -239,7 +239,7 @@ GifParse parseGif(const std::string& d)
 
   const auto packed = static_cast<uint8_t>(d[10]);
   size_t pos = 13;
-  if (packed & 0x80) pos += 3u << ((packed & 0x07) + 1);  // global colour table
+  if (packed & 0x80) pos += 3u << ((packed & 0x07) + 1);  // global color table
 
   while (pos < d.size()) {
     const auto introducer = static_cast<uint8_t>(d[pos]);
@@ -307,9 +307,9 @@ TEST_CASE("APNG output is a structurally valid animated PNG", "[video]")
 
   /*
      There is one IHDR and one palette for the whole file, but frames are compressed
-     independently -- so an encoder that lets each frame pick its own smallest colour
+     independently -- so an encoder that lets each frame pick its own smallest color
      type produces frames that all render in frame 0's palette. Pinning 8-bit RGBA
-     (colour type 6) and requiring no PLTE is what keeps frames independent.
+     (color type 6) and requiring no PLTE is what keeps frames independent.
    */
   CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 8]) == 8);  // bit depth
   CHECK(static_cast<uint8_t>(data[chunks.front().dataOffset + 9]) == 6);  // RGBA
