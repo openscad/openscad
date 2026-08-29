@@ -288,6 +288,54 @@ ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const Mani
   return {mani, originalIDs, originalIDToColor, subtractedIDs};
 }
 
+ManifoldGeometry ManifoldGeometry::boolOp(
+  manifold::OpType opType,
+  const std::vector<std::shared_ptr<const ManifoldGeometry>>& operands)
+{
+  std::vector<manifold::Manifold> manifolds;
+  manifolds.reserve(operands.size());
+  for (const auto& g : operands) manifolds.push_back(g->manifold_);
+
+  // Manifold's BatchBoolean performs a balanced (and internally parallel) reduction. For Subtract
+  // it computes operands[0] - union(operands[1..]). Both are geometrically identical to folding the
+  // pairwise operators, but avoid re-processing the growing accumulator on every step.
+  auto mani = manifold::Manifold::BatchBoolean(manifolds, opType);
+
+  // Merge the id / color / subtracted-id metadata exactly as the equivalent binOp() fold would.
+  std::set<uint32_t> originalIDs;
+  std::map<uint32_t, Color4f> originalIDToColor;
+  std::set<uint32_t> subtractedIDs;
+
+  if (opType == manifold::OpType::Subtract) {
+    const auto& first = *operands.front();
+    originalIDs = first.originalIDs_;
+    originalIDToColor = first.originalIDToColor_;
+    subtractedIDs = first.subtractedIDs_;
+    for (size_t i = 1; i < operands.size(); ++i) {
+      const auto& rhs = *operands[i];
+      originalIDs.insert(rhs.originalIDs_.begin(), rhs.originalIDs_.end());
+      // Mark rhs ids as subtracted, unless they're mapped to a color (matching binOp()).
+      for (const auto id : rhs.originalIDs_) {
+        auto it = rhs.originalIDToColor_.find(id);
+        if (it != rhs.originalIDToColor_.end()) {
+          originalIDToColor[id] = it->second;
+        } else {
+          subtractedIDs.insert(id);
+        }
+      }
+    }
+  } else {
+    // Add / Intersect: union the ids, colors and subtracted ids. Earlier operands win color
+    // conflicts (std::map::insert keeps the existing entry), matching the left-to-right fold.
+    for (const auto& g : operands) {
+      originalIDs.insert(g->originalIDs_.begin(), g->originalIDs_.end());
+      originalIDToColor.insert(g->originalIDToColor_.begin(), g->originalIDToColor_.end());
+      subtractedIDs.insert(g->subtractedIDs_.begin(), g->subtractedIDs_.end());
+    }
+  }
+  return {mani, originalIDs, originalIDToColor, subtractedIDs};
+}
+
 std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs)
 {
 // FIXME: How to deal with operation not supported?
