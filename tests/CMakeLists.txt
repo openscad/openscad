@@ -1553,6 +1553,77 @@ if(NOT ENABLE_MANIFOLD)
   )
 endif()
 
+#################
+# OFF precision #
+#################
+
+# `-O export-off/precision=<n>` gives a lossless OFF coordinate round-trip. Also
+# pins the default, which must stay at the iostream default or every existing
+# OFF expectation moves with it.
+if(OPENSCAD_BINPATH)
+  add_test(NAME off_precision
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_off_precision.py
+      ${OPENSCAD_BINPATH}
+      ${CMAKE_CURRENT_BINARY_DIR}/off_precision_output
+  )
+endif()
+
+###############################
+# Test harness's own behaviour #
+###############################
+
+# Needs no OpenSCAD binary: it exercises test_pretty_print.py's log-file selection directly.
+add_test(NAME pretty_print_logfile
+  CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print_logfile.py
+)
+
+#############################
+# Persistent compute worker #
+#############################
+
+if(OPENSCAD_BINPATH)
+  add_test(NAME compute_worker
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker.py
+      ${OPENSCAD_BINPATH}
+  )
+  add_test(NAME compute_worker_parity
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_parity.py
+      ${OPENSCAD_BINPATH}
+  )
+  add_test(NAME compute_worker_channel
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_channel.py
+      ${OPENSCAD_BINPATH}
+  )
+  add_test(NAME compute_worker_streaming
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_streaming.py
+      ${OPENSCAD_BINPATH}
+  )
+  add_test(NAME compute_worker_cache
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_cache.py
+      ${OPENSCAD_BINPATH}
+  )
+  if(ENABLE_PYTHON)
+    add_test(NAME compute_worker_python
+      CONFIGURATIONS Default
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_python.py
+        ${OPENSCAD_BINPATH}
+    )
+  endif()
+endif()
 ####################
 # Extra Debug Info #
 ####################

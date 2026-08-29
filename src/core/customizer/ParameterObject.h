@@ -28,9 +28,18 @@ public:
   [[nodiscard]] const std::string& group() const { return group_; }
 
   virtual void reset() = 0;
+  // True when the user has moved this parameter away from the value the document declared. The
+  // compute worker applies whatever values it is sent over the document's own, so sending an
+  // untouched parameter overrides an edit the user just made to that variable in the text --
+  // the render, and any export taken from it, silently keeps the previous value.
+  [[nodiscard]] virtual bool isModified() const = 0;
   virtual bool importValue(boost::property_tree::ptree encodedValue, bool store) = 0;
   [[nodiscard]] virtual boost::property_tree::ptree exportValue() const = 0;
-  [[nodiscard]] virtual json jsonValue() const = 0;
+  // withCurrentValue distinguishes the two consumers: the compute worker needs the value the
+  // user currently has set so the Customizer can be restored across the process boundary, while
+  // `--export-format param` is a published format whose output must not change. Emitting the
+  // value unconditionally broke export-param_issue6597.
+  [[nodiscard]] virtual json jsonValue(bool withCurrentValue = false) const = 0;
   virtual void apply(Assignment *assignment) const = 0;
 
 protected:
@@ -57,9 +66,10 @@ public:
   }
 
   void reset() override { value = defaultValue; }
+  [[nodiscard]] bool isModified() const override { return value != defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   bool value;
@@ -73,9 +83,10 @@ public:
                   const std::string& defaultValue, boost::optional<size_t> maximumSize);
 
   void reset() override { value = defaultValue; }
+  [[nodiscard]] bool isModified() const override { return value != defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   std::string value;
@@ -99,9 +110,10 @@ public:
   }
 
   void reset() override { value = defaultValue; }
+  [[nodiscard]] bool isModified() const override { return value != defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   double value;
@@ -127,9 +139,10 @@ public:
   }
 
   void reset() override { value = defaultValue; }
+  [[nodiscard]] bool isModified() const override { return value != defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   std::vector<double> value;
@@ -158,9 +171,10 @@ public:
   }
 
   void reset() override { valueIndex = defaultValueIndex; }
+  [[nodiscard]] bool isModified() const override { return valueIndex != defaultValueIndex; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
-  [[nodiscard]] json jsonValue() const override;
+  [[nodiscard]] json jsonValue(bool withCurrentValue) const override;
   void apply(Assignment *assignment) const override;
 
   int valueIndex;
@@ -172,8 +186,11 @@ class ParameterObjects : public std::vector<std::unique_ptr<ParameterObject>>
 {
 public:
   static ParameterObjects fromSourceFile(const SourceFile *sourceFile);
+  static ParameterObjects fromJson(const std::string& encoded);
+  [[nodiscard]] std::string toJson() const;
   void reset();
   void importValues(const ParameterSet& values);
   ParameterSet exportValues(const std::string& setName);
+  ParameterSet exportModifiedValues(const std::string& setName);
   void apply(SourceFile *sourceFile) const;
 };

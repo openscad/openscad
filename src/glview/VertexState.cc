@@ -15,6 +15,11 @@ void VertexState::draw() const
   }
   if (draw_size_ > 0) {
     if (elements_vbo_) {
+      GLint bound_vbo = 0;
+      glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &bound_vbo);
+      if (bound_vbo == 0) {
+        return;
+      }
       GL_TRACE("glDrawElements(%s, %d, %s, %d)",
                (draw_mode_ == GL_POINTS           ? "GL_POINTS"
                 : draw_mode_ == GL_LINES          ? "GL_LINES"

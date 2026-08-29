@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include <QEvent>
 #include <QFile>
+#include <QFutureWatcher>
 #include <QIODevice>
 #include <QIcon>
 #include <QLabel>
@@ -26,8 +27,12 @@
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
+#include <atomic>
 #include <ctime>
 #include <memory>
+#ifdef ENABLE_OPENCSG
+#include "glview/preview/OpenCSGRenderer.h"
+#endif
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -37,6 +42,7 @@
 #include "core/Context.h"
 #include "core/SourceFile.h"
 #include "glview/Camera.h"
+#include "glview/CsgInfo.h"
 #include "glview/Renderer.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -44,7 +50,8 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
 class BuiltinContext;
-class CGALWorker;
+class ComputeWorker;
+class GeometryWorker;
 class CSGNode;
 class CSGProducts;
 class FontListDialog;
@@ -81,9 +88,19 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventH
 public:
   Preferences *prefs;
 
+  // Process isolation is fixed for a window's whole life: it is latched from the
+  // application-wide default when the window is constructed, so changing the
+  // setting only affects windows opened afterwards. Nothing may observe it
+  // changing mid-compile.
+  static void setProcessIsolation(bool enabled);
+  static bool isProcessIsolation();
+
   QTimer *consoleUpdater;
 
   bool isPreview;
+  bool previewRequested = false;
+  QString activePreviewSource;
+  QMap<QString, QString> workerDependencies;
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
@@ -99,6 +116,8 @@ public:
   std::string untrusted_edit_document_name;
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
+  bool prepareWorkerPython(bool& python, QString& pythonVenv);
+  std::vector<CsgInfo::SourceNode> previewSelectionPath(int index) const;
   Tree tree;
   EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
@@ -111,6 +130,20 @@ public:
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
 
+#ifdef ENABLE_OPENCSG
+  // OpenCSG preparation runs its CPU-bound part on a worker thread so that windows do not
+  // serialize on the GUI thread; these hold the in-flight state between the two GL halves.
+  // The worker only ever reads openCSGPrepareCanceled and writes openCSGPrepareProgress --
+  // it must not touch any widget.
+  std::shared_ptr<OpenCSGRenderer> preparingRenderer;
+  std::vector<OpenCSGRenderer::PendingProduct> preparingProducts;
+  QFutureWatcher<bool> *openCSGPrepareWatcher{nullptr};
+  QTimer *openCSGPrepareProgressTimer{nullptr};
+  std::atomic<bool> openCSGPrepareCanceled{false};
+  std::atomic<size_t> openCSGPrepareProgress{0};
+  size_t openCSGPrepareWork{0};
+#endif
+
   QString lastCompiledDoc;
 
   std::vector<QAction *> fileActionRecentFiles;
@@ -121,13 +154,29 @@ public:
 
   Measurement::Measurement meas;
 
-  int compileErrors;
-  int compileWarnings;
+  const bool processIsolation = processIsolationDefault;
+  int compileErrors = 0;
+  int compileWarnings = 0;
 
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
+  qint64 computeWorkerProcessId() const;
+#ifdef ENABLE_GUI_TESTS
+  void exitComputeWorkerForTest();
+  static void holdOpenCSGPreparationsForTest();
+  static int heldOpenCSGPreparationsForTest();
+  static void releaseOpenCSGPreparationsForTest();
+  int compilationErrorCount() const { return compileErrors; }
+  const std::shared_ptr<CSGProducts>& previewProductsForTest() const { return rootProduct; }
+  bool computeBusyForTest() const { return computeBusy; }
+  int compilationWarningCount() const { return compileWarnings; }
+  // Size of the normalized preview product list, for tests that need to compare two previews
+  // without reaching into private state.
+  size_t previewProductCount() const { return rootProduct ? rootProduct->size() : 0; }
+#endif
 
 private:
+  static bool processIsolationDefault;
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;
@@ -221,6 +270,7 @@ private:
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
+  void resetCompileMessageCounts();
   void compileCSG();
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
@@ -351,7 +401,14 @@ private slots:
   void sendToExternalTool(class ExternalToolInterface& externalToolService);
   void on_designActionRender_triggered();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
+  void actionPreviewDone(const std::shared_ptr<CsgInfo>& products);
+#ifdef ENABLE_OPENCSG
+  void startOpenCSGPreparation(size_t guiWork);
+  void finishOpenCSGPreparation();
+#endif
+  void previewReady();
   void cgalRender();
+  void isolatedRender(bool python, const QString& pythonVenv);
   void handleMeasurementClicked(QAction *clickedAction);
   void on_designCheckValidity_triggered();
   void on_designActionDisplayAST_triggered();
@@ -452,13 +509,16 @@ private:
   std::shared_ptr<CSGProducts> rootProduct;
   std::shared_ptr<CSGProducts> highlightsProducts;
   std::shared_ptr<CSGProducts> backgroundProducts;
+  std::vector<CsgInfo::SourceNode> previewSourceNodes;
   int currentlySelectedObject{-1};
 
   char const *afterCompileSlot;
   bool procevents{false};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
-  CGALWorker *cgalworker;
+  ComputeWorker *computeWorker = nullptr;
+  bool computeBusy = false;
+  GeometryWorker *geometryWorker = nullptr;
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time

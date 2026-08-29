@@ -205,13 +205,16 @@ def png_encode64(fname, width=512, data=None, alt=''):
 
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    # The ctest command may not finish before the LastTest.log.tmp* is flushed,
-    # so read that file if it exists.
-    logfilename = next(pathlib.Path(logpath).glob('LastTest.log*'), None)
-    if not os.path.isfile(logfilename):
-        print('can\'t find and/or open logfile', logfilename)
+    # ctest may not have flushed LastTest.log by the time this post-test hook runs, in which case
+    # the current run is in LastTest.log.tmp<random> instead. Take the newest of the two rather
+    # than the first the glob happens to yield: an interrupted run leaves its temp file behind
+    # forever, and picking that describes a run from days ago -- or fails outright on an output
+    # type it contains.
+    candidates = [path for path in pathlib.Path(logpath).glob('LastTest.log*') if path.is_file()]
+    if not candidates:
+        print('can\'t find and/or open logfile in', logpath)
         sys.exit()
-    return str(logfilename)
+    return str(max(candidates, key=lambda path: path.stat().st_mtime))
 
 # --- Templating ---
 
@@ -336,13 +339,17 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
     templates = Templates()
     for test in report_tests:
-        # relative-output tests have no "type"
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', 'dxf', 'svg', ''):
+        # Every type but png renders as text, including the empty type relative-output tests
+        # carry. This used to be an allowlist of known extensions, which meant adding an export
+        # format to the suite made the report generator raise -- and because it runs as a ctest
+        # post-test step, that turned an otherwise green run into a failing one. 'json' arrived
+        # with the export-param tests and did exactly that.
+        if test.type != 'png':
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
                           test_log=html.escape(test.fulltestlog))
-        elif test.type == 'png':
+        else:  # png
             image_test_count += 1
             alttxt = 'OpenSCAD test image'
 
@@ -370,8 +377,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
                           actual=actual_img,
                           expected=expected_img,
                           mask=mask_img)
-        else:
-            raise TypeError(f"Unknown test type '{test.type}' in test {test.fullname}")
+
 
     for mf in sorted(makefiles.keys()):
         mfname = mf.strip().lstrip(os.path.sep)

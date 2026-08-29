@@ -12,7 +12,10 @@ class ProgressWidget : public QWidget, public Ui::ProgressWidget
   Q_PROPERTY(bool wasCanceled READ wasCanceled);
 
 public:
-  ProgressWidget(QWidget *parent = nullptr);
+  // `showGuiProgress` marks an operation that has a GUI-side phase as well as a worker one --
+  // i.e. a preview. Both bars are then shown from the start rather than the second appearing
+  // partway through and shrinking the first.
+  ProgressWidget(QWidget *parent = nullptr, bool showGuiProgress = false);
   bool wasCanceled() const;
   int elapsedTime() const;
 
@@ -20,6 +23,9 @@ public slots:
   void setRange(int minimum, int maximum);
   void setValue(int progress);
   int value() const;
+  int guiValue() const;
+  void startGuiProgress(int maximum);
+  void setGuiValue(int progress);
   void cancel();
 
 private slots:
@@ -27,6 +33,7 @@ private slots:
 
 signals:
   void requestShow();
+  void canceled();
 
 private:
   bool wascanceled;

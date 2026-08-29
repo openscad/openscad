@@ -53,11 +53,12 @@ boost::property_tree::ptree BoolParameter::exportValue() const
   return output;
 }
 
-json BoolParameter::jsonValue() const
+json BoolParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "boolean";
   o["initial"] = defaultValue;
+  if (withCurrentValue) o["value"] = value;
   return o;
 }
 
@@ -97,11 +98,12 @@ boost::property_tree::ptree StringParameter::exportValue() const
   return output;
 }
 
-json StringParameter::jsonValue() const
+json StringParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "string";
   o["initial"] = defaultValue;
+  if (withCurrentValue) o["value"] = value;
   if (maximumSize.is_initialized()) {
     o["maxLength"] = maximumSize.get();
   }
@@ -138,11 +140,12 @@ boost::property_tree::ptree NumberParameter::exportValue() const
   return output;
 }
 
-json NumberParameter::jsonValue() const
+json NumberParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "number";
   o["initial"] = defaultValue;
+  if (withCurrentValue) o["value"] = value;
 
   if (maximum.is_initialized()) {
     o["max"] = maximum.get();
@@ -218,11 +221,12 @@ boost::property_tree::ptree VectorParameter::exportValue() const
   return output;
 }
 
-json VectorParameter::jsonValue() const
+json VectorParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   o["type"] = "number";
   o["initial"] = defaultValue;
+  if (withCurrentValue) o["value"] = value;
 
   if (maximum.is_initialized()) {
     o["max"] = maximum.get();
@@ -276,7 +280,7 @@ boost::property_tree::ptree EnumParameter::exportValue() const
   return output;
 }
 
-json EnumParameter::jsonValue() const
+json EnumParameter::jsonValue(bool withCurrentValue) const
 {
   json o;
   if (set_enum_value(o, "initial", items[defaultValueIndex])) {
@@ -284,6 +288,7 @@ json EnumParameter::jsonValue() const
   } else {
     o["type"] = "string";
   }
+  if (withCurrentValue) set_enum_value(o, "value", items[valueIndex]);
 
   json options;
   for (const auto& item : items) {
@@ -541,6 +546,89 @@ ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile)
   return output;
 }
 
+std::string ParameterObjects::toJson() const
+{
+  json output = json::array();
+  for (const auto& parameter : *this) {
+    auto item = parameter->jsonValue(true);
+    item["name"] = parameter->name();
+    item["description"] = parameter->description();
+    item["group"] = parameter->group();
+    output.push_back(std::move(item));
+  }
+  return output.dump();
+}
+
+ParameterObjects ParameterObjects::fromJson(const std::string& encoded)
+{
+  ParameterObjects output;
+  const auto input = json::parse(encoded, nullptr, false);
+  if (!input.is_array()) return output;
+
+  for (const auto& item : input) {
+    const auto name = item.value("name", std::string{});
+    const auto description = item.value("description", std::string{});
+    const auto group = item.value("group", std::string{"Parameters"});
+    const auto type = item.value("type", std::string{});
+    if (name.empty() || !item.contains("initial")) continue;
+
+    if (type == "boolean") {
+      auto parameter =
+        std::make_unique<BoolParameter>(name, description, group, item["initial"].get<bool>());
+      parameter->value = item.value("value", parameter->defaultValue);
+      output.push_back(std::move(parameter));
+    } else if (item.contains("options")) {
+      std::vector<EnumParameter::EnumItem> options;
+      int initial = 0;
+      int selected = 0;
+      for (const auto& option : item["options"]) {
+        EnumParameter::EnumItem entry;
+        entry.key = option.value("name", std::string{});
+        if (type == "number") entry.value = option["value"].get<double>();
+        else entry.value = option["value"].get<std::string>();
+        if (option["value"] == item["initial"]) initial = options.size();
+        if (option["value"] == item.value("value", item["initial"])) selected = options.size();
+        options.push_back(std::move(entry));
+      }
+      auto parameter =
+        std::make_unique<EnumParameter>(name, description, group, initial, std::move(options));
+      parameter->valueIndex = selected;
+      output.push_back(std::move(parameter));
+    } else if (type == "string") {
+      const auto maximum = item.contains("maxLength")
+                             ? boost::optional<size_t>(item["maxLength"].get<size_t>())
+                             : boost::none;
+      auto parameter = std::make_unique<StringParameter>(name, description, group,
+                                                         item["initial"].get<std::string>(), maximum);
+      parameter->value = item.value("value", parameter->defaultValue);
+      output.push_back(std::move(parameter));
+    } else if (item["initial"].is_array()) {
+      const auto minimum =
+        item.contains("min") ? boost::optional<double>(item["min"].get<double>()) : boost::none;
+      const auto maximum =
+        item.contains("max") ? boost::optional<double>(item["max"].get<double>()) : boost::none;
+      const auto step =
+        item.contains("step") ? boost::optional<double>(item["step"].get<double>()) : boost::none;
+      auto parameter = std::make_unique<VectorParameter>(
+        name, description, group, item["initial"].get<std::vector<double>>(), minimum, maximum, step);
+      parameter->value = item.value("value", parameter->defaultValue);
+      output.push_back(std::move(parameter));
+    } else if (type == "number") {
+      const auto minimum =
+        item.contains("min") ? boost::optional<double>(item["min"].get<double>()) : boost::none;
+      const auto maximum =
+        item.contains("max") ? boost::optional<double>(item["max"].get<double>()) : boost::none;
+      const auto step =
+        item.contains("step") ? boost::optional<double>(item["step"].get<double>()) : boost::none;
+      auto parameter = std::make_unique<NumberParameter>(
+        name, description, group, item["initial"].get<double>(), minimum, maximum, step);
+      parameter->value = item.value("value", parameter->defaultValue);
+      output.push_back(std::move(parameter));
+    }
+  }
+  return output;
+}
+
 void ParameterObjects::reset()
 {
   for (const auto& parameter : *this) {
@@ -566,6 +654,16 @@ ParameterSet ParameterObjects::exportValues(const std::string& setName)
   output.setName(setName);
   for (const auto& parameter : *this) {
     output[parameter->name()] = parameter->exportValue();
+  }
+  return output;
+}
+
+ParameterSet ParameterObjects::exportModifiedValues(const std::string& setName)
+{
+  ParameterSet output;
+  output.setName(setName);
+  for (const auto& parameter : *this) {
+    if (parameter->isModified()) output[parameter->name()] = parameter->exportValue();
   }
   return output;
 }

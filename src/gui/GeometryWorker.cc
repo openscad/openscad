@@ -1,4 +1,4 @@
-#include "gui/CGALWorker.h"
+#include "gui/GeometryWorker.h"
 
 #include <QThread>
 #include <exception>
@@ -18,23 +18,22 @@
 #include "python/python_public.h"
 #endif
 
-CGALWorker::CGALWorker()
+GeometryWorker::GeometryWorker()
 {
-  this->tree = nullptr;
   this->thread = new QThread();
   if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
-  connect(this->thread, &QThread::started, this, &CGALWorker::work);
+  connect(this->thread, &QThread::started, this, &GeometryWorker::work);
   moveToThread(this->thread);
 }
 
-CGALWorker::~CGALWorker()
+GeometryWorker::~GeometryWorker()
 {
   this->thread->quit();
   this->thread->wait();
   delete this->thread;
 }
 
-void CGALWorker::start(const Tree& tree)
+void GeometryWorker::start(const Tree& tree)
 {
 #ifdef ENABLE_PYTHON
   python_unlock();
@@ -43,9 +42,8 @@ void CGALWorker::start(const Tree& tree)
   this->thread->start();
 }
 
-void CGALWorker::work()
+void GeometryWorker::work()
 {
-  // this is a worker thread: we don't want any exceptions escaping and crashing the app.
 #ifdef ENABLE_PYTHON
   python_lock();
 #endif
@@ -53,19 +51,15 @@ void CGALWorker::work()
   try {
     GeometryEvaluator evaluator(*this->tree);
     root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
-
 #ifdef ENABLE_MANIFOLD
     if (auto manifold = std::dynamic_pointer_cast<const ManifoldGeometry>(root_geom)) {
-      // calling status forces evaluation
-      // we should complete evaluation within the worker thread, so computation
-      // will not block the GUI.
       if (manifold->getManifold().Status() != manifold::Manifold::Error::NoError)
         LOG(message_group::Error, "Rendering cancelled due to unknown manifold error.");
     }
 #endif
-  } catch (const ProgressCancelException& e) {
+  } catch (const ProgressCancelException&) {
     LOG("Rendering cancelled.");
-  } catch (const HardWarningException& e) {
+  } catch (const HardWarningException&) {
     LOG("Rendering cancelled on first warning.");
   } catch (const std::exception& e) {
     LOG(message_group::Error, "Rendering cancelled by exception %1$s", e.what());

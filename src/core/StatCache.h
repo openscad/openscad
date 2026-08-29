@@ -33,5 +33,6 @@
 namespace StatCache {
 
 int stat(const std::string& path, struct ::stat& st);
+void clear();
 
-}
+}  // namespace StatCache

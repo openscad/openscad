@@ -148,6 +148,15 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
   loadSet(comboBoxPreset->currentIndex());
 }
 
+void ParameterWidget::setParameters(const std::string& metadata, const std::string& source)
+{
+  if (this->source == source) return;
+  this->source = source;
+  this->parameters = ParameterObjects::fromJson(metadata);
+  rebuildWidgets();
+  loadSet(comboBoxPreset->currentIndex());
+}
+
 void ParameterWidget::applyParameters(SourceFile *sourceFile)
 {
   this->parameters.apply(sourceFile);

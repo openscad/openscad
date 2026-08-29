@@ -1,9 +1,14 @@
 #pragma once
 
 #include <memory>
+#include <functional>
+#include <string>
 #include <vector>
 
+#include "Feature.h"
 #include "core/CSGNode.h"
+#include "io/ipc_channel.h"
+#include "io/ipc_geometry.h"
 #include "core/CSGTreeEvaluator.h"
 #include "core/Tree.h"
 #include "geometry/GeometryEvaluator.h"
@@ -17,22 +22,82 @@
 class CsgInfo
 {
 public:
+  struct SourceNode {
+    int index;
+    int parent;
+    std::string name;
+    std::string file;
+    int line;
+    int column;
+  };
+  struct CameraInfo {
+    bool has_camera = false;
+    bool noauto = false;
+    double vpr[3] = {0, 0, 0};
+    double vpt[3] = {0, 0, 0};
+    double vpd = 0;
+    double vpf = 0;
+  };
   CsgInfo() = default;
   std::shared_ptr<class CSGProducts> root_products;
   std::shared_ptr<CSGProducts> highlights_products;
   std::shared_ptr<CSGProducts> background_products;
+  std::vector<SourceNode> source_nodes;
+  CameraInfo camera_info;
 
-  bool compile_products(const Tree& tree)
+  bool write_products(const std::string& filename) const;
+
+  // Names of leaf payloads already sent over the response channel during evaluation, keyed by
+  // PolySet identity (feature 34). Empty outside a compute worker, in which case write_products
+  // serializes the leaves itself as it always did.
+  std::map<const PolySet *, std::string> streamed_leaves;
+  // `resolve`, when set, supplies payload bytes by name instead of reading them from disk --
+  // the products themselves and every leaf they refer to. That is how a compute worker's
+  // preview arrives now (see io/ipc_channel.h); an empty resolver reads files as before.
+  // `decoded`, when set, supplies leaf geometry that the receiving side already turned into a
+  // PolySet as it arrived over the channel (feature 34), so the work is not repeated here. A name
+  // it does not know falls through to `resolve`, and then to the filesystem.
+  bool read_products(const std::string& filename, const std::function<bool()>& continue_loading = {},
+                     const IpcPayloadResolver& resolve = {}, const IpcGeometryResolver& decoded = {});
+
+  // `products_file`, when set and when a compute worker is collecting payloads, makes each leaf
+  // be sent as soon as its geometry is evaluated rather than after the whole walk finishes. The
+  // names assigned here are what write_products then references, so the two stay consistent.
+  bool compile_products(const Tree& tree, size_t normalization_limit = 0,
+                        const std::string& products_file = {})
   {
     auto& root_node = tree.root();
+    const auto collect_source_nodes = [this](const auto& self, const auto& node, int parent) -> void {
+      const auto& location = node->modinst ? node->modinst->location() : Location::NONE;
+      source_nodes.push_back({node->index(), parent, node->verbose_name(), location.fileName(),
+                              location.firstLine(), location.firstColumn()});
+      for (const auto& child : node->getChildren()) self(self, child, node->index());
+    };
+    collect_source_nodes(collect_source_nodes, root_node, -1);
     GeometryEvaluator geomevaluator(tree);
     CSGTreeEvaluator evaluator(tree, &geomevaluator);
+    // Gated on the feature as well as the sink: the worker is told which features are enabled on
+    // every request, so turning this on or off takes effect from the next preview and a preview
+    // already in flight keeps whatever it was dispatched with.
+    if (!products_file.empty() && ipc_payload_sink::collecting() &&
+        Feature::ExperimentalStreamingPreview.is_enabled()) {
+      evaluator.setLeafCallback([this, &products_file](const std::shared_ptr<const PolySet>& ps) {
+        // Deduplicated by PolySet identity, exactly as write_chain does, so a mesh shared by
+        // several leaves is sent once and referenced many times.
+        if (this->streamed_leaves.count(ps.get())) return;
+        const auto name =
+          products_file + ".leaf-" + std::to_string(this->streamed_leaves.size()) + kIpcGeometrySuffix;
+        export_ipc_geometry(*ps, ipc_payload_sink::open(name));
+        this->streamed_leaves.emplace(ps.get(), name);
+      });
+    }
     const std::shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
     std::vector<std::shared_ptr<CSGNode>> highlightNodes = evaluator.getHighlightNodes();
     std::vector<std::shared_ptr<CSGNode>> backgroundNodes = evaluator.getBackgroundNodes();
 
     LOG("Compiling design (CSG Products normalization)...");
-    CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
+    CSGTreeNormalizer normalizer(normalization_limit ? normalization_limit
+                                                     : RenderSettings::inst()->openCSGTermLimit);
     if (csgRoot) {
       const std::shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
       if (normalizedRoot) {

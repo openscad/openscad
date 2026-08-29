@@ -44,7 +44,11 @@ enum class FileFormat {
   PNG,
   PDF,
   POV,
-  PARAM
+  PARAM,
+  // Internal only: the binary payload a window and its private compute worker exchange.
+  // Deliberately absent from the identifier table in export.cc, so it is not selectable
+  // as an --export-format and cannot end up in a user's file.
+  IPC_GEOMETRY
 };
 
 struct FileFormatInfo {
@@ -293,6 +297,7 @@ struct ExportInfo {
   const Camera *camera;
   const Color4f defaultColor;
   const ColorScheme *colorScheme;
+  int offPrecision = 0;
 
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;

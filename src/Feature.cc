@@ -49,6 +49,18 @@ const Feature Feature::ExperimentalDiscretizationByError(
 const Feature Feature::ExperimentalAiFeatures("ai-features",
                                               "Enable AI features (Note: AI integration is under "
                                               "development and does not connect to external APIs yet).");
+const Feature Feature::ExperimentalProcessIsolation(
+  "process-isolation", "Run each window's computation in an isolated process (requires restart).");
+const Feature Feature::ExperimentalStreamingPreview(
+  "streaming-preview",
+  "Start processing preview geometry as the isolated compute worker produces it, rather than "
+  "waiting for the whole preview to finish. Takes effect on the next preview -- one already "
+  "running keeps the setting it started with.",
+  &Feature::ExperimentalProcessIsolation);
+const Feature Feature::ExperimentalStructuredDiagnostics(
+  "structured-diagnostics",
+  "Stream, collapse, and retain unabridged diagnostics from isolated compute workers.",
+  &Feature::ExperimentalProcessIsolation);
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
@@ -60,6 +72,13 @@ Feature::Feature(const std::string& name, std::string description, bool hidden)
 {
   feature_map[name] = this;
   if (!hidden) feature_list.push_back(this);
+}
+
+Feature::Feature(const std::string& name, std::string description, const Feature *dependency)
+  : dependency(dependency), name(name), description(std::move(description))
+{
+  feature_map[name] = this;
+  feature_list.push_back(this);
 }
 
 const std::string& Feature::get_name() const
@@ -75,6 +94,9 @@ const std::string& Feature::get_description() const
 bool Feature::is_enabled() const
 {
 #ifdef ENABLE_EXPERIMENTAL
+  // A dependent feature is off whenever what it depends on is off. The stored choice is kept, so
+  // turning the dependency back on restores it rather than making the user set it again.
+  if (dependency && !dependency->is_enabled()) return false;
   return enabled;
 #else
   return false;

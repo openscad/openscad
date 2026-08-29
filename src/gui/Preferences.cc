@@ -224,6 +224,7 @@ void Preferences::init()
   this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
   this->defaultmap["advanced/consoleAutoClear"] = false;
+  this->defaultmap["advanced/collapseDiagnostics"] = true;
   this->defaultmap["advanced/enableHardwarnings"] = false;
   this->defaultmap["advanced/traceDepth"] = 12;
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
@@ -527,6 +528,21 @@ void Preferences::on_stackedWidget_currentChanged(int)
  *
  * @param state the state of the checkbox.
  */
+/**
+ * Grey out every feature whose dependency is currently off. The stored choice is left alone --
+ * Feature::is_enabled() already reports a dependent feature as off while its dependency is, so a
+ * disabled checkbox here is showing that, not causing it.
+ */
+void Preferences::updateDependentFeatureCheckBoxes()
+{
+  for (auto *cb : pageFeatures->findChildren<QCheckBox *>()) {
+    const QVariant v = cb->property(featurePropertyName);
+    if (!v.isValid()) continue;
+    const auto *dependency = v.value<Feature *>()->get_dependency();
+    if (dependency) cb->setEnabled(dependency->is_enabled());
+  }
+}
+
 void Preferences::featuresCheckBoxToggled(bool state)
 {
   const QObject *sender = QObject::sender();
@@ -544,6 +560,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
   if (feature == &Feature::ExperimentalAiFeatures) {
     this->prefsActionAI->setVisible(state);
   }
+  updateDependentFeatureCheckBoxes();
   emit ExperimentalChanged();
 }
 
@@ -578,14 +595,22 @@ void Preferences::setupFeaturesPage()
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
     connect(cb, &QCheckBox::toggled, this, &Preferences::featuresCheckBoxToggled);
-    gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
+    // A feature that depends on another sits indented under it, in the column the descriptions
+    // use, so the page shows the relationship rather than leaving the user to infer it.
+    if (feature->get_dependency()) {
+      gridLayoutExperimentalFeatures->addWidget(cb, row, 1, 1, 1, Qt::AlignLeading);
+    } else {
+      gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
+    }
     row++;
 
     auto *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
     l->setTextFormat(Qt::RichText);
+    if (feature->get_dependency()) l->setContentsMargins(20, 0, 0, 0);
     gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
     row++;
   }
+  updateDependentFeatureCheckBoxes();
   // Force fixed indentation, the checkboxes use column span of 2 so
   // first row is not constrained in size by the visible controls. The
   // fixed size space essentially gives the first row the width of the

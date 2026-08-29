@@ -1085,6 +1085,7 @@ set(CORE_SOURCES
   src/geometry/rotate_extrude.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
+  src/glview/CsgInfo.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/preview/CSGTreeNormalizer.cc
@@ -1110,6 +1111,8 @@ set(CORE_SOURCES
   src/io/import_off.cc
   src/io/import_stl.cc
   src/io/import_svg.cc
+  src/io/ipc_channel.cc
+  src/io/ipc_geometry.cc
   src/platform/PlatformUtils.cc
   src/utils/StackCheck.h
   src/utils/calc.cc
@@ -1295,7 +1298,8 @@ set(GUI_SOURCES
   ${GUI_SOURCES}
   src/openscad_gui.cc
   src/gui/AutoUpdater.cc
-  src/gui/CGALWorker.cc
+  src/gui/ComputeWorker.cc
+  src/gui/GeometryWorker.cc
   src/gui/ViewportControl.cc
   src/gui/Console.cc
   src/gui/Dock.cc
@@ -1375,7 +1379,8 @@ set(GUI_HEADERS
     src/gui/Animate.h
     src/gui/AppleEvents.h
     src/gui/AutoUpdater.h
-    src/gui/CGALWorker.h
+    src/gui/ComputeWorker.h
+    src/gui/GeometryWorker.h
     src/gui/Console.h
     src/gui/Dock.h
     src/gui/Editor.h
@@ -1575,9 +1580,13 @@ elseif(WIN32)
 endif()
 
 file(GLOB_RECURSE TEST_SOURCES
+  "src/io/*_test.cc"
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
 )
+# Feature.cc sits at the top of src/, and a recursive glob there would also sweep in the Qt-only
+# tests under src/gui/ that GUI_TEST_SOURCES owns.
+list(APPEND TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Feature_test.cc")
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
 )

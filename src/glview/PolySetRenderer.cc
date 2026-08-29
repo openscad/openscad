@@ -107,8 +107,12 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
 void PolySetRenderer::setColorScheme(const ColorScheme& cs)
 {
   Renderer::setColorScheme(cs);
+  colormap_[ColorMode::MATERIAL] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_FRONT_COLOR);
+  colormap_[ColorMode::CUTOUT] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_BACK_COLOR);
   colormap_[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
   colormap_[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
+  polyset_vertex_state_containers_.clear();
+  polygon_vertex_state_containers_.clear();
 }
 
 void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderinfo)

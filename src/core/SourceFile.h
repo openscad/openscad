@@ -29,6 +29,7 @@ public:
   std::time_t handleDependencies(bool is_root = true);
   bool hasIncludes() const { return !this->includes.empty(); }
   bool usesLibraries() const { return !this->usedlibs.empty(); }
+  [[nodiscard]] std::vector<std::string> dependencyPaths() const;
   bool isHandlingDependencies() const { return this->is_handling_dependencies; }
   void clearHandlingDependencies() { this->is_handling_dependencies = false; }
   void setFilename(const std::string& filename) { this->filename = filename; }

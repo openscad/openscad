@@ -68,4 +68,9 @@ int stat(const std::string& path, struct ::stat& st)
   return 0;
 }
 
+void clear()
+{
+  statMap.clear();
+}
+
 }  // namespace StatCache

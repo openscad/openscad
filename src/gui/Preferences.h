@@ -217,6 +217,7 @@ private:
   bool event(QEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
+  void updateDependentFeatureCheckBoxes();
   void setup3DPrintPage();
   void writeSettings();
   void hidePasswords();

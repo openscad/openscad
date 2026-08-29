@@ -1,7 +1,9 @@
 #include "TestModuleCache.h"
 
+#include <QDir>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTest>
 #include <memory>
 
@@ -14,8 +16,7 @@ void touchFile(const QString& filename)
 
   QFileInfo fileInfo(filename);
   QFile file(filename);
-  file.open(QIODevice::WriteOnly);
-  if (file.isOpen()) {
+  if (file.open(QIODevice::WriteOnly)) {
     file.setFileTime(timeStamp, QFileDevice::FileModificationTime);
     file.setFileTime(timeStamp, QFileDevice::FileAccessTime);
   }
@@ -25,23 +26,30 @@ void TestModuleCache::testBasicCache()
 {
   restoreWindowInitialState();
 
-  QString filename = QString::fromStdString("test-tmp.scad");
+  QTemporaryFile file(QDir::tempPath() + "/openscad-module-cache-XXXXXX.scad");
+  QVERIFY(file.open());
+  QVERIFY(file.write("cube(1);\n") > 0);
+  QVERIFY(file.flush());
+  file.close();
+  const auto filename = file.fileName();
   SourceFile *previousFile{nullptr};
   SourceFile *currentFile{nullptr};
   connect(window, &MainWindow::compilationDone,
           [&currentFile](SourceFile *file) { currentFile = file; });
 
-  window->designActionAutoReload->setChecked(false);  // Disable auto-reload  & preview
-  window->tabManager->open(filename);                 // Open use.scad
-  window->actionReloadRenderPreview();                // F5
+  const QSignalBlocker blocker(window->designActionAutoReload);
+  window->designActionAutoReload->setChecked(
+    false);                             // Disable auto-reload & preview for this test only.
+  window->tabManager->open(filename);   // Open use.scad
+  window->actionReloadRenderPreview();  // F5
 
-  QVERIFY2(currentFile != nullptr, "The file 'test-tmp.scad' should be loaded.");
+  QVERIFY2(currentFile != nullptr, "The temporary SCAD file should be loaded.");
   previousFile = currentFile;  // save the loaded Source from the
 
   window->actionReloadRenderPreview();
   QVERIFY2(previousFile == currentFile,
            "The file should be the same as the file cache should have done its work.");
-  sleep(1);
+  QTest::qWait(1000);
 
   touchFile(filename);
   window->actionReloadRenderPreview();

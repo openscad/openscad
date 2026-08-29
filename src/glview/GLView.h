@@ -60,6 +60,7 @@ public:
   [[nodiscard]] bool showEdges() const { return this->showedges; }
   void setShowEdges(bool enabled) { this->showedges = enabled; }
   [[nodiscard]] bool showCrosshairs() const { return this->showcrosshairs; }
+  [[nodiscard]] const ColorScheme& colorScheme() const { return *this->colorscheme; }
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
   virtual bool save(const char *filename) const = 0;
