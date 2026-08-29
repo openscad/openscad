@@ -180,6 +180,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 
 %{/* Escape sequences */%}
+\\\r?\n                  { LOCATION_ADD_LINES(parserlloc, 1); }
 \\n                     { stringcontents += '\n'; }
 \\t                     { stringcontents += '\t'; }
 \\r                     { stringcontents += '\r'; }
