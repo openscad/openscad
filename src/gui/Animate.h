@@ -71,7 +71,7 @@ protected:
 private:
   MainWindow *mainWindow;
 
-  //! Asks for an output file and prepares the dump; unticks e_dump if cancelled.
+  //! Asks for an output file and prepares the dump; unticks e_dump if canceled.
   void startDump();
   //! Finalizes any open container and forgets the output file.
   void stopDump();
