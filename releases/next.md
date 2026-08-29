@@ -14,6 +14,7 @@
   * textmetrics() #3684
   * fontmetrics() #3684
   * object() #6012
+  * now() #6654
 * linear_extrude()
   * Added v= and segments= parameters #3770 #5080
   * h= is an alias for height= #5572
@@ -127,4 +128,3 @@
 
 Stats:
 * ~800 pull requests merged
-
