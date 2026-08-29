@@ -1181,6 +1181,12 @@ int openscad_main(int argc, char **argv)
       }
     } catch (const HardWarningException&) {
       rc = 1;
+    } catch (const std::exception& ex) {
+      LOG(message_group::Error, "Compilation aborted by exception: %1$s", ex.what());
+      rc = 1;
+    } catch (...) {
+      LOG(message_group::Error, "Compilation aborted by unknown exception");
+      rc = 1;
     }
 
     if (deps_output_file) {
