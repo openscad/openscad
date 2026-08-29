@@ -64,7 +64,7 @@ public slots:
   void setMouseCentricZoom(bool var) { this->mouseCentricZoom = var; }
   void setMouseActions(int mouseAction, std::array<float, MouseConfig::ACTION_DIMENSION> var)
   {
-    // Load an array defining the behaviour for a single mouse action.
+    // Load an array defining the behavior for a single mouse action.
     for (int i = 0; i < MouseConfig::ACTION_DIMENSION; i++) {
       this->mouseActions[MouseConfig::ACTION_DIMENSION * mouseAction + i] = var[i];
     }
