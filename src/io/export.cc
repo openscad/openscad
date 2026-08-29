@@ -167,8 +167,8 @@ bool is3D(FileFormat format)
 {
   return format == FileFormat::ASCII_STL || format == FileFormat::BINARY_STL ||
          format == FileFormat::OBJ || format == FileFormat::OFF || format == FileFormat::WRL ||
-         format == FileFormat::_3MF || format == FileFormat::NEFDBG ||
-         format == FileFormat::NEF3 || format == FileFormat::POV;
+         format == FileFormat::_3MF || format == FileFormat::NEFDBG || format == FileFormat::NEF3 ||
+         format == FileFormat::POV;
 }
 
 bool is2D(FileFormat format)
