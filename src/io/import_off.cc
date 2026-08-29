@@ -252,7 +252,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       for (i = 0; i < face_size; i++) {
         size_t ind = boost::lexical_cast<int>(words[i + 1]);
         // PRINTDB("%d, ", ind);
-        if (ind >= 0 && ind < vertices_count) {
+        if (ind >= 0 && ind < ps->vertices.size()) {
           ps->indices.back().push_back(ind);
         } else {
           AsciiError((boost::format("ignored bad face vertex index: %d") % ind).str().c_str());
