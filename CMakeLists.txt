@@ -172,7 +172,7 @@ if (MINGW)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -gsplit-dwarf;            # Put most DWARF in .dwo side files
         -fno-omit-frame-pointer;  # Better backtraces
@@ -205,7 +205,7 @@ if (MINGW)
 
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -fstandalone-debug;       # Emit complete type info for headers/templates
         -fno-omit-frame-pointer;  # Better backtraces
@@ -1070,6 +1070,7 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
   src/ext/lodepng/lodepng.cpp
+  src/ext/stb/stb_image_write.cc
   src/geometry/ClipperUtils.cc
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
@@ -1104,6 +1105,10 @@ set(CORE_SOURCES
   src/io/export_param.cc
   src/io/export_wrl.cc
   src/io/fileutils.cc
+  src/io/VideoEncoder.cc
+  src/io/video_apng.cc
+  src/io/video_avi.cc
+  src/io/video_gif.cc
   src/io/import_amf.cc
   src/io/import_json.cc
   src/io/import_obj.cc
@@ -1577,6 +1582,8 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
+  "src/io/*_test.cc"
+  "src/glview/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"

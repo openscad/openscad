@@ -1062,9 +1062,9 @@ void MainWindow::compileCSG()
       renderStatistic.printCacheStatistic();
       this->processEvents();
     } catch (const ProgressCancelException&) {
-      LOG("CSG generation cancelled.");
+      LOG("CSG generation canceled.");
     } catch (const HardWarningException&) {
-      LOG("CSG generation cancelled due to hardwarning being enabled.");
+      LOG("CSG generation canceled due to hardwarning being enabled.");
     }
     progress_report_fin();
     updateStatusBar(nullptr);
@@ -1905,10 +1905,8 @@ void MainWindow::csgRender()
   }
 
   if (animateWidget->dumpPictures()) {
-    const int steps = animateWidget->nextFrame();
-    const QImage img = this->qglview->grabFrame();
-    const QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-    img.save(filename, "PNG");
+    animateWidget->nextFrame();
+    animateWidget->saveFrame(this->qglview->grabFrame());
   }
 
   compileEnded();

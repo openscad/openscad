@@ -42,6 +42,9 @@ enum class FileFormat {
   TERM,
   ECHO,
   PNG,
+  APNG,
+  GIF,
+  AVI,
   PDF,
   POV,
   PARAM
@@ -66,6 +69,11 @@ const FileFormatInfo& info(FileFormat fileFormat);
 bool fromIdentifier(const std::string& identifier, FileFormat& format);
 const std::string& toSuffix(FileFormat format);
 bool canPreview(FileFormat format);
+/*!
+   True for the animation containers, which hold a sequence of rendered frames and are
+   only meaningful together with --animate.
+ */
+bool isAnimation(FileFormat format);
 bool is3D(FileFormat format);
 bool is2D(FileFormat format);
 
@@ -364,6 +372,14 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options,
                 Camera& camera, std::ostream& output);
 bool export_png(const OffscreenView& glview, std::ostream& output);
+
+/*!
+   Renders one animation frame and hands its RGBA pixels to `encoder`, instead of
+   writing a still image. The encoder must already be open at the camera's pixel size.
+ */
+bool export_video_frame(const OffscreenView& glview, class VideoEncoder& encoder);
+bool export_video_frame(const std::shared_ptr<const class Geometry>& root_geom,
+                        const ViewOptions& options, Camera& camera, class VideoEncoder& encoder);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);
