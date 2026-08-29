@@ -1576,6 +1576,7 @@ endif()
 
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
+  "src/core/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
@@ -1797,6 +1798,8 @@ if(ENABLE_TESTS)
       add_executable(OpenSCADUnitTests ${TEST_SOURCES} ${GUI_TEST_SOURCES})
     endif()
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
+    target_compile_definitions(OpenSCADUnitTests PRIVATE
+      OPENSCAD_TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/tests/data")
     include(CTest)
     include(Catch)
     catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)

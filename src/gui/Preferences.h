@@ -156,6 +156,11 @@ public slots:
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
   void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
 
+  // Network
+  void on_lineEditCaCertPath_editingFinished();
+  void on_toolButtonCaCertBrowse_clicked();
+  void on_checkBoxTlsSkipVerify_toggled(bool);
+
   // AI Config Slots
   void on_comboBoxAIProfile_currentIndexChanged(int);
   void on_pushButtonAINewProfile_clicked();

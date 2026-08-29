@@ -38,7 +38,8 @@ public:
 
   // Async chat completion with streaming output
   void chatCompletionStream(std::vector<ChatMessage>& history, ChunkCallback on_chunk,
-                            ErrorCallback on_error, CompleteCallback on_complete);
+                            ErrorCallback on_error, CompleteCallback on_complete,
+                            bool interactiveMode = false, int current_auto_turn = 0);
 
   // Async chat completion with full non-streaming response
   void chatCompletion(const std::vector<ChatMessage>& history, ResponseCallback on_response,
@@ -56,9 +57,18 @@ public:
   // Get auto attach viewport setting
   bool getAutoAttachViewport() const;
 
+  // Get max auto turns setting
+  int getMaxAutoTurns() const;
+
   using ToolExecutor =
     std::function<std::string(const std::string& name, const std::string& arguments_json)>;
   void registerToolExecutor(ToolExecutor executor);
+
+  // Optional callback invoked after each tool-execution round, before the next
+  // recursive LLM call. The callback receives the history vector by reference
+  // and may append additional messages (e.g. a viewport snapshot image message).
+  using HistoryDrainCallback = std::function<void(std::vector<ChatMessage>& history)>;
+  void registerHistoryDrainCallback(HistoryDrainCallback callback);
 
 private:
   class Impl;
