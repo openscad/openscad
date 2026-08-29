@@ -95,6 +95,9 @@ Containers& containers()
     add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
     add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
     add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
+    add_item(*containers, {FileFormat::APNG, "apng", "apng", "Animated PNG"});
+    add_item(*containers, {FileFormat::GIF, "gif", "gif", "Animated GIF"});
+    add_item(*containers, {FileFormat::AVI, "avi", "avi", "MJPEG AVI"});
     add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
@@ -161,7 +164,13 @@ const std::string& toSuffix(FileFormat format)
 bool canPreview(FileFormat format)
 {
   return (format == FileFormat::AST || format == FileFormat::CSG || format == FileFormat::PARAM ||
-          format == FileFormat::ECHO || format == FileFormat::TERM || format == FileFormat::PNG);
+          format == FileFormat::ECHO || format == FileFormat::TERM || format == FileFormat::PNG ||
+          isAnimation(format));
+}
+
+bool isAnimation(FileFormat format)
+{
+  return format == FileFormat::APNG || format == FileFormat::GIF || format == FileFormat::AVI;
 }
 
 bool is3D(FileFormat format)
