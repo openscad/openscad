@@ -92,7 +92,7 @@ PACKAGES=(
     "cairo 1.18.0"
 
     # https://github.com/CGAL/cgal/releases
-    "cgal 6.1"
+    "cgal 6.2"
 
     # https://download.qt.io/official_releases/qt/6.8/
     "qt6 6.8.4"
