@@ -19,11 +19,11 @@ A tutorial can be found at https://en.wikibooks.org/wiki/OpenSCAD_Tutorial.
 
 .TP
 \fB\-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, AMF, 3MF, DXF, SVG,
+Export the given file to \fIoutputfile\fP in STL, OFF, 3MF, DXF, SVG,
 or PNG format, depending on file extension of \fIoutputfile\fP. If this
 option is given, the GUI will not be started.
 
-Known extensions: stl, off, amf, 3mf, csg, dxf, svg, png, echo, ast, term,
+Known extensions: stl, off, 3mf, csg, dxf, svg, png, echo, ast, term,
 nef3, nefdbg.
 
 Additional formats, which are mainly used for debugging and testing (but can
