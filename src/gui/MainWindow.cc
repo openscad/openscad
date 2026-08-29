@@ -1062,9 +1062,9 @@ void MainWindow::compileCSG()
       renderStatistic.printCacheStatistic();
       this->processEvents();
     } catch (const ProgressCancelException&) {
-      LOG("CSG generation cancelled.");
+      LOG("CSG generation canceled.");
     } catch (const HardWarningException&) {
-      LOG("CSG generation cancelled due to hardwarning being enabled.");
+      LOG("CSG generation canceled due to hardwarning being enabled.");
     }
     progress_report_fin();
     updateStatusBar(nullptr);
@@ -2625,11 +2625,31 @@ void MainWindow::actionExportFileFormat(int fmt)
 
   } break;
   case FileFormat::PNG: {
-    // Grab first to make sure dialog box isn't part of the grabbed image
-    qglview->grabFrame();
     const QString suffix = "png";
-    auto img_filename =
-      QFileDialog::getSaveFileName(this, _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
+    // Transparency is offered as a second name filter rather than as a checkbox in a dialog of
+    // its own: Qt maps name filters onto the platform's native format popup, so the choice lives
+    // inside the save panel instead of in front of it.
+    const auto opaqueFilter = QString(_("PNG Files (*.png)"));
+    const auto transparentFilter = QString(_("Transparent PNG Files (*.png)"));
+    QFileDialog dialog(this, _("Export Image"), exportPath(suffix), opaqueFilter);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix(suffix);
+    dialog.setNameFilters({opaqueFilter, transparentFilter});
+    // Remember the choice, so exporting a series of images doesn't mean re-picking it every time.
+    if (Settings::Settings::exportPngTransparentBackground.value()) {
+      dialog.selectNameFilter(transparentFilter);
+    }
+    if (dialog.exec() != QDialog::Accepted) {
+      return;
+    }
+    const auto selectedFiles = dialog.selectedFiles();
+    const auto img_filename = selectedFiles.isEmpty() ? QString() : selectedFiles.front();
+    const bool transparent = dialog.selectedNameFilter() == transparentFilter;
+    Settings::Settings::exportPngTransparentBackground.setValue(transparent);
+    Settings::Settings::visit(SettingsWriter());
+    // Grabbing after the panel has closed is safe: grabFramebuffer() repaints into its own
+    // framebuffer object rather than reading the screen, so no window can end up in the image.
+    qglview->grabFrame(transparent);
     if (!img_filename.isEmpty()) {
       const bool saveResult = qglview->save(img_filename.toStdString().c_str());
       if (saveResult) {

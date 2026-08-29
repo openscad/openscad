@@ -172,7 +172,7 @@ if (MINGW)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -gsplit-dwarf;            # Put most DWARF in .dwo side files
         -fno-omit-frame-pointer;  # Better backtraces
@@ -205,7 +205,7 @@ if (MINGW)
 
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -fstandalone-debug;       # Emit complete type info for headers/templates
         -fno-omit-frame-pointer;  # Better backtraces
@@ -1544,6 +1544,7 @@ if(ENABLE_GUI_TESTS)
     src/guitests/TestModuleCache.h
     src/guitests/TestTabManager.h
     src/guitests/TestMainWindow.h
+    src/guitests/TestExportImage.h
     src/guitests/UXTest.h
   )
 
@@ -1552,6 +1553,7 @@ if(ENABLE_GUI_TESTS)
     src/guitests/TestModuleCache.cc
     src/guitests/TestTabManager.cc
     src/guitests/TestMainWindow.cc
+    src/guitests/TestExportImage.cc
     src/guitests/UXTest.cc
   )
 
@@ -1577,6 +1579,8 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
+  "src/io/*_test.cc"
+  "src/glview/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"

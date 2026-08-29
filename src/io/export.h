@@ -338,10 +338,7 @@ struct ViewOptions {
   RenderType renderer{RenderType::OPENCSG};
 
   std::map<std::string, bool> flags{
-    {"axes", false},
-    {"scales", false},
-    {"edges", false},
-    {"crosshairs", false},
+    {"axes", false}, {"scales", false}, {"edges", false}, {"crosshairs", false}, {"transparent", false},
   };
 
   const std::vector<std::string> names()
