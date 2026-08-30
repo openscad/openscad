@@ -857,7 +857,7 @@ int openscad_main(int argc, char **argv)
       "default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(),
       "output specified file instead of running the GUI. The file extension specifies the type: stl, "
-      "off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be "
+      "off, wrl, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be "
       "used multiple times for different exports. Use '-' for stdout.\n")
     ("O,O", po::value<std::vector<std::string>>(),
       "pass settings value to the file export using the format section/key=value, e.g "

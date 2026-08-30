@@ -116,7 +116,7 @@
 
 
 **Deprecations:**
-* AMF import/export is deprecated
+* Removed AMF import/export
 * Removed support for OpenGL < 2.1
 * Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
 * Removed deprecated -s and -x cmd-line options #5733

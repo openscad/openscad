@@ -1759,9 +1759,6 @@ msgstr "Скинути вид"
 msgid "Export as S&VG..."
 msgstr "Експортувати у &SVG..."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr "Експортувати у &AMF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 #, fuzzy

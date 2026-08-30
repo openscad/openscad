@@ -1735,9 +1735,6 @@ msgstr "ხედის საწყის მნიშვნელობაზ�
 msgid "Export as S&VG..."
 msgstr "S&VG-ის სახით გატანა..."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr "&AMF-ის სახით გატანა..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 msgid "Export as &3MF..."
@@ -3348,8 +3345,6 @@ msgstr ""
 #~ msgid "WRL"
 #~ msgstr "WRL"
 
-#~ msgid "AMF"
-#~ msgstr "AMF"
 
 #~ msgid "3MF"
 #~ msgstr "3MF"

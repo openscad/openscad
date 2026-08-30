@@ -1751,9 +1751,6 @@ msgstr "Výchozí pohled"
 msgid "Export as S&VG..."
 msgstr "Exportovat jako S&VG..."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr "Exportovat jako &AMF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 #, fuzzy

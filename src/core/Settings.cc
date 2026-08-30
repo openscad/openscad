@@ -235,6 +235,9 @@ SettingsEntryEnum<std::string> Settings::localAppFileFormat(
 SettingsEntryList<LocalAppParameter> Settings::localAppParameterList("printing",
                                                                      "localAppParameterList");
 
+SettingsEntryString Settings::caCertPath("network", "caCertPath", "");
+SettingsEntryBool Settings::tlsSkipVerify("network", "tlsSkipVerify", false);
+
 SettingsEntryEnum<std::string> Settings::renderBackend3D(
   "advanced", "renderBackend3D",
   {{"CGAL", "cgal", "CGAL (old/slow)"}, {"Manifold", "manifold", "Manifold (new/fast)"}}, "Manifold");

@@ -1184,9 +1184,6 @@ msgstr "&Typsnittslista"
 msgid "Export as S&VG..."
 msgstr "Exportera som S&VG..."
 
-#: build/OpenSCAD_autogen/include/ui_MainWindow.h:1177
-msgid "Export as &AMF..."
-msgstr "Exportera som &AMF..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1178
 msgid "Export as &3MF..."
@@ -1951,9 +1948,6 @@ msgstr "AV"
 msgid "WRL"
 msgstr "WRL"
 
-#: build/OpenSCAD_autogen/include/ui_Preferences.h:1973
-msgid "AMF"
-msgstr "AMF"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1974
 msgid "3MF"

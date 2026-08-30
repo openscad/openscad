@@ -23,6 +23,13 @@
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 
+// Set limit for reserving vector sizes. Using 10⁸ should be
+// plenty for reading files of 100MB. Also this is not a hard
+// limit, but an initial reserve limit preventing malformed
+// files attacking memory allocation with bogus header info.
+constexpr unsigned long max_reserve_vertices = 10'000'000;
+constexpr unsigned long max_reserve_faces = 10'000'000;
+
 // References:
 // http://www.geomview.org/docs/html/OFF.html
 
@@ -188,8 +195,8 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   PRINTDB("%d vertices, %d faces, %d edges.", vertices_count % faces_count % edges_count);
 
   auto ps = PolySet::createEmpty();
-  ps->vertices.reserve(vertices_count);
-  ps->indices.reserve(faces_count);
+  ps->vertices.reserve(std::min(vertices_count, max_reserve_vertices));
+  ps->indices.reserve(std::min(faces_count, max_reserve_faces));
 
   while ((!f.eof()) && (vertex++ < vertices_count)) {
     if (!getline_clean("reading vertices: end of file")) {
@@ -252,7 +259,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       for (i = 0; i < face_size; i++) {
         size_t ind = boost::lexical_cast<int>(words[i + 1]);
         // PRINTDB("%d, ", ind);
-        if (ind >= 0 && ind < vertices_count) {
+        if (ind >= 0 && ind < ps->vertices.size()) {
           ps->indices.back().push_back(ind);
         } else {
           AsciiError((boost::format("ignored bad face vertex index: %d") % ind).str().c_str());

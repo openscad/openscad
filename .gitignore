@@ -31,7 +31,6 @@ object_script.openscad.Release
 /*.stl
 /*.dxf
 /*.off
-/*.amf
 /*.png
 /*.csg
 /*.nef3
