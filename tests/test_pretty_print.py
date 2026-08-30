@@ -203,15 +203,46 @@ def png_encode64(fname, width=512, data=None, alt=''):
     return tag
 
 
+RUN_MARKER_NAME = '.pretty_print_run_marker'
+
+
+def mark_run(builddir):
+    # Touched by CTestCustom.template's CTEST_CUSTOM_PRE_TEST, right before ctest starts running
+    # tests, so findlogfile() can tell "the log this run wrote" from "whichever log is newest".
+    logpath = os.path.join(builddir, 'Testing', 'Temporary')
+    os.makedirs(logpath, exist_ok=True)
+    pathlib.Path(os.path.join(logpath, RUN_MARKER_NAME)).touch()
+
+
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    # The ctest command may not finish before the LastTest.log.tmp* is flushed,
-    # so read that file if it exists.
-    logfilename = next(pathlib.Path(logpath).glob('LastTest.log*'), None)
-    if not os.path.isfile(logfilename):
-        print('can\'t find and/or open logfile', logfilename)
+    # ctest may not have flushed LastTest.log by the time this post-test hook runs, in which case
+    # the current run is in LastTest.log.tmp<random> instead, and an interrupted run leaves its
+    # temp file behind forever. Newest-by-mtime picks the right one of those -- but two concurrent
+    # ctest invocations against the same builddir can each leave a fresh-looking file, and mtime
+    # alone can't tell which belongs to *this* invocation. So only consider candidates written at
+    # or after this run's marker; a run with nothing fresher than its own marker fails loudly
+    # instead of silently reporting a stale run's results.
+    candidates = [path for path in pathlib.Path(logpath).glob('LastTest.log*') if path.is_file()]
+    if not candidates:
+        print('can\'t find and/or open logfile in', logpath)
         sys.exit()
-    return str(logfilename)
+
+    marker = pathlib.Path(logpath, RUN_MARKER_NAME)
+    if marker.exists():
+        marker_mtime = marker.stat().st_mtime
+        fresh = [path for path in candidates if path.stat().st_mtime >= marker_mtime]
+        if not fresh:
+            sys.exit(f'no logfile in {logpath} is newer than this run\'s marker -- ctest may '
+                      'have been interrupted before writing one')
+        candidates = fresh
+    else:
+        # Marker missing: the script was run outside the wired-up ctest hook (e.g. by hand during
+        # development), or the build tree predates the marker. Newest-by-mtime is still correct as
+        # long as this is the only invocation touching the builddir.
+        print('warning: no run marker found in', logpath, '-- falling back to newest logfile')
+
+    return str(max(candidates, key=lambda path: path.stat().st_mtime))
 
 # --- Templating ---
 
@@ -336,8 +367,8 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
     templates = Templates()
     for test in report_tests:
-        # relative-output tests have no "type"
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', 'dxf', 'svg', ''):
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov',
+                          'dxf', 'svg', 'json', ''):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
@@ -442,6 +473,10 @@ def main():
     debug('build dir set to ' +  builddir)
 
     # --- End Command Line Parsing ---
+
+    if '--mark-run' in sys.argv:
+        mark_run(builddir)
+        return
 
     sysinfo, sysid = read_sysinfo(os.path.join(builddir, 'sysinfo.txt'))
     makefiles = load_makefiles(builddir)
