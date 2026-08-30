@@ -1268,6 +1268,12 @@ add_cmdline_test(render-svg      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY}
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle)
 
 #
+# --enable=unicode-identifiers tests
+#
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --enable=unicode-identifiers)
+add_failing_test(parsererrors SUFFIX stl FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1 --enable=unicode-identifiers)
+
+#
 # --enable=discretization-by-error tests
 #
 # Piggy-back on existing tests which have $fe in them. We don't care about preview vs cgal etc for just this feature.

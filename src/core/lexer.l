@@ -30,8 +30,10 @@
 
 %{
 
+#include "Feature.h"
 #include "handle_dep.h"
 #include "core/str_utf8_wrapper.h"
+#include "core/UnicodeIdentifier.h"
 #include "utils/printutils.h"
 #include "core/parsersettings.h"
 #include "core/Assignment.h"
@@ -96,6 +98,7 @@ extern YYLTYPE parserlloc;
 extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
 void includefile(const Location& loc);
+static int unicode_identifier(const char *text, size_t length);
 std::shared_ptr<fs::path> sourcefile();
 std::shared_ptr<fs::path> parser_sourcefile;
 std::vector<std::shared_ptr<fs::path>> filename_stack;
@@ -127,8 +130,27 @@ U3      [\xe0-\xef]
 U4      [\xf0-\xf4]
 UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
+/*
+ Non-ASCII UTF-8 characters that may appear in an identifier. This is {UNICODE}
+ minus the two sequences treated as whitespace below, U+00A0 (C2 A0) and U+FEFF
+ (EF BB BF); those have to keep terminating an identifier instead of being
+ swallowed by it.
+
+ Note that this is only a coarse approximation of the identifier character set:
+ it matches any non-ASCII code point, and even accepts overlong forms,
+ surrogates and values above U+10FFFF. Deciding which code points are actually
+ permitted is left to unicode_identifier() below, because encoding the ~700
+ UAX #31 code point ranges as UTF-8 byte patterns here would grow the scanner
+ tables by more than an order of magnitude.
+*/
+U2ID    \xc2[\x80-\x9f\xa1-\xbf]|[\xc3-\xdf]{U}
+U3ID    [\xe0-\xee]{U}{U}|\xef[\x80-\xba\xbc-\xbf]{U}|\xef\xbb[\x80-\xbe]
+UNICODEID {U2ID}|{U3ID}|{U4}{U}{U}{U}
+
 IDSTART [a-zA-Z_$]
 IDREST  [a-zA-Z0-9_]
+UIDSTART ({IDSTART}|{UNICODEID})
+UIDREST  ({IDREST}|{UNICODEID})
 
 %%
 
@@ -272,10 +294,9 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 \xef\xbb\xbf
 
 %{/*
- Reject any other non-ASCII UTF-8.  We will want to change this if we ever support
- non-ASCII identifiers.
+ Any other non-ASCII UTF-8 is picked up by the identifier rule below, which
+ reports why the code point was rejected instead of failing without a message.
 */%}
-{UNICODE}              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
 %{/*
  A0 is a non-break space in ISO 8859-1 / Latin-1.  A naked A0 is illegal in UTF-8.
@@ -323,6 +344,12 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                         }
 
 {IDSTART}{IDREST}*      { parserlval.text = strdup(yytext); return TOK_ID; }
+%{/*
+ Identifiers containing non-ASCII characters. Both rules match a plain ASCII
+ identifier equally long, so flex picks the rule above for those and this one
+ never runs for ASCII-only input.
+*/%}
+{UIDSTART}{UIDREST}*    { return unicode_identifier(yytext, yyleng); }
 {D}{IDREST}*            {
                             LOG(message_group::Deprecated, LOCATION(parserlloc), "",
                                 "Variable names starting with digits (%1$s)"
@@ -342,6 +369,43 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 .                       { return yytext[0]; }
 
 %%
+
+/*
+  Handle a token that matched the identifier pattern and contains non-ASCII
+  characters. Normalises it to NFC and checks it against the identifier profile
+  described in core/UnicodeIdentifier.h. Returns TOK_ID carrying the normalised
+  name, or TOK_ERROR after reporting why the token was rejected.
+*/
+static int unicode_identifier(const char *text, size_t length)
+{
+  std::string message;
+
+  if (!Feature::ExperimentalUnicodeIdentifiers.is_enabled()) {
+    message = "Non-ASCII identifiers are experimental, enable the unicode-identifiers feature";
+  } else {
+    const auto result = UnicodeIdentifier::normalize(text, length);
+    switch (result.status) {
+    case UnicodeIdentifier::Status::Valid:
+      parserlval.text = strdup(result.identifier.c_str());
+      return TOK_ID;
+    case UnicodeIdentifier::Status::InvalidEncoding:
+      message = "Malformed UTF-8 sequence in identifier";
+      break;
+    case UnicodeIdentifier::Status::InvalidStart:
+      message = "Identifier cannot start with "
+                + UnicodeIdentifier::formatCodePoint(result.codepoint);
+      break;
+    case UnicodeIdentifier::Status::InvalidContinue:
+      message = "Identifier cannot contain "
+                + UnicodeIdentifier::formatCodePoint(result.codepoint);
+      break;
+    }
+  }
+
+  parsererror(message.c_str());
+  parser_error_pos -= static_cast<int>(length);
+  return TOK_ERROR;
+}
 
 void lexer_set_parser_sourcefile(const fs::path& path)
 {
