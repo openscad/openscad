@@ -1684,9 +1684,6 @@ msgstr ""
 msgid "Export as S&VG..."
 msgstr ""
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 msgid "Export as &3MF..."

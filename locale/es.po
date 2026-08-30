@@ -1717,9 +1717,6 @@ msgstr "Reiniciar vista"
 msgid "Export as S&VG..."
 msgstr "Exportar como S&VG..."
 
-#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-msgid "Export as &AMF..."
-msgstr "Exportar como &AMF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 msgid "Export as &3MF..."

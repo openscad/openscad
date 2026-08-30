@@ -11,7 +11,6 @@
 
 enum class ImportType {
   UNKNOWN,
-  AMF,
   _3MF,
   STL,
   OFF,
