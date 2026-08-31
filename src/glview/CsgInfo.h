@@ -50,7 +50,14 @@ public:
   // Names of leaf payloads already sent over the response channel during evaluation, keyed by
   // PolySet identity (feature 34). Empty outside a compute worker, in which case write_products
   // serializes the leaves itself as it always did.
-  std::map<const PolySet *, std::string> streamed_leaves;
+  //
+  // Each entry keeps a reference to the mesh it is keyed on. Streaming records leaves the
+  // evaluator merely passed through -- the raw square() meshes inside a hull(), say -- and those
+  // are released as soon as the term holding them is discarded. A later leaf allocated at the
+  // freed address would then match the dead entry and be written into the products under its
+  // name, so the preview references the wrong mesh rather than a missing one. Holding the
+  // shared_ptr makes an address in this map unreusable for as long as the map exists.
+  std::map<const PolySet *, std::pair<std::string, std::shared_ptr<const PolySet>>> streamed_leaves;
   // `resolve`, when set, supplies payload bytes by name instead of reading them from disk --
   // the products themselves and every leaf they refer to. That is how a compute worker's
   // preview arrives now (see io/ipc_channel.h); an empty resolver reads files as before.
@@ -88,7 +95,7 @@ public:
         const auto name =
           products_file + ".leaf-" + std::to_string(this->streamed_leaves.size()) + kIpcGeometrySuffix;
         export_ipc_geometry(*ps, ipc_payload_sink::open(name));
-        this->streamed_leaves.emplace(ps.get(), name);
+        this->streamed_leaves.emplace(ps.get(), std::make_pair(name, ps));
       });
     }
     const std::shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);

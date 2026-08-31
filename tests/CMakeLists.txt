@@ -1608,6 +1608,18 @@ if(OPENSCAD_BINPATH)
       ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_streaming.py
       ${OPENSCAD_BINPATH}
   )
+  add_test(NAME compute_worker_2d_render
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_2d_render.py
+      ${OPENSCAD_BINPATH}
+  )
+  add_test(NAME compute_worker_streaming_parity
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_worker_streaming_parity.py
+      ${OPENSCAD_BINPATH}
+  )
   add_test(NAME compute_worker_cache
     CONFIGURATIONS Default
     COMMAND ${Python3_EXECUTABLE}
