@@ -59,20 +59,21 @@ void GLView::setupShader()
         {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
       },
   });
+
+  preview_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
+    .resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("Preview.vert"),
+                                                  ShaderUtils::loadShaderSource("Preview.frag")),
+    .type = ShaderUtils::ShaderType::NONE,
+    .uniforms = {},
+    .attributes = {},
+  });
 }
 
 void GLView::teardownShader()
 {
-  if (edge_shader == nullptr) return;  // if OpenGL context was not initialized
-  if (edge_shader->resource.shader_program) {
-    glDeleteProgram(edge_shader->resource.shader_program);
-  }
-  if (edge_shader->resource.vertex_shader) {
-    glDeleteShader(edge_shader->resource.vertex_shader);
-  }
-  if (edge_shader->resource.fragment_shader) {
-    glDeleteShader(edge_shader->resource.fragment_shader);
-  }
+  // edge_shader/preview_shader may be null if the OpenGL context was never initialized
+  if (edge_shader) ShaderUtils::deleteShaderProgram(edge_shader->resource);
+  if (preview_shader) ShaderUtils::deleteShaderProgram(preview_shader->resource);
 }
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
@@ -210,7 +211,7 @@ void GLView::paintGL()
     OpenCSG::setContext(this->opencsg_id);
 #endif
     this->renderer->prepare(edge_shader.get());
-    this->renderer->draw(showedges, edge_shader.get());
+    this->renderer->draw(showedges, showedges ? edge_shader.get() : preview_shader.get());
   }
   Vector3d eyedir(this->modelview[2], this->modelview[6], this->modelview[10]);
   glColor3f(1, 0, 0);

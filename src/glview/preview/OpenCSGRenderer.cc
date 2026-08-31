@@ -117,23 +117,17 @@ void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
 #ifdef ENABLE_OPENCSG
-  // Only use shader if select rendering or showedges
-  bool enable_shader =
-    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
-
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
 #if OPENCSG_VERSION >= 0x0180
-      if (enable_shader) OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
-      else OpenCSG::setVertexShader({});
+      OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
 #endif
       GL_CHECKD(OpenCSG::render(product->primitives()));
       GL_TRACE0("glDepthFunc(GL_EQUAL)");
       GL_CHECKD(glDepthFunc(GL_EQUAL));
     }
 
-    if (enable_shader) {
+    if (shaderinfo) {
       GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
       GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
       VBOUtils::shader_attribs_enable(*shaderinfo);
@@ -160,7 +154,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
       }
     }
 
-    if (enable_shader) {
+    if (shaderinfo) {
       GL_TRACE0("glUseProgram(0)");
       GL_CHECKD(glUseProgram(0));
       VBOUtils::shader_attribs_disable(*shaderinfo);
