@@ -739,8 +739,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     bool shouldcompiletoplevel = false;
     bool didcompile = false;
 
-    compileErrors = 0;
-    compileWarnings = 0;
+    resetCompileMessageCounts();
 
     this->renderStatistic.start();
 
@@ -929,6 +928,12 @@ void MainWindow::compileDone(bool didchange)
       }
     }
   }
+}
+
+void MainWindow::resetCompileMessageCounts()
+{
+  this->compileErrors = 0;
+  this->compileWarnings = 0;
 }
 
 void MainWindow::compileEnded()

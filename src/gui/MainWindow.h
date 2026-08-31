@@ -279,6 +279,7 @@ private slots:
   void instantiateRoot();
   void compileDone(bool didchange);
   void compileEnded();
+  void resetCompileMessageCounts();
 
 private slots:
   void on_editActionCopyVPT_triggered();
