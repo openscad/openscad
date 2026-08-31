@@ -5,13 +5,13 @@
 
 class Tree;
 
-class CGALWorker : public QObject
+class GeometryWorker : public QObject
 {
   Q_OBJECT;
 
 public:
-  CGALWorker();
-  ~CGALWorker() override;
+  GeometryWorker();
+  ~GeometryWorker() override;
 
 public slots:
   void start(const Tree& tree);
@@ -24,5 +24,5 @@ signals:
 
 protected:
   class QThread *thread;
-  const class Tree *tree;
+  const Tree *tree = nullptr;
 };

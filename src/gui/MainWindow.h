@@ -44,7 +44,7 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
 class BuiltinContext;
-class CGALWorker;
+class GeometryWorker;
 class CSGNode;
 class CSGProducts;
 class FontListDialog;
@@ -121,8 +121,8 @@ public:
 
   Measurement::Measurement meas;
 
-  int compileErrors;
-  int compileWarnings;
+  int compileErrors = 0;
+  int compileWarnings = 0;
 
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
@@ -458,7 +458,7 @@ private:
   bool procevents{false};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
-  CGALWorker *cgalworker;
+  GeometryWorker *geometryWorker;
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time
