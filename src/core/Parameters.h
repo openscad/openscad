@@ -63,6 +63,7 @@ public:
   template <typename T>
   bool validate_integral(const std::string& name, T& out, T lo = std::numeric_limits<T>::min(),
                          T hi = std::numeric_limits<T>::max());
+  boost::optional<const std::string&> exactlyOneOf(const std::initializer_list<std::string> names) const;
 
   ContextFrame to_context_frame() &&;
 
