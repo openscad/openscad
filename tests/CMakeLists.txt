@@ -1271,6 +1271,7 @@ add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/m
 # --enable=unicode-identifiers tests
 #
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --enable=unicode-identifiers)
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS --enable=unicode-identifiers -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
 add_failing_test(parsererrors SUFFIX stl FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1 --enable=unicode-identifiers)
 
 #

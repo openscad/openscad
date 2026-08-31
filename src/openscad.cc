@@ -96,6 +96,7 @@
 #include "core/customizer/ParameterSet.h"
 #include "core/node.h"
 #include "core/parsersettings.h"
+#include "core/str_utf8_wrapper.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/GeometryUtils.h"
@@ -628,8 +629,11 @@ int cmdline(const CommandLine& cmd)
     ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
     ParameterSets sets;
     sets.readFile(cmd.parameterFile);
+    // Set names from the file are normalised on read, the one from the command
+    // line has to be normalised here so that both sides can be compared.
+    const std::string setName = normalize_utf8_nfc(cmd.setName);
     for (const auto& set : sets) {
-      if (set.name() == cmd.setName) {
+      if (set.name() == setName) {
         parameters.importValues(set);
         parameters.apply(root_file);
         break;
