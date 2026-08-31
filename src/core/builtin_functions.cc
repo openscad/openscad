@@ -55,6 +55,7 @@
 #include "version.h"
 // hash double
 #include "geometry/linalg.h"
+#include "handle_dep.h"
 
 #if defined __WIN32__ || defined _MSC_VER
 #include <process.h>
@@ -1103,11 +1104,32 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
 Value builtin_import(Arguments arguments, const Location& loc)
 {
   auto session = arguments.session();
-  const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
+  const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "type"});
+  std::string type = parameters.get("type", "");
   std::string raw_filename = parameters.get("file", "");
+
   std::string file =
     lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
-  return import_json(file, session, loc);
+  if (!file.empty()) handle_dep(file);
+
+  if (type.empty()) {
+    std::string extraw = fs::path(file).extension().generic_string();
+    std::string ext = boost::algorithm::to_lower_copy(extraw);
+    if (ext == ".json") {
+      type = "json";
+    } else {
+      // For error messages, should not match anything below.
+      type = ext;
+    }
+  }
+  if (type == "json") {
+    return import_json(file, session, loc);
+  } else {
+    LOG(message_group::Warning,
+        "Unsupported file format '%1$s' while trying to import file '%2$s', import() at line %3$d", type,
+        raw_filename, loc.firstLine());
+    return Value::undefined.clone();
+  }
 }
 
 void register_builtin_functions()
