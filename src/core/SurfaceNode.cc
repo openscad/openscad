@@ -70,8 +70,7 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
                                             {"file", "center", "convexity"}, {"invert"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-  auto filename =
-    lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
+  auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
