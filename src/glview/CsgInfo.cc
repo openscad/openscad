@@ -21,9 +21,10 @@ namespace fs = std::filesystem;
 
 namespace {
 
-json write_chain(const std::vector<CSGChainObject>& chain, const std::string& filename,
-                 std::map<const PolySet *, std::string>& geometries,
-                 const std::map<const PolySet *, std::string>& streamed)
+json write_chain(
+  const std::vector<CSGChainObject>& chain, const std::string& filename,
+  std::map<const PolySet *, std::string>& geometries,
+  const std::map<const PolySet *, std::pair<std::string, std::shared_ptr<const PolySet>>>& streamed)
 {
   json output = json::array();
   for (const auto& object : chain) {
@@ -34,7 +35,7 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
       if (already != streamed.end()) {
         // Sent during evaluation (feature 34). Reference the name it went out under rather than
         // serializing the same mesh a second time.
-        geometry = geometries.emplace(object.leaf->polyset.get(), already->second).first;
+        geometry = geometries.emplace(object.leaf->polyset.get(), already->second.first).first;
       } else {
         const auto path = filename + ".leaf-" + std::to_string(geometries.size()) + kIpcGeometrySuffix;
         // Not streamed: either this is not a compute worker, or the leaf reached the products
@@ -71,9 +72,10 @@ json write_chain(const std::vector<CSGChainObject>& chain, const std::string& fi
   return output;
 }
 
-json write_products(const std::shared_ptr<CSGProducts>& products, const std::string& filename,
-                    std::map<const PolySet *, std::string>& geometries,
-                    const std::map<const PolySet *, std::string>& streamed)
+json write_products(
+  const std::shared_ptr<CSGProducts>& products, const std::string& filename,
+  std::map<const PolySet *, std::string>& geometries,
+  const std::map<const PolySet *, std::pair<std::string, std::shared_ptr<const PolySet>>>& streamed)
 {
   json output = json::array();
   if (!products) return output;

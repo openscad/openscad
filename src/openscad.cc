@@ -580,7 +580,14 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     }
 
     const std::string input_filename = cmd.is_stdin ? "<stdin>" : source_file;
-    const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
+    // The worker transport carries whatever the root turned out to be. It is listed as 3D for
+    // dispatch, but a 2D top level is a legitimate result -- `!` on a 2D subtree makes one -- and
+    // gating it on 3D fails the request, so the window keeps its previous geometry and the render
+    // looks stale rather than failed. Every user-facing format keeps its declared dimension.
+    const int dim = export_format == FileFormat::IPC_GEOMETRY ? int(root_geom->getDimension())
+                    : fileformat::is3D(export_format)         ? 3
+                    : fileformat::is2D(export_format)         ? 2
+                                                              : 0;
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
     if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
