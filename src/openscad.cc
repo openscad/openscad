@@ -478,11 +478,27 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     GeometryEvaluator geomevaluator(tree);
     std::unique_ptr<OffscreenView> glview;
     std::shared_ptr<const Geometry> root_geom;
-    if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) &&
+    // Parsed before anything renders: --view=depth shades with the same range the
+    // depthmap export encodes with, so the preview and the file agree.
+    DepthmapOptions depthmapOptions;
+    if (const auto section = cmd.exportOptions.find("depthmap"); section != cmd.exportOptions.end()) {
+      if (const auto r = section->second.find("range"); r != section->second.end()) {
+        std::string error;
+        if (!parse_depth_range(r->second, depthmapOptions.explicit_near, depthmapOptions.explicit_far,
+                               error)) {
+          LOG("Invalid depthmap range '%1$s': %2$s.", r->second, error);
+          return 1;
+        }
+        depthmapOptions.has_explicit_range = true;
+      }
+    }
+
+    if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG ||
+         export_format == FileFormat::DEPTHMAP || export_format == FileFormat::PFM) &&
         (cmd.viewOptions.renderer == RenderType::OPENCSG ||
          cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
-      glview = prepare_preview(tree, cmd.viewOptions, camera);
+      glview = prepare_preview(tree, cmd.viewOptions, camera, depthmapOptions);
       if (!glview) return 1;
     } else {
       // Force creation of concrete geometry (mostly for testing)
@@ -517,14 +533,68 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       return 1;
     }
 
-    if (export_format == FileFormat::PNG) {
+    if (export_format == FileFormat::DEPTHMAP) {
+      DepthmapOptions opts = depthmapOptions;
+      const auto section = cmd.exportOptions.find("depthmap");
+      if (section != cmd.exportOptions.end()) {
+        const auto p_entry = section->second.find("profile");
+        if (p_entry != section->second.end()) {
+          if (p_entry->second == "visual") {
+            opts.profile = DepthProfile::visual;
+          } else if (p_entry->second != "metric") {
+            LOG("Unknown depthmap profile '%1$s'. Expected 'metric' or 'visual'.", p_entry->second);
+            return 1;
+          }
+        }
+        const auto c_entry = section->second.find("camera");
+        if (c_entry != section->second.end()) {
+          opts.camera_sidecar_path = c_entry->second;
+        }
+      }
+
+      bool success = true;
+      bool const wrote = with_output(
+        cmd.is_stdout, filename_str,
+        [&success, &root_geom, &cmd, &camera, &glview, opts](std::ostream& stream) {
+          if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
+              cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+            success = export_depthmap(root_geom, cmd.viewOptions, camera, opts, stream);
+          } else {
+            success = export_depthmap(*glview, opts, stream);
+          }
+        },
+        std::ios::out | std::ios::binary);
+      if (!success || !wrote) {
+        return 1;
+      }
+    }
+
+    if (export_format == FileFormat::PFM) {
       bool success = true;
       bool const wrote = with_output(
         cmd.is_stdout, filename_str,
         [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
           if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
               cmd.viewOptions.renderer == RenderType::GEOMETRY) {
-            success = export_png(root_geom, cmd.viewOptions, camera, stream);
+            success = export_pfm(root_geom, cmd.viewOptions, camera, stream);
+          } else {
+            success = export_pfm(*glview, stream);
+          }
+        },
+        std::ios::out | std::ios::binary);
+      if (!success || !wrote) {
+        return 1;
+      }
+    }
+
+    if (export_format == FileFormat::PNG) {
+      bool success = true;
+      bool const wrote = with_output(
+        cmd.is_stdout, filename_str,
+        [&success, &root_geom, &cmd, &camera, &glview, &depthmapOptions](std::ostream& stream) {
+          if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
+              cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+            success = export_png(root_geom, cmd.viewOptions, camera, depthmapOptions, stream);
           } else {
             success = export_png(*glview, stream);
           }

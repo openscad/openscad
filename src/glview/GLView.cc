@@ -9,10 +9,12 @@
 #include "glview/Renderer.h"
 #include "utils/degree_trig.h"
 #include "glview/hershey.h"
+#include "io/depthmap.h"
 
 #include <functional>
 #include <memory>
 #include <cmath>
+#include <algorithm>
 #include <cstdio>
 #include <string>
 
@@ -27,6 +29,7 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
+  showdepth = false;
   colorscheme = &ColorMap::instance().defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
@@ -128,13 +131,17 @@ void GLView::setupCamera()
   auto dist = cam.zoomValue();
   switch (this->cam.projection) {
   case Camera::ProjectionType::PERSPECTIVE: {
-    gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+    this->clipNear = 0.1 * dist;
+    this->clipFar = 100 * dist;
+    gluPerspective(cam.fov, aspectratio, this->clipNear, this->clipFar);
     break;
   }
   default:
   case Camera::ProjectionType::ORTHOGONAL: {
     auto height = dist * tan_degrees(cam.fov / 2);
-    glOrtho(-height * aspectratio, height * aspectratio, -height, height, -100 * dist, +100 * dist);
+    this->clipNear = -100 * dist;
+    this->clipFar = +100 * dist;
+    glOrtho(-height * aspectratio, height * aspectratio, -height, height, this->clipNear, this->clipFar);
     break;
   }
   }
@@ -154,6 +161,72 @@ void GLView::setupCamera()
   glGetDoublev(GL_PROJECTION_MATRIX, this->projection);
 }
 
+/*
+   Shade the model by distance instead of by lighting, so the viewport shows what
+   a depth map export will contain.
+
+   This is GL_LINEAR fog with a black fog color over white geometry: fog blends
+   f*white + (1-f)*black where f is linear in eye-space distance, so the fragment
+   color *is* the depth. Nothing is read back and no shader is involved.
+
+   Fog distance is eye-space and already linear, so unlike the export path this
+   needs none of linearize_depth()'s unprojection - and none of its precision
+   hazard either.
+
+   The range is pinned to the model's bounding sphere rather than to what is
+   currently on screen, so the shading does not swim while the model is rotated.
+ */
+void GLView::setupDepthShading()
+{
+  // Use the bounding box's actual eye-space depth extent rather than a bounding
+  // sphere: a sphere overestimates badly for anything not cube-shaped, and the
+  // wasted range shows up directly as washed-out contrast.
+  // The model's bounding sphere, capped at the viewing distance - orientation
+  // invariant, so turning the model no longer rebalances the shading. An
+  // explicit -O depthmap/range= still wins over it.
+  DepthRange range{0.0, 1.0};
+  const BoundingBox bbox = this->renderer ? this->renderer->getBoundingBox() : BoundingBox();
+  if (!bbox.isEmpty()) {
+    const double bmin[3] = {bbox.min().x(), bbox.min().y(), bbox.min().z()};
+    const double bmax[3] = {bbox.max().x(), bbox.max().y(), bbox.max().z()};
+    range = capped_sphere_range(bmin, bmax, this->modelview);
+  }
+  if (this->depthoptions.has_explicit_range) {
+    range = resolve_depth_range(this->depthoptions, range.start, range.end);
+  }
+
+  const GLfloat fogcolor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+  glFogi(GL_FOG_MODE, GL_LINEAR);
+  glFogf(GL_FOG_START, static_cast<GLfloat>(range.start));
+  glFogf(GL_FOG_END, static_cast<GLfloat>(range.end));
+  glFogfv(GL_FOG_COLOR, fogcolor);
+  glEnable(GL_FOG);
+
+  // Fog blends f*C + (1-f)*fogcolour, so the result is only depth if C is
+  // constant. glColor3f is not enough: the VBO renderers supply per-vertex
+  // colors, which win with lighting off. Instead keep lighting on, take
+  // GL_COLOR_MATERIAL out (so vertex colors stop feeding the material), and
+  // make the material purely emissive white - emission ignores normals, so
+  // every fragment comes out the same white regardless of orientation.
+  const GLfloat white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  const GLfloat black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+  glEnable(GL_LIGHTING);
+  glDisable(GL_COLOR_MATERIAL);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, white);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, black);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, black);
+}
+
+//! Undo setupDepthShading() so the decorations drawn afterwards, and the next
+//! frame, are not left emissive white inside a fog bank.
+void GLView::teardownDepthShading()
+{
+  const GLfloat black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+  glDisable(GL_FOG);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
+  glEnable(GL_COLOR_MATERIAL);
+}
+
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
@@ -161,6 +234,17 @@ void GLView::paintGL()
   auto bgstopcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_STOP_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
+
+  if (this->showdepth) {
+    // No geometry is infinitely far, exactly like the depthmap export's
+    // background pixels (which fall out for free there, since the exporter
+    // only ever reads the depth buffer). The far end of the viewport's own
+    // fog is black, so the background must read as black too, not the color
+    // scheme's normal gradient - otherwise "far" means two different things
+    // depending on whether a pixel happened to hit geometry.
+    bgcol = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    bgstopcol = bgcol;
+  }
 
   glClearColor(bgcol.r(), bgcol.g(), bgcol.b(), 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -204,6 +288,10 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  // Applies to the model only: the background gradient, axes and crosshairs are
+  // drawn above, and the small axes below, all outside the fog.
+  if (this->showdepth) setupDepthShading();
+
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
@@ -221,6 +309,7 @@ void GLView::paintGL()
   for (const SelectedObject& obj : this->shown_obj) {
     showObject(obj, eyedir);
   }
+  if (this->showdepth) teardownDepthShading();
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 

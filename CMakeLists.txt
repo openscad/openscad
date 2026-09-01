@@ -172,7 +172,7 @@ if (MINGW)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -gsplit-dwarf;            # Put most DWARF in .dwo side files
         -fno-omit-frame-pointer;  # Better backtraces
@@ -205,7 +205,7 @@ if (MINGW)
 
     target_compile_options(OpenSCADLibInternal PRIVATE
       $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
+        -O0;                      # No optimization → preserves locals
         -g2;                      # Full debug info (types/locals)
         -fstandalone-debug;       # Emit complete type info for headers/templates
         -fno-omit-frame-pointer;  # Better backtraces
@@ -1090,6 +1090,7 @@ set(CORE_SOURCES
   src/glview/RenderSettings.cc
   src/glview/preview/CSGTreeNormalizer.cc
   src/handle_dep.cc
+  src/io/depthmap.cc
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
@@ -1252,7 +1253,8 @@ if(NULLGL)
     src/glview/OffscreenView.cc
     src/glview/OffscreenContextNULL.cc
     src/io/export_png.cc
-    src/io/imageutils.cc)
+    src/io/imageutils.cc
+    src/io/imageutils-gray16.cc)
 else()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
@@ -1271,6 +1273,7 @@ else()
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
+    src/io/imageutils-gray16.cc
     ${GLEW_SOURCES})
   if(NOT USE_POLYSET_FOR_CGAL)
     list(APPEND OFFSCREEN_SOURCES
