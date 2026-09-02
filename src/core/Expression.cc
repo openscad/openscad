@@ -546,8 +546,8 @@ static SimplificationResult simplify_function_body(const Expression *expression,
     } else if (type == typeid(FunctionCall)) {
       const auto *call = static_cast<const FunctionCall *>(expression);
 
-      const Expression *function_body;
-      const AssignmentList *required_parameters;
+      const Expression *function_body = nullptr;
+      const AssignmentList *required_parameters = nullptr;
       std::shared_ptr<const Context> defining_context;
 
       auto f = call->evaluate_function_expression(context);
@@ -563,27 +563,37 @@ static SimplificationResult simplify_function_body(const Expression *expression,
           required_parameters = &callable.function->parameters;
           defining_context = callable.defining_context;
         } else {
-          const FunctionType *function;
           if (index == 2) {
-            function = &std::get<Value>(*f).toFunction();
+            const FunctionType pfunction = std::get<Value>(*f).toFunction();
+            function_body = pfunction.getExpr().get();
+            required_parameters = pfunction.getParameters().get();
+            defining_context = pfunction.getContext();
+
           } else if (index == 3) {
-            function = &std::get<const Value *>(*f)->toFunction();
-          } else {
-            assert(false);
+            const FunctionType pfunction = std::get<const Value *>(*f)->toFunction();
+            function_body = pfunction.getExpr().get();
+            required_parameters = pfunction.getParameters().get();
+            defining_context = pfunction.getContext();
           }
-          function_body = function->getExpr().get();
-          required_parameters = function->getParameters().get();
-          defining_context = function->getContext();
         }
       }
-      ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
-      body_context->apply_config_variables(*context);
-      Arguments arguments{call->arguments, context};
-      Parameters parameters = Parameters::parse(std::move(arguments), call->location(),
-                                                *required_parameters, defining_context);
-      body_context->apply_variables(std::move(parameters).to_context_frame());
 
-      return SimplifiedExpression{function_body, std::move(body_context), call};
+      SimplifiedExpression result;
+
+      if (function_body && required_parameters && defining_context) {
+        ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+        body_context->apply_config_variables(*context);
+        Arguments arguments{call->arguments, context};
+        Parameters parameters = Parameters::parse(std::move(arguments), call->location(),
+                                                  *required_parameters, defining_context);
+        body_context->apply_variables(std::move(parameters).to_context_frame());
+
+        result = SimplifiedExpression{function_body, std::move(body_context), call};
+      } else {
+        assert(false);
+      }
+
+      return result;
     } else {
       return expression->evaluate(context);
     }

@@ -5,12 +5,34 @@ elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
 endif()
 if (NOT OPENCSG_INCLUDE_DIR)
 #  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
+
+  unset (_MSVC_INCLUDE_HINTS)
+  unset (_MSVC_LIB_HINTS)
+
+  if (MSVC AND DEFINED VCPKG_TARGET_TRIPLET)
+    list(APPEND _MSVC_INCLUDE_HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/opencsg"
+      "${CMAKE_PREFIX_PATH}/include"
+    )
+    list(APPEND _MSVC_LIB_HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib"
+      "${CMAKE_PREFIX_PATH}/lib"
+    )
+  endif()
+  
   find_path(OPENCSG_INCLUDE_DIR
             opencsg.h
-            HINTS ${OPENCSG_DIR}/include)
+            HINTS ${OPENCSG_DIR}/include
+		  ${_MSVC_INCLUDE_HINTS}
+  )
+				  
   find_library(OPENCSG_LIBRARY
                opencsg
-               HINTS ${OPENCSG_DIR}/lib)
+               HINTS ${OPENCSG_DIR}/lib
+		     ${_MSVC_LIB_HINTS}
+  )
+			   
   if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
     message(FATAL_ERROR "OpenCSG not found")
   else()

@@ -26,20 +26,21 @@ int main(int argc, char **argv)
 #include <boost/nowide/convert.hpp>
 #include <cstddef>
 #include <string>
-
+#include <windows.h>
 // wmain gets arguments as wide character strings, which is the way that Windows likes to provide
 // non-ASCII arguments.  Convert them to UTF-8 strings and call the traditional main().
 int wmain(int argc, wchar_t **argv)
 {
-  char *argv8[argc + 1];
-  std::string argvString[argc];
-
+  char **argv8 = new char *[argc + 1];
+  std::string *argvString = new std::string[argc];
   for (int i = 0; i < argc; i++) {
     argvString[i] = boost::nowide::narrow(argv[i]);
     argv8[i] = argvString[i].data();
   }
-  argv8[argc] = NULL;
-
-  return (main(argc, argv8));
+  argv8[argc] = nullptr;
+  int result = main(argc, argv8);
+  delete[] argv8;
+  delete[] argvString;
+  return result;
 }
 #endif
