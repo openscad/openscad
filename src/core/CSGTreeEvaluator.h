@@ -49,6 +49,7 @@ public:
   }
 
 private:
+  using ChildList = std::list<std::shared_ptr<const AbstractNode>>;
   void addToParent(const State& state, const AbstractNode& node);
   void applyToChildren(State& state, const AbstractNode& node, OpenSCADOperator op);
   std::shared_ptr<CSGNode> evaluateCSGNodeFromGeometry(State& state,
@@ -57,10 +58,8 @@ private:
                                                        const AbstractNode& node);
   void applyBackgroundAndHighlight(State& state, const AbstractNode& node);
 
-  using ChildList = std::list<std::shared_ptr<const AbstractNode>>;
-  std::map<int, ChildList> visitedchildren;
-
 protected:
+  std::map<int, ChildList> visitedchildren;
   const Tree& tree;
   GeometryEvaluator *geomevaluator;
   std::shared_ptr<CSGNode> rootNode;
