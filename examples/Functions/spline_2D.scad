@@ -120,7 +120,7 @@ translate([0,-90])
  ** the straight bottom, but not the flatness of the top.
  ** https://www.boost.org/doc/libs/1_92_0/libs/math/doc/html/math_toolkit/catmull_rom.html
  */
- catmull_rom_points = 100; // sets the fineness of the interpolation
+ catmull_rom_points = 200; // sets the fineness of the interpolation
  closed_interpolation = false;  // closed_interpolation set to false stops the interpolation at the final control point.
  // true will smooth from the final control point back to the first.
  topProfile = [for (i = [0:1:righttop]) puzzle_piece_controls[i]];
@@ -140,7 +140,9 @@ translate([0,-90])
  
 catmull_rom_controls = [ for (i=[begseg1:1:endseg2]) puzzle_piece_controls[i]];
 // The extra control points lie along the original top profile of the puzzle piece
-catmull_rom_extra_controls = concat([[12,0]], catmull_rom_controls, [[38,0]]);
+magicControlLeft = [13,15]; // chosen to flatten the angle at the joint
+magicControlRight = [37,15]; // ditto
+catmull_rom_extra_controls = concat([magicControlLeft], catmull_rom_controls, [magicControlRight]);
 // do the smoothing: 
 catmull_smoothed = catmull_rom_spline(catmull_rom_extra_controls, catmull_rom_points, 
         false, // closed is false, ie, its an open curve
