@@ -118,7 +118,7 @@
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
-#include "gui/CGALWorker.h"
+#include "gui/GeometryWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
 #include "gui/ai/AIDock.h"
@@ -612,7 +612,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  delete this->cgalworker;
+  delete this->geometryWorker;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -739,8 +739,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     bool shouldcompiletoplevel = false;
     bool didcompile = false;
 
-    compileErrors = 0;
-    compileWarnings = 0;
+    resetCompileMessageCounts();
 
     this->renderStatistic.start();
 
@@ -929,6 +928,12 @@ void MainWindow::compileDone(bool didchange)
       }
     }
   }
+}
+
+void MainWindow::resetCompileMessageCounts()
+{
+  this->compileErrors = 0;
+  this->compileWarnings = 0;
 }
 
 void MainWindow::compileEnded()
@@ -2006,7 +2011,7 @@ void MainWindow::cgalRender()
   if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
   else return;
 
-  this->cgalworker->start(this->tree);
+  this->geometryWorker->start(this->tree);
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
@@ -3491,8 +3496,8 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  this->cgalworker = new CGALWorker();
-  connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
+  this->geometryWorker = new GeometryWorker();
+  connect(this->geometryWorker, &GeometryWorker::done, this, &MainWindow::actionRenderDone);
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
