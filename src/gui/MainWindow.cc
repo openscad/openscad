@@ -612,6 +612,17 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
+  // The QWidget destructor deletes our child docks, and deleting a QDockWidget
+  // reparents and hides it, which emits Dock::visibilityChanged and sends hide
+  // events through our event filter. Qt only severs connections in ~QObject,
+  // which runs last, so those slots would re-enter this MainWindow after its
+  // own members (exportMap, activeEditor, rubberBandManager, ...) have already
+  // been destroyed. Sever the links here, while the object is still whole.
+  for (auto& [dock, title] : docks) {
+    dock->disconnect(this);
+    dock->removeEventFilter(this);
+  }
+
   delete this->geometryWorker;
 }
 
