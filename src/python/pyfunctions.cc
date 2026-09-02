@@ -1828,8 +1828,7 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
   auto node = std::make_shared<SurfaceNode>(instance);
 
   std::string fileval = file == NULL ? "" : file;
-  std::string filename =
-    lookup_file(fileval, instance->location().filePath().parent_path().string(), "");
+  std::string filename = lookup_file(fileval, instance->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 

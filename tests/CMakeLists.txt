@@ -299,7 +299,6 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/localfiles-test.scad
-  ${TEST_SCAD_DIR}/misc/localfiles_dir/localfiles-compatibility-test.scad
   ${TEST_SCAD_DIR}/misc/allexpressions.scad
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
@@ -414,7 +413,6 @@ list(APPEND RENDER_3D_FILES
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/localfiles-test.scad
-  ${TEST_SCAD_DIR}/misc/localfiles_dir/localfiles-compatibility-test.scad
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
   ${TEST_SCAD_DIR}/misc/empty-shape-tests.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
