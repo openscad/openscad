@@ -1621,7 +1621,7 @@ if(APPLE AND NOT APPLE_UNIX)
     file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
-         DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
+         DESTINATION ${BUNDLE_RESOURCES_DIR}/tests/data)
   endif()
 
 elseif(MINGW)
