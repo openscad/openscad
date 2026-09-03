@@ -30,8 +30,8 @@ rawProfile = concat([[x0, 0]], controlPoints, [[x1,0]]);
 // the cubic_spline is defined to reproduce its control points, and smoothly interpolates between them.
 // Its input is defined to be equal-spaced points on the x axis.
 // https://www.boost.org/doc/libs/1_92_0/libs/math/doc/html/math_toolkit/cardinal_cubic_b.html
-cs = cubic_spline(x0, x1, HourGlassControlYs,
-        numInterpolatedPoints , 
+cs = cubic_spline(HourGlassControlYs,
+        numInterpolatedPoints , x0, x1, 
         slope0, slope1);
 smoothProfile = concat([[x0,0]], cs, [[x1,0]]); // close the profile to display filled interior
 
@@ -121,12 +121,9 @@ translate([0,-90])
  ** https://www.boost.org/doc/libs/1_92_0/libs/math/doc/html/math_toolkit/catmull_rom.html
  */
  catmull_rom_points = 200; // sets the fineness of the interpolation
- closed_interpolation = false;  // closed_interpolation set to false stops the interpolation at the final control point.
- // true will smooth from the final control point back to the first.
  topProfile = [for (i = [0:1:righttop]) puzzle_piece_controls[i]];
  catmull_rom_smoothed_top = catmull_rom_spline(topProfile, 
-        catmull_rom_points, 
-        closed_interpolation, 
+        catmull_rom_points
        );
  translate([0, -130])
     polygon(concat(catmull_rom_smoothed_top, [puzzle_piece_controls[9], puzzle_piece_controls[10]]));
@@ -144,9 +141,13 @@ magicControlLeft = [13,15]; // chosen to flatten the angle at the joint
 magicControlRight = [37,15]; // ditto
 catmull_rom_extra_controls = concat([magicControlLeft], catmull_rom_controls, [magicControlRight]);
 // do the smoothing: 
-catmull_smoothed = catmull_rom_spline(catmull_rom_extra_controls, catmull_rom_points, 
-        false, // closed is false, ie, its an open curve
-        3 // omit both first and last control point intervals from the output
+catmull_smoothed = catmull_rom_spline(catmull_rom_extra_controls,
+        [
+        catmull_rom_points,
+        1,  // omit first point
+        len(catmull_rom_extra_controls)-2    // omit last control point intervals from the output
+        ], 
+        false // closed is false, ie, its an open curve
         );
 translate([0,-170])
     polygon(
