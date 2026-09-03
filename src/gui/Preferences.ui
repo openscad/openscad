@@ -1330,7 +1330,17 @@
              </font>
             </property>
             <property name="text">
-             <string>Features</string>
+             <string>Experimental Features</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelFeaturesDisclaimer">
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>These features are experimental.  They may change or be removed entirely without notice. You may enable them and use them and comment on them, but you must assume that they may not be in their final form and may never appear in an OpenSCAD release in any form.</string>
             </property>
            </widget>
           </item>
