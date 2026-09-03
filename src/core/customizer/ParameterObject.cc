@@ -430,18 +430,24 @@ static NumericLimits parseNumericLimits(const std::string& name, const Expressio
       }
     }
   }
+
+  // output.minimum/maximum get widened multiple times when processing vectors,
+  // therefore the original values need to be cached for accurate warnings
+  const boost::optional<double> declaredMinimum = output.minimum;
+  const boost::optional<double> declaredMaximum = output.maximum;
+
   for (double value : values) {
     if (output.minimum && value < output.minimum) {
       LOG(message_group::Warning, location, "",
           "Parameter '%1$s': value %2$s is below declared minimum %3$s, adjusting minimum",
-          name, formatValue(value), formatValue(*output.minimum));
+          name, formatValue(value), formatValue(*declaredMinimum));
 
       output.minimum = value;
     }
     if (output.maximum && value > output.maximum) {
       LOG(message_group::Warning, location, "",
           "Parameter '%1$s': value %2$s is above declared maximum %3$s, adjusting maximum",
-          name, formatValue(value), formatValue(*output.maximum));
+          name, formatValue(value), formatValue(*declaredMaximum));
 
       output.maximum = value;
     }
