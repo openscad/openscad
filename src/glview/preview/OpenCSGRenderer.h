@@ -89,12 +89,13 @@ public:
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
+  static void clearCache();
 
 private:
   void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
                             const ShaderUtils::ShaderInfo *shaderinfo);
 
-  std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
+  std::vector<std::shared_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
   std::shared_ptr<CSGProducts> background_products_;
