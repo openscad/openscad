@@ -113,6 +113,16 @@ bool isDarkMode()
 
 void configureOpenGLContext()
 {
+  // Each QOpenGLWidget otherwise gets an unshared context with its own object
+  // name space, so two windows both hand out buffer name 1. Renderers are
+  // released outside of paintGL() (MainWindow::instantiateRoot()), where the
+  // current context belongs to whichever window painted last, and the
+  // glDeleteBuffers() in ~VertexStateContainer then destroys that window's
+  // identically-numbered buffers. It crashes on its next repaint, drawing from
+  // a buffer that no longer exists. Sharing gives all the widgets one name
+  // space, so a delete always reaches the buffer it was meant for.
+  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
   // OpenSCAD still relies on legacy OpenGL compatibility features and GLSL 1.20
   // shaders, so a GLES context is not currently usable. On Wayland/EGL setups Qt
