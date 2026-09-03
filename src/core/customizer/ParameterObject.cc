@@ -32,6 +32,11 @@ bool set_enum_value(json& o, const std::string& name, const EnumParameter::EnumI
   }
 }
 
+std::string formatValue(double value)
+{
+  return Value(value).toEchoStringNoThrow();
+}
+
 }  // namespace
 
 bool BoolParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
@@ -396,7 +401,8 @@ struct NumericLimits {
   boost::optional<double> maximum;
   boost::optional<double> step;
 };
-static NumericLimits parseNumericLimits(const Expression *parameter, const std::vector<double>& values)
+static NumericLimits parseNumericLimits(const std::string& name, const Expression *parameter,
+                                        const Location& location, const std::vector<double>& values)
 {
   NumericLimits output;
 
@@ -426,9 +432,17 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
   }
   for (double value : values) {
     if (output.minimum && value < output.minimum) {
+      LOG(message_group::Warning, location, "",
+          "Parameter '%1$s': value %2$s is below declared minimum %3$s, adjusting minimum",
+          name, formatValue(value), formatValue(*output.minimum));
+
       output.minimum = value;
     }
     if (output.maximum && value > output.maximum) {
+      LOG(message_group::Warning, location, "",
+          "Parameter '%1$s': value %2$s is above declared maximum %3$s, adjusting maximum",
+          name, formatValue(value), formatValue(*output.maximum));
+
       output.maximum = value;
     }
   }
@@ -501,7 +515,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 
     if (expression->isDouble()) {
       double value = expression->toDouble();
-      NumericLimits limits = parseNumericLimits(parameter, {value});
+      NumericLimits limits = parseNumericLimits(name, parameter, assignment->location(), {value});
       return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum,
                                                limits.maximum, limits.step);
     }
@@ -522,7 +536,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
       value.push_back(item->toDouble());
     }
 
-    NumericLimits limits = parseNumericLimits(parameter, value);
+    NumericLimits limits = parseNumericLimits(name, parameter, assignment->location(), value);
     return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum,
                                              limits.maximum, limits.step);
   }
