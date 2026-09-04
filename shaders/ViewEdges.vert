@@ -1,5 +1,7 @@
 #version 120
 
+invariant gl_Position;
+
 attribute vec3 barycentric; // barycentric form of vertex coord
                             // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
 
