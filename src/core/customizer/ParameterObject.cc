@@ -437,14 +437,14 @@ static NumericLimits parseNumericLimits(const std::string& name, const Expressio
   const boost::optional<double> declaredMaximum = output.maximum;
 
   for (double value : values) {
-    if (output.minimum && value < output.minimum) {
+    if (output.minimum && value < *declaredMinimum) {
       LOG(message_group::Warning, location, "",
           "Parameter '%1$s': value %2$s is below the declared minimum %3$s, adjusting minimum value",
           name, formatValue(value), formatValue(*declaredMinimum));
 
       output.minimum = value;
     }
-    if (output.maximum && value > output.maximum) {
+    if (output.maximum && value > *declaredMaximum) {
       LOG(message_group::Warning, location, "",
           "Parameter '%1$s': value %2$s is above the declared maximum %3$s, adjusting maximum value",
           name, formatValue(value), formatValue(*declaredMaximum));
