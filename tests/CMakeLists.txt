@@ -387,6 +387,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
+  ${TEST_SCAD_DIR}/issues/issue7013.scad
 )
 
 list(APPEND ASTDUMP_FILES ${MISC_FILES}
@@ -912,6 +913,11 @@ list(APPEND EXPORT_3MF_LAZY_UNION_TEST_FILES ${TEST_SCAD_DIR}/experimental/lazyu
 
 list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
+list(APPEND EXPORT_PARAM_TEST_FILES
+${TEST_SCAD_DIR}/issues/issue6597.scad
+${TEST_SCAD_DIR}/issues/issue7013.scad
+)
+
 list(APPEND EXPORT_IMPORT_3D_FILES
 ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
 ${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
@@ -991,7 +997,13 @@ add_cmdline_test(export-pov-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES 
 add_cmdline_test(export-pov-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
 add_cmdline_test(export-pov-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
 
-add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES "${TEST_SCAD_DIR}/issues/issue6597.scad" ARGS --export-format param)
+# Export parameters, observe exported files and console output
+add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES ${EXPORT_PARAM_TEST_FILES} ARGS --export-format param)
+add_failing_test(export-param-hardwarnings        SUFFIX json FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS --retval=1 --export-format param --hardwarnings)
+add_failing_test(export-paramset-hardwarnings     SUFFIX json FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS --retval=1 --export-format param --hardwarnings -p ${TEST_SCAD_DIR}/issues/issue7013.json -P Defaults)
+
+add_cmdline_test(echo-param    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS -p ${TEST_SCAD_DIR}/issues/issue7013.json EXPECTEDDIR echo)
+add_cmdline_test(echo-paramset OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS -p ${TEST_SCAD_DIR}/issues/issue7013.json -P Defaults)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
