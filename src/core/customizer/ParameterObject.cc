@@ -439,14 +439,14 @@ static NumericLimits parseNumericLimits(const std::string& name, const Expressio
   for (double value : values) {
     if (output.minimum && value < output.minimum) {
       LOG(message_group::Warning, location, "",
-          "Parameter '%1$s': value %2$s is below declared minimum %3$s, adjusting minimum",
+          "Parameter '%1$s': value %2$s is below the declared minimum %3$s, adjusting minimum value",
           name, formatValue(value), formatValue(*declaredMinimum));
 
       output.minimum = value;
     }
     if (output.maximum && value > output.maximum) {
       LOG(message_group::Warning, location, "",
-          "Parameter '%1$s': value %2$s is above declared maximum %3$s, adjusting maximum",
+          "Parameter '%1$s': value %2$s is above the declared maximum %3$s, adjusting maximum value",
           name, formatValue(value), formatValue(*declaredMaximum));
 
       output.maximum = value;
