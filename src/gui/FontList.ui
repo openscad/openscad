@@ -290,7 +290,7 @@
     <iconset theme="chokusen-undo"/>
    </property>
    <property name="text">
-    <string>ResetSampleText</string>
+    <string>Reset Sample Text</string>
    </property>
   </action>
   <action name="actionOpenFolder">
