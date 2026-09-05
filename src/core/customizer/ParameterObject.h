@@ -6,22 +6,35 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <set>
 
 #include "core/customizer/ParameterSet.h"
+#include "core/customizer/ParameterAttributes.h"
+#include "core/Expression.h"
 #include "json/json.hpp"
 using json = nlohmann::json;
 
 class SourceFile;
 class Assignment;
-
+class ObjectExpression;
+class Context;
 class ParameterObject
 {
 public:
   enum class ParameterType { Bool, String, Number, Vector, Enum };
 
   virtual ~ParameterObject() = default;
-  static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
+  static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment,
+                                                         const Context *context = nullptr);
+  static std::unique_ptr<ParameterObject> fromObjectExpression(const ObjectExpression *obj,
+                                                               const Assignment *assignment,
+                                                               const Context *context = nullptr);
 
+  static std::unique_ptr<ParameterObject> createParameter(const std::string& name,
+                                                          const std::string& description,
+                                                          const std::string& group,
+                                                          const Expression *parameterExpr,
+                                                          const Expression *valueExpression);
   [[nodiscard]] ParameterType type() const { return type_; }
   [[nodiscard]] const std::string& name() const { return name_; }
   [[nodiscard]] const std::string& description() const { return description_; }
@@ -32,6 +45,21 @@ public:
   [[nodiscard]] virtual boost::property_tree::ptree exportValue() const = 0;
   [[nodiscard]] virtual json jsonValue() const = 0;
   virtual void apply(Assignment *assignment) const = 0;
+  virtual void updateContext(Context *context) const = 0;
+
+  void setLocked(bool locked) { locked_ = locked; }
+  [[nodiscard]] bool isLocked() const { return locked_; }
+
+  void setHidden(bool hidden) { hidden_ = hidden; }
+  [[nodiscard]] bool isHidden() const { return hidden_; }
+
+  [[nodiscard]] const std::set<std::string>& getDependencies() const { return dependencies; }
+  std::set<std::string>& getDependencies() { return dependencies; }
+
+  virtual void updateAttributes(const Context *context);
+  virtual void applyTypeAttributes(const RawAttributes& raw) {}
+  void setLockedExpression(std::shared_ptr<Expression> expr) { lockedExpr = expr; }
+  void setHiddenExpression(std::shared_ptr<Expression> expr) { hiddenExpr = expr; }
 
 protected:
   ParameterObject(std::string name, std::string description, std::string group, ParameterType type)
@@ -43,6 +71,11 @@ protected:
   std::string name_;
   std::string description_;
   std::string group_;
+  bool locked_ = false;
+  bool hidden_ = false;
+  std::shared_ptr<Expression> lockedExpr;
+  std::shared_ptr<Expression> hiddenExpr;
+  std::set<std::string> dependencies;
 };
 
 class BoolParameter : public ParameterObject
@@ -61,6 +94,7 @@ public:
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
   [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
+  void updateContext(Context *context) const override;
 
   bool value;
   bool defaultValue;
@@ -77,6 +111,7 @@ public:
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
   [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
+  void updateContext(Context *context) const override;
 
   std::string value;
   std::string defaultValue;
@@ -103,12 +138,18 @@ public:
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
   [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
+  void updateContext(Context *context) const override;
+  void applyTypeAttributes(const RawAttributes& raw) override;
+
+  void setSliderEnabled(bool sliderEnabled) { sliderEnabled_ = sliderEnabled; }
+  [[nodiscard]] bool isSliderEnabled() const { return sliderEnabled_; }
 
   double value;
   double defaultValue;
   boost::optional<double> minimum;
   boost::optional<double> maximum;
   boost::optional<double> step;
+  bool sliderEnabled_ = true;
 };
 
 class VectorParameter : public ParameterObject
@@ -131,6 +172,7 @@ public:
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
   [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
+  void updateContext(Context *context) const override;
 
   std::vector<double> value;
   std::vector<double> defaultValue;
@@ -162,6 +204,7 @@ public:
   [[nodiscard]] boost::property_tree::ptree exportValue() const override;
   [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
+  void updateContext(Context *context) const override;
 
   int valueIndex;
   int defaultValueIndex;
@@ -171,7 +214,7 @@ public:
 class ParameterObjects : public std::vector<std::unique_ptr<ParameterObject>>
 {
 public:
-  static ParameterObjects fromSourceFile(const SourceFile *sourceFile);
+  static ParameterObjects fromSourceFile(const SourceFile *sourceFile, const Context *context = nullptr);
   void reset();
   void importValues(const ParameterSet& values);
   ParameterSet exportValues(const std::string& setName);
