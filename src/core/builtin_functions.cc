@@ -26,6 +26,9 @@
 
 #include <algorithm>
 #include <boost/format.hpp>
+#include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
+#include <boost/math/interpolators/makima.hpp>
+#include <boost/math/interpolators/catmull_rom.hpp>
 #include <cmath>
 #include <cstdint>
 #include <ctime>
@@ -948,6 +951,501 @@ Value builtin_cross(Arguments arguments, const Location& loc)
   return VectorType(arguments.session(), x, y, z);
 }
 
+namespace spline_helpers {
+// interpolator functions take an interpolants Argument of either NUMBER or VECTOR
+typedef std::function<double(unsigned)> InterpolantResult_t;
+std::function<double(unsigned)> splineInterpolants(const Argument& nArg, double x0, double x1,
+                                                   unsigned& nOutputPoints)
+{
+  auto typeOfn = nArg->type();
+  if (typeOfn == Value::Type::NUMBER) {
+    // nArg determines the size of the the returned Vector
+    auto d = nArg->toDouble();
+    if (d < 2) throw std::runtime_error("at least two interpolation points are required");
+    nOutputPoints = static_cast<unsigned>(d);
+    // equal spaced x values from x0 to x1, inclusive
+    if ((x1 == x0) || std::isnan(x0) || std::isnan(x1))
+      throw std::runtime_error("The range of x cannot be degenerate");
+    auto xrange = x1 - x0;
+    return [x0, xrange, nOutputPoints](unsigned i) { return x0 + (xrange * i) / (nOutputPoints - 1); };
+  } else if (typeOfn == Value::Type::VECTOR) {
+    // caller provided a list of explicit x values
+    const auto& xValues = nArg->toVector();
+    nOutputPoints = xValues.size();
+    return [&xValues](unsigned i) {
+      const auto& val = xValues[i];
+      if (val.type() != Value::Type::NUMBER) throw std::runtime_error("Non-numeric x value to spline");
+      return val.toDouble();
+    };
+  } else throw std::runtime_error("The interpolants parameter must be a number or a vector");
+}
+
+typedef std::function<void(unsigned, double[])> xyFcn_t;
+
+// interpolator functions return a vector of [x,y] points
+Value splineResult(EvaluationSession *session, unsigned nOutputPoints, const xyFcn_t& xyFcn,
+                   unsigned dim = 2)
+{
+  VectorType result(session);
+  result.reserve(nOutputPoints);
+  for (unsigned i = 0; i < nOutputPoints; i++) {
+    std::shared_ptr<double[]> vals(new double[dim]);
+    xyFcn(i, &vals[0]);
+    VectorType point(session);
+    point.reserve(dim);
+    for (unsigned i = 0; i < dim; i++) point.emplace_back(vals[i]);
+    result.emplace_back(std::move(point));
+  }
+  return std::move(result);  // only successful return
+}
+
+namespace catmull_rom {
+// The catmull_rom built in supports both 2D and 3D splining.
+
+struct InterpolantArg { // specifying interpolants for catmull_rom...
+  unsigned nOutputPoints; // number of points requested to interpolate
+  // only makes sense as indicies into control points
+  unsigned startIndex;
+  unsigned stopIndex;
+  InterpolantArg() : nOutputPoints(0), startIndex(0), stopIndex(0) {}
+};
+typedef std::vector<InterpolantArg> InterpolantArgsType;
+
+// The boost catmull_rom class is templated on its point type, 
+// which must have its dimensionality known at construction
+template <unsigned NDIM, class PointContainer>
+Value evaluate(EvaluationSession *session, PointContainer& points,
+               const InterpolantArgsType& interpolants, bool closed, double alpha, bool tangents)
+{
+  typedef std::array<double, NDIM> Point_t;
+  auto numControlPoints = points.size();  // grab before std::move
+  boost::math::catmull_rom<Point_t> spline(std::move(points), closed, alpha);
+
+  auto maxParam = spline.max_parameter();
+  double minParam = 0;
+  unsigned nOutputPoints(0);
+  std::vector<double> all_s;
+
+  // convert the incoming InterpolantArgsType, which is indicies into the PointContainer,
+  // into actual s values:
+  //
+  // nOutputPoints is the number of points to output,
+  //        except for two consectutive InterpolantArg's in the vector where the second
+  //        starts exactly where the first finished. That overlapping point is not duplicated
+  //        in the output, therefore nOutputPoints is reduced by one from the total
+  //
+  //  startIndex and stopIndex have to be distinct (unless nOutputPoints is less than 2)
+  //  The maximum for each is either numControlPoints-1 for a closed curve,
+  //  or numControlPoints, in which case the interval includes the closing from the last
+  //  control back to the first.
+
+  unsigned maxIdx = closed ? numControlPoints : numControlPoints - 1;
+  unsigned priorStopIdx = static_cast<unsigned>(-1);
+  auto sMax = spline.max_parameter();
+  unsigned resultCount = 0;
+  for (auto const& i : interpolants) {
+    if (i.startIndex >= maxIdx)
+      throw std::runtime_error("interpolant start must be less than last control point");
+    if (i.stopIndex < i.startIndex || (i.stopIndex == i.startIndex && i.nOutputPoints > 1))
+      throw std::runtime_error("interpolant stop point must be beyond start");
+    if (i.stopIndex > maxIdx)
+      throw std::runtime_error("interpolant stop cannot be beyond last control point");
+
+    auto startS = spline.parameter_at_point(i.startIndex);
+    if (i.nOutputPoints == 1) {
+      all_s.push_back(startS);
+      priorStopIdx = i.startIndex;
+      continue;
+    }
+    auto stopS = i.stopIndex == maxIdx ? spline.max_parameter() : spline.parameter_at_point(i.stopIndex);
+    auto rangeS = stopS - startS;
+    unsigned c = 0;
+    if (i.startIndex == priorStopIdx) c = 1; // special case: skip the first if previous ended here
+    for (; c < i.nOutputPoints; c++) {
+      // the interpolator with throw if our floating arith manages to exceed sMax
+      double s = std::min(sMax, startS + rangeS * static_cast<double>(c) / (i.nOutputPoints - 1));
+      all_s.push_back(s);
+    }
+    priorStopIdx = i.stopIndex;
+  }
+  xyFcn_t xyFcn;
+  if (!tangents) {
+    xyFcn = [&spline, &all_s](unsigned i, double xy[]) {
+      auto val = spline(all_s[i]);
+      for (unsigned j = 0; j < NDIM; j++) xy[j] = val[j];
+    };
+    resultCount = all_s.size();
+  } else {  // intersperse tangents
+    xyFcn = [&spline, &all_s](unsigned i, double xy[]) {
+      unsigned j = i >> 1;
+      Point_t val({});
+      auto s = all_s[j];
+      if (!(i & 1)) val = spline(s);
+      else if (s != spline.max_parameter()) // there is no tangent here
+        val = spline.prime(s);
+      for (unsigned k = 0; k < NDIM; k++) xy[k] = val[k];
+    };
+    resultCount = 2 * all_s.size();
+  }
+  return splineResult(session, resultCount, xyFcn, NDIM);
+}
+}  // namespace catmull_rom
+}  // namespace spline_helpers
+
+Value builtin_cubic_spline(Arguments arguments, const Location& loc)
+{ /* A wrapper for boost's cardinal_cubic_b_spline  */
+  if (arguments.size() < 4) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Too few arguments to cubic_spline()");
+    return Value::undefined.clone();
+  } else if (arguments.size() > 6) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Too many arguments to cubic_spline()");
+    return Value::undefined.clone();
+  }
+
+  // first argument
+  const auto& yvalues = arguments[0]->toVector();
+  if (yvalues.size() < 2) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Minimum size of 2 for control values vector in cubic_spline()");
+    return Value::undefined.clone();
+  }
+
+  // The x0,x1 args must be NUMBER
+  for (unsigned argc = 2; argc <= 3; argc++)
+    if (arguments[argc]->type() != Value::Type::NUMBER) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "x0 and x1 must be numbers in cubic_spline()");
+      return Value::undefined.clone();
+    }
+
+  double x0 = arguments[2]->toDouble();
+  double x1 = arguments[3]->toDouble();
+    
+  // second argument, interpolants, can either be a number or a list of x values
+  unsigned nOutputPoints(0);
+  spline_helpers::InterpolantResult_t xFcn;
+  try {
+    xFcn = spline_helpers::splineInterpolants(arguments[1], x0, x1, nOutputPoints);
+  } catch (const std::exception& e) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        std::string(e.what()) + " in cubic_spline()");
+    return Value::undefined.clone();
+  }
+
+  // slopes at left endpoint and right endpoint defaults. Init to boost library defaults
+  double le(std::numeric_limits<double>::quiet_NaN()), re(std::numeric_limits<double>::quiet_NaN());
+  if (arguments.size() > 4) {
+    if (arguments[4]->isDefined())
+      le = arguments[4]->toDouble();
+    if ((arguments.size() > 5) && arguments[5]->isDefined())
+      re = arguments[5]->toDouble();
+  }
+
+  class spline_iterator  // wrap a boost BidiIterator around VectorType
+  {
+  private:
+    const VectorType& v;  // VectorType of NUMBER
+    unsigned idx;
+
+  public:
+    spline_iterator(const VectorType& v, bool atBegin = true) : v(v), idx(atBegin ? 0 : v.size()) {}
+    // boost BidiIterator requires these two operators:
+    int operator-(const spline_iterator& other) const { return idx - other.idx; }
+    double operator[](unsigned id) const
+    {
+      const auto& val = v[id];
+      if (val.type() != Value::Type::NUMBER)
+        throw std::runtime_error("Non-numeric value to cubic_spline");
+      return val.toDouble();
+    }
+  };
+
+  double step = (x1 - x0) / (yvalues.size() - 1);
+  spline_iterator begin(yvalues);
+  spline_iterator end(yvalues, false);
+  try {
+    // after processing all the openscad arguments, we (finally) can calculate
+    boost::math::interpolators::cardinal_cubic_b_spline<double> spline(begin, end, x0, step, le, re);
+    auto xyFcn = [&xFcn, &spline](unsigned i, double xy[]) {
+      auto x = xy[0] = xFcn(i);
+      xy[1] = spline(x);
+    };
+    return spline_helpers::splineResult(arguments.session(), nOutputPoints, xyFcn);
+  } catch (const std::exception& e) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        std::string(e.what()) + std::string("for cubic_spline"));
+  }
+  return Value::undefined.clone();
+}
+
+Value builtin_makima_spline(Arguments arguments, const Location& loc)
+{ /* A wrapper for boost's modified Akima spline
+  ** Compared to cubic spline above, makima does not require equal spaced x control points,
+  ** but does require a minimum of 4 compared to just 2 for cubic.
+  ** Both allow the caller to specify the first derivative at the begin and/or end of the x range.
+  */
+  if (arguments.size() < 2) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Too few arguments to makima_spline()");
+    return Value::undefined.clone();
+  } else if (arguments.size() > 4) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Too many arguments to makima_spline()");
+    return Value::undefined.clone();
+  }
+
+  const auto& xyArg =  // first argument
+    arguments[0];      // input list of control points, [[x0,y0], [x1,y1], ... 4 minimum per makima
+  bool ok = xyArg->type() == Value::Type::VECTOR;
+  if (ok) {
+    const auto& xyv = xyArg->toVector();
+    static const unsigned MAKIMA_MIN_CONTROL_POINTS(4);  // per boost modified Akima documentation
+    if (xyv.size() < MAKIMA_MIN_CONTROL_POINTS) ok = false;
+    else {  // Check the only first point dimension and types here. If later points are bogus,
+            // will throw exception when calculating the spline below
+      const auto& firstPoint = xyv[0];
+      if (firstPoint.type() != Value::Type::VECTOR) ok = false;
+      else {
+        const auto& firstPointV = firstPoint.toVector();
+        if (firstPointV.size() != 2) ok = false;
+        else if ((firstPointV[0].type() != Value::Type::NUMBER) ||
+                 (firstPointV[1].type() != Value::Type::NUMBER))
+          ok = false;
+      }
+    }
+  }
+  if (!ok) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "First argument must be a list of at least 4 controlling [x,y] points in makima_spline()");
+    return Value::undefined.clone();
+  }
+
+  const auto& xycontrols = xyArg->toVector();
+  // for boost's cubic spline above, it was reasonable to wrap openscad's Vector in a custom iterator
+  // and avoid copying the data. For boost's makima instead requires a "container"
+  // which const Value::VectorType is not. Therefore we copy the control points into std::vector
+  std::vector<double> x, y;
+  double x0(std::numeric_limits<double>::max()), x1(std::numeric_limits<double>::lowest());
+  for (const auto& p : xycontrols) {
+    if (p.type() != Value::Type::VECTOR) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Found a non-point entry in first argument in makima_spline()");
+      return Value::undefined.clone();
+    }
+    auto const& pv = p.toVector();
+    if (pv.size() != 2) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Found degenerate point in first argument in makima_spline()");
+      return Value::undefined.clone();
+    }
+    auto d = pv[0].toDouble();
+    x.push_back(d);
+    if (d < x0) x0 = d;
+    if (d > x1) x1 = d;
+    y.push_back(pv[1].toDouble());
+  }
+
+  // second argument, interpolants
+  unsigned nOutputPoints(0);
+  const auto &interpolantsArg(arguments[1]);
+  spline_helpers::InterpolantResult_t xFcn;
+  try {
+    xFcn = spline_helpers::splineInterpolants(interpolantsArg, x0, x1, nOutputPoints);
+  } catch (const std::exception& e) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        std::string(e.what()) + " in makima_spline()");
+    return Value::undefined.clone();
+  }
+
+  // slopes at left endpoint and right endpoint defaults. Init to boost library defaults
+  double le(std::numeric_limits<double>::quiet_NaN()), re(std::numeric_limits<double>::quiet_NaN());
+  if (arguments.size() > 2) {
+    if (arguments[2]->isDefined())
+      le = arguments[2]->toDouble();
+    if ((arguments.size() > 3) && arguments[3]->isDefined())
+      re = arguments[3]->toDouble();
+  }
+
+  try {  // after processing all the openscad arguments, we (finally) can calculate
+    boost::math::interpolators::makima spline(std::move(x), std::move(y), le, re);
+    auto xyFcn = [&xFcn, &spline](unsigned i, double  xy[]) {
+      auto x = xy[0] = xFcn(i);
+      xy[1] = spline(x);
+    };
+    return spline_helpers::splineResult(arguments.session(), nOutputPoints, xyFcn);
+  } catch (const std::exception& e) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        std::string(e.what()) + std::string("for makima_spline"));
+  }
+  return Value::undefined.clone();
+}
+
+Value builtin_catmull_rom_spline(Arguments arguments, const Location& loc)
+{
+  /* A wrapper for boost's catmull_rom spline
+  ** Its input is a list of control points that are ordered as a path in [x,y].
+  ** The result can be requested to be open or closed
+  */
+  if (arguments.size() < 2) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Too few arguments to catmull_rom_spline()");
+    return Value::undefined.clone();
+  } else if (arguments.size() > 5) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Too many arguments to catmull_rom_spline()");
+    return Value::undefined.clone();
+  }
+
+  // copy all the input [x,y] points
+  typedef std::array<double, 3> Point3D_t;  // boost catmull_rom needs points
+  typedef std::array<double, 2> Point2D_t;  // Ugly to have 2 classes but..
+  // the boost documentation says std::vector has all the right signatures for catmull_rom....
+  // ...and it does compile OK. But at run time, the splining crashes
+  // because the boost templated class calls the default constructor of its Point and
+  // expects the Point to have the right size. std::vector's default is size 0.
+
+  const auto& xyArg =  // first argument
+    arguments[0];      // input list of control points, [[x0,y0], [x1,y1],
+  if (xyArg->type() != Value::Type::VECTOR) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "First argument must be a vector in catmull_rom_spline()");
+    return Value::undefined.clone();
+  }
+
+  const auto& xycontrols = xyArg->toVector();
+  std::vector<Point3D_t> points3D;  // fill one or the other
+  std::vector<Point2D_t> points2D;
+  unsigned ndim = 0;
+  for (const auto& p : xycontrols) {
+    if (p.type() != Value::Type::VECTOR) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Found a non-point entry in first argument in catmull_rom_spline()");
+      return Value::undefined.clone();
+    }
+    auto const& pv = p.toVector();
+    if (ndim != 0) {
+      if (pv.size() != ndim) {
+        LOG(message_group::Warning, loc, arguments.documentRoot(),
+            "All the points must have the same dimension in catmull_rom_spline()");
+        return Value::undefined.clone();
+      }
+    } else ndim = pv.size();
+    if ((pv.size() < 2) || (pv.size() > 3)) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Found degenerate point in first argument in catmull_rom_spline()");
+      return Value::undefined.clone();
+    }
+    if (ndim == 2) {
+      Point2D_t pxy({});
+      for (unsigned i = 0; i < pv.size(); i++) pxy[i] = pv[i].toDouble();
+      points2D.push_back(pxy);
+    } else if (ndim == 3) {
+      Point3D_t pxy({});
+      for (unsigned i = 0; i < pv.size(); i++) pxy[i] = pv[i].toDouble();
+      points3D.push_back(pxy);
+    }
+  }
+
+  auto numControlPoints = std::max(points2D.size(), points3D.size());
+
+  // process args out of order cuz we need the flags to deal with interpolants
+  bool closed = false;
+  double alpha = 1.0 / 2.0;
+  bool intersperseTangents = false;
+  if (arguments.size() > 2) {
+    if (arguments[2]->isDefined())
+      closed = arguments[2]->toBool();
+    if (arguments.size() > 3) {
+      if (arguments[3]->isDefined())
+        alpha = arguments[3]->toDouble();
+      if ((arguments.size() > 4 ) && arguments[4]->isDefined()) 
+        intersperseTangents = arguments[4]->toBool();
+    }
+  }
+
+  // second argument, interpolants, can either be
+  //    a number or
+  //    a list of s lookup indicies among control points, or...
+  // ...a list of lists
+  // "s" is the catmull_rom parameterization value
+  const auto& interpolantsArg(arguments[1]);
+  spline_helpers::catmull_rom::InterpolantArgsType interpolants;
+  if (interpolantsArg->type() ==
+      Value::Type::NUMBER) {  // just a number. interpolate through all control points
+    interpolants.resize(1);
+    auto& oneArg = interpolants.front();
+    oneArg.nOutputPoints = static_cast<unsigned>(interpolantsArg->toInteger());
+    oneArg.startIndex = 0;
+    oneArg.stopIndex = numControlPoints - (closed ? 0 : 1);
+  } else if (interpolantsArg->type() == Value::Type::VECTOR) {
+    auto const& interpolants0Vec = interpolantsArg->toVector();
+    bool isNumbers = false;
+    bool isVectors = false;
+    for (unsigned i = 0; i < interpolants0Vec.size(); i++) {
+      auto const& p = interpolants0Vec[i];
+      if (p.type() == Value::Type::VECTOR) {  // a list of lists. Each list item must be size 3
+        if (i == 0) isVectors = true;
+        const auto& interpolants1Vec = p.toVector();
+        if (isVectors && interpolants1Vec.size() == 3) {
+          const auto& m0 = interpolants1Vec[0];
+          const auto& m1 = interpolants1Vec[1];
+          const auto& m2 = interpolants1Vec[2];
+          spline_helpers::catmull_rom::InterpolantArg arg;
+          arg.nOutputPoints = static_cast<unsigned>(m0.toInteger());
+          arg.startIndex = static_cast<unsigned>(m1.toInteger());
+          arg.stopIndex = static_cast<unsigned>(m2.toInteger());
+          if (arg.nOutputPoints) // no output, no problem
+            interpolants.push_back(arg);
+        } else {
+          LOG(message_group::Warning, loc, arguments.documentRoot(),
+              "interpolant list of list not size 3 in catmull_rom_spline()");
+          return Value::undefined.clone();
+        }
+      } else if (p.type() == Value::Type::NUMBER) {
+        if (i == 0) {
+          isNumbers = true;
+          interpolants.resize(1);
+          interpolants.front().stopIndex = numControlPoints - 1;
+        }
+        if (!isNumbers) {
+          LOG(message_group::Warning, loc, arguments.documentRoot(),
+              "interpolant invalid in catmull_rom_spline()");
+          return Value::undefined.clone();
+        }
+        switch (i) {
+        case 0:  interpolants.front().nOutputPoints = static_cast<unsigned>(p.toInteger()); break;
+        case 1:  interpolants.front().startIndex = static_cast<unsigned>(p.toInteger()); break;
+        case 2:  interpolants.front().stopIndex = static_cast<unsigned>(p.toInteger()); break;
+        default: {
+          LOG(message_group::Warning, loc, arguments.documentRoot(),
+              "interpolant list max size is 3 in catmull_rom_spline()");
+          return Value::undefined.clone();
+        }
+        }
+      } else {
+        LOG(message_group::Warning, loc, arguments.documentRoot(),
+            "Wrong datatype interpolants in catmull_rom_spline()");
+        return Value::undefined.clone();
+      }
+    }
+  } else {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Wrong datatype interpolants in catmull_rom_spline()");
+    return Value::undefined.clone();
+  }
+
+  try {  // after processing all the openscad arguments, we (finally) can calculate
+    if (ndim == 2)
+      return spline_helpers::catmull_rom::evaluate<2, std::vector<Point2D_t>>(
+        arguments.session(), points2D, interpolants, closed, alpha, intersperseTangents);
+    else if (ndim == 3)
+      return spline_helpers::catmull_rom::evaluate<3, std::vector<Point3D_t>>(
+        arguments.session(), points3D, interpolants, closed, alpha, intersperseTangents);
+  } catch (const std::exception& e) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        std::string(e.what()) + std::string(" for catmull_rom_spline"));
+  }
+  return Value::undefined.clone();
+}
+
 Value builtin_textmetrics(Arguments arguments, const Location& loc)
 {
   auto *session = arguments.session();
@@ -1341,5 +1839,25 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
                  {
                    "import(file) -> object",
+                 });
+
+  Builtins::init("cubic_spline", new BuiltinFunction(&builtin_cubic_spline),
+                 {
+                   "cubic_spline(controls, interpolants, x0, x1) -> vector",
+                   "cubic_spline(controls, interpolants, x0, x1, s0) -> vector",
+                   "cubic_spline(controls, interpolants, x0, x1, s0, s1) -> vector",
+                 });
+  Builtins::init("makima_spline", new BuiltinFunction(&builtin_makima_spline),
+                 {
+                   "makima_spline(controls, interpolants) -> vector",
+                   "makima_spline(controls, interpolants, s0) -> vector",
+                   "makima_spline(controls, interpolants, s0, s1) -> vector",
+                 });
+  Builtins::init("catmull_rom_spline", new BuiltinFunction(&builtin_catmull_rom_spline),
+                 {
+                   "catmull_rom_spline(controls, interpolants) -> vector",
+                   "catmull_rom_spline(controls, interpolants, closed) -> vector",
+                   "catmull_rom_spline(controls, interpolants, closed, alpha) -> vector",
+                   "catmull_rom_spline(controls, interpolants, closed, alpha, tangents) -> vector",
                  });
 }
