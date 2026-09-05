@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2020.02.17\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 00:06+0200\n"
+"POT-Creation-Date: 2026-09-05 20:19+0200\n"
 "PO-Revision-Date: 2020-05-28 14:42+0200\n"
 "Last-Translator: Michael Tsao <cwtsao@sce.pccu.edu.tw>\n"
 "Language-Team: Distance Learning Center at the Chinese Culture University "
@@ -2983,20 +2983,10 @@ msgstr "進階"
 msgid "FOV"
 msgstr ""
 
-#: src/core/Settings.cc:48
-#, c-format
-msgid "axis-%d"
-msgstr ""
-
 #: src/core/Settings.cc:49
 #, c-format
 msgid "Axis %d"
 msgstr "軸 %d"
-
-#: src/core/Settings.cc:52
-#, fuzzy, c-format
-msgid "axis-inverted-%d"
-msgstr "軸 %d (顛倒)"
 
 #: src/core/Settings.cc:53
 #, c-format

@@ -1,4 +1,4 @@
-# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2026.09.04)  #-#-#-#-#
+# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2026.09.05)  #-#-#-#-#
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
@@ -7,10 +7,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2026.09.04)  #-#-#-#-#\n"
-"Project-Id-Version: OpenSCAD 2026.09.04\n"
+"#-#-#-#-#  openscad-tmp.pot (OpenSCAD 2026.09.05)  #-#-#-#-#\n"
+"Project-Id-Version: OpenSCAD 2026.09.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 00:06+0200\n"
+"POT-Creation-Date: 2026-09-05 20:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-09-04 00:06+0200\n"
+"POT-Creation-Date: 2026-09-05 20:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2837,19 +2837,9 @@ msgstr ""
 msgid "FOV"
 msgstr ""
 
-#: src/core/Settings.cc:48
-#, c-format
-msgid "axis-%d"
-msgstr ""
-
 #: src/core/Settings.cc:49
 #, c-format
 msgid "Axis %d"
-msgstr ""
-
-#: src/core/Settings.cc:52
-#, c-format
-msgid "axis-inverted-%d"
 msgstr ""
 
 #: src/core/Settings.cc:53

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2015.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 00:06+0200\n"
+"POT-Creation-Date: 2026-09-05 20:19+0200\n"
 "PO-Revision-Date: 2021-02-26 14:17+0800\n"
 "Last-Translator: 玉堂白鹤 <yjwork@qq.com>\n"
 "Language-Team: \n"
@@ -2962,20 +2962,10 @@ msgstr "高级"
 msgid "FOV"
 msgstr ""
 
-#: src/core/Settings.cc:48
-#, c-format
-msgid "axis-%d"
-msgstr ""
-
 #: src/core/Settings.cc:49
 #, c-format
 msgid "Axis %d"
 msgstr "轴 %d"
-
-#: src/core/Settings.cc:52
-#, fuzzy, c-format
-msgid "axis-inverted-%d"
-msgstr "轴 %d (反转)"
 
 #: src/core/Settings.cc:53
 #, c-format
