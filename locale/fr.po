@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 00:06+0200\n"
+"POT-Creation-Date: 2026-09-05 20:19+0200\n"
 "PO-Revision-Date: 2019-09-17 \n"
 "Last-Translator: Pierre ROUZEAU <github.com/PRouzeau>\n"
 "Language-Team: French\n"
@@ -2930,20 +2930,10 @@ msgstr "Distance"
 msgid "FOV"
 msgstr "Champ de vision"
 
-#: src/core/Settings.cc:48
-#, c-format
-msgid "axis-%d"
-msgstr "axe-%d"
-
 #: src/core/Settings.cc:49
 #, c-format
 msgid "Axis %d"
 msgstr "Axe %d"
-
-#: src/core/Settings.cc:52
-#, c-format
-msgid "axis-inverted-%d"
-msgstr "axe-inversé-%d"
 
 #: src/core/Settings.cc:53
 #, c-format
