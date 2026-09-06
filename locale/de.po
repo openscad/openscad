@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-05 20:19+0200\n"
-"PO-Revision-Date: 2026-09-06 15:17+0000\n"
-"Last-Translator: Jordan Brown <openscad@jordan.maileater.net>\n"
+"PO-Revision-Date: 2026-09-06 15:35+0000\n"
+"Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German <https://translate.openscad.org/projects/openscad/app/"
 "de/>\n"
 "Language: de\n"
@@ -561,15 +561,15 @@ msgstr "Als Hintergrund"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:443
 msgid "R:"
-msgstr ""
+msgstr "R:"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:444
 msgid "G:"
-msgstr ""
+msgstr "G:"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:445
 msgid "B:"
-msgstr ""
+msgstr "B:"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:449
 msgid "Reset foreground color"
@@ -1101,7 +1101,7 @@ msgstr "Schriftenliste"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:292
 msgid "ResetSampleText"
-msgstr ""
+msgstr "Beispieltext zurücksetzen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:293
 msgid "Open Font Folder"
@@ -3056,7 +3056,7 @@ msgstr "Die ausgewählte Bilddatei konnte nicht geöffnet werden."
 
 #: src/gui/ai/ChatWidget.cc:577
 msgid "[Img]"
-msgstr ""
+msgstr "[Bild]"
 
 #: src/gui/ai/ChatWidget.cc:582
 msgid "Remove attachment"
