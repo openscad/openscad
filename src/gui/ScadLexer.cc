@@ -287,9 +287,9 @@ void ScadLexer2::fold(int start, int end)
 
     bool currStyleIsOtherText = (currStyle == OtherText);
     if (currStyleIsOtherText) {
-      if ((ch == '{') || (ch == '[')) {
+      if ((ch == '{') || (ch == '[') || (ch == '(')) {
         levelCurrent++;
-      } else if ((ch == '}') || (ch == ']')) {
+      } else if ((ch == '}') || (ch == ']') || (ch == ')')) {
         levelCurrent--;
       }
     }
