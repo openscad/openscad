@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-05 20:19+0200\n"
-"PO-Revision-Date: 2026-09-06 15:35+0000\n"
-"Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
+"PO-Revision-Date: 2026-09-06 15:49+0000\n"
+"Last-Translator: Jordan Brown <openscad@jordan.maileater.net>\n"
 "Language-Team: German <https://translate.openscad.org/projects/openscad/app/"
 "de/>\n"
 "Language: de\n"
@@ -1246,9 +1246,8 @@ msgid "New &Window"
 msgstr "Neues Fenster"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1011
-#, fuzzy
 msgid "&Open File..."
-msgstr "&Datei öffen"
+msgstr "&Datei öffen..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1013
 msgid "Ctrl+O"
