@@ -9,15 +9,16 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-05 20:19+0200\n"
-"PO-Revision-Date: 2026-09-02 14:00+0200\n"
-"Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
-"Language-Team: German\n"
+"PO-Revision-Date: 2026-09-06 04:17+0000\n"
+"Last-Translator: Jordan Brown <openscad@jordan.maileater.net>\n"
+"Language-Team: German <https://translate.openscad.org/projects/openscad/app/"
+"de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.9\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:102
@@ -368,25 +369,25 @@ msgstr "Knopf 22"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:194
 msgid "AI Chat"
-msgstr ""
+msgstr "KI-Chat"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:195
 #: src/gui/ai/ChatWidget.cc:138
 msgid "AI Assistant"
-msgstr ""
+msgstr "KI-Assistent"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:197
 msgid "Chat options"
-msgstr ""
+msgstr "Chat-Optionen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:199
 msgid "☰"
-msgstr ""
+msgstr "☰"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:201
 #: src/gui/ai/ChatWidget.cc:140
 msgid "Clear chat history"
-msgstr ""
+msgstr "Chatverlauf löschen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:203
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:42
@@ -397,19 +398,19 @@ msgstr "Löschen"
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:204
 #: src/gui/ai/ChatWidget.cc:141 src/gui/ai/ChatWidget.cc:630
 msgid "Send"
-msgstr ""
+msgstr "Senden"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:206
 msgid "Grab active 3D viewport frame and camera metadata"
-msgstr ""
+msgstr "Fragen Sie den aktiven 3D-Ansichtrahmen und die Kameradaten ab"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:208
 msgid "Analyze Screen"
-msgstr ""
+msgstr "Bildschirm analysieren"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:210
 msgid "Attach local image file"
-msgstr ""
+msgstr "Lokale Bilddatei anhängen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:212
 #: src/gui/ai/ChatWidget.cc:508
@@ -3659,307 +3660,3 @@ msgstr ""
 "addition to 2D paths for extrusion it is also possible to read design "
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
-
-#~ msgid "OpenSCAD Font List"
-#~ msgstr "OpenSCAD Fontliste"
-
-#~ msgid "Copy to Clipboard"
-#~ msgstr "Kopieren"
-
-#~ msgid "Filter:"
-#~ msgstr "Filter:"
-
-#~ msgid ""
-#~ "<html><head/><body><p>This list shows the fonts currently registered with "
-#~ "OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
-#~ "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-#~ "indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
-#~ "text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></"
-#~ "pre><pre style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; "
-#~ "margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" "
-#~ "font-family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = "
-#~ "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
-#~ msgstr ""
-#~ "<html><head/><body><p>Diese Liste zeigt die Fonts, die momentan mit "
-#~ "OpenSCAD registriert sind.</p><p>Beispiele:</p><pre style=\" margin-"
-#~ "top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-"
-#~ "indent:0; text-indent:0px;\"><span style=\" font-family:'Courier "
-#~ "New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;DejaVu "
-#~ "Sans&quot;);</span></pre><pre style=\" margin-top:0px; margin-"
-#~ "bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
-#~ "indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
-#~ "text(&quot;OpenSCAD&quot;, font = &quot;Liberation "
-#~ "Sans:style=Italic&quot;);</span></pre></body></html>"
-
-#~ msgid "Error-Log"
-#~ msgstr "Fehlerliste"
-
-#~ msgid "F7"
-#~ msgstr "F7"
-
-#, fuzzy
-#~ msgid "Swap Mouse Buttons"
-#~ msgstr "Left Mouse Button"
-
-#, fuzzy
-#~ msgid "Line"
-#~ msgstr "Zeilenumbruch"
-
-#, fuzzy
-#~ msgid "Filename"
-#~ msgstr "Dateiname kopieren"
-
-#, fuzzy
-#~ msgid "Font Lists"
-#~ msgstr "&Fontliste"
-
-#, fuzzy
-#~ msgid "PushButton"
-#~ msgstr "Knöpfe"
-
-#~ msgid "Hide Editor"
-#~ msgstr "Editor ausblenden"
-
-#~ msgid "Surfaces"
-#~ msgstr "&Flächen anzeigen"
-
-#~ msgid "F10"
-#~ msgstr "F10"
-
-#~ msgid "F11"
-#~ msgstr "F11"
-
-#~ msgid "Hide Console"
-#~ msgstr "Konsole ausblenden"
-
-#~ msgid "Hide Customizer"
-#~ msgstr "Customizer ausblenden"
-
-#~ msgid "Hide Error Log"
-#~ msgstr "Fehlerliste ausblenden"
-
-#, fuzzy
-#~ msgid "Hide Animation Toolbar/Window"
-#~ msgstr "Editor Symbolleiste ausblenden"
-
-#~ msgid "OpenCSG"
-#~ msgstr "OpenCSG"
-
-#~ msgid "CGAL"
-#~ msgstr "CGAL"
-
-#, fuzzy
-#~ msgid "WRL"
-#~ msgstr "URL"
-
-#~ msgid "Default to ASCII STL export"
-#~ msgstr "STL Export im ASCII format"
-
-#~ msgid "%1"
-#~ msgstr "%1"
-
-#, fuzzy
-#~ msgid "translate"
-#~ msgstr "Translation"
-
-#, fuzzy
-#~ msgid "play animation"
-#~ msgstr "Application"
-
-#~ msgid "Upload Error"
-#~ msgstr "Fehler beim Hochladen"
-
-#~ msgid "Untitled"
-#~ msgstr "Unbenannt"
-
-#~ msgid "Print Service not available"
-#~ msgstr "Druck-Service nicht verfügbar"
-
-#~ msgid "TRACE"
-#~ msgstr "TRACE"
-
-#~ msgid "Enable OpenCSG"
-#~ msgstr "OpenCSG benutzen"
-
-#~ msgid "Enable for OpenGL 1.x"
-#~ msgstr "Aktivieren bei OpenGL 1.x"
-
-#~ msgid ""
-#~ "Warning: You may experience OpenCSG rendering errors.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Achtung: Es können Darstellungsfehler beim Anzeigen der Vorschau "
-#~ "auftreten.\n"
-#~ "\n"
-
-#~ msgid "save preset"
-#~ msgstr "aktuelle Voreinstellung speichern"
-
-#~ msgid "delete current preset"
-#~ msgstr "aktuelle Voreinstellung löschen"
-
-#~ msgid "add new preset"
-#~ msgstr "neue Voreinstellung hinzufügen"
-
-#~ msgid "reset all parameters to the currently selected preset"
-#~ msgstr "alle Parameter auf die aktuelle Voreinstellung zurücksetzen"
-
-#~ msgid "Search"
-#~ msgstr "Suche"
-
-#~ msgid "changes on current preset not saved"
-#~ msgstr "Änderungen an den aktuelle Voreinstellung nicht gespeichert"
-
-#~ msgid ""
-#~ "The changes on the current preset %1 are not saved yet. Do you really "
-#~ "want to reset this preset and lose your changes?"
-#~ msgstr ""
-#~ "Die Änderungen an der akutellen Voreinstellung %1 sind noch nicht "
-#~ "gespeichert.Möchten Sie die Änderungen wirklich zurücksetzen?"
-
-#~ msgid "Save current preset"
-#~ msgstr "Aktuelle Voreinstellung speichern"
-
-#~ msgid "JSON file read only"
-#~ msgstr "JSON file ist nicht schreibbar"
-
-#~ msgid ""
-#~ "The current preset %1 contains changes, but is not saved yet. Do you "
-#~ "really want to change the preset and lose your changes?"
-#~ msgstr ""
-#~ "Die Änderungen an der akutellen Voreinstellung %1 sind noch nicht "
-#~ "gespeichert.Möchten Sie wirklich die Voreinstellung wechseln und somit "
-#~ "Ihre Änderungen verlieren?"
-
-#~ msgid "Do you want to delete the current preset?"
-#~ msgstr "Möchten Sie die aktuelle Voreinstellung löschen?"
-
-#~ msgid "Do you want to delete the current preset '%1'?"
-#~ msgstr "Möchten Sie die aktuelle Voreinstellung '%1' löschen?"
-
-#~ msgid "The set name  %1 already exists. Do you want overwrite it?"
-#~ msgstr "Set %1 existiert bereits. Mochten Sie dieses Set ersetzen?"
-
-#~ msgid "(not supported)"
-#~ msgstr "(nicht unterstützt)"
-
-#~ msgid "ErrorLog"
-#~ msgstr "Fehlerliste"
-
-#~ msgid "Find Next"
-#~ msgstr "Weiter suchen"
-
-#~ msgid "Find Previous"
-#~ msgstr "Rückwärts suchen"
-
-#~ msgid "Some of the tabs are modified."
-#~ msgstr "Einige Dokumente wurden verändert."
-
-#~ msgid "All unsaved changes will be lost."
-#~ msgstr "Alle nicht gespeicherten Änderungen werden verloren gehen."
-
-#~ msgid "Saved design '%s'."
-#~ msgstr "Saved design '%s'."
-
-#~ msgid "Save As"
-#~ msgstr "Speichern Unter..."
-
-#~ msgid "Prev."
-#~ msgstr "Vorheriges"
-
-#~ msgid "&New"
-#~ msgstr "&Neu"
-
-#~ msgid "&Open..."
-#~ msgstr "Ö&ffnen..."
-
-#~ msgid "Editor Type"
-#~ msgstr "Editor"
-
-#~ msgid "Simple Editor"
-#~ msgstr "Einfacher Editor"
-
-#~ msgid "QScintilla Editor"
-#~ msgstr "QScintilla Editor"
-
-#~ msgid "(requires restart)"
-#~ msgstr "(Neustart erforderlich)"
-
-#~ msgid "Allow opening multiple documents"
-#~ msgstr "Öffnen von mehreren Dokumenten erlauben"
-
-#~ msgid "Axis"
-#~ msgstr "Achse"
-
-#~ msgid "Untitled.csg"
-#~ msgstr "Unbenannt.csg"
-
-#~ msgid "Untitled.png"
-#~ msgstr "Unbenannt.png"
-
-#, fuzzy
-#~ msgid "Parameter Widget"
-#~ msgstr "Parameter"
-
-#~ msgid "no preset selected"
-#~ msgstr "keine Voreinstellung ausgewählt"
-
-#~ msgid "<"
-#~ msgstr "<"
-
-#~ msgid ">"
-#~ msgstr ">"
-
-#~ msgid "Shapes"
-#~ msgstr "Formen"
-
-#~ msgid "Extrusion"
-#~ msgstr "Extrusion"
-
-#~ msgid "Untitled%1"
-#~ msgstr "Unbenannt%1"
-
-#~ msgid "Top"
-#~ msgstr "Oben"
-
-#~ msgid ""
-#~ "\n"
-#~ "Using QGLWidget\n"
-#~ "\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Benutze QGLWidget\n"
-#~ "\n"
-
-#~ msgid "Paste font selector to Editor Window"
-#~ msgstr "Font Selektor in Editor kopieren"
-
-#~ msgid "About OpenSCAD "
-#~ msgstr "Über OpenSCAD"
-
-#~ msgid "Check for Update.."
-#~ msgstr "Neue Version suchen..."
-
-#~ msgid "For Light Background"
-#~ msgstr "Für hellen Hintergrund"
-
-#~ msgid "Off"
-#~ msgstr "Aus"
-
-#~ msgid "Enable the <code>concat()</code> function."
-#~ msgstr "Funktion <code>concat()</code> aktivieren."
-
-#~ msgid "OpenSCAD - New Document[*]"
-#~ msgstr "OpenSCAD - Neue Datei[*]"
-
-#~ msgid "[*]"
-#~ msgstr "[*]"
-
-#~ msgid "OpenSCAD recommended OpenGL version is 2.0."
-#~ msgstr "Die empfohlene OpenGL version für OpenSCAD ist 2.0."
-
-#~ msgid "Compile and &Render (CGAL)"
-#~ msgstr "Übersetzen und Rendern (CGAL)"
-
-#~ msgid "CGAL Grid Only"
-#~ msgstr "CGAL Gitter anzeigen"
