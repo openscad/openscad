@@ -3298,7 +3298,7 @@
      <normaloff>:/icons/prefsFeatures.png</normaloff>:/icons/prefsFeatures.png</iconset>
    </property>
    <property name="text">
-    <string>Features</string>
+    <string>Experimental</string>
    </property>
    <property name="toolTip">
     <string>Enable/Disable experimental features</string>
