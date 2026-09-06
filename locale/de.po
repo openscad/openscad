@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-05 20:19+0200\n"
-"PO-Revision-Date: 2026-09-06 15:49+0000\n"
+"PO-Revision-Date: 2026-09-07 16:28+0000\n"
 "Last-Translator: Jordan Brown <openscad@jordan.maileater.net>\n"
 "Language-Team: German <https://translate.openscad.org/projects/openscad/app/"
 "de/>\n"
@@ -1230,7 +1230,7 @@ msgstr "Detailierte Informationen über diese OpenSCAD Version"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:77
 msgid "&OK"
-msgstr "OK"
+msgstr "&OK"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1006
 msgid "&New File"
@@ -1275,9 +1275,8 @@ msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1024
-#, fuzzy
 msgid "Save a C&opy..."
-msgstr "Kopie speichern"
+msgstr "Kopie speichern..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1025
 #, fuzzy
@@ -1770,9 +1769,8 @@ msgid "&Library info"
 msgstr "&Versionsinformationen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1238
-#, fuzzy
 msgid "Show &Library Folder"
-msgstr "Bibli&otheken anzeigen..."
+msgstr "Bibli&otheken anzeigen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1239
 #, fuzzy
@@ -2251,12 +2249,12 @@ msgstr "Alt"
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2498
 #: src/core/Settings.cc:199
 msgid "Left Mouse Button"
-msgstr "Left Mouse Button"
+msgstr "Linke Maustaste"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2499
 #: src/core/Settings.cc:200
 msgid "Either"
-msgstr "Either"
+msgstr "Entweder"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2501
 msgid "Step Size"
@@ -2264,11 +2262,11 @@ msgstr "Schrittgröße"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2502
 msgid "Number Scroll Via Mouse Wheel"
-msgstr "Number Scroll Via Mouse Wheel"
+msgstr "Zahlen Laufleiste per Mausrad"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2503
 msgid "Modifier For Wheel Scroll "
-msgstr "Modifier For Wheel Scroll "
+msgstr "Modifikator fuer Radscroll "
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2504
 msgid "Autocomplete"
@@ -2536,7 +2534,7 @@ msgstr "URL"
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2577
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2667
 msgid "API Key"
-msgstr "API Key"
+msgstr "API-Schlüssel"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2578
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2579
@@ -2553,7 +2551,7 @@ msgstr "Slicing Profil"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2583
 msgid "Slicing Engine"
-msgstr "Slicing Engine"
+msgstr "Slicing-Engine"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2584
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2590
@@ -2673,7 +2671,7 @@ msgstr "Ton abspielen wenn das Rendern abgeschlossen ist"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2624
 msgid "sec"
-msgstr "sec"
+msgstr "sek"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2625
 msgid "Console"
@@ -2741,7 +2739,7 @@ msgstr "Kamera"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2643
 msgid "Bounding Box"
-msgstr "Begrenzungsrahmen "
+msgstr "Begrenzungsrahmen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2644
 msgid "Measurements: Area"
@@ -2749,7 +2747,7 @@ msgstr "Messungen: Fläche"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2645
 msgid "Export Features"
-msgstr "Export Features"
+msgstr "Exportfunktionen"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2646
 msgid "Toolbar Export 3D"
@@ -2873,7 +2871,7 @@ msgstr "%v / %m"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ShortcutConfigurator.h:68
 msgid "Shortcut"
-msgstr "Shortcut"
+msgstr "Abkürzung"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ShortcutConfigurator.h:69
 #, fuzzy
@@ -3248,7 +3246,7 @@ msgstr ""
 
 #: src/gui/MainWindow.cc:1810
 msgid "Application"
-msgstr "Application"
+msgstr "Anwendung"
 
 #: src/gui/MainWindow.cc:1811
 msgid ""
@@ -3268,7 +3266,7 @@ msgstr "%1 Dateien (*%2)"
 
 #: src/gui/MainWindow.cc:2613
 msgid "Export CSG File"
-msgstr "Export CSG File"
+msgstr "CSG-Datei exportieren"
 
 #: src/gui/MainWindow.cc:2614
 msgid "CSG Files (*.csg)"
@@ -3394,7 +3392,7 @@ msgstr "Bitte einen Namen für diese Voreinstellung eingeben"
 
 #: src/gui/parameter/ParameterWidget.cc:284
 msgid "New set "
-msgstr "Neue Parameter Liste"
+msgstr "Neue Parameter Liste "
 
 #: src/gui/Preferences.cc:273
 msgid "Parameter Key"
@@ -3613,12 +3611,14 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
-"software for creating 3D models (such as Blender) it does not focus on the "
-"artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
-"might be the application you are looking for when you are planning to create "
-"3D models of machine parts but pretty sure is not what you are looking for "
-"when you are more interested in creating computer-animated movies."
+"OpenSCAD ist eine Software zur Erstellung von Volumenmodellen (Solid Models) "
+"im CAD-Bereich. Im Gegensatz zu den meisten kostenlosen Programmen zur 3D-"
+"Modellierung (wie etwa Blender) liegt der Schwerpunkt nicht auf "
+"künstlerischen Aspekten, sondern auf CAD-Funktionalitäten. Somit ist es "
+"womöglich genau die Anwendung, die Sie suchen, wenn Sie 3D-Modelle von "
+"Maschinenteilen entwerfen wollen; wenn Sie sich hingegen eher für die "
+"Erstellung computeranimierter Filme interessieren, ist es mit ziemlicher "
+"Sicherheit nicht das Richtige für Sie."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:28
@@ -3630,12 +3630,13 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD is not an interactive modeller. Instead it is something like a 3D-"
-"compiler that reads in a script file that describes the object and renders "
-"the 3D model from this script file. This gives you (the designer) full "
-"control over the modelling process and enables you to easily change any step "
-"in the modelling process or make designs that are defined by configurable "
-"parameters."
+"OpenSCAD ist kein interaktiver Modellierer. Stattdessen handelt es sich um "
+"so etwas wie einen 3D-Compiler, der eine Skriptdatei einliest, die das "
+"Objekt beschreibt, und aus dieser Skriptdatei das 3D-Modell rendert. Dies "
+"gibt Ihnen (dem Designer) die volle Kontrolle über den Modellierungsprozess "
+"und ermöglicht Ihnen, jeden Schritt im Modellierungsprozess einfach zu "
+"ändern oder Designs zu erstellen, die durch konfigurierbare Parameter "
+"definiert sind."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:29
@@ -3647,9 +3648,10 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenSCAD provides two main modelling techniques: First there is constructive "
-"solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
-"data exchange format for this 2D outlines Autocad DXF files are used. In "
-"addition to 2D paths for extrusion it is also possible to read design "
-"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
-"models in the STL and OFF file formats."
+"OpenSCAD bietet zwei wesentliche Modellierungstechniken: zum einen die "
+"konstruktive Festkörpergeometrie (kurz CSG) und zum anderen die Extrusion "
+"von 2D-Konturen. Als Datenaustauschformat für diese 2D-Konturen werden "
+"AutoCAD-DXF-Dateien verwendet. Neben 2D-Pfaden für die Extrusion lassen sich "
+"auch Entwurfsparameter aus DXF-Dateien einlesen. Darüber hinaus kann "
+"OpenSCAD 3D-Modelle in den Dateiformaten STL und OFF sowohl lesen als auch "
+"erstellen."
