@@ -65,7 +65,7 @@
        <item row="0" column="1">
         <widget class="QGroupBox" name="groupUnit">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the PDF page (paper) size.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>Set the unit used in the exported file</string>
          </property>
          <property name="title">
           <string>Unit</string>

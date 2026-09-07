@@ -16,9 +16,6 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="windowTitle">
-   <string>Preferences</string>
-  </property>
   <property name="unifiedTitleAndToolBarOnMac" stdset="0">
    <bool>true</bool>
   </property>
@@ -801,7 +798,7 @@
          <item row="0" column="1">
           <widget class="QLabel" name="label_11">
            <property name="text">
-            <string>X</string>
+            <string notr="true">X</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -850,7 +847,7 @@
          <item row="0" column="2">
           <widget class="QLabel" name="label_14">
            <property name="text">
-            <string>Y</string>
+            <string notr="true">Y</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -895,7 +892,7 @@
          <item row="0" column="3">
           <widget class="QLabel" name="label_15">
            <property name="text">
-            <string>Z</string>
+            <string notr="true">Z</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -986,7 +983,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="labelInputRotationViewPortRelative">
            <property name="text">
-            <string>ViewPort rel.&lt;br /&gt;Rotation</string>
+            <string>ViewPort rel.&lt;br/&gt;Rotation</string>
            </property>
           </widget>
          </item>
@@ -1059,7 +1056,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>SpaceNav</string>
+            <string notr="true">SpaceNav</string>
            </property>
           </widget>
          </item>
@@ -1069,7 +1066,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>HIDAPI</string>
+            <string notr="true">HIDAPI</string>
            </property>
           </widget>
          </item>
@@ -1079,7 +1076,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>QGamepad</string>
+            <string notr="true">QGamepad</string>
            </property>
           </widget>
          </item>
@@ -1099,7 +1096,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>DBus</string>
+            <string notr="true">DBus</string>
            </property>
           </widget>
          </item>
@@ -1134,7 +1131,7 @@
        <item row="35" column="0" colspan="2">
         <widget class="QLabel" name="label_driverInfo">
          <property name="text">
-          <string>TextLabel</string>
+          <string notr="true">(driver status placeholder)</string>
          </property>
         </widget>
        </item>

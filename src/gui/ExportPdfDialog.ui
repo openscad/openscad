@@ -38,7 +38,7 @@
        <item row="0" column="0" rowspan="2">
         <widget class="QGroupBox" name="groupSize">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the PDF page (paper) size.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>Set the PDF page (paper) size.</string>
          </property>
          <property name="title">
           <string>Page Size</string>
@@ -286,7 +286,7 @@
        <item row="0" column="1">
         <widget class="QGroupBox" name="groupOrientation">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the direction of the largest page dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>Set the direction of the largest page dimension.</string>
          </property>
          <property name="title">
           <string>Page Orientation</string>
@@ -324,7 +324,7 @@
           <item>
            <widget class="QRadioButton" name="radioButtonOrientationAuto">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determine best orientation based on maximum geometry dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>Determine best orientation based on maximum geometry dimension.</string>
             </property>
             <property name="text">
              <string>Auto</string>
@@ -349,7 +349,7 @@
           <item>
            <widget class="QCheckBox" name="checkBoxShowFilename">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include design filename on page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>Include design filename on page.</string>
             </property>
             <property name="text">
              <string>Show Design Filename</string>
@@ -362,7 +362,7 @@
           <item>
            <widget class="QGroupBox" name="groupScale">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include rulers on page to confirm 1:1 printing scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>Include rulers on page to confirm 1:1 printing scale.</string>
             </property>
             <property name="title">
              <string>Show Scale</string>
@@ -380,7 +380,7 @@
              <item>
               <widget class="QGroupBox" name="groupGrid">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a grid of the selected size on the page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>Include a grid of the selected size on the page.</string>
                </property>
                <property name="title">
                 <string>Show Grid</string>
@@ -475,7 +475,7 @@
                 <bool>true</bool>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include text describing usage of scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>Include text describing usage of scale.</string>
                </property>
                <property name="text">
                 <string>Show Scale Usage</string>
@@ -500,7 +500,7 @@
           <item>
            <widget class="QCheckBox" name="checkBoxEnableFill">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable filling of exported geometry with a color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>Enable filling of exported geometry with a color.</string>
             </property>
             <property name="text">
              <string>Fill Geometry</string>
@@ -557,7 +557,7 @@
           <item>
            <widget class="QCheckBox" name="checkBoxEnableStroke">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable outline stroke for exported geometry.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>Enable outline stroke for exported geometry.</string>
             </property>
             <property name="text">
              <string>Stroke Outline</string>

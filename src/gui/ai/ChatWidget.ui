@@ -81,7 +81,7 @@
          <string>Chat options</string>
         </property>
         <property name="text">
-         <string>&#x2630;</string>
+         <string notr="true">&#x2630;</string>
         </property>
         <property name="popupMode">
          <enum>QToolButton::InstantPopup</enum>

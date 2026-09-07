@@ -324,7 +324,7 @@
   </layout>
   <action name="actionRowSelected">
    <property name="text">
-    <string>RowSelected</string>
+    <string>Row Selected</string>
    </property>
    <property name="shortcut">
     <string>Return</string>

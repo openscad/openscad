@@ -370,7 +370,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>ShowFileName</string>
+    <string>Show File Name</string>
    </property>
   </action>
   <action name="actionShowFilePathColumn">

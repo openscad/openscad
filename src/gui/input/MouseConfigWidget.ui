@@ -16,9 +16,6 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="windowTitle">
-   <string>Preferences</string>
-  </property>
   <property name="unifiedTitleAndToolBarOnMac" stdset="0">
    <bool>true</bool>
   </property>
