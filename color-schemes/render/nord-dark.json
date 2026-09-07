@@ -8,7 +8,7 @@
         "axes-color" :         "#4c566a",
         "opencsg-face-front" : "#88c0d0",
         "opencsg-face-back" :  "#5e81ac",
-        "cgal-face-front" :    "#81a1c1",
+        "cgal-face-front" :    "#7FA3C7",
         "cgal-face-back" :     "#5e81ac",
         "cgal-face-2d" :       "#81a1c1",
         "cgal-edge-front" :    "#88c0d0",
