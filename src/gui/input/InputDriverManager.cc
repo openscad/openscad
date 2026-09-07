@@ -204,29 +204,17 @@ QList<double> InputDriverManager::getRotation() const
 
 double InputDriverManager::getDistance() const
 {
-  const MainWindow *window = currentWindow;
-  if (window) {
-    return window->getDistance();
-  }
-  return 0.0;
+  return currentWindow ? currentWindow->getDistance() : 0.0;
 }
 
 double InputDriverManager::getFov() const
 {
-  const MainWindow *window = currentWindow;
-  if (window) {
-    return window->getFov();
-  }
-  return 0.0;
+  return currentWindow ? currentWindow->getFov() : 0.0;
 }
 
 QString InputDriverManager::getProjection() const
 {
-  const MainWindow *window = currentWindow;
-  if (window) {
-    return window->getProjection();
-  }
-  return {};
+  return currentWindow ? currentWindow->getProjection() : QString();
 }
 
 void InputDriverManager::onFocusChanged(QWidget *, QWidget *current)
