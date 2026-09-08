@@ -1,0 +1,6 @@
+WARNING: now(..., unit="CPU") unsupported unit: expected "s", "m", or "u" in file now-tests.scad, line 7
+WARNING: variable "type" not specified as parameter in file now-tests.scad, line 8
+WARNING: now(..., unit=1) Invalid type: expected string, found number in file now-tests.scad, line 9
+ECHO: "monotonic_non_decreasing", true
+ECHO: "default_matches_u_scale", true
+ECHO: "unit_scale_ratios", true
