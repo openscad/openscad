@@ -168,3 +168,6 @@ if newscadfile != exportfile:
         os.remove(newscadfile)
     except:
         failquit("failure at os.remove(" + newscadfile + ")")
+
+
+# Web3/DeSci Fix #783: STL compile fails (Cyborg Finger)
