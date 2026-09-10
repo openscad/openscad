@@ -38,7 +38,8 @@
 #include "gui/parameter/ParameterVirtualWidget.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_ParameterWidget.h"
-
+class Context;
+class CustomizerContext;
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
   Q_OBJECT
@@ -47,13 +48,20 @@ private:
   std::string source;
   ParameterObjects parameters;
   std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
+  std::multimap<std::string, ParameterObject *> dependencyMap;
+  std::unique_ptr<CustomizerContext> evaluationContext;
 
   QString invalidJsonFile;  // set if a json file was read that could not be parsed
   QTimer autoPreviewTimer;
   bool modified = false;
 
+  void rebuildDependencyMap();
+  void updateDependentAttributes(ParameterObject *parameter);
+  void updateDependentAttributes(ParameterObject *parameter, std::set<ParameterObject *>& visited);
+
 public:
   ParameterWidget(QWidget *parent = nullptr);
+  ~ParameterWidget() override;
   void readFile(const QString& scadFile);
   void saveFile(const QString& scadFile);
   void saveBackupFile(const QString& scadFile);
@@ -61,6 +69,7 @@ public:
   void applyParameters(SourceFile *sourceFile);
   bool childHasFocus();
   bool isModified() const { return modified; }
+  void updateParameterStates();
 
 public slots:
   void setModified(bool modified = true);

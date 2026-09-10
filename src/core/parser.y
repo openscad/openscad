@@ -36,6 +36,7 @@
 #include <unistd.h>
 #endif
 
+#include "core/customizer/Annotation.h"
 #include "core/SourceFile.h"
 #include "core/UserModule.h"
 #include "core/ModuleInstantiation.h"
@@ -118,6 +119,8 @@ bool fileEnded=false;
 %token TOK_ECHO
 %token TOK_EACH
 
+%token TOK_AT
+
 %token <text> TOK_ID
 %token <text> TOK_STRING
 %token <text> TOK_USE
@@ -156,6 +159,9 @@ bool fileEnded=false;
 %type <ifelse> if_statement
 %type <ifelse> ifelse_statement
 %type <inst> single_module_instantiation
+
+%type <expr> attribute_block
+%type <args> attribute_list
 
 %type <args> arguments
 %type <args> argument_list
@@ -228,6 +234,19 @@ assignment
             {
                 handle_assignment($1, $3, LOCD("assignment", @$));
                 free($1);
+            }
+        | attribute_block TOK_ID '=' expr ';'
+            {
+                // Note: attribute_block is $1, ID is $2, expr is $4
+                handle_assignment($2, $4, LOCD("assignment", @$));
+                if ($1) {
+                  Assignment *as = nullptr;
+                  for (auto &a : scope_stack.top()->assignments){
+                    if (a->getName() == $2) as = a.get();
+                  }
+                  if (as) as->addAnnotations(new AnnotationList({Annotation("NativeAttributes", std::shared_ptr<Expression>($1))}));
+                }
+                free($2);
             }
         ;
 
@@ -706,6 +725,24 @@ argument
             {
                 $$ = new Assignment($1, std::shared_ptr<Expression>($3), LOCD("argumentcall", @$));
                 free($1);
+            }
+        ;
+
+attribute_block
+        : TOK_AT '{' attribute_list '}'
+            {
+                $$ = new ObjectExpression(*$3, LOC(@$));
+                delete $3;
+            }
+        ;
+
+attribute_list
+        : /* empty */ { $$ = new AssignmentList(); }
+        | attribute_list TOK_ID '=' expr ';'
+            {
+                $$ = $1;
+                $$->emplace_back(new Assignment($2, std::shared_ptr<Expression>($4), LOC(@2)));
+                free($2);
             }
         ;
 

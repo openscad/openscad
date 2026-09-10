@@ -74,6 +74,9 @@ static int getLineToStop(const std::string& fulltext)
     }
 
     if (i < fulltext.length() && fulltext[i] == '{') {
+      if (i > 0 && fulltext[i - 1] == '@') {
+        continue;
+      }
       return lineNo;
     }
   }

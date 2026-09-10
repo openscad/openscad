@@ -33,9 +33,11 @@
 #include <QString>
 #include <QToolButton>
 #include <QWidget>
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -44,7 +46,13 @@
 #include <utility>
 #include <vector>
 
+#include "core/Context.h"
+#include "core/BuiltinContext.h"
+#include "core/EvaluationSession.h"
+#include "core/ScopeContext.h"
+
 #include "core/customizer/ParameterObject.h"
+#include "platform/PlatformUtils.h"
 #include "gui/Preferences.h"
 #include "gui/parameter/GroupWidget.h"
 #include "gui/parameter/ParameterCheckBox.h"
@@ -54,6 +62,24 @@
 #include "gui/parameter/ParameterText.h"
 #include "gui/parameter/ParameterVector.h"
 #include "gui/parameter/ParameterVirtualWidget.h"
+
+class CustomizerContext
+{
+public:
+  explicit CustomizerContext(const SourceFile *sourceFile)
+    : session(PlatformUtils::resourcePath("libraries").string()),
+      builtinContext(Context::create<BuiltinContext>(&session)),
+      fileContext(Context::create<FileContext>(*builtinContext, sourceFile))
+  {
+  }
+
+  Context *context() { return fileContext.operator->(); }
+
+private:
+  EvaluationSession session;
+  ContextHandle<BuiltinContext> builtinContext;
+  ContextHandle<FileContext> fileContext;
+};
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -82,6 +108,8 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   connect(GlobalPreferences::inst(), &Preferences::customizerFontChanged, this,
           &ParameterWidget::setFontFamilySize);
 }
+
+ParameterWidget::~ParameterWidget() = default;
 
 // Can only be called before the initial setParameters().
 void ParameterWidget::readFile(const QString& scadFile)
@@ -138,16 +166,51 @@ void ParameterWidget::saveBackupFile(const QString& scadFile)
 
 void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::string& source)
 {
+  auto evaluationContext = std::make_unique<CustomizerContext>(sourceFile);
   if (this->source == source) {
+    this->evaluationContext = std::move(evaluationContext);
+    updateParameterStates();
     return;
   }
   this->source = source;
 
-  this->parameters = ParameterObjects::fromSourceFile(sourceFile);
+  QLayout *layout = this->scrollAreaWidgetContents->layout();
+  while (layout && layout->count() > 0) {
+    QLayoutItem *child = layout->takeAt(0);
+    delete child->widget();
+    delete child;
+  }
+
+  this->widgets.clear();
+  this->dependencyMap.clear();
+  this->parameters.clear();
+  this->evaluationContext = std::move(evaluationContext);
+  this->parameters = ParameterObjects::fromSourceFile(sourceFile, this->evaluationContext->context());
   rebuildWidgets();
   loadSet(comboBoxPreset->currentIndex());
+  updateParameterStates();
 }
 
+// updates every parameter
+void ParameterWidget::updateParameterStates()
+{
+  if (!this->evaluationContext) return;
+
+  Context *context = this->evaluationContext->context();
+
+  for (const auto& param : this->parameters) {
+    param->updateContext(context);
+  }
+  for (const auto& param : this->parameters) {
+    param->updateAttributes(context);
+    if (widgets.count(param.get())) {
+      for (auto *widget : widgets.at(param.get())) {
+        widget->setEnabled(!param->isLocked());
+        widget->setHidden(param->isHidden());
+      }
+    }
+  }
+}
 void ParameterWidget::applyParameters(SourceFile *sourceFile)
 {
   this->parameters.apply(sourceFile);
@@ -270,8 +333,13 @@ void ParameterWidget::onExpandAll()
 void ParameterWidget::parameterModified(bool immediate)
 {
   auto *widget = (ParameterVirtualWidget *)sender();
+  if (!widget) return;
   ParameterObject *parameter = widget->getParameter();
 
+  if (parameter && this->evaluationContext) {
+    parameter->updateContext(this->evaluationContext->context());
+    updateDependentAttributes(parameter);
+  }
   // When attempting to modify the design default, create a new set to edit.
   if (comboBoxPreset->currentIndex() == 0) {
     std::set<std::string> setNames;
@@ -378,6 +446,7 @@ void ParameterWidget::rebuildWidgets()
     groupWidget->setExpanded(it == expandedGroups.end() || it->second);
     layout->addWidget(groupWidget);
   }
+  rebuildDependencyMap();
 }
 
 std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups()
@@ -418,25 +487,31 @@ std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups
 ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *parameter,
                                                                DescriptionStyle descriptionStyle)
 {
+  ParameterVirtualWidget *widget = nullptr;
   if (parameter->type() == ParameterObject::ParameterType::Bool) {
-    return new ParameterCheckBox(this, static_cast<BoolParameter *>(parameter), descriptionStyle);
+    widget = new ParameterCheckBox(this, static_cast<BoolParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::String) {
-    return new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
+    widget = new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Number) {
     auto *numberParameter = static_cast<NumberParameter *>(parameter);
-    if (numberParameter->minimum && numberParameter->maximum) {
-      return new ParameterSlider(this, numberParameter, descriptionStyle);
+    if (numberParameter->minimum && numberParameter->maximum && numberParameter->isSliderEnabled()) {
+      widget = new ParameterSlider(this, numberParameter, descriptionStyle);
     } else {
-      return new ParameterSpinBox(this, numberParameter, descriptionStyle);
+      widget = new ParameterSpinBox(this, numberParameter, descriptionStyle);
     }
   } else if (parameter->type() == ParameterObject::ParameterType::Vector) {
-    return new ParameterVector(this, static_cast<VectorParameter *>(parameter), descriptionStyle);
+    widget = new ParameterVector(this, static_cast<VectorParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Enum) {
-    return new ParameterComboBox(this, static_cast<EnumParameter *>(parameter), descriptionStyle);
+    widget = new ParameterComboBox(this, static_cast<EnumParameter *>(parameter), descriptionStyle);
   } else {
     assert(false);
     throw std::runtime_error("Unsupported parameter widget type");
   }
+  if (widget) {
+    widget->setEnabled(!parameter->isLocked());
+    widget->setHidden(parameter->isHidden());
+  }
+  return widget;
 }
 
 QString ParameterWidget::getJsonFile(const QString& scadFile)
@@ -473,4 +548,102 @@ void ParameterWidget::setFontFamilySize(const QString& fontFamily, uint fontSize
 {
   scrollArea->setStyleSheet(
     QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
+}
+
+void ParameterWidget::rebuildDependencyMap()
+{
+  this->dependencyMap.clear();
+
+  std::map<std::string, ParameterObject *> parametersByName;
+
+  for (const auto& param_ptr : this->parameters) {
+    ParameterObject *param = param_ptr.get();
+    parametersByName[param->name()] = param;
+
+    for (const std::string& depName : param->getDependencies()) {
+      this->dependencyMap.insert({depName, param});
+    }
+  }
+
+  enum class VisitState { Unvisited, Visiting, Finished };
+  std::map<ParameterObject *, VisitState> states;
+  std::vector<ParameterObject *> path;
+  std::set<std::set<std::string>> reportedCycles;
+
+  std::function<void(ParameterObject *)> visit = [&](ParameterObject *parameter) {
+    states[parameter] = VisitState::Visiting;
+    path.push_back(parameter);
+
+    for (const auto& dependencyName : parameter->getDependencies()) {
+      auto dependencyIt = parametersByName.find(dependencyName);
+      if (dependencyIt == parametersByName.end()) continue;
+
+      ParameterObject *dependency = dependencyIt->second;
+      if (states[dependency] == VisitState::Unvisited) {
+        visit(dependency);
+      } else if (states[dependency] == VisitState::Visiting) {
+        auto cycleStart = std::find(path.begin(), path.end(), dependency);
+        std::vector<ParameterObject *> cycle(cycleStart, path.end());
+        std::set<std::string> cycleNames;
+        std::string cyclePath;
+        for (auto *cycleParameter : cycle) {
+          cycleNames.insert(cycleParameter->name());
+          if (!cyclePath.empty()) cyclePath += " -> ";
+          cyclePath += cycleParameter->name();
+        }
+        cyclePath += " -> " + dependency->name();
+
+        if (reportedCycles.insert(cycleNames).second) {
+          PRINT(Message("Customizer dependency cycle detected: " + cyclePath, message_group::Error,
+                        dependency->location()));
+          for (auto *cycleParameter : cycle) {
+            PRINT(Message("Customizer cycle variable: " + cycleParameter->name(), message_group::Error,
+                          cycleParameter->location()));
+          }
+        }
+      }
+    }
+
+    path.pop_back();
+    states[parameter] = VisitState::Finished;
+  };
+
+  for (const auto& param : this->parameters) {
+    if (states[param.get()] == VisitState::Unvisited) visit(param.get());
+  }
+}
+
+void ParameterWidget::updateDependentAttributes(ParameterObject *parameter)
+{
+  std::set<ParameterObject *> visited;
+  updateDependentAttributes(parameter, visited);
+}
+
+void ParameterWidget::updateDependentAttributes(ParameterObject *parameter,
+                                                std::set<ParameterObject *>& visited)
+{
+  if (!evaluationContext) return;
+  if (!visited.insert(parameter).second) return;
+
+  Context *context = evaluationContext->context();
+  parameter->updateContext(context);
+
+  auto range = dependencyMap.equal_range(parameter->name());
+
+  for (auto it = range.first; it != range.second; ++it) {
+    ParameterObject *dependentParam = it->second;
+
+    if (dependentParam == parameter) continue;
+    dependentParam->updateAttributes(context);
+
+    if (widgets.count(dependentParam)) {
+      for (auto *widget : widgets.at(dependentParam)) {
+        widget->setEnabled(!dependentParam->isLocked());
+        widget->setHidden(dependentParam->isHidden());
+        // potentially update other visual properties here later
+      }
+    }
+
+    updateDependentAttributes(dependentParam, visited);
+  }
 }
