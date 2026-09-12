@@ -1541,6 +1541,7 @@ if(ENABLE_GUI_TESTS)
   set(GUITESTS_HEADERS
     src/guitests/guitests.h
     src/guitests/TestModuleCache.h
+    src/guitests/TestScadLexerFolding.h
     src/guitests/TestTabManager.h
     src/guitests/TestMainWindow.h
     src/guitests/UXTest.h
@@ -1549,6 +1550,7 @@ if(ENABLE_GUI_TESTS)
   set(GUITESTS_SOURCES
     src/guitests/guitests.cc
     src/guitests/TestModuleCache.cc
+    src/guitests/TestScadLexerFolding.cc
     src/guitests/TestTabManager.cc
     src/guitests/TestMainWindow.cc
     src/guitests/UXTest.cc
