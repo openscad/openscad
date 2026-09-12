@@ -87,6 +87,7 @@ public:
   ~OpenCSGRenderer() override = default;
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void setColorScheme(const ColorScheme& cs) override;
 
   BoundingBox getBoundingBox() const override;
   static void clearCache();
