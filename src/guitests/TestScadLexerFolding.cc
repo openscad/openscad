@@ -108,8 +108,8 @@ void TestScadLexerFolding::testFolding_data()
             x + a;
         y = 1;
       )"
-    << QList{0, 0, 1, 1, 0, 0}
-    << QList{1};
+    << QList{0, 1, 2, 2, 1, 0}
+    << QList{0, 1};
 
   QTest::newRow("function_single_line")
     << R"(
@@ -130,8 +130,8 @@ void TestScadLexerFolding::testFolding_data()
           );
         y = 1;
       )"
-    << QList{0, 0, 1, 1, 0, 1, 1, 0}
-    << QList{1, 4};
+    << QList{0, 1, 2, 2, 1, 2, 2, 0}
+    << QList{0, 1, 4};
 
   // A more complex nesting case: brackets and parens that open *and* close
   // again within a single line should net to zero and not produce a spurious
@@ -159,7 +159,7 @@ void TestScadLexerFolding::testFolding_data()
         ];
         x = 1;
       )"
-    << QList{0, 1, 1, 1, 1, 0}
+    << QList{0, 2, 2, 2, 2, 0}
     << QList{0};
 
   // Regression guard: A semicolon inside a quoted string must not be
@@ -172,8 +172,8 @@ void TestScadLexerFolding::testFolding_data()
           ;
         x = 1;
       )"
-    << QList{0, 0, 0, 0, 0}
-    << QList<int>{};
+    << QList{0, 1, 1, 1, 0}
+    << QList{0};
 
   QTest::newRow("multiline_comment")
     << R"(
@@ -201,8 +201,8 @@ void TestScadLexerFolding::testFolding_data()
           x + 1;
         y = 2;
       )"
-    << QList{0, 0, 1, 1, 0, 0}
-    << QList{1};
+    << QList{0, 1, 2, 2, 1, 0}
+    << QList{0, 1};
 
   // Negative case: a different Keyword-styled token ("echo") must NOT trigger
   // the function-virtual-level path. Folding here should come entirely from
@@ -242,26 +242,21 @@ void TestScadLexerFolding::testFolding_data()
           b;
         z = 1;
       )"
-    << QList{0, 0, 0, 0, 0, 0, 0}
-    << QList<int>{};
+    << QList{0, 1, 1, 0, 1, 1, 0}
+    << QList{0, 3};
 
-  QTest::newRow("unfinished_function")
+  QTest::newRow("unfinished_before_function")
     << R"(
         function x(phi, r=1) =
-          [
-            for (phi = [0:15:360]) r * cos(phi)
-          ]
+          [for (phi = [0:15:360]) r * cos(phi)]
 
         function y(phi, r) =
-          [
-            for (phi = [0:15:360]) r * sin(phi)
-          ];
+          [for (phi = [0:15:360]) r * sin(phi)];
 
         x = 1;
       )"
-    << QList{0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0}
-    << QList{1, 6};
-
+    << QList{0, 1, 1, 1, 1, 0, 0}
+    << QList{0};
 
   // clang-format on
 }

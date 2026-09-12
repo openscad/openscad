@@ -276,6 +276,10 @@ void ScadLexer2::fold(int start, int end)
   int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
                   QsciScintilla::SC_FOLDLEVELNUMBERMASK;
   int levelCurrent = levelPrev;
+
+  std::string currKeyword;
+  auto insideFunctionDef = false;
+
   for (int i = start; i < end; i++) {
     char ch = chNext;
     chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, i + 1);
@@ -291,6 +295,23 @@ void ScadLexer2::fold(int start, int end)
         levelCurrent++;
       } else if ((ch == '}') || (ch == ']') || (ch == ')')) {
         levelCurrent--;
+      } else if ((ch == ';') && insideFunctionDef) {
+        // Function definitions cannot contain semicolons, there the first one must close the definition.
+        insideFunctionDef = false;
+        levelCurrent--;
+      }
+    }
+
+    if (!insideFunctionDef) {
+      if (currStyle == Keyword) {
+        currKeyword += ch;
+      } else if (!currKeyword.empty()) {
+        if (currKeyword == "function") {
+          insideFunctionDef = true;
+          levelCurrent++;
+        }
+
+        currKeyword.clear();
       }
     }
 
