@@ -28,5 +28,6 @@ struct ShaderInfo {
 
 std::string loadShaderSource(const std::string& name);
 ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str);
+void deleteShaderProgram(const ShaderResource& resource);
 
 }  // namespace ShaderUtils
