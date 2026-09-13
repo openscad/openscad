@@ -346,9 +346,9 @@ QColor ScadLexer2::defaultColor(int style) const
   case Keyword:        return Qt::blue;
   case Comment:        return Qt::green;
   case Number:         return Qt::red;
-  case Transformation: return "#f32222";
-  case Boolean:        return "#22f322";
-  case Function:       return "#2222f3";
+  case Transformation: return 0xf32222;
+  case Boolean:        return 0x22f322;
+  case Function:       return 0x2222f3;
   case Model:          return Qt::blue;
   case Default:        return Qt::black;
   }
