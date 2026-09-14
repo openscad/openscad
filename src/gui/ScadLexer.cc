@@ -200,12 +200,12 @@ void Lex::finalize_rules()
 #endif
 }
 
-void Lex::lex_results(const std::string& input, int start, LexInterface *const obj)
+void Lex::lex_results(std::string_view input, int start, LexInterface *const obj)
 {
 #if DEBUG_LEXERTL
   std::cout << "called lexer" << std::endl;
 #endif
-  lexertl::smatch results(input.begin(), input.end());
+  lexertl::cmatch results(input.begin(), input.end());
 
   // The editor can ask to only lex from a starting point.
   // This can be faster the lexing the whole text,
@@ -247,10 +247,12 @@ void ScadLexer2::styleText(int start, int end)
 #endif
   if (!editor()) return;
 
-  char *data = new char[end - start + 1];
-  editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
-  QString source(data);
-  const std::string input(source.toStdString());
+  // QVarLengthArray allocates its PreAlloc bytes on stack by default,
+  // instead of using expensive HEAP memory. This gives a measureable
+  // performance gain in hot code paths.
+  auto buffer = QVarLengthArray<char, 8192>(end - start + 1);
+  const auto length = editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, buffer.data());
+  auto input = std::string_view(buffer.data(), length);
 
 #if DEBUG_LEXERTL
   auto pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
@@ -259,9 +261,6 @@ void ScadLexer2::styleText(int start, int end)
 
   my_lexer->lex_results(input, start, this);
   this->fold(start, end);
-
-  delete[] data;
-  if (source.isEmpty()) return;
 }
 
 void ScadLexer2::autoScroll(int error_pos)

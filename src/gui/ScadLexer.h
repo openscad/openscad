@@ -93,7 +93,7 @@ public:
   void defineRules(const std::string& keyword_list, int id);
   void finalize_rules();
 
-  void lex_results(const std::string& input, int start, LexInterface *const obj);
+  void lex_results(std::string_view input, int start, LexInterface *const obj);
 };
 
 class ScadLexer2 : public QsciLexerCustom, public LexInterface
