@@ -99,7 +99,7 @@ public:
 class ScadLexer2 : public QsciLexerCustom, public LexInterface
 {
 public:
-  enum {
+  enum Style {
     Default = 0,
     Keyword = 1,
     Transformation = 2,

@@ -356,7 +356,9 @@ QColor ScadLexer2::defaultColor(int style) const
 
 QString ScadLexer2::description(int style) const
 {
-  switch (style) {
+  // The static cast enables the -Wswitch warning on many compilers.
+  // If changed to -Werror=switch it could avoid forgetting cases in the future.
+  switch (static_cast<Style>(style)) {
   case Default:         return "Default";
   case Keyword:         return "Keyword";
   case Transformation:  return "Transformation";
@@ -379,6 +381,7 @@ QString ScadLexer2::description(int style) const
   case Variable:        return "Variable";
   case SpecialVariable: return "SpecialVariable";
   case Comment:         return "Comment";
+  case OtherText:       return "OtherText";
   }
   return {QString::number(style)};
 }
