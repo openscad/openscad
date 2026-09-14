@@ -273,8 +273,7 @@ void ScadLexer2::fold(int start, int end)
 {
   char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
   int lineCurrent = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, start);
-  int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
-                  QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+  int levelPrev = foldLevelAtLine(lineCurrent);
   int levelCurrent = levelPrev;
 
   std::string currKeyword;
@@ -328,14 +327,14 @@ void ScadLexer2::fold(int start, int end)
     }
 
     if (atEOL || (i == (end - 1))) {
-      int lev = levelPrev;
+      auto state = levelPrev;
 
       if (levelCurrent > levelPrev) {
-        lev |= QsciScintilla::SC_FOLDLEVELHEADERFLAG;
+        state |= QsciScintilla::SC_FOLDLEVELHEADERFLAG;
       }
 
-      if (lev != editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent)) {
-        editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, lev);
+      if (state != foldStateAtLine(lineCurrent)) {
+        editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, state);
       }
 
       lineCurrent++;
@@ -343,8 +342,7 @@ void ScadLexer2::fold(int start, int end)
     }
   }
 
-  int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
-                  QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+  const auto flagsNext = foldLevelAtLine(lineCurrent);
   editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
 }
 

@@ -137,6 +137,8 @@ public:
   void styleText(int start, int end) override;
   void autoScroll(int error_pos);
   int getStyleAt(int pos) override;
+  int foldStateAtLine(int line) const { return editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, line); }
+  int foldLevelAtLine(int line) const { return foldStateAtLine(line) & QsciScintilla::SC_FOLDLEVELNUMBERMASK; }
   void fold(int start, int end);
 
   QColor defaultColor(int style) const override;
