@@ -278,6 +278,9 @@ void TestScadLexerFolding::testFolding()
 
   QCOMPARE(lineCount(editor->qsci), expectedDepths.count());
 
+  qInfo() << currentDepths(editor->qsci) << expectedDepths;
+  qInfo() << currentHeaders(editor->qsci) << expectedHeaders;
+
   QCOMPARE(currentDepths(editor->qsci), expectedDepths);
   QCOMPARE(currentHeaders(editor->qsci), expectedHeaders);
 }
