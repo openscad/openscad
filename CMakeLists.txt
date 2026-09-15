@@ -1577,7 +1577,14 @@ file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
   "src/io/*_test.cc"
+  "src/glview/*_test.cc"
 )
+# Non-recursive: a plain `src/*_test.cc` glob would also sweep up src/gui/*_test.cc,
+# which needs Qt/GUI headers and cannot link into a headless build.
+file(GLOB TOP_LEVEL_TEST_SOURCES
+  "src/*_test.cc"
+)
+list(APPEND TEST_SOURCES ${TOP_LEVEL_TEST_SOURCES})
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
 )
