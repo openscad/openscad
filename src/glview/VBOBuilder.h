@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <cstddef>
+#include <string_view>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <utility>
@@ -25,13 +26,25 @@ template <typename T>
 struct vertex_hash {
   std::size_t operator()(T const& vertex) const
   {
-    size_t seed = 0;
-    for (size_t i = 0; i < vertex.size(); ++i) boost::hash_combine(seed, vertex.data()[i]);
-    return seed;
+    // The whole vertex at once: combining byte by byte cost more than everything else in a build.
+    return std::hash<std::string_view>{}(
+      std::string_view(reinterpret_cast<const char *>(vertex.data()), vertex.size()));
   }
 };
 
 using ElementsMap = std::unordered_map<std::vector<GLbyte>, GLuint, vertex_hash<std::vector<GLbyte>>>;
+
+//! The element index of an interleaved vertex, adding it as the next index if the map has not seen
+//! it. Returns the index and whether it was added. Runs once for every vertex of every triangle
+//! whenever a preview's buffers are built, so its cost is most of that build.
+//! A template over the map only so a test can count the hashes it takes: one per vertex.
+template <typename Map = ElementsMap>
+inline std::pair<GLuint, bool> uniqueElementIndex(Map& map, const std::vector<GLbyte>& vertex)
+{
+  // One hash per vertex; the key is only copied when the vertex is new.
+  const auto [entry, added] = map.try_emplace(vertex, static_cast<GLuint>(map.size()));
+  return {entry->second, added};
+}
 
 // Interface class for basic attribute data that will be loaded into VBO
 class IAttributeData
