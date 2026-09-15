@@ -951,15 +951,15 @@ void MainWindow::resetCompileMessageCounts()
 // is the user's choice, and OpenCSG has to be compiled in for preview to be one of the options.
 void MainWindow::selectPreviewViewMode()
 {
+#ifdef ENABLE_OPENCSG
   if (viewActionThrownTogether->isChecked()) {
     viewModeThrownTogether();
   } else {
-#ifdef ENABLE_OPENCSG
     viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
   }
+#else
+  viewModeThrownTogether();
+#endif
 }
 
 void MainWindow::compileEnded()
