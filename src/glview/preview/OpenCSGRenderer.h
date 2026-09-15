@@ -91,8 +91,15 @@ public:
 
   BoundingBox getBoundingBox() const override;
   static void clearCache();
+  //! How many products have had vertex buffers built rather than taken from the cache, ever.
+  static size_t vboBuildsForTest() { return vbo_builds_; }
+  [[nodiscard]] const std::shared_ptr<CSGProducts>& rootProductsForTest() const
+  {
+    return root_products_;
+  }
 
 private:
+  static inline size_t vbo_builds_ = 0;
   void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
                             const ShaderUtils::ShaderInfo *shaderinfo);
 
