@@ -623,6 +623,12 @@ MainWindow::~MainWindow()
     dock->removeEventFilter(this);
   }
 
+  // Same reasoning for the filters we installed on ourselves and on the find panel: destroying a
+  // member such as rubberBandManager reparents its widget, which delivers events here, and
+  // eventFilter() reads members that are already gone.
+  removeEventFilter(this);
+  if (find_panel) find_panel->removeEventFilter(this);
+
   delete this->geometryWorker;
 }
 
