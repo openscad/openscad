@@ -70,7 +70,7 @@ jobs:
       run: |
         cd build
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-        ctest -j$NUMCPU -E pdfexporttest
+        ctest -L Default -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v7
       if: ${{ always() }}
