@@ -231,9 +231,8 @@
      <addaction name="fileActionExportOBJ"/>
      <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
-     <addaction name="fileActionExportWRL"/>
-     <addaction name="fileActionExportAMF"/>
-     <addaction name="fileActionExport3MF"/>
+      <addaction name="fileActionExportWRL"/>
+      <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
@@ -288,6 +287,8 @@
     <addaction name="editActionUnindent"/>
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
+    <addaction name="editActionMoveLineUp"/>
+    <addaction name="editActionMoveLineDown"/>
     <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="editActionToggleBookmark"/>
     <addaction name="editActionNextBookmark"/>
@@ -896,6 +897,22 @@
     <string>Ctrl+Shift+D</string>
    </property>
   </action>
+<action name="editActionMoveLineUp">
+   <property name="text">
+    <string>Mo&amp;ve Line Up</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Up</string>
+   </property>
+  </action>
+  <action name="editActionMoveLineDown">
+   <property name="text">
+    <string>Mo&amp;ve Line Down</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Down</string>
+   </property>
+  </action>
   <action name="editActionNextTab">
    <property name="text">
     <string>Show &amp;Next Tab</string>
@@ -1456,14 +1473,6 @@
    </property>
    <property name="text">
     <string>Export as S&amp;VG...</string>
-   </property>
-  </action>
-  <action name="fileActionExportAMF">
-   <property name="icon">
-    <iconset theme="chokusen-export-amf"/>
-   </property>
-   <property name="text">
-    <string>Export as &amp;AMF...</string>
    </property>
   </action>
   <action name="fileActionExport3MF">

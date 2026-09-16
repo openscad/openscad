@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <memory>
+#include <optional>
 #include <vector>
 #include "core/AIService.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
@@ -73,4 +74,8 @@ private:
   QWidget *diffBannerWidget = nullptr;
   CollapsibleBubble *activeToolBubble = nullptr;
   std::vector<ImageAttachment> pendingAttachments;
+  bool agenticMode = true;          // true = agentic (auto-loop), false = interactive review
+  bool pendingAutoPreview = false;  // fire preview automatically after user accepts diff
+  std::optional<ChatMessage>
+    pendingViewportSnapshot;  // viewport image to inject before next agentic turn
 };

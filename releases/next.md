@@ -28,6 +28,7 @@
     * Support $fn, $fs, $fa #3994
     * TODO: Just for SVG, how is this enforced? Added id= and layer= parameters to SVG import() #4042 #4378
 * Vector swizzle feature #4010
+* Non-ASCII identifiers following Unicode Standard Annex #31, opt-in via --enable=unicode-identifiers #3736
 * Ranges on the form [begin:end] with begin value greater than the end value now yields an empty range #5750
 
 * Bugfixes
@@ -115,12 +116,13 @@
 
 
 **Deprecations:**
-* AMF import/export is deprecated
+* Removed AMF import/export
 * Removed support for OpenGL < 2.1
 * Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
 * Removed deprecated -s and -x cmd-line options #5733
 * Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
 * Removed deprecated child() and assign() modules.
+* Removed deprecated trangles= parameter to polyhedron() #6825
 
 **Misc:**
 

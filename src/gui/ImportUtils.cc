@@ -15,7 +15,6 @@ int Importer::init()
   knownFileExtensions["off"] = importStatement;
   knownFileExtensions["dxf"] = importStatement;
   knownFileExtensions["svg"] = importStatement;
-  knownFileExtensions["amf"] = importStatement;
   knownFileExtensions["dat"] = surfaceStatement;
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;

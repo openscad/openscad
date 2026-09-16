@@ -299,6 +299,16 @@ void TabManager::uncommentSelection()
   editor->uncommentSelection();
 }
 
+void TabManager::moveLineUp()
+{
+  editor->moveLineUp();
+}
+
+void TabManager::moveLineDown()
+{
+  editor->moveLineDown();
+}
+
 void TabManager::toggleBookmark()
 {
   editor->toggleBookmark();
