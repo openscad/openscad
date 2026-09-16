@@ -33,6 +33,8 @@ const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers
                                                         "Enable indexing in vertex object renderers");
 const Feature Feature::ExperimentalTextMetricsFunctions(
   "textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
+const Feature Feature::ExperimentalFnFunction(
+  "fn-function", "Enable fn function returning number of segments in a circle.");
 const Feature Feature::ExperimentalImportFunction(
   "import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalObjectFunction(
