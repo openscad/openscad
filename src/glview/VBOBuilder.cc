@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <optional>
 #include <cstdio>
 
 #include "geometry/linalg.h"
@@ -452,11 +453,13 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const C
 
   for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
     const auto& poly = ps.indices[i];
-    const int32_t color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
-    const auto& color = !force_default_color && color_index >= 0 &&
-                            static_cast<size_t>(color_index) < ps.colors.size() &&
-                            ps.colors[color_index].isValid()
-                          ? ps.colors[color_index]
+    std::optional<size_t> color_index;
+    if (has_colors && i < ps.color_indices.size() && ps.color_indices[i] >= 0) {
+      color_index = static_cast<size_t>(ps.color_indices[i]);
+    }
+    const auto& color = !force_default_color && color_index && *color_index < ps.colors.size() &&
+                            ps.colors[*color_index].isValid()
+                          ? ps.colors[*color_index]
                           : default_color;
     if (poly.size() == 3) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
