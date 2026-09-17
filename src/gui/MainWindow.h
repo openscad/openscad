@@ -388,6 +388,9 @@ public:
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
+  double getDistance() const;
+  double getFov() const;
+  QString getProjection() const;
   std::unordered_map<FileFormat, QAction *> exportMap;
 
 public slots:

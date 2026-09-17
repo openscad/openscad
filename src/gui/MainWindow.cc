@@ -462,14 +462,25 @@ void MainWindow::onTranslateEvent(InputEventTranslate *event)
 
   if (event->viewPortRelative) {
     qglview->translate(event->x, event->y, event->z, event->relative, true);
-  } else {
+  } else if (event->relative) {
     qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
+  } else {
+    // Absolute translations are in the user-facing vpt format used by $vpt,
+    // Viewport Control and the Copy/Paste viewport values, so they must not be
+    // scaled by the zoom factor.
+    qglview->setVpt(event->x, event->y, event->z);
   }
 }
 
 void MainWindow::onRotateEvent(InputEventRotate *event)
 {
-  qglview->rotate(event->x, event->y, event->z, event->relative);
+  if (event->relative) {
+    qglview->rotate(event->x, event->y, event->z, event->relative);
+  } else {
+    // Absolute rotations are in the user-facing vpr format used by $vpr,
+    // Viewport Control and the Copy/Paste viewport values.
+    qglview->setVpr(event->x, event->y, event->z);
+  }
 }
 
 void MainWindow::onRotate2Event(InputEventRotate2 *event)
@@ -1466,20 +1477,29 @@ void MainWindow::on_editActionCopyVPF_triggered()
 
 QList<double> MainWindow::getTranslation() const
 {
-  QList<double> ret;
-  ret.append(qglview->cam.object_trans.x());
-  ret.append(qglview->cam.object_trans.y());
-  ret.append(qglview->cam.object_trans.z());
-  return ret;
+  const auto vpt = qglview->cam.getVpt();
+  return {vpt.x(), vpt.y(), vpt.z()};
 }
 
 QList<double> MainWindow::getRotation() const
 {
-  QList<double> ret;
-  ret.append(qglview->cam.object_rot.x());
-  ret.append(qglview->cam.object_rot.y());
-  ret.append(qglview->cam.object_rot.z());
-  return ret;
+  const auto vpr = qglview->cam.getVpr();
+  return {vpr.x(), vpr.y(), vpr.z()};
+}
+
+double MainWindow::getDistance() const
+{
+  return qglview->cam.zoomValue();
+}
+
+double MainWindow::getFov() const
+{
+  return qglview->cam.fovValue();
+}
+
+QString MainWindow::getProjection() const
+{
+  return qglview->cam.projection == Camera::ProjectionType::ORTHOGONAL ? "ORTHOGONAL" : "PERSPECTIVE";
 }
 
 void MainWindow::hideFind()
