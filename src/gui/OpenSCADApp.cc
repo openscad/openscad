@@ -21,11 +21,27 @@
 
 #include "glview/RenderSettings.h"
 
+namespace {
+
+QtMessageHandler defaultMessageHandler = nullptr;
+
+void logHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg)
+{
+  if (msg.contains("Using Qt multimedia with FFmpeg")) return;
+
+  if (defaultMessageHandler) defaultMessageHandler(type, ctx, msg);
+}
+
+}  // namespace
+
 OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 {
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
 #endif
+
+  // Wire the log filter early in the app creation process
+  defaultMessageHandler = qInstallMessageHandler(logHandler);
 
   // Note: It may be tempting to add more initialization code here, but keep in mind that this is run as
   // part of QApplication initialization, so it's usually better to that in the main gui() function after

@@ -50,7 +50,7 @@
              <string>A6 (105 x 148 mm)</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>a6</string>
+             <string notr="true">a6</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -63,7 +63,7 @@
              <string>A5 (148 x 210 mm)</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>a5</string>
+             <string notr="true">a5</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -79,7 +79,7 @@
              <bool>true</bool>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>a4</string>
+             <string notr="true">a4</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -92,7 +92,7 @@
              <string>A3 (297x420 mm)</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>a3</string>
+             <string notr="true">a3</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -105,7 +105,7 @@
              <string>Letter (8.5x11 in)</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>letter</string>
+             <string notr="true">letter</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -118,7 +118,7 @@
              <string>Legal (8.5x14 in)</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>legal</string>
+             <string notr="true">legal</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -134,7 +134,7 @@
              <string/>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>tabloid</string>
+             <string notr="true">tabloid</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupPaperSize</string>
@@ -314,7 +314,7 @@
              <string>Landscape (Horizontal)</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>landscape</string>
+             <string notr="true">landscape</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupOrientation</string>
@@ -330,7 +330,7 @@
              <string>Auto</string>
             </property>
             <property name="_settings_value" stdset="0">
-             <string>auto</string>
+             <string notr="true">auto</string>
             </property>
             <attribute name="buttonGroup">
              <string notr="true">buttonGroupOrientation</string>
