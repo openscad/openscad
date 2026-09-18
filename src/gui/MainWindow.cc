@@ -947,6 +947,21 @@ void MainWindow::resetCompileMessageCounts()
   this->compileWarnings = 0;
 }
 
+// Preview and thrown-together are the two non-rendered view modes; which one a preview lands in
+// is the user's choice, and OpenCSG has to be compiled in for preview to be one of the options.
+void MainWindow::selectPreviewViewMode()
+{
+#ifdef ENABLE_OPENCSG
+  if (viewActionThrownTogether->isChecked()) {
+    viewModeThrownTogether();
+  } else {
+    viewModePreview();
+  }
+#else
+  viewModeThrownTogether();
+#endif
+}
+
 void MainWindow::compileEnded()
 {
   clearCurrentOutput();
@@ -1851,16 +1866,7 @@ void MainWindow::csgReloadRender()
 {
   if (this->rootNode) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
+  selectPreviewViewMode();
   compileEnded();
 }
 
@@ -1909,16 +1915,7 @@ void MainWindow::csgRender()
 {
   if (this->rootNode) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
+  selectPreviewViewMode();
 
   if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
