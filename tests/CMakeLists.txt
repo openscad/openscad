@@ -299,7 +299,6 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/localfiles-test.scad
-  ${TEST_SCAD_DIR}/misc/localfiles_dir/localfiles-compatibility-test.scad
   ${TEST_SCAD_DIR}/misc/allexpressions.scad
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
@@ -387,6 +386,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
+  ${TEST_SCAD_DIR}/issues/issue7013.scad
 )
 
 list(APPEND ASTDUMP_FILES ${MISC_FILES}
@@ -414,7 +414,6 @@ list(APPEND RENDER_3D_FILES
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/localfiles-test.scad
-  ${TEST_SCAD_DIR}/misc/localfiles_dir/localfiles-compatibility-test.scad
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
   ${TEST_SCAD_DIR}/misc/empty-shape-tests.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
@@ -912,40 +911,45 @@ list(APPEND EXPORT_3MF_LAZY_UNION_TEST_FILES ${TEST_SCAD_DIR}/experimental/lazyu
 
 list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
+list(APPEND EXPORT_PARAM_TEST_FILES
+  ${TEST_SCAD_DIR}/issues/issue6597.scad
+  ${TEST_SCAD_DIR}/issues/issue7013.scad
+)
+
 list(APPEND EXPORT_IMPORT_3D_FILES
-${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
-${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
-${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
-${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
-${TEST_SCAD_DIR}/3D/issues/issue1221.scad
-${TEST_SCAD_DIR}/3D/issues/issue1225.scad
-${TEST_SCAD_DIR}/3D/issues/issue1258.scad
-${TEST_SCAD_DIR}/3D/issues/issue2259.scad
-${TEST_SCAD_DIR}/3D/issues/issue5216.scad
-${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
-${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
-${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
-${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
-${TEST_SCAD_DIR}/misc/preview_variable.scad
+  ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
+  ${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1215.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5216.scad
+  ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
+  ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
+  ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
+  ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
+  ${TEST_SCAD_DIR}/misc/preview_variable.scad
 )
 
 list(APPEND EXPORT_IMPORT_3D_DIFFERENT_FILES
-${TEST_SCAD_DIR}/3D/issues/issue904.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
-${TEST_SCAD_DIR}/misc/internal-cavity.scad
-${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
-${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
+  ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 )
 
 list(APPEND EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES
-${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
 
 #
@@ -991,7 +995,13 @@ add_cmdline_test(export-pov-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES 
 add_cmdline_test(export-pov-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
 add_cmdline_test(export-pov-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
 
-add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES "${TEST_SCAD_DIR}/issues/issue6597.scad" ARGS --export-format param)
+# Export parameters, observe exported files and console output
+add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES ${EXPORT_PARAM_TEST_FILES} ARGS --export-format param)
+add_failing_test(export-param-hardwarnings        SUFFIX json FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS --retval=1 --export-format param --hardwarnings)
+add_failing_test(export-paramset-hardwarnings     SUFFIX json FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS --retval=1 --export-format param --hardwarnings -p ${TEST_SCAD_DIR}/issues/issue7013.json -P Defaults)
+
+add_cmdline_test(echo-param    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS -p ${TEST_SCAD_DIR}/issues/issue7013.json EXPECTEDDIR echo)
+add_cmdline_test(echo-paramset OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS -p ${TEST_SCAD_DIR}/issues/issue7013.json -P Defaults)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
@@ -1279,6 +1289,7 @@ add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/m
 # --enable=unicode-identifiers tests
 #
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --enable=unicode-identifiers)
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS --enable=unicode-identifiers -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
 add_failing_test(parsererrors SUFFIX stl FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1 --enable=unicode-identifiers)
 
 #

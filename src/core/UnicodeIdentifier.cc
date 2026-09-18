@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iomanip>
+#include <ios>
 #include <iterator>
 #include <sstream>
 #include <string>

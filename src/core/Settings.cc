@@ -45,11 +45,11 @@ std::vector<SettingsEntryEnum<std::string>::Item> axisValues()
   output.push_back({"None", "none", _("None")});
   for (size_t i = 0; i < max_axis; ++i) {
     const auto userData = (boost::format("+%d") % (i + 1)).str();
-    const auto name = (boost::format(_("axis-%d")) % i).str();
+    const auto name = (boost::format("axis-%d") % i).str();
     const auto text = (boost::format(_("Axis %d")) % i).str();
     output.push_back({userData, name, text});
     const auto userDataInv = (boost::format("-%d") % (i + 1)).str();
-    const auto nameInv = (boost::format(_("axis-inverted-%d")) % i).str();
+    const auto nameInv = (boost::format("axis-inverted-%d") % i).str();
     const auto textInv = (boost::format(_("Axis %d (inverted)")) % i).str();
     output.push_back({userDataInv, nameInv, textInv});
   }

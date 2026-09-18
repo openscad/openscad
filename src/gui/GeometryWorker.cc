@@ -1,4 +1,4 @@
-#include "gui/CGALWorker.h"
+#include "gui/GeometryWorker.h"
 
 #include <QThread>
 #include <exception>
@@ -18,23 +18,23 @@
 #include "python/python_public.h"
 #endif
 
-CGALWorker::CGALWorker()
+GeometryWorker::GeometryWorker()
 {
   this->tree = nullptr;
   this->thread = new QThread();
   if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
-  connect(this->thread, &QThread::started, this, &CGALWorker::work);
+  connect(this->thread, &QThread::started, this, &GeometryWorker::work);
   moveToThread(this->thread);
 }
 
-CGALWorker::~CGALWorker()
+GeometryWorker::~GeometryWorker()
 {
   this->thread->quit();
   this->thread->wait();
   delete this->thread;
 }
 
-void CGALWorker::start(const Tree& tree)
+void GeometryWorker::start(const Tree& tree)
 {
 #ifdef ENABLE_PYTHON
   python_unlock();
@@ -43,7 +43,7 @@ void CGALWorker::start(const Tree& tree)
   this->thread->start();
 }
 
-void CGALWorker::work()
+void GeometryWorker::work()
 {
   // this is a worker thread: we don't want any exceptions escaping and crashing the app.
 #ifdef ENABLE_PYTHON

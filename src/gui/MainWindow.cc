@@ -118,7 +118,7 @@
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "gui/AboutDialog.h"
-#include "gui/CGALWorker.h"
+#include "gui/GeometryWorker.h"
 #include "gui/ColorList.h"
 #include "gui/Dock.h"
 #include "gui/ai/AIDock.h"
@@ -612,7 +612,18 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  delete this->cgalworker;
+  // The QWidget destructor deletes our child docks, and deleting a QDockWidget
+  // reparents and hides it, which emits Dock::visibilityChanged and sends hide
+  // events through our event filter. Qt only severs connections in ~QObject,
+  // which runs last, so those slots would re-enter this MainWindow after its
+  // own members (exportMap, activeEditor, rubberBandManager, ...) have already
+  // been destroyed. Sever the links here, while the object is still whole.
+  for (auto& [dock, title] : docks) {
+    dock->disconnect(this);
+    dock->removeEventFilter(this);
+  }
+
+  delete this->geometryWorker;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -739,8 +750,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     bool shouldcompiletoplevel = false;
     bool didcompile = false;
 
-    compileErrors = 0;
-    compileWarnings = 0;
+    resetCompileMessageCounts();
 
     this->renderStatistic.start();
 
@@ -929,6 +939,27 @@ void MainWindow::compileDone(bool didchange)
       }
     }
   }
+}
+
+void MainWindow::resetCompileMessageCounts()
+{
+  this->compileErrors = 0;
+  this->compileWarnings = 0;
+}
+
+// Preview and thrown-together are the two non-rendered view modes; which one a preview lands in
+// is the user's choice, and OpenCSG has to be compiled in for preview to be one of the options.
+void MainWindow::selectPreviewViewMode()
+{
+#ifdef ENABLE_OPENCSG
+  if (viewActionThrownTogether->isChecked()) {
+    viewModeThrownTogether();
+  } else {
+    viewModePreview();
+  }
+#else
+  viewModeThrownTogether();
+#endif
 }
 
 void MainWindow::compileEnded()
@@ -1835,16 +1866,7 @@ void MainWindow::csgReloadRender()
 {
   if (this->rootNode) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
+  selectPreviewViewMode();
   compileEnded();
 }
 
@@ -1893,16 +1915,7 @@ void MainWindow::csgRender()
 {
   if (this->rootNode) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
+  selectPreviewViewMode();
 
   if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
@@ -2006,7 +2019,7 @@ void MainWindow::cgalRender()
   if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
   else return;
 
-  this->cgalworker->start(this->tree);
+  this->geometryWorker->start(this->tree);
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
@@ -3491,8 +3504,8 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  this->cgalworker = new CGALWorker();
-  connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
+  this->geometryWorker = new GeometryWorker();
+  connect(this->geometryWorker, &GeometryWorker::done, this, &MainWindow::actionRenderDone);
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);

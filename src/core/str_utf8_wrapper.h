@@ -142,3 +142,39 @@ public:
 private:
   std::shared_ptr<str_utf8_t> str_ptr;
 };
+
+/**
+ * Normalise a UTF-8 string to Normalization Form C.
+ *
+ * Identifiers are normalised to NFC by the lexer, see core/UnicodeIdentifier.h,
+ * so every name reaching the AST is in NFC. Names that enter OpenSCAD by another
+ * route - parameter set files, command line arguments - carry whatever
+ * normalisation their author used, and have to be normalised here before they
+ * are compared against a name from the AST. Canonically equivalent spellings are
+ * indistinguishable on screen, so a mismatch would be silent.
+ *
+ * Input that is not well-formed UTF-8 is returned unchanged; reporting it is the
+ * caller's business, if it is anyone's.
+ */
+inline std::string normalize_utf8_nfc(const std::string& text)
+{
+  // ASCII is always in NFC, so the common case needs neither the conversion nor
+  // the allocation it requires. A string containing a NUL byte is passed through
+  // as well: g_utf8_normalize() hands back a NUL terminated buffer, so
+  // normalising one would truncate it and could collapse two distinct names into
+  // the same lookup key.
+  bool convert = false;
+  for (const char character : text) {
+    const auto byte = static_cast<unsigned char>(character);
+    if (byte == 0) return text;
+    if (byte >= 0x80) convert = true;
+  }
+  if (!convert) return text;
+
+  gchar *normalized = g_utf8_normalize(text.data(), static_cast<gssize>(text.size()), G_NORMALIZE_NFC);
+  if (normalized == nullptr) return text;
+
+  std::string result(normalized);
+  g_free(normalized);
+  return result;
+}
