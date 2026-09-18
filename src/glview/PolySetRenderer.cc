@@ -133,7 +133,8 @@ void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderi
     add_shader_pointers(vbo_builder, shaderinfo);
 
     vbo_builder.writeSurface();
-    vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, enable_barycentric, false);
+    vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, enable_barycentric, false,
+                               schemeFaceColors());
   }
 
   vbo_builder.createInterleavedVBOs();

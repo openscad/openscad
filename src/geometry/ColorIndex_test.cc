@@ -20,9 +20,27 @@ TEST_CASE("color_index_t sentinel semantics", "[ColorIndex]")
     REQUIRE_FALSE(c.index().has_value());
   }
 
+  SECTION("Cutout (-2) and Default (-3) are distinct sentinels a missing value can't be confused with")
+  {
+    color_index_t cutout(color_index_t::kCutout);
+    color_index_t deflt(color_index_t::kDefault);
+
+    REQUIRE(cutout.isCutout());
+    REQUIRE_FALSE(cutout.isDefault());
+    REQUIRE_FALSE(cutout.isNoColor());
+    REQUIRE_FALSE(cutout.index().has_value());
+
+    REQUIRE(deflt.isDefault());
+    REQUIRE_FALSE(deflt.isCutout());
+    REQUIRE_FALSE(deflt.index().has_value());
+
+    REQUIRE(cutout != deflt);
+    REQUIRE(cutout != color_index_t(color_index_t::kNoColor));
+  }
+
   SECTION("a sentinel can never be mistaken for an actual array index")
   {
-    for (int32_t raw : {color_index_t::kNoColor, -7, -100}) {
+    for (int32_t raw : {color_index_t::kNoColor, color_index_t::kCutout, color_index_t::kDefault}) {
       color_index_t c(raw);
       REQUIRE_FALSE(c.index().has_value());
     }

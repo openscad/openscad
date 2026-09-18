@@ -5,8 +5,13 @@
 #include <optional>
 
 // Wraps the raw int32_t value stored in PolySet::color_indices. A non-negative value is an
-// index into PolySet::colors; a negative value is a named sentinel. Today the only sentinel is
-// -1 (NoColor), the long-standing "no specific color" meaning.
+// index into PolySet::colors; a negative value is a named sentinel.
+//
+// -1 (NoColor) is the long-standing "no specific color" meaning. -2 (Cutout) and -3 (Default) tag
+// the faces whose color belongs to the viewer's color scheme rather than to the model -- the
+// inside of a difference(), and any surface with no color of its own. Geometry is cached and
+// outlives the scheme it was built under, so it stores the tag and whoever draws or exports it
+// resolves the color against the scheme in force then.
 //
 // Trivially copyable and the same size as int32_t, so std::vector<color_index_t> has the same
 // layout as std::vector<int32_t> — no change to PolySet's serialization or memory footprint.
@@ -14,6 +19,8 @@ class color_index_t
 {
 public:
   static constexpr int32_t kNoColor = -1;
+  static constexpr int32_t kCutout = -2;
+  static constexpr int32_t kDefault = -3;
 
   constexpr color_index_t() = default;
   // Intentionally implicit: color_indices is populated all over the codebase with plain ints
@@ -23,6 +30,8 @@ public:
 
   constexpr int32_t raw() const { return raw_; }
   constexpr bool isNoColor() const { return raw_ == kNoColor; }
+  constexpr bool isCutout() const { return raw_ == kCutout; }
+  constexpr bool isDefault() const { return raw_ == kDefault; }
 
   // The only way to get an actual index into PolySet::colors: nullopt for every sentinel, so a
   // missing value can't accidentally be used to index the array.

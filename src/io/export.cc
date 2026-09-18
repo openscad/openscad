@@ -51,6 +51,7 @@
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 #include "geometry/linalg.h"
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
@@ -204,23 +205,77 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
   return exportInfo;
 }
 
+namespace {
+
+// Formats that write a color per face. Only these need the tags below resolved, and each of them
+// turns the geometry into a PolySet itself, so converting here costs nothing extra.
+bool readsFaceColors(FileFormat format)
+{
+  return format == FileFormat::OFF || format == FileFormat::WRL || format == FileFormat::POV ||
+         format == FileFormat::OBJ || format == FileFormat::_3MF;
+}
+
+// A PolySet tags faces whose color comes from the viewer's color scheme rather than from the
+// model, because the geometry is cached and outlives any one scheme. An exported file is a
+// snapshot, so the tags are turned back into real colors here, once, against the scheme this
+// export is running under -- every exporter then sees only real indices, as it always has.
+std::shared_ptr<const Geometry> resolveSchemeFaceColors(const std::shared_ptr<const Geometry>& geom,
+                                                        const ColorScheme *scheme)
+{
+  if (!scheme || !geom) return geom;
+  if (const auto list = std::dynamic_pointer_cast<const GeometryList>(geom)) {
+    Geometry::Geometries children;
+    for (const auto& [node, child] : list->getChildren()) {
+      children.emplace_back(node, resolveSchemeFaceColors(child, scheme));
+    }
+    return std::make_shared<GeometryList>(children);
+  }
+  // Not necessarily a PolySet yet: a Manifold or Nef result is converted by the exporter. The tags
+  // only exist on the converted form, so the conversion has to happen before they can be seen.
+  const auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  const auto isTag = [](color_index_t i) { return i.isDefault() || i.isCutout(); };
+  if (!ps) return geom;
+  if (std::none_of(ps->color_indices.begin(), ps->color_indices.end(), isTag)) return geom;
+
+  const auto schemeColors = SchemeFaceColors::from(*scheme);
+  auto resolved = std::make_shared<PolySet>(*ps);
+  color_index_t defaultIndex(color_index_t::kDefault);
+  color_index_t cutoutIndex(color_index_t::kCutout);
+  for (auto& index : resolved->color_indices) {
+    if (!isTag(index)) continue;
+    auto& cached = index.isCutout() ? cutoutIndex : defaultIndex;
+    if (!cached.index()) {
+      const auto& color = index.isCutout() ? schemeColors.cutoutColor : schemeColors.defaultColor;
+      cached = color_index_t(static_cast<int32_t>(resolved->colors.size()));
+      resolved->colors.push_back(color);
+    }
+    index = cached;
+  }
+  return resolved;
+}
+
+}  // namespace
+
 static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
                        const ExportInfo& exportInfo)
 {
+  const auto geom = readsFaceColors(exportInfo.format)
+                      ? resolveSchemeFaceColors(root_geom, exportInfo.colorScheme)
+                      : root_geom;
   switch (exportInfo.format) {
-  case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
-  case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
-  case FileFormat::OBJ:        export_obj(root_geom, output); break;
-  case FileFormat::OFF:        export_off(root_geom, output); break;
-  case FileFormat::WRL:        export_wrl(root_geom, output); break;
-  case FileFormat::_3MF:       export_3mf(root_geom, output, exportInfo); break;
-  case FileFormat::DXF:        export_dxf(root_geom, output); break;
-  case FileFormat::SVG:        export_svg(root_geom, output, exportInfo); break;
-  case FileFormat::PDF:        export_pdf(root_geom, output, exportInfo); break;
-  case FileFormat::POV:        export_pov(root_geom, output, exportInfo); break;
+  case FileFormat::ASCII_STL:  export_stl(geom, output, false); break;
+  case FileFormat::BINARY_STL: export_stl(geom, output, true); break;
+  case FileFormat::OBJ:        export_obj(geom, output); break;
+  case FileFormat::OFF:        export_off(geom, output); break;
+  case FileFormat::WRL:        export_wrl(geom, output); break;
+  case FileFormat::_3MF:       export_3mf(geom, output, exportInfo); break;
+  case FileFormat::DXF:        export_dxf(geom, output); break;
+  case FileFormat::SVG:        export_svg(geom, output, exportInfo); break;
+  case FileFormat::PDF:        export_pdf(geom, output, exportInfo); break;
+  case FileFormat::POV:        export_pov(geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
-  case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
-  case FileFormat::NEF3:   export_nef3(root_geom, output); break;
+  case FileFormat::NEFDBG: export_nefdbg(geom, output); break;
+  case FileFormat::NEF3:   export_nef3(geom, output); break;
 #endif
   default: assert(false && "Unknown file format");
   }
