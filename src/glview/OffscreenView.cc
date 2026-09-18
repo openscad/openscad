@@ -2,6 +2,7 @@
 #include "glview/system-gl.h"
 #include <iostream>
 #include <cstdint>
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -11,6 +12,7 @@
 #include <vector>
 
 #include "io/imageutils.h"
+#include "Feature.h"
 #include "utils/printutils.h"
 #include "glview/OffscreenContextFactory.h"
 #include "glview/fbo.h"
@@ -24,7 +26,7 @@ namespace {
  Capture framebuffer from OpenGL and write it to the given ostream.
  Called by save_framebuffer() from platform-specific code.
 */
-bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output)
+bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output, bool with_alpha)
 {
   if (!ctx) return false;
 
@@ -35,7 +37,21 @@ bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output)
   std::vector<uint8_t> flippedBuffer(samplesPerPixel * ctx->height() * ctx->width());
   flip_image(&pixels[0], flippedBuffer.data(), samplesPerPixel, ctx->width(), ctx->height());
 
-  return write_png(output, flippedBuffer.data(), ctx->width(), ctx->height());
+  if (with_alpha) {
+    // A transparent render always leaves the framebuffer premultiplied; PNG stores straight alpha,
+    // so undo it. Fully opaque and fully transparent pixels need no correction -- the latter carry
+    // no recoverable color at all.
+    for (size_t i = 0; i < flippedBuffer.size(); i += samplesPerPixel) {
+      const unsigned a = flippedBuffer[i + 3];
+      if (a == 0 || a == 255) continue;
+      for (size_t c = 0; c < 3; ++c) {
+        flippedBuffer[i + c] =
+          static_cast<uint8_t>(std::min(255u, (flippedBuffer[i + c] * 255u + a / 2) / a));
+      }
+    }
+  }
+
+  return write_png(output, flippedBuffer.data(), ctx->width(), ctx->height(), with_alpha);
 }
 
 }  // namespace
@@ -115,7 +131,7 @@ bool OffscreenView::save(const char *filename) const
     std::cerr << "Can't open file " << filename << " for writing";
     return false;
   } else {
-    save_framebuffer(this->ctx.get(), fstream);
+    save_framebuffer(this->ctx.get(), fstream, this->transparentBackground());
     fstream.close();
   }
   return true;
@@ -123,7 +139,7 @@ bool OffscreenView::save(const char *filename) const
 
 bool OffscreenView::save(std::ostream& output) const
 {
-  return save_framebuffer(this->ctx.get(), output);
+  return save_framebuffer(this->ctx.get(), output, this->transparentBackground());
 }
 
 std::string OffscreenView::getRendererInfo() const
