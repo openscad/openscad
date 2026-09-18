@@ -1151,26 +1151,32 @@ void MainWindow::compileCSG()
       this->backgroundProducts.reset();
     }
 
-    if (this->rootProduct && (this->rootProduct->size() >
-                              GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-      LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
-      LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
-    }
-#ifdef ENABLE_OPENCSG
-    else {
-      LOG("Normalized tree has %1$d elements!", (this->rootProduct ? this->rootProduct->size() : 0));
-      this->previewRenderer = std::make_shared<OpenCSGRenderer>(
-        this->rootProduct, this->highlightsProducts, this->backgroundProducts);
-    }
-#endif  // ifdef ENABLE_OPENCSG
-    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
-      this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+    createPreviewRenderers();
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
   } catch (const HardWarningException&) {
     exceptionCleanup();
   }
+}
+
+// Builds the renderers a preview draws from, given the current product lists.
+void MainWindow::createPreviewRenderers()
+{
+  if (this->rootProduct && (this->rootProduct->size() >
+                            GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+    LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
+    LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
+  }
+#ifdef ENABLE_OPENCSG
+  else {
+    LOG("Normalized tree has %1$d elements!", (this->rootProduct ? this->rootProduct->size() : 0));
+    this->previewRenderer = std::make_shared<OpenCSGRenderer>(
+      this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+  }
+#endif  // ifdef ENABLE_OPENCSG
+  this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
+    this->rootProduct, this->highlightsProducts, this->backgroundProducts);
 }
 
 void MainWindow::on_fileActionOpen_triggered()
@@ -1915,6 +1921,12 @@ void MainWindow::csgRender()
 {
   if (this->rootNode) compileCSG();
 
+  finishPreview();
+}
+
+// What a preview does once its products exist: view mode, animate dump, compileEnded.
+void MainWindow::finishPreview()
+{
   selectPreviewViewMode();
 
   if (animateWidget->dumpPictures()) {
