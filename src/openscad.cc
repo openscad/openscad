@@ -366,6 +366,16 @@ Camera get_camera(const po::variables_map& vm)
     }
   }
 
+  if (vm.count("fov")) {
+    const auto fov = vm["fov"].as<double>();
+    if (!(fov > 0.0) || !(fov < 180.0)) {
+      LOG("fov needs to be an angle in degrees greater than 0 and less than 180\n");
+      exit(1);
+    }
+    camera.setVpf(fov);
+    camera.fovLocked = true;
+  }
+
   if (vm.count("imgsize")) {
     std::vector<std::string> strs;
     boost::split(strs, vm["imgsize"].as<std::string>(), boost::is_any_of(","));
@@ -896,6 +906,9 @@ int openscad_main(int argc, char **argv)
     ("view", po::value<CommaSeparatedVector>(),
       ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
     ("projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")
+    ("fov", po::value<double>(),
+      "=angle -vertical field of view in degrees when exporting png; with --projection=ortho it "
+      "scales the view rather than the perspective")
     ("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
     ("summary", po::value<std::vector<std::string>>(),
       "enable additional render summary and statistics: all | cache | time | camera | geometry | "
