@@ -107,6 +107,10 @@ QStringList ScadLexer::autoCompletionWordSeparators() const
 
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
+namespace {
+static constexpr std::string_view KEYWORD_FUNCTION = "function";
+}
+
 void Lex::default_rules()
 {
   rules_.push_state("PATH");
@@ -200,12 +204,12 @@ void Lex::finalize_rules()
 #endif
 }
 
-void Lex::lex_results(const std::string& input, int start, LexInterface *const obj)
+void Lex::lex_results(std::string_view input, int start, LexInterface *const obj)
 {
 #if DEBUG_LEXERTL
   std::cout << "called lexer" << std::endl;
 #endif
-  lexertl::smatch results(input.begin(), input.end());
+  lexertl::cmatch results(input.begin(), input.end());
 
   // The editor can ask to only lex from a starting point.
   // This can be faster the lexing the whole text,
@@ -247,10 +251,12 @@ void ScadLexer2::styleText(int start, int end)
 #endif
   if (!editor()) return;
 
-  char *data = new char[end - start + 1];
-  editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, data);
-  QString source(data);
-  const std::string input(source.toStdString());
+  // QVarLengthArray allocates its PreAlloc bytes on stack by default,
+  // instead of using expensive HEAP memory. This gives a measureable
+  // performance gain in hot code paths.
+  auto buffer = QVarLengthArray<char, 8192>(end - start + 1);
+  const auto length = editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, buffer.data());
+  auto input = std::string_view(buffer.data(), length);
 
 #if DEBUG_LEXERTL
   auto pos = editor()->SendScintilla(QsciScintilla::SCI_GETCURRENTPOS);
@@ -259,9 +265,6 @@ void ScadLexer2::styleText(int start, int end)
 
   my_lexer->lex_results(input, start, this);
   this->fold(start, end);
-
-  delete[] data;
-  if (source.isEmpty()) return;
 }
 
 void ScadLexer2::autoScroll(int error_pos)
@@ -270,13 +273,47 @@ void ScadLexer2::autoScroll(int error_pos)
   editor()->SendScintilla(QsciScintilla::SCI_SCROLLCARET);
 }
 
+std::optional<int> ScadLexer2::resolveFunctionDefLevel(int line) const
+{
+  // QVarLengthArray allocates its PreAlloc bytes on stack by default,
+  // instead of using expensive HEAP memory. This gives a measureable
+  // performance gain in hot code paths.
+  auto buffer = QVarLengthArray<char, 512>();
+
+  // Figure out if any of the parent folds is associated with a `function` keyword.
+  // If that's the case we'll have to pick up this parent fold's folding level to
+  // properly fold function definitions. Without this effort we'll miss to be within
+  // a function definition and won't mark lines with their proper folding level,
+  // resulting in rather dissorted folding marks.
+  while (-1 != (line = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDPARENT, line))) {
+    const auto start = editor()->SendScintilla(QsciScintilla::SCI_POSITIONFROMLINE, line);
+    const auto end = editor()->SendScintilla(QsciScintilla::SCI_GETLINEENDPOSITION, line);
+
+    buffer.resize(end - start + 1);
+    auto len = editor()->SendScintilla(QsciScintilla::SCI_GETTEXTRANGE, start, end, buffer.data());
+    auto text = QByteArrayView(buffer.data(), len);
+
+    // Ideally QsciScintilla::SCI_GETFOLDLEVEL would define a namespace for application defined
+    // folding flags. This could give quite a performance gain. Sadly it doesn't and we are back
+    // to expensive substring search.
+    if (text.contains(KEYWORD_FUNCTION)) {
+      return foldLevelAtLine(line);
+    }
+  }
+
+  return std::nullopt;
+}
+
 void ScadLexer2::fold(int start, int end)
 {
   char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
   int lineCurrent = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, start);
-  int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
-                  QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+  int levelPrev = foldLevelAtLine(lineCurrent);
   int levelCurrent = levelPrev;
+
+  auto functionDefLevel = resolveFunctionDefLevel(lineCurrent);
+  std::string currKeyword;
+
   for (int i = start; i < end; i++) {
     char ch = chNext;
     chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, i + 1);
@@ -288,10 +325,27 @@ void ScadLexer2::fold(int start, int end)
 
     bool currStyleIsOtherText = (currStyle == OtherText);
     if (currStyleIsOtherText) {
-      if ((ch == '{') || (ch == '[')) {
+      if ((ch == '{') || (ch == '[') || (ch == '(')) {
         levelCurrent++;
-      } else if ((ch == '}') || (ch == ']')) {
+      } else if ((ch == '}') || (ch == ']') || (ch == ')')) {
         levelCurrent--;
+      } else if ((ch == ';') && functionDefLevel) {
+        // Function definitions cannot contain semicolons, there the first one must close the definition.
+        functionDefLevel.reset();
+        levelCurrent--;
+      }
+    }
+
+    if (!functionDefLevel) {
+      if (currStyle == Keyword) {
+        currKeyword += ch;
+      } else if (!currKeyword.empty()) {
+        if (currKeyword == KEYWORD_FUNCTION) {
+          levelCurrent++;
+          functionDefLevel = levelCurrent;
+        }
+
+        currKeyword.clear();
       }
     }
 
@@ -308,14 +362,14 @@ void ScadLexer2::fold(int start, int end)
     }
 
     if (atEOL || (i == (end - 1))) {
-      int lev = levelPrev;
+      auto state = levelPrev;
 
       if (levelCurrent > levelPrev) {
-        lev |= QsciScintilla::SC_FOLDLEVELHEADERFLAG;
+        state |= QsciScintilla::SC_FOLDLEVELHEADERFLAG;
       }
 
-      if (lev != editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent)) {
-        editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, lev);
+      if (state != foldStateAtLine(lineCurrent)) {
+        editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, state);
       }
 
       lineCurrent++;
@@ -323,8 +377,7 @@ void ScadLexer2::fold(int start, int end)
     }
   }
 
-  int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
-                  QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+  const auto flagsNext = foldLevelAtLine(lineCurrent);
   editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
 }
 
@@ -346,9 +399,9 @@ QColor ScadLexer2::defaultColor(int style) const
   case Keyword:        return Qt::blue;
   case Comment:        return Qt::green;
   case Number:         return Qt::red;
-  case Transformation: return "#f32222";
-  case Boolean:        return "#22f322";
-  case Function:       return "#2222f3";
+  case Transformation: return 0xf32222;
+  case Boolean:        return 0x22f322;
+  case Function:       return 0x2222f3;
   case Model:          return Qt::blue;
   case Default:        return Qt::black;
   }
@@ -357,7 +410,9 @@ QColor ScadLexer2::defaultColor(int style) const
 
 QString ScadLexer2::description(int style) const
 {
-  switch (style) {
+  // The static cast enables the -Wswitch warning on many compilers.
+  // If changed to -Werror=switch it could avoid forgetting cases in the future.
+  switch (static_cast<Style>(style)) {
   case Default:         return "Default";
   case Keyword:         return "Keyword";
   case Transformation:  return "Transformation";
@@ -380,6 +435,7 @@ QString ScadLexer2::description(int style) const
   case Variable:        return "Variable";
   case SpecialVariable: return "SpecialVariable";
   case Comment:         return "Comment";
+  case OtherText:       return "OtherText";
   }
   return {QString::number(style)};
 }

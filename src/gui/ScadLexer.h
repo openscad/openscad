@@ -93,13 +93,13 @@ public:
   void defineRules(const std::string& keyword_list, int id);
   void finalize_rules();
 
-  void lex_results(const std::string& input, int start, LexInterface *const obj);
+  void lex_results(std::string_view input, int start, LexInterface *const obj);
 };
 
 class ScadLexer2 : public QsciLexerCustom, public LexInterface
 {
 public:
-  enum {
+  enum Style {
     Default = 0,
     Keyword = 1,
     Transformation = 2,
@@ -137,6 +137,9 @@ public:
   void styleText(int start, int end) override;
   void autoScroll(int error_pos);
   int getStyleAt(int pos) override;
+  int foldStateAtLine(int line) const { return editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, line); }
+  int foldLevelAtLine(int line) const { return foldStateAtLine(line) & QsciScintilla::SC_FOLDLEVELNUMBERMASK; }
+  std::optional<int> resolveFunctionDefLevel(int line) const;
   void fold(int start, int end);
 
   QColor defaultColor(int style) const override;
