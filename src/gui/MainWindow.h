@@ -461,6 +461,8 @@ private:
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   GeometryWorker *geometryWorker;
+  //! Releases the lock a compile request took, and restarts auto-reload if it is on.
+  void unlockAfterRequest();
   QMutex consolemutex;
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time
