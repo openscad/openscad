@@ -1564,6 +1564,24 @@ add_test(NAME pretty_print_logfile
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print_logfile.py
 )
 
+#############################
+# Animation container export #
+#############################
+
+# End-to-end check that --animate writes a single valid gif/apng/avi. Structural,
+# not golden-file: the compressed bytes vary with the zlib and JPEG versions in use,
+# but the container structure and frame count do not.
+if(OPENSCAD_BINPATH)
+  add_test(NAME animation_export
+    CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_animation_export.py
+      ${OPENSCAD_BINPATH}
+      ${TEST_SCAD_DIR}/misc/animation-export.scad
+      ${CMAKE_CURRENT_BINARY_DIR}/animation_export_output
+  )
+endif()
+
 ####################
 # Extra Debug Info #
 ####################
