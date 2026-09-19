@@ -60,6 +60,7 @@ public:
                          std::shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override = default;
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void setColorScheme(const ColorScheme& cs) override;
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;

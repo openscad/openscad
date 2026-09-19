@@ -1,5 +1,7 @@
 #include "TestMainWindow.h"
 
+#include <QScopeGuard>
+
 #include <QString>
 #include <QStringList>
 #include <QTest>
@@ -128,4 +130,70 @@ void TestMainWindow::checkRepeatPreviewOfManyProductsReusesCachedBuffers()
   QVERIFY2(rebuilt == 0, qPrintable(QStringLiteral("the repeat preview rebuilt %1 of 150 products")
                                       .arg(static_cast<qulonglong>(rebuilt))));
 #endif
+}
+
+// The thrown-together view keeps its own vertex buffers, built the same way and cached the same
+// way, so it goes stale on a scheme change for the same reason the OpenCSG preview did.
+void TestMainWindow::checkChangingColorSchemeRecolorsThrownTogether()
+{
+  restoreWindowInitialState();
+  window->show();
+  QVERIFY(QTest::qWaitForWindowExposed(window));
+  // This test changes the view mode and the color scheme, which are shared with every test that
+  // runs after it -- and with the user's own settings. Put both back on every exit path.
+  const bool thrownTogetherWas = window->viewActionThrownTogether->isChecked();
+  const bool previewWas = window->viewActionPreview->isChecked();
+  auto restore = qScopeGuard([this, thrownTogetherWas, previewWas] {
+    window->viewActionThrownTogether->setChecked(thrownTogetherWas);
+    window->viewActionPreview->setChecked(previewWas);
+    if (previewWas) QMetaObject::invokeMethod(window, "viewModePreview");
+    window->qglview->setColorScheme("Cornfield");
+  });
+  window->qglview->setColorScheme("Cornfield");
+  window->activeEditor->setPlainText("cube(100, center = true);");
+  window->viewActionThrownTogether->setChecked(true);
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionPreview_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->thrownTogetherRenderer != nullptr, 10000);
+  QVERIFY(QMetaObject::invokeMethod(window, "viewModeThrownTogether"));
+  window->qglview->repaint();
+  const auto before = window->qglview->grabFramebuffer();
+  QVERIFY(!before.isNull());
+  const auto cornfield = before.pixelColor(before.width() / 2, before.height() / 2);
+
+  window->qglview->setColorScheme("Starnight");
+  window->qglview->repaint();
+  const auto after = window->qglview->grabFramebuffer();
+  QVERIFY(!after.isNull());
+  const auto starnight = after.pixelColor(after.width() / 2, after.height() / 2);
+
+  QVERIFY2(cornfield != starnight,
+           "Changing schemes left the thrown-together view colored by the previous scheme");
+}
+
+// The rendered (F6) view caches its buffers in PolySetRenderer / CGALRenderer.
+void TestMainWindow::checkChangingColorSchemeRecolorsRender()
+{
+  restoreWindowInitialState();
+  window->show();
+  QVERIFY(QTest::qWaitForWindowExposed(window));
+  auto restoreScheme = qScopeGuard([this] { window->qglview->setColorScheme("Cornfield"); });
+  window->qglview->setColorScheme("Cornfield");
+  window->activeEditor->setPlainText("cube(100, center = true);");
+
+  QVERIFY(QMetaObject::invokeMethod(window, "on_designActionRender_triggered"));
+  QTRY_VERIFY_WITH_TIMEOUT(window->qglview->getRenderer() != nullptr, 60000);
+  window->qglview->repaint();
+  const auto before = window->qglview->grabFramebuffer();
+  QVERIFY(!before.isNull());
+  const auto cornfield = before.pixelColor(before.width() / 2, before.height() / 2);
+
+  window->qglview->setColorScheme("Starnight");
+  window->qglview->repaint();
+  const auto after = window->qglview->grabFramebuffer();
+  QVERIFY(!after.isNull());
+  const auto starnight = after.pixelColor(after.width() / 2, after.height() / 2);
+
+  QVERIFY2(cornfield != starnight,
+           "Changing schemes left the rendered view colored by the previous scheme");
 }
