@@ -3,6 +3,7 @@
 #include "glview/ShaderUtils.h"
 #include "core/Selection.h"
 #include "glview/system-gl.h"
+#include "glview/preview/OpenCSGRenderer.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
@@ -290,6 +291,8 @@ void GLView::enable_opencsg_shaders()
 
 void GLView::initializeGL()
 {
+  OpenCSGRenderer::clearCache();
+
 #ifdef DEBUG
 /*
    // Requires OpenGL 4.3+
