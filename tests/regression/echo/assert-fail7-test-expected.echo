@@ -1,0 +1,2 @@
+ERROR: Assertion 'false' failed: "abort-assert" in file assert-fail7-test.scad, line 1
+TRACE: called by 'assert' in file assert-fail7-test.scad, line 1
