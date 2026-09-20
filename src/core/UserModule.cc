@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -45,6 +46,7 @@
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
+#include "utils/CallTraceStack.h"
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
@@ -55,43 +57,46 @@ static void NOINLINE print_err(std::string name, const Location& loc,
       name);
 }
 
-static void NOINLINE print_trace(EvaluationException& e, const UserModule *mod,
-                                 const std::shared_ptr<const UserModuleContext>& context,
-                                 const AssignmentList& parameters)
+// Helper to build parameter string for trace
+static std::string buildParameterString(const UserModule *mod,
+                                        const std::shared_ptr<const UserModuleContext>& context,
+                                        const AssignmentList& parameters)
 {
   std::stringstream stream;
   if (parameters.size() == 0) {
-    // nothing to do
-  } else if (StackCheck::inst().check()) {
-    stream << "...";
-  } else {
-    bool first = true;
-    for (const auto& assignment : parameters) {
-      if (first) {
-        first = false;
-      } else {
-        stream << ", ";
-      }
-      if (!assignment->getName().empty()) {
-        stream << assignment->getName();
-        stream << " = ";
-      }
-      try {
-        stream << context->lookup_variable(assignment->getName(), Location::NONE);
-      } catch (EvaluationException& e) {
-        stream << "...";
-      }
+    return "";
+  }
+  if (StackCheck::inst().check()) {
+    return "...";
+  }
+
+  bool first = true;
+  for (const auto& assignment : parameters) {
+    if (first) {
+      first = false;
+    } else {
+      stream << ", ";
+    }
+    if (!assignment->getName().empty()) {
+      stream << assignment->getName();
+      stream << " = ";
+    }
+    try {
+      stream << context->lookup_variable(assignment->getName(), Location::NONE);
+    } catch (EvaluationException&) {
+      stream << "...";
     }
   }
-  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
-        mod->name, stream.str());
+  return stream.str();
 }
 
 std::shared_ptr<AbstractNode> UserModule::instantiate(
   const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst,
   const std::shared_ptr<const Context>& context) const
 {
-  if (StackCheck::inst().check()) {
+  const bool stack_check_triggered = StackCheck::inst().check();
+
+  if (stack_check_triggered) {
     print_err(inst->name(), loc, context);
     throw RecursionException::create("module", inst->name(), loc);
     return nullptr;
@@ -101,23 +106,29 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
     defining_context, this, inst->location(), Arguments(inst->arguments, context),
     Children(inst->scope, context))};
+
 #if 0 && DEBUG
   PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
   PRINTDB("%s", module_context->dump());
 #endif
 
-  std::shared_ptr<AbstractNode> ret;
-  try {
-    ret = this->body->instantiateModules(
-      *module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
-  } catch (EvaluationException& e) {
-    if (OpenSCAD::traceUsermoduleParameters) {
-      print_trace(e, this, *module_context, this->parameters);
-      e.traceDepth--;
-    }
-    throw;
+  // Only create trace guard when traceUsermoduleParameters is enabled
+  // This matches the original behavior where trace entries were only added
+  // in the catch block when catching exceptions from body->instantiateModules()
+  // The guard must be AFTER the stack check so we don't add a trace entry for
+  // exceptions thrown by this function itself (stack overflow detection)
+  std::optional<CallTraceStack::Guard> trace_guard;
+  if (OpenSCAD::traceUsermoduleParameters) {
+    trace_guard.emplace(
+      CallTraceStack::Entry::Type::UserModuleCall, this->name, this->loc,
+      std::const_pointer_cast<Context>(std::static_pointer_cast<const Context>(*module_context)));
+    // Compute parameter string immediately while context is still valid
+    trace_guard->setParameterString(buildParameterString(this, *module_context, this->parameters));
   }
-  return ret;
+
+  // No try/catch needed - exception propagates directly, trace is in CallTraceStack
+  return this->body->instantiateModules(
+    *module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
 }
 
 void UserModule::print(std::ostream& stream, const std::string& indent) const

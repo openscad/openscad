@@ -487,6 +487,7 @@ public:
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
+      // Log the error message - this is essential for VectorEchoStringException
       e.LOG(message_group::Error, e.what());
       throw;
     }
@@ -499,6 +500,7 @@ public:
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
+      // Log the error message - this is essential for VectorEchoStringException
       e.LOG(message_group::Error, e.what());
       throw;
     }
