@@ -31,7 +31,7 @@ if(USE_IMAGE_COMPARE_PY)
   if(BUILD_VENV)
     message(STATUS "Setting up testing venv for image comparison")
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
       WORKING_DIRECTORY "${CCBD}"
       OUTPUT_QUIET
       ERROR_QUIET)
@@ -50,7 +50,7 @@ if(USE_IMAGE_COMPARE_PY)
       OUTPUT_QUIET
       ERROR_QUIET)
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" ${IMAGE_COMPARE_OPTS} "-m" "pip" "install" "numpy" "Pillow"
+      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "--trusted-host" "pypi.org" "--trusted-host" "files.pythonhosted.org" "numpy" "Pillow"
       WORKING_DIRECTORY "${CCBD}"
       OUTPUT_QUIET
       ERROR_QUIET)

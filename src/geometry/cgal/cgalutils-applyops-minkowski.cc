@@ -45,9 +45,57 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
           nef = CGALUtils::getNefPolyhedronFromGeometry(operands[i]);
         }
 
-        if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
-        else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);
-        else throw 0;
+        if (ps) {
+          CGALUtils::createPolyhedronFromPolySet(*ps, poly);
+        } else if (nef && !nef->isEmpty()) {
+          CGAL_Nef_polyhedron3 nefcopy(*nef->p3);
+          bool have_polyhedron = false;
+
+          if (nefcopy.is_simple()) {
+            CGALUtils::convertNefToPolyhedron(nefcopy, poly);
+            have_polyhedron = true;
+          } else {
+            PRINTDB("Minkowski: child %d is non-simple Nef, attempting regularization...", i);
+            try {
+              nefcopy.regularization();
+              if (nefcopy.is_simple()) {
+                CGALUtils::convertNefToPolyhedron(nefcopy, poly);
+                have_polyhedron = true;
+              } else if (nefcopy.is_empty()) {
+                PRINTDB("Minkowski: regularization produced empty geometry for child %d", i);
+                poly.clear();
+                have_polyhedron = true;
+              } else {
+                PRINTDB("Minkowski: regularization left child %d non-simple", i);
+              }
+            } catch (const CGAL::Failure_exception& e) {
+              PRINTDB("Minkowski: regularization failed for child %d: %s", i % e.what());
+              throw;
+            } catch (const std::exception& e) {
+              PRINTDB("Minkowski: regularization threw for child %d: %s", i % e.what());
+              throw;
+            }
+          }
+
+          if (!have_polyhedron && !nefcopy.is_empty()) {
+            PRINTDB("Minkowski: tessellating non-simple Nef child %d", i);
+            if (auto tess = CGALUtils::createPolySetFromNefPolyhedron3(nefcopy)) {
+              CGALUtils::createPolyhedronFromPolySet(*tess, poly);
+              have_polyhedron = true;
+            }
+          }
+
+          if (!have_polyhedron) {
+            throw 0;
+          }
+        } else {
+          throw 0;
+        }
+
+        if (poly.size_of_vertices() == 0) {
+          PRINTDB("Minkowski: child %d is empty after preprocessing", i);
+          return std::make_shared<CGALNefGeometry>();
+        }
 
         if ((ps && ps->isConvex()) || (!ps && CGALUtils::is_weakly_convex(poly))) {
           PRINTDB("Minkowski: child %d is convex and %s", i % (ps ? "PolySet" : "Nef"));

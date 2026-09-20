@@ -192,7 +192,9 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {
-    // LOG(message_group::NONE,,e.what()); //please output the message before throwing the exception
+    // Print the call trace from CallTraceStack (collected via RAII guards)
+    e.printCallTrace();
+    CallTraceStack::clear();
     *resulting_file_context = nullptr;
   }
   return node;
