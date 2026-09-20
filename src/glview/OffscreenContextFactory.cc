@@ -11,7 +11,9 @@
 #endif
 #ifdef _WIN32
 #include "glview/offscreen-old/OffscreenContextWGL.h"
+#include "glview/OffscreenContextWGL.h"
 #endif
+
 #ifdef ENABLE_EGL
 #include "glview/offscreen-old/OffscreenContextEGL.h"
 #include "glview/OffscreenContextEGL.h"
@@ -41,8 +43,9 @@ const char *defaultProvider()
   return "glx";
 #endif
 #ifdef _WIN32
-  return "wgl-old";
+  return "wgl";
 #endif
+
 #endif  // NULLGL
 }
 
@@ -102,8 +105,12 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider,
     }
     return offscreen_old::CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion,
                                                     attrib.minorGLVersion, attrib.compatibilityProfile);
+  } else if (provider == "wgl") {
+    return CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion,
+                                     attrib.minorGLVersion, attrib.compatibilityProfile);
   } else
 #endif
+
 #endif  // NULLGL
   LOG("GL context provider '%1$s' not found", provider);
   return nullptr;

@@ -6,8 +6,7 @@
 
 #include "glview/OffscreenContext.h"
 
-std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
+std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(
     size_t width, size_t height, size_t majorGLVersion, 
-    size_t minorGLVersion, bool gles, bool compatibilityProfile,
-    const std::string& drmNode = "");
+    size_t minorGLVersion, bool compatibilityProfile);
 

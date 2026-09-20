@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "glview/system-gl.h"
+#include "glview/OpenGLContext.h"
 
 class FBO
 {
@@ -24,7 +25,7 @@ private:
 
   int width_ = 0;
   int height_ = 0;
-  bool use_ext_;
+  bool use_ext_ = false;
   GLuint fbo_id_ = 0;
   GLuint old_fbo_id_ = 0;
   GLuint renderbuf_id_ = 0;
@@ -33,3 +34,8 @@ private:
 };
 
 std::unique_ptr<FBO> createFBO(int width, int height);
+
+inline std::unique_ptr<FBO> createFBO(const OpenGLContext &ctx) {
+  return createFBO(ctx.width(), ctx.height());
+}
+
