@@ -6,6 +6,7 @@
 #include <string>
 
 #include "glview/system-gl.h"
+#include "utils/printutils.h"
 
 namespace {
 
@@ -39,10 +40,8 @@ bool checkFBOStatus()
   default: break;
   }
 
-  std::cerr << "glCheckFramebufferStatus(): ";
-  if (statusString) std::cerr << statusString;
-  else std::cerr << "Unknown status " << status;
-  std::cerr << std::endl;
+  LOG(message_group::Error, "glCheckFramebufferStatus(): %1$s",
+      statusString ? statusString : "Unknown status " + std::to_string(status));
   return false;
 }
 
@@ -55,7 +54,7 @@ std::unique_ptr<FBO> createFBO(int width, int height)
   } else if (hasGLExtension(EXT_framebuffer_object)) {
     return std::make_unique<FBO>(width, height, /*useEXT*/ true);
   } else {
-    std::cerr << "Framebuffer Objects not supported" << std::endl;
+    LOG(message_group::Error, "Framebuffer Objects not supported");
     return nullptr;
   }
 }
@@ -78,7 +77,7 @@ FBO::FBO(int width, int height, bool useEXT) : width_(width), height_(height), u
                                      this->renderbuf_id_));
 
   if (!checkFBOStatus()) {
-    std::cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
+    LOG(message_group::Error, "Problem with OpenGL framebuffer after specifying color render buffer.");
     return;
   }
 
@@ -90,7 +89,7 @@ FBO::FBO(int width, int height, bool useEXT) : width_(width), height_(height), u
                                      this->depthbuf_id_));
 
   if (!checkFBOStatus()) {
-    std::cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
+    LOG(message_group::Error, "Problem with OpenGL framebuffer after specifying depth render buffer.");
     return;
   }
 
