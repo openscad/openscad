@@ -612,16 +612,6 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  // Child widgets (such as QDockWidgets) can emit signals (e.g. visibilityChanged)
-  // or trigger event filters during their destruction in QWidget::~QWidget()
-  // (via deleteChildren()). Since MainWindow members have already been destroyed by
-  // the time QWidget's destructor runs, invoking MainWindow slots/methods at that
-  // point leads to crashes. Disconnect all child signals and event filters here before
-  // base class destruction begins.
-  for (QObject *child : findChildren<QObject *>()) {
-    child->removeEventFilter(this);
-    child->disconnect(this);
-  }
   // The QWidget destructor deletes our child docks, and deleting a QDockWidget
   // reparents and hides it, which emits Dock::visibilityChanged and sends hide
   // events through our event filter. Qt only severs connections in ~QObject,
@@ -2951,7 +2941,6 @@ void MainWindow::showLink(const QString& link)
 
 void MainWindow::onEditorDockVisibilityChanged(bool isVisible)
 {
-  if (isClosing) return;
   auto e = (ScintillaEditor *)this->activeEditor;
   if (isVisible) {
     e->qsci->setReadOnly(false);
@@ -2964,10 +2953,8 @@ void MainWindow::onEditorDockVisibilityChanged(bool isVisible)
     // (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
     // may eventually get resolved at which point this bit and the stuff in
     // the else should be removed. Currently known to affect 5.14.1 and 5.15.0
-    if (e && e->qsci) {
-      e->qsci->setReadOnly(true);
-      e->setupAutoComplete(true);
-    }
+    e->qsci->setReadOnly(true);
+    e->setupAutoComplete(true);
   }
   updateExportActions();
 }
@@ -3814,7 +3801,7 @@ void MainWindow::setupDocks()
   connect(windowActionJumpTo, &QAction::triggered, this, &MainWindow::onNavigationOpenContextMenu);
 
   // Create the popup menu to navigate between the docks by keyboard.
-  navigationMenu = new QMenu(this);
+  navigationMenu = new QMenu();
 
   // Create the docks, connect corresponding action and install menu entries
   for (auto& [dock, title] : docks) {
