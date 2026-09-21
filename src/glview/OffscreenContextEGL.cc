@@ -224,12 +224,14 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(eglVersion) << "." << GLAD_VERSION_MINOR(eglVersion)
             << " after reload" << std::endl;
 
+#ifdef EGL_MESA_query_driver
   if (eglGetDisplayDriverName) {
     const char *name = eglGetDisplayDriverName(ctx->eglDisplay);
     if (name) {
       std::cout << "Got EGL display with driver name: " << name << std::endl;
     }
   }
+#endif
 
   EGLint numConfigs;
   EGLConfig config;
