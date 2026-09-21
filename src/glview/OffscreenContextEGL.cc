@@ -9,7 +9,9 @@
 #ifdef HAS_GBM
 #include <gbm.h>
 #endif
+#define GLAD_EGL_IMPLEMENTATION
 #include "glad/egl.h"
+
 #include "GL/gl.h"
 #include "utils/printutils.h"
 
