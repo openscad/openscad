@@ -134,6 +134,5 @@ inline void glColor4fv(float *c)
 #define hasGLESVersion2() (GLAD_GL_ES_VERSION_2_0 != 0)
 #endif
 
-
 std::string gl_dump();
 std::string gl_extensions_dump();
