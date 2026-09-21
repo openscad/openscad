@@ -41,12 +41,9 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
           return false;
         });
       } else if (const auto *ps = dynamic_cast<const PolySet *>(chgeom.get())) {
-        pts.reserve(pts.size() + ps->indices.size() * 3);
-        for (const auto& p : ps->indices) {
-          for (const auto& ind : p) {
-            auto& v = ps->vertices[ind];
-            pts.push_back({v[0], v[1], v[2]});
-          }
+        pts.reserve(pts.size() + ps->vertices.size());
+        for (const auto& v : ps->vertices) {
+          pts.push_back({v[0], v[1], v[2]});
         }
       } else {
         auto chN = createManifoldFromGeometry(chgeom);
