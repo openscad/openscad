@@ -189,8 +189,8 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(size_t width, size_t
   // we also accept GLX < 1.3 as long as glXGetVisualFromFBConfig() exists.
   // FIXME: Figure out if this is still relevant with GLAD, as we may want to check functions anyway?
   if (glxMajor == 1 && glxMinor <= 2 && glXGetVisualFromFBConfig == nullptr) {
-    std::cerr << "Error: GLX version 1.3 functions missing. "
-              << "Your GLX version: " << glxMajor << "." << glxMinor << std::endl;
+    std::cerr << "Error: GLX version 1.3 functions missing. " << "Your GLX version: " << glxMajor << "."
+              << glxMinor << std::endl;
     return nullptr;
   }
 
