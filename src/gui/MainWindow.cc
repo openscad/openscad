@@ -4075,6 +4075,29 @@ void MainWindow::restoreWindowState()
 #endif  // ifdef Q_OS_WIN
   }
 
+  restoreToolBarVisibility();
+}
+
+/**
+  Restore the visibility of the editor and 3D view tool bars.
+
+  Both tool bars are plain child widgets of the editor dock and of the central
+  widget, so they are not covered by the state saved by QMainWindow::saveState().
+  Their visibility is stored separately by the corresponding view actions and
+  has to be applied explicitly.
+ */
+void MainWindow::restoreToolBarVisibility()
+{
+  const QSettingsCached settings;
+  const auto hideEditorToolBar = settings.value("view/hideEditorToolbar").toBool();
+  const auto hide3DViewToolBar = settings.value("view/hide3DViewToolbar").toBool();
+
+  // QAction::setChecked() only emits toggled() when the state actually changes,
+  // therefore the visibility is applied explicitly instead of relying on the slots.
+  viewActionHideEditorToolBar->setChecked(hideEditorToolBar);
+  viewActionHide3DViewToolBar->setChecked(hide3DViewToolBar);
+  editortoolbar->setVisible(!hideEditorToolBar);
+  viewerToolBar->setVisible(!hide3DViewToolBar);
 }
 
 void MainWindow::openRemainingFiles(const QStringList& filenames)
