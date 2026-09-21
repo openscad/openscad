@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 
-class OpenGLContext {
+class OpenGLContext
+{
 protected:
   uint32_t width_;
   uint32_t height_;
@@ -20,4 +21,3 @@ public:
   virtual std::string getInfo() const = 0;
   std::vector<uint8_t> getFramebuffer() const;
 };
-

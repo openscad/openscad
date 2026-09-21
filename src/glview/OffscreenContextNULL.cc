@@ -9,18 +9,15 @@
 
 #include "glview/OffscreenContext.h"
 
-class OffscreenContextNULL : public OffscreenContext {
+class OffscreenContextNULL : public OffscreenContext
+{
 public:
   OffscreenContextNULL() : OffscreenContext(0, 0) {}
   ~OffscreenContextNULL() override = default;
 
-  std::string getInfo() const override {
-    return "GL context creator: NULLGL\n";
-  }
+  std::string getInfo() const override { return "GL context creator: NULLGL\n"; }
 
-  bool makeCurrent() const override {
-    return true;
-  }
+  bool makeCurrent() const override { return true; }
 };
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextNULL()

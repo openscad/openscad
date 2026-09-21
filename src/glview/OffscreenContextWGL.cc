@@ -17,52 +17,50 @@
 #include "glview/OffscreenContext.h"
 #include "utils/scope_guard.hpp"
 
-
-class OffscreenContextWGL : public OffscreenContext {
-
+class OffscreenContextWGL : public OffscreenContext
+{
 public:
   HWND window = nullptr;
   HDC devContext = nullptr;
   HGLRC renderContext = nullptr;
 
   OffscreenContextWGL(int width, int height) : OffscreenContext(width, height) {}
-  ~OffscreenContextWGL() {
+  ~OffscreenContextWGL()
+  {
     wglMakeCurrent(nullptr, nullptr);
     if (this->renderContext) wglDeleteContext(this->renderContext);
     if (this->devContext) ReleaseDC(this->window, this->devContext);
     if (this->window) DestroyWindow(this->window);
   }
 
-  std::string getInfo() const override {
+  std::string getInfo() const override
+  {
     std::ostringstream result;
     result << "GL context creator: WGL\n";
     return result.str();
   }
 
-  bool makeCurrent() const override {
-    return wglMakeCurrent(this->devContext, this->renderContext);
-  }
+  bool makeCurrent() const override { return wglMakeCurrent(this->devContext, this->renderContext); }
 };
 
-
 std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(size_t width, size_t height,
-							    size_t majorGLVersion, size_t minorGLVersion, bool compatibilityProfile)
+                                                            size_t majorGLVersion, size_t minorGLVersion,
+                                                            bool compatibilityProfile)
 {
   auto ctx = std::make_shared<OffscreenContextWGL>(width, height);
 
-  WNDCLASSEX wndClass = {
-    .cbSize = sizeof(WNDCLASSEX),
-    .style = CS_OWNDC,
-    .lpfnWndProc = &DefWindowProc,
-    .hInstance = GetModuleHandle(nullptr),
-    .lpszClassName = "OffscreenClass"
-  };
+  WNDCLASSEX wndClass = {.cbSize = sizeof(WNDCLASSEX),
+                         .style = CS_OWNDC,
+                         .lpfnWndProc = &DefWindowProc,
+                         .hInstance = GetModuleHandle(nullptr),
+                         .lpszClassName = "OffscreenClass"};
   // FIXME: Check for ERROR_CLASS_ALREADY_EXISTS ?
   RegisterClassEx(&wndClass);
   // Create the window. Position and size it.
   // Style the window and remove the caption bar (WS_POPUP)
-  ctx->window = CreateWindowEx(0, "OffscreenClass", "offscreen", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
-    CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, 0, 0);
+  ctx->window =
+    CreateWindowEx(0, "OffscreenClass", "offscreen", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
+                   CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, 0, 0);
   if (!ctx->window) {
     std::cerr << "CreateWindowEx() failed: " << GetLastError() << std::endl;
     return nullptr;
@@ -81,8 +79,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(size_t width, size_t
     .iPixelType = PFD_TYPE_RGBA,
     .cColorBits = 32,
     .cDepthBits = 24,
-    .cStencilBits = 8
-  };
+    .cStencilBits = 8};
 
   int pixelFormat = ChoosePixelFormat(ctx->devContext, &pixelFormatDesc);
   if (!pixelFormat) {
@@ -112,13 +109,14 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(size_t width, size_t
   gladLoaderLoadWGL(ctx->devContext);
 
   if (wglCreateContextAttribsARB) {
-    int attributes[] = {
-      WGL_CONTEXT_MAJOR_VERSION_ARB, static_cast<int>(majorGLVersion),
-      WGL_CONTEXT_MINOR_VERSION_ARB, static_cast<int>(minorGLVersion),
-      WGL_CONTEXT_PROFILE_MASK_ARB,
-      compatibilityProfile ? WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB : WGL_CONTEXT_CORE_PROFILE_BIT_ARB,         
-      0
-    };
+    int attributes[] = {WGL_CONTEXT_MAJOR_VERSION_ARB,
+                        static_cast<int>(majorGLVersion),
+                        WGL_CONTEXT_MINOR_VERSION_ARB,
+                        static_cast<int>(minorGLVersion),
+                        WGL_CONTEXT_PROFILE_MASK_ARB,
+                        compatibilityProfile ? WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB
+                                             : WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+                        0};
     ctx->renderContext = wglCreateContextAttribsARB(ctx->devContext, nullptr, attributes);
     if (ctx->renderContext == nullptr) {
       std::cerr << "wglCreateContextAttribsARB() failed: " << GetLastError() << std::endl;
@@ -126,7 +124,8 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(size_t width, size_t
     }
   } else {
     if (majorGLVersion > 2) {
-      std::cerr << "wglCreateContextAttribsARB() not available, cannot create modern OpenGL context" << std::endl;
+      std::cerr << "wglCreateContextAttribsARB() not available, cannot create modern OpenGL context"
+                << std::endl;
       return nullptr;
     }
     // Fall back to the legacy context
@@ -136,5 +135,3 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(size_t width, size_t
 
   return ctx;
 }
-
-

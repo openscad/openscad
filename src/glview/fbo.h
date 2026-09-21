@@ -35,7 +35,7 @@ private:
 
 std::unique_ptr<FBO> createFBO(int width, int height);
 
-inline std::unique_ptr<FBO> createFBO(const OpenGLContext &ctx) {
+inline std::unique_ptr<FBO> createFBO(const OpenGLContext& ctx)
+{
   return createFBO(ctx.width(), ctx.height());
 }
-

@@ -14,45 +14,46 @@
 
 namespace {
 
-#define CASE_STR( value ) case value: return #value; 
-const char* eglGetErrorString( EGLint error )
+#define CASE_STR(value) \
+  case value: return #value;
+const char *eglGetErrorString(EGLint error)
 {
-    switch( error )
-    {
-    CASE_STR( EGL_SUCCESS             )
-    CASE_STR( EGL_NOT_INITIALIZED     )
-    CASE_STR( EGL_BAD_ACCESS          )
-    CASE_STR( EGL_BAD_ALLOC           )
-    CASE_STR( EGL_BAD_ATTRIBUTE       )
-    CASE_STR( EGL_BAD_CONTEXT         )
-    CASE_STR( EGL_BAD_CONFIG          )
-    CASE_STR( EGL_BAD_CURRENT_SURFACE )
-    CASE_STR( EGL_BAD_DISPLAY         )
-    CASE_STR( EGL_BAD_SURFACE         )
-    CASE_STR( EGL_BAD_MATCH           )
-    CASE_STR( EGL_BAD_PARAMETER       )
-    CASE_STR( EGL_BAD_NATIVE_PIXMAP   )
-    CASE_STR( EGL_BAD_NATIVE_WINDOW   )
-    CASE_STR( EGL_CONTEXT_LOST        )
-    default: return "Unknown";
-    }
+  switch (error) {
+    CASE_STR(EGL_SUCCESS)
+    CASE_STR(EGL_NOT_INITIALIZED)
+    CASE_STR(EGL_BAD_ACCESS)
+    CASE_STR(EGL_BAD_ALLOC)
+    CASE_STR(EGL_BAD_ATTRIBUTE)
+    CASE_STR(EGL_BAD_CONTEXT)
+    CASE_STR(EGL_BAD_CONFIG)
+    CASE_STR(EGL_BAD_CURRENT_SURFACE)
+    CASE_STR(EGL_BAD_DISPLAY)
+    CASE_STR(EGL_BAD_SURFACE)
+    CASE_STR(EGL_BAD_MATCH)
+    CASE_STR(EGL_BAD_PARAMETER)
+    CASE_STR(EGL_BAD_NATIVE_PIXMAP)
+    CASE_STR(EGL_BAD_NATIVE_WINDOW)
+    CASE_STR(EGL_CONTEXT_LOST)
+  default: return "Unknown";
+  }
 }
 #undef CASE_STR
 
-} // namespace
+}  // namespace
 
-class OffscreenContextEGL : public OffscreenContext {
-
+class OffscreenContextEGL : public OffscreenContext
+{
 public:
   EGLDisplay eglDisplay;
   EGLSurface eglSurface;
   EGLContext eglContext;
 
-// If eglDisplay is backed by a GBM device.
+  // If eglDisplay is backed by a GBM device.
   struct gbm_device *gbmDevice = nullptr;
 
   OffscreenContextEGL(int width, int height) : OffscreenContext(width, height) {}
-  ~OffscreenContextEGL() {
+  ~OffscreenContextEGL()
+  {
     if (this->eglSurface) eglDestroySurface(this->eglDisplay, this->eglSurface);
     if (this->eglDisplay) eglTerminate(this->eglDisplay);
 #ifdef HAS_GBM
@@ -60,7 +61,8 @@ public:
 #endif
   }
 
-  std::string getInfo() const override {
+  std::string getInfo() const override
+  {
     std::ostringstream result;
     const char *eglVersion = eglQueryString(this->eglDisplay, EGL_VERSION);
     result << "GL context creator: EGL\n"
@@ -68,12 +70,14 @@ public:
     return result.str();
   }
 
-  bool makeCurrent() const override {
+  bool makeCurrent() const override
+  {
     return eglMakeCurrent(this->eglDisplay, this->eglSurface, this->eglSurface, this->eglContext);
   }
 
 #ifdef HAS_GBM
-  void getDisplayFromDrmNode(const std::string& drmNode) {
+  void getDisplayFromDrmNode(const std::string& drmNode)
+  {
     this->eglDisplay = EGL_NO_DISPLAY;
     const int fd = open(drmNode.c_str(), O_RDWR);
     if (fd < 0) {
@@ -92,7 +96,8 @@ public:
   }
 #endif
 
-  void findPlatformDisplay() {
+  void findPlatformDisplay()
+  {
     std::set<std::string> clientExtensions;
     std::string ext = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     std::cout << ext << std::endl;
@@ -113,34 +118,30 @@ public:
       EGLint numDevices = 0;
       eglQueryDevicesEXT(1, &eglDevice, &numDevices);
       if (numDevices > 0) {
-      // FIXME: Attribs
-        this->eglDisplay =  eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevice, nullptr);
+        // FIXME: Attribs
+        this->eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevice, nullptr);
       }
     }
   }
 
-  void createSurface(const EGLConfig& config,size_t width, size_t height) {
+  void createSurface(const EGLConfig& config, size_t width, size_t height)
+  {
     if (this->gbmDevice) {
 #ifdef HAS_GBM
-// FIXME: For some reason, we have to pass 0 as flags for the nvidia GBM backend
-      const auto gbmSurface =
-        gbm_surface_create(this->gbmDevice, width, height,
-                           GBM_FORMAT_ARGB8888, 
-                           0); // GBM_BO_USE_RENDERING
+      // FIXME: For some reason, we have to pass 0 as flags for the nvidia GBM backend
+      const auto gbmSurface = gbm_surface_create(this->gbmDevice, width, height, GBM_FORMAT_ARGB8888,
+                                                 0);  // GBM_BO_USE_RENDERING
       if (!gbmSurface) {
         std::cerr << "Unable to create GBM surface" << std::endl;
         this->eglSurface = EGL_NO_SURFACE;
         return;
       }
 
-      this->eglSurface =
-        eglCreatePlatformWindowSurface(this->eglDisplay, config, gbmSurface, nullptr);
+      this->eglSurface = eglCreatePlatformWindowSurface(this->eglDisplay, config, gbmSurface, nullptr);
 #endif
     } else {
       const EGLint pbufferAttribs[] = {
-        EGL_WIDTH, static_cast<EGLint>(width),
-        EGL_HEIGHT, static_cast<EGLint>(height),
-        EGL_NONE,
+        EGL_WIDTH, static_cast<EGLint>(width), EGL_HEIGHT, static_cast<EGLint>(height), EGL_NONE,
       };
       this->eglSurface = eglCreatePbufferSurface(this->eglDisplay, config, pbufferAttribs);
     }
@@ -152,8 +153,9 @@ public:
 // OpenGL compatibility major.minor
 // OpenGL ES major.minor
 std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t height,
-							       size_t majorGLVersion, size_t minorGLVersion, bool gles, bool compatibilityProfile,
-                 const std::string &drmNode)
+                                                            size_t majorGLVersion, size_t minorGLVersion,
+                                                            bool gles, bool compatibilityProfile,
+                                                            const std::string& drmNode)
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
@@ -163,8 +165,8 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     return nullptr;
   }
   std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(initialEglVersion) << "."
-    << GLAD_VERSION_MINOR(initialEglVersion) << " on first load." << std::endl;
-  
+            << GLAD_VERSION_MINOR(initialEglVersion) << " on first load." << std::endl;
+
   EGLint conformant;
   if (!gles) conformant = EGL_OPENGL_BIT;
   else if (majorGLVersion >= 3) conformant = EGL_OPENGL_ES3_BIT;
@@ -174,17 +176,16 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   const EGLint configAttribs[] = {
     // For some reason, we have to request a "window" surface when using GBM, although
     // we're rendering offscreen
-    EGL_SURFACE_TYPE, drmNode.empty() ? EGL_PBUFFER_BIT : EGL_WINDOW_BIT,
-    EGL_BLUE_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8,
-    EGL_ALPHA_SIZE, 8,
-    EGL_DEPTH_SIZE, 24,
-    EGL_STENCIL_SIZE, 8,
-    EGL_CONFORMANT, conformant,
+    EGL_SURFACE_TYPE,  drmNode.empty() ? EGL_PBUFFER_BIT : EGL_WINDOW_BIT,
+    EGL_BLUE_SIZE,     8,
+    EGL_GREEN_SIZE,    8,
+    EGL_RED_SIZE,      8,
+    EGL_ALPHA_SIZE,    8,
+    EGL_DEPTH_SIZE,    24,
+    EGL_STENCIL_SIZE,  8,
+    EGL_CONFORMANT,    conformant,
     EGL_CONFIG_CAVEAT, EGL_NONE,
-    EGL_NONE
-  };
+    EGL_NONE};
 
   if (!drmNode.empty()) {
 #ifdef HAS_GBM
@@ -212,14 +213,16 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     return nullptr;
   }
 
-  std::cout << "EGL Version: " << major << "." << minor << " (" << eglQueryString(ctx->eglDisplay, EGL_VENDOR) << ")" << std::endl;
+  std::cout << "EGL Version: " << major << "." << minor << " ("
+            << eglQueryString(ctx->eglDisplay, EGL_VENDOR) << ")" << std::endl;
 
   const auto eglVersion = gladLoaderLoadEGL(ctx->eglDisplay);
   if (!eglVersion) {
     std::cerr << "gladLoaderLoadEGL(eglDisplay): Unable to reload EGL" << std::endl;
     return nullptr;
   }
-  std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(eglVersion) << "." << GLAD_VERSION_MINOR(eglVersion) << " after reload" << std::endl;
+  std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(eglVersion) << "." << GLAD_VERSION_MINOR(eglVersion)
+            << " after reload" << std::endl;
 
   if (eglGetDisplayDriverName) {
     const char *name = eglGetDisplayDriverName(ctx->eglDisplay);
@@ -240,19 +243,22 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     return nullptr;
   }
 
-  ctx->createSurface(config, width, height);    
+  ctx->createSurface(config, width, height);
   if (ctx->eglSurface == EGL_NO_SURFACE) {
     std::cerr << "Unable to create EGL surface (eglError: " << eglGetError() << ")" << std::endl;
     return nullptr;
   }
 
   std::vector<EGLint> ctxattr = {
-    EGL_CONTEXT_MAJOR_VERSION, static_cast<EGLint>(majorGLVersion),
-    EGL_CONTEXT_MINOR_VERSION, static_cast<EGLint>(minorGLVersion),
+    EGL_CONTEXT_MAJOR_VERSION,
+    static_cast<EGLint>(majorGLVersion),
+    EGL_CONTEXT_MINOR_VERSION,
+    static_cast<EGLint>(minorGLVersion),
   };
   if (!gles) {
     ctxattr.push_back(EGL_CONTEXT_OPENGL_PROFILE_MASK);
-    ctxattr.push_back(compatibilityProfile ? EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT : EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT);
+    ctxattr.push_back(compatibilityProfile ? EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT
+                                           : EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT);
   }
   ctxattr.push_back(EGL_NONE);
   ctx->eglContext = eglCreateContext(ctx->eglDisplay, config, EGL_NO_CONTEXT, ctxattr.data());
