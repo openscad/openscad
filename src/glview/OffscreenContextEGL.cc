@@ -160,9 +160,9 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
-  int initialEglVersion = gladLoaderLoadEGL(NULL);
+  int initialEglVersion = gladLoaderLoadEGL(nullptr);
   if (!initialEglVersion) {
-    LOG("gladLoaderLoadEGL(NULL): Unable to load EGL");
+    LOG("gladLoaderLoadEGL(nullptr): Unable to load EGL");
     return nullptr;
   }
   PRINTDB("GLAD: Loaded EGL %d.%d on first load",

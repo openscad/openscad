@@ -58,14 +58,14 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextCGL(size_t width, size_t
     kCGLPFADoubleBuffer,        kCGLPFASampleBuffers,
     (CGLPixelFormatAttribute)1, kCGLPFASamples,
     (CGLPixelFormatAttribute)4, (CGLPixelFormatAttribute)0};
-  CGLPixelFormatObj pixelFormat = NULL;
+  CGLPixelFormatObj pixelFormat = nullptr;
   GLint numPixelFormats = 0;
   const auto status = CGLChoosePixelFormat(attributes, &pixelFormat, &numPixelFormats);
   if (status != kCGLNoError) {
     LOG("CGLChoosePixelFormat() failed: %1$s (%2$d)", CGLErrorString(status), static_cast<int>(status));
     return nullptr;
   }
-  CGLCreateContext(pixelFormat, NULL, &ctx->cglContext);
+  CGLCreateContext(pixelFormat, nullptr, &ctx->cglContext);
   CGLDestroyPixelFormat(pixelFormat);
 
   return ctx;
