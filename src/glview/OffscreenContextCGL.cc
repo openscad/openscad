@@ -1,13 +1,13 @@
 #include "glview/OffscreenContextCGL.h"
 
 #include <cstddef>
-#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
 
 #include "glview/OffscreenContext.h"
 #include "glview/system-gl.h"
+#include "utils/printutils.h"
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/OpenGL.h>
 
@@ -17,22 +17,23 @@ public:
   OffscreenContextCGL(int width, int height) : OffscreenContext(width, height) {}
   ~OffscreenContextCGL()
   {
-    if (this->cglContext) {
-      CGLDestroyContext(this->cglContext);
+    if (cglContext) {
+      CGLDestroyContext(cglContext);
     }
   }
 
   std::string getInfo() const override
   {
     std::ostringstream out;
-    out << "GL context creator: CGL\n";
+    out << "GL context creator: CGL (new)\n";
     return out.str();
   }
 
   bool makeCurrent() const override
   {
-    if (CGLSetCurrentContext(this->cglContext) != kCGLNoError) {
-      std::cerr << "CGLSetCurrentContext() failed" << std::endl;
+    const auto err = CGLSetCurrentContext(cglContext);
+    if (err != kCGLNoError) {
+      LOG("CGLSetCurrentContext() failed: %1$s (%2$d)", CGLErrorString(err), static_cast<int>(err));
       return false;
     }
     return true;
@@ -61,7 +62,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextCGL(size_t width, size_t
   GLint numPixelFormats = 0;
   const auto status = CGLChoosePixelFormat(attributes, &pixelFormat, &numPixelFormats);
   if (status != kCGLNoError) {
-    std::cerr << "CGLChoosePixelFormat() failed: " << CGLErrorString(status) << std::endl;
+    LOG("CGLChoosePixelFormat() failed: %1$s (%2$d)", CGLErrorString(status), static_cast<int>(status));
     return nullptr;
   }
   CGLCreateContext(pixelFormat, NULL, &ctx->cglContext);
