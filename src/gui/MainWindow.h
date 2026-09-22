@@ -156,6 +156,7 @@ private:
   void setupDocks();
   void setupMenusAndActions();
   void restoreWindowState();
+  void restoreToolBarVisibility();
   void openRemainingFiles(const QStringList& filenames);
   void setupAIDock();
 
