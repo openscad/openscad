@@ -130,7 +130,7 @@ Follow the instructions for the platform you're compiling on below.
 * [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
 
 For the test suite, additional requirements are:
-* Python3 (3.8 -> )
+* Python3 (3.9 -> )
 * [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
 * [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
