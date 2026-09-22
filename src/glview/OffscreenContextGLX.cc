@@ -1,19 +1,18 @@
 #include "glview/OffscreenContextGLX.h"
 
+#include <cstddef>
 #include <cstdlib>
+#include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 
 #define GLAD_GLX_IMPLEMENTATION
 #include <glad/glx.h>
 
-#include <cstddef>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include "utils/scope_guard.hpp"
 #include "glview/OffscreenContext.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 
 namespace {
 
@@ -42,18 +41,13 @@ public:
     }
   }
 
-  // FIXME: What info are we really interested in here?
   std::string getInfo() const override
   {
     std::ostringstream result;
-
     int major, minor;
     glXQueryVersion(this->display, &major, &minor);
-
-    result << "GL context creator: GLX (new)\n"
-           << "GLX version: " << major << "." << minor << "\n"
-           << "PNG generator: lodepng\n";
-
+    result << "GL context creator: GLX\n"
+           << "GLX version: " << major << "." << minor << "\n";
     return result.str();
   }
 
@@ -70,23 +64,26 @@ public:
   //  This function will alter ctx.openGLContext and ctx.xwindow if successful
   bool createGLXContext(size_t majorGLVersion, size_t minorGLVersion, bool compatibilityProfile)
   {
-    const int attributes[] = {GLX_DRAWABLE_TYPE,
-                              GLX_WINDOW_BIT | GLX_PIXMAP_BIT,
-                              GLX_RENDER_TYPE,
-                              GLX_RGBA_BIT,
-                              GLX_RED_SIZE,
-                              8,
-                              GLX_GREEN_SIZE,
-                              8,
-                              GLX_BLUE_SIZE,
-                              8,
-                              GLX_ALPHA_SIZE,
-                              8,
-                              GLX_DEPTH_SIZE,
-                              24,  // depth-stencil for OpenCSG
-                              GLX_STENCIL_SIZE,
-                              8,
-                              None};
+    const int attributes[] = {
+      GLX_DRAWABLE_TYPE,
+      GLX_WINDOW_BIT | GLX_PIXMAP_BIT | GLX_PBUFFER_BIT,  // support all 3, for OpenCSG
+      GLX_RENDER_TYPE,
+      GLX_RGBA_BIT,
+      GLX_RED_SIZE,
+      8,
+      GLX_GREEN_SIZE,
+      8,
+      GLX_BLUE_SIZE,
+      8,
+      GLX_ALPHA_SIZE,
+      8,
+      GLX_DEPTH_SIZE,
+      24,  // depth-stencil for OpenCSG
+      GLX_STENCIL_SIZE,
+      8,
+      GLX_DOUBLEBUFFER,
+      true,  // FIXME: Do we need this?
+      None};
 
     int numConfigs = 0;
     GLXFBConfig *fbconfigs = nullptr;

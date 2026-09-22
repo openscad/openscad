@@ -125,9 +125,13 @@ inline void glColor4fv(float *c)
 
 #ifdef USE_GLEW
 #define hasGLExtension(ext) glewIsSupported("GL_" #ext)
+#define hasGLVersion3() (GLEW_VERSION_3_0 != 0)
+#define hasGLESVersion2() false
 #endif
 #ifdef USE_GLAD
 #define hasGLExtension(ext) GLAD_GL_##ext
+#define hasGLVersion3() (GLAD_GL_VERSION_3_0 != 0)
+#define hasGLESVersion2() (GLAD_GL_ES_VERSION_2_0 != 0)
 #endif
 
 std::string gl_dump();
