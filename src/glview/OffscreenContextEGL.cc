@@ -190,7 +190,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 
   if (!drmNode.empty()) {
 #ifdef HAS_GBM
-    PRINTDB("Using GBM...");
+    PRINTD("Using GBM...");
     ctx->getDisplayFromDrmNode(drmNode);
 #endif
   } else {
