@@ -12,9 +12,9 @@ public:
   FBO(int width, int height, bool useEXT);
   ~FBO() { destroy(); };
 
-  int width() const { return this->width_; }
-  int height() const { return this->height_; }
-  bool isComplete() const { return this->complete_; }
+  int width() const { return width_; }
+  int height() const { return height_; }
+  bool isComplete() const { return complete_; }
 
   bool resize(size_t width, size_t height);
   GLuint bind();

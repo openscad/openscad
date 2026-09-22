@@ -62,19 +62,19 @@ std::unique_ptr<FBO> createFBO(int width, int height)
 FBO::FBO(int width, int height, bool useEXT) : width_(width), height_(height), use_ext_(useEXT)
 {
   // Generate and bind FBO
-  GL_CHECK(glGenFramebuffers(1, &this->fbo_id_));
-  this->bind();
+  GL_CHECK(glGenFramebuffers(1, &fbo_id_));
+  bind();
 
   // Generate depth and render buffers
-  GL_CHECK(glGenRenderbuffers(1, &this->depthbuf_id_));
-  GL_CHECK(glGenRenderbuffers(1, &this->renderbuf_id_));
+  GL_CHECK(glGenRenderbuffers(1, &depthbuf_id_));
+  GL_CHECK(glGenRenderbuffers(1, &renderbuf_id_));
 
   // Create buffers with correct size
-  if (!this->resize(width, height)) return;
+  if (!resize(width, height)) return;
 
   // Attach render and depth buffers
-  GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                                     this->renderbuf_id_));
+  GL_CHECK(
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderbuf_id_));
 
   if (!checkFBOStatus()) {
     LOG(message_group::Error, "Problem with OpenGL framebuffer after specifying color render buffer.");
@@ -84,73 +84,73 @@ FBO::FBO(int width, int height, bool useEXT) : width_(width), height_(height), u
   // to prevent Mesa's software renderer from crashing, do this in two stages.
   // ie. instead of using GL_DEPTH_STENCIL_ATTACHMENT, do DEPTH then STENCIL.
   GL_CHECK(
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->depthbuf_id_));
-  GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-                                     this->depthbuf_id_));
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuf_id_));
+  GL_CHECK(
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthbuf_id_));
 
   if (!checkFBOStatus()) {
     LOG(message_group::Error, "Problem with OpenGL framebuffer after specifying depth render buffer.");
     return;
   }
 
-  this->complete_ = true;
+  complete_ = true;
 }
 
 bool FBO::resize(size_t width, size_t height)
 {
-  if (this->use_ext_) {
-    GL_CHECK(glBindRenderbufferEXT(GL_RENDERBUFFER, this->renderbuf_id_));
+  if (use_ext_) {
+    GL_CHECK(glBindRenderbufferEXT(GL_RENDERBUFFER, renderbuf_id_));
   } else {
-    GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, this->renderbuf_id_));
+    GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, renderbuf_id_));
   }
   GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height));
-  if (this->use_ext_) {
-    GL_CHECK(glBindRenderbufferEXT(GL_RENDERBUFFER, this->depthbuf_id_));
+  if (use_ext_) {
+    GL_CHECK(glBindRenderbufferEXT(GL_RENDERBUFFER, depthbuf_id_));
   } else {
-    GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, this->depthbuf_id_));
+    GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, depthbuf_id_));
   }
   GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
 
-  this->width_ = width;
-  this->height_ = height;
+  width_ = width;
+  height_ = height;
 
   return true;
 }
 
 GLuint FBO::bind()
 {
-  glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint *>(&this->old_fbo_id_));
-  if (this->use_ext_) {
-    GL_CHECK(glBindFramebufferEXT(GL_FRAMEBUFFER, this->fbo_id_));
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint *>(&old_fbo_id_));
+  if (use_ext_) {
+    GL_CHECK(glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_));
   } else {
-    GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, this->fbo_id_));
+    GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_));
   }
-  return this->old_fbo_id_;
+  return old_fbo_id_;
 }
 
 void FBO::unbind()
 {
-  if (this->use_ext_) {
-    GL_CHECK(glBindFramebufferEXT(GL_FRAMEBUFFER, this->old_fbo_id_));
+  if (use_ext_) {
+    GL_CHECK(glBindFramebufferEXT(GL_FRAMEBUFFER, old_fbo_id_));
   } else {
-    GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, this->old_fbo_id_));
+    GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, old_fbo_id_));
   }
-  this->old_fbo_id_ = 0;
+  old_fbo_id_ = 0;
 }
 
 void FBO::destroy()
 {
-  this->unbind();
-  if (this->depthbuf_id_ != 0) {
-    GL_CHECK(glDeleteRenderbuffers(1, &this->depthbuf_id_));
-    this->depthbuf_id_ = 0;
+  unbind();
+  if (depthbuf_id_ != 0) {
+    GL_CHECK(glDeleteRenderbuffers(1, &depthbuf_id_));
+    depthbuf_id_ = 0;
   }
-  if (this->renderbuf_id_ != 0) {
-    GL_CHECK(glDeleteRenderbuffers(1, &this->renderbuf_id_));
-    this->renderbuf_id_ = 0;
+  if (renderbuf_id_ != 0) {
+    GL_CHECK(glDeleteRenderbuffers(1, &renderbuf_id_));
+    renderbuf_id_ = 0;
   }
-  if (this->fbo_id_ != 0) {
-    GL_CHECK(glDeleteFramebuffers(1, &this->fbo_id_));
-    this->fbo_id_ = 0;
+  if (fbo_id_ != 0) {
+    GL_CHECK(glDeleteFramebuffers(1, &fbo_id_));
+    fbo_id_ = 0;
   }
 }
