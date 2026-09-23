@@ -281,6 +281,10 @@ private slots:
   void compileEnded();
   void resetCompileMessageCounts();
   void selectPreviewViewMode();
+  //! Builds the renderers a preview draws from, given the current product lists.
+  void createPreviewRenderers();
+  //! What a preview does once its products exist: view mode, animate dump, compileEnded.
+  void finishPreview();
 
 private slots:
   void on_editActionCopyVPT_triggered();
