@@ -4,6 +4,11 @@
 
 #include "platform/PlatformUtils.h"
 
+QString UXTest::fixturePath(const QString& relative)
+{
+  return QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/data/" + relative;
+}
+
 void UXTest::setWindow(MainWindow *window_)
 {
   window = window_;
@@ -11,8 +16,7 @@ void UXTest::setWindow(MainWindow *window_)
 
 void UXTest::restoreWindowInitialState()
 {
-  QString filename =
-    QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/default.scad";
+  QString filename = fixturePath("basic-ux/default.scad");
   window->tabManager->open(filename);
 
   while (window->tabCount > 1) {
