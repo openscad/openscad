@@ -376,14 +376,15 @@ endif()
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
 file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 
-# Default to Release build
-#if(NOT CMAKE_BUILD_TYPE)
-#  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
-#  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
-#  set(CMAKE_BUILD_TYPE Release)
-#else()
-#  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-#endif()
+# Default to Release build (skip for multi-config generators like MSVC/Xcode,
+# where CMAKE_BUILD_TYPE is ignored and the config is chosen at build time)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "CMAKE_BUILD_TYPE not specified.  Defaulting to 'Release'")
+  message(STATUS "Usage: cmake -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] .")
+  set(CMAKE_BUILD_TYPE Release)
+else()
+  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
 
 target_compile_options(OpenSCADLibInternal PUBLIC "$<$<CONFIG:DEBUG>:-DDEBUG>")
 target_compile_options(OpenSCADExe PUBLIC "$<$<CONFIG:DEBUG>:-DDEBUG>")
