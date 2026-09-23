@@ -197,8 +197,8 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
           for (const auto& v : p) {
-            const double x = scale.x() * (-viewbox.x() + v.x()) - cx;
-            const double y = scale.y() * (-viewbox.y() - v.y()) + cy;
+            const double x = scale.x() * v.x() - cx;
+            const double y = scale.y() * -v.y() + cy;
             outline.vertices.emplace_back(x, y);
             outline.positive = true;
           }
