@@ -76,6 +76,8 @@ public:
   void rotate(double x, double y, double z, bool relative);
   void rotate2(double x, double y, double z);
   void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);
+  void setVpt(double x, double y, double z);
+  void setVpr(double x, double y, double z);
 
 private:
   void init();

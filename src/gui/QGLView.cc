@@ -565,6 +565,20 @@ void QGLView::rotate(double x, double y, double z, bool relative)
   emit cameraChanged();
 }
 
+void QGLView::setVpt(double x, double y, double z)
+{
+  cam.setVpt(x, y, z);
+  update();
+  emit cameraChanged();
+}
+
+void QGLView::setVpr(double x, double y, double z)
+{
+  cam.setVpr(x, y, z);
+  update();
+  emit cameraChanged();
+}
+
 void QGLView::rotate2(double x, double y, double z)
 {
   // This vector describes the rotation.

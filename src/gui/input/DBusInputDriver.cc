@@ -66,8 +66,17 @@ bool DBusInputDriver::open()
   }
 
   new OpenSCADAdaptor(this);
-  connection.registerObject("/org/openscad/OpenSCAD/Application", this);
-  connection.registerService("org.openscad.OpenSCAD");
+  if (!connection.registerObject("/org/openscad/OpenSCAD/Application", this)) {
+    LOG(message_group::Error, "DBusInputDriver: could not register application object: %1$s",
+        connection.lastError().message().toStdString());
+    return false;
+  }
+  if (!connection.registerService("org.openscad.OpenSCAD")) {
+    LOG(message_group::Error, "DBusInputDriver: could not register service: %1$s",
+        connection.lastError().message().toStdString());
+    connection.unregisterObject("/org/openscad/OpenSCAD/Application");
+    return false;
+  }
   new org::openscad::OpenSCAD(QString(), QString(), connection, this);
 
   name = "DBusInputDriver (" + connection.baseService().toStdString() + ")";
@@ -143,6 +152,21 @@ const QList<double> DBusInputDriver::getRotation() const
 const QList<double> DBusInputDriver::getTranslation() const
 {
   return InputDriverManager::instance()->getTranslation();
+}
+
+double DBusInputDriver::getDistance() const
+{
+  return InputDriverManager::instance()->getDistance();
+}
+
+double DBusInputDriver::getFov() const
+{
+  return InputDriverManager::instance()->getFov();
+}
+
+QString DBusInputDriver::getProjection() const
+{
+  return InputDriverManager::instance()->getProjection();
 }
 
 const std::string& DBusInputDriver::get_name() const
