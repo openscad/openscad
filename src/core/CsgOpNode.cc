@@ -25,6 +25,7 @@
  */
 
 #include "core/CsgOpNode.h"
+#include "core/RemoveNode.h"
 
 #include <cassert>
 #include <memory>
@@ -59,6 +60,13 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
+static std::shared_ptr<AbstractNode> builtin_remove(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+  return children.instantiate(std::make_shared<RemoveNode>(inst));
+}
+
 std::string CsgOpNode::toString() const
 {
   return this->name() + "()";
@@ -90,5 +98,10 @@ void register_builtin_csgops()
   Builtins::init("intersection", new BuiltinModule(builtin_intersection),
                  {
                    "intersection()",
+                 });
+
+  Builtins::init("remove", new BuiltinModule(builtin_remove),
+                 {
+                   "remove()",
                  });
 }
