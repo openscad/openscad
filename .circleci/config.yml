@@ -522,7 +522,7 @@ workflows:
           name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
-              openscad_platform: [wasm-web, wasm-node]
+              openscad_platform: [wasm-web, wasm-node, wasm-node-module]
           context: secret-context
           filters:
               branches:
@@ -558,7 +558,7 @@ workflows:
           name: openscad-<< matrix.openscad_platform >>-pr
           matrix:
             parameters:
-              openscad_platform: [wasm-web, wasm-node]
+              openscad_platform: [wasm-web, wasm-node, wasm-node-module]
           filters:
               branches:
                   ignore:
@@ -599,7 +599,7 @@ workflows:
           filters: *release-filters
           matrix:
             parameters:
-              openscad_platform: [wasm-web, wasm-node]
+              openscad_platform: [wasm-web, wasm-node, wasm-node-module]
           openscad_build_type: release
           source_method: tarball
           context: secret-context
