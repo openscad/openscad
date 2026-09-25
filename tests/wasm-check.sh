@@ -4,39 +4,34 @@
 #
 set -euo pipefail
 
-cd $(dirname $0)
-
 ENV=$1
 
 rm -f out.stl
 case $ENV in
   node)
     echo "Checking WASM node build..."
-    n use latest
-    chmod +x ../../build/openscad.js
-    ../../build/openscad.js \
+    ../build/openscad.js \
         --backend=manifold \
-        $PWD/../examples/Basics/CSG.scad \
+        examples/Basics/CSG.scad \
         -o out.stl
     cat out.stl
     ;;
   node-module)
     echo "Checking WASM node module build..."
-    n use latest
-    node -e "import OpenSCAD from '../../build/openscad.js';\
-      OpenSCAD({noInitialRun: true}).then(instance => instance.callMain([\
-        '$PWD/../examples/Basics/CSG.scad',\
-        '-o', 'out.stl',\
-        '--backend=manifold'\
-      ]))"
+    node --input-type=module -e "
+      import OpenSCAD from '$PWD/../build/openscad.js';
+      const instance = await OpenSCAD({noInitialRun: true});
+      instance.callMain(['--backend=manifold', 'examples/Basics/CSG.scad', '-o', 'out.stl']);
+    "
     cat out.stl
     ;;
   web)
     echo "Checking WASM web build..."
-    node wasm-check.mjs $PWD/wasm-check.html
+    file="tests/wasm-check.html"
+    node tests/wasm-check.mjs $PWD/$file
     ;;
   *)
-    echo "Usage: $0 {node|web|node-module}"
+    echo "Usage: $0 {node|node-module|web}"
     exit 1
     ;;
 esac 2>&1 | tee out.log

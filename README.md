@@ -300,11 +300,11 @@ The following command creates `build-node/openscad.js`, which is a node module t
 
 Example usage:
 
-```node
-import OpenSCAD from "../openscad-wasm/openscad.js";
+```js
+import OpenSCAD from "./build-node/openscad.js";
 
 const instance = await OpenSCAD({
-    noInitialRun: true, 
+    noInitialRun: true,
     print: (text) => {
         console.debug('stdout: ' + text);
     },

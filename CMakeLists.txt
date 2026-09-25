@@ -80,7 +80,7 @@ cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT 
 set(ENABLE_GAMEPAD "AUTO" CACHE STRING "Enable Qt5Gamepad input driver")
 set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
 set(WASM_BUILD_TYPE "web" CACHE STRING
-  "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
+  "WebAssembly build type. Support web (builds an OpenSCAD module), node (standalone .js executable) or node-module (ES module for node)")
 
 if (USE_QT6)
   # Minimum version required for Qt-6.8
@@ -333,20 +333,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       # Alternatively to single-file mode, code caching could make repeated runs faster:
       # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
     )
-  elseif (WASM_BUILD_TYPE STREQUAL "node-module")
-    target_link_options(OpenSCAD PUBLIC
-      -sENVIRONMENT=node,worker
-      -sEXPORT_ES6=1
-      -sEXPORT_NAME=OpenSCAD
-      -sMODULARIZE=1
-      -sNODERAWFS
-
-      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
-      $<$<CONFIG:Release>:-sSINGLE_FILE> 
-      
-      # Alternatively to single-file mode, code caching could make repeated runs faster:
-      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
-    )
 
     # Ensure the resulting .js file is executable on Unix:
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake "
@@ -360,8 +346,22 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       POST_BUILD TARGET OpenSCADExe
       COMMAND ${CMAKE_COMMAND} "-DFILE=$<TARGET_FILE:OpenSCADExe>" -P "${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake"
     )
+  elseif (WASM_BUILD_TYPE STREQUAL "node-module")
+    target_link_options(OpenSCADExe PUBLIC
+      -sENVIRONMENT=node,worker
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=OpenSCAD
+      -sMODULARIZE=1
+      -sNODERAWFS
+
+      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
+      $<$<CONFIG:Release>:-sSINGLE_FILE>
+
+      # Alternatively to single-file mode, code caching could make repeated runs faster:
+      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
+    )
   else()
-    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
+    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, node-module, web)")
   endif()
 endif()
 
