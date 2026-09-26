@@ -1920,7 +1920,7 @@ void MainWindow::csgRender()
   if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
     const QImage img = this->qglview->grabFrame();
-    const QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+    const QString filename = exportPath("png", QString("frame%1").arg(steps, 5, 10, QChar('0')));
     img.save(filename, "PNG");
   }
 
@@ -2492,7 +2492,7 @@ void MainWindow::on_designCheckValidity_triggered()
 }
 
 // Returns if we can export (true) or not(false) (bool)
-// Separated into it's own function for re-use.
+// Separated into its own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
   auto guard = scopedSetCurrentOutput();
@@ -3441,20 +3441,27 @@ void MainWindow::processEvents()
   if (this->procevents) QApplication::processEvents();
 }
 
-QString MainWindow::exportPath(const QString& suffix)
+QString MainWindow::exportPath(const QString& suffix, const QString& basename)
 {
+  // Derive the directory.
   const auto path_it = this->exportPaths.find(suffix);
-  const auto basename =
-    activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
   QString dir;
   if (path_it != exportPaths.end()) {
     dir = QFileInfo(path_it->second).absolutePath();
-  } else if (activeEditor->filepath.isEmpty()) {
-    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
-  } else {
+  } else if (!activeEditor->filepath.isEmpty()) {
     dir = QFileInfo(activeEditor->filepath).absolutePath();
+  } else {
+    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
   }
-  return QString("%1/%2.%3").arg(dir, basename, suffix);
+
+  // Derive the base name.
+  const auto derivedBasename = !basename.isEmpty() ? basename
+                               : !activeEditor->filepath.isEmpty()
+                                 ? QFileInfo(activeEditor->filepath).completeBaseName()
+                                 : "Untitled";
+
+  // Construct the full path.
+  return QString("%1/%2.%3").arg(dir, derivedBasename, suffix);
 }
 
 void MainWindow::jumpToLine(int line, int col)
