@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 env:
+  DELAY_DAYS: 10
   SUBMODULE_NAME: "Manifold"
   SUBMODULE_REPO: "elalish/manifold"
   SUBMODULE_PATH: "submodules/manifold"
@@ -25,7 +26,12 @@ jobs:
       - name: Get latest upstream release
         id: get-latest-release
         run: |
-          LATEST_RELEASE=$(gh release view --json tagName -q '.tagName' -R "$SUBMODULE_REPO")
+          LATEST_RELEASE=$(gh release list \
+            -R "$SUBMODULE_REPO" \
+            --exclude-drafts \
+            --exclude-pre-releases \
+            --json createdAt,tagName \
+            -q "map(select(.createdAt | fromdateiso8601 <= (now - $DELAY_DAYS * 86400))) | .[0].tagName")
           echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
