@@ -90,4 +90,4 @@ jobs:
           branch: "chore/update-manifold-${{ steps.compare-releases.outputs.release_tag }}"
           labels: |
             dependencies
-            "Tag: ${{ env.SUBMODULE_NAME }}"
+            Tag: ${{ env.SUBMODULE_NAME }}
