@@ -81,8 +81,8 @@ jobs:
       - name: Update submodule if new release is available and no PR exists
         if: steps.compare-releases.outputs.new_release_available == 'true' && steps.check-existing-pr.outputs.existing_pr == ''
         run: |
-          RELEASE_TAG="${{ steps.compare-releases.outputs.release_tag }}"
           git submodule update --remote "$SUBMODULE_PATH"
+          git checkout "${{ steps.compare-releases.outputs.release_tag }}"
 
       - name: Create Pull Request
         if: steps.compare-releases.outputs.new_release_available == 'true' && steps.check-existing-pr.outputs.existing_pr == ''
