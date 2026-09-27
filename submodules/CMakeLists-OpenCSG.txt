@@ -17,8 +17,24 @@ set(OPENCSG_SOURCES
   submodules/OpenCSG/src/glad/src/gl.cpp
 )
 
+if(ENABLE_OSMESA)
+  list(APPEND OPENCSG_SOURCES src/glview/opencsg_init.cpp)
+endif()
+
 add_library(OpenCSGObjects OBJECT ${OPENCSG_SOURCES})
-target_include_directories(OpenCSGObjects PRIVATE OpenCSG submodules/OpenCSG submodules/OpenCSG/include)
+target_include_directories(OpenCSGObjects PRIVATE
+  OpenCSG
+  submodules/OpenCSG
+  submodules/OpenCSG/src
+  submodules/OpenCSG/include
+)
+if(ENABLE_OSMESA)
+  target_compile_definitions(OpenCSGObjects PRIVATE ENABLE_OSMESA)
+  set_source_files_properties(
+    submodules/OpenCSG/src/context.cpp
+    PROPERTIES COMPILE_DEFINITIONS "ensureFunctionPointers=ensureFunctionPointers_unused"
+  )
+endif()
 
 add_library(OpenCSG INTERFACE)
 target_include_directories(OpenCSG INTERFACE submodules/OpenCSG/include)
