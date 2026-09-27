@@ -84,7 +84,8 @@ jobs:
           set -x
           git submodule status
           git -C "$SUBMODULE_PATH" log -n8 --oneline
-          git submodule update --remote --checkout "$SUBMODULE_PATH"
+          git -C "$SUBMODULE_PATH" fetch --all
+          git -C "$SUBMODULE_PATH" reset --hard origin/master
           git -C "$SUBMODULE_PATH" log -n8 --oneline
           git -C "$SUBMODULE_PATH" checkout "${{ steps.compare-releases.outputs.release_tag }}"
           git -C "$SUBMODULE_PATH" log -n8 --oneline
