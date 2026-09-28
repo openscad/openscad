@@ -1,4 +1,4 @@
-#include "glad/include/KHR/khrplatform.h"
+#include "openglExt.h"
 
 #ifdef ENABLE_OSMESA
 extern "C" void *OSMesaGetCurrentContext(void);
@@ -6,11 +6,6 @@ extern "C" void (*OSMesaGetProcAddress(const char *funcName))(void);
 #endif
 
 namespace OpenCSG {
-
-#include "glad/include/glad/gl.h"
-
-void initExtensionLibrary();
-
 namespace OpenGL {
 
 void ensureFunctionPointers()
@@ -30,3 +25,4 @@ void ensureFunctionPointers()
 
 }  // namespace OpenGL
 }  // namespace OpenCSG
+
