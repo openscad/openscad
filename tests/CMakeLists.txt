@@ -180,20 +180,20 @@ configure_file(${TEST_PYTHON_DIR}/gen_svg_viewbox_tests-template.py
 # this is for stress-testing the parser
 # Generated into the build dir (CCBD) so the source tree can stay read-only (#6700)
 file(MAKE_DIRECTORY ${CCBD}/data/scad/issues)
-add_custom_target(issue2342 ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${CCBD}/data/scad/issues/issue2342.scad"
-  WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
-  COMMENT "Generating issue2342.scad"
-)
+# add_custom_target(issue2342 ALL
+#   COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${CCBD}/data/scad/issues/issue2342.scad"
+#   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
+#   COMMENT "Generating issue2342.scad"
+# )
 file(MAKE_DIRECTORY ${CCBD}/data/svg/viewbox)
 file(MAKE_DIRECTORY ${CCBD}/data/scad/svg/extruded)
 configure_file(${TEST_DATA_DIR}/svg/viewbox/viewbox-tests.svg.in ${CCBD}/data/svg/viewbox/viewbox-tests.svg.in COPYONLY)
 configure_file(${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad ${CCBD}/data/scad/svg/extruded/viewbox-test.scad COPYONLY)
-add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${CCBD}/data/svg/viewbox" "${CCBD}/data/scad/svg/extruded"
-  WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
-  COMMENT "Generating svg viewbox tests"
-)
+# add_custom_target(svg_viewbox_tests ALL
+#   COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${CCBD}/data/svg/viewbox" "${CCBD}/data/scad/svg/extruded"
+#   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
+#   COMMENT "Generating svg viewbox tests"
+# )
 
 #######################################
 # Define Test Output Lines to Exclude #

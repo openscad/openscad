@@ -9,6 +9,11 @@
 #pragma warning(disable : 26486)  // Disable warning for dangling pointers
 #endif                            // defined(_MSC_VER)
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-pointer"
+#endif
+
 class StackCheck
 {
 public:
@@ -38,3 +43,7 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif  // defined(_MSC_VER)
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
