@@ -44,6 +44,6 @@ multmatrix([[1, 0, 0, -5], [0, 1, 0, -5], [0, 0, 1, -5], [0, 0, 0, 1]]) {
 group() {
 	hull() {
 		cube(size = [0, 0, 0], center = false);
-		sphere($fn = 0, $fa = 12, $fs = 2, r = 0);
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 0, style = "orig");
 	}
 }

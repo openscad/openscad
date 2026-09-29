@@ -170,17 +170,193 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 std::string SphereNode::toString() const
 {
   std::ostringstream stream;
-  stream << "sphere(" << discretizer << ", r = " << r << ")";
+  stream << "sphere(" << discretizer << ", r = " << r << ", style = \"" << style << "\")";
   return stream.str();
 }
 
-std::unique_ptr<const Geometry> SphereNode::createGeometry() const
+/*
+ * Octahedral sphere tessellation (style = "octa").
+ *
+ * Start from an octahedron whose six vertices are on the axis poles and
+ * subdivide each of its eight triangular faces into n*n triangles, with
+ * n = ceil(fragments / 4). Each of the three great circles in the coordinate
+ * planes then is a regular polygon with 4*n segments whose vertices are
+ * exactly those of circle()/cylinder() with the same number of fragments, so
+ * the sphere fits cylinders on any axis without slivers. All vertices are on
+ * the sphere, there is a vertex on each of the six poles and the mesh has the
+ * full symmetry of the octahedron.
+ *
+ * Interior vertices are placed using the algorithm posted by Bram Cohen in
+ * https://github.com/openscad/openscad/pull/6100#issuecomment-3229898933:
+ * the vertex with barycentric index (i, j, k), i + j + k = n, of the octant
+ * face is where the great-circle arcs joining the equally spaced edge points
+ * at "constant i", "constant j" and "constant k" meet. The three arcs do not
+ * pass exactly through one point, so the three pairwise intersections are
+ * averaged and projected back onto the sphere. This keeps the three-fold
+ * symmetry of each face and makes the edge lengths very even.
+ *
+ * Vertices are stored in rings around the z axis: ring 0 is the +z pole,
+ * ring t (1 <= t <= n) has 4*t vertices, t per quadrant, starting on the
+ * meridian at the +x side of the quadrant and going counterclockwise as seen
+ * from +z. Ring n is the equator and rings n+1..2n mirror rings n-1..0.
+ * Ring t starts at vertex index 1 + 2*t*(t-1), so the vertex at quadrant q
+ * (0..3) and position s (0..t-1) is at 1 + 2*t*(t-1) + q*t + s; ring_start[]
+ * below holds these offsets. Seen from +z (x right, y up) for n = 3 the top
+ * hemisphere is
+ *
+ *                        16
+ *                 17            15             ring 3 (equator): 13..24
+ *                        7
+ *            18     8         6     14         ring 2: 5..12
+ *                        2
+ *       19     9     3   0   1     5     13    ring 1: 1..4, pole: 0
+ *                        4
+ *            20    10        12     24
+ *                       11
+ *                 21            23
+ *                        22
+ *
+ * Between ring t and ring t+1 each quadrant has t+1 triangles with their apex
+ * on ring t and t triangles with their apex on ring t+1, see stitch() below.
+ */
+std::unique_ptr<PolySet> SphereNode::createGeometryOcta(int num_fragments) const
 {
-  if (this->r <= 0 || !std::isfinite(this->r)) {
-    return PolySet::createEmpty();
+  const int n = std::max(1, (num_fragments + 3) / 4);  // subdivisions per octahedron edge
+  const int fragments = 4 * n;                         // segments per equator
+
+  // Angle of the m-th of the n equally spaced points along an octahedron edge,
+  // computed as in generate_circle() so shared vertices are bit-identical.
+  std::vector<double> cos_table(n + 1), sin_table(n + 1);
+  for (int m = 0; m <= n; ++m) {
+    const double phi = (360.0 * m) / fragments;
+    cos_table[m] = cos_degrees(phi);
+    sin_table[m] = sin_degrees(phi);
   }
 
-  int num_fragments = discretizer.getCircularSegmentCount(r).value_or(3);
+  // Where the great circles through (a, b) and (c, d) intersect (on the side
+  // of the sphere where the arcs are).
+  const auto arc_intersection = [](const Vector3d& a, const Vector3d& b, const Vector3d& c,
+                                   const Vector3d& d) -> Vector3d {
+    return a.cross(b).cross(c.cross(d)).normalized();
+  };
+
+  // Interior points of the first octant on the unit sphere, indexed like ring t,
+  // quadrant 0: octant[t][s] has barycentric index i = t - s, j = s, k = n - t.
+  // The other seven octants are exact rotations/mirrors of these. Points on the
+  // octahedron edges are not in this table, they are generated below.
+  std::vector<std::vector<Vector3d>> octant(n);
+  for (int t = 2; t < n; ++t) {
+    octant[t].resize(t);
+    const int k = n - t;
+    for (int s = 1; s < t; ++s) {
+      const int i = t - s;
+      const int j = s;
+      // Arc at constant k: joins the k-th point of the xz edge and of the yz edge.
+      const Vector3d xz_k(cos_table[k], 0, sin_table[k]);
+      const Vector3d yz_k(0, cos_table[k], sin_table[k]);
+      // Arc at constant j: joins the j-th point of the xy edge and the (n-j)-th of the yz edge.
+      const Vector3d xy_j(cos_table[j], sin_table[j], 0);
+      const Vector3d yz_j(0, cos_table[n - j], sin_table[n - j]);
+      // Arc at constant i: joins the (n-i)-th point of the xy edge and of the xz edge.
+      const Vector3d xy_i(cos_table[n - i], sin_table[n - i], 0);
+      const Vector3d xz_i(cos_table[n - i], 0, sin_table[n - i]);
+      octant[t][s] =
+        (arc_intersection(xz_k, yz_k, xy_j, yz_j) + arc_intersection(xz_k, yz_k, xy_i, xz_i) +
+         arc_intersection(xy_j, yz_j, xy_i, xz_i))
+          .normalized();
+    }
+  }
+
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/ true);
+  polyset->vertices.reserve(4 * n * n + 2);
+  polyset->indices.reserve(8 * n * n);
+
+  std::vector<int> ring_start(2 * n + 1);
+  for (int ring = 0; ring <= 2 * n; ++ring) {
+    ring_start[ring] = static_cast<int>(polyset->vertices.size());
+    const bool top = ring <= n;
+    const int t = top ? ring : 2 * n - ring;  // rings away from the nearest pole
+    const int k = n - t;                      // edge points away from the equator
+    if (t == 0) {
+      polyset->vertices.emplace_back(0, 0, top ? r : -r);
+      continue;
+    }
+    for (int q = 0; q < 4; ++q) {
+      for (int s = 0; s < t; ++s) {
+        if (t == n) {
+          // Equator: the vertices of circle(r) with the same number of fragments.
+          const double phi = (360.0 * (q * n + s)) / fragments;
+          polyset->vertices.emplace_back(r * cos_degrees(phi), r * sin_degrees(phi), 0);
+        } else if (s == 0) {
+          // Meridian in the xz plane (even q) or yz plane (odd q): the vertices
+          // of that same circle rotated by rotate([90, 0, 0]) or rotate([90, 0, 90]).
+          const int idx = top ? (q < 2 ? k : 2 * n - k) : (q < 2 ? 4 * n - k : 2 * n + k);
+          const double phi = (360.0 * idx) / fragments;
+          const double c = r * cos_degrees(phi);
+          const double z = r * sin_degrees(phi);
+          if (q % 2 == 0) {
+            polyset->vertices.emplace_back(c, 0, z);
+          } else {
+            polyset->vertices.emplace_back(0, c, z);
+          }
+        } else {
+          const Vector3d& p = octant[t][s];
+          const double z = top ? p.z() : -p.z();
+          switch (q) {
+          case 0:  polyset->vertices.emplace_back(r * p.x(), r * p.y(), r * z); break;
+          case 1:  polyset->vertices.emplace_back(-r * p.y(), r * p.x(), r * z); break;
+          case 2:  polyset->vertices.emplace_back(-r * p.x(), -r * p.y(), r * z); break;
+          default: polyset->vertices.emplace_back(r * p.y(), -r * p.x(), r * z); break;
+          }
+        }
+      }
+    }
+  }
+  assert(polyset->vertices.size() == static_cast<size_t>(4 * n * n + 2));
+
+  // Triangulate the band between ring 'inner' (t vertices per quadrant) and the
+  // adjacent ring 'outer' (t + 1 per quadrant). The triangles are wound
+  // counterclockwise as seen from outside for the top hemisphere, and
+  // 'mirrored' reverses that for the bottom one.
+  const auto stitch = [&](int inner, int outer, int t, bool mirrored) {
+    const int inner_count = 4 * t;
+    const int outer_count = 4 * (t + 1);
+    const auto inner_index = [&](int i) {
+      return t == 0 ? ring_start[inner] : ring_start[inner] + i % inner_count;
+    };
+    const auto outer_index = [&](int i) { return ring_start[outer] + i % outer_count; };
+    const auto add = [&](int a, int b, int c) {
+      if (mirrored) {
+        polyset->indices.push_back({a, c, b});
+      } else {
+        polyset->indices.push_back({a, b, c});
+      }
+    };
+    for (int q = 0; q < 4; ++q) {
+      for (int s = 0; s <= t; ++s) {
+        const int i = q * t + s;
+        const int o = q * (t + 1) + s;
+        add(inner_index(i), outer_index(o), outer_index(o + 1));
+        if (s < t) {
+          add(inner_index(i), outer_index(o + 1), inner_index(i + 1));
+        }
+      }
+    }
+  };
+  for (int t = 0; t < n; ++t) {
+    stitch(t, t + 1, t, false);
+    stitch(2 * n - t, 2 * n - t - 1, t, true);
+  }
+  assert(polyset->indices.size() == static_cast<size_t>(8 * n * n));
+
+  return polyset;
+}
+
+// The original sphere: rings of latitude, offset by half a step so there are
+// no vertices on the poles, and none on the equator either (only on the x and y
+// axes, when num_fragments is 4i+2).
+std::unique_ptr<PolySet> SphereNode::createGeometryOrig(int num_fragments) const
+{
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
@@ -222,9 +398,25 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   return polyset;
 }
 
+std::unique_ptr<const Geometry> SphereNode::createGeometry() const
+{
+  if (this->r <= 0 || !std::isfinite(this->r)) {
+    return PolySet::createEmpty();
+  }
+
+  const int num_fragments = discretizer.getCircularSegmentCount(r).value_or(3);
+
+  if (style == "octa") {
+    return createGeometryOcta(num_fragments);
+  } else {
+    return createGeometryOrig(num_fragments);
+  }
+}
+
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d", "style"});
 
   auto node = std::make_shared<SphereNode>(inst, CurveDiscretizer(parameters, inst->location()));
 
@@ -235,6 +427,15 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "sphere(r=%1$s)",
           r.toEchoStringNoThrow());
     }
+  }
+
+  (void)parameters.valid("style", Value::Type::STRING);
+  const std::string style = parameters.get("style", node->style);
+  if (style == "orig" || style == "octa") {
+    node->style = style;
+  } else {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "sphere(style=\"%1$s\") is not \"orig\" or \"octa\", using \"%2$s\"", style, node->style);
   }
 
   return node;
@@ -737,6 +938,7 @@ void register_builtin_primitives()
                    "sphere(radius)",
                    "sphere(r = radius)",
                    "sphere(d = diameter)",
+                   "sphere(r = radius, style = \"octa\")",
                  });
 
   Builtins::init("cylinder", new BuiltinModule(builtin_cylinder),

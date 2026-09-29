@@ -2,7 +2,7 @@ difference() {
 	intersection() {
 		group() {
 			color([0, 0, 1, 1]) {
-				sphere($fn = 0, $fa = 5, $fs = 0.1, r = 10);
+				sphere($fn = 0, $fa = 5, $fs = 0.1, r = 10, style = "orig");
 			}
 		}
 		group() {
@@ -49,7 +49,7 @@ group() {
 					intersection() {
 						group() {
 							color([0, 0, 1, 1]) {
-								sphere($fn = 0, $fa = 5, $fs = 0.1, r = 10);
+								sphere($fn = 0, $fa = 5, $fs = 0.1, r = 10, style = "orig");
 							}
 						}
 						group() {
@@ -62,7 +62,7 @@ group() {
 				multmatrix([[1, 0, 0, -15], [0, 1, 0, 0], [0, 0, 1, -35], [0, 0, 0, 1]]) {
 					group() {
 						color([0, 0, 1, 1]) {
-							sphere($fn = 0, $fa = 5, $fs = 0.1, r = 10);
+							sphere($fn = 0, $fa = 5, $fs = 0.1, r = 10, style = "orig");
 						}
 					}
 				}
