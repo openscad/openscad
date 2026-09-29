@@ -242,7 +242,7 @@ detect_and_install()
 
 # Usage: $0 [qt6]
 # Qt5 is default
-if [ "`echo $* | grep qt6`" ]; then
+if echo "$@" | grep -q qt6; then
   USE_QT6=1
 else
   USE_QT6=0

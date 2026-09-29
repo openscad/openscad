@@ -56,11 +56,9 @@ if [[ $USE_QT6 == 1 ]]; then
     time brew install $formula
   done
 else
-  for formula in qt5; do
-    log "Installing formula $formula"
-    brew ls --versions $formula
-    time brew install $formula
-  done
+  log "Installing formula qt5"
+  brew ls --versions qt5
+  time brew install qt5
   # FIXME: Workaround for https://github.com/openscad/openscad/issues/5058
   curl -o qscintilla2.rb https://raw.githubusercontent.com/Homebrew/homebrew-core/da59bcdf7f1dadf70e30240394ddc0bd6014affe/Formula/q/qscintilla2.rb
   brew unlink qscintilla2
