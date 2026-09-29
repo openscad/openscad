@@ -25,4 +25,3 @@ void ensureFunctionPointers()
 
 }  // namespace OpenGL
 }  // namespace OpenCSG
-
