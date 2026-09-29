@@ -55,11 +55,11 @@ repos:
             args: ["--style=file"]
             exclude: ^wasm-test/vendor/
     - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-      rev: v9.26.0
+      rev: v9.27.0
       hooks:
           - id: commitlint
             stages: [commit-msg]
-            additional_dependencies: ["@commitlint/config-conventional@21.2.2"]
+            additional_dependencies: ["@commitlint/config-conventional@21.2.3"]
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.16.8
       hooks:
