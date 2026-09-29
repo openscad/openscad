@@ -81,7 +81,9 @@ jobs:
       - name: Update submodule if new release is available and no PR exists
         if: steps.compare-releases.outputs.new_release_available == 'true' && steps.check-existing-pr.outputs.existing_pr == ''
         run: |
+          git submodule status
           git submodule update --remote "$SUBMODULE_PATH"
+          git -C "$SUBMODULE_PATH" fetch
           git -C "$SUBMODULE_PATH" checkout "${{ steps.compare-releases.outputs.release_tag }}"
           git -C "$SUBMODULE_PATH" log -n8 --oneline
 
