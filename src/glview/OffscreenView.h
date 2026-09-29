@@ -9,6 +9,7 @@
 #include "glview/GLView.h"
 #include "glview/OpenGLContext.h"
 #include "glview/fbo.h"
+#include "io/depthmap.h"
 
 class OffscreenViewException : public std::runtime_error
 {
@@ -22,6 +23,10 @@ public:
   OffscreenView(uint32_t width, uint32_t height);
   ~OffscreenView() override;
   bool save(std::ostream& output) const;
+  //! Write the depth buffer as a PNG in the given profile, rather than the
+  //! color buffer. Must be called after paintGL(), like save().
+  bool saveDepth(std::ostream& output, DepthProfile profile) const;
+  bool saveDepth(std::ostream& output, const DepthmapOptions& options) const;
   // TODO: Do we need to worry about deletion order?
   std::shared_ptr<OpenGLContext> ctx;
   std::unique_ptr<FBO> fbo;
