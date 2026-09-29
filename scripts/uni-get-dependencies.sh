@@ -109,7 +109,7 @@ get_debian_deps()
   libdouble-conversion-dev libeigen3-dev libffi-dev libfontconfig-dev \
   libfreetype-dev libgl1-mesa-dev libglew-dev libglib2.0-dev libgmp-dev \
   libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
-  libtbb-dev libxi-dev libxml2-dev libxmu-dev \
+  libtbb-dev libxi-dev libxml2-dev libxmu-dev libssl-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
   python3-setuptools python3-venv ragel xvfb
  apt-get -y install catch2 || echo "catch2 pkg deprecated on Debian, so if you're seeing this, it's probably been removed from the repo"
@@ -242,7 +242,7 @@ detect_and_install()
 
 # Usage: $0 [qt6]
 # Qt5 is default
-if [ "`echo $* | grep qt6`" ]; then
+if echo "$@" | grep -q qt6; then
   USE_QT6=1
 else
   USE_QT6=0

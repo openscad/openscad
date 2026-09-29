@@ -1,0 +1,104 @@
+name: Check for Manifold Release
+
+on:
+  schedule:
+    - cron: '5 5 1 * *'
+  workflow_dispatch:
+
+env:
+  DELAY_DAYS: 10
+  SUBMODULE_NAME: "Manifold"
+  SUBMODULE_REPO: "elalish/manifold"
+  SUBMODULE_PATH: "submodules/manifold"
+
+jobs:
+  check-and-update-submodule:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Get latest upstream release
+        id: get-latest-release
+        run: |
+          LATEST_RELEASE=$(gh release list \
+            -R "$SUBMODULE_REPO" \
+            --exclude-drafts \
+            --exclude-pre-releases \
+            --json createdAt,tagName \
+            -q "map(select(.createdAt | fromdateiso8601 <= (now - $DELAY_DAYS * 86400))) | .[0].tagName")
+          echo "latest_release=$LATEST_RELEASE" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get current submodule commit
+        id: get-current-submodule
+        run: |
+          git submodule update --init --recursive --remote "$SUBMODULE_PATH"
+          CURRENT_COMMIT=$(git submodule status "$SUBMODULE_PATH" | awk '{print $1}' | tr -d '-')
+          echo "current_commit=$CURRENT_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Compare releases
+        id: compare-releases
+        run: |
+          if [ "$LATEST_RELEASE" != "$CURRENT_COMMIT" ]; then
+            echo "New release detected: $LATEST_RELEASE (current: $CURRENT_COMMIT)"
+            echo "new_release_available=true" >> "$GITHUB_OUTPUT"
+            echo "release_tag=$LATEST_RELEASE" >> "$GITHUB_OUTPUT"
+          else
+            echo "No new release detected."
+            echo "new_release_available=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          LATEST_RELEASE: ${{ steps.get-latest-release.outputs.latest_release }}
+          CURRENT_COMMIT: ${{ steps.get-current-submodule.outputs.current_commit }}
+
+      - name: Check for existing PR
+        id: check-existing-pr
+        if: steps.compare-releases.outputs.new_release_available == 'true'
+        run: |
+          EXISTING_PR=$(gh pr list \
+            -L1 \
+            --json number \
+            --jq '.[].number' \
+            --state all \
+            --label dependencies \
+            --search "in:title Update $SUBMODULE_NAME to $RELEASE_TAG")
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Existing PR found: #$EXISTING_PR"
+            echo "existing_pr=$EXISTING_PR" >> "$GITHUB_OUTPUT"
+          else
+            echo "No existing PR found."
+            echo "existing_pr=" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.compare-releases.outputs.release_tag }}
+
+      - name: Update submodule if new release is available and no PR exists
+        if: steps.compare-releases.outputs.new_release_available == 'true' && steps.check-existing-pr.outputs.existing_pr == ''
+        run: |
+          set -x
+          git submodule status
+          git -C "$SUBMODULE_PATH" log -n8 --oneline
+          git -C "$SUBMODULE_PATH" checkout "$RELEASE_TAG"
+          git -C "$SUBMODULE_PATH" log -n8 --oneline
+        env:
+          RELEASE_TAG: ${{ steps.compare-releases.outputs.release_tag }}
+
+      - name: Create Pull Request
+        if: steps.compare-releases.outputs.new_release_available == 'true' && steps.check-existing-pr.outputs.existing_pr == ''
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          commit-message: "chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}"
+          title: "chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}"
+          body: |
+            This PR updates the submodule `${{ env.SUBMODULE_NAME }}` from `${{ steps.get-current-submodule.outputs.current_commit }}` to the latest release tag: `${{ steps.compare-releases.outputs.release_tag }}` (Note: Releases are only picked up after a delay of ${{ env.DELAY_DAYS }} days).
+            - **Upstream Release**: https://github.com/elalish/manifold/releases/tag/${{ steps.compare-releases.outputs.release_tag }}
+          branch: "chore/update-manifold-${{ steps.compare-releases.outputs.release_tag }}"
+          labels: |
+            dependencies
+            Tag: ${{ env.SUBMODULE_NAME }}

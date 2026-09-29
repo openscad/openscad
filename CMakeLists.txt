@@ -160,6 +160,15 @@ set_target_properties(OpenSCADLibInternal PROPERTIES
 )
 
 add_library(svg STATIC)
+# Disable floating-point contraction (fusing a*b+c into a single fma) for the SVG code.
+# arm64 has FMA in its baseline ISA and Clang fuses by default; the x86-64 baseline has no
+# FMA instruction, so the same expressions round at every step. path::arc_to() feeds its
+# results into a ceil() that picks the arc's segment count, so a sub-ulp difference there
+# changes the number of segments and hence every emitted coordinate.
+# See https://github.com/openscad/openscad/issues/6161.
+if(NOT MSVC)
+  target_compile_options(svg PRIVATE -ffp-contract=off)
+endif()
 target_link_libraries(OpenSCADExe PUBLIC svg)
 # TODO: https://github.com/openscad/openscad/issues/6369 - Update includes so we don't need this, which also prevents trivially including other parts of OpenSCAD.
 target_include_directories(svg PUBLIC
@@ -1289,19 +1298,15 @@ if(NOT HEADLESS)
   if (APPLE AND EXISTS /usr/local/opt/qt)
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
   endif()
+  if (APPLE AND EXISTS /opt/homebrew/opt/qt)
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt")
+  endif()
   if (USE_QT6)
     if (APPLE AND EXISTS /usr/local/opt/qt@6)
       list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@6")
     endif()
     if (APPLE AND EXISTS /opt/homebrew/opt/qt@6)
       list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@6")
-    endif()
-  else()
-    if (APPLE AND EXISTS /usr/local/opt/qt@5)
-      list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
-    endif()
-    if (APPLE AND EXISTS /opt/homebrew/opt/qt@5)
-      list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
     endif()
   endif()
 
@@ -1503,7 +1508,10 @@ elseif(WIN32)
   if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Windows WGL")
     message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextWGL.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        src/glview/offscreen-old/OffscreenContextWGL.cc
+        src/glview/OffscreenContextWGL.cc)
+
   endif()
 endif()
 
