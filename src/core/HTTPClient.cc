@@ -1,6 +1,8 @@
 #include "HTTPClient.h"
 #include <string>
+#include "core/Settings.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 #ifndef __EMSCRIPTEN__
 
@@ -472,6 +474,10 @@ public:
   std::mutex sessions_mutex;
   std::set<std::shared_ptr<CancelableSession>> active_sessions;
 
+  std::mutex ssl_mutex;
+  std::string applied_ca_path;
+  bool applied_skip_verify = false;
+
   void register_session(std::shared_ptr<CancelableSession> session) override
   {
     std::lock_guard<std::mutex> lock(sessions_mutex);
@@ -514,6 +520,36 @@ public:
     }
     for (const auto& s : to_cancel) {
       s->cancel();
+    }
+  }
+
+  // Re-applies the global CA certificate / TLS verification settings to
+  // ssl_ctx. Only new connections pick up the change; in-flight sessions
+  // keep the trust settings they were created with.
+  void applyNetworkTlsSettings()
+  {
+    const auto& caPath = Settings::Settings::caCertPath.value();
+    const auto skipVerify = Settings::Settings::tlsSkipVerify.value();
+    std::lock_guard<std::mutex> lock(ssl_mutex);
+    if (skipVerify != applied_skip_verify) {
+      // Relies on the default setting of the stack is to have verification enabled,
+      // matching the default of applied_skip_verify = false.
+      ssl_ctx.set_verify_mode(skipVerify ? boost::asio::ssl::verify_none
+                                         : boost::asio::ssl::verify_peer);
+      applied_skip_verify = skipVerify;
+    }
+    if (caPath != applied_ca_path) {
+      if (!caPath.empty()) {
+        boost::system::error_code ec;
+        ssl_ctx.load_verify_file(caPath, ec);
+        if (ec) {
+          // On error, don't update the applied flag, so the next connection request
+          // will try to load the certificates again.
+          LOG("Could not load custom CA certificates from '%1$s': %2$s", caPath, ec.message());
+        } else {
+          applied_ca_path = caPath;
+        }
+      }
     }
   }
 
@@ -564,6 +600,7 @@ void HTTPClient::asyncGet(const std::string& url, const Headers& headers, Respon
   }
 
   if (parsed.scheme == "https") {
+    impl->applyNetworkTlsSettings();
     auto session = std::make_shared<Session<true>>(
       impl->io_ctx, impl.get(), &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
       std::move(on_response), nullptr, std::move(on_error), nullptr);
@@ -609,6 +646,7 @@ void HTTPClient::asyncPost(const std::string& url, const Headers& headers, const
   req.prepare_payload();
 
   if (parsed.scheme == "https") {
+    impl->applyNetworkTlsSettings();
     auto session = std::make_shared<Session<true>>(
       impl->io_ctx, impl.get(), &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
       std::move(on_response), nullptr, std::move(on_error), nullptr);
@@ -655,6 +693,7 @@ void HTTPClient::asyncPostStream(const std::string& url, const Headers& headers,
   req.prepare_payload();
 
   if (parsed.scheme == "https") {
+    impl->applyNetworkTlsSettings();
     auto session = std::make_shared<Session<true>>(
       impl->io_ctx, impl.get(), &impl->ssl_ctx, parsed.host, parsed.port, parsed.target, std::move(req),
       nullptr, std::move(on_chunk), std::move(on_error), std::move(on_complete));

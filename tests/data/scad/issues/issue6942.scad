@@ -1,0 +1,2 @@
+echo("A continued \
+string");

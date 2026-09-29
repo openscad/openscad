@@ -12,20 +12,13 @@ OPENSCADDIR=$PWD
 
 printUsage()
 {
-  echo "Usage: $0 [qt5]"
+  echo "Usage: $0"
 }
 
 log()
 {
   echo "$(date):" "$@"
 }
-
-# Qt6 is default
-if [ "`echo $* | grep qt5`" ]; then
-  USE_QT6=0
-else
-  USE_QT6=1
-fi
 
 if [ ! -f $OPENSCADDIR/openscad.appdata.xml.in ]; then
   echo "Must be run from the OpenSCAD source root directory"
@@ -50,26 +43,8 @@ fi
 $TAP tap openscad/homebrew-tap
 $TAP trust openscad/homebrew-tap
 
-for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz lib3mf double-conversion imagemagick ccache ghostscript tbb catch2; do
+for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz lib3mf double-conversion imagemagick ccache ghostscript tbb catch2 qt qscintilla2; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
 done
-
-if [[ $USE_QT6 == 1 ]]; then 
-  for formula in qt qscintilla2; do
-    log "Installing formula $formula"
-    brew ls --versions $formula
-    time brew install $formula
-  done
-else
-  for formula in qt5; do
-    log "Installing formula $formula"
-    brew ls --versions $formula
-    time brew install $formula
-  done
-  # FIXME: Workaround for https://github.com/openscad/openscad/issues/5058
-  curl -o qscintilla2.rb https://raw.githubusercontent.com/Homebrew/homebrew-core/da59bcdf7f1dadf70e30240394ddc0bd6014affe/Formula/q/qscintilla2.rb
-  brew unlink qscintilla2
-  brew install qscintilla2.rb
-fi
