@@ -727,6 +727,7 @@ def main():
               "src/geometry/roof_ss.cc",
               "src/geometry/roof_vd.cc",
               "src/geometry/skin.cc",
+              "src/geometry/patch.cc",
               "src/geometry/linear_extrude.cc",
               "src/geometry/organic_resample.cc",
               "src/geometry/cgal/CGALCache.cc",
@@ -793,6 +794,7 @@ def main():
               "src/core/PathExtrudeNode.cc",
               "src/core/GroupModule.cc",
               "src/core/SkinNode.cc",
+              "src/core/PatchNode.cc",
               "src/core/RepairNode.cc"
             ]
     context = [

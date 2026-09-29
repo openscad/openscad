@@ -1,7 +1,7 @@
 """ PythonSCAD Stub File for use in editors like Visual Studio Code """
 
 from enum import Enum
-from typing import Any, Iterator, List, Literal, Mapping, Optional, Self, Sequence, TYPE_CHECKING, Union, overload
+from typing import Callable, Any, Iterator, List, Literal, Mapping, Optional, Self, Sequence, TYPE_CHECKING, Union, overload
 
 if TYPE_CHECKING:
     import numpy as np
@@ -1737,6 +1737,36 @@ def concat(*objects: PyOpenSCADs) -> PyOpenSCAD:
 
     Returns:
         A single object containing all input objects.
+    """
+    ...
+
+def patch(
+    outer: Union[Sequence[Vector3], PyOpenSCAD],
+    holes: Optional[Sequence[Union[Sequence[Vector3], PyOpenSCAD]]] = None,
+    proj: Optional[Callable[[Vector3], Vector2]] = None,
+    grid_spacing_uv: float = 1.0,
+    displacement: Optional[Callable[[Vector3], float]] = None,
+    use_tangents: bool = False,
+) -> PyOpenSCAD:
+    """Build a triangulated surface from an outer boundary ring and holes.
+
+    Args:
+        outer: The outer boundary ring, as a list of 3D points or a 2D shape.
+        holes: Zero or more inner boundary rings to cut out of the surface,
+               each a list of 3D points or a 2D shape.
+        proj: Optional function mapping a 3D point to 2D (u, v) coordinates,
+              used to flatten the boundary for triangulation. If not given,
+              chosen automatically based on the shape of the input.
+        grid_spacing_uv: Target spacing between interior mesh points, in the
+              flattened domain's own units. Defaults to 1.0.
+        displacement: Optional function mapping a 3D point to a scalar,
+              applied along the local surface normal at interior points.
+        use_tangents: If True, use each ring's own plane normal as a tangent
+              to bow the surface instead of a flat interpolation between
+              rings. Only meaningful when a ring is given as a 2D shape.
+
+    Returns:
+        A 3D surface object.
     """
     ...
 

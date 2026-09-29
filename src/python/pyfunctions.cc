@@ -834,6 +834,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
    "sheet(func, imin=0, imax=1, jmin=0, jmax=1)\n"
    "sheet(func, imin=0, imax=1, jmin=0, jmax=1, fs=0.5)\n"
    "sheet(func, imin=0, imax=1, jmin=0, jmax=1, iclose=True, jclose=True)"},
+  {"patch", (PyCFunction)python_patch, METH_VARARGS | METH_KEYWORDS,
+   "patch(outer, holes=None, proj=None, grid_spacing_uv=1.0, displacement=None, use_tangents=False)"},
   {"mesh", (PyCFunction)python_mesh, METH_VARARGS | METH_KEYWORDS,
    "Get triangle mesh vertices/faces of an object.\n"
    "mesh(obj)\n"

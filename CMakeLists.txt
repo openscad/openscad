@@ -758,10 +758,12 @@ if(ENABLE_PYTHON)
     src/python/pywidget_bridge.cc
     src/python/pyconversion.cc
     src/python/python_runtime.cc
+    src/geometry/patch.cc
     src/core/node_clone.cc
     src/core/PullNode.cc
     src/core/WrapNode.cc
     src/core/SheetNode.cc
+    src/core/PatchNode.cc
     src/core/DebugNode.cc
     src/core/RepairNode.cc
     src/core/OversampleNode.cc

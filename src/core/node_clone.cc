@@ -40,6 +40,7 @@
 #include "core/RoofNode.h"
 #include "core/RenderNode.h"
 #include "core/SkinNode.h"
+#include "core/PatchNode.h"
 #include "core/SurfaceNode.h"
 #include "core/TextNode.h"
 #include "core/CgalAdvNode.h"
@@ -89,14 +90,15 @@ NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
                   NodeCloneFunc(SheetNode) NodeCloneFunc(TextNode) NodeCloneFunc(OffsetNode)
                     NodeCloneFunc(ProjectionNode) NodeCloneFunc(GroupNode) NodeCloneFunc(ImportNode)
                       NodeCloneFunc(ListNode) NodeCloneFunc(AbstractIntersectionNode)
+                        NodeCloneFunc(PatchNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-                        NodeCloneFunc(RoofNode)
+                          NodeCloneFunc(RoofNode)
 #endif
 #if defined(ENABLE_LIBFIVE)
-                          NodeCloneFunc(FrepNode)
+                            NodeCloneFunc(FrepNode)
 #endif
 
-                            std::shared_ptr<AbstractNode> AbstractNode::clone(void)
+                              std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 {
   std::shared_ptr<AbstractNode> clone = nullptr;
   NodeCloneUse(CubeNode) NodeCloneUse(SphereNode) NodeCloneUse(CylinderNode) NodeCloneUse(PolyhedronNode)
@@ -110,13 +112,14 @@ NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
                   NodeCloneUse(SheetNode) NodeCloneUse(TextNode) NodeCloneUse(OffsetNode)
                     NodeCloneUse(ProjectionNode) NodeCloneUse(GroupNode) NodeCloneUse(ImportNode)
                       NodeCloneUse(ListNode) NodeCloneUse(AbstractIntersectionNode)
+                        NodeCloneUse(PatchNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-                        NodeCloneUse(RoofNode)
+                          NodeCloneUse(RoofNode)
 #endif
 #if defined(ENABLE_LIBFIVE)
-                          NodeCloneUse(FrepNode)
+                            NodeCloneUse(FrepNode)
 #endif
-                            if (clone != nullptr)
+                              if (clone != nullptr)
   {
     clone->idx = idx_counter++;
     clone->children.clear();

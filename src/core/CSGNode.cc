@@ -89,11 +89,13 @@ std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type,
   } else {
     // In case we're creating a CSG term from a pruned tree, left or right may be the empty set
     if (right->isEmptySet()) {
-      if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE) return left;
+      if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::DIFFERENCE ||
+          type == OpenSCADOperator::CONCAT)
+        return left;
       else return right;
     }
     if (left->isEmptySet()) {
-      if (type == OpenSCADOperator::UNION) return right;
+      if (type == OpenSCADOperator::UNION || type == OpenSCADOperator::CONCAT) return right;
       else return left;
     }
   }
@@ -161,7 +163,7 @@ void CSGOperation::initBoundingBox()
   case OpenSCADOperator::UNION:        this->bbox = leftbox.merged(rightbox); break;
   case OpenSCADOperator::INTERSECTION: this->bbox = leftbox.intersection(rightbox); break;
   case OpenSCADOperator::DIFFERENCE:   this->bbox = leftbox; break;
-  case OpenSCADOperator::CONCAT:        this->bbox = leftbox.merged(rightbox); break;
+  case OpenSCADOperator::CONCAT:       this->bbox = leftbox.merged(rightbox); break;
   default:                             assert(false);
   }
 }
@@ -204,6 +206,7 @@ std::string CSGOperation::dump() const
     if (!ispostfix) {  // handle left child. only right child uses a prefix string
       std::string lpostfix;
       switch (node->type) {
+      case OpenSCADOperator::CONCAT:
       case OpenSCADOperator::UNION:        lpostfix = " + "; break;
       case OpenSCADOperator::INTERSECTION: lpostfix = " * "; break;
       case OpenSCADOperator::DIFFERENCE:   lpostfix = " - "; break;
@@ -254,7 +257,8 @@ void CSGProducts::import(std::shared_ptr<CSGNode> csgnode, OpenSCADOperator type
     auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
     if (auto leaf = std::dynamic_pointer_cast<CSGLeaf>(csgnode)) {
-      if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
+      if ((type == OpenSCADOperator::UNION || type == OpenSCADOperator::CONCAT) &&
+          this->currentproduct->intersections.size() > 0) {
         this->createProduct();
       } else if (type == OpenSCADOperator::DIFFERENCE) {
         this->currentlist = &this->currentproduct->subtractions;
@@ -273,10 +277,14 @@ void CSGProducts::import(std::shared_ptr<CSGNode> csgnode, OpenSCADOperator type
 std::string CSGProduct::dump() const
 {
   std::ostringstream dump;
-  dump << this->intersections.front().leaf->label;
-  for (const auto& csgobj :
-       boost::make_iterator_range(this->intersections.begin() + 1, this->intersections.end())) {
-    dump << " *" << csgobj.leaf->label;
+  if (this->intersections.empty()) {
+    dump << "()";
+  } else {
+    dump << this->intersections.front().leaf->label;
+    for (const auto& csgobj :
+         boost::make_iterator_range(this->intersections.begin() + 1, this->intersections.end())) {
+      dump << " *" << csgobj.leaf->label;
+    }
   }
   for (const auto& csgobj : this->subtractions) {
     dump << " -" << csgobj.leaf->label;

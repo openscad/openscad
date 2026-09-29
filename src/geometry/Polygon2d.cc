@@ -509,7 +509,28 @@ PointLocation2d Polygon2d::point_location(const Vector2d& pt, double eps) const
       const Vector2d& p1 = o.vertices[i];
       const Vector2d& p2 = o.vertices[(i + 1) % n];
       if (std::fabs(p1[1] - p2[1]) > 1e-9) {
-        if (pt[1] <= p1[1] && pt[1] > p2[1]) {
+        // Half-open interval test so a ray passing exactly through a shared
+        // vertex is attributed to exactly one of its two adjacent edges,
+        // whichever the vertex's y-value truly borders - regardless of
+        // whether that vertex is an ordinary pass-through point or a local
+        // extremum (e.g. the very top/bottom of a hole outline's own
+        // rounded boundary, where BOTH neighbors sit on the same side).
+        // That requires opposite strictness on the two endpoints of each
+        // branch: the case below previously used '<=' on p1 together with
+        // strict '>' on p2, which is backwards - it should be the near
+        // (this-edge-owns-it) endpoint that is checked strictly and the far
+        // endpoint non-strictly, matching the second branch below exactly
+        // (just with p1/p2 swapped). With the endpoints' strictness
+        // swapped as they were, a ray through a local-extremum vertex could
+        // get double- or zero-counted across its two adjacent edges instead
+        // of the required even (0 or 2) total, silently flipping even-odd
+        // parity for the remainder of that ray and misclassifying every
+        // point further along it as outside when it was actually inside
+        // (or vice versa) - reproduced and confirmed via a hole ring's own
+        // v-extremum vertex, and fixed by swapping '<=' and '>' below to
+        // match the non-strict/strict pairing the second branch already
+        // uses correctly.
+        if (pt[1] < p1[1] && pt[1] >= p2[1]) {
           const double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
           if (x > pt[0]) cuts++;
         }

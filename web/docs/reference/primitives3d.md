@@ -282,3 +282,112 @@ set `center=True` to center the generated shape's bounding box on the origin.
 
     rounded_cube(20, r=2, fn=100).show()
     ```
+
+## patch
+
+Build a triangulated surface stitched onto one outer boundary ring and zero
+or more inner boundary rings ("holes"), optionally displaced along its
+normal and optionally curved via per-ring tangents. This is a
+PythonSCAD-only extension (not part of upstream OpenSCAD).
+
+Together with `concat()`, `patch()` gives you a second way to build a
+manifold solid, alongside ordinary CSG. Rather than combining primitives
+with boolean operations, you describe the object's surface directly: each
+`patch()` call builds one wall, panel, or bridge as a mesh whose boundary
+points line up exactly with its neighbors, and `concat()` stitches those
+pieces into a single watertight object.
+
+**Syntax:**
+
+=== "Python"
+
+    ```python
+    patch(outer, holes=None, proj=None, grid_spacing_uv=1.0,
+          displacement=None, use_tangents=False)
+    ```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `outer` | list of `[x, y, z]` points, or a 2D shape | — | The outer boundary ring |
+| `holes` | list of rings (each a list of points or a 2D shape) | `None` | Zero or more inner boundary rings to cut out of the surface |
+| `proj` | function `(point) -> [u, v]` | `None` | How to flatten the boundary into a 2D domain for triangulation. Left as `None`, `patch()` picks automatically — see **Automatic behavior** below |
+| `grid_spacing_uv` | number | `1.0` | Target spacing between interior mesh points, in the flattened domain's own units. Smaller values give a finer mesh at higher cost |
+| `displacement` | function `(point) -> number` | `None` | A bump/texture function evaluated at each interior point and applied along the local surface normal. Boundary points are never displaced, so neighboring `patch()`/`concat()` calls still line up exactly |
+| `use_tangents` | bool | `False` | Bows the surface using each ring's own plane normal as a tangent, instead of a flat interpolation between rings. See **use_tangents** below |
+
+**Automatic behavior:**
+
+`outer` and each entry of `holes` is a closed ring of points (or a 2D
+shape, converted to one). `patch()` recognizes three shapes of input
+automatically, with no need to say which one you're building:
+
+- **Panel with cutouts** — `outer` and the holes lie roughly in one plane.
+  The plane is found automatically and the interior is filled in, with the
+  holes cut out.
+- **Tube wall** — `outer` and one hole ("the tube partner") sit far apart
+  along a shared axis, like one ring of a vase wall. Any further holes
+  (e.g. mounting holes drilled through the wall, at any angle) get their
+  own real 2D shape regardless of orientation, instead of collapsing to a
+  line under a plain top-down view.
+- **Bridge between two separate rings** — when `outer` and a single hole
+  are two rings that don't nest inside one another (e.g. two side ports
+  that a handle needs to arc between), `patch()` connects them directly,
+  point by point, along a curve built from each point's own position and
+  (if supplied) tangent.
+
+**use_tangents:**
+
+`use_tangents=True` uses a ring's own plane normal as its tangent — "the
+surface should leave this ring perpendicular to the shape's own plane."
+This is correct for a ring that is genuinely a side port (a hole drilled
+straight through a wall, or a handle mount), but not for an ordinary
+tapered profile: two unrotated circles forming a cone both have plane
+normals pointing straight up, which is not the direction the cone's wall
+actually travels, and would bow an otherwise straight wall into a bulge.
+Leave this at the default (`False`) unless a ring is genuinely meant to be
+left at a right angle to its own plane.
+
+**Examples:**
+
+=== "Python"
+
+    ```python
+    from pythonscad import *
+
+    # Panel with a rectangular cutout
+    outer_ring = [[0, 0, 0], [20, 0, 0], [20, 20, 0], [0, 20, 0]]
+    hole_ring = [[7, 7, 0], [13, 7, 0], [13, 13, 0], [7, 13, 0]]
+    patch(outer_ring, holes=[hole_ring]).show()
+    ```
+
+=== "Python"
+
+    ```python
+    from pythonscad import *
+
+    # A tapered tube wall between two circular rings
+    bottom_ring = circle(10)
+    top_ring = circle(6).up(30)
+    patch(bottom_ring, holes=[top_ring]).show()
+    ```
+
+=== "Python"
+
+    ```python
+    from pythonscad import *
+
+    # Building a cup with a handle: two patch() surfaces joined with concat()
+    wall = patch(outer_ring, holes=[top_ring, mount_hole_1, mount_hole_2])
+    handle = patch(tap1, holes=[tap2], use_tangents=True)
+    cup = concat(wall, handle)
+    cup.show()
+    ```
+
+**Performance:**
+
+`patch()`'s cost scales with the number of boundary and interior mesh
+points, controlled by `grid_spacing_uv`: halving it roughly quadruples the
+point and triangle count. Prefer the coarsest `grid_spacing_uv` that still
+looks acceptable before reaching for other tuning.

@@ -41,6 +41,8 @@
 #endif
 #include "core/FreetypeRenderer.h"
 #include "core/TextNode.h"
+#include "core/PatchNode.h"
+#include <Tree.h>
 
 PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1470,5 +1472,196 @@ PyObject *python_organic(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   node->d = d;
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+// 'out' gets the 3D world coordinates of 'shape_obj''s outline (via its
+// cumulative transform). 'out_normal' gets, in parallel, per point, the
+// shape's tangent/departure direction - simply the 2D plane's face
+// normal, rotated into world coordinates (trans.linear() * (0,0,1)) and
+// normalized. For a flat 2D shape this is the same vector at every
+// boundary point; patch() later uses it as the tangent for the cubic
+// blend between two rings (see geometry/patch.h/.cc).
+// 'want_normal' controls whether a tangent is computed at all - see the
+// caller python_patch_parse_ring(). When false, 'out_normal' stays
+// completely empty for this ring, and patch() is guaranteed to fall back
+// to the old, purely linear/barycentric behavior for it. This matters:
+// a 2D shape's plane normal is only a sensible patching tangent when the
+// surface is really meant to "leave" perpendicular to that plane (e.g. a
+// pipe stub on a flange). For an ordinary cone/funnel made from two
+// unrotated circle()s, both rings' plane normal is simply (0,0,1) - that
+// is NOT the direction the cone's wall actually runs in, and would
+// wrongly bow an otherwise-straight wall ("pimple"). That's why tangent
+// evaluation is strictly opt-in (see 'use_tangents' in python_patch())
+// rather than automatically attached to every shape.
+static bool python_patch_ring_from_shape(PyObject *shape_obj, std::vector<Vector3d>& out,
+                                         std::vector<Vector3d>& out_normal, bool want_normal)
+{
+  PyObject *dummydict = nullptr;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(shape_obj, &dummydict);
+  auto dummydict_owner = py_owned(dummydict);
+  if (child == nullptr) return false;
+
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  if (PyErr_Occurred()) return false;  // in case the evaluation itself already set a Python exception
+
+  auto poly2d = std::dynamic_pointer_cast<const Polygon2d>(geom);
+  if (poly2d == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "patch(): object is not a 2D shape.");
+    return false;
+  }
+
+  const auto outlines = poly2d->untransformedOutlines();
+  if (outlines.size() != 1 || outlines[0].vertices.size() < 3) {
+    PyErr_SetString(PyExc_TypeError,
+                    "patch(): 2D-shape must exactly have one outline with at least 3 points.");
+
+    return false;
+  }
+  Transform3d trans = poly2d->getTransform3d();
+  const auto& outline = outlines[0];
+
+  out.reserve(out.size() + outline.vertices.size());
+  for (const auto& v : outline.vertices) {
+    out.push_back(trans * Vector3d(v[0], v[1], 0));
+  }
+
+  if (!want_normal) return true;
+
+  Vector3d normal = trans.linear() * Vector3d(0, 0, 1);
+  double nlen = normal.norm();
+  normal = (nlen > 1e-12) ? (normal / nlen) : Vector3d(0, 0, 1);
+
+  out_normal.reserve(out_normal.size() + outline.vertices.size());
+  for (size_t i = 0; i < outline.vertices.size(); i++) out_normal.push_back(normal);
+  return true;
+}
+
+// Helper: a list of [x,y,z] points OR a 2D shape object -> std::vector<Vector3d>.
+// 'out_normal' is filled ONLY when 'ring_obj' is a 2D shape AND
+// 'want_normal' is true (see python_patch_ring_from_shape() above); in
+// all other cases (point list, or a shape without use_tangents=True) it
+// stays empty, i.e. patch() is guaranteed to fall back to the old,
+// purely linear behavior for this boundary.
+static bool python_patch_parse_ring(PyObject *ring_obj, std::vector<Vector3d>& out,
+                                    std::vector<Vector3d>& out_normal, bool want_normal)
+{
+  // New: accept a PyOpenSCAD 2D object directly (its outline is used)
+  if (PyObject_IsInstance(ring_obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    return python_patch_ring_from_shape(ring_obj, out, out_normal, want_normal);
+  }
+
+  // Previous behavior: a list of [x,y,z] points - no tangents.
+  out = python_to2dvarpointlist(ring_obj);
+  return true;
+}
+
+PyObject *python_patch(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE();
+
+  // Order deliberately chosen so the two truly important arguments (the
+  // geometry: 'outer' and 'holes') come first; everything else
+  // (projection, grid resolution, displacement, curvature) is optional
+  // and has a sensible default. 'proj' and 'displacement' remain
+  // addressable by keyword at any time regardless
+  // (patch(outer, proj=myProj, ...)), even though 'holes' comes before them.
+  char *kwlist[] = {"outer", "holes", "proj", "grid_spacing_uv", "displacement", "use_tangents", NULL};
+  PyObject *outer_obj = nullptr;
+  PyObject *holes_obj = nullptr;
+  PyObject *proj_obj = nullptr;
+  double grid_spacing_uv = 1.0;
+  PyObject *displacement_obj = nullptr;
+  PyObject *use_tangents_obj = nullptr;
+
+  // 'proj' is OPTIONAL: omitted or None -> patch() determines the
+  // projection automatically itself (see computeAutoProj() in
+  // geometry/patch.cc - distinguishes "tube between two ports" from
+  // "perforated panel in one plane"). An explicitly given proj always
+  // wins and is used unchanged.
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOdOO", kwlist, &outer_obj, &holes_obj, &proj_obj,
+                                   &grid_spacing_uv, &displacement_obj, &use_tangents_obj)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Error during parsing patch(outer, holes=None, proj=None, grid_spacing_uv=1.0, "
+                    "displacement=None, use_tangents=False)");
+    return nullptr;
+  }
+
+  // Only when the caller EXPLICITLY passes use_tangents=True is a tangent
+  // derived from the plane normal for shape boundary objects at all (see
+  // python_patch_ring_from_shape()), enabling the cubic curvature.
+  // Default (no argument, or False) = exactly the old, purely linear
+  // behavior - even when outer/holes are 2D shapes. This keeps e.g. a
+  // simple cone made from two circle()s untouched.
+  const bool use_tangents = (use_tangents_obj == Py_True);
+
+  if (proj_obj != nullptr && proj_obj != Py_None && proj_obj->ob_type != &PyFunction_Type) {
+    PyErr_SetString(PyExc_TypeError,
+                    "patch(): proj must be a function, None, or omitted (for "
+                    "automatic projection).");
+    return nullptr;
+  }
+  if (displacement_obj != nullptr && displacement_obj->ob_type != &PyFunction_Type) {
+    PyErr_SetString(PyExc_TypeError, "patch(): displacement must be a function.");
+    return nullptr;
+  }
+
+  auto node = std::make_shared<PatchNode>(instance);
+  node->use_tangents = use_tangents;
+
+  if (!python_patch_parse_ring(outer_obj, node->outer, node->outer_normal, use_tangents) ||
+      node->outer.size() < 3) {
+    PyErr_SetString(PyExc_TypeError, "patch(): outer must be a list of at least 3 [x,y,z] points.");
+    return nullptr;
+  }
+
+  if (holes_obj != nullptr && holes_obj != Py_None) {
+    if (!python_is_sequence(holes_obj)) {
+      PyErr_SetString(PyExc_TypeError, "patch(): holes must be a list of point lists.");
+      return nullptr;
+    }
+    PyObject *holeseq = PySequence_Fast(holes_obj, "expected a list of rings");
+    if (holeseq == nullptr) return nullptr;
+    Py_ssize_t nholes = PySequence_Fast_GET_SIZE(holeseq);
+    for (Py_ssize_t i = 0; i < nholes; i++) {
+      std::vector<Vector3d> hole;
+      std::vector<Vector3d> hole_normal;
+      if (!python_patch_parse_ring(PySequence_Fast_GET_ITEM(holeseq, i), hole, hole_normal,
+                                   use_tangents)) {
+        Py_DECREF(holeseq);
+        PyErr_SetString(PyExc_TypeError, "patch(): each hole must be a list of [x,y,z] points.");
+        return nullptr;
+      }
+      if (hole.size() < 3) {
+        Py_DECREF(holeseq);
+        PyErr_SetString(PyExc_TypeError, "patch(): each hole must contain at least 3 [x,y,z] points.");
+        return nullptr;
+      }
+      node->holes.push_back(std::move(hole));
+      node->holes_normal.push_back(std::move(hole_normal));
+    }
+    Py_DECREF(holeseq);
+  }
+
+  node->grid_spacing_uv = grid_spacing_uv;
+
+  if (proj_obj != nullptr && proj_obj != Py_None) {
+    Py_INCREF(proj_obj);
+    node->proj_func = (void *)proj_obj;
+    node->proj_func_hash = python_func_hash(proj_obj);
+  } else {
+    node->proj_func_hash = "auto";
+  }
+
+  if (displacement_obj != nullptr) {
+    Py_INCREF(displacement_obj);
+    node->displacement_func = (void *)displacement_obj;
+    node->displacement_func_hash = python_func_hash(displacement_obj);
+  } else {
+    node->displacement_func_hash = "none";
+  }
+
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
