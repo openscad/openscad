@@ -20,8 +20,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-        with:
-          submodules: recursive
 
       - name: Get latest upstream release
         id: get-latest-release
@@ -39,6 +37,7 @@ jobs:
       - name: Get current submodule commit
         id: get-current-submodule
         run: |
+          git submodule update --init --recursive --remote "$SUBMODULE_PATH"
           CURRENT_COMMIT=$(git submodule status "$SUBMODULE_PATH" | awk '{print $1}' | tr -d '-')
           echo "current_commit=$CURRENT_COMMIT" >> $GITHUB_OUTPUT
 
@@ -84,9 +83,6 @@ jobs:
           set -x
           git submodule status
           git -C "$SUBMODULE_PATH" log -n8 --oneline
-          git -C "$SUBMODULE_PATH" fetch --all
-          git -C "$SUBMODULE_PATH" reset --hard origin/master
-          git -C "$SUBMODULE_PATH" log -n8 --oneline
           git -C "$SUBMODULE_PATH" checkout "${{ steps.compare-releases.outputs.release_tag }}"
           git -C "$SUBMODULE_PATH" log -n8 --oneline
 
@@ -97,7 +93,7 @@ jobs:
           commit-message: "chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}"
           title: "chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}"
           body: |
-            This PR updates the submodule `${{ env.SUBMODULE_NAME }}` to the latest release tag: `${{ steps.compare-releases.outputs.release_tag }}`.
+            This PR updates the submodule `${{ env.SUBMODULE_NAME }}` from `${{ steps.get-current-submodule.outputs.current_commit }}` to the latest release tag: `${{ steps.compare-releases.outputs.release_tag }}` (Note: Releases are only picked up after a delay of ${{ env.DELAY_DAYS }} days).
             - **Upstream Release**: https://github.com/elalish/manifold/releases/tag/${{ steps.compare-releases.outputs.release_tag }}
           branch: "chore/update-manifold-${{ steps.compare-releases.outputs.release_tag }}"
           labels: |
