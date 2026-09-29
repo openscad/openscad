@@ -163,8 +163,8 @@ Project a 3D object onto the XY plane, producing a 2D shape.
 === "Python"
 
     ```python
-    projection(obj, cut=False, convexity=2)
-    obj.projection(cut=False, convexity=2)
+    projection(obj, cut=False, detail=False, convexity=2)
+    obj.projection(cut=False, detail=False, convexity=2)
     ```
 
 **Parameters:**
@@ -173,7 +173,7 @@ Project a 3D object onto the XY plane, producing a 2D shape.
 |-----------|------|---------|-------------|
 | `obj` | solid | — | 3D object to project |
 | `cut` | bool | `False` | If `True`, only the cross-section at Z=0 is returned; if `False`, the entire silhouette is projected |
-| `detail` | bool | `False` | If `True`, preserves all the edges during creating  the projection, only valid when cut is False |
+| `detail` | bool | `False` | If `True` and `cut` is `False`, preserve more silhouette edges. Only honored with the Manifold backend; ignored otherwise |
 | `convexity` | int | `2` | Convexity for rendering |
 
 **Examples:**

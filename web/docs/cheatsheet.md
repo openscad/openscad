@@ -52,11 +52,11 @@
       <div><code>circle(r=5, angle=90).show()</code></div>
 
       <div class="func"><code><a href="../reference/primitives2d/#polygon">polygon</a>(points, paths)</code></div>
-      <div>Create a 2D polygon from a list of points</div>
-      <div><code>polygon([[0,0], [10,0], [5,10]]).show()</code></div>
+      <div>Create a 2D polygon; optional <code>[x,y,r]</code> rounds a corner</div>
+      <div><code>polygon([[0,0], [10,0,2], [5,10]]).show()</code></div>
 
       <div class="func"><code><a href="../reference/primitives2d/#polyline">polyline</a>(points)</code></div>
-      <div>Create an open 2D polyline (e.g. for laser cutting)</div>
+      <div>Create an open 2D/3D polyline (e.g. for laser cutting)</div>
       <div><code>polyline([[0,0], [10,0], [5,10]]).show()</code></div>
 
       <div class="func"><code><a href="../reference/primitives2d/#spline">spline</a>(points, fn)</code></div>

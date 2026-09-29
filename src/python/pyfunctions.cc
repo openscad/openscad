@@ -625,10 +625,13 @@ PyMethodDef PyOpenSCADFunctions[] = {
    "2D polygon from points and paths.\n"
    "polygon(points=[...])\n"
    "polygon(points=[...], paths=[...])\n"
-   "polygon(points=[...], paths=[...], convexity=2)"},
+   "polygon(points=[...], paths=[...], convexity=2)\n"
+   "Each point is [x, y] or [x, y, r] where r fillets the corner.\n"
+   "Use fn/fa/fs to control fillet arc subdivision."},
   {"polyline", (PyCFunction)python_polyline, METH_VARARGS | METH_KEYWORDS,
-   "Open 2D polyline through points.\n"
-   "polyline(points=[...])"},
+   "Open 2D or 3D polyline through points.\n"
+   "polyline(points=[...])\n"
+   "Points are [x, y] (2D) or [x, y, z] (3D if any z != 0)."},
   {"spline", (PyCFunction)python_spline, METH_VARARGS | METH_KEYWORDS,
    "Smooth curve through points.\n"
    "spline(points=[...])\n"

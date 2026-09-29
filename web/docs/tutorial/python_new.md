@@ -274,6 +274,20 @@ files, and items can also be seeded directly via the constructor's
 `items=[...]` argument. See
 [Multi-tool Export](../reference/multitool.md) for the full reference.
 
+## polygon corner radius
+
+`polygon` points may include an optional third value: a corner fillet radius.
+`[x, y]` (or `[x, y, 0]`) stays sharp; `[x, y, r]` replaces that vertex with a circular arc of radius `r`. Use `fn`/`fa`/`fs` to control arc resolution. This is handy for `rotate_extrude` profiles where you want smooth transitions between slopes:
+
+```python
+from pythonscad import *
+
+pts = [[0, 0], [5, 0], [2, 25, 3], [4, 30, 1.5], [0, 30]]
+polygon(pts, fn=32).rotate_extrude(fn=64).show()
+```
+
+See [polygon](../reference/primitives2d.md#polygon) for details. Note that `polyline` uses a third coordinate as **Z** (3D path), not as a fillet radius.
+
 ## spline
 
 Spline is like 'polygon'  just with the difference, that the resulting object is very round and will meet the given points

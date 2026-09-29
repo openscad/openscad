@@ -107,16 +107,39 @@ Create a 2D polygon from a list of points.
 === "Python"
 
     ```python
-    polygon(points, paths=None, convexity=2)
+    polygon(points, paths=None, convexity=2, *, fn=None, fa=None, fs=None)
     ```
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `points` | list of `[x, y]` | — | Vertex coordinates |
+| `points` | list of `[x, y]` or `[x, y, r]` | — | Vertex coordinates. Optional third value is a corner fillet radius (PythonSCAD extension) |
 | `paths` | list of index lists | `None` | Optional paths defining which points form each outline/hole. If omitted, points are connected in order |
 | `convexity` | int | `2` | Maximum number of front/back faces a ray can intersect |
+| `fn`, `fa`, `fs` | float | — | Keyword-only controls for corner-fillet arc subdivision. Combined as lower bounds on the number of segments per fillet (not the same angle-scaled `$fn`/`$fa`/`$fs` rules used by `circle`) |
+
+**PythonSCAD extensions:**
+
+Each point may be `[x, y]` or `[x, y, r]`. When `r` is non-zero, the sharp corner at that vertex is replaced with a circular arc of radius `r`. Use `r = 0` (or omit the third value) for a sharp corner. The arc is fitted so it is tangent to both adjacent edges; `fn` / `fa` / `fs` control how finely the arc is subdivided.
+
+This is especially useful for profiles that will be `rotate_extrude`d (for example stacked frustums), where a non-zero radius turns an abrupt slope change into a smooth fillet.
+
+=== "Python"
+
+    ```python
+    from pythonscad import *
+
+    # Sharp transitions between slopes
+    sharp = polygon([[0, 0], [5, 0], [2, 25], [4, 30], [0, 30]])
+
+    # Smooth transitions: third value is corner radius at that vertex
+    smooth = polygon([[0, 0], [5, 0], [2, 25, 3], [4, 30, 1.5], [0, 30]], fn=32)
+
+    smooth.rotate_extrude().show()
+    ```
+
+The radius must fit on both adjacent edges. If `r` is larger than the shorter edge can accommodate, the resulting outline may self-intersect or look unexpected. Concave corners are supported; the fillet follows the interior angle of the polygon.
 
 **Examples:**
 
@@ -126,6 +149,9 @@ Create a 2D polygon from a list of points.
     from pythonscad import *
 
     polygon([[0, 0], [10, 0], [5, 10]]).show()
+
+    # Rounded rectangle via per-vertex radii
+    polygon([[0, 0, 2], [20, 0, 2], [20, 10, 2], [0, 10, 2]], fn=24).show()
 
     # Polygon with a hole
     polygon(
@@ -154,9 +180,11 @@ Create an open polyline from a list of points. Unlike `polygon`, a polyline is n
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `points` | list of `[x, y]` | — | Vertex coordinates connected by line segments |
+| `points` | list of `[x, y]` or `[x, y, z]` | — | Vertex coordinates connected by line segments |
 
 Polylines can carry color but have no area and are ignored in CSG operations.
+
+If every point is `[x, y]` (or has `z = 0`), the result is a 2D polyline. If any point has a non-zero `z`, the result is a **3D** polyline. Unlike `polygon`, the optional third component is a Z coordinate, not a corner radius.
 
 **Examples:**
 
@@ -167,6 +195,9 @@ Polylines can carry color but have no area and are ignored in CSG operations.
 
     for i in range(10):
         polyline([[0, i], [20, i]]).show()
+
+    # 3D polyline (any non-zero Z promotes the whole path to 3D)
+    polyline([[0, 0, 0], [10, 0, 5], [10, 10, 5]]).show()
     ```
 
 ---
