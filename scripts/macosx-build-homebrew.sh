@@ -12,20 +12,13 @@ OPENSCADDIR=$PWD
 
 printUsage()
 {
-  echo "Usage: $0 [qt5]"
+  echo "Usage: $0"
 }
 
 log()
 {
   echo "$(date):" "$@"
 }
-
-# Qt6 is default
-if [ "`echo $* | grep qt5`" ]; then
-  USE_QT6=0
-else
-  USE_QT6=1
-fi
 
 if [ ! -f $OPENSCADDIR/openscad.appdata.xml.in ]; then
   echo "Must be run from the OpenSCAD source root directory"
