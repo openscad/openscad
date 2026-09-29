@@ -145,7 +145,8 @@ add_library(svg STATIC)
 # arm64 has FMA in its baseline ISA and Clang fuses by default; the x86-64 baseline has no
 # FMA instruction, so the same expressions round at every step. path::arc_to() feeds its
 # results into a ceil() that picks the arc's segment count, so a sub-ulp difference there
-# changes the number of segments and hence every emitted coordinate. See #6161.
+# changes the number of segments and hence every emitted coordinate.
+# See https://github.com/openscad/openscad/issues/6161.
 if(NOT MSVC)
   target_compile_options(svg PRIVATE -ffp-contract=off)
 endif()
