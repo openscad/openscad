@@ -471,6 +471,5 @@ void ParameterWidget::cleanSets()
 
 void ParameterWidget::setFontFamilySize(const QString& fontFamily, uint fontSize)
 {
-  scrollArea->setStyleSheet(
-    QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
+  scrollArea->setFont(QFont(fontFamily, fontSize));
 }
