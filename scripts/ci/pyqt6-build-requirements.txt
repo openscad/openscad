@@ -1,5 +1,5 @@
 # Pin the code-generation toolchain used by immutable binding artifacts.
-sip==6.16.1
+sip==6.15.3
 PyQt-builder==1.19.1
 PyQt6-sip==13.12.0
 packaging==26.3
