@@ -3574,6 +3574,13 @@ void MainWindow::setupPreferences()
  */
 void MainWindow::setupStatusBar()
 {
+  // Remove ugly frames in the QStatusBar when using additional widgets.
+  const auto stylesheet = QString(R"(
+    QStatusBar::item {
+        border: 0px solid black;
+    }
+  )");
+  this->statusBar()->setStyleSheet(stylesheet);
   this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
 }

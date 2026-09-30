@@ -116,19 +116,8 @@ void OpenSCADApp::setRenderBackend3D(RenderBackend3D backend)
 
 void OpenSCADApp::setApplicationFont(const QString& family, uint size)
 {
-  // Trigger style sheet refresh to update the application font
-  // (hopefully) everywhere. Also remove ugly frames in the QStatusBar
-  // when using additional widgets
-  const auto stylesheet = QString(R"(
-    * {
-        font-family: '%1';
-        font-size: %2pt;
-    }
-    QStatusBar::item {
-        border: 0px solid black;
-    }
-  )");
-  scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
+  // Update the application font (hopefully) everywhere.
+  scadApp->setFont(QFont(family, size));
 }
 
 // For Qt5, simulate the Qt6 behavior.
