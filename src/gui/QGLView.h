@@ -92,6 +92,7 @@ private:
   QPoint last_mouse;
 #endif
   QImage frame;  // Used by grabFrame() and save()
+  double smoothedFPS = 0;
 
   void wheelEvent(QWheelEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
