@@ -19,16 +19,6 @@
 #endif
 #ifdef ENABLE_OSMESA
 #include "glview/OffscreenContextOSMesa.h"
-#ifndef GLAPI
-#define GLAPI extern
-#endif
-#ifndef GLAPIENTRY
-#define GLAPIENTRY
-#endif
-#ifndef APIENTRY
-#define APIENTRY GLAPIENTRY
-#endif
-#include <GL/osmesa.h>
 #endif
 
 namespace {

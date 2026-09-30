@@ -9,3 +9,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextOSMesa(uint32_t width, u
                                                                uint32_t majorGLVersion,
                                                                uint32_t minorGLVersion,
                                                                bool compatibilityProfile);
+
+#ifdef ENABLE_OSMESA
+extern "C" void (*OSMesaGetProcAddress(const char *funcName))(void);
+#endif

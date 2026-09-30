@@ -21,21 +21,21 @@ Result Variables
 
 find_package(PkgConfig QUIET)
 if(PKG_CONFIG_FOUND)
-  set(_OSMESA_HINTS
-    ${OSMesa_ROOT}
-    ${OSMESA_ROOT}
-    ${CMAKE_PREFIX_PATH}
-    "${CMAKE_SOURCE_DIR}/dependencies/mesa_install"
-    "${CMAKE_BINARY_DIR}/dependencies/mesa_install"
-  )
-  set(_OSMESA_SAVED_PKG_CONFIG_PATH "$ENV{PKG_CONFIG_PATH}")
-  foreach(_hint ${_OSMESA_HINTS})
-    if(EXISTS "${_hint}/lib/pkgconfig")
-      set(ENV{PKG_CONFIG_PATH} "${_hint}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-    endif()
-  endforeach()
   pkg_check_modules(PC_OSMESA QUIET osmesa)
-  set(ENV{PKG_CONFIG_PATH} "${_OSMESA_SAVED_PKG_CONFIG_PATH}")
+endif()
+
+# Hints for Homebrew installations (both linked and keg-only)
+set(_OSMESA_BREW_PREFIX "")
+if(APPLE AND NOT CMAKE_CROSSCOMPILING)
+  find_program(_BREW_BIN brew)
+  if(_BREW_BIN)
+    execute_process(
+      COMMAND ${_BREW_BIN} --prefix osmesa
+      OUTPUT_VARIABLE _OSMESA_BREW_PREFIX
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+  endif()
 endif()
 
 find_path(OSMESA_INCLUDE_DIR
@@ -44,13 +44,14 @@ find_path(OSMESA_INCLUDE_DIR
     ${OSMesa_ROOT}
     ${OSMESA_ROOT}
     ${CMAKE_PREFIX_PATH}
-    "${CMAKE_SOURCE_DIR}/dependencies/mesa_install"
-    "${CMAKE_BINARY_DIR}/dependencies/mesa_install"
     ${PC_OSMESA_INCLUDEDIR}
     ${PC_OSMESA_INCLUDE_DIRS}
+    ${_OSMESA_BREW_PREFIX}
   PATH_SUFFIXES
     include
   PATHS
+    /opt/homebrew/opt/osmesa/include
+    /usr/local/opt/osmesa/include
     /opt/homebrew/include
     /usr/local/include
     /usr/include
@@ -62,13 +63,14 @@ find_library(OSMESA_LIBRARY
     ${OSMesa_ROOT}
     ${OSMESA_ROOT}
     ${CMAKE_PREFIX_PATH}
-    "${CMAKE_SOURCE_DIR}/dependencies/mesa_install"
-    "${CMAKE_BINARY_DIR}/dependencies/mesa_install"
     ${PC_OSMESA_LIBDIR}
     ${PC_OSMESA_LIBRARY_DIRS}
+    ${_OSMESA_BREW_PREFIX}
   PATH_SUFFIXES
     lib
   PATHS
+    /opt/homebrew/opt/osmesa/lib
+    /usr/local/opt/osmesa/lib
     /opt/homebrew/lib
     /usr/local/lib
     /usr/lib

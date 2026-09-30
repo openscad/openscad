@@ -6,16 +6,15 @@
 #include <string>
 #include <vector>
 
+// On macOS, if Apple's <OpenGL/gl.h> was included first, its __gl_h_ guard causes
+// Mesa's <GL/gl.h> to be skipped when included by <GL/osmesa.h>. Apple's header does
+// not define GLAPI or APIENTRY, so ensure they are defined before including <GL/osmesa.h>.
 #ifndef GLAPI
 #define GLAPI extern
 #endif
-#ifndef GLAPIENTRY
-#define GLAPIENTRY
-#endif
 #ifndef APIENTRY
-#define APIENTRY GLAPIENTRY
+#define APIENTRY
 #endif
-
 #include <GL/osmesa.h>
 
 #include "utils/printutils.h"
@@ -67,15 +66,9 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextOSMesa(uint32_t width, u
 {
   auto ctx = std::make_shared<OffscreenContextOSMesa>(width, height);
 
-  std::vector<int> attribs;
-  attribs.push_back(OSMESA_FORMAT);
-  attribs.push_back(OSMESA_RGBA);
-  attribs.push_back(OSMESA_DEPTH_BITS);
-  attribs.push_back(24);
-  attribs.push_back(OSMESA_STENCIL_BITS);
-  attribs.push_back(8);
-  attribs.push_back(OSMESA_ACCUM_BITS);
-  attribs.push_back(0);
+  std::vector<int> attribs = {
+    OSMESA_FORMAT, OSMESA_RGBA, OSMESA_DEPTH_BITS, 24, OSMESA_STENCIL_BITS, 8, OSMESA_ACCUM_BITS, 0,
+  };
 
   if (majorGLVersion >= 3) {
     attribs.push_back(OSMESA_PROFILE);

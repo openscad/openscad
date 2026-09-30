@@ -49,7 +49,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_CCACHE=OFF -DUSE_BUILTIN_OPENCSG=ON -DENABLE_OSMESA=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_CCACHE=OFF -DUSE_BUILTIN_OPENCSG=ON -DENABLE_OSMESA=ON -DDEFAULT_OFFSCREEN_CONTEXT=osmesa
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite
@@ -57,7 +57,6 @@ jobs:
       # Quartz backend which doesn't have the Liberation Sans font we use.
       run: |
         cd build
-        export OPENSCAD_OFFSCREEN_CONTEXT=osmesa
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
