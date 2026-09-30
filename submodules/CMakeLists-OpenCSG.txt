@@ -29,6 +29,8 @@ target_include_directories(OpenCSGObjects PRIVATE
   submodules/OpenCSG/include
 )
 if(ENABLE_OSMESA)
+  # Temporary workaround: substitute ensureFunctionPointers to load via OSMesaGetProcAddress.
+  # TODO: Remove once upstream OpenCSG provides an official proc-address loader API.
   target_compile_definitions(OpenCSGObjects PRIVATE ENABLE_OSMESA)
   set_source_files_properties(
     submodules/OpenCSG/src/context.cpp
