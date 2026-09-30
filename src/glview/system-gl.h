@@ -4,6 +4,9 @@
 
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include <GL/glew.h>
+#ifdef DIFFERENCE
+#undef DIFFERENCE
+#endif
 #endif
 #ifdef USE_GLAD
 #ifdef _WIN32
