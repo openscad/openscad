@@ -20,6 +20,69 @@
 #include <opencsg.h>
 #endif
 
+namespace {
+
+void local_gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+{
+  GLdouble ymax = zNear * tan_degrees(fovy / 2.0);
+  GLdouble ymin = -ymax;
+  GLdouble xmin = ymin * aspect;
+  GLdouble xmax = ymax * aspect;
+  glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+}
+
+void local_gluLookAt(GLdouble eyeX, GLdouble eyeY, GLdouble eyeZ, GLdouble centerX, GLdouble centerY,
+                     GLdouble centerZ, GLdouble upX, GLdouble upY, GLdouble upZ)
+{
+  double fx = centerX - eyeX;
+  double fy = centerY - eyeY;
+  double fz = centerZ - eyeZ;
+  double rlf = 1.0 / std::sqrt(fx * fx + fy * fy + fz * fz);
+  fx *= rlf;
+  fy *= rlf;
+  fz *= rlf;
+
+  double sx = fy * upZ - fz * upY;
+  double sy = fz * upX - fx * upZ;
+  double sz = fx * upY - fy * upX;
+  double rls = 1.0 / std::sqrt(sx * sx + sy * sy + sz * sz);
+  sx *= rls;
+  sy *= rls;
+  sz *= rls;
+
+  double ux = sy * fz - sz * fy;
+  double uy = sz * fx - sx * fz;
+  double uz = sx * fy - sy * fx;
+
+  GLdouble m[16] = {sx, ux, -fx, 0.0, sy, uy, -fy, 0.0, sz, uz, -fz, 0.0, 0.0, 0.0, 0.0, 1.0};
+  glMultMatrixd(m);
+  glTranslated(-eyeX, -eyeY, -eyeZ);
+}
+
+GLint local_gluProject(GLdouble objx, GLdouble objy, GLdouble objz, const GLdouble model[16],
+                       const GLdouble proj[16], const GLint viewport[4], GLdouble *winx, GLdouble *winy,
+                       GLdouble *winz)
+{
+  double in[4] = {objx, objy, objz, 1.0};
+  double out[4];
+  for (int i = 0; i < 4; ++i) {
+    out[i] = in[0] * model[i] + in[1] * model[4 + i] + in[2] * model[8 + i] + in[3] * model[12 + i];
+  }
+  for (int i = 0; i < 4; ++i) {
+    in[i] = out[0] * proj[i] + out[1] * proj[4 + i] + out[2] * proj[8 + i] + out[3] * proj[12 + i];
+  }
+  if (in[3] == 0.0) return GL_FALSE;
+  in[0] /= in[3];
+  in[1] /= in[3];
+  in[2] /= in[3];
+  *winx = viewport[0] + (1.0 + in[0]) * viewport[2] / 2.0;
+  *winy = viewport[1] + (1.0 + in[1]) * viewport[3] / 2.0;
+  *winz = (1.0 + in[2]) / 2.0;
+  return GL_TRUE;
+}
+
+}  // namespace
+
 GLView::GLView()
 {
   aspectratio = 1;
@@ -128,7 +191,7 @@ void GLView::setupCamera()
   auto dist = cam.zoomValue();
   switch (this->cam.projection) {
   case Camera::ProjectionType::PERSPECTIVE: {
-    gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+    local_gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
     break;
   }
   default:
@@ -140,9 +203,9 @@ void GLView::setupCamera()
   }
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(0.0, -dist, 0.0,  // eye
-            0.0, 0.0, 0.0,    // center
-            0.0, 0.0, 1.0);   // up
+  local_gluLookAt(0.0, -dist, 0.0,  // eye
+                  0.0, 0.0, 0.0,    // center
+                  0.0, 0.0, 1.0);   // up
 
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
@@ -341,9 +404,9 @@ void GLView::showSmallaxes(const Color4f& col)
   auto scale = 90.0;
   glOrtho(-scale * dpi * aspectratio, scale * dpi * aspectratio, -scale * dpi, scale * dpi, -scale * dpi,
           scale * dpi);
-  gluLookAt(0.0, -1.0, 0.0,  // eye
-            0.0, 0.0, 0.0,   // center
-            0.0, 0.0, 1.0);  // up
+  local_gluLookAt(0.0, -1.0, 0.0,  // eye
+                  0.0, 0.0, 0.0,   // center
+                  0.0, 0.0, 1.0);  // up
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -374,17 +437,17 @@ void GLView::showSmallaxes(const Color4f& col)
   glGetIntegerv(GL_VIEWPORT, viewport);
 
   GLdouble xlabel_x, xlabel_y, xlabel_z;
-  gluProject(12 * dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
+  local_gluProject(12 * dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
   xlabel_x = std::round(xlabel_x);
   xlabel_y = std::round(xlabel_y);
 
   GLdouble ylabel_x, ylabel_y, ylabel_z;
-  gluProject(0, 12 * dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
+  local_gluProject(0, 12 * dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
   ylabel_x = std::round(ylabel_x);
   ylabel_y = std::round(ylabel_y);
 
   GLdouble zlabel_x, zlabel_y, zlabel_z;
-  gluProject(0, 0, 12 * dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
+  local_gluProject(0, 0, 12 * dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
   zlabel_x = std::round(zlabel_x);
   zlabel_y = std::round(zlabel_y);
 
