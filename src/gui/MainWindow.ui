@@ -231,9 +231,8 @@
      <addaction name="fileActionExportOBJ"/>
      <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
-     <addaction name="fileActionExportWRL"/>
-     <addaction name="fileActionExportAMF"/>
-     <addaction name="fileActionExport3MF"/>
+      <addaction name="fileActionExportWRL"/>
+      <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
@@ -1474,14 +1473,6 @@
    </property>
    <property name="text">
     <string>Export as S&amp;VG...</string>
-   </property>
-  </action>
-  <action name="fileActionExportAMF">
-   <property name="icon">
-    <iconset theme="chokusen-export-amf"/>
-   </property>
-   <property name="text">
-    <string>Export as &amp;AMF...</string>
    </property>
   </action>
   <action name="fileActionExport3MF">

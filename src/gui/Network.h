@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2026 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QObject>
+#include <QSslConfiguration>
+#include <QSslSocket>
 #include <QString>
 #include <QTimer>
 #include <QtNetwork>
@@ -41,6 +43,8 @@
 #include <utility>
 #include <vector>
 
+#include "core/Settings.h"
+#include "gui/CaCerts.h"
 #include "gui/NetworkSignal.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
@@ -116,6 +120,20 @@ ResultType NetworkRequest<ResultType>::execute(const NetworkRequest::setup_func_
   request.setHeader(QNetworkRequest::UserAgentHeader,
                     QString::fromStdString(PlatformUtils::user_agent()));
   setup_func(request);
+
+  const auto caCertPath = QString::fromStdString(Settings::Settings::caCertPath.value());
+  const auto tlsSkipVerify = Settings::Settings::tlsSkipVerify.value();
+  if (!caCertPath.isEmpty() || tlsSkipVerify) {
+    QSslConfiguration sslConfig = request.sslConfiguration();
+    if (tlsSkipVerify) {
+      sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    } else {
+      const auto certs = loadCustomCaCerts(caCertPath);
+      // requires Qt5.15 or Qt6
+      sslConfig.addCaCertificates(certs);
+    }
+    request.setSslConfiguration(sslConfig);
+  }
 
   QNetworkAccessManager nam;
   QNetworkReply *reply = reply_func(nam, request);

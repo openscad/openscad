@@ -1,0 +1,15 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "Defaults": {
+            "LargeScalar": "6",
+            "LargeVectorFwd": "[5, 6, 7, 8]",
+            "LargeVectorRev": "[8, 7, 6, 5]",
+            "MixedVectorFwd": "[0, 1, 2, 3]",
+            "MixedVectorRev": "[3, 2, 1, 0]",
+            "SmallScalar": "0",
+            "SmallVectorFwd": "[5, 4, 3, 2]",
+            "SmallVectorRev": "[2, 3, 4, 5]"
+        }
+    }
+}

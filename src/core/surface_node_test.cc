@@ -1,20 +1,11 @@
 #include "core/SurfaceNode.h"
 
 #include <catch2/catch_all.hpp>
-#include <filesystem>
 #include <vector>
-
-namespace fs = std::filesystem;
 
 static std::string get_test_image(const std::string& name)
 {
-  if (fs::exists("tests/data/image/" + name)) {
-    return "tests/data/image/" + name;
-  }
-  if (fs::exists("../tests/data/image/" + name)) {
-    return "../tests/data/image/" + name;
-  }
-  return name;
+  return std::string(OPENSCAD_TEST_DATA_DIR) + "/image/" + name;
 }
 
 TEST_CASE("SurfaceNode 8-bit and 16-bit PNG import", "[core][SurfaceNode]")

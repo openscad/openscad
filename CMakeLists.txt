@@ -49,10 +49,13 @@ option(HEADLESS "Build without GUI frontend" OFF)
 option(USE_QT6 "Build the GUI with Qt6" ON)
 option(ENABLE_EGL "Enable EGL support if available" ON)
 option(ENABLE_GLX "Enable GLX support if available" ON)
+option(ENABLE_OSMESA "Enable OSMesa support if available" OFF)
+option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
+
+set(DEFAULT_OFFSCREEN_CONTEXT "" CACHE STRING "Default offscreen OpenGL context provider (cgl, osmesa, egl, glx, wgl-old, nullgl)")
 # For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
 option(USE_GLAD "Use GLAD. Mutually exclusive from USE_GLEW" OFF)
 option(USE_GLEW "Use GLEW. Mutually exclusive from USE_GLAD" OFF)
-option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
@@ -80,7 +83,7 @@ cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT 
 set(ENABLE_GAMEPAD "AUTO" CACHE STRING "Enable Qt5Gamepad input driver")
 set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
 set(WASM_BUILD_TYPE "web" CACHE STRING
-  "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
+  "WebAssembly build type. Support web (builds an OpenSCAD module), node (standalone .js executable) or node-module (ES module for node)")
 
 if (USE_QT6)
   # Minimum version required for Qt-6.8
@@ -141,6 +144,15 @@ set_target_properties(OpenSCADLibInternal PROPERTIES
 )
 
 add_library(svg STATIC)
+# Disable floating-point contraction (fusing a*b+c into a single fma) for the SVG code.
+# arm64 has FMA in its baseline ISA and Clang fuses by default; the x86-64 baseline has no
+# FMA instruction, so the same expressions round at every step. path::arc_to() feeds its
+# results into a ceil() that picks the arc's segment count, so a sub-ulp difference there
+# changes the number of segments and hence every emitted coordinate.
+# See https://github.com/openscad/openscad/issues/6161.
+if(NOT MSVC)
+  target_compile_options(svg PRIVATE -ffp-contract=off)
+endif()
 target_link_libraries(OpenSCADExe PUBLIC svg)
 # TODO: https://github.com/openscad/openscad/issues/6369 - Update includes so we don't need this, which also prevents trivially including other parts of OpenSCAD.
 target_include_directories(svg PUBLIC
@@ -346,8 +358,22 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       POST_BUILD TARGET OpenSCADExe
       COMMAND ${CMAKE_COMMAND} "-DFILE=$<TARGET_FILE:OpenSCADExe>" -P "${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake"
     )
+  elseif (WASM_BUILD_TYPE STREQUAL "node-module")
+    target_link_options(OpenSCADExe PUBLIC
+      -sENVIRONMENT=node,worker
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=OpenSCAD
+      -sMODULARIZE=1
+      -sNODERAWFS
+
+      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
+      $<$<CONFIG:Release>:-sSINGLE_FILE>
+
+      # Alternatively to single-file mode, code caching could make repeated runs faster:
+      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
+    )
   else()
-    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
+    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, node-module, web)")
   endif()
 endif()
 
@@ -418,6 +444,9 @@ macro(find_graphics)
 
     set(OPENSCAD_UNITY_BUILD ${CMAKE_UNITY_BUILD})
     set(CMAKE_UNITY_BUILD OFF)
+    if(APPLE AND ENABLE_OSMESA)
+      set(USE_BUILTIN_OPENCSG ON)
+    endif()
     if(NOT USE_BUILTIN_OPENCSG)
       find_package(OpenCSG REQUIRED QUIET)
       target_link_libraries(OpenSCADLibInternal PUBLIC ${OPENCSG_LIBRARY})
@@ -786,19 +815,15 @@ if(NOT HEADLESS)
   if (APPLE AND EXISTS /usr/local/opt/qt)
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
   endif()
+  if (APPLE AND EXISTS /opt/homebrew/opt/qt)
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt")
+  endif()
   if (USE_QT6)
     if (APPLE AND EXISTS /usr/local/opt/qt@6)
       list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@6")
     endif()
     if (APPLE AND EXISTS /opt/homebrew/opt/qt@6)
       list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@6")
-    endif()
-  else()
-    if (APPLE AND EXISTS /usr/local/opt/qt@5)
-      list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
-    endif()
-    if (APPLE AND EXISTS /opt/homebrew/opt/qt@5)
-      list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
     endif()
   endif()
 
@@ -931,22 +956,19 @@ endif()
 # Stack size 8MB; github issue 116
 target_compile_definitions(OpenSCADLibInternal PUBLIC "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
 
+set(OFFSCREEN_METHODS "")
 if(NULLGL)
-  set(OFFSCREEN_METHOD "NULLGL")
-  message(STATUS "Offscreen OpenGL Context - using NULLGL")
-else()
-  SET(OFFSCREEN_METHOD "<undefined>")
+  list(APPEND OFFSCREEN_METHODS "nullgl")
 endif()
 if(APPLE)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_OS="Mac OS X")
-  message(STATUS "Offscreen OpenGL Context - using Apple CGL/NSOpenGL")
   set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
     target_compile_definitions(OpenSCADLibInternal PUBLIC GL_SILENCE_DEPRECATION)
-    set(OFFSCREEN_METHOD "Apple CGL/NSOpenGL")
+    list(APPEND OFFSCREEN_METHODS "cgl")
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
         src/glview/offscreen-old/OffscreenContextNSOpenGL.mm
         src/glview/OffscreenContextCGL.cc)
@@ -957,10 +979,9 @@ elseif(UNIX)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_OS="Unix")
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
   if(NOT NULLGL)
-    set(OFFSCREEN_METHOD "Unix")
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
       target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_EGL)
-      set(OFFSCREEN_METHOD "${OFFSCREEN_METHOD} EGL")
+      list(APPEND OFFSCREEN_METHODS "egl")
       set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
 	src/glview/offscreen-old/OffscreenContextEGL.cc
         src/glview/OffscreenContextEGL.cc)
@@ -971,26 +992,48 @@ elseif(UNIX)
     endif()
     if(ENABLE_GLX AND OpenGL_GLX_FOUND)
       target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_GLX)
-      set(OFFSCREEN_METHOD "${OFFSCREEN_METHOD} GLX")
+      list(APPEND OFFSCREEN_METHODS "glx")
       set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
           src/glview/offscreen-old/OffscreenContextGLX.cc
           src/glview/OffscreenContextGLX.cc)
       find_package(X11 REQUIRED)
       target_link_libraries(OpenSCADLibInternal PUBLIC X11::X11 ${CMAKE_DL_LIBS})
     endif()
-    message(STATUS "Offscreen OpenGL Context - using ${OFFSCREEN_METHOD}")
   endif()
 elseif(WIN32)
   target_compile_definitions(OpenSCADLibInternal PUBLIC NOGDI)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_OS="Windows")
-  message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-win.cc)
   if(NOT NULLGL)
-    set(OFFSCREEN_METHOD "Windows WGL")
-    message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextWGL.cc)
+    list(APPEND OFFSCREEN_METHODS "wgl-old")
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        src/glview/offscreen-old/OffscreenContextWGL.cc
+        src/glview/OffscreenContextWGL.cc)
   endif()
 endif()
+
+if(ENABLE_OSMESA AND NOT NULLGL)
+  find_package(OSMesa)
+  if(OSMESA_FOUND)
+    target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_OSMESA)
+    target_link_libraries(OpenSCADLibInternal PUBLIC OSMesa::OSMesa)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        src/glview/OffscreenContextOSMesa.cc)
+    list(APPEND OFFSCREEN_METHODS "osmesa")
+  endif()
+endif()
+
+if(NOT OFFSCREEN_METHODS)
+  message(FATAL_ERROR "No offscreen OpenGL context provider found on this system.")
+endif()
+
+if(NOT DEFAULT_OFFSCREEN_CONTEXT)
+  list(GET OFFSCREEN_METHODS 0 DEFAULT_OFFSCREEN_CONTEXT)
+elseif(NOT DEFAULT_OFFSCREEN_CONTEXT IN_LIST OFFSCREEN_METHODS)
+  list(JOIN OFFSCREEN_METHODS ", " OFFSCREEN_METHODS_STR)
+  message(FATAL_ERROR "DEFAULT_OFFSCREEN_CONTEXT '${DEFAULT_OFFSCREEN_CONTEXT}' is not among available providers: ${OFFSCREEN_METHODS_STR}")
+endif()
+target_compile_definitions(OpenSCADLibInternal PUBLIC DEFAULT_OFFSCREEN_CONTEXT="${DEFAULT_OFFSCREEN_CONTEXT}")
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
@@ -1045,6 +1088,7 @@ set(CORE_SOURCES
   src/core/TransformNode.cc
   src/core/Tree.cc
   src/core/UndefType.cc
+  src/core/UnicodeIdentifier.cc
   src/core/UserModule.cc
   src/core/Value.cc
   src/core/builtin_functions.cc
@@ -1085,6 +1129,7 @@ set(CORE_SOURCES
   src/geometry/rotate_extrude.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
+  src/glview/CsgInfo.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/preview/CSGTreeNormalizer.cc
@@ -1092,7 +1137,6 @@ set(CORE_SOURCES
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
-  src/io/export_amf.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
   src/io/export_off.cc
@@ -1104,7 +1148,6 @@ set(CORE_SOURCES
   src/io/export_param.cc
   src/io/export_wrl.cc
   src/io/fileutils.cc
-  src/io/import_amf.cc
   src/io/import_json.cc
   src/io/import_obj.cc
   src/io/import_off.cc
@@ -1295,7 +1338,7 @@ set(GUI_SOURCES
   ${GUI_SOURCES}
   src/openscad_gui.cc
   src/gui/AutoUpdater.cc
-  src/gui/CGALWorker.cc
+  src/gui/GeometryWorker.cc
   src/gui/ViewportControl.cc
   src/gui/Console.cc
   src/gui/Dock.cc
@@ -1375,7 +1418,7 @@ set(GUI_HEADERS
     src/gui/Animate.h
     src/gui/AppleEvents.h
     src/gui/AutoUpdater.h
-    src/gui/CGALWorker.h
+    src/gui/GeometryWorker.h
     src/gui/Console.h
     src/gui/Dock.h
     src/gui/Editor.h
@@ -1577,6 +1620,7 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
+  "src/io/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
@@ -1798,6 +1842,8 @@ if(ENABLE_TESTS)
       add_executable(OpenSCADUnitTests ${TEST_SOURCES} ${GUI_TEST_SOURCES})
     endif()
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
+    target_compile_definitions(OpenSCADUnitTests PRIVATE
+      OPENSCAD_TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/tests/data")
     include(CTest)
     include(Catch)
     catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)

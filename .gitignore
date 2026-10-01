@@ -31,7 +31,6 @@ object_script.openscad.Release
 /*.stl
 /*.dxf
 /*.off
-/*.amf
 /*.png
 /*.csg
 /*.nef3
@@ -77,6 +76,7 @@ src/*.debug
 .DS_Store
 /build
 /build-web
+/build-node
 /release
 tests/DartConfiguration.tcl
 tests/__pycache__/

@@ -1,0 +1,57 @@
+sphere($fn = 0, $fa = 12, $fs = 2, r = 1, style = "octa");
+multmatrix([[1, 0, 0, 14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 28], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 42], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 56], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 14], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 3, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 14], [0, 1, 0, 14], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 10, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 28], [0, 1, 0, 14], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 16, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 42], [0, 1, 0, 14], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 24, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 56], [0, 1, 0, 14], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0.1, $fa = 12, $fs = 2, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 28], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 20, $fs = 0.3, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 14], [0, 1, 0, 28], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 30, $fs = 0.3, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 28], [0, 1, 0, 28], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 40, $fs = 0.3, r = 5, style = "octa");
+}
+multmatrix([[1, 0, 0, 42], [0, 1, 0, 28], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
+}
+multmatrix([[1, 0, 0, 56], [0, 1, 0, 28], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 42], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 0, style = "octa");
+}
+multmatrix([[1, 0, 0, 14], [0, 1, 0, 42], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 16, $fa = 12, $fs = 2, r = 4, style = "octa");
+	cylinder($fn = 16, $fa = 12, $fs = 2, h = 5, r1 = 4, r2 = 4, center = false);
+	multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+		cylinder($fn = 16, $fa = 12, $fs = 2, h = 5, r1 = 4, r2 = 4, center = false);
+	}
+	multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
+		cylinder($fn = 16, $fa = 12, $fs = 2, h = 5, r1 = 4, r2 = 4, center = false);
+	}
+}
+

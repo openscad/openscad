@@ -36,6 +36,7 @@ updatepot()
  OPTS=$OPTS' --package-version='$VER
  OPTS=$OPTS' --default-domain=openscad'
  OPTS=$OPTS' --language=c++'
+ OPTS=$OPTS' --from-code=UTF-8'
  OPTS=$OPTS' --keyword=' #without WORD means not to use default keywords
  OPTS=$OPTS' --keyword=_'
  OPTS=$OPTS' --keyword=q_'

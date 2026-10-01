@@ -83,6 +83,10 @@ endif()
 message("running '@OPENSCAD_BINPATH@ --info' to generate sysinfo.txt")
 execute_process(COMMAND @OPENSCAD_BINPATH@ --info OUTPUT_FILE sysinfo.txt)
 
+# Marks when this run started testing, so the post-test hook below can tell "the log this run
+# wrote" from "whichever LastTest.log* happens to be newest" -- see findlogfile() in
+# test_pretty_print.py.
+set(CTEST_CUSTOM_PRE_TEST ${CTEST_CUSTOM_PRE_TEST} "@Python3_EXECUTABLE@ \"@CMAKE_CURRENT_SOURCE_DIR@/test_pretty_print.py\" --mark-run --builddir=@CMAKE_BINARY_DIR@")
 set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@Python3_EXECUTABLE@ \"@CMAKE_CURRENT_SOURCE_DIR@/test_pretty_print.py\" --builddir=@CMAKE_BINARY_DIR@")
 
 if ( ${debug_openscad_template} )

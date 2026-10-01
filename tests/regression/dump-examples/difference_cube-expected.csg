@@ -2,6 +2,6 @@ group();
 group() {
 	difference() {
 		cube(size = [30, 30, 30], center = true);
-		sphere($fn = 0, $fa = 12, $fs = 2, r = 20);
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 20, style = "orig");
 	}
 }

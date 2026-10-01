@@ -110,7 +110,7 @@ Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
 * [cmake (3.5 ->)](https://cmake.org/)
-* [Qt (5.12 ->)](https://qt.io/)
+* [Qt (5.15 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
@@ -130,7 +130,7 @@ Follow the instructions for the platform you're compiling on below.
 * [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
 
 For the test suite, additional requirements are:
-* Python3 (3.8 -> )
+* Python3 (3.9 -> )
 * [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
 * [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
@@ -288,6 +288,43 @@ build-node/openscad.js --help
 
 > [!NOTE]
 > With a debug build (`-DCMAKE_BUILD_TYPE=Debug`), you can set C++ breakpoints in VSCode + Node ([needs an extension](https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_debugging-webassembly)).
+
+#### node.js module build
+
+The following command creates `build-node/openscad.js`, which is a node module that can be imported into other node programs:
+
+```bash
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-node -DWASM_BUILD_TYPE=node-module -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-node -j2
+```
+
+Example usage:
+
+```js
+import OpenSCAD from "./build-node/openscad.js";
+
+const instance = await OpenSCAD({
+    noInitialRun: true,
+    print: (text) => {
+        console.debug('stdout: ' + text);
+    },
+    printErr: (text) => {
+        console.debug('stderr: ' + text);
+    },
+});
+
+const inFile = "model.scad";
+const outFile = "model.stl";
+
+instance.callMain([
+    inFile,
+    "-o", outFile,
+    "--backend=manifold",
+    "--export-format=binstl",
+]);
+
+// Model is now generated
+```
 
 ### Compilation
 

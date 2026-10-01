@@ -175,8 +175,14 @@ void Lex::finalize_rules()
 {
   // These need to come after keywords, so they don't accidentally match.
   // Sadly, order of definition matters, as well as enum.
-  rules_.push("[a-zA-Z0-9_]+", evariable);
-  rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
+  //
+  // Identifiers may contain non-ASCII characters, see core/lexer.l. lexertl
+  // matches bytes, so every byte outside ASCII is accepted here rather than
+  // spelling out the UTF-8 encoding of the permitted code points. This only
+  // drives highlighting; deciding which code points are actually valid is the
+  // parser's job, and it reports the ones that are not.
+  rules_.push("[a-zA-Z0-9_\\x80-\\xff]+", evariable);
+  rules_.push("[$][a-zA-Z0-9_\\x80-\\xff]+", especialVariable);
 
   rules_.push("INITIAL", "\"/*\"", ecomment, "COMMENT");
   rules_.push("COMMENT", "[^*]+|.", ecomment, "COMMENT");

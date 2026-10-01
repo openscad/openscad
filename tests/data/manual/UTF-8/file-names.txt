@@ -63,8 +63,7 @@ L       Mojibake on the console with default CHCP 437, not with CHCP 65001
 5b2     OK      OK      OK      - - off
 5b3     OK      OK      OK      - - obj
 5b4     OK      OK      g       - - 3mf
-5b5     OK      OK      OK      - - amf
-5b6     OK      OK      OK      - - off
+5b5     OK      OK      OK      - - off
 5c      -       -       -       - Data
 5c1     OK      OK      OK      - - JSON
 6       -       -       -       surface()
@@ -78,11 +77,10 @@ L       Mojibake on the console with default CHCP 437, not with CHCP 65001
 7b      -       -       -       - 3D
 7b1     OK      OK      OK      - - stl
 7b2     OK      OK      OK      - - off
-7b3     OK      OK      OK      - - amf
-7b4     OK      OK      OK      - - obj
-7b5     OK      OK      OK      - - pov
-7b6     OK      OK      OK      - - wrl
-7b7     OK      OK      OK      - - 3mf
+7b3     OK      OK      OK      - - obj
+7b4     OK      OK      OK      - - pov
+7b5     OK      OK      OK      - - wrl
+7b6     OK      OK      OK      - - 3mf
 7c      -       -       -       - Other
 7c1     OK      OK      OK      - - csg
 7c2     OK      OK      OK      - - png
@@ -93,8 +91,7 @@ L       Mojibake on the console with default CHCP 437, not with CHCP 65001
 8b      -       -       -       - 3D
 8b1     OK      OK      OK      - - stl
 8b2     OK      OK      OK      - - off
-8b3     OK      OK      OK      - - amf
-8b4     OK      OK      OK      - - 3mf
+8b3     OK      OK      OK      - - 3mf
 8c      -       -       -       - Other
 8c1     OK      OK      OK      - - csg
 8c2     OK      OK      OK      - - png
