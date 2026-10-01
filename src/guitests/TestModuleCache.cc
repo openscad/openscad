@@ -61,8 +61,7 @@ void TestModuleCache::testMCAD()
 {
   restoreWindowInitialState();
 
-  QString filename =
-    QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/modulecache-tests/use-mcad.scad";
+  QString filename = fixturePath("modulecache-tests/use-mcad.scad");
   window->tabManager->open(filename);   // Open use-mcad.scad
   window->actionReloadRenderPreview();  // F5
 
