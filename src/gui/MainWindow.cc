@@ -53,6 +53,8 @@
 #include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QImage>
+#include <QImageWriter>
 #include <QKeySequence>
 #include <QLabel>
 #include <QList>
@@ -2625,7 +2627,12 @@ void MainWindow::csgRenderFinished()
     const int steps = animateWidget->nextFrame();
     const QImage img = this->qglview->grabFrame();
     const QString filename = exportPath("png", QString("frame%1").arg(steps, 5, 10, QChar('0')));
-    img.save(filename, "PNG");
+    QImageWriter writer(filename, "PNG");
+    if (!writer.write(img)) {
+      LOG(message_group::Error, "%1$s: %2$s", filename.toStdString(),
+          writer.errorString().toStdString());
+      animateWidget->pauseAnimation();
+    }
   }
 
   compileEnded();
