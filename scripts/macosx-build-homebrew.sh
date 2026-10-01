@@ -43,7 +43,7 @@ fi
 $TAP tap openscad/homebrew-tap
 $TAP trust openscad/homebrew-tap
 
-for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz lib3mf double-conversion imagemagick ccache ghostscript tbb catch2 qt qscintilla2; do
+for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz lib3mf osmesa double-conversion imagemagick ccache ghostscript tbb catch2 qt qscintilla2; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
