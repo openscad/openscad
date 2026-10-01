@@ -17,6 +17,9 @@
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glview/glew-utils.h"
 #endif
+#ifdef ENABLE_OSMESA
+#include "glview/OffscreenContextOSMesa.h"
+#endif
 
 namespace {
 
@@ -48,7 +51,8 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
     .majorGLVersion = 2,
     .minorGLVersion = 0,
   };
-  auto provider = OffscreenContextFactory::defaultProvider();
+  const char *env_provider = getenv("OPENSCAD_OFFSCREEN_CONTEXT");
+  auto provider = env_provider ? env_provider : OffscreenContextFactory::defaultProvider();
   // We cannot initialize GLX GLEW with an EGL context:
   // https://github.com/nigels-com/glew/issues/273
   // ..so if we're using GLEW, default to creating a GLX context.
@@ -77,7 +81,15 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 #endif  // USE_GLEW
 #ifdef USE_GLAD
   // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
-  const auto version = gladLoaderLoadGL();
+  int version = 0;
+#ifdef ENABLE_OSMESA
+  if (!strcmp(provider, "osmesa")) {
+    version = gladLoadGL(reinterpret_cast<GLADloadfunc>(OSMesaGetProcAddress));
+  } else
+#endif
+  {
+    version = gladLoaderLoadGL();
+  }
   if (version == 0) {
     throw OffscreenViewException("Unable to initialize GLAD");
   }
