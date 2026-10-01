@@ -39,6 +39,7 @@
 #include "geometry/linalg.h"
 
 PolySet organic_resample(const std::vector<Vector3d>& points, double max_mesh_size, double alpha = -1.0);
+class PolySet;
 
 class CubeNode : public LeafNode
 {
@@ -95,6 +96,12 @@ public:
   std::string func_hash;
 #endif
   int dragflags = 0;  // r
+  // "orig": rings of latitude; "octa": subdivided octahedron, see createGeometryOcta()
+  std::string style = "orig";
+
+private:
+  std::unique_ptr<PolySet> createGeometryOrig(int num_fragments) const;
+  std::unique_ptr<PolySet> createGeometryOcta(int num_fragments) const;
 };
 
 class CylinderNode : public LeafNode
