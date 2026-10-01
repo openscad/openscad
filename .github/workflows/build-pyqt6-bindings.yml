@@ -15,12 +15,25 @@ on:
       - 'scripts/ci/pyqt6_smoke_test.py'
       - 'scripts/ci/resolve_pyqt6_version.py'
       - 'scripts/deps/profiles/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/build-pyqt6-bindings.yml'
+      - 'scripts/ci/fetch_pyqt6_bindings.sh'
+      - 'scripts/ci/patch_pyqt6_free_operators.py'
+      - 'scripts/ci/patch_pyqtbuild_win32_pythonlib.py'
+      - 'scripts/ci/pyqt6-build-requirements.txt'
+      - 'scripts/ci/pyqt6-versions.json'
+      - 'scripts/ci/pyqt6_artifact.py'
+      - 'scripts/ci/pyqt6_smoke_test.py'
+      - 'scripts/ci/resolve_pyqt6_version.py'
+      - 'scripts/deps/profiles/**'
   schedule:
     - cron: '17 4 * * 1'
 
 concurrency:
-  group: pyqt6-bindings
-  cancel-in-progress: false
+  group: pyqt6-bindings-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -146,6 +159,7 @@ jobs:
           QT_QPA_PLATFORM=offscreen python3 scripts/ci/pyqt6_smoke_test.py /tmp/pyqt-out
 
       - name: Publish immutable bindings release
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           ASSET_NAME: ${{ steps.metadata.outputs.asset_name }}
@@ -298,6 +312,7 @@ jobs:
           QT_QPA_PLATFORM=offscreen python3 scripts/ci/pyqt6_smoke_test.py /tmp/pyqt-out
 
       - name: Publish immutable bindings release
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           ASSET_NAME: ${{ steps.metadata.outputs.asset_name }}
@@ -488,6 +503,7 @@ jobs:
             "$PYTHON_EMBED_EXE" scripts/ci/pyqt6_smoke_test.py "$PYQT_OUT_WIN"
 
       - name: Publish immutable bindings release
+        if: github.event_name != 'pull_request'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
