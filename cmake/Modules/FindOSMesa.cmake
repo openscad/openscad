@@ -22,4 +22,3 @@ if(OSMESA_FOUND)
 endif()
 
 mark_as_advanced(OSMESA_INCLUDE_DIR OSMESA_LIBRARY)
-
