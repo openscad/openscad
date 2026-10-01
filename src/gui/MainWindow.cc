@@ -53,6 +53,8 @@
 #include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QImage>
+#include <QImageWriter>
 #include <QKeySequence>
 #include <QLabel>
 #include <QList>
@@ -2624,8 +2626,13 @@ void MainWindow::csgRenderFinished()
   if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
     const QImage img = this->qglview->grabFrame();
-    const QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-    img.save(filename, "PNG");
+    const QString filename = exportPath("png", QString("frame%1").arg(steps, 5, 10, QChar('0')));
+    QImageWriter writer(filename, "PNG");
+    if (!writer.write(img)) {
+      LOG(message_group::Error, "%1$s: %2$s", filename.toStdString(),
+          writer.errorString().toStdString());
+      animateWidget->pauseAnimation();
+    }
   }
 
   compileEnded();
@@ -3610,6 +3617,8 @@ bool MainWindow::confirmCrossTabGeometryOrRender(EditorInterface *sourceEditor)
   return false;
 }
 
+// Returns if we can export (true) or not(false) (bool)
+// Separated into its own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
   if (!rootGeom) {
@@ -5205,6 +5214,29 @@ void MainWindow::openCSGSettingsChanged()
 void MainWindow::processEvents()
 {
   if (this->procevents) QApplication::processEvents();
+}
+
+QString MainWindow::exportPath(const QString& suffix, const QString& basename)
+{
+  // Derive the directory.
+  const auto path_it = this->exportPaths.find(suffix);
+  QString dir;
+  if (path_it != exportPaths.end()) {
+    dir = QFileInfo(path_it->second).absolutePath();
+  } else if (!activeEditor->filepath.isEmpty()) {
+    dir = QFileInfo(activeEditor->filepath).absolutePath();
+  } else {
+    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
+  }
+
+  // Derive the base name.
+  const auto derivedBasename = !basename.isEmpty() ? basename
+                               : !activeEditor->filepath.isEmpty()
+                                 ? QFileInfo(activeEditor->filepath).completeBaseName()
+                                 : "Untitled";
+
+  // Construct the full path.
+  return QString("%1/%2.%3").arg(dir, derivedBasename, suffix);
 }
 
 void MainWindow::jumpToLine(int line, int col)
