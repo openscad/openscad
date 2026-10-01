@@ -279,6 +279,8 @@ private slots:
   void instantiateRoot();
   void compileDone(bool didchange);
   void compileEnded();
+  void resetCompileMessageCounts();
+  void selectPreviewViewMode();
 
 private slots:
   void on_editActionCopyVPT_triggered();

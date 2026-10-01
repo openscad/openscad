@@ -72,17 +72,15 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   const auto& v = parameters["file"];
   std::string filename;
   if (v.isDefined()) {
-    filename =
-      lookup_file(v.isUndefined() ? "" : v.toString(),
-                  inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename = lookup_file(v.isUndefined() ? "" : v.toString(),
+                           inst->location().filePath().parent_path().string());
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
       LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
-    filename =
-      lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(),
-                  inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(),
+                           inst->location().filePath().parent_path().string());
   }
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;

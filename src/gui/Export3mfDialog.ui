@@ -82,7 +82,7 @@
                <bool>true</bool>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>micron</string>
+               <string notr="true">micron</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupUnit</string>
@@ -95,7 +95,7 @@
                <string>Millimeter (default)</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>millimeter</string>
+               <string notr="true">millimeter</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupUnit</string>
@@ -108,7 +108,7 @@
                <string>Centimeter</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>centimeter</string>
+               <string notr="true">centimeter</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupUnit</string>
@@ -121,7 +121,7 @@
                <string>Meter</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>meter</string>
+               <string notr="true">meter</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupUnit</string>
@@ -134,7 +134,7 @@
                <string>Inch</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>inch</string>
+               <string notr="true">inch</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupUnit</string>
@@ -147,7 +147,7 @@
                <string>Foot</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>foot</string>
+               <string notr="true">foot</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupUnit</string>
@@ -176,7 +176,7 @@
                <string>Use colors from model and color scheme</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>model</string>
+               <string notr="true">model</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupColors</string>
@@ -192,7 +192,7 @@
                <bool>true</bool>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>none</string>
+               <string notr="true">none</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupColors</string>
@@ -205,7 +205,7 @@
                <string>Use selected color for all objects</string>
               </property>
               <property name="_settings_value" stdset="0">
-               <string>selected-only</string>
+               <string notr="true">selected-only</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupColors</string>
