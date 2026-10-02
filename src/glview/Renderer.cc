@@ -166,6 +166,7 @@ void Renderer::setColorScheme(const ColorScheme& cs)
   colormap_[ColorMode::MATERIAL_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR);
   colormap_[ColorMode::CUTOUT_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR);
   colormap_[ColorMode::EMPTY_SPACE] = ColorMap::getColor(cs, RenderColor::BACKGROUND_COLOR);
+  scheme_face_colors_ = SchemeFaceColors::from(cs);
   colorscheme_ = &cs;
 }
 
