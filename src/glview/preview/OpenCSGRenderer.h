@@ -87,14 +87,23 @@ public:
   ~OpenCSGRenderer() override = default;
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void setColorScheme(const ColorScheme& cs) override;
 
   BoundingBox getBoundingBox() const override;
+  static void clearCache();
+  //! How many products have had vertex buffers built rather than taken from the cache, ever.
+  static size_t vboBuildsForTest() { return vbo_builds_; }
+  [[nodiscard]] const std::shared_ptr<CSGProducts>& rootProductsForTest() const
+  {
+    return root_products_;
+  }
 
 private:
+  static inline size_t vbo_builds_ = 0;
   void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode,
                             const ShaderUtils::ShaderInfo *shaderinfo);
 
-  std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
+  std::vector<std::shared_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
   std::shared_ptr<CSGProducts> background_products_;
