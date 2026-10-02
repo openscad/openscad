@@ -1126,6 +1126,14 @@ add_cmdline_test(echo-cli-view-variables-7         OPENSCAD SUFFIX echo FILES ${
 add_cmdline_test(dump-cli-view-variables-7         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
 add_cmdline_test(preview-cli-view-variables-7      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
 
+# Test that --fov reaches the camera. Without it the field of view is stuck at
+# the 22.5 degree default whenever --camera is given, since --camera locks the
+# camera and $vpf is then ignored.
+add_cmdline_test(echo-cli-view-variables-fov          OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70 --fov 35)
+add_cmdline_test(echo-cli-view-variables-fov-only     OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --fov 60)
+# --fov takes precedence over a $vpf set by the design, and says so.
+add_cmdline_test(echo-cli-view-variables-fov-override OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables-vpf.scad ARGS --fov 35)
+
 # Test transcription of --camera options to $vp* for 6-argument --camera.
 add_cmdline_test(echo-cli-view-variables-6         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
 add_cmdline_test(dump-cli-view-variables-6         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
