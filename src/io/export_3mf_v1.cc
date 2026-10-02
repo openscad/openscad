@@ -136,10 +136,11 @@ std::string quote_xml(const std::string& value)
 }
 
 bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps,
-                           int triangle_index, int color_index, std::vector<DWORD>& materialMap,
-                           ExportContext& ctx)
+                           int triangle_index, color_index_t color_index,
+                           std::vector<DWORD>& materialMap, ExportContext& ctx)
 {
-  if (color_index < 0) {
+  const auto idx = color_index.index();
+  if (!idx) {
     return true;
   }
   if (ps->colors.empty()) {
@@ -153,7 +154,7 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
   }
 
   if (ctx.basematerial) {
-    const auto colId = materialMap[color_index];
+    const auto colId = materialMap[*idx];
     if (colId != ctx.defaultColorId) {
       if (lib3mf_propertyhandler_setbasematerial(propertyhandler, triangle_index, ctx.basematerialid,
                                                  colId) != LIB3MF_OK) {
@@ -162,7 +163,7 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
       }
     }
   } else if (ctx.usecolors) {
-    const auto& col = ps->colors[color_index];
+    const auto& col = ps->colors[*idx];
     if (lib3mf_propertyhandler_setsinglecolorfloatrgba(propertyhandler, triangle_index, col.r(), col.g(),
                                                        col.b(), col.a()) != LIB3MF_OK) {
       export_3mf_error("Can't set triangle color.", ctx.model);
@@ -262,7 +263,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
   }
 
   for (size_t i = 0; i < sorted_ps->color_indices.size(); ++i) {
-    const int32_t idx = sorted_ps->color_indices[i];
+    const color_index_t idx = sorted_ps->color_indices[i];
     if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, materialMap, ctx)) {
       return false;
     }

@@ -97,8 +97,8 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     output << "] }\n\n";
     output << "colorIndex [\n";
     for (size_t i = 0; i < ps->indices.size(); ++i) {
-      auto color_index = ps->color_indices[i];
-      output << ((color_index >= 0) ? color_index : ps->colors.size()) << " ";
+      const auto color_index = ps->color_indices[i].index();
+      output << (color_index ? *color_index : ps->colors.size()) << " ";
     }
     output << "]\n\n";
   }
