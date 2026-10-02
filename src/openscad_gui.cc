@@ -32,6 +32,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFutureWatcher>
+#include <QSet>
 #include <QGuiApplication>
 #include <QIcon>
 #include <QObject>
@@ -376,7 +377,10 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   if (gui_test != "none") {
     QTimer::singleShot(0, [&]() {
       int failureCount = 0;
-      for (auto w : app.windowManager.getWindows()) {
+      // Snapshot: a test can open a window (adding to this QSet), which would otherwise
+      // invalidate this range-for's iterator mid-run.
+      const QSet<MainWindow *> windows = app.windowManager.getWindows();
+      for (auto w : windows) {
         failureCount += runAllTest(w);
       }
       app.exit(failureCount);
