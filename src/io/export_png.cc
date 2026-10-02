@@ -73,6 +73,7 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
+  glview->setTransparentBackground(options["transparent"]);
   glview->paintGL();
   glview->save(output);
   return true;
@@ -122,6 +123,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
+  glview->setTransparentBackground(options["transparent"]);
   glview->paintGL();
   return glview;
 }

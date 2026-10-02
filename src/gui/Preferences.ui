@@ -70,6 +70,16 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QCheckBox" name="checkBoxTransparentColorSchemeBackground">
+              <property name="text">
+               <string>Make background transparent (#00000000)</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
