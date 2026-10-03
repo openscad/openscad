@@ -29,6 +29,7 @@ pkgs.mkShell {
     libzip
     manifold
     mpfr
+    nettle_4
     opencsg
     python3
     python3Packages.numpy
