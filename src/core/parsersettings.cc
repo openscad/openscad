@@ -89,7 +89,12 @@ inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& loc
   if (localpath.is_absolute()) {
     if (check_valid(localpath, openfilenames)) {
 #ifndef __EMSCRIPTEN__
-      return fs::canonical(localpath);
+      try {
+        return fs::canonical(localpath);
+      } catch (const fs::filesystem_error&) {
+        // Canonicalization is best effort; the original path was already validated.
+        return localpath;
+      }
 #else
       return localpath;
 #endif
@@ -97,7 +102,13 @@ inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& loc
   } else {
     fs::path fpath = sourcepath / localpath;
 #ifndef __EMSCRIPTEN__
-    if (fs::exists(fpath)) fpath = fs::canonical(fpath);
+    if (fs::exists(fpath)) {
+      try {
+        fpath = fs::canonical(fpath);
+      } catch (const fs::filesystem_error&) {
+        // Keep the existing path if the platform cannot canonicalize it.
+      }
+    }
 #endif
     if (check_valid(fpath, openfilenames)) return fpath;
     fpath = search_libs(localpath);
