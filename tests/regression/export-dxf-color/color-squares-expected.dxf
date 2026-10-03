@@ -1,0 +1,332 @@
+999
+DXF from OpenSCAD
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1006
+  9
+$INSBASE
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$EXTMIN
+ 10
+0
+ 20
+0
+  9
+$EXTMAX
+ 10
+35
+ 20
+50
+  9
+$LINMIN
+ 10
+0
+ 20
+0
+  9
+$LINMAX
+ 10
+35
+ 20
+50
+  0
+ENDSEC
+  0
+SECTION
+  2
+TABLES
+  0
+TABLE
+  2
+LTYPE
+ 70
+1
+  0
+LTYPE
+  2
+CONTINUOUS
+ 70
+64
+  3
+Solid line
+ 72
+65
+ 73
+0
+ 40
+0.000000
+  0
+ENDTAB
+  0
+TABLE
+  2
+LAYER
+ 70
+6
+  0
+LAYER
+  2
+0
+ 70
+64
+ 62
+7
+  6
+CONTINUOUS
+  0
+ENDTAB
+  0
+TABLE
+  2
+STYLE
+ 70
+0
+  0
+ENDTAB
+  0
+ENDSEC
+  0
+SECTION
+  2
+BLOCKS
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+10
+ 20
+10
+ 10
+0
+ 20
+10
+ 10
+0
+ 20
+0
+ 10
+10
+ 20
+0
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+ 62
+1
+420
+16711680
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+35
+ 20
+0
+ 10
+35
+ 20
+10
+ 10
+20
+ 20
+10
+ 10
+20
+ 20
+0
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+ 62
+5
+420
+255
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+10
+ 20
+30
+ 10
+0
+ 20
+30
+ 10
+0
+ 20
+20
+ 10
+10
+ 20
+20
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+ 62
+3
+420
+65280
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+30
+ 20
+30
+ 10
+20
+ 20
+30
+ 10
+20
+ 20
+20
+ 10
+30
+ 20
+20
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+ 62
+6
+420
+16711935
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+10
+ 20
+50
+ 10
+0
+ 20
+50
+ 10
+0
+ 20
+40
+ 10
+10
+ 20
+40
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+ 62
+6
+420
+16711935
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+3
+ 20
+47
+ 10
+7
+ 20
+47
+ 10
+7
+ 20
+43
+ 10
+3
+ 20
+43
+  0
+LWPOLYLINE
+100
+AcDbEntity
+  8
+0
+ 62
+4
+420
+65535
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+30
+ 20
+50
+ 10
+20
+ 20
+50
+ 10
+20
+ 20
+40
+ 10
+30
+ 20
+40
+  0
+ENDSEC
+  0
+EOF

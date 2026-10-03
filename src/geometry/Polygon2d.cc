@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -25,6 +26,21 @@ Polygon2d::Polygon2d(Outline2d outline) : sanitized(true)
 std::unique_ptr<Geometry> Polygon2d::copy() const
 {
   return std::make_unique<Polygon2d>(*this);
+}
+
+void Polygon2d::setColor(const Color4f& c)
+{
+  for (auto& outline : this->theoutlines) outline.color = c;
+}
+
+std::optional<Color4f> Polygon2d::uniformColor() const
+{
+  if (this->theoutlines.empty()) return Color4f{};
+  const Color4f& color = this->theoutlines.front().color;
+  for (const auto& outline : this->theoutlines) {
+    if (outline.color != color) return std::nullopt;
+  }
+  return color;
 }
 
 BoundingBox Outline2d::getBoundingBox() const

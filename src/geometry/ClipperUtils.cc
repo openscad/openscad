@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -168,7 +169,7 @@ std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& pa
   return result;
 }
 
-std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
+static std::unique_ptr<Polygon2d> sanitizeUncolored(const Polygon2d& poly)
 {
   auto scale_bits = scaleBitsFromPrecision();
 
@@ -263,8 +264,8 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
 
    May return an empty Polygon2d, but will not return nullptr.
  */
-std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
-                                 Clipper2Lib::ClipType clipType)
+static std::unique_ptr<Polygon2d> applyUncolored(
+  const std::vector<std::shared_ptr<const Polygon2d>>& polygons, Clipper2Lib::ClipType clipType)
 {
   const int scale_bits = scaleBitsFromPrecision();
 
@@ -286,10 +287,187 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
   return res;
 }
 
+namespace {
+
+double outlineArea(const Outline2d& outline)
+{
+  double area = 0.0;
+  const auto& vertices = outline.vertices;
+  const size_t count = vertices.size();
+  for (size_t i = 0; i < count; ++i) {
+    const auto& p = vertices[i];
+    const auto& q = vertices[(i + 1) % count];
+    area += p.x() * q.y() - q.x() * p.y();
+  }
+  return area;
+}
+
+// Positive contours are CCW and holes are CW. A mirror flips the vertices and
+// leaves the flag behind, so those contours must be unioned again before reuse.
+bool windingIsConsistent(const Outline2d& outline)
+{
+  if (outline.vertices.size() < 3) return true;
+  const double area = outlineArea(outline);
+  if (area == 0.0) return true;
+  return outline.positive ? area > 0.0 : area < 0.0;
+}
+
+std::optional<Color4f> sharedUniformColor(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
+{
+  std::optional<Color4f> shared;
+  for (const auto& polygon : polygons) {
+    if (!polygon || polygon->isEmpty()) continue;
+    const auto color = polygon->uniformColor();
+    if (!color) return std::nullopt;
+    if (!shared) shared = *color;
+    else if (*shared != *color) return std::nullopt;
+  }
+  if (!shared) return Color4f{};
+  return shared;
+}
+
+struct ColorGroup {
+  Color4f color;
+  std::vector<std::shared_ptr<const Polygon2d>> polygons;
+};
+
+void addToColorGroup(std::vector<ColorGroup>& groups, const Color4f& color,
+                     std::shared_ptr<const Polygon2d> polygon)
+{
+  for (auto& group : groups) {
+    if (group.color == color) {
+      group.polygons.push_back(std::move(polygon));
+      return;
+    }
+  }
+  groups.push_back(ColorGroup{color, {std::move(polygon)}});
+}
+
+void addPolygonToGroups(std::vector<ColorGroup>& groups, const std::shared_ptr<const Polygon2d>& polygon)
+{
+  if (!polygon || polygon->isEmpty()) return;
+  if (const auto color = polygon->uniformColor()) {
+    addToColorGroup(groups, *color, polygon);
+    return;
+  }
+
+  std::vector<std::pair<Color4f, std::unique_ptr<Polygon2d>>> parts;
+  for (const auto& outline : polygon->outlines()) {
+    std::unique_ptr<Polygon2d> *dest = nullptr;
+    for (auto& part : parts) {
+      if (part.first == outline.color) {
+        dest = &part.second;
+        break;
+      }
+    }
+    if (dest == nullptr) {
+      parts.emplace_back(outline.color, std::make_unique<Polygon2d>());
+      dest = &parts.back().second;
+    }
+    (*dest)->addOutline(outline);
+  }
+  for (auto& part : parts) {
+    bool consistent = true;
+    for (const auto& outline : part.second->outlines()) {
+      if (!windingIsConsistent(outline)) {
+        consistent = false;
+        break;
+      }
+    }
+    // Mixed-color polygons are per-color unions concatenated together.
+    // Each color is simple when its winding still matches the positive flag.
+    part.second->setSanitized(consistent);
+    addToColorGroup(groups, part.first, std::shared_ptr<const Polygon2d>(std::move(part.second)));
+  }
+}
+
+std::vector<ColorGroup> groupByColor(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
+{
+  std::vector<ColorGroup> groups;
+  for (const auto& polygon : polygons) addPolygonToGroups(groups, polygon);
+  return groups;
+}
+
+std::vector<ColorGroup> groupByColor(const Polygon2d& polygon)
+{
+  return groupByColor(
+    std::vector<std::shared_ptr<const Polygon2d>>{std::make_shared<Polygon2d>(polygon)});
+}
+
+template <typename Op>
+std::unique_ptr<Polygon2d> concatColored(const std::vector<ColorGroup>& groups, Op op)
+{
+  auto result = std::make_unique<Polygon2d>();
+  size_t nonempty = 0;
+  for (const auto& group : groups) {
+    auto part = op(group);
+    if (!part || part->isEmpty()) continue;
+    part->setColor(group.color);
+    for (const auto& outline : part->outlines()) result->addOutline(outline);
+    ++nonempty;
+  }
+  // Different colors may overlap, so the polygon is reusable without a union
+  // only when a single color remains.
+  result->setSanitized(nonempty <= 1);
+  return result;
+}
+
+}  // namespace
+
+std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
+{
+  if (const auto color = poly.uniformColor()) {
+    auto result = sanitizeUncolored(poly);
+    result->setColor(*color);
+    return result;
+  }
+  return concatColored(groupByColor(poly), [](const ColorGroup& group) {
+    return sanitizeUncolored(*group.polygons.front());
+  });
+}
+
+std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
+                                 Clipper2Lib::ClipType clipType)
+{
+  if (clipType == Clipper2Lib::ClipType::Union) {
+    if (const auto color = sharedUniformColor(polygons)) {
+      auto result = applyUncolored(polygons, clipType);
+      result->setColor(*color);
+      return result;
+    }
+    return concatColored(groupByColor(polygons), [&](const ColorGroup& group) {
+      return applyUncolored(group.polygons, clipType);
+    });
+  }
+
+  const std::shared_ptr<const Polygon2d> subject = polygons.empty() ? nullptr : polygons.front();
+  if (!subject || subject->isEmpty() || subject->uniformColor()) {
+    auto result = applyUncolored(polygons, clipType);
+    if (subject && !subject->isEmpty()) {
+      if (const auto color = subject->uniformColor()) result->setColor(*color);
+    }
+    return result;
+  }
+
+  std::vector<std::shared_ptr<const Polygon2d>> clips;
+  if (polygons.size() > 1) clips.assign(polygons.begin() + 1, polygons.end());
+  return concatColored(groupByColor({subject}), [&](const ColorGroup& group) {
+    std::vector<std::shared_ptr<const Polygon2d>> args = group.polygons;
+    args.insert(args.end(), clips.begin(), clips.end());
+    return applyUncolored(args, clipType);
+  });
+}
+
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
 {
+  const auto color = sharedUniformColor(polygons);
+  const auto paint = [&color](std::unique_ptr<Polygon2d> result) {
+    if (result && color) result->setColor(*color);
+    return result;
+  };
+
   if (polygons.size() == 1) {
-    return polygons[0] ? std::make_unique<Polygon2d>(*polygons[0]) : nullptr;  // Just copy
+    return paint(polygons[0] ? std::make_unique<Polygon2d>(*polygons[0]) : nullptr);  // Just copy
   }
 
   auto it = polygons.begin();
@@ -331,12 +509,12 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
 
   Clipper2Lib::PolyTree64 polytree;
   clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, polytree);
-  return toPolygon2d(polytree, scale_bits);
+  return paint(toPolygon2d(polytree, scale_bits));
 }
 
-std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset,
-                                       Clipper2Lib::JoinType joinType, double miter_limit,
-                                       double arc_tolerance)
+static std::unique_ptr<Polygon2d> offsetUncolored(const Polygon2d& poly, double offset,
+                                                  Clipper2Lib::JoinType joinType, double miter_limit,
+                                                  double arc_tolerance)
 {
   const bool isMiter = joinType == Clipper2Lib::JoinType::Miter;
   const bool isRound = joinType == Clipper2Lib::JoinType::Round;
@@ -350,8 +528,23 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset,
   return toPolygon2d(result, scale_bits);
 }
 
+std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset,
+                                       Clipper2Lib::JoinType joinType, double miter_limit,
+                                       double arc_tolerance)
+{
+  if (const auto color = poly.uniformColor()) {
+    auto result = offsetUncolored(poly, offset, joinType, miter_limit, arc_tolerance);
+    result->setColor(*color);
+    return result;
+  }
+  return concatColored(groupByColor(poly), [&](const ColorGroup& group) {
+    return offsetUncolored(*group.polygons.front(), offset, joinType, miter_limit, arc_tolerance);
+  });
+}
+
 std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
 {
+  const auto color = sharedUniformColor(polygons);
   const int scale_bits = scaleBitsFromPrecision();
 
   Clipper2Lib::Clipper64 sumclipper;
@@ -371,7 +564,9 @@ std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<con
   //  sumclipper.StrictlySimple(true);
   sumclipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, sumresult);
   if (sumresult.Count() > 0) {
-    return ClipperUtils::toPolygon2d(sumresult, scale_bits);
+    auto result = ClipperUtils::toPolygon2d(sumresult, scale_bits);
+    if (color) result->setColor(*color);
+    return result;
   }
   return {};
 }

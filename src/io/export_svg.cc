@@ -23,12 +23,15 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <algorithm>
 #include <cassert>
 #include <clocale>
 #include <cmath>
+#include <cstdio>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
@@ -36,6 +39,49 @@
 #include "geometry/linalg.h"
 #include "io/export.h"
 
+static std::string svgHex(const Color4f& color)
+{
+  const auto channel = [](float value) {
+    const float clamped = std::clamp(value, 0.0f, 1.0f);
+    return std::clamp(static_cast<int>(std::lround(clamped * 255.0f)), 0, 255);
+  };
+  char buf[8];
+  std::snprintf(buf, sizeof(buf), "#%02x%02x%02x", channel(color.r()), channel(color.g()),
+                channel(color.b()));
+  return buf;
+}
+
+static void append_svg_path(std::ostream& output, const std::vector<const Outline2d *>& outlines,
+                            const std::string& stroke, const std::string& fill, double strokeWidth,
+                            bool writeOpacity, float alpha)
+{
+  output << "<path d=\"\n";
+  for (const Outline2d *outline : outlines) {
+    if (outline->vertices.empty()) continue;
+
+    const Eigen::Vector2d& p0 = outline->vertices[0];
+    output << "M " << p0.x() << "," << -p0.y();
+    for (unsigned int idx = 1; idx < outline->vertices.size(); ++idx) {
+      const Eigen::Vector2d& p = outline->vertices[idx];
+      output << " L " << p.x() << "," << -p.y();
+      if ((idx % 6) == 5) {
+        output << "\n";
+      }
+    }
+    output << " z\n";
+  }
+  output << "\" stroke=\"" << stroke << "\" fill=\"" << fill << "\" stroke-width=\"" << strokeWidth
+         << "\"";
+  if (writeOpacity) {
+    const double opacity = std::clamp(static_cast<double>(alpha), 0.0, 1.0);
+    output << " fill-opacity=\"" << opacity << "\"";
+    if (stroke != "none") output << " stroke-opacity=\"" << opacity << "\"";
+  }
+  output << "/>\n";
+}
+
+// Model colors become one path per color, in the order each color first appears.
+// Uncolored contours keep the export fill and stroke, so files without color() stay the same.
 static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
 {
   const ExportSvgOptions *options;
@@ -47,28 +93,44 @@ static void append_svg(const Polygon2d& poly, std::ostream& output, const Export
     options = &defaultSvgOptions;
   }
 
-  const std::string stroke = options->stroke ? options->strokeColor : "none";
-  const std::string fill = options->fill ? options->fillColor : "none";
-  const double strokeWidth = options->strokeWidth;
-  output << "<path d=\"\n";
-  for (const auto& o : poly.outlines()) {
-    if (o.vertices.empty()) {
-      continue;
+  std::vector<Color4f> seen;
+  std::vector<std::vector<const Outline2d *>> groups;
+  for (const auto& outline : poly.outlines()) {
+    if (outline.vertices.empty()) continue;
+    size_t index = 0;
+    for (; index < seen.size(); ++index) {
+      if (seen[index] == outline.color) break;
     }
-
-    const Eigen::Vector2d& p0 = o.vertices[0];
-    output << "M " << p0.x() << "," << -p0.y();
-    for (unsigned int idx = 1; idx < o.vertices.size(); ++idx) {
-      const Eigen::Vector2d& p = o.vertices[idx];
-      output << " L " << p.x() << "," << -p.y();
-      if ((idx % 6) == 5) {
-        output << "\n";
-      }
+    if (index == seen.size()) {
+      seen.push_back(outline.color);
+      groups.emplace_back();
     }
-    output << " z\n";
+    groups[index].push_back(&outline);
   }
-  output << "\" stroke=\"" << stroke << "\" fill=\"" << fill << "\" stroke-width=\"" << strokeWidth
-         << "\"/>\n";
+
+  if (groups.empty()) {
+    const std::string stroke = options->stroke ? options->strokeColor : "none";
+    const std::string fill = options->fill ? options->fillColor : "none";
+    append_svg_path(output, {}, stroke, fill, options->strokeWidth, false, 1.0f);
+    return;
+  }
+
+  for (size_t i = 0; i < groups.size(); ++i) {
+    const Color4f& color = seen[i];
+    std::string stroke;
+    std::string fill;
+    bool writeOpacity = false;
+    if (color.hasRgb()) {
+      const std::string hex = svgHex(color);
+      fill = hex;
+      stroke = options->stroke ? hex : "none";
+      writeOpacity = color.hasAlpha() && color.a() < 1.0f;
+    } else {
+      fill = options->fill ? options->fillColor : "none";
+      stroke = options->stroke ? options->strokeColor : "none";
+    }
+    append_svg_path(output, groups[i], stroke, fill, options->strokeWidth, writeOpacity, color.a());
+  }
 }
 
 static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
