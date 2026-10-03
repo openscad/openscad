@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,6 +19,8 @@ struct Outline2d {
   Outline2d() = default;
   VectorOfVector2d vertices;
   bool positive{true};
+  // Invalid Color4f (the default) means this contour has no model color.
+  Color4f color{};
   [[nodiscard]] BoundingBox getBoundingBox() const;
 };
 
@@ -49,6 +52,10 @@ public:
   // not inherit an unused 3d transform function.
   // But that will likely require significant refactoring.
   using Geometry::transform;
+
+  void setColor(const Color4f& c) override;
+  // All outlines share one color, or the polygon is empty. Empty is uncolored.
+  [[nodiscard]] std::optional<Color4f> uniformColor() const;
 
   void transform(const Transform2d& mat);
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);

@@ -4,6 +4,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "core/ColorUtil.h"
 #include "geometry/Geometry.h"
@@ -159,38 +160,97 @@ void draw_axes(cairo_t *cr, double left, double right, double bottom, double top
   }
 }
 
-// Draws a single 2D polygon.
-void draw_geom(const Polygon2d& poly, cairo_t *cr)
+// Append one contour. Y is inverted in Cairo. The path is closed with an
+// explicit line back to the start, matching the previous single-color export.
+void append_outline(const Outline2d& outline, cairo_t *cr)
 {
-  for (const auto& o : poly.outlines()) {
-    if (o.vertices.empty()) {
-      continue;
-    }
-    const Eigen::Vector2d& p0 = o.vertices[0];
-    // Move to the first vertice.  Note Y is inverted in Cairo.
-    cairo_move_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
-    for (unsigned int idx = 1; idx < o.vertices.size(); idx++) {
-      const Eigen::Vector2d& p = o.vertices[idx];
-      cairo_line_to(cr, mm_to_points(p.x()), mm_to_points(-p.y()));
-    }
-    // Draw a line from the last vertice to the first vertice.
-    cairo_line_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
+  if (outline.vertices.empty()) {
+    return;
   }
+  const Eigen::Vector2d& p0 = outline.vertices[0];
+  cairo_move_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
+  for (unsigned int idx = 1; idx < outline.vertices.size(); idx++) {
+    const Eigen::Vector2d& p = outline.vertices[idx];
+    cairo_line_to(cr, mm_to_points(p.x()), mm_to_points(-p.y()));
+  }
+  cairo_line_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
 }
 
-// Main entry:  draw geometry that consists of 2D polygons.  Walks the tree...
-void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr)
+// Model color is always filled. Stroke uses that same color when stroke is enabled.
+// Uncolored contours keep the export fill and stroke.
+void paint_outlines(const std::vector<const Outline2d *>& outlines, cairo_t *cr,
+                    const ExportPdfOptions *options, const Color4f& color)
+{
+  for (const Outline2d *outline : outlines) {
+    append_outline(*outline, cr);
+  }
+
+  const Color4f black = Color4f(0.0f, 0.0f, 0.0f);
+  if (color.hasRgb()) {
+    const float alpha = color.hasAlpha() ? color.a() : 1.0f;
+    cairo_set_source_rgba(cr, color.r(), color.g(), color.b(), alpha);
+    cairo_fill_preserve(cr);
+    if (options->stroke) {
+      cairo_set_line_width(cr, mm_to_points(options->strokeWidth));
+      cairo_stroke_preserve(cr);
+    }
+  } else {
+    if (options->fill) {
+      const Color4f fillColor = OpenSCAD::getColor(options->fillColor, black);
+      cairo_set_source_rgba(cr, fillColor.r(), fillColor.g(), fillColor.b(), fillColor.a());
+      cairo_fill_preserve(cr);
+    }
+    if (options->stroke) {
+      const Color4f strokeColor = OpenSCAD::getColor(options->strokeColor, black);
+      cairo_set_source_rgba(cr, strokeColor.r(), strokeColor.g(), strokeColor.b(), strokeColor.a());
+      cairo_set_line_width(cr, mm_to_points(options->strokeWidth));
+      cairo_stroke_preserve(cr);
+    }
+  }
+  cairo_new_path(cr);
+}
+
+void collect_outlines(const std::shared_ptr<const Geometry>& geom,
+                      std::vector<const Outline2d *>& outlines)
 {
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
-      draw_geom(item.second, cr);
+      collect_outlines(item.second, outlines);
+    }
+  } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    for (const auto& outline : poly->outlines()) {
+      if (!outline.vertices.empty()) outlines.push_back(&outline);
     }
   } else if (std::dynamic_pointer_cast<const PolySet>(geom)) {
     assert(false && "Unsupported file format");
-  } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    draw_geom(*poly, cr);
   } else {
     assert(false && "Export as PDF for this geometry type is not supported");
+  }
+}
+
+// One path per color, in the order each color first appears. Later colors are
+// painted on top. Contours of one color stay in their original order.
+void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr, const ExportPdfOptions *options)
+{
+  std::vector<const Outline2d *> outlines;
+  collect_outlines(geom, outlines);
+
+  std::vector<Color4f> seen;
+  std::vector<std::vector<const Outline2d *>> groups;
+  for (const Outline2d *outline : outlines) {
+    size_t index = 0;
+    for (; index < seen.size(); ++index) {
+      if (seen[index] == outline->color) break;
+    }
+    if (index == seen.size()) {
+      seen.push_back(outline->color);
+      groups.emplace_back();
+    }
+    groups[index].push_back(outline);
+  }
+
+  for (size_t i = 0; i < groups.size(); ++i) {
+    paint_outlines(groups[i], cr, options, seen[i]);
   }
 }
 
@@ -295,26 +355,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // Note Y axis + is DOWN.  Drawings have to invert Y, but these translations account for that.
   cairo_translate(cr, tcX, tcY);  // Center page on geometry;
 
-  const Color4f black = Color4f(0.0f, 0.0f, 0.0f);
-
-  // create path
-  draw_geom(geom, cr);
-
-  if (options->fill) {
-    Color4f fillColor = OpenSCAD::getColor(options->fillColor, black);
-    cairo_set_source_rgba(cr, fillColor.r(), fillColor.g(), fillColor.b(), fillColor.a());
-    cairo_fill_preserve(cr);
-  }
-
-  if (options->stroke) {
-    Color4f strokeColor = OpenSCAD::getColor(options->strokeColor, black);
-    cairo_set_source_rgba(cr, strokeColor.r(), strokeColor.g(), strokeColor.b(), strokeColor.a());
-    cairo_set_line_width(cr, mm_to_points(options->strokeWidth));
-    cairo_stroke_preserve(cr);
-  }
-
-  // clear path
-  cairo_new_path(cr);
+  draw_geom(geom, cr, options);
 
   // Set Annotations
   const std::string about =
