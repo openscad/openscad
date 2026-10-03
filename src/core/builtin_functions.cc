@@ -1260,15 +1260,13 @@ void register_builtin_functions()
                    "chr(range) -> string",
                  });
 
-  Builtins::init("textmetrics",
-                 new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
+  Builtins::init("textmetrics", new BuiltinFunction(&builtin_textmetrics),
                  {
                    "textmetrics(text, size, font, direction, language, script, halign, valign, spacing, "
                    "em) -> object",
                  });
 
-  Builtins::init("fontmetrics",
-                 new BuiltinFunction(&builtin_fontmetrics, &Feature::ExperimentalTextMetricsFunctions),
+  Builtins::init("fontmetrics", new BuiltinFunction(&builtin_fontmetrics),
                  {
                    "fontmetrics(size, font, em) -> object",
                  });
@@ -1349,8 +1347,7 @@ void register_builtin_functions()
                    "is_function(arg) -> boolean",
                  });
 
-  Builtins::init("is_object",
-                 new BuiltinFunction(&builtin_is_object, &Feature::ExperimentalTextMetricsFunctions),
+  Builtins::init("is_object", new BuiltinFunction(&builtin_is_object),
                  {
                    "is_object(arg) -> boolean",
                  });
