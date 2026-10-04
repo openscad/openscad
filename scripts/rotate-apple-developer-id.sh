@@ -1,11 +1,11 @@
-
 #!/usr/bin/env bash
 # Semi-automated Developer ID Application renewal helper for OpenSCAD
+
 
 set -e
 
 # Persistent directory so private keys are never lost if a step fails
-KEYDIR="$HOME/.openscad_signing"
+KEYDIR="${KEYDIR:-$HOME/Desktop/OpenSCAD/secrets/apple_signing}"
 mkdir -p "$KEYDIR"
 chmod 700 "$KEYDIR"
 
@@ -39,16 +39,16 @@ openssl req -new -newkey rsa:2048 -nodes \
 
 chmod 600 "$KEY_FILE"
 
-cp "$CSR_FILE" ~/Desktop/OpenSCAD_DeveloperID.csr
+cp "$CSR_FILE" "$KEYDIR/OpenSCAD_DeveloperID.csr"
 echo "    Private key saved safely to: $KEY_FILE"
-echo "    CSR copied to: ~/Desktop/OpenSCAD_DeveloperID.csr"
+echo "    CSR copied to: $KEYDIR/OpenSCAD_DeveloperID.csr"
 echo ""
 echo "=========================================================================="
 echo "==> Step 2: Apple Developer Portal (Manual)"
 echo "    1. Open: https://developer.apple.com/account/resources/certificates/add"
 echo "    2. Select 'Developer ID Application' -> Continue"
 echo "    3. Select 'G2 Sub-CA' when prompted for the intermediary"
-echo "    4. Upload: ~/Desktop/OpenSCAD_DeveloperID.csr"
+echo "    4. Upload: $KEYDIR/OpenSCAD_DeveloperID.csr"
 echo "    5. Download the issued .cer file"
 echo "=========================================================================="
 echo ""
@@ -83,7 +83,7 @@ CER_MOD=$(openssl x509 -inform der -in "$RESOLVED_PATH" -noout -modulus)
 
 if [ "$KEY_MOD" != "$CER_MOD" ]; then
     echo "ERROR: The certificate in '$RESOLVED_PATH' does NOT match the private key generated in this run!"
-    echo "This happens if you uploaded an older CSR to Apple. Please create a new certificate on Apple Developer portal using ~/Desktop/OpenSCAD_DeveloperID.csr and download the new .cer file."
+    echo "This happens if you uploaded an older CSR to Apple. Please create a new certificate on Apple Developer portal using $KEYDIR/OpenSCAD_DeveloperID.csr and download the new .cer file."
     exit 1
 fi
 
