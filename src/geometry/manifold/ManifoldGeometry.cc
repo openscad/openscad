@@ -151,24 +151,19 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   std::map<Color4f, int32_t> colorToIndex;
   std::map<uint32_t, int32_t> originalIDToColorIndex;
 
-  auto getFaceFrontColorIndex = [&]() -> int {
-    if (faceFrontColorIndex < 0) {
-      faceFrontColorIndex = ps->colors.size();
-      ps->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR));
+  // Both faceFrontColorIndex and faceBackColorIndex are lazily-cached indices into ps->colors
+  // for one fixed RenderColor each; this is the shared cache-or-create logic for both.
+  auto getCachedFaceColorIndex = [&](int32_t& cachedIndex, RenderColor renderColor) -> int32_t {
+    if (cachedIndex < 0) {
+      cachedIndex = ps->colors.size();
+      ps->colors.push_back(ColorMap::getColor(*colorScheme, renderColor));
     }
-    return faceFrontColorIndex;
-  };
-  auto getFaceBackColorIndex = [&]() -> int {
-    if (faceBackColorIndex < 0) {
-      faceBackColorIndex = ps->colors.size();
-      ps->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_BACK_COLOR));
-    }
-    return faceBackColorIndex;
+    return cachedIndex;
   };
 
   auto getColorIndex = [&](uint32_t originalID) -> int32_t {
     if (subtractedIDs_.find(originalID) != subtractedIDs_.end()) {
-      return getFaceBackColorIndex();
+      return getCachedFaceColorIndex(faceBackColorIndex, RenderColor::CGAL_FACE_BACK_COLOR);
     }
     auto colorIndexIt = originalIDToColorIndex.find(originalID);
     if (colorIndexIt != originalIDToColorIndex.end()) {
@@ -176,7 +171,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
     }
     auto colorIt = originalIDToColor_.find(originalID);
     if (colorIt == originalIDToColor_.end()) {
-      return getFaceFrontColorIndex();
+      return getCachedFaceColorIndex(faceFrontColorIndex, RenderColor::CGAL_FACE_FRONT_COLOR);
     }
     const auto& color = colorIt->second;
 
