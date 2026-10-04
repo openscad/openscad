@@ -44,7 +44,7 @@ repos:
           - id: check-yaml
           - id: detect-private-key
     - repo: https://github.com/pre-commit/mirrors-clang-format
-      rev: "v23.1.1"
+      rev: "v23.1.2"
       hooks:
           # clang-format's default file types include JavaScript, so without
           # an exclude it reformats the vendored, pre-minified three.js bundles
@@ -61,7 +61,7 @@ repos:
             stages: [commit-msg]
             additional_dependencies: ["@commitlint/config-conventional@21.2.3"]
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.16.8
+      rev: v0.16.10
       hooks:
           # Validate Python stub files programmatically instead of
           # eyeballing them. Scoped to the stubs tree so that the rest of
