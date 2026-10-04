@@ -86,6 +86,15 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root
 {
 }
 
+void ThrownTogetherRenderer::setColorScheme(const ColorScheme& cs)
+{
+  const bool changed = colorscheme_ != &cs;
+  Renderer::setColorScheme(cs);
+  if (!changed) return;
+  // Same as PolySetRenderer and CGALRenderer: the colors live in the buffers, so mark them dirty.
+  vertex_state_containers_.clear();
+}
+
 void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown prepare");
