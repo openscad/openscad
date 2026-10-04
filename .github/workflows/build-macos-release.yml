@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   build-arm64:
-    runs-on: macos-15
+    runs-on: macos-26
     name: macOS arm64 Build and Package
     timeout-minutes: 150
     permissions:
