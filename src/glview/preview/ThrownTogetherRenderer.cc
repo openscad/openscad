@@ -186,7 +186,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     add_shader_pointers(vbo_builder, shaderinfo);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric,
-                               override_color);
+                               override_color, schemeFaceColors());
     if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
@@ -210,7 +210,8 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       // Scale 2D negative objects 10% in the Z direction to avoid z fighting
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
-    vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric, override_color);
+    vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric, override_color,
+                               schemeFaceColors());
     if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
@@ -230,7 +231,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     container.states().emplace_back(std::move(cull));
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric,
-                               true);
+                               true, schemeFaceColors());
     if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }

@@ -73,9 +73,9 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     float b = exportInfo.defaultColor.b();
     float f = 0.;
     if (has_color) {
-      auto color_index = ps->color_indices[polygon_index];
-      if (color_index >= 0) {
-        auto color = ps->colors[color_index];
+      const auto color_index = ps->color_indices[polygon_index].index();
+      if (color_index) {
+        auto color = ps->colors[*color_index];
         r = color.r();
         g = color.g();
         b = color.b();

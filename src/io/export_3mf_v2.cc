@@ -109,9 +109,10 @@ int count_mesh_objects(const Lib3MF::PModel& model)
 }
 
 void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx,
-                           Lib3MF::PMeshObject& mesh, Lib3MF_uint32 triangle, int color_index)
+                           Lib3MF::PMeshObject& mesh, Lib3MF_uint32 triangle, color_index_t color_index)
 {
-  if (color_index < 0) {
+  const auto idx = color_index.index();
+  if (!idx) {
     return;
   }
   if (ps->colors.empty()) {
@@ -124,7 +125,7 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
     return;
   }
 
-  const Color4f col = ps->colors[color_index];
+  const Color4f col = ps->colors[*idx];
   const auto col_it = ctx.materialColors.find(col);
 
   Lib3MF_uint32 col_idx = 0;
@@ -189,7 +190,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
       return true;
     };
 
-    auto triangleFunc = [&](const IndexedFace& indices, int color_index) -> bool {
+    auto triangleFunc = [&](const IndexedFace& indices, color_index_t color_index) -> bool {
       try {
         const auto triangle = mesh->AddTriangle({static_cast<Lib3MF_uint32>(indices[0]),
                                                  static_cast<Lib3MF_uint32>(indices[1]),
@@ -216,7 +217,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     }
 
     for (size_t i = 0; i < out_ps->indices.size(); i++) {
-      auto color_index = i < out_ps->color_indices.size() ? out_ps->color_indices[i] : -1;
+      const color_index_t color_index = i < out_ps->color_indices.size() ? out_ps->color_indices[i] : -1;
       if (!triangleFunc(out_ps->indices[i], color_index)) {
         export_3mf_error("Can't add triangle to 3MF model.");
         return false;

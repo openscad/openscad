@@ -70,6 +70,16 @@ private:
   friend class ColorMap;
 };
 
+//! The colors that PolySet's color_index_t sentinels stand for. Geometry outlives the color
+//! scheme it was built under -- it is cached and reused across a scheme change -- so it stores a
+//! tag and whoever draws or exports it resolves the color against the scheme in force then.
+struct SchemeFaceColors {
+  Color4f defaultColor;
+  Color4f cutoutColor;
+
+  static SchemeFaceColors from(const ColorScheme& scheme);
+};
+
 class ColorMap
 {
   using colorscheme_set_t = std::multimap<int, std::shared_ptr<RenderColorScheme>, std::less<>>;
