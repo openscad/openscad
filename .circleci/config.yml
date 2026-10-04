@@ -373,7 +373,7 @@ jobs:
             brew tap
             brew uninstall -f --cask temurin17
             brew update
-            brew install automake libtool cmake pkg-config wget meson python-packaging
+            brew install automake libtool cmake pkg-config wget meson python-packaging gnupg
       - restore_cache:
           keys:
             # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files
@@ -432,10 +432,20 @@ jobs:
 
             security -v delete-keychain OpenSCAD.keychain
             rm OpenSCAD.p12
-            cp -R OpenSCAD-$OPENSCAD_VERSION.dmg /tmp/artifacts/
-            shasum -a 256 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha256
-            shasum -a 512 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha512
-            cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/artifacts/
+            mkdir -p /tmp/artifacts
+            cp -v "OpenSCAD-$OPENSCAD_VERSION.dmg" /tmp/artifacts/
+            cd /tmp/artifacts
+            shasum -a 256 "OpenSCAD-$OPENSCAD_VERSION.dmg" > "OpenSCAD-$OPENSCAD_VERSION.dmg.sha256"
+            shasum -a 512 "OpenSCAD-$OPENSCAD_VERSION.dmg" > "OpenSCAD-$OPENSCAD_VERSION.dmg.sha512"
+            if [ -n "${CODE_SIGNING_KEY:-}" ]; then
+                echo "$CODE_SIGNING_DATA" | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo "$CODE_SIGNING_PW")
+                export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                for a in *.dmg; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; done
+                rm -rf ~/.gnupg
+            else
+                echo "Skipping code signing."
+            fi
+            ls -l "OpenSCAD-$OPENSCAD_VERSION.dmg"*
       - store_artifacts:
           path: /tmp/artifacts
           destination: macOS
@@ -480,11 +490,20 @@ jobs:
             cd /tmp/workspace
             sha256sum openscad-${OPENSCAD_VERSION}.src.tar.gz > openscad-${OPENSCAD_VERSION}.src.tar.gz.sha256
             sha512sum openscad-${OPENSCAD_VERSION}.src.tar.gz > openscad-${OPENSCAD_VERSION}.src.tar.gz.sha512
+            if [ -n "${CODE_SIGNING_KEY:-}" ]; then
+                echo "$CODE_SIGNING_DATA" | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo "$CODE_SIGNING_PW")
+                export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS openscad-${OPENSCAD_VERSION}.src.tar.gz
+                rm -rf ~/.gnupg
+            else
+                echo "Skipping code signing."
+            fi
             ls -l openscad-${OPENSCAD_VERSION}.*
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - openscad-*.src.tar.gz
+            - openscad-*.src.tar.gz.asc
             - openscad-*.src.tar.gz.sha256
             - openscad-*.src.tar.gz.sha512
       - store_artifacts:
@@ -576,6 +595,7 @@ workflows:
     jobs:
       - openscad-tarball:
           name: openscad-tarball-release
+          context: secret-context
           filters: *release-filters
       - openscad-mxe:
           name: openscad-mxe-release
