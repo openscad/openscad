@@ -421,10 +421,10 @@ jobs:
             echo "$APPLE_CODE_SIGNING_KEY" | base64 -D -o OpenSCAD.p12
             security -v import OpenSCAD.p12 -k OpenSCAD.keychain -f pkcs12 -P "$APPLE_CODE_SIGNING_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
             security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
-            codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
+            codesign --timestamp --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
 
             hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$OPENSCAD_VERSION.dmg"
-            codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$OPENSCAD_VERSION.dmg
+            codesign --timestamp --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$OPENSCAD_VERSION.dmg
 
             xcrun notarytool submit OpenSCAD-$OPENSCAD_VERSION.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
             # TODO: If notarization fails, we could, download and dump the explanation here.
