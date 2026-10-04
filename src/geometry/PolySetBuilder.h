@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "geometry/ColorIndex.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Polygon2d.h"
@@ -45,7 +46,7 @@ public:
 private:
   Reindexer<Vector3d> vertices_;
   PolygonIndices indices_;
-  std::vector<int32_t> color_indices_;
+  std::vector<color_index_t> color_indices_;
   std::vector<Color4f> colors_;
   int convexity_{1};
   int dim_;
