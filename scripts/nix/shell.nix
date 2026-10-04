@@ -29,6 +29,7 @@ pkgs.mkShell {
     libzip
     manifold
     mpfr
+    nettle_4
     opencsg
     python3
     python3Packages.numpy
@@ -36,7 +37,7 @@ pkgs.mkShell {
     wayland
     wayland-protocols
 
-    # QT5 
+    # QT5
     # libsForQt5.full
     # qscintilla
 
