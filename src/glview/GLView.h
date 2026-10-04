@@ -61,6 +61,8 @@ public:
   void setShowEdges(bool enabled) { this->showedges = enabled; }
   [[nodiscard]] bool showCrosshairs() const { return this->showcrosshairs; }
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
+  [[nodiscard]] bool transparentBackground() const { return this->transparent_background; }
+  void setTransparentBackground(bool enabled) { this->transparent_background = enabled; }
 
   virtual bool save(const char *filename) const = 0;
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
@@ -76,6 +78,7 @@ public:
   bool showedges;
   bool showcrosshairs;
   bool showscale;
+  bool transparent_background{false};
   GLdouble modelview[16];
   GLdouble projection[16];
   std::vector<SelectedObject> selected_obj;
