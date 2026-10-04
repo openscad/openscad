@@ -1,4 +1,4 @@
 # Pinned build tools for docker/wasm/sysroot.dockerfile (Dependabot: pip, /docker/wasm).
-cmake==4.4.3
+cmake==4.4.4
 meson==1.12.1
 packaging==26.3
