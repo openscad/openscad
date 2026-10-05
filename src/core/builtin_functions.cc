@@ -1379,9 +1379,9 @@ void register_builtin_functions()
                    "has_key(object, key) -> boolean",
                  });
 
-  Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
+  Builtins::init("import", new BuiltinFunction(&builtin_import),
                  {
-                   "import(file) -> object",
+                   "import(file [, type]) -> value",
                  });
   Builtins::init("fragments", new BuiltinFunction(&builtin_fragments),
                  {
