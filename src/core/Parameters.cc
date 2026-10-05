@@ -292,7 +292,7 @@ void Parameters::set_caller(const std::string& caller)
  * @return radius value of type Value::Type::NUMBER, or nothing if both variables are invalid or not set.
  */
 boost::optional<const Value> Parameters::lookupRadius(const std::string& diameter_var,
-                                                       const std::string& radius_var) const
+                                                      const std::string& radius_var) const
 {
   const auto& d = get(diameter_var);
   const auto& r = get(radius_var);

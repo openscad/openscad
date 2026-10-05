@@ -513,8 +513,7 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
     if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) ||
         !std::isfinite(node->r2)) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "cylinder(r1=%1$s, r2=%2$s, ...)",
-          (r1 ? r1->toEchoStringNoThrow() : r->toEchoStringNoThrow()),
+          "cylinder(r1=%1$s, r2=%2$s, ...)", (r1 ? r1->toEchoStringNoThrow() : r->toEchoStringNoThrow()),
           (r2 ? r2->toEchoStringNoThrow() : r->toEchoStringNoThrow()));
     }
   }
