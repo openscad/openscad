@@ -277,6 +277,7 @@ build_qt6()
   cd qt-everywhere-src-$version
 
   patch -p1 < $OPENSCADDIR/patches/qt6/qyieldcpu.patch
+  patch -p1 < $OPENSCADDIR/patches/qt6/dup3.patch
 
   mkdir build
   cd build
