@@ -41,6 +41,8 @@ public:
   [[nodiscard]] virtual size_t numFacets() const = 0;
   [[nodiscard]] unsigned int getConvexity() const { return convexity; }
   void setConvexity(int c) { this->convexity = c; }
+  [[nodiscard]] std::string getModelName() const { return model_name; }
+  void setModelName(std::string model_name) { this->model_name = model_name; }
   virtual void setColor(const Color4f& c) {}
 
   virtual void transform(const Transform3d& /*mat*/) { assert(!"transform not implemented!"); }
@@ -53,6 +55,7 @@ public:
 
 protected:
   int convexity{1};
+  std::string model_name{""};
 };
 
 /**
