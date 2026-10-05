@@ -46,6 +46,8 @@ public:
                           const std::shared_ptr<const Context>& defining_context);
 
   boost::optional<const Value&> lookup(const std::string& name) const;
+  boost::optional<const Value> lookupRadius(const std::string& diameter_var,
+                                             const std::string& radius_var) const;
 
   void set_caller(const std::string& caller);
   const std::string& get_caller() const { return caller; }
@@ -63,7 +65,6 @@ public:
   template <typename T>
   bool validate_integral(const std::string& name, T& out, T lo = std::numeric_limits<T>::min(),
                          T hi = std::numeric_limits<T>::max());
-  boost::optional<const std::string&> exactlyOneOf(const std::initializer_list<std::string> names) const;
 
   ContextFrame to_context_frame() &&;
 

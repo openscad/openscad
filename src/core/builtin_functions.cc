@@ -1043,22 +1043,18 @@ Value builtin_fn(Arguments arguments, const Location& loc)
   Parameters parameters = Parameters::parse(std::move(arguments), loc, {"r"}, {"d"});
   parameters.set_caller("fn");
 
-  auto name = parameters.exactlyOneOf({"r", "d"});
-  if (!name) {
-    return Value::undefined.clone();
-  }
-
-  double v;
-  if (!parameters.validate_number(*name, v)) {
-    return Value::undefined.clone();
-  }
-
-  if (*name == "d") {
-    v = v / 2;
+  double r = 1.0;
+  const auto rValue = parameters.lookupRadius("d", "r");
+  if (rValue) {
+    r = rValue->toDouble();
+    if (OpenSCAD::rangeCheck && ((r <= 0) || !std::isfinite(r))) {
+      LOG(message_group::Warning, loc, parameters.documentRoot(), "fn(r=%1$s)",
+          rValue->toEchoStringNoThrow());
+    }
   }
 
   CurveDiscretizer discretizer(parameters, loc);
-  return discretizer.getCircularSegmentCount(v).value_or(3);
+  return discretizer.getCircularSegmentCount(r).value_or(3);
 }
 
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
