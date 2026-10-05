@@ -157,6 +157,7 @@ private:
   void setupDocks();
   void setupMenusAndActions();
   void restoreWindowState();
+  void restoreToolBarVisibility();
   void openRemainingFiles(const QStringList& filenames);
   /// First CLI path was a missing design file; tab UI deferred until user answers create prompt.
   QString deferredCliMissingFile;
