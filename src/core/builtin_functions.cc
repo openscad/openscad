@@ -1038,6 +1038,25 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   return std::move(font_metrics);
 }
 
+Value builtin_fn(Arguments arguments, const Location& loc)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"r"}, {"d"});
+  parameters.set_caller("fn");
+
+  double r = 1.0;
+  const auto rValue = parameters.lookupRadius("d", "r");
+  if (rValue) {
+    r = rValue->toDouble();
+    if (OpenSCAD::rangeCheck && ((r <= 0) || !std::isfinite(r))) {
+      LOG(message_group::Warning, loc, parameters.documentRoot(), "fn(r=%1$s)",
+          rValue->toEchoStringNoThrow());
+    }
+  }
+
+  CurveDiscretizer discretizer(parameters, loc);
+  return discretizer.getCircularSegmentCount(r).value_or(3);
+}
+
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
   if (call->arguments.size() != 1) {
@@ -1365,5 +1384,9 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
                  {
                    "import(file) -> object",
+                 });
+  Builtins::init("fn", new BuiltinFunction(&builtin_fn, &Feature::ExperimentalFnFunction),
+                 {
+                   "fn(r|d) -> number",
                  });
 }
