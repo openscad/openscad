@@ -473,6 +473,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
   ${TEST_SCAD_DIR}/issues/issue7013.scad
+  ${TEST_SCAD_DIR}/misc/isobject-test.scad
+  ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
 )
 
 list(APPEND ASTDUMP_FILES ${MISC_FILES}

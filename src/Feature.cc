@@ -36,8 +36,6 @@ const Feature Feature::ExperimentalPythonSeparateObjects(
   "unioning them, so 3MF export can write one object per part.");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing",
                                                         "Enable indexing in vertex object renderers");
-const Feature Feature::ExperimentalTextMetricsFunctions(
-  "textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 const Feature Feature::ExperimentalImportFunction(
   "import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalObjectFunction(
