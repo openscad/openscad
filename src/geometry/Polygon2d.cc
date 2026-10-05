@@ -2,10 +2,12 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
 
+#include "geometry/ClipperUtils.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
@@ -25,6 +27,29 @@ Polygon2d::Polygon2d(Outline2d outline) : sanitized(true)
 std::unique_ptr<Geometry> Polygon2d::copy() const
 {
   return std::make_unique<Polygon2d>(*this);
+}
+
+void Polygon2d::setColor(const Color4f& c)
+{
+  for (auto& outline : this->theoutlines) outline.color = c;
+}
+
+std::optional<Color4f> Polygon2d::uniformColor() const
+{
+  if (this->theoutlines.empty()) return Color4f{};
+  const Color4f& color = this->theoutlines.front().color;
+  for (const auto& outline : this->theoutlines) {
+    if (outline.color != color) return std::nullopt;
+  }
+  return color;
+}
+
+std::unique_ptr<Polygon2d> Polygon2d::unionedContours() const
+{
+  if (uniformColor()) return nullptr;
+  Polygon2d merged(*this);
+  merged.setColor(Color4f{});
+  return ClipperUtils::sanitize(merged);
 }
 
 BoundingBox Outline2d::getBoundingBox() const
@@ -174,6 +199,15 @@ double Polygon2d::area() const
 std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
+  // Export reads these colored contours directly. Render, extrusion, and area use
+  // this mesh, so overlapping colors are unioned here and match an uncolored union.
+  if (!uniformColor()) {
+    Polygon2d merged(*this);
+    merged.setColor(Color4f{});
+    const auto unified = ClipperUtils::sanitize(merged);
+    if (!unified) return std::make_unique<PolySet>(2);
+    return unified->tessellate();
+  }
 #if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
