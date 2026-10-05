@@ -22,12 +22,12 @@
 
 namespace {
 
-void local_gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+void local_gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar, GLdouble xShift)
 {
   GLdouble ymax = zNear * tan_degrees(fovy / 2.0);
   GLdouble ymin = -ymax;
-  GLdouble xmin = ymin * aspect;
-  GLdouble xmax = ymax * aspect;
+  GLdouble xmin = ymin * aspect + xShift;
+  GLdouble xmax = ymax * aspect + xShift;
   glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 
@@ -93,6 +93,7 @@ GLView::GLView()
   colorscheme = &ColorMap::instance().defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
+  stereoEyeOffset = 0.0;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -191,7 +192,8 @@ void GLView::setupCamera()
   auto dist = cam.zoomValue();
   switch (this->cam.projection) {
   case Camera::ProjectionType::PERSPECTIVE: {
-    local_gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist);
+    // Off-axis frustum: the two eyes meet at the distance of the point looked at
+    local_gluPerspective(cam.fov, aspectratio, 0.1 * dist, 100 * dist, -0.1 * stereoEyeOffset);
     break;
   }
   default:
@@ -203,9 +205,12 @@ void GLView::setupCamera()
   }
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  local_gluLookAt(0.0, -dist, 0.0,  // eye
-                  0.0, 0.0, 0.0,    // center
-                  0.0, 0.0, 1.0);   // up
+  // Perspective: the eye moves sideways and keeps looking straight ahead.
+  // Orthographic: the eye turns around the point looked at.
+  const auto centerX = cam.projection == Camera::ProjectionType::PERSPECTIVE ? stereoEyeOffset : 0.0;
+  local_gluLookAt(stereoEyeOffset, -dist, 0.0,  // eye
+                  centerX, 0.0, 0.0,            // center
+                  0.0, 0.0, 1.0);               // up
 
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
