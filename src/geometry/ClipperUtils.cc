@@ -259,34 +259,6 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
   return ClipperUtils::toPolygon2d(sumresult, scale_bits);
 }
 
-/*!
-   Apply the clipper operator to the given polygons.
-
-   May return an empty Polygon2d, but will not return nullptr.
- */
-static std::unique_ptr<Polygon2d> applyUncolored(
-  const std::vector<std::shared_ptr<const Polygon2d>>& polygons, Clipper2Lib::ClipType clipType)
-{
-  const int scale_bits = scaleBitsFromPrecision();
-
-  std::vector<Clipper2Lib::Paths64> pathsvector;
-  for (const auto& polygon : polygons) {
-    if (polygon) {
-      auto polypaths = fromPolygon2d(*polygon, scale_bits);
-      if (!polygon->isSanitized()) {
-        polypaths = Clipper2Lib::PolyTreeToPaths64(*sanitize(polypaths));
-      }
-      pathsvector.push_back(std::move(polypaths));
-    } else {
-      // Insert empty object as this could be the positive object in a difference
-      pathsvector.emplace_back();
-    }
-  }
-  auto res = apply(pathsvector, clipType, scale_bits);
-  assert(res);
-  return res;
-}
-
 namespace {
 
 double outlineArea(const Outline2d& outline)
@@ -310,6 +282,56 @@ bool windingIsConsistent(const Outline2d& outline)
   const double area = outlineArea(outline);
   if (area == 0.0) return true;
   return outline.positive ? area > 0.0 : area < 0.0;
+}
+
+// Paths for a boolean. Sanitized polygons are used as stored. A polygon whose
+// contours overlap only because different colors were kept apart still has
+// coherent winding: NonZero merges that overlap. EvenOdd would cut a hole
+// through it. Incoherent winding keeps the historical EvenOdd clean.
+Clipper2Lib::Paths64 preparedPaths(const Polygon2d& polygon, int scale_bits)
+{
+  if (polygon.isSanitized()) return fromPolygon2d(polygon, scale_bits);
+
+  bool coherent = !polygon.outlines().empty();
+  for (const auto& outline : polygon.outlines()) {
+    if (!windingIsConsistent(outline)) {
+      coherent = false;
+      break;
+    }
+  }
+  if (coherent) {
+    Polygon2d kept(polygon);
+    kept.setSanitized(true);
+    Clipper2Lib::Clipper64 clipper;
+    clipper.PreserveCollinear(false);
+    clipper.AddSubject(fromPolygon2d(kept, scale_bits));
+    Clipper2Lib::PolyTree64 tree;
+    clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, tree);
+    return Clipper2Lib::PolyTreeToPaths64(tree);
+  }
+
+  auto polypaths = fromPolygon2d(polygon, scale_bits);
+  return Clipper2Lib::PolyTreeToPaths64(*sanitize(polypaths));
+}
+
+// May return an empty Polygon2d, but will not return nullptr.
+std::unique_ptr<Polygon2d> applyUncolored(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
+                                          Clipper2Lib::ClipType clipType)
+{
+  const int scale_bits = scaleBitsFromPrecision();
+
+  std::vector<Clipper2Lib::Paths64> pathsvector;
+  for (const auto& polygon : polygons) {
+    if (polygon) {
+      pathsvector.push_back(preparedPaths(*polygon, scale_bits));
+    } else {
+      // Insert empty object as this could be the positive object in a difference
+      pathsvector.emplace_back();
+    }
+  }
+  auto res = apply(pathsvector, clipType, scale_bits);
+  assert(res);
+  return res;
 }
 
 std::optional<Color4f> sharedUniformColor(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)

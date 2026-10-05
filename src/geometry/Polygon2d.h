@@ -56,6 +56,9 @@ public:
   void setColor(const Color4f& c) override;
   // All outlines share one color, or the polygon is empty. Empty is uncolored.
   [[nodiscard]] std::optional<Color4f> uniformColor() const;
+  // Boolean union of every contour. nullptr when the polygon is already one color,
+  // in which case the contours are already that union.
+  [[nodiscard]] std::unique_ptr<Polygon2d> unionedContours() const;
 
   void transform(const Transform2d& mat);
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
