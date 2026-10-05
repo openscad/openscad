@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.11'",
@@ -207,7 +207,7 @@ wheels = [
 
 [[package]]
 name = "cibuildwheel"
-version = "4.2.1"
+version = "4.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bashlex" },
@@ -220,9 +220,9 @@ dependencies = [
     { name = "packaging" },
     { name = "platformdirs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6e/ab/2e01b7a53e44b23b380c4bb77cc53fa96bc109864055efed9e34e375e7e0/cibuildwheel-4.2.1.tar.gz", hash = "sha256:6d67f04c0d1277a3b5301ed2ef82b115efd2ac1fe58b998bbc6ba1d59c918983", size = 456807, upload-time = "2026-09-05T14:47:49.776Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a2/8b/876da1c2f692a2c00c4e25b1c335ec53286695f25b29ee25818b993296e8/cibuildwheel-4.3.0.tar.gz", hash = "sha256:a88d0eee3946463636b71e0b1bfc2756df3c1fadf32163d5cdf1676467632ee5", size = 462711, upload-time = "2026-10-05T08:18:43.461Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/4b/03d8b91b86e9ca35cfed01f409564162f61e0c365dac725df54dfe35a66c/cibuildwheel-4.2.1-py3-none-any.whl", hash = "sha256:22af6eb3a601bc9efdd42ab5522839ed99c8d61cad6dbd0cec5278bfef74ae4f", size = 167680, upload-time = "2026-09-05T14:47:48.422Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/48/6e35bbcbd82df325130d4395a467e0dc7b8d158448a892605ef2495f6412/cibuildwheel-4.3.0-py3-none-any.whl", hash = "sha256:868e2355f9a0ff9f29ebccf80e8382feac7a8746d7f97e1b2ab27e38aed6d7ea", size = 169435, upload-time = "2026-10-05T08:18:41.647Z" },
 ]
 
 [[package]]
@@ -871,7 +871,7 @@ requires-dist = [
 build = [
     { name = "auditwheel", marker = "python_full_version >= '3.11'", specifier = "==6.8.2" },
     { name = "build", marker = "python_full_version >= '3.11'", specifier = "==1.6.1" },
-    { name = "cibuildwheel", marker = "python_full_version >= '3.11'", specifier = "==4.2.1" },
+    { name = "cibuildwheel", marker = "python_full_version >= '3.11'", specifier = "==4.3.0" },
     { name = "delocate", marker = "python_full_version >= '3.11'", specifier = "==0.13.0" },
     { name = "delvewheel", marker = "python_full_version >= '3.11'", specifier = "==1.13.1" },
 ]
