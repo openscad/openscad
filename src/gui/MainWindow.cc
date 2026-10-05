@@ -5369,8 +5369,16 @@ void MainWindow::setupStatusBar()
   // Must be initialized before setupEditor(), because creating a tab triggers
   // tabSwitched -> onLanguageActiveChanged -> updateLanguageLabel() which
   // dereferences these pointers.
-  this->versionLabel = nullptr;
   this->languageLabel = nullptr;
+  // Remove ugly frames in the QStatusBar when using additional widgets.
+  const auto stylesheet = QString(R"(
+    QStatusBar::item {
+        border: 0px solid black;
+    }
+  )");
+  this->statusBar()->setStyleSheet(stylesheet);
+  updateStatusBar(nullptr);
+  this->versionLabel = nullptr;
 }
 
 /**

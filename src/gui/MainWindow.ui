@@ -945,7 +945,7 @@
   </action>
   <action name="editActionCopyViewport">
    <property name="text">
-    <string>Copy viewport ima&amp;ge</string>
+    <string>Copy Viewport Ima&amp;ge</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+C</string>
@@ -953,7 +953,7 @@
   </action>
   <action name="editActionCopyVPT">
    <property name="text">
-    <string>Copy viewport transl&amp;ation</string>
+    <string>Copy Viewport Transl&amp;ation</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -961,17 +961,17 @@
   </action>
   <action name="editActionCopyVPR">
    <property name="text">
-    <string>Cop&amp;y viewport rotation</string>
+    <string>Cop&amp;y Viewport Rotation</string>
    </property>
   </action>
   <action name="editActionCopyVPD">
    <property name="text">
-    <string>Copy vie&amp;wport distance</string>
+    <string>Copy Vie&amp;wport Distance</string>
    </property>
   </action>
   <action name="editActionCopyVPF">
    <property name="text">
-    <string>Copy vie&amp;wport fov</string>
+    <string>Copy Vie&amp;wport FOV</string>
    </property>
   </action>
   <action name="editActionZoomTextIn">
@@ -1506,7 +1506,7 @@
   </action>
   <action name="editActionJumpToNextError">
    <property name="text">
-    <string>J&amp;ump to next error</string>
+    <string>J&amp;ump to Next Error</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+E</string>
@@ -1548,7 +1548,7 @@
   </action>
   <action name="helpActionLibraryInfo">
    <property name="text">
-    <string>&amp;Library info</string>
+    <string>&amp;Library Info</string>
    </property>
   </action>
   <action name="helpActionReportIssue">
@@ -1638,7 +1638,7 @@
   </action>
   <action name="editActionNextBookmark">
    <property name="text">
-    <string>Jump to next &amp;bookmark</string>
+    <string>Jump to Next &amp;Bookmark</string>
    </property>
    <property name="shortcut">
     <string>F2</string>
@@ -1646,7 +1646,7 @@
   </action>
   <action name="editActionPrevBookmark">
    <property name="text">
-    <string>Jump to &amp;previous bookmark</string>
+    <string>Jump to &amp;Previous Bookmark</string>
    </property>
    <property name="shortcut">
     <string>Shift+F2</string>
@@ -1668,7 +1668,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Hide Editor toolbar</string>
+    <string>&amp;Hide Editor Toolbar</string>
    </property>
   </action>
   <action name="editActionUnindent">
@@ -1705,7 +1705,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide &amp;3D View toolbar</string>
+    <string>Hide &amp;3D View Toolbar</string>
    </property>
   </action>
   <action name="windowActionNextWindow">

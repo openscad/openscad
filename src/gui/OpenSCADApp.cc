@@ -285,6 +285,8 @@ void OpenSCADApp::setApplicationFont(const QString& family, uint size)
   )");
   scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
   scadApp->setPalette(themePalette);
+  // Update the application font (hopefully) everywhere.
+  scadApp->setFont(QFont(family, size));
 }
 
 // For Qt5, simulate the Qt6 behavior.
