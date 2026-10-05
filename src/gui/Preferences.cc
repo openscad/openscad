@@ -782,6 +782,19 @@ void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
   emit updateMouseCentricZoom(val);
 }
 
+void Preferences::on_checkBoxStereo3dView_toggled(bool val)
+{
+  Settings::Settings::stereo3dView.setValue(val);
+  writeSettings();
+}
+
+void Preferences::on_doubleSpinBoxStereo3dEyeSeparation_valueChanged(double val)
+{
+  Settings::Settings::stereo3dEyeSeparation.setValue(val);
+  writeSettings();
+  emit requestRedraw();
+}
+
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
   Settings::Settings::indentationWidth.setValue(val);
@@ -2025,6 +2038,9 @@ void Preferences::updateGUI()
   initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
   initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
   initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
+  initUpdateCheckBox(this->checkBoxStereo3dView, Settings::Settings::stereo3dView);
+  initUpdateDoubleSpinBox(this->doubleSpinBoxStereo3dEyeSeparation,
+                          Settings::Settings::stereo3dEyeSeparation);
   initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
 
   /* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from
