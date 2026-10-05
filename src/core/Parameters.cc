@@ -92,42 +92,6 @@ const Value& Parameters::get(const std::initializer_list<std::string> names) con
   return matchValue ? *matchValue : Value::undefined;
 }
 
-boost::optional<const std::string&> Parameters::exactlyOneOf(
-  const std::initializer_list<std::string> names) const
-{
-  boost::optional<const std::string&> matchName;
-
-  for (const std::string& name : names) {
-    boost::optional<const Value&> value = lookup(name);
-    if (value && value->isDefined()) {
-      if (!matchName) {
-        matchName = name;
-      } else {
-        LOG(message_group::Warning, loc, documentRoot(), "%1$s(): specified both %2$s and %3$s", caller,
-            quoteVar(*matchName), quoteVar(name));
-        return boost::none;
-      }
-    }
-  }
-
-  if (!matchName) {
-    std::stringstream str;
-    auto it = names.begin();
-    if (names.size() == 2) {
-      str << quoteVar(*it++);
-      str << " or " << quoteVar(*it);
-    } else {
-      for (int i = 0; i < names.size() - 1; i++) {
-        str << quoteVar(*it++) << ", ";
-      }
-      str << "or " << quoteVar(*it);
-    }
-    LOG(message_group::Warning, loc, documentRoot(), "%1$s(): expected one of %2$s", caller, str.str());
-    return boost::none;
-  }
-  return matchName;
-}
-
 double Parameters::get(const std::string& name, double default_value) const
 {
   boost::optional<const Value&> value = lookup(name);
@@ -316,6 +280,36 @@ Parameters Parameters::parse(Arguments arguments, const Location& loc,
 void Parameters::set_caller(const std::string& caller)
 {
   this->caller = caller;
+}
+
+/**
+ * Return a radius value by looking up both a diameter and radius variable.
+ * The diameter has higher priority, so if found an additionally set radius
+ * value is ignored.
+ *
+ * @param radius_var name of the variable to lookup for the radius value.
+ * @param diameter_var name of the variable to lookup for the diameter value.
+ * @return radius value of type Value::Type::NUMBER, or nothing if both variables are invalid or not set.
+ */
+boost::optional<const Value> Parameters::lookupRadius(const std::string& diameter_var,
+                                                       const std::string& radius_var) const
+{
+  const auto& d = get(diameter_var);
+  const auto& r = get(radius_var);
+  const auto r_defined = (r.type() == Value::Type::NUMBER);
+
+  if (d.type() == Value::Type::NUMBER) {
+    if (r_defined) {
+      LOG(message_group::Warning, loc, documentRoot(),
+          "Ignoring radius argument %1$s as diameter %2$s is defined too.", quoteVar(radius_var),
+          quoteVar(diameter_var));
+    }
+    return boost::optional<const Value>(d.toDouble() / 2.0);
+  } else if (r_defined) {
+    return boost::optional<const Value>(r.clone());
+  } else {
+    return boost::none;
+  }
 }
 
 void print_argCnt_warning(const std::string& name, int found, const std::string& expected,
