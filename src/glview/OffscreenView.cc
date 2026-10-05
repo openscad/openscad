@@ -20,6 +20,9 @@
 #ifdef ENABLE_OSMESA
 #include "glview/OffscreenContextOSMesa.h"
 #endif
+#ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+#endif
 
 namespace {
 
@@ -85,10 +88,16 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 #ifdef ENABLE_OSMESA
   if (!strcmp(provider, "osmesa")) {
     version = gladLoadGL(reinterpret_cast<GLADloadfunc>(OSMesaGetProcAddress));
+#ifdef ENABLE_OPENCSG
+    OpenCSG::setGLProcAddress(reinterpret_cast<OpenCSG::GLProcAddressFunc>(OSMesaGetProcAddress));
+#endif
   } else
 #endif
   {
     version = gladLoaderLoadGL();
+#if defined(ENABLE_OSMESA) && defined(ENABLE_OPENCSG)
+    OpenCSG::setGLProcAddress(nullptr);
+#endif
   }
   if (version == 0) {
     throw OffscreenViewException("Unable to initialize GLAD");
@@ -111,6 +120,9 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 OffscreenView::~OffscreenView()
 {
   fbo.reset();
+#if defined(ENABLE_OSMESA) && defined(ENABLE_OPENCSG)
+  OpenCSG::setGLProcAddress(nullptr);
+#endif
 }
 
 #ifdef ENABLE_OPENCSG
