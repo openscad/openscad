@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-10 04:06+0200\n"
+"POT-Creation-Date: 2026-09-27 07:10+0200\n"
 "PO-Revision-Date: 2026-08-01 01:42+0200\n"
 "Last-Translator: Pierre ROUZEAU <github.com/PRouzeau>\n"
 "Language-Team: French\n"
@@ -368,7 +368,7 @@ msgstr "Assistant IA"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:197
 msgid "Chat options"
-msgstr ""
+msgstr "Options du chat"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:199
 msgid "☰"
@@ -392,31 +392,30 @@ msgstr "Envoyer"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:206
 msgid "Grab active 3D viewport frame and camera metadata"
-msgstr ""
+msgstr "Capturer l'image de la fenêtre de vue 3D active et les métadonnées de la caméra"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:208
-#, fuzzy
 msgid "Analyze Screen"
-msgstr "&Plein écran"
+msgstr "Analyser l'écran"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:210
 msgid "Attach local image file"
-msgstr ""
+msgstr "Joindre un fichier image local"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:212
 #: src/gui/ai/ChatWidget.cc:508
 msgid "Attach Image"
-msgstr ""
+msgstr "Joindre une image"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:214
 msgid ""
 "Agentic mode: allow the AI to call tools in multiple automatic turns per "
 "request"
-msgstr ""
+msgstr "Mode agentique : autoriser l'IA à appeler des outils en plusieurs tours automatiques par requête"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:216
 msgid "Agentic"
-msgstr ""
+msgstr "Agentique"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:399
 msgid "Color List"
@@ -574,7 +573,7 @@ msgid "Clear console"
 msgstr "Effacer la console"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:46
-#: src/gui/TabManager.cc:2052
+#: src/gui/TabManager.cc:2120
 msgid "Save As..."
 msgstr "Enregistrer sous..."
 
@@ -790,8 +789,9 @@ msgstr "Toujours afficher la boîte de dialogue"
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:221
 #: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:109
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:185
-#: src/gui/UnsavedChangesDialog.cc:60 src/openscad_gui.cc:196
-#: src/openscad_gui.cc:871
+#: src/gui/MainWindow.cc:3562 src/gui/MainWindow.cc:3595
+#: src/gui/MainWindow.cc:3654 src/gui/UnsavedChangesDialog.cc:60
+#: src/openscad_gui.cc:196 src/openscad_gui.cc:871
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -799,9 +799,12 @@ msgstr "Annuler"
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportGcodeDialog.h:190
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:634
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:222
-#: src/gui/MainWindow.cc:3828 src/gui/MainWindow.cc:3832
-#: src/gui/MainWindow.cc:3854 src/gui/MainWindow.cc:3869
-#, fuzzy
+#: src/gui/MainWindow.cc:3553 src/gui/MainWindow.cc:3586
+#: src/gui/MainWindow.cc:3620 src/gui/MainWindow.cc:3641
+#: src/gui/MainWindow.cc:3673 src/gui/MainWindow.cc:3680
+#: src/gui/MainWindow.cc:3994 src/gui/MainWindow.cc:4135
+#: src/gui/MainWindow.cc:4139 src/gui/MainWindow.cc:4163
+#: src/gui/MainWindow.cc:4178 src/gui/MainWindow.cc:4193
 msgid "Export"
 msgstr "E&xporter"
 
@@ -1231,7 +1234,7 @@ msgid "Select Design"
 msgstr "Sélectionner la conception"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1065
-#: src/gui/MainWindow.cc:4869
+#: src/gui/MainWindow.cc:5246
 msgid "Welcome..."
 msgstr "Bienvenue..."
 
@@ -1244,7 +1247,6 @@ msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1070
-#, fuzzy
 msgid "New &Window"
 msgstr "Nouvelle fenêtre"
 
@@ -1257,7 +1259,6 @@ msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1075
-#, fuzzy
 msgid "Open in New Windo&w"
 msgstr "Ouvrir dans une nouvelle fenêtre"
 
@@ -1278,12 +1279,10 @@ msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Maj+S"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1084
-#, fuzzy
 msgid "Save a C&opy..."
 msgstr "Enregistrer une copie"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1085
-#, fuzzy
 msgid "S&ave All"
 msgstr "Tout enregistrer"
 
@@ -1296,7 +1295,7 @@ msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1090
-#: src/gui/MainWindow.cc:4870
+#: src/gui/MainWindow.cc:5247
 msgid "Close &Window"
 msgstr "&Fermer la fenêtre"
 
@@ -1382,24 +1381,21 @@ msgstr "Ctrl+Maj+D"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1133
 msgid "Mo&ve Line Up"
-msgstr ""
+msgstr "Déplacer la ligne &vers le haut"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1135
-#, fuzzy
 msgid "Ctrl+Alt+Up"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+Up"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1137
 msgid "Mo&ve Line Down"
-msgstr ""
+msgstr "Déplacer la ligne &vers le bas"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1139
-#, fuzzy
 msgid "Ctrl+Alt+Down"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+Down"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1141
-#, fuzzy
 msgid "Show &Next Tab"
 msgstr "Afficher l'onglet suivant"
 
@@ -1408,7 +1404,6 @@ msgid "Ctrl+Tab"
 msgstr "Ctrl+Tab"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1145
-#, fuzzy
 msgid "Show P&revious Tab"
 msgstr "Afficher l'onglet précédent"
 
@@ -1541,7 +1536,7 @@ msgid "Display CSG Pr&oducts"
 msgstr "Afficher les &produits CSG"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1200
-#: src/gui/MainWindow.cc:3688
+#: src/gui/MainWindow.cc:3910
 msgid "&Export..."
 msgstr "&Exporter..."
 
@@ -1554,9 +1549,8 @@ msgid "Export &as..."
 msgstr "Exporter &sous..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1206
-#, fuzzy
 msgid "Ctrl+F7"
-msgstr "Ctrl+F"
+msgstr "Ctrl+F7"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1208
 msgid "Export as &STL (binary)..."
@@ -1595,7 +1589,6 @@ msgid "Export as &GCode..."
 msgstr "Exporter comme &GCode..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1217
-#, fuzzy
 msgid "P&review"
 msgstr "Aperçu"
 
@@ -1604,7 +1597,6 @@ msgid "F9"
 msgstr "F9"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1221
-#, fuzzy
 msgid "T&hrown Together"
 msgstr "Jeté ensemble"
 
@@ -1613,7 +1605,6 @@ msgid "F12"
 msgstr "F12"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1225
-#, fuzzy
 msgid "&Show Edges"
 msgstr "Afficher les arêtes"
 
@@ -1622,7 +1613,6 @@ msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1229
-#, fuzzy
 msgid "Show A&xes"
 msgstr "Afficher les axes"
 
@@ -1631,7 +1621,6 @@ msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1233
-#, fuzzy
 msgid "Show &Crosshairs"
 msgstr "Afficher la mire"
 
@@ -1640,7 +1629,6 @@ msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1237
-#, fuzzy
 msgid "Show Scale &Markers"
 msgstr "Afficher les graduations"
 
@@ -1811,7 +1799,6 @@ msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1311
-#, fuzzy
 msgid "J&ump to next error"
 msgstr "Aller à l'erreur suivante"
 
@@ -1856,7 +1843,6 @@ msgid "Show Backup Files"
 msgstr "Afficher les fichiers de sauvegarde"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1324
-#, fuzzy
 msgid "Reset &View"
 msgstr "Réinitialiser la vue"
 
@@ -1869,7 +1855,6 @@ msgid "Export as &3MF..."
 msgstr "Exporter comme &3MF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1327
-#, fuzzy
 msgid "Zoom &In"
 msgstr "Zoom avant"
 
@@ -1878,7 +1863,6 @@ msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1331
-#, fuzzy
 msgid "&Zoom Out"
 msgstr "Zoom arrière"
 
@@ -1887,7 +1871,6 @@ msgid "Ctrl+["
 msgstr "Ctrl+["
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1335
-#, fuzzy
 msgid "View &All"
 msgstr "Voir tout"
 
@@ -1900,7 +1883,6 @@ msgid "Conv&ert Tabs to Spaces"
 msgstr "Conv&ertir les tabulations en espaces"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1340
-#, fuzzy
 msgid "&Toggle Bookmark"
 msgstr "Basculer le signet"
 
@@ -1909,7 +1891,6 @@ msgid "Ctrl+F2"
 msgstr "Ctrl+F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1344
-#, fuzzy
 msgid "Jump to next &bookmark"
 msgstr "Aller au signet suivant"
 
@@ -1918,7 +1899,6 @@ msgid "F2"
 msgstr "F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1348
-#, fuzzy
 msgid "Jump to &previous bookmark"
 msgstr "Aller au signet précédent"
 
@@ -1935,7 +1915,6 @@ msgid "F11"
 msgstr "F11"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1356
-#, fuzzy
 msgid "&Hide Editor toolbar"
 msgstr "Cacher la barre d'outils de l'éditeur"
 
@@ -1960,7 +1939,6 @@ msgid "Export as PDF..."
 msgstr "Exporter en PDF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1364
-#, fuzzy
 msgid "Hide &3D View toolbar"
 msgstr "Cacher la barre d'outils de la vue 3D"
 
@@ -1981,12 +1959,10 @@ msgid "Alt+Ins"
 msgstr "Alt+Ins"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1371
-#, fuzzy
 msgid "Fold/Unfold All"
 msgstr "Tout plier/déplier"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1372
-#, fuzzy
 msgid "&Jump To"
 msgstr "Aller à ..."
 
@@ -2256,7 +2232,7 @@ msgstr "Éditeur"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2631
 msgid "Experimental"
-msgstr ""
+msgstr "Expérimental"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2633
 msgid "Enable/Disable experimental features"
@@ -2284,6 +2260,8 @@ msgstr "Paramètres Python"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2645
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:178
+#: src/gui/MainWindow.cc:3553 src/gui/MainWindow.cc:3586
+#: src/gui/MainWindow.cc:3641
 msgid "3D Print"
 msgstr "Impression 3D"
 
@@ -2594,9 +2572,8 @@ msgid "Last checked: "
 msgstr "Dernière vérification : "
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2737
-#, fuzzy
 msgid "Experimental Features"
-msgstr "Fonctionnalités d'export"
+msgstr "Fonctionnalités expérimentales"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2738
 msgid ""
@@ -2604,7 +2581,7 @@ msgid ""
 "without notice. You may enable them and use them and comment on them, but "
 "you must assume that they may not be in their final form and may never "
 "appear in an OpenSCAD release in any form."
-msgstr ""
+msgstr "Ces fonctionnalités sont expérimentales. Elles peuvent changer ou être entièrement retirées sans préavis. Vous pouvez les activer, les utiliser et les commenter, mais vous devez partir du principe qu'elles ne sont peut-être pas dans leur forme définitive et qu'elles pourraient ne jamais apparaître sous quelque forme que ce soit dans une version d'OpenSCAD."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2739
 msgid "General"
@@ -2620,7 +2597,7 @@ msgstr "Activer les services d'impression distants"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2742
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:181
-#: src/gui/Preferences.cc:646
+#: src/gui/Preferences.cc:652
 msgid "OctoPrint"
 msgstr "OctoPrint"
 
@@ -2674,7 +2651,7 @@ msgstr ""
 "l'application."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2756
-#: src/gui/Preferences.cc:647
+#: src/gui/Preferences.cc:653
 msgid "Local Application"
 msgstr "Application locale"
 
@@ -2916,15 +2893,15 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2827
 msgid "Network"
-msgstr ""
+msgstr "Réseau"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2828
 msgid "Custom CA certificates (PEM)"
-msgstr ""
+msgstr "Certificats CA personnalisés (PEM)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2830
 msgid "Skip TLS certificate verification (insecure)"
-msgstr ""
+msgstr "Ignorer la vérification du certificat TLS (non sécurisé)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2831
 msgid "Network Import List"
@@ -2943,7 +2920,6 @@ msgid "Dialog visibility"
 msgstr "Visibilité des boîtes de dialogue"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2835
-#, fuzzy
 msgid "Always show Welcome screen"
 msgstr "Affiche l'écran d'accueil"
 
@@ -2956,7 +2932,6 @@ msgid "Always show 3MF export dialog"
 msgstr "Toujours afficher la boîte de dialogue d'export 3MF"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2838
-#, fuzzy
 msgid "Always show SVG export dialog"
 msgstr "Toujours afficher la boîte de dialogue d'export SVG"
 
@@ -3168,18 +3143,16 @@ msgid "Thinking"
 msgstr "Réflexion"
 
 #: src/gui/ai/ChatWidget.cc:153
-#, fuzzy
 msgid "Export Chat..."
-msgstr "Exporter comme &STEP..."
+msgstr "Exporter le chat…"
 
 #: src/gui/ai/ChatWidget.cc:154
-#, fuzzy
 msgid "Import Chat..."
-msgstr "Exporter comme &STEP..."
+msgstr "Importer le chat…"
 
 #: src/gui/ai/ChatWidget.cc:156
 msgid "Copy as Markdown"
-msgstr ""
+msgstr "Copier en Markdown"
 
 #: src/gui/ai/ChatWidget.cc:200 src/gui/ai/ChatWidget.cc:613
 msgid ""
@@ -3206,105 +3179,93 @@ msgid "Stop"
 msgstr "Arrêter"
 
 #: src/gui/ai/ChatWidget.cc:481 src/gui/ai/ChatWidget.cc:488
-#, fuzzy
 msgid "Viewport Error"
-msgstr "Contrôle de la &vue"
+msgstr "Erreur de fenêtre de vue"
 
 #: src/gui/ai/ChatWidget.cc:482
 msgid "Could not find active 3D Viewport to grab screen."
-msgstr ""
+msgstr "Impossible de trouver une fenêtre de vue 3D active pour capturer l'écran."
 
 #: src/gui/ai/ChatWidget.cc:488
 msgid "Failed to capture 3D viewport frame."
-msgstr ""
+msgstr "Échec de la capture de l'image de la fenêtre de vue 3D."
 
 #: src/gui/ai/ChatWidget.cc:509
 msgid "Image Files (*.png *.jpg *.jpeg *.webp)"
-msgstr ""
+msgstr "Fichiers image (*.png *.jpg *.jpeg *.webp)"
 
 #: src/gui/ai/ChatWidget.cc:517
-#, fuzzy
 msgid "File Error"
-msgstr "Cacher les boîtes à outils"
+msgstr "Erreur de fichier"
 
 #: src/gui/ai/ChatWidget.cc:517
-#, fuzzy
 msgid "Could not open the selected image file."
-msgstr "Impossible d'enregistrer la session."
+msgstr "Impossible d'ouvrir le fichier image sélectionné."
 
 #: src/gui/ai/ChatWidget.cc:577
 msgid "[Img]"
 msgstr ""
 
 #: src/gui/ai/ChatWidget.cc:582
-#, fuzzy
 msgid "Remove attachment"
-msgstr "Supprimer un paramètre"
+msgstr "Supprimer la pièce jointe"
 
 #: src/gui/ai/ChatWidget.cc:902
-#, fuzzy
 msgid "Export Chat History"
-msgstr "Effacer l'historique du chat"
+msgstr "Exporter l'historique du chat"
 
 #: src/gui/ai/ChatWidget.cc:902 src/gui/ai/ChatWidget.cc:949
-#, fuzzy
 msgid "JSON Files (*.json)"
-msgstr "Fichiers CSG (*.csg)"
+msgstr "Fichiers JSON (*.json)"
 
 #: src/gui/ai/ChatWidget.cc:938
-#, fuzzy
 msgid "Export Warning"
-msgstr "Exporter une Image"
+msgstr "Avertissement d'exportation"
 
 #: src/gui/ai/ChatWidget.cc:938
-#, fuzzy
 msgid "Could not write to the chosen file."
-msgstr "Impossible d'enregistrer la session."
+msgstr "Impossible d'écrire dans le fichier choisi."
 
 #: src/gui/ai/ChatWidget.cc:943
-#, fuzzy
 msgid "Export Successful"
-msgstr "Fonctionnalités d'export"
+msgstr "Exportation réussie"
 
 #: src/gui/ai/ChatWidget.cc:943
 msgid "Chat history exported successfully."
-msgstr ""
+msgstr "Historique du chat exporté avec succès."
 
 #: src/gui/ai/ChatWidget.cc:949
-#, fuzzy
 msgid "Import Chat History"
-msgstr "Effacer l'historique du chat"
+msgstr "Importer l'historique du chat"
 
 #: src/gui/ai/ChatWidget.cc:957 src/gui/ai/ChatWidget.cc:965
 #: src/gui/ai/ChatWidget.cc:970 src/gui/ai/ChatWidget.cc:1013
-#, fuzzy
 msgid "Import Warning"
-msgstr "Avertissements OpenGL"
+msgstr "Avertissement d'importation"
 
 #: src/gui/ai/ChatWidget.cc:957
-#, fuzzy
 msgid "Could not open the selected file."
-msgstr "Impossible d'enregistrer la session."
+msgstr "Impossible d'ouvrir le fichier sélectionné."
 
 #: src/gui/ai/ChatWidget.cc:971
 msgid "Selected file does not contain a valid chat history array."
-msgstr ""
+msgstr "Le fichier sélectionné ne contient pas un tableau d'historique de chat valide."
 
 #: src/gui/ai/ChatWidget.cc:1016
 msgid "Import Successful"
-msgstr ""
+msgstr "Importation réussie"
 
 #: src/gui/ai/ChatWidget.cc:1016
 msgid "Chat history imported successfully."
-msgstr ""
+msgstr "Historique du chat importé avec succès."
 
 #: src/gui/ai/ChatWidget.cc:1051
 msgid "Chat Copied"
-msgstr ""
+msgstr "Chat copié"
 
 #: src/gui/ai/ChatWidget.cc:1052
 msgid "Chat conversation copied to clipboard as Markdown."
-msgstr ""
+msgstr "La conversation du chat a été copiée dans le presse-papiers en Markdown."
 
 #: src/gui/Animate.cc:207
 msgid "press to pause animation"
@@ -3338,7 +3299,7 @@ msgstr ""
 "Les tampons sans titre sont déjà approuvés. Enregistrez dans un fichier si "
 "vous avez besoin d'une entrée de confiance persistante."
 
-#: src/gui/Export3mfDialog.cc:78
+#: src/gui/Export3mfDialog.cc:80
 msgid ""
 "This PythonSCAD build uses lib3mf version 1. Setting the decimal precision "
 "for export needs version 2 or later."
@@ -3438,15 +3399,15 @@ msgstr ""
 " Pour plus de détails, voir le <a href=\"#errorlog\">journal des erreurs</a> "
 "et la <a href=\"#console\">console</a>."
 
-#: src/gui/MainWindow.cc:1663 src/gui/TabManager.cc:429
+#: src/gui/MainWindow.cc:1678 src/gui/TabManager.cc:489
 msgid "Session Save"
 msgstr "Enregistrement de la session"
 
-#: src/gui/MainWindow.cc:1664
+#: src/gui/MainWindow.cc:1679
 msgid "Could not save the session."
 msgstr "Impossible d'enregistrer la session."
 
-#: src/gui/MainWindow.cc:1665
+#: src/gui/MainWindow.cc:1680
 msgid ""
 "%1\n"
 "\n"
@@ -3456,23 +3417,23 @@ msgstr ""
 "\n"
 "%2"
 
-#: src/gui/MainWindow.cc:1666
+#: src/gui/MainWindow.cc:1681
 msgid "Try Again"
 msgstr "Réessayer"
 
-#: src/gui/MainWindow.cc:1668
+#: src/gui/MainWindow.cc:1683
 msgid "Quit Without Saving"
 msgstr "Quitter sans enregistrer"
 
-#: src/gui/MainWindow.cc:1669
+#: src/gui/MainWindow.cc:1684
 msgid "Keep Open"
 msgstr "Garder ouvert"
 
-#: src/gui/MainWindow.cc:1855
+#: src/gui/MainWindow.cc:1870
 msgid "Revoke All Trusted Designs"
 msgstr "Révoquer la confiance pour toutes les conceptions"
 
-#: src/gui/MainWindow.cc:1856
+#: src/gui/MainWindow.cc:1871
 msgid ""
 "This will revoke trust for all Python designs.\n"
 "\n"
@@ -3482,26 +3443,26 @@ msgstr ""
 "\n"
 "Êtes-vous sûr ?"
 
-#: src/gui/MainWindow.cc:1898 src/gui/MainWindow.cc:1905
-#: src/gui/MainWindow.cc:1914 src/gui/MainWindow.cc:1927
-#: src/gui/MainWindow.cc:1932
+#: src/gui/MainWindow.cc:1913 src/gui/MainWindow.cc:1920
+#: src/gui/MainWindow.cc:1929 src/gui/MainWindow.cc:1942
+#: src/gui/MainWindow.cc:1947
 msgid "Create Virtual Environment"
 msgstr "Créer un environnement virtuel"
 
-#: src/gui/MainWindow.cc:1912
+#: src/gui/MainWindow.cc:1927
 msgid "Creating Python virtual environment. Please wait..."
 msgstr "Création de l'environnement virtuel Python. Veuillez patienter..."
 
-#: src/gui/MainWindow.cc:1949
+#: src/gui/MainWindow.cc:1964
 msgid "Select Virtual Environment"
 msgstr "Sélectionner l'environnement virtuel"
 
-#: src/gui/MainWindow.cc:2507 src/gui/TabManager.cc:380
-#: src/gui/TabManager.cc:494
+#: src/gui/MainWindow.cc:2522 src/gui/TabManager.cc:440
+#: src/gui/TabManager.cc:554
 msgid "Application"
 msgstr "Application"
 
-#: src/gui/MainWindow.cc:2508
+#: src/gui/MainWindow.cc:2523
 msgid ""
 "The file has changed on disk, but this tab has unsaved edits.\n"
 "Reloading will discard your changes.\n"
@@ -3514,62 +3475,174 @@ msgstr ""
 "\n"
 "Voulez-vous vraiment recharger le fichier ?"
 
-#: src/gui/MainWindow.cc:3134
+#: src/gui/MainWindow.cc:3182
 msgid "Click to change language"
 msgstr "Cliquer pour changer la langue"
 
-#: src/gui/MainWindow.cc:3179
+#: src/gui/MainWindow.cc:3227
 msgid "Auto-detect from file extension"
 msgstr "Détection automatique selon l'extension du fichier"
 
-#: src/gui/MainWindow.cc:3610
-#, fuzzy
+#: src/gui/MainWindow.cc:3554
+msgid "The design has not been rendered yet (F6)."
+msgstr "Le design n’a pas encore été rendu (F6)."
+
+#: src/gui/MainWindow.cc:3555
+msgid "Render the design and print, or cancel."
+msgstr "Rendre le design et imprimer, ou annuler."
+
+#: src/gui/MainWindow.cc:3556
+msgid "Render the design and export, or cancel."
+msgstr "Rendre le design et exporter, ou annuler."
+
+#: src/gui/MainWindow.cc:3561 src/gui/MainWindow.cc:3594
+#: src/gui/MainWindow.cc:3653
+msgid "Render and Print"
+msgstr "Rendre et imprimer"
+
+#: src/gui/MainWindow.cc:3561 src/gui/MainWindow.cc:3594
+#: src/gui/MainWindow.cc:3653
+msgid "Render and Export"
+msgstr "Rendre et exporter"
+
+#: src/gui/MainWindow.cc:3579 src/gui/UnsavedChangesDialog.cc:105
+#: src/gui/UnsavedChangesDialog.cc:121
+msgid "Untitled"
+msgstr "Sans titre"
+
+#: src/gui/MainWindow.cc:3587
+msgid "The current render belongs to a different tab (%1)."
+msgstr "Le rendu actuel appartient à un autre onglet (%1)."
+
+#: src/gui/MainWindow.cc:3588
+msgid "Use that tab's render, render this tab first, or cancel."
+msgstr ""
+"Utiliser le rendu de cet autre onglet, d’abord rendre cet onglet-ci, ou "
+"annuler."
+
+#: src/gui/MainWindow.cc:3589
+msgid "Export that tab's render, render this tab first, or cancel."
+msgstr ""
+"Exporter le rendu de cet autre onglet, d’abord rendre cet onglet-ci, ou "
+"annuler."
+
+#: src/gui/MainWindow.cc:3592
+msgid "Use Other Tab's Render"
+msgstr "Utiliser le rendu de l’autre onglet"
+
+#: src/gui/MainWindow.cc:3592
+msgid "Export Other Tab's Render"
+msgstr "Exporter le rendu de l’autre onglet"
+
+#: src/gui/MainWindow.cc:3620
+msgid "Nothing to export! Try rendering first (press F6)"
+msgstr "Rien à exporter ! Essayez d’abord le rendu (F6)"
+
+#: src/gui/MainWindow.cc:3642
+msgid "The design has changed since it was last rendered (F6)."
+msgstr "Le modèle a changé depuis le dernier rendu (F6)."
+
+#: src/gui/MainWindow.cc:3644
+msgid ""
+"Print the last rendered geometry, render the current design first, or cancel."
+msgstr ""
+"Imprimez la dernière géométrie rendue, rendez d’abord le modèle actuel, ou "
+"annulez."
+
+#: src/gui/MainWindow.cc:3645
+msgid ""
+"Export the last rendered geometry, render the current design first, or "
+"cancel."
+msgstr ""
+"Exportez la dernière géométrie rendue, rendez d’abord le modèle actuel, ou "
+"annulez."
+
+#: src/gui/MainWindow.cc:3651
+msgid "Use Previous"
+msgstr "Utiliser le précédent"
+
+#: src/gui/MainWindow.cc:3651
+msgid "Export Previous"
+msgstr "Exporter le précédent"
+
+#: src/gui/MainWindow.cc:3674
+msgid "Current top level object is not a %1D object."
+msgstr "L’objet de niveau supérieur actuel n’est pas un objet %1D."
+
+#: src/gui/MainWindow.cc:3680
+msgid "Current top level object is empty."
+msgstr "L’objet de niveau supérieur actuel est vide."
+
+#: src/gui/MainWindow.cc:3773
+msgid "ASCII STL"
+msgstr "STL ASCII"
+
+#: src/gui/MainWindow.cc:3775
+msgid "Binary STL"
+msgstr "STL binaire"
+
+#: src/gui/MainWindow.cc:3822
 msgid "By Extension (*.*)"
 msgstr "Par extension (*.*)"
 
-#: src/gui/MainWindow.cc:3686
+#: src/gui/MainWindow.cc:3908
 msgid "E&xport to %1"
 msgstr "E&xporter vers %1"
 
-#: src/gui/MainWindow.cc:3855 src/gui/MainWindow.cc:3870
+#: src/gui/MainWindow.cc:3994
+msgid "Nothing to export. Please try compiling first."
+msgstr "Rien à exporter. Veuillez d’abord compiler."
+
+#: src/gui/MainWindow.cc:4164 src/gui/MainWindow.cc:4179
 msgid ""
 "The given filename does not have any known file extension. Please enter a "
 "known file extension or select a file format from the file format list."
-msgstr "Le nom de fichier donné n'a aucune extension connue. Veuillez saisir une extension connue ou sélectionner un format dans la liste des formats de fichier."
+msgstr ""
+"Le nom de fichier donné n'a aucune extension connue. Veuillez saisir une "
+"extension connue ou sélectionner un format dans la liste des formats de "
+"fichier."
 
-#: src/gui/MainWindow.cc:4310 src/gui/MainWindow.cc:5195
+#: src/gui/MainWindow.cc:4192 src/gui/TabManager.cc:404
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 existe déjà.\n"
+"Voulez-vous le remplacer ?"
+
+#: src/gui/MainWindow.cc:4681 src/gui/MainWindow.cc:5572
 msgid "&AI Chat"
 msgstr "Chat &IA"
 
-#: src/gui/MainWindow.cc:5187
+#: src/gui/MainWindow.cc:5564
 msgid "&Editor"
 msgstr "&Éditeur"
 
-#: src/gui/MainWindow.cc:5188
+#: src/gui/MainWindow.cc:5565
 msgid "&Console"
 msgstr "&Console"
 
-#: src/gui/MainWindow.cc:5189
+#: src/gui/MainWindow.cc:5566
 msgid "C&ustomizer"
 msgstr "Personnalisateur"
 
-#: src/gui/MainWindow.cc:5190
+#: src/gui/MainWindow.cc:5567
 msgid "Error &Log"
 msgstr "Journal des &erreurs"
 
-#: src/gui/MainWindow.cc:5191
+#: src/gui/MainWindow.cc:5568
 msgid "&Animate"
 msgstr "Animer"
 
-#: src/gui/MainWindow.cc:5192
+#: src/gui/MainWindow.cc:5569
 msgid "&Font List"
 msgstr "Liste des &polices"
 
-#: src/gui/MainWindow.cc:5193
+#: src/gui/MainWindow.cc:5570
 msgid "C&olor List"
 msgstr "Liste de &couleurs"
 
-#: src/gui/MainWindow.cc:5194
+#: src/gui/MainWindow.cc:5571
 msgid "&Viewport Control"
 msgstr "Contrôle de la &vue"
 
@@ -3659,52 +3732,52 @@ msgid " seconds"
 msgstr " secondes"
 
 #: src/gui/Preferences.cc:481 src/gui/Preferences.cc:486
-#: src/gui/Preferences.cc:1489 src/gui/Preferences.cc:1528
+#: src/gui/Preferences.cc:1495 src/gui/Preferences.cc:1534
 msgid "<Default>"
 msgstr "<Défaut>"
 
-#: src/gui/Preferences.cc:645
+#: src/gui/Preferences.cc:651
 msgid "NONE"
 msgstr "AUCUN"
 
-#: src/gui/Preferences.cc:1211
+#: src/gui/Preferences.cc:1217
 msgid "Select CA certificate"
-msgstr ""
+msgstr "Sélectionner un certificat CA"
 
-#: src/gui/Preferences.cc:1212
+#: src/gui/Preferences.cc:1218
 msgid "Certificate files (*.pem *.crt *.cer);;All files (*)"
-msgstr ""
+msgstr "Fichiers de certificat (*.pem *.crt *.cer);;Tous les fichiers (*)"
 
-#: src/gui/Preferences.cc:1472
+#: src/gui/Preferences.cc:1478
 msgid "Success: Server Version = %2, API Version = %1"
 msgstr "Succès : version serveur = %2, version API = %1"
 
-#: src/gui/Preferences.cc:1474 src/gui/Preferences.cc:1499
-#: src/gui/Preferences.cc:1538
+#: src/gui/Preferences.cc:1480 src/gui/Preferences.cc:1505
+#: src/gui/Preferences.cc:1544
 msgid "Error"
 msgstr "Erreur"
 
-#: src/gui/Preferences.cc:1615
+#: src/gui/Preferences.cc:1621
 msgid "New AI Profile"
 msgstr "Nouveau profil IA"
 
-#: src/gui/Preferences.cc:1615
+#: src/gui/Preferences.cc:1621
 msgid "Profile name:"
 msgstr "Nom du profil :"
 
-#: src/gui/Preferences.cc:1620
+#: src/gui/Preferences.cc:1626
 msgid "Duplicate Profile"
 msgstr "Dupliquer le profil"
 
-#: src/gui/Preferences.cc:1620
+#: src/gui/Preferences.cc:1626
 msgid "A profile with that name already exists."
 msgstr "Un profil portant ce nom existe déjà."
 
-#: src/gui/Preferences.cc:1682
+#: src/gui/Preferences.cc:1688
 msgid "Delete AI Profile"
 msgstr "Supprimer le profil IA"
 
-#: src/gui/Preferences.cc:1683
+#: src/gui/Preferences.cc:1689
 msgid "Delete profile \"%1\"?"
 msgstr "Supprimer le profil « %1 » ?"
 
@@ -3757,33 +3830,25 @@ msgstr ""
 msgid "Trust Design"
 msgstr "Approuver la conception"
 
-#: src/gui/TabManager.cc:311
+#: src/gui/TabManager.cc:371
 msgid "Python script (*.py)"
 msgstr "Script Python (*.py)"
 
-#: src/gui/TabManager.cc:314 src/gui/TabManager.cc:319
+#: src/gui/TabManager.cc:374 src/gui/TabManager.cc:379
 msgid "OpenSCAD script (*.scad)"
 msgstr "Script OpenSCAD (*.scad)"
 
-#: src/gui/TabManager.cc:322
+#: src/gui/TabManager.cc:382
 msgid "All files (*)"
 msgstr "Tous les fichiers (*)"
 
-#: src/gui/TabManager.cc:344
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 existe déjà.\n"
-"Voulez-vous le remplacer ?"
-
-#: src/gui/TabManager.cc:381
+#: src/gui/TabManager.cc:441
 msgid "Cannot open design file \"%1\": path is a directory."
 msgstr ""
 "Impossible d'ouvrir le fichier de conception « %1 » : le chemin est un "
 "répertoire."
 
-#: src/gui/TabManager.cc:430
+#: src/gui/TabManager.cc:490
 msgid ""
 "Could not write session file:\n"
 "%1\n"
@@ -3799,11 +3864,11 @@ msgstr ""
 "\n"
 "Les modifications de session peuvent être perdues."
 
-#: src/gui/TabManager.cc:439
+#: src/gui/TabManager.cc:499
 msgid "Unable to create the session directory."
 msgstr "Impossible de créer le répertoire de session."
 
-#: src/gui/TabManager.cc:495
+#: src/gui/TabManager.cc:555
 msgid ""
 "The file \"%1\" does not exist.\n"
 "\n"
@@ -3813,45 +3878,45 @@ msgstr ""
 "\n"
 "Voulez-vous le créer ?"
 
-#: src/gui/TabManager.cc:994
+#: src/gui/TabManager.cc:1054
 msgid "Copy file name"
 msgstr "Copier le nom du fichier"
 
-#: src/gui/TabManager.cc:1000
+#: src/gui/TabManager.cc:1060
 msgid "Copy full path"
 msgstr "Copier le chemin complet"
 
-#: src/gui/TabManager.cc:1006
+#: src/gui/TabManager.cc:1066
 msgid "Open Folder"
 msgstr "Ouvrir le dossier"
 
-#: src/gui/TabManager.cc:1011
+#: src/gui/TabManager.cc:1071
 msgid "Close Tab"
 msgstr "Fermer l'onglet"
 
-#: src/gui/TabManager.cc:1016
+#: src/gui/TabManager.cc:1076
 msgid "Close All But This Tab"
 msgstr "Fermer tous les onglets sauf celui-ci"
 
-#: src/gui/TabManager.cc:1312
+#: src/gui/TabManager.cc:1372
 msgid "Do you want to save the changes you made to %1?"
 msgstr "Voulez-vous enregistrer les modifications apportées à %1 ?"
 
-#: src/gui/TabManager.cc:1313
+#: src/gui/TabManager.cc:1373
 msgid "Your changes will be lost if you don't save them."
 msgstr "Vos modifications seront perdues si vous ne les enregistrez pas."
 
-#: src/gui/TabManager.cc:1318
+#: src/gui/TabManager.cc:1378
 msgid "Don't save"
 msgstr "Ne pas enregistrer"
 
-#: src/gui/TabManager.cc:1792 src/gui/TabManager.cc:1821
-#: src/gui/TabManager.cc:1828 src/gui/TabManager.cc:1856
-#: src/gui/TabManager.cc:2047
+#: src/gui/TabManager.cc:1860 src/gui/TabManager.cc:1889
+#: src/gui/TabManager.cc:1896 src/gui/TabManager.cc:1924
+#: src/gui/TabManager.cc:2115
 msgid "Session Restore"
 msgstr "Restauration de session"
 
-#: src/gui/TabManager.cc:1793
+#: src/gui/TabManager.cc:1861
 msgid ""
 "The session file was created by a newer version of PythonSCAD (session "
 "version %1, but this build only supports up to version %2)."
@@ -3860,7 +3925,7 @@ msgstr ""
 "(version de session %1, mais cette version ne prend en charge que jusqu'à la "
 "version %2)."
 
-#: src/gui/TabManager.cc:1798
+#: src/gui/TabManager.cc:1866
 msgid ""
 "Exit to keep the session file for use with a newer PythonSCAD, or discard it "
 "to start fresh here.\n"
@@ -3874,15 +3939,15 @@ msgstr ""
 "Fichier de session :\n"
 "%1"
 
-#: src/gui/TabManager.cc:1801
+#: src/gui/TabManager.cc:1869
 msgid "Exit"
 msgstr "Quitter"
 
-#: src/gui/TabManager.cc:1802
+#: src/gui/TabManager.cc:1870
 msgid "Discard session"
 msgstr "Rejeter la session"
 
-#: src/gui/TabManager.cc:1822
+#: src/gui/TabManager.cc:1890
 msgid ""
 "Could not open the session file for reading:\n"
 "%1\n"
@@ -3898,7 +3963,7 @@ msgstr ""
 "\n"
 "Démarrage avec une nouvelle session."
 
-#: src/gui/TabManager.cc:1829
+#: src/gui/TabManager.cc:1897
 msgid ""
 "The session file is corrupt or unreadable:\n"
 "%1\n"
@@ -3912,7 +3977,7 @@ msgstr ""
 "Le fichier n'a pas été supprimé — vous pouvez l'examiner manuellement.\n"
 "Démarrage avec une nouvelle session."
 
-#: src/gui/TabManager.cc:1857
+#: src/gui/TabManager.cc:1925
 msgid ""
 "The session file uses an old format (version %1) that cannot be migrated to "
 "the current format (version %2). Starting with a fresh session."
@@ -3921,11 +3986,11 @@ msgstr ""
 "être migré vers le format actuel (version %2). Démarrage avec une nouvelle "
 "session."
 
-#: src/gui/TabManager.cc:2048
+#: src/gui/TabManager.cc:2116
 msgid "%1 file(s) could not be found on disk."
 msgstr "%1 fichier(s) n'ont pas pu être trouvé(s) sur le disque."
 
-#: src/gui/TabManager.cc:2050
+#: src/gui/TabManager.cc:2118
 msgid ""
 "The session contents were restored, but the file paths are stale.\n"
 "Use Save As to pick a new location."
@@ -3934,23 +3999,23 @@ msgstr ""
 "obsolètes.\n"
 "Utilisez Enregistrer sous pour choisir un nouvel emplacement."
 
-#: src/gui/TabManager.cc:2053
+#: src/gui/TabManager.cc:2121
 msgid "Dismiss"
 msgstr "Ignorer"
 
-#: src/gui/TabManager.cc:2166 src/gui/TabManager.cc:2318
+#: src/gui/TabManager.cc:2234 src/gui/TabManager.cc:2386
 msgid "Failed to open file for writing"
 msgstr "Échec d'ouverture de fichier en écriture"
 
-#: src/gui/TabManager.cc:2206 src/gui/TabManager.cc:2332
+#: src/gui/TabManager.cc:2274 src/gui/TabManager.cc:2400
 msgid "Error saving design"
 msgstr "Erreur lors de l'enregistrement de la conception"
 
-#: src/gui/TabManager.cc:2218
+#: src/gui/TabManager.cc:2286
 msgid "Save File"
 msgstr "Enregistrer le fichier"
 
-#: src/gui/TabManager.cc:2295
+#: src/gui/TabManager.cc:2363
 msgid "Save A Copy"
 msgstr "Enregistrer une copie"
 
@@ -3990,10 +4055,6 @@ msgstr "Appuyez sur %1 pour rejeter les modifications sans enregistrer."
 msgid "Discard Changes"
 msgstr "Rejeter les modifications"
 
-#: src/gui/UnsavedChangesDialog.cc:105 src/gui/UnsavedChangesDialog.cc:121
-msgid "Untitled"
-msgstr "Sans titre"
-
 #: src/gui/UnsavedChangesDialog.cc:110
 msgid "Save this file"
 msgstr "Enregistrer ce fichier"
@@ -4015,12 +4076,12 @@ msgstr "des valeurs extrêmes peuvent conduire à un comportement étrange"
 msgid "negative distances are not supported"
 msgstr "les distances négatives ne sont pas prises en charge"
 
-#: src/io/export.cc:299
+#: src/io/export.cc:298
 #, c-format
 msgid "Can't open file \"%1$s\" for export"
 msgstr "Impossible d'ouvrir le fichier \"%1$s\" pour l'export"
 
-#: src/io/export.cc:315
+#: src/io/export.cc:314
 #, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
 msgstr "\"%1$s\" erreur d'écriture. (Disque plein ?)"
@@ -4560,98 +4621,16 @@ msgstr ""
 #~ msgid "OpenGL Info"
 #~ msgstr "Information OpenGL"
 
-msgid "ASCII STL"
-msgstr "STL ASCII"
+#~ msgid ""
+#~ "The current tab has been modified since its last render (F6).\n"
+#~ "Do you really want to export the previous content?"
+#~ msgstr ""
+#~ "L’onglet actuel a été modifié depuis son dernier rendu (F6).\n"
+#~ "Voulez-vous vraiment exporter le contenu précédent ?"
 
-msgid "Binary STL"
-msgstr "STL binaire"
-#: src/gui/MainWindow.cc
-msgid "Nothing to export! Try rendering first (press F6)"
-msgstr "Rien à exporter ! Essayez d’abord le rendu (F6)"
-
-#: src/gui/MainWindow.cc
-msgid "Nothing to export. Please try compiling first."
-msgstr "Rien à exporter. Veuillez d’abord compiler."
-
-#: src/gui/MainWindow.cc
-msgid "Current top level object is not a %1D object."
-msgstr "L’objet de niveau supérieur actuel n’est pas un objet %1D."
-
-#: src/gui/MainWindow.cc
-msgid "Current top level object is empty."
-msgstr "L’objet de niveau supérieur actuel est vide."
-
-#: src/gui/MainWindow.cc
-msgid ""
-"The current tab has been modified since its last render (F6).\n"
-"Do you really want to export the previous content?"
-msgstr ""
-"L’onglet actuel a été modifié depuis son dernier rendu (F6).\n"
-"Voulez-vous vraiment exporter le contenu précédent ?"
-
-#: src/gui/MainWindow.cc
-msgid ""
-"The rendered data is from a different tab.\n"
-"Do you really want to export another tab's content?"
-msgstr ""
-"Les données rendues proviennent d’un autre onglet.\n"
-"Voulez-vous vraiment exporter le contenu d’un autre onglet ?"
-#: src/gui/MainWindow.cc
-msgid "The design has changed since it was last rendered (F6)."
-msgstr "Le modèle a changé depuis le dernier rendu (F6)."
-
-#: src/gui/MainWindow.cc
-msgid "Export the last rendered geometry, render the current design first, or cancel."
-msgstr "Exportez la dernière géométrie rendue, rendez d’abord le modèle actuel, ou annulez."
-
-#: src/gui/MainWindow.cc
-msgid "Print the last rendered geometry, render the current design first, or cancel."
-msgstr "Imprimez la dernière géométrie rendue, rendez d’abord le modèle actuel, ou annulez."
-
-#: src/gui/MainWindow.cc
-msgid "Export Previous"
-msgstr "Exporter le précédent"
-
-#: src/gui/MainWindow.cc
-msgid "Use Previous"
-msgstr "Utiliser le précédent"
-
-#: src/gui/MainWindow.cc
-msgid "Render and Export"
-msgstr "Rendre et exporter"
-
-#: src/gui/MainWindow.cc
-msgid "Render and Print"
-msgstr "Rendre et imprimer"
-
-#: src/gui/MainWindow.cc
-msgid "The design has not been rendered yet (F6)."
-msgstr "Le design n’a pas encore été rendu (F6)."
-
-#: src/gui/MainWindow.cc
-msgid "Render the design and export, or cancel."
-msgstr "Rendre le design et exporter, ou annuler."
-
-#: src/gui/MainWindow.cc
-msgid "Render the design and print, or cancel."
-msgstr "Rendre le design et imprimer, ou annuler."
-
-#: src/gui/MainWindow.cc
-msgid "The current render belongs to a different tab (%1)."
-msgstr "Le rendu actuel appartient à un autre onglet (%1)."
-
-#: src/gui/MainWindow.cc
-msgid "Export that tab's render, render this tab first, or cancel."
-msgstr "Exporter le rendu de cet autre onglet, d’abord rendre cet onglet-ci, ou annuler."
-
-#: src/gui/MainWindow.cc
-msgid "Use that tab's render, render this tab first, or cancel."
-msgstr "Utiliser le rendu de cet autre onglet, d’abord rendre cet onglet-ci, ou annuler."
-
-#: src/gui/MainWindow.cc
-msgid "Export Other Tab's Render"
-msgstr "Exporter le rendu de l’autre onglet"
-
-#: src/gui/MainWindow.cc
-msgid "Use Other Tab's Render"
-msgstr "Utiliser le rendu de l’autre onglet"
+#~ msgid ""
+#~ "The rendered data is from a different tab.\n"
+#~ "Do you really want to export another tab's content?"
+#~ msgstr ""
+#~ "Les données rendues proviennent d’un autre onglet.\n"
+#~ "Voulez-vous vraiment exporter le contenu d’un autre onglet ?"

@@ -126,11 +126,19 @@ cd "$TOPDIR" || exit 1
 if [ -z ${1+x} ]; then
   CURDIR="`python3 -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR'), '$TOPDIR'))"`"
   echo "Generating POTFILES..."
-  BUILDDIR=$(
+  # Prefer ./build when present so stale sibling trees (e.g. build-sandbox-check)
+  # cannot contaminate the catalog with outdated ui_*.h strings.
+  if [ -f "$CURDIR/build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h" ] || \
+     [ -f "$CURDIR/build/OpenSCAD_autogen/include/ui_MainWindow.h" ]; then
+    BUILDDIR="$CURDIR/build"
+  else
+    BUILDDIR=$(
 	find "$CURDIR" -name ui_MainWindow.h \
 	| grep 'OpenSCAD.*_autogen/include/ui_MainWindow.h' \
-	| sed -e 's,/*OpenSCAD.*_autogen/include/ui_MainWindow.h,,'
-  )
+	| sed -e 's,/*OpenSCAD.*_autogen/include/ui_MainWindow.h,,' \
+	| head -n1
+    )
+  fi
   echo "Found directory: $BUILDDIR"
   ./scripts/generate-potfiles.sh "$BUILDDIR" > locale/POTFILES
   updatepot && updatepo && updatemo

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2022.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-10 04:06+0200\n"
+"POT-Creation-Date: 2026-09-27 07:10+0200\n"
 "PO-Revision-Date: 2023-02-14 16:47+0100\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <(nothing)>\n"
@@ -366,7 +366,7 @@ msgstr "AI ასისტენტი"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:197
 msgid "Chat options"
-msgstr ""
+msgstr "ჩატის პარამეტრები"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:199
 msgid "☰"
@@ -390,31 +390,30 @@ msgstr "გაგზავნა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:206
 msgid "Grab active 3D viewport frame and camera metadata"
-msgstr ""
+msgstr "აქტიური 3D ხედის კადრისა და კამერის მეტამონაცემების გადაღება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:208
-#, fuzzy
 msgid "Analyze Screen"
-msgstr "&სრული ეკრანი"
+msgstr "ეკრანის ანალიზი"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:210
 msgid "Attach local image file"
-msgstr ""
+msgstr "ადგილობრივი გამოსახულების ფაილის მიმაგრება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:212
 #: src/gui/ai/ChatWidget.cc:508
 msgid "Attach Image"
-msgstr ""
+msgstr "გამოსახულების მიმაგრება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:214
 msgid ""
 "Agentic mode: allow the AI to call tools in multiple automatic turns per "
 "request"
-msgstr ""
+msgstr "აგენტური რეჟიმი: AI-ს მიეცეს უფლება თითო მოთხოვნაზე რამდენიმე ავტომატურ ნაბიჯში გამოიძახოს ხელსაწყოები"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:216
 msgid "Agentic"
-msgstr ""
+msgstr "აგენტური"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:399
 msgid "Color List"
@@ -572,7 +571,7 @@ msgid "Clear console"
 msgstr "კონსოლის გასუფთავება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:46
-#: src/gui/TabManager.cc:2052
+#: src/gui/TabManager.cc:2120
 msgid "Save As..."
 msgstr "შენახვა, როგორც..."
 
@@ -788,8 +787,9 @@ msgstr "დიალოგის ყოველთვის ჩვენებ�
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:221
 #: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:109
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:185
-#: src/gui/UnsavedChangesDialog.cc:60 src/openscad_gui.cc:196
-#: src/openscad_gui.cc:871
+#: src/gui/MainWindow.cc:3562 src/gui/MainWindow.cc:3595
+#: src/gui/MainWindow.cc:3654 src/gui/UnsavedChangesDialog.cc:60
+#: src/openscad_gui.cc:196 src/openscad_gui.cc:871
 msgid "Cancel"
 msgstr "გაუქმება"
 
@@ -797,9 +797,12 @@ msgstr "გაუქმება"
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportGcodeDialog.h:190
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:634
 #: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:222
-#: src/gui/MainWindow.cc:3828 src/gui/MainWindow.cc:3832
-#: src/gui/MainWindow.cc:3854 src/gui/MainWindow.cc:3869
-#, fuzzy
+#: src/gui/MainWindow.cc:3553 src/gui/MainWindow.cc:3586
+#: src/gui/MainWindow.cc:3620 src/gui/MainWindow.cc:3641
+#: src/gui/MainWindow.cc:3673 src/gui/MainWindow.cc:3680
+#: src/gui/MainWindow.cc:3994 src/gui/MainWindow.cc:4135
+#: src/gui/MainWindow.cc:4139 src/gui/MainWindow.cc:4163
+#: src/gui/MainWindow.cc:4178 src/gui/MainWindow.cc:4193
 msgid "Export"
 msgstr "&გატანა"
 
@@ -1225,7 +1228,7 @@ msgid "Select Design"
 msgstr "დიზაინის არჩევა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1065
-#: src/gui/MainWindow.cc:4869
+#: src/gui/MainWindow.cc:5246
 msgid "Welcome..."
 msgstr "მოგესალმებით..."
 
@@ -1238,7 +1241,6 @@ msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1070
-#, fuzzy
 msgid "New &Window"
 msgstr "ახალი ფანჯარა"
 
@@ -1251,7 +1253,6 @@ msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1075
-#, fuzzy
 msgid "Open in New Windo&w"
 msgstr "ახალ ფანჯარაში გახსნა"
 
@@ -1272,12 +1273,10 @@ msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1084
-#, fuzzy
 msgid "Save a C&opy..."
 msgstr "ასლის შენახვა..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1085
-#, fuzzy
 msgid "S&ave All"
 msgstr "ყველას შენახვა"
 
@@ -1290,7 +1289,7 @@ msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1090
-#: src/gui/MainWindow.cc:4870
+#: src/gui/MainWindow.cc:5247
 msgid "Close &Window"
 msgstr "&ფანჯრის დახურვა"
 
@@ -1376,24 +1375,21 @@ msgstr "Ctrl+Shift+D"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1133
 msgid "Mo&ve Line Up"
-msgstr ""
+msgstr "ხაზის &ზემოთ გადატანა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1135
-#, fuzzy
 msgid "Ctrl+Alt+Up"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+Up"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1137
 msgid "Mo&ve Line Down"
-msgstr ""
+msgstr "ხაზის &ქვემოთ გადატანა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1139
-#, fuzzy
 msgid "Ctrl+Alt+Down"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+Down"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1141
-#, fuzzy
 msgid "Show &Next Tab"
 msgstr "შემდეგი ჩანართის ჩვენება"
 
@@ -1402,7 +1398,6 @@ msgid "Ctrl+Tab"
 msgstr "Ctrl+Tab"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1145
-#, fuzzy
 msgid "Show P&revious Tab"
 msgstr "წინა ჩანართის ჩვენება"
 
@@ -1535,7 +1530,7 @@ msgid "Display CSG Pr&oducts"
 msgstr "CSG-ის &პროდუქტების ჩვენება..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1200
-#: src/gui/MainWindow.cc:3688
+#: src/gui/MainWindow.cc:3910
 msgid "&Export..."
 msgstr "&ექსპორტი..."
 
@@ -1548,9 +1543,8 @@ msgid "Export &as..."
 msgstr "ექსპორტი &როგორც..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1206
-#, fuzzy
 msgid "Ctrl+F7"
-msgstr "Ctrl+F"
+msgstr "Ctrl+F7"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1208
 msgid "Export as &STL (binary)..."
@@ -1589,7 +1583,6 @@ msgid "Export as &GCode..."
 msgstr "&GCode-ის სახით გატანა..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1217
-#, fuzzy
 msgid "P&review"
 msgstr "მინიატურა"
 
@@ -1598,7 +1591,6 @@ msgid "F9"
 msgstr "F9"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1221
-#, fuzzy
 msgid "T&hrown Together"
 msgstr "ყველაფერი ერთად"
 
@@ -1607,7 +1599,6 @@ msgid "F12"
 msgstr "F12"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1225
-#, fuzzy
 msgid "&Show Edges"
 msgstr "კიდეების ჩვენება"
 
@@ -1616,7 +1607,6 @@ msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1229
-#, fuzzy
 msgid "Show A&xes"
 msgstr "ღერძების ჩვენება"
 
@@ -1625,7 +1615,6 @@ msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1233
-#, fuzzy
 msgid "Show &Crosshairs"
 msgstr "გადაჯვარედინებების ჩვენება"
 
@@ -1634,7 +1623,6 @@ msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1237
-#, fuzzy
 msgid "Show Scale &Markers"
 msgstr "მასშტაბის ჭდეების ჩვენება"
 
@@ -1803,7 +1791,6 @@ msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1311
-#, fuzzy
 msgid "J&ump to next error"
 msgstr "შემდეგ შეცდომაზე გადასვლა"
 
@@ -1848,7 +1835,6 @@ msgid "Show Backup Files"
 msgstr "სარეზერვო ფაილების ჩვენება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1324
-#, fuzzy
 msgid "Reset &View"
 msgstr "ხედის საწყის მნიშვნელობაზე დაბრუნება"
 
@@ -1861,7 +1847,6 @@ msgid "Export as &3MF..."
 msgstr "&3MF-ის სახით გატანა..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1327
-#, fuzzy
 msgid "Zoom &In"
 msgstr "გადიდება"
 
@@ -1870,7 +1855,6 @@ msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1331
-#, fuzzy
 msgid "&Zoom Out"
 msgstr "და_პატარავება"
 
@@ -1879,7 +1863,6 @@ msgid "Ctrl+["
 msgstr "Ctrl+["
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1335
-#, fuzzy
 msgid "View &All"
 msgstr "ყველას ნახვა"
 
@@ -1892,7 +1875,6 @@ msgid "Conv&ert Tabs to Spaces"
 msgstr "&ტაბულაციის გამოტოვებებით შეცვლა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1340
-#, fuzzy
 msgid "&Toggle Bookmark"
 msgstr "სანიშნის გადართვა"
 
@@ -1901,7 +1883,6 @@ msgid "Ctrl+F2"
 msgstr "Ctrl+F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1344
-#, fuzzy
 msgid "Jump to next &bookmark"
 msgstr "შემდეგ სანიშნზე გადასვლა"
 
@@ -1910,7 +1891,6 @@ msgid "F2"
 msgstr "F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1348
-#, fuzzy
 msgid "Jump to &previous bookmark"
 msgstr "წინა სანიშნზე გადასვლა"
 
@@ -1927,7 +1907,6 @@ msgid "F11"
 msgstr "F11"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1356
-#, fuzzy
 msgid "&Hide Editor toolbar"
 msgstr "რედაქტორის პანელის დამალვა"
 
@@ -1952,7 +1931,6 @@ msgid "Export as PDF..."
 msgstr "PDF-ად გატანა..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1364
-#, fuzzy
 msgid "Hide &3D View toolbar"
 msgstr "3D ხელსაწყოთა ზოლის დამალვა"
 
@@ -1973,12 +1951,10 @@ msgid "Alt+Ins"
 msgstr "Alt+Ins"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1371
-#, fuzzy
 msgid "Fold/Unfold All"
 msgstr "ყველას დაკეცვა/გაშლა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1372
-#, fuzzy
 msgid "&Jump To"
 msgstr "გადასვლა"
 
@@ -2248,7 +2224,7 @@ msgstr "რედაქტორი"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2631
 msgid "Experimental"
-msgstr ""
+msgstr "ექსპერიმენტული"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2633
 msgid "Enable/Disable experimental features"
@@ -2276,6 +2252,8 @@ msgstr "Python პარამეტრები"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2645
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:178
+#: src/gui/MainWindow.cc:3553 src/gui/MainWindow.cc:3586
+#: src/gui/MainWindow.cc:3641
 msgid "3D Print"
 msgstr "3D ბეჭდვა"
 
@@ -2586,9 +2564,8 @@ msgid "Last checked: "
 msgstr "ბოლო შემოწმება: "
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2737
-#, fuzzy
 msgid "Experimental Features"
-msgstr "გატანის მორგება"
+msgstr "ექსპერიმენტული ფუნქციები"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2738
 msgid ""
@@ -2596,7 +2573,7 @@ msgid ""
 "without notice. You may enable them and use them and comment on them, but "
 "you must assume that they may not be in their final form and may never "
 "appear in an OpenSCAD release in any form."
-msgstr ""
+msgstr "ეს ფუნქციები ექსპერიმენტულია. ისინი შეიძლება შეიცვალოს ან გაფრთხილების გარეშე მთლიანად მოიხსნას. შეგიძლიათ ჩართოთ, გამოიყენოთ და გააკეთოთ კომენტარები, მაგრამ უნდა ივარაუდოთ, რომ ისინი შესაძლოა საბოლოო სახით არ იყოს და შესაძლოა არასდროს გამოჩნდეს OpenSCAD-ის რომელიმე გამოშვებაში."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2739
 msgid "General"
@@ -2612,7 +2589,7 @@ msgstr "დისტანციური საბეჭდი სერვი�
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2742
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:181
-#: src/gui/Preferences.cc:646
+#: src/gui/Preferences.cc:652
 msgid "OctoPrint"
 msgstr "OctoPrint"
 
@@ -2664,7 +2641,7 @@ msgid "Note: The API key is stored unencrypted in the application settings."
 msgstr "შენიშვნა: API-ის გასაღები აპლიკაციის პარამეტრებში დაუშიფრავად ინახება."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2756
-#: src/gui/Preferences.cc:647
+#: src/gui/Preferences.cc:653
 msgid "Local Application"
 msgstr "ლოკალური აპლიკაცია"
 
@@ -2901,15 +2878,15 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2827
 msgid "Network"
-msgstr ""
+msgstr "ქსელი"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2828
 msgid "Custom CA certificates (PEM)"
-msgstr ""
+msgstr "მორგებული CA სერტიფიკატები (PEM)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2830
 msgid "Skip TLS certificate verification (insecure)"
-msgstr ""
+msgstr "TLS სერტიფიკატის შემოწმების გამოტოვება (არაუსაფრთხო)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2831
 msgid "Network Import List"
@@ -2928,7 +2905,6 @@ msgid "Dialog visibility"
 msgstr "დიალოგის ხილვადობა"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2835
-#, fuzzy
 msgid "Always show Welcome screen"
 msgstr "საწყისი ეკრანის ჩვენება"
 
@@ -2941,7 +2917,6 @@ msgid "Always show 3MF export dialog"
 msgstr "3MF გატანის დიალოგის ყოველთვის ჩვენება"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2838
-#, fuzzy
 msgid "Always show SVG export dialog"
 msgstr "SVG გატანის დიალოგის ყოველთვის ჩვენება"
 
@@ -3153,18 +3128,16 @@ msgid "Thinking"
 msgstr "ფიქრობს"
 
 #: src/gui/ai/ChatWidget.cc:153
-#, fuzzy
 msgid "Export Chat..."
-msgstr "&Step-ის სახით გატანა..."
+msgstr "ჩატის გატანა…"
 
 #: src/gui/ai/ChatWidget.cc:154
-#, fuzzy
 msgid "Import Chat..."
-msgstr "&Step-ის სახით გატანა..."
+msgstr "ჩატის შემოტანა…"
 
 #: src/gui/ai/ChatWidget.cc:156
 msgid "Copy as Markdown"
-msgstr ""
+msgstr "Markdown-ად კოპირება"
 
 #: src/gui/ai/ChatWidget.cc:200 src/gui/ai/ChatWidget.cc:613
 msgid ""
@@ -3191,105 +3164,93 @@ msgid "Stop"
 msgstr "შეწყვეტა"
 
 #: src/gui/ai/ChatWidget.cc:481 src/gui/ai/ChatWidget.cc:488
-#, fuzzy
 msgid "Viewport Error"
-msgstr "&ვიუპორტის მართვა"
+msgstr "ხედის შეცდომა"
 
 #: src/gui/ai/ChatWidget.cc:482
 msgid "Could not find active 3D Viewport to grab screen."
-msgstr ""
+msgstr "ეკრანის გადასაღებად აქტიური 3D ხედი ვერ მოიძებნა."
 
 #: src/gui/ai/ChatWidget.cc:488
 msgid "Failed to capture 3D viewport frame."
-msgstr ""
+msgstr "3D ხედის კადრის გადაღება ვერ მოხერხდა."
 
 #: src/gui/ai/ChatWidget.cc:509
 msgid "Image Files (*.png *.jpg *.jpeg *.webp)"
-msgstr ""
+msgstr "გამოსახულების ფაილები (*.png *.jpg *.jpeg *.webp)"
 
 #: src/gui/ai/ChatWidget.cc:517
-#, fuzzy
 msgid "File Error"
-msgstr "შეცდომების ჟურნალის დამალვა"
+msgstr "ფაილის შეცდომა"
 
 #: src/gui/ai/ChatWidget.cc:517
-#, fuzzy
 msgid "Could not open the selected image file."
-msgstr "სესიის შენახვა ვერ მოხერხდა."
+msgstr "არჩეული გამოსახულების ფაილის გახსნა ვერ მოხერხდა."
 
 #: src/gui/ai/ChatWidget.cc:577
 msgid "[Img]"
 msgstr ""
 
 #: src/gui/ai/ChatWidget.cc:582
-#, fuzzy
 msgid "Remove attachment"
-msgstr "პარამეტრის წაშლა"
+msgstr "დანართის წაშლა"
 
 #: src/gui/ai/ChatWidget.cc:902
-#, fuzzy
 msgid "Export Chat History"
-msgstr "ჩატის ისტორიის გასუფთავება"
+msgstr "ჩატის ისტორიის გატანა"
 
 #: src/gui/ai/ChatWidget.cc:902 src/gui/ai/ChatWidget.cc:949
-#, fuzzy
 msgid "JSON Files (*.json)"
-msgstr "CSG ფაილები (*.csg)"
+msgstr "JSON ფაილები (*.json)"
 
 #: src/gui/ai/ChatWidget.cc:938
-#, fuzzy
 msgid "Export Warning"
-msgstr "გამოსახულების გატანა"
+msgstr "გატანის გაფრთხილება"
 
 #: src/gui/ai/ChatWidget.cc:938
-#, fuzzy
 msgid "Could not write to the chosen file."
-msgstr "სესიის შენახვა ვერ მოხერხდა."
+msgstr "არჩეულ ფაილში ჩაწერა ვერ მოხერხდა."
 
 #: src/gui/ai/ChatWidget.cc:943
-#, fuzzy
 msgid "Export Successful"
-msgstr "გატანის მორგება"
+msgstr "გატანა წარმატებულია"
 
 #: src/gui/ai/ChatWidget.cc:943
 msgid "Chat history exported successfully."
-msgstr ""
+msgstr "ჩატის ისტორია წარმატებით გაიტანა."
 
 #: src/gui/ai/ChatWidget.cc:949
-#, fuzzy
 msgid "Import Chat History"
-msgstr "ჩატის ისტორიის გასუფთავება"
+msgstr "ჩატის ისტორიის შემოტანა"
 
 #: src/gui/ai/ChatWidget.cc:957 src/gui/ai/ChatWidget.cc:965
 #: src/gui/ai/ChatWidget.cc:970 src/gui/ai/ChatWidget.cc:1013
-#, fuzzy
 msgid "Import Warning"
-msgstr "OpenGL-ის გაფრთხილება"
+msgstr "შემოტანის გაფრთხილება"
 
 #: src/gui/ai/ChatWidget.cc:957
-#, fuzzy
 msgid "Could not open the selected file."
-msgstr "სესიის შენახვა ვერ მოხერხდა."
+msgstr "არჩეული ფაილის გახსნა ვერ მოხერხდა."
 
 #: src/gui/ai/ChatWidget.cc:971
 msgid "Selected file does not contain a valid chat history array."
-msgstr ""
+msgstr "არჩეული ფაილი არ შეიცავს ჩატის ისტორიის სწორ მასივს."
 
 #: src/gui/ai/ChatWidget.cc:1016
 msgid "Import Successful"
-msgstr ""
+msgstr "შემოტანა წარმატებულია"
 
 #: src/gui/ai/ChatWidget.cc:1016
 msgid "Chat history imported successfully."
-msgstr ""
+msgstr "ჩატის ისტორია წარმატებით შემოვიდა."
 
 #: src/gui/ai/ChatWidget.cc:1051
 msgid "Chat Copied"
-msgstr ""
+msgstr "ჩატი დაკოპირდა"
 
 #: src/gui/ai/ChatWidget.cc:1052
 msgid "Chat conversation copied to clipboard as Markdown."
-msgstr ""
+msgstr "ჩატის საუბარი დაკოპირდა ბუფერში Markdown-ის სახით."
 
 #: src/gui/Animate.cc:207
 msgid "press to pause animation"
@@ -3323,7 +3284,7 @@ msgstr ""
 "უსახელო ბუფერები უკვე სანდოა. ფაილში შეინახეთ, თუ მუდმივი ნდობის ჩანაწერი "
 "გჭირდებათ."
 
-#: src/gui/Export3mfDialog.cc:78
+#: src/gui/Export3mfDialog.cc:80
 msgid ""
 "This PythonSCAD build uses lib3mf version 1. Setting the decimal precision "
 "for export needs version 2 or later."
@@ -3419,15 +3380,15 @@ msgstr ""
 " დეტალებისთვის იხილეთ <a href=\"#errorlog\">შეცდომების ჟურნალი</a> და <a "
 "href=\"#console\">კონსოლის ფანჯარა</a>."
 
-#: src/gui/MainWindow.cc:1663 src/gui/TabManager.cc:429
+#: src/gui/MainWindow.cc:1678 src/gui/TabManager.cc:489
 msgid "Session Save"
 msgstr "სესიის შენახვა"
 
-#: src/gui/MainWindow.cc:1664
+#: src/gui/MainWindow.cc:1679
 msgid "Could not save the session."
 msgstr "სესიის შენახვა ვერ მოხერხდა."
 
-#: src/gui/MainWindow.cc:1665
+#: src/gui/MainWindow.cc:1680
 msgid ""
 "%1\n"
 "\n"
@@ -3437,23 +3398,23 @@ msgstr ""
 "\n"
 "%2"
 
-#: src/gui/MainWindow.cc:1666
+#: src/gui/MainWindow.cc:1681
 msgid "Try Again"
 msgstr "ხელახლა ცდა"
 
-#: src/gui/MainWindow.cc:1668
+#: src/gui/MainWindow.cc:1683
 msgid "Quit Without Saving"
 msgstr "შენახვის გარეშე გასვლა"
 
-#: src/gui/MainWindow.cc:1669
+#: src/gui/MainWindow.cc:1684
 msgid "Keep Open"
 msgstr "ღია დატოვება"
 
-#: src/gui/MainWindow.cc:1855
+#: src/gui/MainWindow.cc:1870
 msgid "Revoke All Trusted Designs"
 msgstr "ყველა სანდო დიზაინის ნდობის გაუქმება"
 
-#: src/gui/MainWindow.cc:1856
+#: src/gui/MainWindow.cc:1871
 msgid ""
 "This will revoke trust for all Python designs.\n"
 "\n"
@@ -3463,26 +3424,26 @@ msgstr ""
 "\n"
 "დარწმუნებული ხართ?"
 
-#: src/gui/MainWindow.cc:1898 src/gui/MainWindow.cc:1905
-#: src/gui/MainWindow.cc:1914 src/gui/MainWindow.cc:1927
-#: src/gui/MainWindow.cc:1932
+#: src/gui/MainWindow.cc:1913 src/gui/MainWindow.cc:1920
+#: src/gui/MainWindow.cc:1929 src/gui/MainWindow.cc:1942
+#: src/gui/MainWindow.cc:1947
 msgid "Create Virtual Environment"
 msgstr "ვირტუალური გარემოს შექმნა"
 
-#: src/gui/MainWindow.cc:1912
+#: src/gui/MainWindow.cc:1927
 msgid "Creating Python virtual environment. Please wait..."
 msgstr "Python ვირტუალური გარემოს შექმნა. გთხოვთ, მოიცადოთ..."
 
-#: src/gui/MainWindow.cc:1949
+#: src/gui/MainWindow.cc:1964
 msgid "Select Virtual Environment"
 msgstr "ვირტუალური გარემოს არჩევა"
 
-#: src/gui/MainWindow.cc:2507 src/gui/TabManager.cc:380
-#: src/gui/TabManager.cc:494
+#: src/gui/MainWindow.cc:2522 src/gui/TabManager.cc:440
+#: src/gui/TabManager.cc:554
 msgid "Application"
 msgstr "აპლიკაცია"
 
-#: src/gui/MainWindow.cc:2508
+#: src/gui/MainWindow.cc:2523
 msgid ""
 "The file has changed on disk, but this tab has unsaved edits.\n"
 "Reloading will discard your changes.\n"
@@ -3494,61 +3455,169 @@ msgstr ""
 "\n"
 "ნამდვილად გსურთ ფაილის თავიდან ჩატვირთვა?"
 
-#: src/gui/MainWindow.cc:3134
+#: src/gui/MainWindow.cc:3182
 msgid "Click to change language"
 msgstr "ენის შესაცვლელად დააწკაპუნეთ"
 
-#: src/gui/MainWindow.cc:3179
+#: src/gui/MainWindow.cc:3227
 msgid "Auto-detect from file extension"
 msgstr "ავტომატური გამოვლენა ფაილის გაფართოებიდან"
 
-#: src/gui/MainWindow.cc:3610
+#: src/gui/MainWindow.cc:3554
+msgid "The design has not been rendered yet (F6)."
+msgstr "დიზაინი ჯერ არ არის რენდერირებული (F6)."
+
+#: src/gui/MainWindow.cc:3555
+msgid "Render the design and print, or cancel."
+msgstr "დიზაინის რენდერი და ბეჭდვა, ან გაუქმება."
+
+#: src/gui/MainWindow.cc:3556
+msgid "Render the design and export, or cancel."
+msgstr "დიზაინის რენდერი და ექსპორტი, ან გაუქმება."
+
+#: src/gui/MainWindow.cc:3561 src/gui/MainWindow.cc:3594
+#: src/gui/MainWindow.cc:3653
+msgid "Render and Print"
+msgstr "რენდერი და ბეჭდვა"
+
+#: src/gui/MainWindow.cc:3561 src/gui/MainWindow.cc:3594
+#: src/gui/MainWindow.cc:3653
+msgid "Render and Export"
+msgstr "რენდერი და გატანა"
+
+#: src/gui/MainWindow.cc:3579 src/gui/UnsavedChangesDialog.cc:105
+#: src/gui/UnsavedChangesDialog.cc:121
+msgid "Untitled"
+msgstr "უსახელო"
+
+#: src/gui/MainWindow.cc:3587
+msgid "The current render belongs to a different tab (%1)."
+msgstr "მიმდინარე რენდერი სხვა ჩანართს ეკუთვნის (%1)."
+
+#: src/gui/MainWindow.cc:3588
+msgid "Use that tab's render, render this tab first, or cancel."
+msgstr "იმ ჩანართის რენდერის გამოყენება, ჯერ ამ ჩანართის რენდერი, ან გაუქმება."
+
+#: src/gui/MainWindow.cc:3589
+msgid "Export that tab's render, render this tab first, or cancel."
+msgstr "იმ ჩანართის რენდერის ექსპორტი, ჯერ ამ ჩანართის რენდერი, ან გაუქმება."
+
+#: src/gui/MainWindow.cc:3592
+msgid "Use Other Tab's Render"
+msgstr "სხვა ჩანართის რენდერის გამოყენება"
+
+#: src/gui/MainWindow.cc:3592
+msgid "Export Other Tab's Render"
+msgstr "სხვა ჩანართის რენდერის ექსპორტი"
+
+#: src/gui/MainWindow.cc:3620
+msgid "Nothing to export! Try rendering first (press F6)"
+msgstr "გასატანი არაფერია! ჯერ დაარენდერეთ (F6)"
+
+#: src/gui/MainWindow.cc:3642
+msgid "The design has changed since it was last rendered (F6)."
+msgstr "დიზაინი შეიცვალა ბოლო რენდერის (F6) შემდეგ."
+
+#: src/gui/MainWindow.cc:3644
+msgid ""
+"Print the last rendered geometry, render the current design first, or cancel."
+msgstr ""
+"დაბეჭდეთ ბოლოს დარენდერებული გეომეტრია, ჯერ დაარენდერეთ მიმდინარე დიზაინი, "
+"ან გააუქმეთ."
+
+#: src/gui/MainWindow.cc:3645
+msgid ""
+"Export the last rendered geometry, render the current design first, or "
+"cancel."
+msgstr ""
+"გაიტანეთ ბოლოს დარენდერებული გეომეტრია, ჯერ დაარენდერეთ მიმდინარე დიზაინი, "
+"ან გააუქმეთ."
+
+#: src/gui/MainWindow.cc:3651
+msgid "Use Previous"
+msgstr "წინას გამოყენება"
+
+#: src/gui/MainWindow.cc:3651
+msgid "Export Previous"
+msgstr "წინას გატანა"
+
+#: src/gui/MainWindow.cc:3674
+msgid "Current top level object is not a %1D object."
+msgstr "მიმდინარე ზედა დონის ობიექტი არ არის %1D ობიექტი."
+
+#: src/gui/MainWindow.cc:3680
+msgid "Current top level object is empty."
+msgstr "მიმდინარე ზედა დონის ობიექტი ცარიელია."
+
+#: src/gui/MainWindow.cc:3773
+msgid "ASCII STL"
+msgstr "ASCII STL"
+
+#: src/gui/MainWindow.cc:3775
+msgid "Binary STL"
+msgstr "ბინარული STL"
+
+#: src/gui/MainWindow.cc:3822
 msgid "By Extension (*.*)"
 msgstr "გაფართოებით (*.*)"
 
-#: src/gui/MainWindow.cc:3686
+#: src/gui/MainWindow.cc:3908
 msgid "E&xport to %1"
 msgstr "&ექსპორტი %1-ში"
 
-#: src/gui/MainWindow.cc:3855 src/gui/MainWindow.cc:3870
+#: src/gui/MainWindow.cc:3994
+msgid "Nothing to export. Please try compiling first."
+msgstr "გასატანი არაფერია. ჯერ დააკომპილირეთ."
+
+#: src/gui/MainWindow.cc:4164 src/gui/MainWindow.cc:4179
 msgid ""
 "The given filename does not have any known file extension. Please enter a "
 "known file extension or select a file format from the file format list."
-msgstr "მითითებულ ფაილის სახელს არ აქვს ცნობილი გაფართოება. შეიყვანეთ ცნობილი გაფართოება ან აირჩიეთ ფორმატი სიიდან."
+msgstr ""
+"მითითებულ ფაილის სახელს არ აქვს ცნობილი გაფართოება. შეიყვანეთ ცნობილი "
+"გაფართოება ან აირჩიეთ ფორმატი სიიდან."
 
-#: src/gui/MainWindow.cc:4310 src/gui/MainWindow.cc:5195
+#: src/gui/MainWindow.cc:4192 src/gui/TabManager.cc:404
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 უკვე არსებობს\n"
+"გნებავთ გადააწეროთ?"
+
+#: src/gui/MainWindow.cc:4681 src/gui/MainWindow.cc:5572
 msgid "&AI Chat"
 msgstr "&AI ჩატი"
 
-#: src/gui/MainWindow.cc:5187
+#: src/gui/MainWindow.cc:5564
 msgid "&Editor"
 msgstr "&რედაქტორი"
 
-#: src/gui/MainWindow.cc:5188
+#: src/gui/MainWindow.cc:5565
 msgid "&Console"
 msgstr "&კონსოლი"
 
-#: src/gui/MainWindow.cc:5189
+#: src/gui/MainWindow.cc:5566
 msgid "C&ustomizer"
 msgstr "&მომრგები"
 
-#: src/gui/MainWindow.cc:5190
+#: src/gui/MainWindow.cc:5567
 msgid "Error &Log"
 msgstr "შეცდომების &ჟურნალი"
 
-#: src/gui/MainWindow.cc:5191
+#: src/gui/MainWindow.cc:5568
 msgid "&Animate"
 msgstr "&ანიმაცია"
 
-#: src/gui/MainWindow.cc:5192
+#: src/gui/MainWindow.cc:5569
 msgid "&Font List"
 msgstr "&ფონტების სია"
 
-#: src/gui/MainWindow.cc:5193
+#: src/gui/MainWindow.cc:5570
 msgid "C&olor List"
 msgstr "ფ&ერების სია"
 
-#: src/gui/MainWindow.cc:5194
+#: src/gui/MainWindow.cc:5571
 msgid "&Viewport Control"
 msgstr "&ვიუპორტის მართვა"
 
@@ -3639,52 +3708,52 @@ msgid " seconds"
 msgstr " წამი"
 
 #: src/gui/Preferences.cc:481 src/gui/Preferences.cc:486
-#: src/gui/Preferences.cc:1489 src/gui/Preferences.cc:1528
+#: src/gui/Preferences.cc:1495 src/gui/Preferences.cc:1534
 msgid "<Default>"
 msgstr "<ნაგულისხმები>"
 
-#: src/gui/Preferences.cc:645
+#: src/gui/Preferences.cc:651
 msgid "NONE"
 msgstr "არცერთი"
 
-#: src/gui/Preferences.cc:1211
+#: src/gui/Preferences.cc:1217
 msgid "Select CA certificate"
-msgstr ""
+msgstr "CA სერტიფიკატის არჩევა"
 
-#: src/gui/Preferences.cc:1212
+#: src/gui/Preferences.cc:1218
 msgid "Certificate files (*.pem *.crt *.cer);;All files (*)"
-msgstr ""
+msgstr "სერტიფიკატის ფაილები (*.pem *.crt *.cer);;ყველა ფაილი (*)"
 
-#: src/gui/Preferences.cc:1472
+#: src/gui/Preferences.cc:1478
 msgid "Success: Server Version = %2, API Version = %1"
 msgstr "წარმატება: სერვერის ვერსია = %2, API-ის ვერსია = %1"
 
-#: src/gui/Preferences.cc:1474 src/gui/Preferences.cc:1499
-#: src/gui/Preferences.cc:1538
+#: src/gui/Preferences.cc:1480 src/gui/Preferences.cc:1505
+#: src/gui/Preferences.cc:1544
 msgid "Error"
 msgstr "შეცდომა"
 
-#: src/gui/Preferences.cc:1615
+#: src/gui/Preferences.cc:1621
 msgid "New AI Profile"
 msgstr "&ახალი AI პროფილი"
 
-#: src/gui/Preferences.cc:1615
+#: src/gui/Preferences.cc:1621
 msgid "Profile name:"
 msgstr "პროფილის სახელი:"
 
-#: src/gui/Preferences.cc:1620
+#: src/gui/Preferences.cc:1626
 msgid "Duplicate Profile"
 msgstr "პროფილის დუბლირება"
 
-#: src/gui/Preferences.cc:1620
+#: src/gui/Preferences.cc:1626
 msgid "A profile with that name already exists."
 msgstr "ამ სახელის პროფილი უკვე არსებობს."
 
-#: src/gui/Preferences.cc:1682
+#: src/gui/Preferences.cc:1688
 msgid "Delete AI Profile"
 msgstr "AI პროფილის წაშლა"
 
-#: src/gui/Preferences.cc:1683
+#: src/gui/Preferences.cc:1689
 msgid "Delete profile \"%1\"?"
 msgstr "წავშალოთ პროფილი „%1\"?"
 
@@ -3736,31 +3805,23 @@ msgstr "ეს Python დიზაინი სანდო არ არის.
 msgid "Trust Design"
 msgstr "დიზაინის ნდობა"
 
-#: src/gui/TabManager.cc:311
+#: src/gui/TabManager.cc:371
 msgid "Python script (*.py)"
 msgstr "Python სკრიპტი (*.py)"
 
-#: src/gui/TabManager.cc:314 src/gui/TabManager.cc:319
+#: src/gui/TabManager.cc:374 src/gui/TabManager.cc:379
 msgid "OpenSCAD script (*.scad)"
 msgstr "OpenSCAD სკრიპტი (*.scad)"
 
-#: src/gui/TabManager.cc:322
+#: src/gui/TabManager.cc:382
 msgid "All files (*)"
 msgstr "ყველა ფაილი (*)"
 
-#: src/gui/TabManager.cc:344
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 უკვე არსებობს\n"
-"გნებავთ გადააწეროთ?"
-
-#: src/gui/TabManager.cc:381
+#: src/gui/TabManager.cc:441
 msgid "Cannot open design file \"%1\": path is a directory."
 msgstr "დიზაინის ფაილი „%1\" ვერ გაიხსნა: გზა საქაღალდეა."
 
-#: src/gui/TabManager.cc:430
+#: src/gui/TabManager.cc:490
 msgid ""
 "Could not write session file:\n"
 "%1\n"
@@ -3776,11 +3837,11 @@ msgstr ""
 "\n"
 "სესიის ცვლილებები შეიძლება დაიკარგოს."
 
-#: src/gui/TabManager.cc:439
+#: src/gui/TabManager.cc:499
 msgid "Unable to create the session directory."
 msgstr "სესიის საქაღალდის შექმნა ვერ მოხერხდა."
 
-#: src/gui/TabManager.cc:495
+#: src/gui/TabManager.cc:555
 msgid ""
 "The file \"%1\" does not exist.\n"
 "\n"
@@ -3790,45 +3851,45 @@ msgstr ""
 "\n"
 "გსურთ შექმნა?"
 
-#: src/gui/TabManager.cc:994
+#: src/gui/TabManager.cc:1054
 msgid "Copy file name"
 msgstr "ფაილის სახელის კოპირება"
 
-#: src/gui/TabManager.cc:1000
+#: src/gui/TabManager.cc:1060
 msgid "Copy full path"
 msgstr "სრული ბილიკის კოპირება"
 
-#: src/gui/TabManager.cc:1006
+#: src/gui/TabManager.cc:1066
 msgid "Open Folder"
 msgstr "საქაღალდის გახსნა"
 
-#: src/gui/TabManager.cc:1011
+#: src/gui/TabManager.cc:1071
 msgid "Close Tab"
 msgstr "ჩანართის დახურვა"
 
-#: src/gui/TabManager.cc:1016
+#: src/gui/TabManager.cc:1076
 msgid "Close All But This Tab"
 msgstr "ყველა ჩანართის დახურვა გარდა ამისა"
 
-#: src/gui/TabManager.cc:1312
+#: src/gui/TabManager.cc:1372
 msgid "Do you want to save the changes you made to %1?"
 msgstr "გსურთ შეინახოთ %1-ში შეტანილი ცვლილებები?"
 
-#: src/gui/TabManager.cc:1313
+#: src/gui/TabManager.cc:1373
 msgid "Your changes will be lost if you don't save them."
 msgstr "თქვენი ცვლილებები დაიკარგება, თუ არ შეინახავთ."
 
-#: src/gui/TabManager.cc:1318
+#: src/gui/TabManager.cc:1378
 msgid "Don't save"
 msgstr "არ შევინახო"
 
-#: src/gui/TabManager.cc:1792 src/gui/TabManager.cc:1821
-#: src/gui/TabManager.cc:1828 src/gui/TabManager.cc:1856
-#: src/gui/TabManager.cc:2047
+#: src/gui/TabManager.cc:1860 src/gui/TabManager.cc:1889
+#: src/gui/TabManager.cc:1896 src/gui/TabManager.cc:1924
+#: src/gui/TabManager.cc:2115
 msgid "Session Restore"
 msgstr "სესიის აღდგენა"
 
-#: src/gui/TabManager.cc:1793
+#: src/gui/TabManager.cc:1861
 msgid ""
 "The session file was created by a newer version of PythonSCAD (session "
 "version %1, but this build only supports up to version %2)."
@@ -3836,7 +3897,7 @@ msgstr ""
 "სესიის ფაილი შეიქმნა PythonSCAD-ის უფრო ახალი ვერსიით (სესიის ვერსია %1, ეს "
 "აგება მხარს უჭერს მხოლოდ %2-მდე)."
 
-#: src/gui/TabManager.cc:1798
+#: src/gui/TabManager.cc:1866
 msgid ""
 "Exit to keep the session file for use with a newer PythonSCAD, or discard it "
 "to start fresh here.\n"
@@ -3850,15 +3911,15 @@ msgstr ""
 "სესიის ფაილი:\n"
 "%1"
 
-#: src/gui/TabManager.cc:1801
+#: src/gui/TabManager.cc:1869
 msgid "Exit"
 msgstr "გასვლა"
 
-#: src/gui/TabManager.cc:1802
+#: src/gui/TabManager.cc:1870
 msgid "Discard session"
 msgstr "სესიის გაუქმება"
 
-#: src/gui/TabManager.cc:1822
+#: src/gui/TabManager.cc:1890
 msgid ""
 "Could not open the session file for reading:\n"
 "%1\n"
@@ -3874,7 +3935,7 @@ msgstr ""
 "\n"
 "იწყება ახალი სესია."
 
-#: src/gui/TabManager.cc:1829
+#: src/gui/TabManager.cc:1897
 msgid ""
 "The session file is corrupt or unreadable:\n"
 "%1\n"
@@ -3888,7 +3949,7 @@ msgstr ""
 "ფაილი არ წაშლილა — შეგიძლიათ ხელით გადაამოწმოთ.\n"
 "იწყება ახალი სესია."
 
-#: src/gui/TabManager.cc:1857
+#: src/gui/TabManager.cc:1925
 msgid ""
 "The session file uses an old format (version %1) that cannot be migrated to "
 "the current format (version %2). Starting with a fresh session."
@@ -3896,11 +3957,11 @@ msgstr ""
 "სესიის ფაილი ძველ ფორმატს იყენებს (ვერსია %1), რომელიც ვერ გადაინაცვლება "
 "მიმდინარე ფორმატში (ვერსია %2). იწყება ახალი სესია."
 
-#: src/gui/TabManager.cc:2048
+#: src/gui/TabManager.cc:2116
 msgid "%1 file(s) could not be found on disk."
 msgstr "%1 ფაილი დისკზე ვერ მოიძებნა."
 
-#: src/gui/TabManager.cc:2050
+#: src/gui/TabManager.cc:2118
 msgid ""
 "The session contents were restored, but the file paths are stale.\n"
 "Use Save As to pick a new location."
@@ -3908,23 +3969,23 @@ msgstr ""
 "სესიის შიგთავსი აღდგა, მაგრამ ფაილის გზები მოძველებულია.\n"
 "\\u201eშენახვა როგორც\\u201c-ით აირჩიეთ ახალი მდებარეობა."
 
-#: src/gui/TabManager.cc:2053
+#: src/gui/TabManager.cc:2121
 msgid "Dismiss"
 msgstr "დახურვა"
 
-#: src/gui/TabManager.cc:2166 src/gui/TabManager.cc:2318
+#: src/gui/TabManager.cc:2234 src/gui/TabManager.cc:2386
 msgid "Failed to open file for writing"
 msgstr "ფაილის ჩასაწერად გახსნის შეცდომა"
 
-#: src/gui/TabManager.cc:2206 src/gui/TabManager.cc:2332
+#: src/gui/TabManager.cc:2274 src/gui/TabManager.cc:2400
 msgid "Error saving design"
 msgstr "დიზაინის შენახვის შეცდომა"
 
-#: src/gui/TabManager.cc:2218
+#: src/gui/TabManager.cc:2286
 msgid "Save File"
 msgstr "ფაილის შენახვა"
 
-#: src/gui/TabManager.cc:2295
+#: src/gui/TabManager.cc:2363
 msgid "Save A Copy"
 msgstr "ასლის შენახვა"
 
@@ -3962,10 +4023,6 @@ msgstr "დააჭირეთ %1 ცვლილებების შენ�
 msgid "Discard Changes"
 msgstr "ცვლილებების გაუქმება"
 
-#: src/gui/UnsavedChangesDialog.cc:105 src/gui/UnsavedChangesDialog.cc:121
-msgid "Untitled"
-msgstr "უსახელო"
-
 #: src/gui/UnsavedChangesDialog.cc:110
 msgid "Save this file"
 msgstr "ამ ფაილის შენახვა"
@@ -3987,12 +4044,12 @@ msgstr "ზედმეტად დიდი მნიშვნელობე�
 msgid "negative distances are not supported"
 msgstr "უარყოფითი მანძილები არ არის მხარდაჭერილი"
 
-#: src/io/export.cc:299
+#: src/io/export.cc:298
 #, c-format
 msgid "Can't open file \"%1$s\" for export"
 msgstr "გასატანად \"%1$s\"-ის გახსნა შეუძლებელია"
 
-#: src/io/export.cc:315
+#: src/io/export.cc:314
 #, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
 msgstr "\"%1$s\"-ის ჩაწერის შეცდოა. (დისკი გადაივსო?)"
@@ -4423,98 +4480,16 @@ msgstr ""
 #~ "გაფრთხილება: შეიძლება OpenCSG-ის რენდერის შეცდომები მიიღოთ.\n"
 #~ "\n"
 
-msgid "ASCII STL"
-msgstr "ASCII STL"
+#~ msgid ""
+#~ "The current tab has been modified since its last render (F6).\n"
+#~ "Do you really want to export the previous content?"
+#~ msgstr ""
+#~ "მიმდინარე ჩანართი შეიცვალა ბოლო რენდერის (F6) შემდეგ.\n"
+#~ "ნამდვილად გსურთ წინა შიგთავსის გატანა?"
 
-msgid "Binary STL"
-msgstr "ბინარული STL"
-#: src/gui/MainWindow.cc
-msgid "Nothing to export! Try rendering first (press F6)"
-msgstr "გასატანი არაფერია! ჯერ დაარენდერეთ (F6)"
-
-#: src/gui/MainWindow.cc
-msgid "Nothing to export. Please try compiling first."
-msgstr "გასატანი არაფერია. ჯერ დააკომპილირეთ."
-
-#: src/gui/MainWindow.cc
-msgid "Current top level object is not a %1D object."
-msgstr "მიმდინარე ზედა დონის ობიექტი არ არის %1D ობიექტი."
-
-#: src/gui/MainWindow.cc
-msgid "Current top level object is empty."
-msgstr "მიმდინარე ზედა დონის ობიექტი ცარიელია."
-
-#: src/gui/MainWindow.cc
-msgid ""
-"The current tab has been modified since its last render (F6).\n"
-"Do you really want to export the previous content?"
-msgstr ""
-"მიმდინარე ჩანართი შეიცვალა ბოლო რენდერის (F6) შემდეგ.\n"
-"ნამდვილად გსურთ წინა შიგთავსის გატანა?"
-
-#: src/gui/MainWindow.cc
-msgid ""
-"The rendered data is from a different tab.\n"
-"Do you really want to export another tab's content?"
-msgstr ""
-"დარენდერებული მონაცემები სხვა ჩანართისაა.\n"
-"ნამდვილად გსურთ სხვა ჩანართის შიგთავსის გატანა?"
-#: src/gui/MainWindow.cc
-msgid "The design has changed since it was last rendered (F6)."
-msgstr "დიზაინი შეიცვალა ბოლო რენდერის (F6) შემდეგ."
-
-#: src/gui/MainWindow.cc
-msgid "Export the last rendered geometry, render the current design first, or cancel."
-msgstr "გაიტანეთ ბოლოს დარენდერებული გეომეტრია, ჯერ დაარენდერეთ მიმდინარე დიზაინი, ან გააუქმეთ."
-
-#: src/gui/MainWindow.cc
-msgid "Print the last rendered geometry, render the current design first, or cancel."
-msgstr "დაბეჭდეთ ბოლოს დარენდერებული გეომეტრია, ჯერ დაარენდერეთ მიმდინარე დიზაინი, ან გააუქმეთ."
-
-#: src/gui/MainWindow.cc
-msgid "Export Previous"
-msgstr "წინას გატანა"
-
-#: src/gui/MainWindow.cc
-msgid "Use Previous"
-msgstr "წინას გამოყენება"
-
-#: src/gui/MainWindow.cc
-msgid "Render and Export"
-msgstr "რენდერი და გატანა"
-
-#: src/gui/MainWindow.cc
-msgid "Render and Print"
-msgstr "რენდერი და ბეჭდვა"
-
-#: src/gui/MainWindow.cc
-msgid "The design has not been rendered yet (F6)."
-msgstr "დიზაინი ჯერ არ არის რენდერირებული (F6)."
-
-#: src/gui/MainWindow.cc
-msgid "Render the design and export, or cancel."
-msgstr "დიზაინის რენდერი და ექსპორტი, ან გაუქმება."
-
-#: src/gui/MainWindow.cc
-msgid "Render the design and print, or cancel."
-msgstr "დიზაინის რენდერი და ბეჭდვა, ან გაუქმება."
-
-#: src/gui/MainWindow.cc
-msgid "The current render belongs to a different tab (%1)."
-msgstr "მიმდინარე რენდერი სხვა ჩანართს ეკუთვნის (%1)."
-
-#: src/gui/MainWindow.cc
-msgid "Export that tab's render, render this tab first, or cancel."
-msgstr "იმ ჩანართის რენდერის ექსპორტი, ჯერ ამ ჩანართის რენდერი, ან გაუქმება."
-
-#: src/gui/MainWindow.cc
-msgid "Use that tab's render, render this tab first, or cancel."
-msgstr "იმ ჩანართის რენდერის გამოყენება, ჯერ ამ ჩანართის რენდერი, ან გაუქმება."
-
-#: src/gui/MainWindow.cc
-msgid "Export Other Tab's Render"
-msgstr "სხვა ჩანართის რენდერის ექსპორტი"
-
-#: src/gui/MainWindow.cc
-msgid "Use Other Tab's Render"
-msgstr "სხვა ჩანართის რენდერის გამოყენება"
+#~ msgid ""
+#~ "The rendered data is from a different tab.\n"
+#~ "Do you really want to export another tab's content?"
+#~ msgstr ""
+#~ "დარენდერებული მონაცემები სხვა ჩანართისაა.\n"
+#~ "ნამდვილად გსურთ სხვა ჩანართის შიგთავსის გატანა?"
