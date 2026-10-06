@@ -1,0 +1,3 @@
+DEPRECATED: nimport() is deprecated and insecure for sharing libraries; publish/install a Python package instead. See https://www.pythonscad.org/libraries/
+deprecation_warning: True
+reached_download_error: True

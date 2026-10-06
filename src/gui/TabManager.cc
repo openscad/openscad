@@ -461,15 +461,7 @@ void launchGvimForFile(const QString& filepath)
 void initEmptyUntitledTab(EditorInterface *editor)
 {
 #ifdef ENABLE_PYTHON
-  std::string templ = "from pythonscad import *\n";
-  std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
-  std::stringstream ss(libs);
-  std::string word;
-  while (std::getline(ss, word, '\n')) {
-    if (word.size() == 0) continue;
-    templ += "nimport(\"" + word + "\")\n";
-  }
-  editor->setPlainText(QString::fromStdString(templ));
+  editor->setPlainText(QStringLiteral("from pythonscad import *\n"));
   editor->setLanguageManually(LANG_PYTHON);
 #else
   editor->setPlainText("");
@@ -564,15 +556,7 @@ void TabManager::prepareEditorBufferForNewDesignFile(EditorInterface *edt, const
   const QString suffix = Importer::effectiveSuffixForOpen(absPath);
 #ifdef ENABLE_PYTHON
   if (suffix == QStringLiteral("py")) {
-    std::string templ = "from pythonscad import *\n";
-    std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
-    std::stringstream ss(libs);
-    std::string word;
-    while (std::getline(ss, word, '\n')) {
-      if (word.size() == 0) continue;
-      templ += "nimport(\"" + word + "\")\n";
-    }
-    edt->setPlainText(QString::fromStdString(templ));
+    edt->setPlainText(QStringLiteral("from pythonscad import *\n"));
     edt->setLanguageManually(LANG_PYTHON);
     edt->revokeTrust();
   } else
@@ -1184,22 +1168,8 @@ void TabManager::openTabFile(const QString& filename)
     }
     prepareEditorBufferForNewDesignFile(editor, absPath);
   } else {
-#ifdef ENABLE_PYTHON
-    if (suffix == QStringLiteral("py")) {
-      std::string templ = "from pythonscad import *\n";
-      std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
-      std::stringstream ss(libs);
-      std::string word;
-      while (std::getline(ss, word, '\n')) {
-        if (word.size() == 0) continue;
-        templ += "nimport(\"" + word + "\")\n";
-      }
-      editor->setPlainText(QString::fromStdString(templ));
-    } else
-#endif
-    {
-      editor->setPlainText("");
-    }
+    // Content is loaded from disk by refreshDocument() below.
+    editor->setPlainText("");
   }
 
   editor->filepath = absPath;

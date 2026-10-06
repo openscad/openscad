@@ -938,8 +938,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"set_modal_dialog_active", python_set_modal_dialog_active, METH_VARARGS,
    "Suspend python_lock()/python_unlock() while a modal PyQt6 dialog is open"},
   {"nimport", (PyCFunction)python_nimport, METH_VARARGS | METH_KEYWORDS,
-   "Import a Python model from a URL (not an STL).\n"
-   "nimport(url=\"https://example.com/model.py\")"},
+   "Deprecated: download and star-import a single .py file from a URL.\n"
+   "Prefer a published Python package; see https://www.pythonscad.org/libraries/\n"
+   "nimport(url=\"https://example.com/model.py\")  # deprecated"},
   {"qapp_ptr", python_qapp_ptr, METH_NOARGS,
    "Get raw pointer to the Qt application.\n"
    "qapp_ptr()"},

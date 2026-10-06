@@ -13,6 +13,9 @@ For editor completion and call validation, follow the
 [project-local environment setup](installation.md#project-local-environment-for-ide-support);
 the `pythonscad` package includes its type information.
 
+To share or consume reusable geometry as versioned Python packages, see
+[Sharing and using libraries](libraries/index.md).
+
 [PyForge](https://pyforge.zima.digirent.nl) is a community platform for
 sharing PythonSCAD designs — similar to Thingiverse, but built
 specifically for PythonSCAD. Designs are shared including their source

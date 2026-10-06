@@ -59,6 +59,10 @@ nav:
       - PythonSCAD v0.16.0: releases/PythonSCAD v0.16.0.md
   - Playground: /playground/
   - Installation: installation.md
+  - Libraries:
+      - Overview: libraries/index.md
+      - Creating and publishing: libraries/creating.md
+      - Using libraries: libraries/using.md
   - Development:
       - Release Smoke Tests: development/release-smoke-tests.md
       - Upstream Sync: development/upstream-sync.md

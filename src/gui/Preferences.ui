@@ -3005,25 +3005,14 @@
           </property>
          </widget>
          <layout class="QGridLayout" name="gridLayout_p">
-          <item row="0" column="1">
-           <widget class="QLabel" name="labelNetworkImport">
-            <property name="text">
-             <string>Network Import List</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QTextEdit" name="textEditPythonImportList">
-           </widget>
-          </item>
-	  <item row="1" column="1">
+	  <item row="0" column="1">
            <widget class="QLabel" name="labelGlobalTrustPython">
             <property name="text">
              <string>Globally trust Python designs</string>
             </property>
            </widget>
           </item>
-	  <item row="1" column="2">
+	  <item row="0" column="2">
             <widget class="QCheckBox" name="checkBoxGlobalTrustPython">
              <property name="text">
               <string>Really (very dangerous)</string>

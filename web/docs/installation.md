@@ -198,6 +198,10 @@ For a design that must remain reproducible, replace `pythonscad` in either
 example with the exact version used to render it, for example
 `pythonscad==1.2.0`.
 
+To install third-party PythonSCAD geometry libraries into the same environment
+(GUI **File → Python** venv or a headless project venv), see
+[Using libraries](libraries/using.md).
+
 ### Build dependencies (source fallback only)
 
 When pip must compile from source, you need a C++17 compiler, `pkg-config`,

@@ -697,6 +697,13 @@ std::vector<std::string> nimport_downloaded;
 extern int curl_download(const std::string& url, const std::string& path, std::string *errmsg);
 PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  static const char *const nimport_deprecation_msg =
+    "nimport() is deprecated and insecure for sharing libraries; publish/install a Python package "
+    "instead. See https://www.pythonscad.org/libraries/";
+  LOG(message_group::Deprecated, "%1$s", nimport_deprecation_msg);
+  if (PyErr_WarnEx(PyExc_DeprecationWarning, nimport_deprecation_msg, 1) < 0) {
+    return nullptr;
+  }
   char *kwlist[] = {"url", NULL};
   const char *c_url = nullptr;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist, &c_url)) {
@@ -768,7 +775,7 @@ PyObject *python_str(PyObject *self)
 static PyObject *python_register_parameter_impl(PyObject *args, PyObject *kwargs, bool inject_global)
 {
   char *kwlist[] = {"name", "default",    "description", "group", "range",
-                    "step", "max_length", "options",    "type",  NULL};
+                    "step", "max_length", "options",     "type",  NULL};
   char *name = NULL;
   PyObject *value = NULL;
   const char *description = NULL;
@@ -1002,7 +1009,7 @@ static PyObject *python_register_parameter_impl(PyObject *args, PyObject *kwargs
       annotationList->push_back(Annotation("Group", std::make_shared<Literal>(group, Location::NONE)));
     }
 
-     if (custom_type != NULL) {
+    if (custom_type != NULL) {
       annotationList->push_back(
         Annotation("CustomType", std::make_shared<Literal>(custom_type, Location::NONE)));
     }
@@ -1215,7 +1222,7 @@ PyObject *python_add_parameter_widget(PyObject * /*self*/, PyObject *args, PyObj
   static const char *kwlist[] = {"typename", "factory", nullptr};
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO", const_cast<char **>(kwlist), &typenamec,
-                                    &factory)) {
+                                   &factory)) {
     return nullptr;
   }
 
@@ -1243,7 +1250,6 @@ PyObject *python_set_modal_dialog_active(PyObject *, PyObject *args)
   pythonModalDialogActive.store(active != 0);
   Py_RETURN_NONE;
 }
-
 
 PyObject *python_qapp_ptr(PyObject *, PyObject *)
 {

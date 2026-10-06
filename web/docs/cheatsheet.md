@@ -434,8 +434,8 @@
       <div><code>scad("cube(10);")</code></div>
 
       <div class="func"><code><a href="../reference/io/#nimport">nimport</a>(url)</code></div>
-      <div>GUI only: download a remote <code>.py</code> module and <code>from … import *</code> (not for STL/geometry)</div>
-      <div><code>nimport("https://example.com/mylib.py"); make_widget().show()</code></div>
+      <div>Deprecated (GUI only): download a remote <code>.py</code> and <code>from … import *</code> — use a <a href="../libraries/">Python package</a> instead</div>
+      <div><code>nimport("https://example.com/mylib.py")  # deprecated</code></div>
   </div>
 </div>
 

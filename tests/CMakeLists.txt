@@ -302,9 +302,10 @@ set(PYTHONSCAD_ECHO_EXPORT_FILES
   "${TEST_PYTHONSCAD_ECHO_DIR}/issue232-lookup-file-export-deprecation.py"
 )
 list(REMOVE_ITEM PYTHONSCAD_ECHO_FILES ${PYTHONSCAD_ECHO_EXPORT_FILES})
-# GUI pointer callbacks are not exposed in headless builds.
+# GUI pointer callbacks and nimport() are not exposed in headless builds.
 if(HEADLESS)
   list(REMOVE_ITEM PYTHONSCAD_ECHO_FILES "${TEST_PYTHONSCAD_ECHO_DIR}/gui_callback_abi.py")
+  list(REMOVE_ITEM PYTHONSCAD_ECHO_FILES "${TEST_PYTHONSCAD_ECHO_DIR}/nimport-deprecation.py")
 endif()
 # Exclude libfive tests if libfive is not enabled
 if(NOT ENABLE_LIBFIVE)
@@ -1397,6 +1398,14 @@ add_cmdline_test(pythonscadpreview   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${TE
 # 2D boolean seam fillets (issue #1004): validate via SVG (headless-safe).
 add_cmdline_test(pythonscad2d        EXPERIMENTAL OPENSCAD SUFFIX svg FILES ${PYTHONSCAD_2D_SVG_FILES} ARGS --render --trust-python)
 add_cmdline_test(pythonscadecho      EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${PYTHONSCAD_ECHO_FILES} ARGS --trust-python)
+# nimport download logs include machine-local library paths; keep the portable
+# DEPRECATED line + script prints in the golden file.
+if(NOT HEADLESS)
+  add_line_exclusion_for_test(pythonscadecho nimport-deprecation
+    [[^WARNING: Downloading to ]])
+  add_line_exclusion_for_test(pythonscadecho nimport-deprecation
+    [[^ERROR: ]])
+endif()
 # Same group name so goldens stay under tests/regression/pythonscadecho/.
 add_cmdline_test(pythonscadecho      EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${PYTHONSCAD_ECHO_EXPORT_FILES} ARGS --trust-python --render)
 add_cmdline_test(pythonscadlaser     EXPERIMENTAL OPENSCAD SUFFIX svg FILES ${PYTHONSCAD_LASER_FILES}            ARGS --trust-python)

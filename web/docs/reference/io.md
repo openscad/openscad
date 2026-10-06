@@ -9,8 +9,9 @@ interchangeable — pick by what you are loading:
 |------|----------|---------|
 | Local mesh / 2D drawing (STL, 3MF, SVG, …) | [`osimport`](#osimport) | Geometry object (or color→object dict for SVG `split_by_color`) |
 | Local OpenSCAD library (`.scad` modules/functions/vars) | [`osuse`](#osuse) (prefer over deprecated [`osinclude`](#osinclude)) | Handle with attributes for modules, functions, and variables |
-| Remote **Python** library over HTTP(S) | [`nimport`](#nimport) (GUI only) | `None` — side effect is `from <module> import *` into the current namespace |
+| Shared **Python** library (versioned package) | Ordinary `import` after `pip install` — see [Libraries](../libraries/index.md) | Whatever that module exports |
 | Local Python / PythonSCAD script | Ordinary Python `import` / `from … import …` | Whatever that module exports |
+| Remote single-file `.py` over HTTP(S) | Deprecated [`nimport`](#nimport) (GUI only) | `None` — side effect is `from <module> import *` into the current namespace |
 
 Inline OpenSCAD snippets (not a file) use [`scad`](#scad).
 
@@ -258,34 +259,40 @@ Execute inline OpenSCAD code from within a Python script.
 
 ## nimport
 
-Download a **Python** module from a network URL into the user library directory,
-then run `from <module_stem> import *` so its symbols appear in the current
-namespace. This is **not** a geometry importer — it does not load STL, 3MF,
-SVG, or other mesh/drawing files (use [`osimport`](#osimport) for those, after
-downloading the file yourself if needed).
+!!! warning "Deprecated"
+    `nimport` is **deprecated**. Do not use it in new designs. Calling it logs a
+    deprecation message to the PythonSCAD console and points at
+    [Sharing and using libraries](../libraries/index.md). Prefer a published
+    Python package (`pip install` + ordinary `import`).
 
-`nimport` is only available in **GUI** builds (it is omitted from headless /
-`OPENSCAD_NOGUI` builds). It returns `None`; useful results come from the
-imported module's exported names (for example a function or solid you then
-call or `.show()`).
+    Reasons to stop using it:
 
-**Behavior:**
+    - **Misleading name** — unlike [`osimport`](#osimport), it does not load
+      STL/3MF/SVG geometry; it only fetches a single remote `.py` file.
+    - **Single file only** — multi-file libraries and proper packages cannot be
+      expressed as one URL download.
+    - **Fragile URLs** — if the host rearranges paths or goes offline, every
+      design that depended on that URL breaks.
+    - **No versions** — the remote file can change incompatibly with no pin.
+    - **Security** — if the domain expires and is taken over, or the host is
+      compromised, the downloaded script can be replaced with malware. There is
+      no package integrity or release attestation comparable to PyPI.
 
-1. Take the last path segment of `url` as the filename (e.g. `mylib.py`).
-2. Download it to the PythonSCAD user library path (skipped if this session
-   already downloaded the same URL and the file is still present).
-3. Execute `from <stem> import *` where `<stem>` is the filename without its
-   final extension.
+    The Preferences → Python **Network Import List** and new-tab `nimport("…")`
+    prefills have been **removed**. Existing scripts that still call `nimport`
+    continue to run until the function is removed in a future release.
 
-Preferences → Python can list default network-import URLs; new editor tabs
-pre-fill matching `nimport("…")` lines from that list.
+Legacy behavior (GUI builds only; omitted from headless / `OPENSCAD_NOGUI`):
+download a `.py` file from `url` into the user library directory, then run
+`from <stem> import *`. Returns `None`. This is **not** a geometry importer —
+use [`osimport`](#osimport) for mesh/drawing files.
 
 **Syntax:**
 
 === "Python"
 
     ```python
-    nimport(url)
+    nimport(url)  # deprecated
     ```
 
 **Parameters:**
@@ -294,17 +301,6 @@ pre-fill matching `nimport("…")` lines from that list.
 |-----------|------|-------------|
 | `url` | string | HTTP(S) URL of a `.py` module to download and star-import |
 
-**Examples:**
-
-=== "Python"
-
-    ```python
-    from pythonscad import *
-
-    # Remote library that defines e.g. make_widget() / WIDGET_SIZE
-    nimport("https://example.com/mylib.py")
-    make_widget().show()
-    ```
-
-For a **local** PythonSCAD library on disk, prefer a normal Python import
-(with the file on `sys.path` or next to your script) instead of `nimport`.
+**Migration:** publish or install a package instead — see
+[Libraries](../libraries/index.md), [Creating](../libraries/creating.md), and
+[Using](../libraries/using.md).

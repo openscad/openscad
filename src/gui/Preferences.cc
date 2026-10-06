@@ -475,8 +475,6 @@ void Preferences::init()
     ->setText(QString::fromStdString(Settings::Settings::localAppExecutable.value()));
   BlockSignals<QLineEdit *>(this->lineEditLocalAppTempDir)
     ->setText(QString::fromStdString(Settings::Settings::localAppTempDir.value()));
-  BlockSignals<QTextEdit *>(this->textEditPythonImportList)
-    ->setText(QString::fromStdString(Settings::SettingsPython::pythonNetworkImportList.value()));
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -1419,13 +1417,6 @@ void Preferences::updateLocalAppParams()
     }
   }
   Settings::Settings::localAppParameterList.setValue(items);
-  writeSettings();
-}
-
-void Preferences::on_textEditPythonImportList_textChanged()
-{
-  Settings::SettingsPython::pythonNetworkImportList.setValue(
-    this->textEditPythonImportList->document()->toPlainText().toStdString());
   writeSettings();
 }
 

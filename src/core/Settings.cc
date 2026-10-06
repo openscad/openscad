@@ -390,7 +390,6 @@ SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
 SettingsEntryString SettingsPython::pythonTrustedFiles(SECTION_PYTHON, "trusted-files", "");
 SettingsEntryString SettingsPython::pythonVirtualEnv(SECTION_PYTHON, "virtual-env", "");
-SettingsEntryString SettingsPython::pythonNetworkImportList(SECTION_PYTHON, "networkImportList", "");
 SettingsEntryBool SettingsPython::globalTrustPython(SECTION_PYTHON, "global-trust-python", false);
 
 SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-dialog",
