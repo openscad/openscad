@@ -175,11 +175,7 @@ Run the provided script from the repository root:
 ```
 
 This installs all required dependencies via Homebrew,
-including Qt6 by default. For Qt5 instead, run:
-
-```bash
-./scripts/macosx-build-homebrew.sh qt5
-```
+including Qt6. macOS Homebrew builds do not support Qt5.
 
 #### Build on macOS
 

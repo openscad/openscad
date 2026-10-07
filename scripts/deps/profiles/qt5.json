@@ -85,9 +85,8 @@
     },
     "macos": {
       "extends": null,
-      "packages": [
-        "qt@5"
-      ]
+      "unsupported": true,
+      "unsupported_message": "macOS builds are Qt6-only; use --profile pythonscad-qt6"
     },
     "mageia": {
       "extends": null,

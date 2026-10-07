@@ -159,6 +159,15 @@ def resolve_packages(cfg: dict, distro: DistroInfo) -> List[str]:
     if distro.id not in distros:
         raise SystemExit(f"Unsupported / unknown distro '{distro.id}'. Supported: {', '.join(sorted(distros))}")
 
+    distro_cfg = distros[distro.id]
+    if distro_cfg.get("unsupported"):
+        raise SystemExit(
+            distro_cfg.get(
+                "unsupported_message",
+                f"This profile does not support distro '{distro.id}'",
+            )
+        )
+
     # Inheritance chain
     chain = []
     cur = distro.id

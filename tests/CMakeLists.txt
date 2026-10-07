@@ -1705,6 +1705,16 @@ if(ENABLE_PYTHON)
   set_property(TEST ipython-precedence PROPERTY SKIP_REGULAR_EXPRESSION "^SKIP-")
 endif()
 
+# Host-side check that the macOS Homebrew dep script (and the qt5
+# get-dependencies profile) stay Qt6-only on macOS.
+if(Python3_EXECUTABLE)
+  add_test(NAME macosx-build-homebrew-qt6 CONFIGURATIONS Default
+    COMMAND ${Python3_EXECUTABLE} -Xutf8=1
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_macosx_build_homebrew.py
+  )
+  set_property(TEST macosx-build-homebrew-qt6 PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+endif()
+
 if(NOT ENABLE_LIBFIVE)
   message(STATUS "LIBFIVE is not enabled. Skipping related tests.")
   disable_tests_safe(
