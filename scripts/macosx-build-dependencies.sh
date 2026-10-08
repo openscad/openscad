@@ -95,7 +95,7 @@ PACKAGES=(
     "cgal 6.2"
 
     # https://download.qt.io/official_releases/qt/6.8/
-    "qt6 6.8.4"
+    "qt6 6.8.4 1"
 
     # https://opencsg.org/news.html
     "opencsg 1.8.2"
@@ -254,6 +254,10 @@ build_qt6()
 
   patch -p1 < $OPENSCADDIR/patches/qt6/qyieldcpu.patch
   patch -p1 < $OPENSCADDIR/patches/qt6/dup3.patch
+  # QTBUG-145793: preserve the shared CoreAudio device rate during playback.
+  if [ "$version" = "6.8.4" ]; then
+    patch -p1 < $OPENSCADDIR/patches/qt6/coreaudio-preserve-device-sample-rate.patch
+  fi
 
   mkdir build
   cd build
