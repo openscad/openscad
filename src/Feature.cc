@@ -31,6 +31,8 @@ const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus",
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing",
                                                         "Enable indexing in vertex object renderers");
+const Feature Feature::ExperimentalTextMetricsFunctions(
+  "textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 const Feature Feature::ExperimentalImportFunction(
   "import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalObjectFunction(
@@ -47,9 +49,6 @@ const Feature Feature::ExperimentalDiscretizationByError(
 const Feature Feature::ExperimentalAiFeatures("ai-features",
                                               "Enable AI features (Note: AI integration is under "
                                               "development and does not connect to external APIs yet).");
-const Feature Feature::ExperimentalUnicodeIdentifiers(
-  "unicode-identifiers",
-  "Allow non-ASCII characters in identifiers, following Unicode Standard Annex #31.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
