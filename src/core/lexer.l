@@ -381,8 +381,6 @@ static int unicode_identifier(const char *text, size_t length)
   std::string message;
 
   if (!Feature::ExperimentalUnicodeIdentifiers.is_enabled()) {
-    message = "Non-ASCII identifiers are experimental, enable the unicode-identifiers feature";
-  } else {
     const auto result = UnicodeIdentifier::normalize(text, length);
     switch (result.status) {
     case UnicodeIdentifier::Status::Valid:
@@ -400,6 +398,10 @@ static int unicode_identifier(const char *text, size_t length)
                 + UnicodeIdentifier::formatCodePoint(result.codepoint);
       break;
     }
+    
+  } 
+  else {
+    message = "Non-ASCII identifiers are experimental, enable the unicode-identifiers feature";
   }
 
   parsererror(message.c_str());
