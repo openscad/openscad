@@ -1101,31 +1101,6 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
-void Preferences::on_lineEditCaCertPath_editingFinished()
-{
-  Settings::Settings::caCertPath.setValue(this->lineEditCaCertPath->text().toStdString());
-  writeSettings();
-}
-
-void Preferences::on_toolButtonCaCertBrowse_clicked()
-{
-  const QString fileName =
-    QFileDialog::getOpenFileName(this, _("Select CA certificate"), QString{},
-                                 _("Certificate files (*.pem *.crt *.cer);;All files (*)"));
-  if (fileName.isEmpty()) {
-    return;
-  }
-
-  this->lineEditCaCertPath->setText(fileName);
-  on_lineEditCaCertPath_editingFinished();
-}
-
-void Preferences::on_checkBoxTlsSkipVerify_toggled(bool checked)
-{
-  Settings::Settings::tlsSkipVerify.setValue(checked);
-  writeSettings();
-}
-
 void Preferences::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
 {
   S::enableRemotePrintServices.setValue(checked);
@@ -1971,11 +1946,6 @@ void Preferences::updateGUI()
 
   BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)
     ->setChecked(Settings::Settings::inputEnableDriverHIDAPILog.value());
-
-  BlockSignals<QLineEdit *>(this->lineEditCaCertPath)
-    ->setText(QString::fromStdString(Settings::Settings::caCertPath.value()));
-  BlockSignals<QCheckBox *>(this->checkBoxTlsSkipVerify)
-    ->setChecked(Settings::Settings::tlsSkipVerify.value());
   BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)
     ->setChecked(getValue("editor/enableAutocomplete").toBool());
   BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)
