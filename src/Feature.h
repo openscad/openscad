@@ -12,6 +12,7 @@ public:
   using list_t = std::vector<Feature *>;
   using iterator = list_t::iterator;
 
+  static const Feature UnicodeIdentifiers;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;
@@ -22,7 +23,6 @@ public:
   static const Feature ExperimentalVectorSwizzle;
   static const Feature ExperimentalDiscretizationByError;
   static const Feature ExperimentalAiFeatures;
-  static const Feature ExperimentalUnicodeIdentifiers;
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif
@@ -36,6 +36,8 @@ public:
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;
 
+  [[nodiscard]] bool get_default_enabled() const;
+  [[nodiscard]] bool is_available() const;
   [[nodiscard]] bool is_enabled() const;
   void enable(bool status);
 
@@ -48,6 +50,8 @@ public:
 
 private:
   bool enabled{false};
+  const bool default_enabled;
+  const bool experimental;
 
   const std::string name;
   const std::string description;
@@ -56,7 +60,8 @@ private:
   static map_t feature_map;
   static list_t feature_list;
 
-  Feature(const std::string& name, std::string description, bool hidden = false);
+  Feature(const std::string& name, std::string description, bool hidden = false,
+          bool default_enabled = false, bool experimental = true);
   virtual ~Feature() = default;
 };
 

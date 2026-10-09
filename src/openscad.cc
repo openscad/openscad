@@ -629,8 +629,7 @@ int cmdline(const CommandLine& cmd)
     ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
     ParameterSets sets;
     sets.readFile(cmd.parameterFile);
-    // Set names from the file are normalised on read, the one from the command
-    // line has to be normalised here so that both sides can be compared.
+    // Set names are normalized on read; normalize the CLI spelling as well.
     const std::string setName = normalize_utf8_nfc(cmd.setName);
     for (const auto& set : sets) {
       if (set.name() == setName) {
@@ -851,6 +850,10 @@ int openscad_main(int argc, char **argv)
   boost::optional<FileFormat> export_format;
 
   ViewOptions viewOptions{};
+  std::vector<std::string> feature_names;
+  for (const Feature *feature : boost::make_iterator_range(Feature::begin(), Feature::end())) {
+    if (feature->is_available()) feature_names.push_back(feature->get_name());
+  }
   po::options_description desc("Allowed options");
   // clang-format off
   desc.add_options()
@@ -861,7 +864,7 @@ int openscad_main(int argc, char **argv)
       "default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(),
       "output specified file instead of running the GUI. The file extension specifies the type: stl, "
-      "off, wrl, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be "
+      "off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be "
       "used multiple times for different exports. Use '-' for stdout.\n")
     ("O,O", po::value<std::vector<std::string>>(),
       "pass settings value to the file export using the format section/key=value, e.g "
@@ -869,14 +872,15 @@ int openscad_main(int argc, char **argv)
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
     ("p,p", po::value<std::string>(), "customizer parameter file")
     ("P,P", po::value<std::string>(), "customizer parameter set")
-#ifdef ENABLE_EXPERIMENTAL
     ("enable", po::value<std::vector<std::string>>(),
-      ("enable experimental features (specify 'all' for enabling all available features): " +
-      str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
-               [](const Feature *feature) { return feature->get_name(); }) +
+      ("enable features (specify 'all' for enabling all available features): " +
+      str_join(feature_names, " | ", [](const std::string& name) { return name; }) +
       "\n")
       .c_str())
-#endif
+    ("disable", po::value<std::vector<std::string>>(),
+      ("disable features (takes precedence over --enable; specify 'all' to disable all): " +
+      str_join(feature_names, " | ", [](const std::string& name) { return name; }) + "\n")
+      .c_str())
     ("help,h", "print this help message and exit")
     ("help-export", "print list of export parameters and values that can be set via -O")
     ("version,v", "print the version")
@@ -1088,6 +1092,15 @@ int openscad_main(int argc, char **argv)
         break;
       }
       Feature::enable_feature(feature);
+    }
+  }
+  if (vm.count("disable")) {
+    for (const auto& feature : vm["disable"].as<std::vector<std::string>>()) {
+      if (feature == "all") {
+        Feature::enable_all(false);
+        break;
+      }
+      Feature::enable_feature(feature, false);
     }
   }
 

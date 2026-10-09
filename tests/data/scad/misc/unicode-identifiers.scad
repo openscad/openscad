@@ -1,6 +1,3 @@
-// Identifiers may contain non-ASCII letters. Requires --enable=unicode-identifiers.
-// See https://github.com/openscad/openscad/issues/3736
-
 größe = 10;
 echo(größe);
 

@@ -1330,7 +1330,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Experimental Features</string>
+             <string>Features</string>
             </property>
            </widget>
           </item>
@@ -1340,7 +1340,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>These features are experimental.  They may change or be removed entirely without notice. You may enable them and use them and comment on them, but you must assume that they may not be in their final form and may never appear in an OpenSCAD release in any form.</string>
+             <string>Experimental features may change or be removed entirely without notice. You may enable them and use them and comment on them, but you must assume that they may not be in their final form and may never appear in an OpenSCAD release in any form. The unicode-identifiers feature is stable and enabled by default.</string>
             </property>
            </widget>
           </item>
@@ -3298,10 +3298,10 @@
      <normaloff>:/icons/prefsFeatures.png</normaloff>:/icons/prefsFeatures.png</iconset>
    </property>
    <property name="text">
-    <string>Experimental</string>
+    <string>Features</string>
    </property>
    <property name="toolTip">
-    <string>Enable/Disable experimental features</string>
+    <string>Enable/Disable features</string>
    </property>
   </action>
   <action name="prefsActionInput">
