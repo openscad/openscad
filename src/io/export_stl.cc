@@ -142,7 +142,7 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
     const auto& p2 = ps->vertices[t[2]];
 
     // Tessellation already eliminated these cases.
-    assert(p0 != p1 && p0 != p2 && p1 != p2);
+    if( p0 == p1 || p0 == p2 || p1 == p2) continue;
 
     auto normal = (p1 - p0).cross(p2 - p0);
     if (!normal.isZero(0)) {
