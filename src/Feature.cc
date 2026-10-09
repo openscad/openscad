@@ -25,6 +25,9 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  * (well-defined) order of object construction, matching the order of the
  * const Features listed below.
  */
+const Feature Feature::UnicodeIdentifiers(
+  "unicode-identifiers", "Allow non-ASCII identifiers (disable to accept only ASCII identifiers).",
+  false, true, false);
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus",
                                                    "Enable DBus input drivers (requires restart)");
@@ -55,8 +58,13 @@ const Feature Feature::ExperimentalPythonEngine(
   "python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
 #endif
 
-Feature::Feature(const std::string& name, std::string description, bool hidden)
-  : name(name), description(std::move(description))
+Feature::Feature(const std::string& name, std::string description, bool hidden, bool default_enabled,
+                 bool experimental)
+  : enabled(default_enabled),
+    default_enabled(default_enabled),
+    experimental(experimental),
+    name(name),
+    description(std::move(description))
 {
   feature_map[name] = this;
   if (!hidden) feature_list.push_back(this);
@@ -72,13 +80,23 @@ const std::string& Feature::get_description() const
   return description;
 }
 
-bool Feature::is_enabled() const
+bool Feature::get_default_enabled() const
+{
+  return default_enabled;
+}
+
+bool Feature::is_available() const
 {
 #ifdef ENABLE_EXPERIMENTAL
-  return enabled;
+  return true;
 #else
-  return false;
+  return !experimental;
 #endif
+}
+
+bool Feature::is_enabled() const
+{
+  return is_available() && enabled;
 }
 
 void Feature::enable(bool status)

@@ -255,10 +255,9 @@ void Preferences::init()
   this->toolBar->removeAction(prefsActionUpdate);
 #endif
   addPrefPage(group, prefsAction3DPrint, page3DPrint);
-#ifdef ENABLE_EXPERIMENTAL
   addPrefPage(group, prefsActionFeatures, pageFeatures);
-#else
-  this->toolBar->removeAction(prefsActionFeatures);
+#ifndef ENABLE_EXPERIMENTAL
+  this->labelFeaturesDisclaimer->hide();
 #endif
   addPrefPage(group, prefsActionInput, pageInput);
   addPrefPage(group, prefsActionInputButton, pageInputButton);
@@ -559,9 +558,10 @@ void Preferences::setupFeaturesPage()
   int row = 0;
   for (auto it = Feature::begin(); it != Feature::end(); ++it) {
     Feature *feature = *it;
+    if (!feature->is_available()) continue;
 
     QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
-    this->defaultmap[featurekey] = false;
+    this->defaultmap[featurekey] = feature->get_default_enabled();
 
     // spacer item between the features, just for some optical separation
     gridLayoutExperimentalFeatures->addItem(

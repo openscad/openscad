@@ -828,6 +828,21 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 
+# Unicode identifiers are enabled by default. Keep NFC normalization and the
+# identifier security profile covered independently of experimental features.
+add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad)
+add_cmdline_test(echo-unicode-enabled OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad EXPECTEDDIR echo ARGS --enable=unicode-identifiers)
+add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
+add_cmdline_test(echo-unicode-set-name-nfd OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Größ")
+add_cmdline_test(echo-unicode-set-name-nfc OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Höhe")
+add_failing_test(parsererrors SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1)
+# CSG export succeeds for this source when Unicode identifiers are enabled,
+# even though it contains no geometry; STL export would fail in both modes.
+add_failing_test(unicode-identifiers-disabled SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --retval=1 --disable=unicode-identifiers)
+add_failing_test(unicode-identifiers-disabled-after-enable-all SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --retval=1 --enable=all --disable=unicode-identifiers)
+add_failing_test(unicode-identifiers-disabled-before-enable-all SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --retval=1 --disable=unicode-identifiers --enable=all)
+add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-disabled.scad ARGS --disable=unicode-identifiers)
+
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
