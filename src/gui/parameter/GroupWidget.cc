@@ -45,7 +45,7 @@ void GroupWidget::setExpanded(bool expanded)
   } else {
     contentArea.hide();
   }
-for (QWidget *w = this; w; w = w->parentWidget()) {
-printf("... %s\n", qPrintable(w->styleSheet())); fflush(stdout);
-}
+//for (QWidget *w = this; w; w = w->parentWidget()) {
+//printf("... %s\n", qPrintable(w->styleSheet())); fflush(stdout);
+//}
 }
