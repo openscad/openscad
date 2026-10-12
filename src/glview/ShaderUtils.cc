@@ -90,4 +90,17 @@ ShaderResource compileShaderProgram(const std::string& vs_str, const std::string
   };
 }
 
+void deleteShaderProgram(const ShaderResource& resource)
+{
+  if (resource.shader_program) {
+    glDeleteProgram(resource.shader_program);
+  }
+  if (resource.vertex_shader) {
+    glDeleteShader(resource.vertex_shader);
+  }
+  if (resource.fragment_shader) {
+    glDeleteShader(resource.fragment_shader);
+  }
+}
+
 }  // namespace ShaderUtils
