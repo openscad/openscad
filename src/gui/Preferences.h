@@ -220,6 +220,7 @@ private:
   void removeDefaultSettings();
   void setupFeaturesPage();
   void setup3DPrintPage();
+  void updateStereo3dOptions();
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);

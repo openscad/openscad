@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QString>
 #include <QtGlobal>
 
 class QGLView;
@@ -22,7 +23,13 @@ public:
 
   // Asks for stereo buffers in the default surface format when the preference is on
   static void requestStereoBuffers(QSurfaceFormat& format);
+  // Whether the 3D view can be drawn in stereo on this system, found out once per session
+  static bool isAvailable();
+  // Why the stereo 3D view is not available, for the tooltip of its preferences
+  static QString unavailableReason();
 
+  // From QGLView::initializeGL()
+  void initialize();
   // Around GLView::paintGL(): sets the offset of the eye drawn now, then sets up the camera between
   // the eyes again, which picking uses
   void beginEye();
