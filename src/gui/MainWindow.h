@@ -38,7 +38,6 @@
 #include "core/SourceFile.h"
 #include "glview/Camera.h"
 #include "glview/Renderer.h"
-#include "glview/RenderSettings.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QSvgPlugin)
@@ -175,7 +174,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
-  void updateBackend3DLabel(RenderBackend3D backend);
+  void updateBackend3DLabel();
 
   // implements the actions to be done when the selection menu is closing
   // the seclection menu is the one that show up when right click on the geometry in the 3d view.

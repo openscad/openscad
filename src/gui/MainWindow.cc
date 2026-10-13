@@ -536,12 +536,9 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D =
-    renderBackend3DFromString(
-      GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
-      .value_or(DEFAULT_RENDERING_BACKEND_3D);
-  RenderSettings::inst()->backend3D = backend3D;
-  updateBackend3DLabel(backend3D);
+  scadApp->setRenderBackend3D(renderBackend3DFromString(
+    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
+    .value_or(DEFAULT_RENDERING_BACKEND_3D));
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -2392,7 +2389,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->progresswidget = nullptr;
     }
     versionLabel.show();
-    backend3DLabel.show();
+    updateBackend3DLabel(); // shows if appropriate
   } else {
     versionLabel.hide();
     backend3DLabel.hide();
@@ -3550,8 +3547,6 @@ void MainWindow::setupPreferences()
           &MainWindow::setColorScheme);
   connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this,
           &MainWindow::updateExportActions);
-  connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, this,
-          &MainWindow::updateBackend3DLabel);
 
   connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
           QOverload<>::of(&QGLView::update));
@@ -3598,6 +3593,8 @@ void MainWindow::setupStatusBar()
                              QString::fromStdString(std::string(openscad_displayversionnumber)));
   this->statusBar()->addPermanentWidget(&this->versionLabel);
 
+  connect(scadApp, &OpenSCADApp::backend3DChanged, this, &MainWindow::updateBackend3DLabel);
+  updateBackend3DLabel();
   this->statusBar()->addPermanentWidget(&this->backend3DLabel);
 
   updateStatusBar(nullptr);
@@ -4140,14 +4137,14 @@ void MainWindow::changeEvent(QEvent *event)
   QMainWindow::changeEvent(event);
 }
 
-void MainWindow::updateBackend3DLabel(RenderBackend3D backend)
+void MainWindow::updateBackend3DLabel()
 {
-  QString s;
+  RenderBackend3D backend = RenderSettings::inst()->backend3D;
 
   if (backend == DEFAULT_RENDERING_BACKEND_3D) {
-    s = "";
+    backend3DLabel.hide();
   } else {
-    s = QString::fromStdString(renderBackend3DToString(backend));
+    backend3DLabel.setText(QString::fromStdString(renderBackend3DToString(backend)));
+    backend3DLabel.show();
   }
-  backend3DLabel.setText(s);
 }
