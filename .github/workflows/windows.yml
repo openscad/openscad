@@ -103,7 +103,7 @@ jobs:
             vcpkg-installed-windows-arm64-
       - name: Install flex and bison
         run: |
-          choco install winflexbison3 --no-progress -y
+          choco install winflexbison3 pkgconfiglite --no-progress -y
           $shim = (Get-Command win_flex).Source | Split-Path
           Copy-Item "$shim\win_flex.exe" "$shim\flex.exe" -Force
           Copy-Item "$shim\win_bison.exe" "$shim\bison.exe" -Force
