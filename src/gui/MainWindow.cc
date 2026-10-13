@@ -538,8 +538,8 @@ void MainWindow::loadDesignSettings()
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
   auto backend3D =
     renderBackend3DFromString(
-    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString()
-    ).value_or(DEFAULT_RENDERING_BACKEND_3D);
+      GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
+      .value_or(DEFAULT_RENDERING_BACKEND_3D);
   RenderSettings::inst()->backend3D = backend3D;
   updateBackend3DLabel(backend3D);
 }
@@ -3594,8 +3594,8 @@ void MainWindow::setupStatusBar()
   )");
   this->statusBar()->setStyleSheet(stylesheet);
 
-  this->versionLabel.setText(
-    "OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
+  this->versionLabel.setText("OpenSCAD " +
+                             QString::fromStdString(std::string(openscad_displayversionnumber)));
   this->statusBar()->addPermanentWidget(&this->versionLabel);
 
   this->statusBar()->addPermanentWidget(&this->backend3DLabel);
