@@ -94,6 +94,13 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: arm64
+      - name: Cache vcpkg dependencies
+        uses: actions/cache@v4
+        with:
+          path: C:\vcpkg\installed
+          key: vcpkg-installed-windows-arm64-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-installed-windows-arm64-
       - name: Install flex and bison
         run: |
           choco install winflexbison3 --no-progress -y
