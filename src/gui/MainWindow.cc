@@ -537,9 +537,11 @@ void MainWindow::loadDesignSettings()
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
   auto backend3D =
-    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
+    renderBackend3DFromString(
+    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString()
+    ).value_or(DEFAULT_RENDERING_BACKEND_3D);
+  RenderSettings::inst()->backend3D = backend3D;
+  updateBackend3DLabel(backend3D);
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -2389,17 +2391,11 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       delete this->progresswidget;
       this->progresswidget = nullptr;
     }
-    if (versionLabel == nullptr) {
-      versionLabel =
-        new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
-      sb->addPermanentWidget(this->versionLabel);
-    }
+    versionLabel.show();
+    backend3DLabel.show();
   } else {
-    if (this->versionLabel != nullptr) {
-      sb->removeWidget(this->versionLabel);
-      delete this->versionLabel;
-      this->versionLabel = nullptr;
-    }
+    versionLabel.hide();
+    backend3DLabel.hide();
     sb->addPermanentWidget(progressWidget);
   }
 }
@@ -3554,6 +3550,8 @@ void MainWindow::setupPreferences()
           &MainWindow::setColorScheme);
   connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this,
           &MainWindow::updateExportActions);
+  connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, this,
+          &MainWindow::updateBackend3DLabel);
 
   connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
           QOverload<>::of(&QGLView::update));
@@ -3595,7 +3593,13 @@ void MainWindow::setupStatusBar()
     }
   )");
   this->statusBar()->setStyleSheet(stylesheet);
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
+
+  this->versionLabel.setText(
+    "OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
+  this->statusBar()->addPermanentWidget(&this->versionLabel);
+
+  this->statusBar()->addPermanentWidget(&this->backend3DLabel);
+
   updateStatusBar(nullptr);
 }
 
@@ -4134,4 +4138,16 @@ void MainWindow::changeEvent(QEvent *event)
     setGlobalTheme();
   }
   QMainWindow::changeEvent(event);
+}
+
+void MainWindow::updateBackend3DLabel(RenderBackend3D backend)
+{
+  QString s;
+
+  if (backend == DEFAULT_RENDERING_BACKEND_3D) {
+    s = "";
+  } else {
+    s = QString::fromStdString(renderBackend3DToString(backend));
+  }
+  backend3DLabel.setText(s);
 }
