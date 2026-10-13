@@ -1,7 +1,7 @@
 **Highlights**
 
 * New geometry engine: Manifold - rendering (F6) is now orders of magnitude faster
-* Color support in F6 rendering, and color import/export for OFF and 3MF
+* Color support in F6 rendering, color import/export for OFF and 3MF, and `color()` colors in SVG, PDF, and DXF export
 * Significantly improved external file import, with built-in mesh repair
 
 **Language Features**
