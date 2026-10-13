@@ -86,6 +86,9 @@ public:
   const std::list<ActionStruct>& getActions() const;
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
+  double getDistance() const;
+  double getFov() const;
+  QString getProjection() const;
 
   size_t getButtonCount() const;
   size_t getAxisCount() const;
