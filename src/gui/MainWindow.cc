@@ -2390,7 +2390,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->progresswidget = nullptr;
     }
     versionLabel.show();
-    updateBackend3DLabel(); // shows if appropriate
+    updateBackend3DLabel();  // shows if appropriate
   } else {
     versionLabel.hide();
     backend3DLabel.hide();
