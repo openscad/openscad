@@ -536,9 +536,10 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  scadApp->setRenderBackend3D(renderBackend3DFromString(
-    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
-    .value_or(DEFAULT_RENDERING_BACKEND_3D));
+  scadApp->setRenderBackend3D(
+    renderBackend3DFromString(
+      GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
+      .value_or(DEFAULT_RENDERING_BACKEND_3D));
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
