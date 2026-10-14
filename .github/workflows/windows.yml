@@ -110,7 +110,7 @@ jobs:
       - name: Build OpenSCAD
         run: |
           mkdir build && cd build
-          cmake .. -G"Ninja" -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DHEADLESS=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=arm64-windows -DVCPKG_HOST_TRIPLET=arm64-windows -DVCPKG_MANIFEST_FEATURES=tests -DUSE_BUILTIN_OPENCSG=TRUE
+          cmake .. -G"Ninja" -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DCMAKE_REQUIRE_FIND_PACKAGE_Lib3MF=OFF -DSNAPSHOT=ON -DHEADLESS=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=arm64-windows -DVCPKG_HOST_TRIPLET=arm64-windows -DVCPKG_MANIFEST_FEATURES=tests -DUSE_BUILTIN_OPENCSG=TRUE
           cmake --build . -j4
           cmake --install . --prefix=.
       - name: Run Test Suite
