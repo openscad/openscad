@@ -94,7 +94,7 @@ PACKAGES=(
     # https://github.com/CGAL/cgal/releases
     "cgal 6.2"
 
-    # https://download.qt.io/official_releases/qt/6.8/
+    # https://download.qt.io/archive/qt/6.8/
     "qt6 6.8.4"
 
     # https://opencsg.org/news.html
@@ -247,7 +247,7 @@ build_qt6()
   v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-src-$version
   if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
+    curl -LO --insecure https://download.qt.io/archive/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
   fi
   tar xjf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
