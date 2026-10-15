@@ -117,8 +117,6 @@ public:
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
-  QLabel *versionLabel;
-
   Measurement::Measurement meas;
 
   int compileErrors = 0;
@@ -128,6 +126,9 @@ public:
   ~MainWindow() override;
 
 private:
+  QLabel versionLabel;
+  QLabel backend3DLabel;
+
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;
@@ -173,6 +174,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
+  void updateBackend3DLabel();
 
   // implements the actions to be done when the selection menu is closing
   // the seclection menu is the one that show up when right click on the geometry in the 3d view.

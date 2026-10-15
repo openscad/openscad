@@ -536,10 +536,10 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D =
-    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
+  scadApp->setRenderBackend3D(
+    renderBackend3DFromString(
+      GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
+      .value_or(DEFAULT_RENDERING_BACKEND_3D));
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -2389,17 +2389,11 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       delete this->progresswidget;
       this->progresswidget = nullptr;
     }
-    if (versionLabel == nullptr) {
-      versionLabel =
-        new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
-      sb->addPermanentWidget(this->versionLabel);
-    }
+    versionLabel.show();
+    updateBackend3DLabel();  // shows if appropriate
   } else {
-    if (this->versionLabel != nullptr) {
-      sb->removeWidget(this->versionLabel);
-      delete this->versionLabel;
-      this->versionLabel = nullptr;
-    }
+    versionLabel.hide();
+    backend3DLabel.hide();
     sb->addPermanentWidget(progressWidget);
   }
 }
@@ -3595,7 +3589,15 @@ void MainWindow::setupStatusBar()
     }
   )");
   this->statusBar()->setStyleSheet(stylesheet);
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
+
+  this->versionLabel.setText("OpenSCAD " +
+                             QString::fromStdString(std::string(openscad_displayversionnumber)));
+  this->statusBar()->addPermanentWidget(&this->versionLabel);
+
+  connect(scadApp, &OpenSCADApp::backend3DChanged, this, &MainWindow::updateBackend3DLabel);
+  updateBackend3DLabel();
+  this->statusBar()->addPermanentWidget(&this->backend3DLabel);
+
   updateStatusBar(nullptr);
 }
 
@@ -4134,4 +4136,16 @@ void MainWindow::changeEvent(QEvent *event)
     setGlobalTheme();
   }
   QMainWindow::changeEvent(event);
+}
+
+void MainWindow::updateBackend3DLabel()
+{
+  RenderBackend3D backend = RenderSettings::inst()->backend3D;
+
+  if (backend == DEFAULT_RENDERING_BACKEND_3D) {
+    backend3DLabel.hide();
+  } else {
+    backend3DLabel.setText(QString::fromStdString(renderBackend3DToString(backend)));
+    backend3DLabel.show();
+  }
 }
