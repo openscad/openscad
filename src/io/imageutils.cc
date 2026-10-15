@@ -15,12 +15,12 @@ void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, 
   }
 }
 
-bool write_png(const char *filename, unsigned char *pixels, int width, int height)
+bool write_png(const char *filename, unsigned char *pixels, int width, int height, bool with_alpha)
 {
   assert(filename && pixels);
   std::ofstream fstream(filename, std::ios::binary);
   if (fstream.is_open()) {
-    write_png(fstream, pixels, width, height);
+    write_png(fstream, pixels, width, height, with_alpha);
     fstream.close();
     return true;
   } else {

@@ -31,25 +31,29 @@ static CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream& output)
   return dc;
 }
 
-bool write_png(std::ostream& output, unsigned char *pixels, int width, int height)
+bool write_png(std::ostream& output, unsigned char *pixels, int width, int height, bool with_alpha)
 {
   const size_t rowBytes = static_cast<size_t>(width) * 4;
   //  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-  const CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;  // BGRA
+  // Framebuffer alpha is not premultiplied.
+  const CGBitmapInfo bitmapInfo =
+    (with_alpha ? kCGImageAlphaLast : kCGImageAlphaNoneSkipLast) | kCGBitmapByteOrder32Big;  // BGRA
   const int bitsPerComponent = 8;
-  CGContextRef contextRef =
-    CGBitmapContextCreate(pixels, width, height, bitsPerComponent, rowBytes, colorSpace, bitmapInfo);
-  if (!contextRef) {
-    std::cerr << "Unable to create CGContextRef.";
+  // Build the image straight from the caller's buffer rather than through a bitmap context:
+  // CGBitmapContextCreate rejects non-premultiplied alpha, CGImageCreate accepts it.
+  CGDataProviderRef provider = CGDataProviderCreateWithData(nullptr, pixels, rowBytes * height, nullptr);
+  if (!provider) {
+    std::cerr << "Unable to create CGDataProviderRef.";
     CGColorSpaceRelease(colorSpace);
     return false;
   }
 
-  CGImageRef imageRef = CGBitmapContextCreateImage(contextRef);
+  CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, 32, rowBytes, colorSpace,
+                                      bitmapInfo, provider, nullptr, false, kCGRenderingIntentDefault);
   if (!imageRef) {
     std::cerr << "Unable to create CGImageRef.";
-    CFRelease(contextRef);
+    CGDataProviderRelease(provider);
     CGColorSpaceRelease(colorSpace);
     return false;
   }
@@ -77,7 +81,7 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
     std::cerr << "Unable to create CGImageDestinationRef.";
     CFRelease(dataconsumer);
     CGImageRelease(imageRef);
-    CFRelease(contextRef);
+    CGDataProviderRelease(provider);
     CGColorSpaceRelease(colorSpace);
     return false;
   }
@@ -94,7 +98,7 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
   // CFRelease(fname);
   CFRelease(imageProps);
   CGImageRelease(imageRef);
-  CFRelease(contextRef);
+  CGDataProviderRelease(provider);
   CGColorSpaceRelease(colorSpace);
   return true;
 }
