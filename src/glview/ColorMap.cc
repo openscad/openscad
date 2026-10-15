@@ -208,6 +208,12 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
   return colorSchemeNames;
 }
 
+SchemeFaceColors SchemeFaceColors::from(const ColorScheme& scheme)
+{
+  return {.defaultColor = ColorMap::getColor(scheme, RenderColor::CGAL_FACE_FRONT_COLOR),
+          .cutoutColor = ColorMap::getColor(scheme, RenderColor::CGAL_FACE_BACK_COLOR)};
+}
+
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
