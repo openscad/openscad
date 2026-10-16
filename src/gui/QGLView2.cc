@@ -24,7 +24,8 @@
  */
 
 /*
- * This file defines two helper functions for saving and restoring OpenGL contexts.
+ * This file defines two helper functions for saving and restoring OpenGL contexts,
+ * and one that tells which format a new context gets.
  * They are in a separate file (rather than in the more obvious QGLView.cc) because
  * <QOpenGLContext> is incompatible with GLEW and produces compilation warning messages.
  * Putting them in a separate file in helper functions allows the main file to need
@@ -33,6 +34,7 @@
  * See also the discussion at QGLView::mouseDoubleClickEvent().
  */
 #include <QOpenGLContext>
+#include <QSurfaceFormat>
 
 QOpenGLContext *getGLContext()
 {
@@ -50,4 +52,17 @@ void setGLContext(QOpenGLContext *ctx)
   if (ctx) {
     ctx->makeCurrent(ctx->surface());
   }
+}
+
+QSurfaceFormat createdContextFormat(const QSurfaceFormat& format)
+{
+  /*
+   * Qt picks the framebuffer configuration when it creates the context, so the
+   * created context's format is what the system gives for the format asked.  No
+   * surface is needed, so no window is shown, and the current context stays current.
+   */
+  QOpenGLContext context;
+  context.setFormat(format);
+  if (!context.create()) return {};
+  return context.format();
 }
