@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
@@ -58,6 +59,15 @@ public:
   ManifoldGeometry operator-(const ManifoldGeometry& other) const;
   /*! minkowksi operation. */
   ManifoldGeometry minkowski(const ManifoldGeometry& other) const;
+
+  /*! N-ary union/intersection/difference via Manifold's batched (balanced, parallel)
+   *  BatchBoolean. Result is geometrically identical to folding operator+ / operator* /
+   *  operator- over the operands, but avoids re-processing the growing accumulator on every
+   *  step. opType must be Add, Intersect or Subtract; for Subtract, operands[0] is the minuend
+   *  and the remaining operands are subtracted (as their union). operands must be non-empty and
+   *  contain no empty geometries; the caller is responsible for that filtering. */
+  static ManifoldGeometry boolOp(manifold::OpType opType,
+                                 const std::vector<std::shared_ptr<const ManifoldGeometry>>& operands);
 
   Polygon2d slice() const;
   Polygon2d project() const;
