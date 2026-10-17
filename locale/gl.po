@@ -3556,3 +3556,2563 @@ msgstr "Ir ao marcador &anterior"
 #: src/gui/MainWindow.ui
 msgid "Jump to Next &Bookmark"
 msgstr "Ir ao seguinte &marcador"
+
+#: src/Cache.h:194
+#, c-format
+msgid "Trimming cache: %1$s (%2$d bytes)"
+msgstr "Recortando a caché: %1$s (%2$d bytes)"
+
+#: src/Feature.cc:97
+#, c-format
+msgid "Ignoring request to enable unknown feature '%1$s'."
+msgstr ""
+"Ignorando a solicitude para activar a funcionalidade descoñecida «%1$s»."
+
+#: src/FontCache.cc:153
+msgid ""
+"Can't initialize fontconfig library, text() objects will not be rendered"
+msgstr ""
+"Non se pode inicializar a biblioteca fontconfig; os obxectos text() non se "
+"renderizarán"
+
+#: src/FontCache.cc:205
+msgid "Can't initialize freetype library, text() objects will not be rendered"
+msgstr ""
+"Non se pode inicializar a biblioteca freetype; os obxectos text() non se "
+"renderizarán"
+
+#: src/FontCache.cc:244
+#, c-format
+msgid "Can't register font '%1$s'"
+msgstr "Non se pode rexistrar o tipo de letra «%1$s»"
+
+#: src/FontCache.cc:254
+#, c-format
+msgid "Can't register font directory '%1$s'"
+msgstr "Non se pode rexistrar o directorio de tipos de letra «%1$s»"
+
+#: src/FontCache.cc:411
+#, c-format
+msgid "Could not parse font '%1$s'"
+msgstr "Non foi posible analizar o tipo de letra «%1$s»"
+
+#: src/FontCache.cc:471
+#, c-format
+msgid "Could not select a char map for font '%1$s/%2$s'"
+msgstr ""
+"Non foi posible seleccionar un mapa de caracteres para o tipo de letra "
+"«%1$s/%2$s»"
+
+#: src/RenderStatistic.cc:226
+msgid "Top level object is a list of objects:"
+msgstr "O obxecto de nivel superior é unha lista de obxectos:"
+
+#: src/RenderStatistic.cc:227
+#, c-format
+msgid "   Objects:    %1$d"
+msgstr "   Obxectos:   %1$d"
+
+#: src/RenderStatistic.cc:232
+msgid "Top level object is a 2D object:"
+msgstr "O obxecto de nivel superior é un obxecto 2D:"
+
+#: src/RenderStatistic.cc:233
+#, c-format
+msgid "   Contours:   %1$6d"
+msgstr "   Contornos:  %1$6d"
+
+#: src/RenderStatistic.cc:236 src/RenderStatistic.cc:250
+msgid "Bounding box:"
+msgstr "Caixa delimitadora:"
+
+#: src/RenderStatistic.cc:237
+#, c-format
+msgid "   Min:  %1$.2f, %2$.2f"
+msgstr "   Mín.:    %1$.2f, %2$.2f"
+
+#: src/RenderStatistic.cc:238
+#, c-format
+msgid "   Max:  %1$.2f, %2$.2f"
+msgstr "   Máx.:    %1$.2f, %2$.2f"
+
+#: src/RenderStatistic.cc:239
+#, c-format
+msgid "   Size: %1$.2f, %2$.2f"
+msgstr "   Tamaño:  %1$.2f, %2$.2f"
+
+#: src/RenderStatistic.cc:242
+msgid "Measurements:"
+msgstr "Medidas:"
+
+#: src/RenderStatistic.cc:243
+#, c-format
+msgid "   Area: %1$.2f"
+msgstr "   Área: %1$.2f"
+
+#: src/RenderStatistic.cc:251
+#, c-format
+msgid "   Min:  %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Mín.:    %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:252
+#, c-format
+msgid "   Max:  %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Máx.:    %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:253
+#, c-format
+msgid "   Size: %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Tamaño:  %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:261
+msgid "Top level object is a 3D object (PolySet):"
+msgstr "O obxecto de nivel superior é un obxecto 3D (PolySet):"
+
+#: src/RenderStatistic.cc:262
+#, c-format
+msgid "   Convex:       %1$s"
+msgstr "   Convexo:      %1$s"
+
+#: src/RenderStatistic.cc:264
+#, c-format
+msgid "   Triangles: %1$6d"
+msgstr "   Triángulos: %1$6d"
+
+#: src/RenderStatistic.cc:266
+#, c-format
+msgid "   Facets:    %1$6d"
+msgstr "   Facetas:    %1$6d"
+
+#: src/RenderStatistic.cc:276
+msgid "Top level object is a 3D object (Nef polyhedron):"
+msgstr "O obxecto de nivel superior é un obxecto 3D (poliedro Nef):"
+
+#: src/RenderStatistic.cc:277
+#, c-format
+msgid "   Simple:     %1$s"
+msgstr "   Simple:       %1$s"
+
+#: src/RenderStatistic.cc:278 src/RenderStatistic.cc:300
+#, c-format
+msgid "   Vertices:   %1$6d"
+msgstr "   Vértices:     %1$6d"
+
+#: src/RenderStatistic.cc:279
+#, c-format
+msgid "   Halfedges:  %1$6d"
+msgstr "   Semiarestas:  %1$6d"
+
+#: src/RenderStatistic.cc:280
+#, c-format
+msgid "   Edges:      %1$6d"
+msgstr "   Arestas:      %1$6d"
+
+#: src/RenderStatistic.cc:281
+#, c-format
+msgid "   Halffacets: %1$6d"
+msgstr "   Semifacetas:  %1$6d"
+
+#: src/RenderStatistic.cc:282 src/RenderStatistic.cc:301
+#, c-format
+msgid "   Facets:     %1$6d"
+msgstr "   Facetas:      %1$6d"
+
+#: src/RenderStatistic.cc:283
+#, c-format
+msgid "   Volumes:    %1$6d"
+msgstr "   Volumes:      %1$6d"
+
+#: src/RenderStatistic.cc:285
+msgid "Object may not be a valid 2-manifold and may need repair!"
+msgstr ""
+"Pode que o obxecto non sexa unha 2-variedade válida e que precise "
+"reparación!"
+
+#: src/RenderStatistic.cc:295
+msgid "   Top level object is a 3D object (manifold):"
+msgstr "   O obxecto de nivel superior é un obxecto 3D (manifold):"
+
+#: src/RenderStatistic.cc:298
+#, c-format
+msgid "   Status:     %1$s"
+msgstr "   Estado:     %1$s"
+
+#: src/RenderStatistic.cc:299
+#, c-format
+msgid "   Genus:      %1$d"
+msgstr "   Xénero:     %1$d"
+
+#: src/RenderStatistic.cc:309
+msgid "Camera:"
+msgstr "Cámara:"
+
+#: src/RenderStatistic.cc:310
+#, c-format
+msgid "   Translation: %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Translación: %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:312
+#, c-format
+msgid "   Rotation:    %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Rotación:    %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:314
+#, c-format
+msgid "   Distance:    %1$.2f"
+msgstr "   Distancia:   %1$.2f"
+
+#: src/RenderStatistic.cc:315
+#, c-format
+msgid "   FOV:         %1$.2f"
+msgstr "   FOV:         %1$.2f"
+
+#: src/RenderStatistic.cc:331
+#, c-format
+msgid "Total rendering time: %1$d:%2$02d:%3$02d.%4$03d"
+msgstr "Tempo total de renderización: %1$d:%2$02d:%3$02d.%4$03d"
+
+#: src/core/BuiltinContext.cc:37
+#, c-format
+msgid "Experimental builtin function '%1$s' is not enabled"
+msgstr "A función integrada experimental «%1$s» non está activada"
+
+#: src/core/BuiltinContext.cc:50
+#, c-format
+msgid "Experimental builtin module '%1$s' is not enabled"
+msgstr "O módulo integrado experimental «%1$s» non está activado"
+
+#: src/core/BuiltinContext.cc:55
+#, c-format
+msgid ""
+"The %1$s() module will be removed in future releases. Use %2$s instead."
+msgstr ""
+"O módulo %1$s() eliminarase en versións futuras. Use %2$s no seu lugar."
+
+#: src/core/CSGTreeEvaluator.cc:277 src/geometry/GeometryEvaluator.cc:745
+msgid ""
+"Transformation matrix contains Not-a-Number and/or Infinity - removing "
+"object."
+msgstr ""
+"A matriz de transformación contén Not-a-Number e/ou Infinity - eliminando o "
+"obxecto."
+
+#: src/core/ColorNode.cc:62
+#, c-format
+msgid ""
+"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range"
+msgstr ""
+"color() espera números entre 0.0 e 1.0. O valor %1$.1f está fóra do rango"
+
+#: src/core/ColorNode.cc:73
+#, c-format
+msgid "Unable to parse color \"%1$s\""
+msgstr "Non foi posible analizar a cor \"%1$s\""
+
+#: src/core/ColorNode.cc:75
+msgid ""
+"For a list of valid color names, see the <a href=\"open-"
+"window://colorlist\"><b>Color List</b></a> window."
+msgstr ""
+"Para ver unha lista de nomes de cor válidos, consulte a xanela <a "
+"href=\"open-window://colorlist\"><b>Lista de cores</b></a>."
+
+#: src/core/ColorNode.cc:83
+#, c-format
+msgid ""
+"color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range"
+msgstr ""
+"color() espera un alfa entre 0.0 e 1.0. O valor %1$.1f está fóra do rango"
+
+#: src/core/ColorUtil.cc:130
+#, c-format
+msgid "Unable to parse color \"%1$s\", reverting to default color."
+msgstr "Non foi posible analizar a cor \"%1$s\"; volvendo á cor predeterminada."
+
+#: src/core/Context.cc:93 src/core/EvaluationSession.cc:77
+#, c-format
+msgid "Ignoring unknown variable %1$s"
+msgstr "Ignorando a variable descoñecida %1$s"
+
+#: src/core/Context.cc:111 src/core/EvaluationSession.cc:92
+#, c-format
+msgid "Ignoring unknown function '%1$s'"
+msgstr "Ignorando a función descoñecida «%1$s»"
+
+#: src/core/Context.cc:127 src/core/EvaluationSession.cc:105
+#, c-format
+msgid "Ignoring unknown module '%1$s'"
+msgstr "Ignorando o módulo descoñecido «%1$s»"
+
+#: src/core/CurveDiscretizer.cc:37
+msgid "$fn negative - setting to 0"
+msgstr "$fn negativo - estableceuse a 0"
+
+#: src/core/CurveDiscretizer.cc:41
+msgid "$fe negative - setting to 0"
+msgstr "$fe negativo - estableceuse a 0"
+
+#: src/core/CurveDiscretizer.cc:45
+#, c-format
+msgid "$fs too small - clamping to %1$f"
+msgstr "$fs demasiado pequeno - limitado a %1$f"
+
+#: src/core/CurveDiscretizer.cc:50
+#, c-format
+msgid "$fa too small - clamping to %1$f"
+msgstr "$fa demasiado pequeno - limitado a %1$f"
+
+#: src/core/Expression.cc:257
+#, c-format
+msgid "begin %1$s than the end, but step %2$s"
+msgstr "inicio %1$s que o final, pero paso %2$s"
+
+#: src/core/Expression.cc:269
+#, c-format
+msgid "Unable to convert [%1$s:...:%2$s] to a range"
+msgstr "Non foi posible converter [%1$s:...:%2$s] nun rango"
+
+#: src/core/Expression.cc:279
+#, c-format
+msgid "Unable to convert [...:%1$s:...] to a step value"
+msgstr "Non foi posible converter [...:%1$s:...] nun valor de paso"
+
+#: src/core/Expression.cc:466 src/core/Expression.cc:628
+#, c-format
+msgid "Recursion detected calling function '%1$s'"
+msgstr "Detectouse recursión ao chamar á función «%1$s»"
+
+#: src/core/Expression.cc:480 src/core/ModuleInstantiation.cc:70
+#, c-format
+msgid "called by '%1$s'"
+msgstr "chamado por «%1$s»"
+
+#: src/core/Expression.cc:511
+#, c-format
+msgid "Can't call function on %1$s"
+msgstr "Non se pode chamar a unha función sobre %1$s"
+
+#: src/core/Expression.cc:682
+#, c-format
+msgid "Assertion%1$s failed%2$s"
+msgstr "A aserción%1$s fallou%2$s"
+
+#: src/core/Expression.cc:743
+#, c-format
+msgid "Assignment without variable name %1$s"
+msgstr "Asignación sen nome de variable %1$s"
+
+#: src/core/Expression.cc:747
+#, c-format
+msgid "Ignoring duplicate variable assignment %1$s = %2$s"
+msgstr "Ignorando a asignación duplicada da variable %1$s = %2$s"
+
+#: src/core/Expression.cc:823 src/core/Expression.cc:895
+#, c-format
+msgid "Bad range parameter in for statement: too many elements (%1$lu)"
+msgstr ""
+"Parámetro de rango incorrecto na instrución for: demasiados elementos "
+"(%1$lu)"
+
+#: src/core/Expression.cc:987
+msgid "For loop counter exceeded limit"
+msgstr "O contador do bucle for superou o límite"
+
+#: src/core/FreetypeRenderer.cc:115 src/core/FreetypeRenderer.cc:150
+#, c-format
+msgid ""
+"Unknown value for the halign parameter (use \"left\", \"right\" or "
+"\"center\"): '%1$s'"
+msgstr ""
+"Valor descoñecido para o parámetro halign (use \"left\", \"right\" ou "
+"\"center\"): «%1$s»"
+
+#: src/core/FreetypeRenderer.cc:132 src/core/FreetypeRenderer.cc:171
+#, c-format
+msgid ""
+"Unknown value for the valign parameter (use \"baseline\", \"bottom\", "
+"\"top\" or \"center\"): '%1$s'"
+msgstr ""
+"Valor descoñecido para o parámetro valign (use \"baseline\", \"bottom\", "
+"\"top\" ou \"center\"): «%1$s»"
+
+#: src/core/FreetypeRenderer.cc:158
+msgid "Don't use valign=\"baseline\" with vertical layouts"
+msgstr "Non use valign=\"baseline\" con disposicións verticais"
+
+#: src/core/FreetypeRenderer.cc:281
+msgid "Font cache initialization failed"
+msgstr "Fallou a inicialización da caché de tipos de letra"
+
+#: src/core/FreetypeRenderer.cc:287
+#, c-format
+msgid "Can't get font %1$s"
+msgstr "Non se pode obter o tipo de letra %1$s"
+
+#: src/core/FreetypeRenderer.cc:304
+#, c-format
+msgid "Can't set font size for font %1$s"
+msgstr "Non se pode definir o tamaño do tipo de letra %1$s"
+
+#: src/core/FreetypeRenderer.cc:341
+#, c-format
+msgid "%1$s: \"size\" ignored when \"em\" is set"
+msgstr "%1$s: ignórase \"size\" cando se define \"em\""
+
+#: src/core/FreetypeRenderer.cc:402
+#, c-format
+msgid "Ignoring text with invalid UTF-8 encoding: \"%1$s\""
+msgstr "Ignorando un texto cunha codificación UTF-8 non válida: \"%1$s\""
+
+#: src/core/FreetypeRenderer.cc:435
+#, c-format
+msgid "Could not load glyph %1$u for char at index %2$u in text '%3$s'"
+msgstr ""
+"Non foi posible cargar o glifo %1$u para o carácter na posición %2$u do "
+"texto «%3$s»"
+
+#: src/core/FreetypeRenderer.cc:445
+#, c-format
+msgid "Could not get glyph %1$u for char at index %2$u in text '%3$s'"
+msgstr ""
+"Non foi posible obter o glifo %1$u para o carácter na posición %2$u do texto"
+" «%3$s»"
+
+#: src/core/HTTPClient.cc:548
+#, c-format
+msgid "Could not load custom CA certificates from '%1$s': %2$s"
+msgstr ""
+"Non foi posible cargar os certificados de CA personalizados desde «%1$s»: "
+"%2$s"
+
+#: src/core/ImportNode.cc:80
+msgid "filename= is deprecated. Please use file="
+msgstr "filename= está obsoleto. Use file="
+
+#: src/core/ImportNode.cc:109
+msgid "layername= is deprecated. Please use layer="
+msgstr "layername= está obsoleto. Use layer="
+
+#: src/core/ImportNode.cc:127
+#, c-format
+msgid "Unable to convert import(..., origin=%1$s) parameter to vec2"
+msgstr ""
+"Non foi posible converter o parámetro import(..., origin=%1$s) en vec2"
+
+#: src/core/ImportNode.cc:144
+#, c-format
+msgid ""
+"Invalid dpi value giving, using default of %1$f dpi. Value must be positive "
+"and >= 0.001, file %2$s, import() at line %3$d"
+msgstr ""
+"Valor de dpi non válido; úsase o predeterminado de %1$f dpi. O valor debe "
+"ser positivo e >= 0.001, ficheiro %2$s, import() na liña %3$d"
+
+#: src/core/ImportNode.cc:254
+#, c-format
+msgid ""
+"Unsupported file format while trying to import file '%1$s', import() at line"
+" %2$d"
+msgstr ""
+"Formato de ficheiro non compatible ao tentar importar o ficheiro «%1$s», "
+"import() na liña %2$d"
+
+#: src/core/LinearExtrudeNode.cc:60
+msgid "v when specified should be a 3d vector"
+msgstr "v, se se especifica, debe ser un vector 3D"
+
+#: src/core/LinearExtrudeNode.cc:68
+msgid "height when specified should be a number"
+msgstr "height, se se especifica, debe ser un número"
+
+#: src/core/LinearExtrudeNode.cc:84
+#, c-format
+msgid "linear_extrude(..., scale=%1$s) could not be converted"
+msgstr "Non foi posible converter linear_extrude(..., scale=%1$s)"
+
+#: src/core/OffsetNode.cc:61
+#, c-format
+msgid "Ignoring %1$s argument as %2$s is defined too."
+msgstr "Ignorando o argumento %1$s porque tamén se definiu %2$s."
+
+#: src/core/Parameters.cc:86
+#, c-format
+msgid "Specified both %1$s and %2$s"
+msgstr "Especificáronse %1$s e %2$s á vez"
+
+#: src/core/Parameters.cc:123
+#, c-format
+msgid "%1$s: missing argument %2$s"
+msgstr "%1$s: falta o argumento %2$s"
+
+#: src/core/Parameters.cc:150
+#, c-format
+msgid "%1$s(..., %2$s=%3$s) argument cannot be infinite or nan"
+msgstr "O argumento %1$s(..., %2$s=%3$s) non pode ser infinito nin nan"
+
+#: src/core/Parameters.cc:182
+#, c-format
+msgid "argument %1$s supplied more than once"
+msgstr "o argumento %1$s indicouse máis dunha vez"
+
+#: src/core/Parameters.cc:185
+#, c-format
+msgid "argument %1$s overrides positional argument"
+msgstr "o argumento %1$s substitúe un argumento posicional"
+
+#: src/core/Parameters.cc:202
+#, c-format
+msgid "variable %1$s not specified as parameter"
+msgstr "a variable %1$s non se especificou como parámetro"
+
+#: src/core/Parameters.cc:221
+msgid "Too many unnamed arguments supplied"
+msgstr "Indicáronse demasiados argumentos sen nome"
+
+#: src/core/Parameters.cc:289
+#, c-format
+msgid "%1$s() number of parameters does not match: expected %2$s, found %3$i"
+msgstr ""
+"O número de parámetros de %1$s() non coincide: esperábanse %2$s, atopáronse "
+"%3$i"
+
+#: src/core/RotateExtrudeNode.cc:71
+msgid ""
+"In future releases, rotational extrusion without \"angle\" will start at "
+"zero, the +X axis.  Set start=180 to explicitly start on the -X axis."
+msgstr ""
+"En versións futuras, a extrusión rotacional sen \"angle\" comezará en cero, "
+"no eixo +X. Defina start=180 para comezar explicitamente no eixo -X."
+
+#: src/core/ScopeContext.cc:23
+#, c-format
+msgid "Parameter %1$s is overwritten with a literal"
+msgstr "O parámetro %1$s sobrescríbese cun literal"
+
+#: src/core/ScopeContext.cc:29
+#, c-format
+msgid "assignment to %1$s"
+msgstr "asignación a %1$s"
+
+#: src/core/ScopeContext.cc:33
+#, c-format
+msgid ""
+"overwritten assignment to %1$s (this is where the assignment is evaluated)"
+msgstr "asignación sobrescrita a %1$s (aquí é onde se avalía a asignación)"
+
+#: src/core/ScopeContext.cc:36
+#, c-format
+msgid "overwriting assignment to %1$s"
+msgstr "sobrescribindo a asignación a %1$s"
+
+#: src/core/SourceFile.cc:80
+#, c-format
+msgid "Can't read font with path '%1$s'"
+msgstr "Non se pode ler o tipo de letra coa ruta «%1$s»"
+
+#: src/core/SourceFileCache.cc:102
+#, c-format
+msgid "Can't open library file '%1$s'\n"
+msgstr "Non se pode abrir o ficheiro de biblioteca «%1$s»\n"
+
+#: src/core/SurfaceNode.cc:129
+#, c-format
+msgid "bad_alloc caught for '%1$s'."
+msgstr "Capturouse bad_alloc para «%1$s»."
+
+#: src/core/SurfaceNode.cc:134
+#, c-format
+msgid "The file '%1$s' couldn't be opened."
+msgstr "Non foi posible abrir o ficheiro «%1$s»."
+
+#: src/core/SurfaceNode.cc:147 src/core/SurfaceNode.cc:159
+#, c-format
+msgid "Can't read PNG image '%1$s'"
+msgstr "Non se pode ler a imaxe PNG «%1$s»"
+
+#: src/core/SurfaceNode.cc:175
+#, c-format
+msgid "Can't open DAT file '%1$s'."
+msgstr "Non se pode abrir o ficheiro DAT «%1$s»."
+
+#: src/core/SurfaceNode.cc:211
+#, c-format
+msgid "Illegal value in '%1$s': %2$s"
+msgstr "Valor non permitido en «%1$s»: %2$s"
+
+#: src/core/TransformNode.cc:66
+#, c-format
+msgid ""
+"Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of "
+"numbers or a number"
+msgstr ""
+"Non foi posible converter o parámetro de scale(%1$s) nun número, nun vec3 ou"
+" vec2 de números ou nun número"
+
+#: src/core/TransformNode.cc:73
+#, c-format
+msgid "scale(%1$s)"
+msgstr "scale(%1$s)"
+
+#: src/core/TransformNode.cc:124
+#, c-format
+msgid ""
+"When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)"
+msgstr ""
+"Cando o parámetro a se indica como vector, ignórase v rotate(a=%1$s, v=%2$s)"
+
+#: src/core/TransformNode.cc:130 src/core/TransformNode.cc:158
+#, c-format
+msgid "Problem converting rotate(a=%1$s, v=%2$s) parameter"
+msgstr "Problema ao converter o parámetro de rotate(a=%1$s, v=%2$s)"
+
+#: src/core/TransformNode.cc:134 src/core/TransformNode.cc:163
+#, c-format
+msgid "Problem converting rotate(a=%1$s) parameter"
+msgstr "Problema ao converter o parámetro de rotate(a=%1$s)"
+
+#: src/core/TransformNode.cc:155
+#, c-format
+msgid "Problem converting rotate(..., v=%1$s) parameter"
+msgstr "Problema ao converter o parámetro de rotate(..., v=%1$s)"
+
+#: src/core/TransformNode.cc:180
+#, c-format
+msgid "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers"
+msgstr ""
+"Non foi posible converter o parámetro de mirror(%1$s) nun vec3 ou vec2 de "
+"números"
+
+#: src/core/TransformNode.cc:221
+#, c-format
+msgid ""
+"Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers"
+msgstr ""
+"Non foi posible converter o parámetro de translate(%1$s) nun vec3 ou vec2 de"
+" números"
+
+#: src/core/UserModule.cc:54
+#, c-format
+msgid "Recursion detected calling module '%1$s'"
+msgstr "Detectouse recursión ao chamar ao módulo «%1$s»"
+
+#: src/core/UserModule.cc:86
+#, c-format
+msgid "call of '%1$s(%2$s)'"
+msgstr "chamada a «%1$s(%2$s)»"
+
+#: src/core/Value.cc:583
+#, c-format
+msgid "Bad range parameter in for statement: too many elements (%1$lu)."
+msgstr ""
+"Parámetro de rango incorrecto na instrución for: demasiados elementos "
+"(%1$lu)."
+
+#: src/core/Value.cc:1142
+#, c-format
+msgid "Matrix must be rectangular. Problem at row %1$lu"
+msgstr "A matriz debe ser rectangular. Problema na fila %1$lu"
+
+#: src/core/Value.cc:1146
+#, c-format
+msgid "Vector must contain only numbers. Problem at index %1$lu"
+msgstr "O vector só debe conter números. Problema na posición %1$lu"
+
+#: src/core/Value.cc:1150
+#, c-format
+msgid "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu"
+msgstr ""
+"A matriz só debe conter números. Problema na fila %1$lu, columna %2$lu"
+
+#: src/core/builtin_functions.cc:161
+msgid "rands() range min cannot be infinite"
+msgstr "o mínimo do rango de rands() non pode ser infinito"
+
+#: src/core/builtin_functions.cc:163 src/core/builtin_functions.cc:170
+#, c-format
+msgid "resetting to %1f"
+msgstr "restablecendo a %1f"
+
+#: src/core/builtin_functions.cc:168
+msgid "rands() range max cannot be infinite"
+msgstr "o máximo do rango de rands() non pode ser infinito"
+
+#: src/core/builtin_functions.cc:181
+msgid "rands() cannot create an infinite number of results"
+msgstr "rands() non pode crear un número infinito de resultados"
+
+#: src/core/builtin_functions.cc:182
+msgid "resetting number of results to 1"
+msgstr "restablecendo o número de resultados a 1"
+
+#: src/core/builtin_functions.cc:438
+#, c-format
+msgid "ord() argument '%1$s' is not a valid utf8 string"
+msgstr "o argumento «%1$s» de ord() non é unha cadea utf8 válida"
+
+#: src/core/builtin_functions.cc:609
+#, c-format
+msgid "lookup(%1$s, ...) first argument is not a number"
+msgstr "o primeiro argumento de lookup(%1$s, ...) non é un número"
+
+#: src/core/builtin_functions.cc:742
+#, c-format
+msgid ""
+"Invalid entry in search vector at index %1$d, required number of values in "
+"the entry: %2$d. Invalid entry: %3$s"
+msgstr ""
+"Entrada non válida no vector de busca na posición %1$d; número de valores "
+"necesario na entrada: %2$d. Entrada non válida: %3$s"
+
+#: src/core/builtin_functions.cc:879
+#, c-format
+msgid "Negative parent module index (%1$d) not allowed"
+msgstr "Non se permite un índice de módulo pai negativo (%1$d)"
+
+#: src/core/builtin_functions.cc:884
+#, c-format
+msgid ""
+"Parent module index (%1$d) greater than the number of modules on the stack"
+msgstr "O índice de módulo pai (%1$d) é maior que o número de módulos na pila"
+
+#: src/core/builtin_functions.cc:901
+msgid "Incorrect arguments to norm()"
+msgstr "Argumentos incorrectos para norm()"
+
+#: src/core/builtin_functions.cc:922
+msgid "Invalid vector size of parameter for cross()"
+msgstr "Tamaño de vector non válido no parámetro de cross()"
+
+#: src/core/builtin_functions.cc:928
+msgid "Invalid value in parameter vector for cross()"
+msgstr "Valor non válido no vector de parámetros de cross()"
+
+#: src/core/builtin_functions.cc:935
+msgid "Invalid value (NaN) in parameter vector for cross()"
+msgstr "Valor non válido (NaN) no vector de parámetros de cross()"
+
+#: src/core/builtin_functions.cc:940
+msgid "Invalid value (INF) in parameter vector for cross()"
+msgstr "Valor non válido (INF) no vector de parámetros de cross()"
+
+#: src/core/builtin_functions.cc:1122
+#, c-format
+msgid "No file extension or type while trying to import '%1$s'"
+msgstr "Non hai extensión nin tipo de ficheiro ao tentar importar «%1$s»"
+
+#: src/core/builtin_functions.cc:1126
+#, c-format
+msgid "Unsupported file extension '%1$s' while trying to import '%2$s'"
+msgstr "Extensión de ficheiro «%1$s» non compatible ao tentar importar «%2$s»"
+
+#: src/core/builtin_functions.cc:1135
+#, c-format
+msgid "Unsupported file type '%1$s' while trying to import '%2$s'"
+msgstr "Tipo de ficheiro «%1$s» non compatible ao tentar importar «%2$s»"
+
+#: src/core/control.cc:61
+#, c-format
+msgid "Children index (%1$d) out of bounds (%2$d children)"
+msgstr "Índice de fillo (%1$d) fóra dos límites (%2$d fillos)"
+
+#: src/core/control.cc:73
+#, c-format
+msgid ""
+"Bad parameter type (%1$s) for children, only accept: empty, number, vector, "
+"range."
+msgstr ""
+"Tipo de parámetro incorrecto (%1$s) para children; só se aceptan: baleiro, "
+"número, vector, rango."
+
+#: src/core/control.cc:121
+#, c-format
+msgid "Bad range parameter for children: too many elements (%1$lu)"
+msgstr ""
+"Parámetro de rango incorrecto para children: demasiados elementos (%1$lu)"
+
+#: src/core/control.cc:135
+#, c-format
+msgid ""
+"Bad parameter type (%1$s) for children, only accept: empty, number, vector, "
+"range"
+msgstr ""
+"Tipo de parámetro incorrecto (%1$s) para children; só se aceptan: baleiro, "
+"número, vector, rango"
+
+#: src/core/customizer/ParameterObject.cc:438
+#, c-format
+msgid ""
+"Parameter %1$s: value %2$g is below the declared minimum %3$g, adjusting "
+"minimum value"
+msgstr ""
+"Parámetro %1$s: o valor %2$g é inferior ao mínimo declarado %3$g; axustando "
+"o valor mínimo"
+
+#: src/core/customizer/ParameterObject.cc:445
+#, c-format
+msgid ""
+"Parameter %1$s: value %2$g is above the declared maximum %3$g, adjusting "
+"maximum value"
+msgstr ""
+"Parámetro %1$s: o valor %2$g é superior ao máximo declarado %3$g; axustando "
+"o valor máximo"
+
+#: src/core/customizer/ParameterSet.cc:21
+#, c-format
+msgid "Cannot open Parameter Set '%1$s' for reading"
+msgstr "Non se pode abrir o conxunto de parámetros «%1$s» para lectura"
+
+#: src/core/customizer/ParameterSet.cc:27
+#, c-format
+msgid "Cannot open Parameter Set '%1$s': %2$s"
+msgstr "Non se pode abrir o conxunto de parámetros «%1$s»: %2$s"
+
+#: src/core/customizer/ParameterSet.cc:67
+#, c-format
+msgid "Cannot open Parameter Set '%1$s' for writing"
+msgstr "Non se pode abrir o conxunto de parámetros «%1$s» para escritura"
+
+#: src/core/customizer/ParameterSet.cc:73
+#, c-format
+msgid "Cannot write Parameter Set '%1$s': %2$s"
+msgstr "Non se pode escribir o conxunto de parámetros «%1$s»: %2$s"
+
+#: src/core/module.cc:81
+#, c-format
+msgid "module %1$s() does not support child modules%2$s%3$s"
+msgstr "o módulo %1$s() non admite módulos fillos%2$s%3$s"
+
+#: src/core/primitives.cc:89
+#, c-format
+msgid "Ignoring radius variable %1$s as diameter %2$s is defined too."
+msgstr ""
+"Ignorando a variable de raio %1$s porque tamén se definiu o diámetro %2$s."
+
+#: src/core/primitives.cc:152
+#, c-format
+msgid ""
+"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of "
+"numbers"
+msgstr ""
+"Non foi posible converter o parámetro de cube(size=%1$s, ...) nun número ou "
+"nun vec3 de números"
+
+#: src/core/primitives.cc:158
+#, c-format
+msgid "cube(size=%1$s, ...)"
+msgstr "cube(size=%1$s, ...)"
+
+#: src/core/primitives.cc:427
+#, c-format
+msgid "sphere(r=%1$s)"
+msgstr "sphere(r=%1$s)"
+
+#: src/core/primitives.cc:438
+#, c-format
+msgid "sphere(style=\"%1$s\") is not \"orig\" or \"octa\", using \"%2$s\""
+msgstr "sphere(style=\"%1$s\") non é \"orig\" nin \"octa\"; úsase \"%2$s\""
+
+#: src/core/primitives.cc:528
+msgid "Cylinder parameters ambiguous"
+msgstr "Os parámetros de cylinder son ambiguos"
+
+#: src/core/primitives.cc:544
+#, c-format
+msgid "cylinder(h=%1$s, ...)"
+msgstr "cylinder(h=%1$s, ...)"
+
+#: src/core/primitives.cc:550
+#, c-format
+msgid "cylinder(r1=%1$s, r2=%2$s, ...)"
+msgstr "cylinder(r1=%1$s, r2=%2$s, ...)"
+
+#: src/core/primitives.cc:627 src/core/primitives.cc:866
+#, c-format
+msgid "Unable to convert points = %1$s to a vector of coordinates"
+msgstr "Non foi posible converter points = %1$s nun vector de coordenadas"
+
+#: src/core/primitives.cc:637
+#, c-format
+msgid "Unable to convert points[%1$d] = %2$s to a vec3 of numbers"
+msgstr "Non foi posible converter points[%1$d] = %2$s nun vec3 de números"
+
+#: src/core/primitives.cc:648
+#, c-format
+msgid "Unable to convert faces = %1$s to a vector of vector of point indices"
+msgstr ""
+"Non foi posible converter faces = %1$s nun vector de vectores de índices de "
+"puntos"
+
+#: src/core/primitives.cc:657
+#, c-format
+msgid "Unable to convert faces[%1$d] = %2$s to a vector of numbers"
+msgstr "Non foi posible converter faces[%1$d] = %2$s nun vector de números"
+
+#: src/core/primitives.cc:665
+#, c-format
+msgid "Unable to convert faces[%1$d][%2$d] = %3$s to a number"
+msgstr "Non foi posible converter faces[%1$d][%2$d] = %3$s nun número"
+
+#: src/core/primitives.cc:673
+#, c-format
+msgid "Point index %1$d is out of bounds (from faces[%2$d][%3$d])"
+msgstr ""
+"O índice de punto %1$d está fóra dos límites (desde faces[%2$d][%3$d])"
+
+#: src/core/primitives.cc:725
+#, c-format
+msgid ""
+"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of "
+"numbers"
+msgstr ""
+"Non foi posible converter o parámetro de square(size=%1$s, ...) nun número "
+"ou nun vec2 de números"
+
+#: src/core/primitives.cc:733
+#, c-format
+msgid "square(size=%1$s, ...)"
+msgstr "square(size=%1$s, ...)"
+
+#: src/core/primitives.cc:776
+#, c-format
+msgid "circle(r=%1$s)"
+msgstr "circle(r=%1$s)"
+
+#: src/core/primitives.cc:875
+#, c-format
+msgid "Unable to convert points[%1$d] = %2$s to a vec2 of numbers"
+msgstr "Non foi posible converter points[%1$d] = %2$s nun vec2 de números"
+
+#: src/core/primitives.cc:888
+#, c-format
+msgid "Unable to convert paths[%1$d] = %2$s to a vector of numbers"
+msgstr "Non foi posible converter paths[%1$d] = %2$s nun vector de números"
+
+#: src/core/primitives.cc:896
+#, c-format
+msgid "Unable to convert paths[%1$d][%2$d] = %3$s to a number"
+msgstr "Non foi posible converter paths[%1$d][%2$d] = %3$s nun número"
+
+#: src/core/primitives.cc:904
+#, c-format
+msgid "Point index %1$d is out of bounds (from paths[%2$d][%3$d])"
+msgstr ""
+"O índice de punto %1$d está fóra dos límites (desde paths[%2$d][%3$d])"
+
+#: src/core/primitives.cc:916
+#, c-format
+msgid "Unable to convert paths = %1$s to a vector of vector of point indices"
+msgstr ""
+"Non foi posible converter paths = %1$s nun vector de vectores de índices de "
+"puntos"
+
+#: src/geometry/ClipperUtils.cc:165
+msgid "Range check failed for polygon. skipping"
+msgstr "Fallou a comprobación de rango do polígono. Omitindo"
+
+#: src/geometry/Geometry.cc:55
+msgid "Mixing 2D and 3D objects is not supported."
+msgstr "Non se admite mesturar obxectos 2D e 3D."
+
+#: src/geometry/GeometryCache.cc:30
+#, c-format
+msgid "Geometry Cache %1$s: %2$s (%3$d bytes)"
+msgstr "Caché de xeometría %1$s: %2$s (%3$d bytes)"
+
+#: src/geometry/GeometryCache.cc:58
+#, c-format
+msgid "Geometries in cache: %1$d"
+msgstr "Xeometrías na caché: %1$d"
+
+#: src/geometry/GeometryCache.cc:59
+#, c-format
+msgid "Geometry cache size in bytes: %1$d"
+msgstr "Tamaño da caché de xeometría en bytes: %1$d"
+
+#: src/geometry/GeometryEvaluator.cc:121
+msgid "Mixing 2D and 3D objects is not supported"
+msgstr "Non se admite mesturar obxectos 2D e 3D"
+
+#: src/geometry/GeometryEvaluator.cc:157
+msgid "fill() not yet implemented for 3D"
+msgstr "fill() aínda non está implementado para 3D"
+
+#: src/geometry/GeometryEvaluator.cc:263
+#, c-format
+msgid "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s"
+msgstr "GeometryEvaluator::applyHull2D() durante CGAL::convex_hull_2(): %1$s"
+
+#: src/geometry/GeometryEvaluator.cc:320
+msgid "Ignoring 3D child object for 2D operation"
+msgstr "Ignorando un obxecto fillo 3D nunha operación 2D"
+
+#: src/geometry/GeometryEvaluator.cc:360
+msgid "GeometryEvaluator: Node didn't fit into cache."
+msgstr "GeometryEvaluator: o nodo non cabía na caché."
+
+#: src/geometry/GeometryEvaluator.cc:402
+msgid "Ignoring 2D child object for 3D operation"
+msgstr "Ignorando un obxecto fillo 2D nunha operación 3D"
+
+#: src/geometry/GeometryEvaluator.cc:448
+#, c-format
+msgid "Unknown boolean operation %1$d"
+msgstr "Operación booleana descoñecida %1$d"
+
+#: src/geometry/PolySetBuilder.cc:111
+#: src/geometry/cgal/cgalutils-project.cc:241 src/io/export_stl.cc:206
+msgid "Nef->PolySet failed"
+msgstr "Fallou Nef->PolySet"
+
+#: src/geometry/PolySetUtils.cc:162
+msgid "PolySet has degenerate polygons"
+msgstr "O PolySet ten polígonos dexenerados"
+
+#: src/geometry/PolySetUtils.cc:193 src/geometry/cgal/cgalutils.cc:529
+msgid "Nef->PolySet failed."
+msgstr "Fallou Nef->PolySet."
+
+#: src/geometry/Polygon2d.cc:94
+msgid "Scaling a 2D object with 0 - removing object"
+msgstr "Escalando un obxecto 2D por 0 - eliminando o obxecto"
+
+#: src/geometry/cgal/CGALCache.cc:27
+#, c-format
+msgid "CGAL Cache hit: %1$s (%2$d bytes)"
+msgstr "Acerto na caché de CGAL: %1$s (%2$d bytes)"
+
+#: src/geometry/cgal/CGALCache.cc:49
+#, c-format
+msgid "CGAL Cache %1$s: %2$s (%3$d bytes)"
+msgstr "Caché de CGAL %1$s: %2$s (%3$d bytes)"
+
+#: src/geometry/cgal/CGALCache.cc:82
+#, c-format
+msgid "CGAL Polyhedrons in cache: %1$d"
+msgstr "Poliedros CGAL na caché: %1$d"
+
+#: src/geometry/cgal/CGALCache.cc:83
+#, c-format
+msgid "CGAL cache size in bytes: %1$d"
+msgstr "Tamaño da caché de CGAL en bytes: %1$d"
+
+#: src/geometry/cgal/CGALNefGeometry.cc:110
+msgid "Scaling a 3D object with 0 - removing object"
+msgstr "Escalando un obxecto 3D por 0 - eliminando o obxecto"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:81
+#, c-format
+msgid "CGAL error in CGALUtils::applyUnion3D: %1$s"
+msgstr "Erro de CGAL en CGALUtils::applyUnion3D: %1$s"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:130
+#: src/geometry/manifold/manifold-applyops.cc:98
+#, c-format
+msgid "Unsupported CGAL operator: %1$d"
+msgstr "Operador de CGAL non compatible: %1$d"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:142
+#, c-format
+msgid "CGAL error in CGALUtils::applyOperator3D %1$s: %2$s"
+msgstr "Erro de CGAL en CGALUtils::applyOperator3D %1$s: %2$s"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:151
+#, c-format
+msgid "exception in CGALUtils::applyOperator3D %1$s: %2$s"
+msgstr "excepción en CGALUtils::applyOperator3D %1$s: %2$s"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:211
+#, c-format
+msgid "CGAL error in applyHull3D(): %1$s"
+msgstr "Erro de CGAL en applyHull3D(): %1$s"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:125
+#, c-format
+msgid "Failed to add face with %1$lu vertices!"
+msgstr "Non foi posible engadir unha cara con %1$lu vértices!"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:142
+msgid ""
+"Attempted to remove too many vertices around this copied face, remesh "
+"aborted!"
+msgstr ""
+"Tentouse eliminar demasiados vértices arredor desta cara copiada; abortouse "
+"a remallaxe!"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:172
+msgid ""
+"Attempted to remove too many vertices around this added face, remesh "
+"aborted!"
+msgstr ""
+"Tentouse eliminar demasiados vértices arredor desta cara engadida; abortouse"
+" a remallaxe!"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:181
+msgid "Remeshing output isn't valid"
+msgstr "O resultado da remallaxe non é válido"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:185
+msgid "Remeshing output isn't closed"
+msgstr "O resultado da remallaxe non está pechado"
+
+#: src/geometry/cgal/cgalutils-polyhedron.cc:297
+#, c-format
+msgid "CGAL error in CGAL_Nef_polyhedron3(): %1$s. Attempting union..."
+msgstr "Erro de CGAL en CGAL_Nef_polyhedron3(): %1$s. Tentando unha unión..."
+
+#: src/geometry/cgal/cgalutils-polyhedron.cc:322
+#, c-format
+msgid ""
+"CGALUtils::convertSurfaceMeshToNef: Discarded %1$d facets during Nef "
+"conversion."
+msgstr ""
+"CGALUtils::convertSurfaceMeshToNef: descartáronse %1$d facetas durante a "
+"conversión a Nef."
+
+#: src/geometry/cgal/cgalutils-polyhedron.cc:342
+#, c-format
+msgid "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s"
+msgstr "Erro de CGAL en CGALUtils::createPolyhedronFromPolySet: %1$s"
+
+#: src/geometry/cgal/cgalutils-project.cc:203
+#, c-format
+msgid " CGAL error in CGALUtils::project during bigbox intersection: %1$s"
+msgstr ""
+" Erro de CGAL en CGALUtils::project durante a intersección coa caixa grande:"
+" %1$s"
+
+#: src/geometry/cgal/cgalutils-project.cc:209
+msgid "Projection() failed."
+msgstr "Fallou projection()."
+
+#: src/geometry/cgal/cgalutils-project.cc:231
+#, c-format
+msgid "CGAL error in CGALUtils::project while flattening: %1$s"
+msgstr "Erro de CGAL en CGALUtils::project ao aplanar: %1$s"
+
+#: src/geometry/cgal/cgalutils-triangulate.cc:133
+#, c-format
+msgid "CGAL error in Polygon2d::tesselate(): %1$s"
+msgstr "Erro de CGAL en Polygon2d::tesselate(): %1$s"
+
+#: src/geometry/cgal/cgalutils.cc:98
+msgid "The given mesh is not closed! Unable to convert to CGALNefGeometry."
+msgstr ""
+"A malla indicada non está pechada! Non se pode converter en CGALNefGeometry."
+
+#: src/geometry/cgal/cgalutils.cc:100
+msgid "The given mesh is invalid! Unable to convert to CGALNefGeometry."
+msgstr ""
+"A malla indicada non é válida! Non se pode converter en CGALNefGeometry."
+
+#: src/geometry/cgal/cgalutils.cc:111
+msgid "PolySet has nonplanar faces. Attempting alternate construction"
+msgstr "O PolySet ten caras non planas. Tentando unha construción alternativa"
+
+#: src/geometry/cgal/cgalutils.cc:114
+#, c-format
+msgid "CGAL error in CGAL_Nef_polyhedron3(): %1$s"
+msgstr "Erro de CGAL en CGAL_Nef_polyhedron3(): %1$s"
+
+#: src/geometry/cgal/cgalutils.cc:127
+#, c-format
+msgid ""
+"Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s"
+msgstr ""
+"Fallou a construción alternativa. Erro de CGAL en CGAL_Nef_polyhedron3(): "
+"%1$s"
+
+#: src/geometry/cgal/cgalutils.cc:340
+#, c-format
+msgid "Non-manifold mesh encountered: %1$d unconnected edges"
+msgstr "Atopouse unha malla non variedade: %1$d arestas non conectadas"
+
+#: src/geometry/cgal/cgalutils.cc:406
+#, c-format
+msgid "Non-manifold mesh created: %1$d unconnected edges"
+msgstr "Creouse unha malla non variedade: %1$d arestas non conectadas"
+
+#: src/geometry/cgal/cgalutils.cc:485
+msgid "Resize in direction normal to flat object is not implemented"
+msgstr ""
+"O redimensionamento en dirección normal a un obxecto plano non está "
+"implementado"
+
+#: src/geometry/manifold/ManifoldGeometry.cc:254
+#, c-format
+msgid "CGAL error in ManifoldGeometry::toPolyhedron(): %1$s"
+msgstr "Erro de CGAL en ManifoldGeometry::toPolyhedron(): %1$s"
+
+#: src/geometry/manifold/ManifoldGeometry.cc:310
+#, c-format
+msgid "Nef minkoswki operation failed: %1$s\n"
+msgstr "Fallou a operación de Minkowski con Nef: %1$s\n"
+
+#: src/geometry/manifold/ManifoldGeometry.cc:312
+msgid "Nef minkowski hard-crashed"
+msgstr "A operación de Minkowski con Nef fallou gravemente"
+
+#: src/geometry/manifold/manifold-applyops-minkowski.cc:109
+msgid "Minkowski: Nef polyhedron converted from mesh is invalid!"
+msgstr "Minkowski: o poliedro Nef convertido desde a malla non é válido!"
+
+#: src/geometry/manifold/manifold-applyops-minkowski.cc:244
+#, c-format
+msgid ""
+"[manifold] Minkowski failed with error, falling back to Nef operation: "
+"%1$s\n"
+msgstr ""
+"[manifold] Minkowski fallou cun erro; recorrendo á operación Nef: %1$s\n"
+
+#: src/geometry/manifold/manifold-applyops-minkowski.cc:246
+msgid "[manifold] Minkowski hard-crashed, falling back to Nef operation."
+msgstr "[manifold] Minkowski fallou gravemente; recorrendo á operación Nef."
+
+#: src/geometry/manifold/manifoldutils.cc:147
+#, c-format
+msgid ""
+"PolySet -> Manifold conversion failed: %1$s\n"
+"Trying to repair and reconstruct mesh.."
+msgstr ""
+"Fallou a conversión PolySet -> Manifold: %1$s\n"
+"Tentando reparar e reconstruír a malla.."
+
+#: src/geometry/manifold/manifoldutils.cc:183
+msgid "[manifold] Input mesh is not closed!"
+msgstr "[manifold] A malla de entrada non está pechada!"
+
+#: src/geometry/manifold/manifoldutils.cc:191
+#, c-format
+msgid "[manifold] CGAL error: %1$s"
+msgstr "[manifold] Erro de CGAL: %1$s"
+
+#: src/geometry/manifold/manifoldutils.cc:277
+#, c-format
+msgid "[manifold] Surface_mesh -> Manifold conversion failed: %1$s"
+msgstr "[manifold] Fallou a conversión Surface_mesh -> Manifold: %1$s"
+
+#: src/geometry/rotate_extrude.cc:96
+#, c-format
+msgid ""
+"Children of rotate_extrude() may not lie across the Y axis (Range of X "
+"coords for all children [%1$.2f : %2$.2f])"
+msgstr ""
+"Os fillos de rotate_extrude() non poden cruzar o eixo Y (rango de "
+"coordenadas X de todos os fillos [%1$.2f : %2$.2f])"
+
+#: src/glview/Camera.cc:115
+#, c-format
+msgid "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers"
+msgstr "Non foi posible converter $vpr=%1$s nun vec3 ou vec2 de números"
+
+#: src/glview/Camera.cc:126
+#, c-format
+msgid "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers"
+msgstr "Non foi posible converter $vpt=%1$s nun vec3 ou vec2 de números"
+
+#: src/glview/Camera.cc:137
+#, c-format
+msgid "Unable to convert $vpd=%1$s to a number"
+msgstr "Non foi posible converter $vpd=%1$s nun número"
+
+#: src/glview/Camera.cc:147
+#, c-format
+msgid "Unable to convert $vpf=%1$s to a number"
+msgstr "Non foi posible converter $vpf=%1$s nun número"
+
+#: src/glview/Camera.cc:152
+msgid "Viewall and autocenter disabled in favor of $vp*"
+msgstr "Viewall e autocenter desactivados en favor de $vp*"
+
+#: src/glview/ColorMap.cc:76
+#, c-format
+msgid "Error reading color scheme file: '%1$s': %2$s"
+msgstr "Erro ao ler o ficheiro de esquema de cores: «%1$s»: %2$s"
+
+#: src/glview/CsgInfo.cc:23 src/gui/MainWindow.cc:1105
+msgid "Compiling design (CSG Products normalization)..."
+msgstr "Compilando o deseño (normalización dos produtos CSG)..."
+
+#: src/glview/CsgInfo.cc:30
+#, c-format
+msgid "Normalized CSG tree has %1$d elements"
+msgstr "A árbore CSG normalizada ten %1$d elementos"
+
+#: src/glview/CsgInfo.cc:33 src/gui/MainWindow.cc:1119
+msgid "CSG normalization resulted in an empty tree"
+msgstr "A normalización CSG deu como resultado unha árbore baleira"
+
+#: src/glview/CsgInfo.cc:38
+#, c-format
+msgid "Compiling highlights (%1$i CSG Trees)..."
+msgstr "Compilando os realces (%1$i árbores CSG)..."
+
+#: src/glview/CsgInfo.cc:47
+#, c-format
+msgid "Compiling background (%1$i CSG Trees)..."
+msgstr "Compilando o fondo (%1$i árbores CSG)..."
+
+#: src/glview/GLView.cc:167
+#, c-format
+msgid "GLView: unknown colorscheme %1$s"
+msgstr "GLView: esquema de cores descoñecido %1$s"
+
+#: src/glview/OffscreenContextCGL.cc:36
+#, c-format
+msgid "CGLSetCurrentContext() failed: %1$s (%2$d)"
+msgstr "Fallou CGLSetCurrentContext(): %1$s (%2$d)"
+
+#: src/glview/OffscreenContextCGL.cc:65
+#, c-format
+msgid "CGLChoosePixelFormat() failed: %1$s (%2$d)"
+msgstr "Fallou CGLChoosePixelFormat(): %1$s (%2$d)"
+
+#: src/glview/OffscreenContextEGL.cc:165
+msgid "gladLoaderLoadEGL(nullptr): Unable to load EGL"
+msgstr "gladLoaderLoadEGL(nullptr): non foi posible cargar EGL"
+
+#: src/glview/OffscreenContextEGL.cc:206
+msgid "No EGL display found"
+msgstr "Non se atopou ningunha pantalla EGL"
+
+#: src/glview/OffscreenContextEGL.cc:212
+#, c-format
+msgid "Unable to initialize EGL: %1$s"
+msgstr "Non foi posible inicializar EGL: %1$s"
+
+#: src/glview/OffscreenContextEGL.cc:221
+msgid "gladLoaderLoadEGL(eglDisplay): Unable to reload EGL"
+msgstr "gladLoaderLoadEGL(eglDisplay): non foi posible recargar EGL"
+
+#: src/glview/OffscreenContextEGL.cc:232
+#, c-format
+msgid "Failed to choose config (eglError: %1$x)"
+msgstr "Non foi posible escoller a configuración (eglError: %1$x)"
+
+#: src/glview/OffscreenContextEGL.cc:236
+msgid "eglBindAPI() failed!"
+msgstr "Fallou eglBindAPI()!"
+
+#: src/glview/OffscreenContextEGL.cc:242
+#, c-format
+msgid "Unable to create EGL surface (eglError: %1$x)"
+msgstr "Non foi posible crear a superficie EGL (eglError: %1$x)"
+
+#: src/glview/OffscreenContextEGL.cc:260
+#, c-format
+msgid "Unable to create EGL context (eglError: %1$x)"
+msgstr "Non foi posible crear o contexto EGL (eglError: %1$x)"
+
+#: src/glview/OffscreenContextFactory.cc:75
+msgid "GLES is not supported on macOS"
+msgstr "GLES non é compatible con macOS"
+
+#: src/glview/OffscreenContextFactory.cc:78
+msgid "Compatibility context is not available on macOS"
+msgstr "O contexto de compatibilidade non está dispoñible en macOS"
+
+#: src/glview/OffscreenContextFactory.cc:116
+msgid "GLES is not supported on Windows"
+msgstr "GLES non é compatible con Windows"
+
+#: src/glview/OffscreenContextFactory.cc:127
+#, c-format
+msgid "GL context provider '%1$s' not found"
+msgstr "Non se atopou o provedor de contexto GL «%1$s»"
+
+#: src/glview/OffscreenContextGLX.cc:97
+msgid "glXChooseFBConfig() failed"
+msgstr "Fallou glXChooseFBConfig()"
+
+#: src/glview/OffscreenContextGLX.cc:102
+msgid "glXGetVisualFromFBConfig failed"
+msgstr "Fallou glXGetVisualFromFBConfig"
+
+#: src/glview/OffscreenContextGLX.cc:124
+#, c-format
+msgid "XCreateWindow() failed: %1$s"
+msgstr "Fallou XCreateWindow(): %1$s"
+
+#: src/glview/OffscreenContextGLX.cc:141
+msgid "Unable to create GLX context using glXCreateContextAttribsARB()"
+msgstr "Non foi posible crear o contexto GLX con glXCreateContextAttribsARB()"
+
+#: src/glview/OffscreenContextGLX.cc:147
+msgid "Unable to create GLX context using glXCreateNewContext()"
+msgstr "Non foi posible crear o contexto GLX con glXCreateNewContext()"
+
+#: src/glview/OffscreenContextGLX.cc:173
+msgid "Unable to open a connection to the X server."
+msgstr "Non foi posible abrir unha conexión co servidor X."
+
+#: src/glview/OffscreenContextGLX.cc:175
+#, c-format
+msgid "  DISPLAY=%1$s"
+msgstr "  DISPLAY=%1$s"
+
+#: src/glview/OffscreenContextGLX.cc:181
+msgid "GLAD: Unable to load GLX"
+msgstr "GLAD: non foi posible cargar GLX"
+
+#: src/glview/OffscreenContextGLX.cc:193
+#, c-format
+msgid "Error: GLX version 1.3 functions missing. Your GLX version: %1$d.%2$d"
+msgstr "Erro: faltan as funcións de GLX 1.3. A súa versión de GLX: %1$d.%2$d"
+
+#: src/glview/OffscreenContextOSMesa.cc:51
+msgid "OSMesa context is null"
+msgstr "O contexto OSMesa é nulo"
+
+#: src/glview/OffscreenContextOSMesa.cc:55
+msgid "OSMesaMakeCurrent() failed"
+msgstr "Fallou OSMesaMakeCurrent()"
+
+#: src/glview/OffscreenContextOSMesa.cc:90
+#, c-format
+msgid "OSMesaCreateContext failed for GL %1$d.%2$d"
+msgstr "Fallou OSMesaCreateContext para GL %1$d.%2$d"
+
+#: src/glview/OffscreenView.cc:119
+msgid "OpenSCAD recommended OpenGL version is 2.0."
+msgstr "A versión de OpenGL recomendada para OpenSCAD é a 2.0."
+
+#: src/glview/PolySetRenderer.cc:101
+#, c-format
+msgid "Unsupported geom '%1$s' in PolySetRenderer"
+msgstr "Xeometría non compatible «%1$s» en PolySetRenderer"
+
+#: src/glview/PolySetRenderer.cc:221
+msgid "PolySetRenderer::prepare() called with both polysets and polygons"
+msgstr "Chamouse a PolySetRenderer::prepare() con polysets e polígonos á vez"
+
+#: src/glview/Renderer.cc:29 src/glview/ShaderUtils.cc:21
+#, c-format
+msgid "Cannot open shader source file: '%1$s'"
+msgstr "Non se pode abrir o ficheiro fonte do shader: «%1$s»"
+
+#: src/glview/cgal/CGALRenderer.cc:244
+msgid "CGALRenderer::prepare() called with both polysets and polygons"
+msgstr "Chamouse a CGALRenderer::prepare() con polysets e polígonos á vez"
+
+#: src/glview/fbo.cc:43
+#, c-format
+msgid "glCheckFramebufferStatus(): %1$s"
+msgstr "glCheckFramebufferStatus(): %1$s"
+
+#: src/glview/fbo.cc:57
+msgid "Framebuffer Objects not supported"
+msgstr "Os Framebuffer Objects non son compatibles"
+
+#: src/glview/fbo.cc:80
+msgid "Problem with OpenGL framebuffer after specifying color render buffer."
+msgstr ""
+"Problema co framebuffer de OpenGL despois de especificar o búfer de "
+"renderizado de cor."
+
+#: src/glview/fbo.cc:92
+msgid "Problem with OpenGL framebuffer after specifying depth render buffer."
+msgstr ""
+"Problema co framebuffer de OpenGL despois de especificar o búfer de "
+"renderizado de profundidade."
+
+#: src/glview/preview/CSGTreeNormalizer.cc:100
+#, c-format
+msgid "Normalized tree is growing past %1$d elements. Aborting normalization.\n"
+msgstr ""
+"A árbore normalizada supera os %1$d elementos. Abortando a normalización.\n"
+
+#: src/glview/system-gl.h:34
+#, c-format
+msgid ""
+"OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
+"              %5$s\n"
+msgstr ""
+"Erro de OpenGL: %1$s (0x%2$04x) en %3$s:%4$d\n"
+"              %5$s\n"
+
+#: src/gui/CaCerts.h:59
+#, c-format
+msgid "Could not open CA certificate file: %1$s"
+msgstr "Non foi posible abrir o ficheiro de certificados de CA: %1$s"
+
+#: src/gui/CaCerts.h:77
+#, c-format
+msgid "Malformed CA certificate file, missing end marker: %1$s"
+msgstr ""
+"Ficheiro de certificados de CA mal formado, falta o marcador final: %1$s"
+
+#: src/gui/CaCerts.h:84
+#, c-format
+msgid "Skipping unparseable certificate in CA certificate file: %1$s"
+msgstr ""
+"Omitindo un certificado que non se pode analizar no ficheiro de certificados"
+" de CA: %1$s"
+
+#: src/gui/CaCerts.h:92
+#, c-format
+msgid "No valid certificates found in CA certificate file: %1$s"
+msgstr ""
+"Non se atoparon certificados válidos no ficheiro de certificados de CA: %1$s"
+
+#: src/gui/Console.cc:194
+#, c-format
+msgid "Console content saved to '%1$s'."
+msgstr "Gardouse o contido da consola en «%1$s»."
+
+#: src/gui/EditorColorMap.cc:20
+#, c-format
+msgid "Error reading color scheme file '%1$s': %2$s"
+msgstr "Erro ao ler o ficheiro de esquema de cores «%1$s»: %2$s"
+
+#: src/gui/ExternalToolInterface.cc:80
+msgid "Could not open temporary file."
+msgstr "Non foi posible abrir o ficheiro temporal."
+
+#: src/gui/ExternalToolInterface.cc:90
+#, c-format
+msgid "Exported temporary file %1$s"
+msgstr "Exportouse o ficheiro temporal %1$s"
+
+#: src/gui/ExternalToolInterface.cc:122
+#, c-format
+msgid "Configured temporary directory does not exist: '%1$s'"
+msgstr "O directorio temporal configurado non existe: «%1$s»"
+
+#: src/gui/ExternalToolInterface.cc:138
+msgid ""
+"No application configured, check Preferences -> 3D Print -> Local "
+"Application"
+msgstr ""
+"Non hai ningunha aplicación configurada; comprobe Preferencias -> Impresión "
+"3D -> Aplicación local"
+
+#: src/gui/ExternalToolInterface.cc:167
+#, c-format
+msgid "Could not start local application '%1$s': %2$s"
+msgstr "Non foi posible iniciar a aplicación local «%1$s»: %2$s"
+
+#: src/gui/ExternalToolInterface.cc:171
+#, c-format
+msgid "Output: %1$s"
+msgstr "Saída: %1$s"
+
+#: src/gui/ExternalToolInterface.cc:182
+msgid "Unable to open exported STL file."
+msgstr "Non foi posible abrir o ficheiro STL exportado."
+
+#: src/gui/GeometryWorker.cc:63
+msgid "Rendering cancelled due to unknown manifold error."
+msgstr "Renderización cancelada por un erro descoñecido de manifold."
+
+#: src/gui/GeometryWorker.cc:67
+msgid "Rendering cancelled."
+msgstr "Renderización cancelada."
+
+#: src/gui/GeometryWorker.cc:69
+msgid "Rendering cancelled on first warning."
+msgstr "Renderización cancelada no primeiro aviso."
+
+#: src/gui/GeometryWorker.cc:71
+#, c-format
+msgid "Rendering cancelled by exception %1$s"
+msgstr "Renderización cancelada pola excepción %1$s"
+
+#: src/gui/GeometryWorker.cc:73
+msgid "Rendering cancelled by unknown exception."
+msgstr "Renderización cancelada por unha excepción descoñecida."
+
+#: src/gui/MainWindow.cc:239
+#, c-format
+msgid "%1$s export finished: %2$s"
+msgstr "Exportación %1$s finalizada: %2$s"
+
+#: src/gui/MainWindow.cc:267
+#, c-format
+msgid "Unknown print service \"%1$s\""
+msgstr "Servizo de impresión descoñecido \"%1$s\""
+
+#: src/gui/MainWindow.cc:815
+#, c-format
+msgid "Used file cache size: %1$d files"
+msgstr "Tamaño usado da caché de ficheiros: %1$d ficheiros"
+
+#: src/gui/MainWindow.cc:1019
+msgid "Compiling design (CSG Tree generation)..."
+msgstr "Compilando o deseño (xeración da árbore CSG)..."
+
+#: src/gui/MainWindow.cc:1047 src/openscad.cc:440
+msgid "More than one Root Modifier (!)"
+msgstr "Hai máis dun modificador raíz (!)"
+
+#: src/gui/MainWindow.cc:1058
+msgid "Compilation failed! (no top level object found)"
+msgstr ""
+"Fallou a compilación! (non se atopou ningún obxecto de nivel superior)"
+
+#: src/gui/MainWindow.cc:1060
+msgid "Compilation failed!"
+msgstr "Fallou a compilación!"
+
+#: src/gui/MainWindow.cc:1076
+msgid "Compiling design (CSG Products generation)..."
+msgstr "Compilando o deseño (xeración dos produtos CSG)..."
+
+#: src/gui/MainWindow.cc:1098
+msgid "CSG generation cancelled."
+msgstr "Xeración CSG cancelada."
+
+#: src/gui/MainWindow.cc:1100
+msgid "CSG generation cancelled due to hardwarning being enabled."
+msgstr ""
+"Xeración CSG cancelada porque está activado deterse no primeiro aviso."
+
+#: src/gui/MainWindow.cc:1126
+#, c-format
+msgid "Compiling highlights (%1$d CSG Trees)..."
+msgstr "Compilando os realces (%1$d árbores CSG)..."
+
+#: src/gui/MainWindow.cc:1142
+#, c-format
+msgid "Compiling background (%1$d CSG Trees)..."
+msgstr "Compilando o fondo (%1$d árbores CSG)..."
+
+#: src/gui/MainWindow.cc:1158 src/gui/MainWindow.cc:1163
+#, c-format
+msgid "Normalized tree has %1$d elements!"
+msgstr "A árbore normalizada ten %1$d elementos!"
+
+#: src/gui/MainWindow.cc:1159
+msgid "OpenCSG rendering has been disabled."
+msgstr "Desactivouse a renderización con OpenCSG."
+
+#: src/gui/MainWindow.cc:1170
+msgid "Compile and preview finished."
+msgstr "Compilación e previsualización finalizadas."
+
+#: src/gui/MainWindow.cc:1294
+#, c-format
+msgid "Saved backup file: %1$s"
+msgstr "Gardouse a copia de seguranza: %1$s"
+
+#: src/gui/MainWindow.cc:1301
+#, c-format
+msgid "Cannot create backup path: %1$s"
+msgstr "Non se pode crear a ruta da copia de seguranza: %1$s"
+
+#: src/gui/MainWindow.cc:1324
+msgid "Failed to create backup file"
+msgstr "Non foi posible crear a copia de seguranza"
+
+#: src/gui/MainWindow.cc:1376
+#, c-format
+msgid "Creating Python virtual environment in '%1$s'..."
+msgstr "Creando o contorno virtual de Python en «%1$s»..."
+
+#: src/gui/MainWindow.cc:1382
+msgid "Python virtual environment creation successfull."
+msgstr "O contorno virtual de Python creouse correctamente."
+
+#: src/gui/MainWindow.cc:1387
+msgid "Python virtual environment creation failed."
+msgstr "Fallou a creación do contorno virtual de Python."
+
+#: src/gui/MainWindow.cc:1422
+#, c-format
+msgid "Library path %1$s doesn't exist. Creating"
+msgstr "A ruta de bibliotecas %1$s non existe. Creándoa"
+
+#: src/gui/MainWindow.cc:1424
+#, c-format
+msgid "Cannot create library path: %1$s"
+msgstr "Non se pode crear a ruta de bibliotecas: %1$s"
+
+#: src/gui/MainWindow.cc:1428
+#, c-format
+msgid "Opening file browser for %1$s"
+msgstr "Abrindo o explorador de ficheiros para %1$s"
+
+#: src/gui/MainWindow.cc:1767 src/openscad.cc:602
+msgid "Python is not enabled"
+msgstr "Python non está activado"
+
+#: src/gui/MainWindow.cc:1777
+#, c-format
+msgid "Running %1$s without venv."
+msgstr "Executando %1$s sen venv."
+
+#: src/gui/MainWindow.cc:1780
+#, c-format
+msgid "Running %1$s in venv '%2$s'."
+msgstr "Executando %1$s no venv «%2$s»."
+
+#: src/gui/MainWindow.cc:1880
+msgid "Parsing design (AST generation)..."
+msgstr "Analizando o deseño (xeración da AST)..."
+
+#: src/gui/MainWindow.cc:1987
+#, c-format
+msgid "Selected File format: %1$s"
+msgstr "Formato de ficheiro seleccionado: %1$s"
+
+#: src/gui/MainWindow.cc:1992
+#, c-format
+msgid "Error: Unable to create service: %1$d %2$s %3$d"
+msgstr "Erro: non foi posible crear o servizo: %1$d %2$s %3$d"
+
+#: src/gui/MainWindow.cc:2020
+#, c-format
+msgid "Rendering Polygon Mesh using %1$s..."
+msgstr "Renderizando a malla poligonal con %1$s..."
+
+#: src/gui/MainWindow.cc:2050
+msgid "Rendering finished."
+msgstr "Renderización finalizada."
+
+#: src/gui/MainWindow.cc:2072
+msgid "No top level geometry to render"
+msgstr "Non hai xeometría de nivel superior para renderizar"
+
+#: src/gui/MainWindow.cc:2409
+msgid "Execution aborted"
+msgstr "Execución abortada"
+
+#: src/gui/MainWindow.cc:2419
+msgid "Compilation aborted by unknown exception"
+msgstr "Compilación abortada por unha excepción descoñecida"
+
+#: src/gui/MainWindow.cc:2421
+#, c-format
+msgid "Compilation aborted by exception: %1$s"
+msgstr "Compilación abortada pola excepción: %1$s"
+
+#: src/gui/MainWindow.cc:2478
+msgid "Nothing to validate! Try building first (press F6)."
+msgstr "Non hai nada que validar! Probe a construír primeiro (prema F6)."
+
+#: src/gui/MainWindow.cc:2483
+msgid "Current top level object is not a 3D object."
+msgstr "O obxecto de nivel superior actual non é un obxecto 3D."
+
+#: src/gui/MainWindow.cc:2498
+#, c-format
+msgid "Valid:      %1$6s"
+msgstr "Válido:     %1$6s"
+
+#: src/gui/MainWindow.cc:2507
+msgid "Nothing to export! Try rendering first (press F6)"
+msgstr "Non hai nada que exportar! Probe a renderizar primeiro (prema F6)"
+
+#: src/gui/MainWindow.cc:2534 src/openscad.cc:206
+#, c-format
+msgid "Current top level object is not a %1$dD object."
+msgstr "O obxecto de nivel superior actual non é un obxecto %1$dD."
+
+#: src/gui/MainWindow.cc:2539 src/openscad.cc:210
+msgid "Current top level object is empty."
+msgstr "O obxecto de nivel superior actual está baleiro."
+
+#: src/gui/MainWindow.cc:2547
+msgid ""
+"Object may not be a valid 2-manifold and may need repair! See "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+msgstr ""
+"Pode que o obxecto non sexa unha 2-variedade válida e que precise "
+"reparación! Consulte "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+
+#: src/gui/MainWindow.cc:2555
+#, c-format
+msgid ""
+"Object may not be a valid manifold and may need repair! Error message: %1$s."
+" See "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+msgstr ""
+"Pode que o obxecto non sexa unha variedade válida e que precise reparación! "
+"Mensaxe de erro: %1$s. Consulte "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+
+#: src/gui/MainWindow.cc:2624
+msgid "Nothing to export. Please try compiling first."
+msgstr "Non hai nada que exportar. Probe a compilar primeiro."
+
+#: src/gui/MainWindow.cc:2660
+#, c-format
+msgid "Can't open file \"%1$s\" for export image"
+msgstr "Non se pode abrir o ficheiro \"%1$s\" para exportar a imaxe"
+
+#: src/gui/MainWindow.cc:2702
+msgid "Caches Flushed"
+msgstr "Cachés baleiradas"
+
+#: src/gui/MouseSelector.cc:77
+msgid ""
+"MouseSelector: Failed to create framebuffer; disabling mouse selection."
+msgstr ""
+"MouseSelector: non foi posible crear o framebuffer; desactivando a selección"
+" co rato."
+
+#: src/gui/OctoPrint.cc:192
+#, c-format
+msgid "Uploaded successfully to %1$s"
+msgstr "Subiuse correctamente a %1$s"
+
+#: src/gui/OctoPrint.cc:219
+msgid "Slice command successfully executed."
+msgstr "A orde de laminado executouse correctamente."
+
+#: src/gui/PrintInitDialog.cc:95
+msgid "No external print services found"
+msgstr "Non se atoparon servizos de impresión externos"
+
+#: src/gui/PrintInitDialog.cc:219
+#, c-format
+msgid "fileformat::fromIdentifier error: id '%1$s' not recognized"
+msgstr "Erro en fileformat::fromIdentifier: non se recoñece o id «%1$s»"
+
+#: src/gui/PrintService.cc:196
+#, c-format
+msgid "Upload finished, opening URL %1$s."
+msgstr "Subida finalizada; abrindo o URL %1$s."
+
+#: src/gui/ScintillaEditor.cc:285
+#, c-format
+msgid "Error reading template file '%1$s': %2$s"
+msgstr "Erro ao ler o ficheiro de modelo «%1$s»: %2$s"
+
+#: src/gui/TabManager.cc:580
+#, c-format
+msgid "Failed to open file %1$s: %2$s"
+msgstr "Non foi posible abrir o ficheiro %1$s: %2$s"
+
+#: src/gui/TabManager.cc:588
+#, c-format
+msgid "Loaded design '%1$s'."
+msgstr "Cargouse o deseño «%1$s»."
+
+#: src/gui/TabManager.cc:719 src/gui/TabManager.cc:830
+#, c-format
+msgid "Saved design '%1$s'."
+msgstr "Gardouse o deseño «%1$s»."
+
+#: src/io/DxfData.cc:85
+#, c-format
+msgid "Can't open DXF file '%1$s'."
+msgstr "Non se pode abrir o ficheiro DXF «%1$s»."
+
+#: src/io/DxfData.cc:144
+#, c-format
+msgid "Illegal ID '%1$s' in `%2$s'"
+msgstr "ID non permitido «%1$s» en «%2$s»"
+
+#: src/io/DxfData.cc:362
+#, c-format
+msgid "Illegal value '%1$s'in `%2$s'"
+msgstr "Valor non permitido «%1$s» en «%2$s»"
+
+#: src/io/DxfData.cc:364
+#, c-format
+msgid "Not enough input values for %1$s. in '%2$s'"
+msgstr "Non hai suficientes valores de entrada para %1$s en «%2$s»"
+
+#: src/io/DxfData.cc:370
+#, c-format
+msgid "Unsupported DXF Entity '%1$s' (%2$x) in %3$s."
+msgstr "Entidade DXF non compatible «%1$s» (%2$x) en %3$s."
+
+#: src/io/DxfData.cc:373
+#, c-format
+msgid "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s"
+msgstr "Entidade DXF non compatible «%1$s» (%2$x) na capa «%3$s» de %4$s"
+
+#: src/io/DxfData.cc:396 src/io/DxfData.cc:425 src/io/DxfData.cc:466
+#, c-format
+msgid "Bad DXF line index in %1$s."
+msgstr "Índice de liña DXF incorrecto en %1$s."
+
+#: src/io/dxfdim.cc:72
+#, c-format
+msgid "dxf_dim(..., origin=%1$s) could not be converted"
+msgstr "Non foi posible converter dxf_dim(..., origin=%1$s)"
+
+#: src/io/dxfdim.cc:88 src/io/dxfdim.cc:193
+#, c-format
+msgid "Can't open DXF file '%1$s'!"
+msgstr "Non se pode abrir o ficheiro DXF «%1$s»!"
+
+#: src/io/dxfdim.cc:149
+#, c-format
+msgid "Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!"
+msgstr "A cota «%1$s» en «%2$s», capa «%3$s», ten un tipo non compatible!"
+
+#: src/io/dxfdim.cc:154
+#, c-format
+msgid "Can't find dimension '%1$s' in '%2$s', layer '%3$s'!"
+msgstr "Non se atopa a cota «%1$s» en «%2$s», capa «%3$s»!"
+
+#: src/io/dxfdim.cc:178
+#, c-format
+msgid "dxf_cross(..., origin=%1$s) could not be converted"
+msgstr "Non foi posible converter dxf_cross(..., origin=%1$s)"
+
+#: src/io/dxfdim.cc:245
+#, c-format
+msgid "Can't find cross in '%1$s', layer '%2$s'!"
+msgstr "Non se atopa a cruz en «%1$s», capa «%2$s»!"
+
+#: src/io/export_3mf_dummy.cc:36
+msgid "Export to 3MF format was not enabled when building the application."
+msgstr "A exportación ao formato 3MF non se activou ao compilar a aplicación."
+
+#: src/io/export_3mf_v1.cc:220 src/io/export_3mf_v1.cc:285
+#: src/io/export_3mf_v2.cc:135 src/io/export_3mf_v2.cc:374
+#: src/io/export_3mf_v2.cc:383
+msgid "Invalid color in 3MF export"
+msgstr "Cor non válida na exportación 3MF"
+
+#: src/io/export_3mf_v1.cc:313 src/io/export_3mf_v2.cc:245
+msgid "Export failed, empty geometry."
+msgstr "Fallou a exportación: xeometría baleira."
+
+#: src/io/export_3mf_v1.cc:319 src/io/export_3mf_v2.cc:251
+#: src/io/export_stl.cc:200 src/io/export_stl.cc:224
+msgid "Exported object may not be a valid 2-manifold and may need repair"
+msgstr ""
+"Pode que o obxecto exportado non sexa unha 2-variedade válida e que precise "
+"reparación"
+
+#: src/io/export_3mf_v1.cc:382 src/io/import_3mf_v1.cc:435
+msgid "Error reading 3MF library version"
+msgstr "Erro ao ler a versión da biblioteca 3MF"
+
+#: src/io/export_3mf_v1.cc:388 src/io/export_3mf_v2.cc:316
+#: src/io/export_3mf_v2.cc:328 src/io/import_3mf_v1.cc:441
+#: src/io/import_3mf_v2.cc:347
+#, c-format
+msgid ""
+"Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d"
+msgstr ""
+"Versión principal da biblioteca 3MF non válida %1$d.%2$d.%3$d; esperábase "
+"%4$d.%5$d.%6$d"
+
+#: src/io/export_3mf_v1.cc:397 src/io/export_3mf_v2.cc:338
+msgid "Can't create 3MF model."
+msgstr "Non se pode crear o modelo 3MF."
+
+#: src/io/export_3mf_v1.cc:476
+msgid "Error writing 3MF model."
+msgstr "Erro ao escribir o modelo 3MF."
+
+#: src/io/export_3mf_v2.cc:431
+#, c-format
+msgid "Error setting decimal precision for export: %1$s"
+msgstr "Erro ao definir a precisión decimal para a exportación: %1$s"
+
+#: src/io/export_nef.cc:43 src/io/export_nef.cc:53
+msgid "Not a CGALNefPoly. Add some CSG ops?"
+msgstr "Non é un CGALNefPoly. Engadir algunhas operacións CSG?"
+
+#: src/io/export_off.cc:73
+msgid "Invalid color in OFF export"
+msgstr "Cor non válida na exportación OFF"
+
+#: src/io/export_pdf.cc:260
+msgid "Geometry is too large to fit into selected size."
+msgstr "A xeometría é demasiado grande para o tamaño seleccionado."
+
+#: src/io/export_pdf.cc:350
+msgid "Export to PDF format was not enabled when building the application."
+msgstr "A exportación ao formato PDF non se activou ao compilar a aplicación."
+
+#: src/io/export_png.cc:91
+#, c-format
+msgid "Can't create OffscreenView: %1$s."
+msgstr "Non se pode crear OffscreenView: %1$s."
+
+#: src/io/export_stl.cc:231
+msgid "Manifold->PolySet failed"
+msgstr "Fallou Manifold->PolySet"
+
+#: src/io/export_stl.cc:284
+msgid "Triangle count exceeded 4294967295, so the STL file is not valid"
+msgstr ""
+"O número de triángulos superou 4294967295, polo que o ficheiro STL non é "
+"válido"
+
+#: src/io/export_wrl.cc:91
+msgid "Invalid color in WRL export"
+msgstr "Cor non válida na exportación WRL"
+
+#: src/io/import_3mf_dummy.cc:44
+#, c-format
+msgid ""
+"Import from 3MF format was not enabled when building the application, "
+"import() at line %1$d"
+msgstr ""
+"A importación desde o formato 3MF non se activou ao compilar a aplicación, "
+"import() na liña %1$d"
+
+#: src/io/import_3mf_v1.cc:190 src/io/import_3mf_v2.cc:113
+#, c-format
+msgid "Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d"
+msgstr "O obxecto «%1$s» co UUID «%2$s» non é válido, import() na liña %3$d"
+
+#: src/io/import_3mf_v1.cc:421 src/io/import_3mf_v2.cc:303
+#, c-format
+msgid "Reading 3MF with title '%1$s'"
+msgstr "Lendo 3MF co título «%1$s»"
+
+#: src/io/import_3mf_v1.cc:450
+#, c-format
+msgid "Could not create model: %1$08lx"
+msgstr "Non foi posible crear o modelo: %1$08lx"
+
+#: src/io/import_3mf_v1.cc:457
+#, c-format
+msgid "Could not create 3MF reader: %1$08lx"
+msgstr "Non foi posible crear o lector 3MF: %1$08lx"
+
+#: src/io/import_3mf_v1.cc:464
+#, c-format
+msgid "Could not read file '%1$s', import() at line %2$d"
+msgstr "Non foi posible ler o ficheiro «%1$s», import() na liña %2$d"
+
+#: src/io/import_3mf_v2.cc:361
+msgid "Could not create model"
+msgstr "Non foi posible crear o modelo"
+
+#: src/io/import_3mf_v2.cc:373
+msgid "Could not create 3MF reader"
+msgstr "Non foi posible crear o lector 3MF"
+
+#: src/io/import_3mf_v2.cc:377
+#, c-format
+msgid "Could create 3MF reader, import() at line %1$d: %2$s"
+msgstr "Non foi posible crear o lector 3MF, import() na liña %1$d: %2$s"
+
+#: src/io/import_3mf_v2.cc:385
+#, c-format
+msgid "Could not read file '%1$s', import() at line %2$d: %3$s"
+msgstr "Non foi posible ler o ficheiro «%1$s», import() na liña %2$d: %3$s"
+
+#: src/io/import_3mf_v2.cc:395
+msgid "Could not retrieve build items, import() at line %2$d"
+msgstr ""
+"Non foi posible obter os elementos de construción, import() na liña %2$d"
+
+#: src/io/import_3mf_v2.cc:423
+msgid "Error collecting meshes, import() at line %2$d"
+msgstr "Erro ao recoller as mallas, import() na liña %2$d"
+
+#: src/io/import_3mf_v2.cc:436 src/io/import_svg.cc:213
+#, c-format
+msgid "%1$s, import() at line %2$d"
+msgstr "%1$s, import() na liña %2$d"
+
+#: src/io/import_json.cc:87
+#, c-format
+msgid "Could not read file '%1$s'"
+msgstr "Non foi posible ler o ficheiro «%1$s»"
+
+#: src/io/import_json.cc:90
+#, c-format
+msgid "Failed to parse file '%1$s': %2$s"
+msgstr "Non foi posible analizar o ficheiro «%1$s»: %2$s"
+
+#: src/io/import_nef.cc:22 src/io/import_obj.cc:27 src/io/import_stl.cc:85
+#, c-format
+msgid "Can't open import file '%1$s', import() at line %2$d"
+msgstr ""
+"Non se pode abrir o ficheiro de importación «%1$s», import() na liña %2$d"
+
+#: src/io/import_nef.cc:32
+#, c-format
+msgid "Failure trying to import '%1$s', import() at line %2$d"
+msgstr "Fallo ao tentar importar «%1$s», import() na liña %2$d"
+
+#: src/io/import_obj.cc:45
+#, c-format
+msgid "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'"
+msgstr ""
+"Ficheiro OBJ liña %1$s, %2$s liña «%3$s» ao importar o ficheiro «%4$s»"
+
+#: src/io/import_obj.cc:77
+#, c-format
+msgid "Invalid Face index in File %1$s in Line %2$d"
+msgstr "Índice de cara non válido no ficheiro %1$s na liña %2$d"
+
+#: src/io/import_obj.cc:83
+#, c-format
+msgid "Index %1$d out of range in Line %2$d"
+msgstr "Índice %1$d fóra do rango na liña %2$d"
+
+#: src/io/import_obj.cc:96
+#, c-format
+msgid "Unrecognized Line  %1$s in line Line %2$d"
+msgstr "Liña non recoñecida %1$s na liña %2$d"
+
+#: src/io/import_off.cc:50
+#, c-format
+msgid "OFF File line %1$s, %2$s line '%3$s' importing file '%4$s'"
+msgstr ""
+"Ficheiro OFF liña %1$s, %2$s liña «%3$s» ao importar o ficheiro «%4$s»"
+
+#: src/io/import_stl.cc:123
+#, c-format
+msgid "STL line %1$s, %2$s line '%3$s' importing file '%4$s'"
+msgstr "STL liña %1$s, %2$s liña «%3$s» ao importar o ficheiro «%4$s»"
+
+#: src/io/import_stl.cc:193
+msgid "Binary STL '%1$s' error: %3$s"
+msgstr "Erro no STL binario «%1$s»: %3$s"
+
+#: src/io/import_stl.cc:195
+#, c-format
+msgid "Binary STL '%1$s' error at byte %2$s: %3$s"
+msgstr "Erro no STL binario «%1$s» no byte %2$s: %3$s"
+
+#: src/io/import_stl.cc:201
+#, c-format
+msgid "STL format not recognized in '%1$s'."
+msgstr "Non se recoñece o formato STL en «%1$s»."
+
+#: src/io/import_svg.cc:130
+msgid "import() filter %2$s did not match anything"
+msgstr "O filtro %2$s de import() non coincidiu con nada"
+
+#: src/openscad.cc:225
+#, c-format
+msgid ""
+"Usage: %1$s [options] file.scad\n"
+"%2$s"
+msgstr ""
+"Uso: %1$s [opcións] ficheiro.scad\n"
+"%2$s"
+
+#: src/openscad.cc:232
+#, c-format
+msgid "Section '%1$s':"
+msgstr "Sección «%1$s»:"
+
+#: src/openscad.cc:242
+#, c-format
+msgid "OpenSCAD version %1$s\n"
+msgstr "OpenSCAD versión %1$s\n"
+
+#: src/openscad.cc:243
+msgid "List of settings that can be given using the -O option using the"
+msgstr ""
+"Lista de opcións de configuración que se poden indicar coa opción -O usando "
+"o"
+
+#: src/openscad.cc:244
+msgid "format '<section>/<key>=value', e.g.:"
+msgstr "formato '<sección>/<chave>=valor', p. ex.:"
+
+#: src/openscad.cc:245
+msgid "openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n"
+msgstr "openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n"
+
+#: src/openscad.cc:254
+#, c-format
+msgid "OpenSCAD version %1$s"
+msgstr "OpenSCAD versión %1$s"
+
+#: src/openscad.cc:266
+#, c-format
+msgid "Can't create OpenGL OffscreenView: %1$s. Exiting.\n"
+msgstr "Non se pode crear o OffscreenView de OpenGL: %1$s. Saíndo.\n"
+
+#: src/openscad.cc:306
+msgid "--animate_sharding requires <shard>/<num_shards>"
+msgstr "--animate_sharding require <shard>/<num_shards>"
+
+#: src/openscad.cc:313
+msgid "--animate_sharding parameters need to be positive integers"
+msgstr "Os parámetros de --animate_sharding deben ser enteiros positivos"
+
+#: src/openscad.cc:317
+msgid "--animate_sharding: shard needs to be in range <1..num_shards>"
+msgstr "--animate_sharding: shard debe estar no rango <1..num_shards>"
+
+#: src/openscad.cc:339
+msgid "Camera setup requires numbers as parameters"
+msgstr "A configuración da cámara require números como parámetros"
+
+#: src/openscad.cc:342
+msgid ""
+"Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for "
+"Vector Camera"
+msgstr ""
+"A configuración da cámara require 7 números para a cámara Gimbal ou 6 "
+"números para a cámara Vector"
+
+#: src/openscad.cc:365
+msgid "projection needs to be 'o' or 'p' for ortho or perspective\n"
+msgstr "projection debe ser 'o' ou 'p' para ortogonal ou perspectiva\n"
+
+#: src/openscad.cc:374 src/openscad.cc:383
+msgid "Need 2 numbers for imgsize"
+msgstr "imgsize necesita 2 números"
+
+#: src/openscad.cc:508
+msgid "Converted to backend-specific geometry"
+msgstr "Convertido á xeometría específica do motor"
+
+#: src/openscad.cc:558
+#, c-format
+msgid ""
+"Invalid suffix %1$s. Either add a valid suffix or specify one using the "
+"--export-format option."
+msgstr ""
+"Sufixo non válido %1$s. Engada un sufixo válido ou especifique un coa opción"
+" --export-format."
+
+#: src/openscad.cc:572
+#, c-format
+msgid ""
+"\n"
+"'%1$s' is not a directory for output file %2$s - Skipping\n"
+msgstr ""
+"\n"
+"«%1$s» non é un directorio para o ficheiro de saída %2$s - Omitindo\n"
+
+#: src/openscad.cc:590
+#, c-format
+msgid "Can't open input file '%1$s'!\n"
+msgstr "Non se pode abrir o ficheiro de entrada «%1$s»!\n"
+
+#: src/openscad.cc:622
+#, c-format
+msgid "Can't parse file '%1$s'!\n"
+msgstr "Non se pode analizar o ficheiro «%1$s»!\n"
+
+#: src/openscad.cc:674
+#, c-format
+msgid "Exporting %1$s..."
+msgstr "Exportando %1$s..."
+
+#: src/openscad.cc:750
+#, c-format
+msgid "Unknown color scheme '%1$s', using default '%2$s'."
+msgstr "Esquema de cores descoñecido «%1$s»; úsase o predeterminado «%2$s»."
+
+#: src/openscad.cc:771
+#, c-format
+msgid "Could not initialize localization (application path is '%1$s')."
+msgstr ""
+"Non foi posible inicializar a localización (a ruta da aplicación é «%1$s»)."
+
+#: src/openscad.cc:867
+msgid "Allowed options"
+msgstr "Opcións permitidas"
+
+#: src/openscad.cc:871
+msgid ""
+"overrides format of exported scad file when using option '-o', arg can be "
+"any of its supported file extensions.  For ASCII stl export, specify "
+"'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is "
+"the current stl default, but binary stl is planned as the future default so "
+"asciistl should be explicitly specified in scripts when needed.\n"
+msgstr ""
+"substitúe o formato do ficheiro scad exportado ao usar a opción '-o'; arg "
+"pode ser calquera das súas extensións de ficheiro compatibles. Para exportar"
+" STL en ASCII, indique 'asciistl', e para STL binario, indique 'binstl'. A "
+"exportación ASCII é o formato STL predeterminado actual, pero está previsto "
+"que o binario sexa o predeterminado no futuro, así que nos scripts debería "
+"indicarse explicitamente asciistl cando sexa necesario.\n"
+
+#: src/openscad.cc:876
+msgid ""
+"output specified file instead of running the GUI. The file extension "
+"specifies the type: stl, off, wrl, 3mf, csg, dxf, svg, pdf, png, echo, ast, "
+"term, nef3, nefdbg, param, pov. May be used multiple times for different "
+"exports. Use '-' for stdout.\n"
+msgstr ""
+"xera o ficheiro indicado en vez de executar a interface gráfica. A extensión"
+" do ficheiro indica o tipo: stl, off, wrl, 3mf, csg, dxf, svg, pdf, png, "
+"echo, ast, term, nef3, nefdbg, param, pov. Pódese usar varias veces para "
+"distintas exportacións. Use '-' para a saída estándar.\n"
+
+#: src/openscad.cc:880
+msgid ""
+"pass settings value to the file export using the format section/key=value, "
+"e.g export-pdf/paper-size=a3. Use --help-export to list all available "
+"settings."
+msgstr ""
+"pasa un valor de configuración á exportación de ficheiros co formato "
+"sección/chave=valor, p. ex. export-pdf/paper-size=a3. Use --help-export para"
+" listar todas as opcións dispoñibles."
+
+#: src/openscad.cc:882
+msgid "var=val -pre-define variables"
+msgstr "var=val -predefine variables"
+
+#: src/openscad.cc:883
+msgid "customizer parameter file"
+msgstr "ficheiro de parámetros do personalizador"
+
+#: src/openscad.cc:884
+msgid "customizer parameter set"
+msgstr "conxunto de parámetros do personalizador"
+
+#: src/openscad.cc:887
+msgid ""
+"enable experimental features (specify 'all' for enabling all available "
+"features): "
+msgstr ""
+"activa funcionalidades experimentais (indique 'all' para activar todas as "
+"dispoñibles): "
+
+#: src/openscad.cc:893
+msgid "print this help message and exit"
+msgstr "amosa esta mensaxe de axuda e sae"
+
+#: src/openscad.cc:894
+msgid "print list of export parameters and values that can be set via -O"
+msgstr ""
+"amosa a lista de parámetros de exportación e valores que se poden definir "
+"con -O"
+
+#: src/openscad.cc:895
+msgid "print the version"
+msgstr "amosa a versión"
+
+#: src/openscad.cc:896
+msgid "print information about the build process\n"
+msgstr "amosa información sobre o proceso de compilación\n"
+
+#: src/openscad.cc:898
+msgid ""
+"camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
+"=eye_x,y,z,center_x,y,z"
+msgstr ""
+"parámetros da cámara ao exportar png: =translate_x,y,z,rot_x,y,z,dist ou "
+"=eye_x,y,z,center_x,y,z"
+
+#: src/openscad.cc:899
+msgid "adjust camera to look at object's center"
+msgstr "axusta a cámara para mirar ao centro do obxecto"
+
+#: src/openscad.cc:900
+msgid "adjust camera to fit object"
+msgstr "axusta a cámara para encadrar o obxecto"
+
+#: src/openscad.cc:902
+msgid ""
+"3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) "
+"[default]"
+msgstr ""
+"motor de renderización 3D que usar: 'CGAL' (antigo/lento) ou 'Manifold' "
+"(novo/rápido) [predeterminado]"
+
+#: src/openscad.cc:903
+msgid "=width,height of exported png"
+msgstr "=largura,altura do png exportado"
+
+#: src/openscad.cc:905
+msgid "for full geometry evaluation when exporting png"
+msgstr "para a avaliación completa da xeometría ao exportar png"
+
+#: src/openscad.cc:907
+msgid "[=throwntogether] -for ThrownTogether preview png"
+msgstr "[=throwntogether] -para o png de previsualización ThrownTogether"
+
+#: src/openscad.cc:908
+msgid "export N animated frames"
+msgstr "exporta N fotogramas animados"
+
+#: src/openscad.cc:910
+msgid ""
+"Parameter <shard>/<num_shards> - Divide work into <num_shards> and only "
+"output frames for <shard>. E.g. 2/5 only outputs the second 1/5 of frames. "
+"Use to parallelize work on multiple cores or machines."
+msgstr ""
+"Parámetro <shard>/<num_shards> - Divide o traballo en <num_shards> e só xera"
+" os fotogramas de <shard>. P. ex. 2/5 só xera o segundo 1/5 dos fotogramas. "
+"Úseo para paralelizar o traballo en varios núcleos ou máquinas."
+
+#: src/openscad.cc:914
+msgid "=view options: "
+msgstr "=opcións de vista: "
+
+#: src/openscad.cc:915
+msgid "=(o)rtho or (p)erspective when exporting png"
+msgstr "=(o)rtogonal ou (p)erspectiva ao exportar png"
+
+#: src/openscad.cc:916
+msgid "=n -stop rendering at n CSG elements when exporting png"
+msgstr "=n -detén a renderización en n elementos CSG ao exportar png"
+
+#: src/openscad.cc:918
+msgid ""
+"enable additional render summary and statistics: all | cache | time | camera"
+" | geometry | bounding-box | area"
+msgstr ""
+"activa o resumo e as estatísticas adicionais da renderización: all | cache |"
+" time | camera | geometry | bounding-box | area"
+
+#: src/openscad.cc:921
+msgid ""
+"output summary information in JSON format to the given file, using '-' "
+"outputs to stdout"
+msgstr ""
+"xera a información de resumo en formato JSON no ficheiro indicado; '-' "
+"envíaa á saída estándar"
+
+#: src/openscad.cc:923
+msgid "=colorscheme: "
+msgstr "=esquema de cores: "
+
+#: src/openscad.cc:931
+msgid "deps_file -generate a dependency file for make"
+msgstr "deps_file -xera un ficheiro de dependencias para make"
+
+#: src/openscad.cc:932
+msgid "make_cmd -runs make_cmd file if file is missing"
+msgstr "make_cmd -executa make_cmd se falta o ficheiro"
+
+#: src/openscad.cc:933
+msgid "quiet mode (don't print anything *except* errors)"
+msgstr "modo silencioso (non amosa nada *agás* os erros)"
+
+#: src/openscad.cc:934
+msgid "Reset GUI settings for window placement and fonts."
+msgstr ""
+"Restablece a configuración da interface gráfica para a posición das xanelas "
+"e os tipos de letra."
+
+#: src/openscad.cc:936
+msgid "=n, maximum number of trace messages"
+msgstr "=n, número máximo de mensaxes de traza"
+
+#: src/openscad.cc:938
+msgid "=true/false, configure the output of user module parameters in a trace"
+msgstr ""
+"=true/false, configura a saída dos parámetros dos módulos de usuario nunha "
+"traza"
+
+#: src/openscad.cc:940
+msgid ""
+"=true/false, configure the parameter check for user modules and functions"
+msgstr ""
+"=true/false, configura a comprobación de parámetros para módulos e funcións "
+"de usuario"
+
+#: src/openscad.cc:942
+msgid "=true/false, configure the parameter range check for builtin modules"
+msgstr ""
+"=true/false, configura a comprobación do rango de parámetros para os módulos"
+" integrados"
+
+#: src/openscad.cc:944
+msgid "special debug info - specify 'all' or a set of source file names"
+msgstr ""
+"información especial de depuración - indique 'all' ou un conxunto de nomes "
+"de ficheiros fonte"
+
+#: src/openscad.cc:946
+msgid "Trust python"
+msgstr "Confiar en Python"
+
+#: src/openscad.cc:947
+msgid "=module Call pip python module"
+msgstr "=module Chama ao módulo python de pip"
+
+#: src/openscad.cc:954
+msgid "special gui testing mode - run all the tests"
+msgstr ""
+"modo especial de probas da interface gráfica - executa todas as probas"
+
+#: src/openscad.cc:958
+msgid "Hidden options"
+msgstr "Opcións ocultas"
+
+#: src/openscad.cc:962
+msgid "process serial number"
+msgstr "número de serie do proceso"
+
+#: src/openscad.cc:964
+msgid "input file"
+msgstr "ficheiro de entrada"
+
+#: src/openscad.cc:989
+#, c-format
+msgid "Debug on. --debug=%1$s"
+msgstr "Depuración activada. --debug=%1$s"
+
+#: src/openscad.cc:993
+msgid "Python Engine enabled"
+msgstr "Motor de Python activado"
+
+#: src/openscad.cc:1029
+#, c-format
+msgid "Could not parse '--%1$s %2$s' as flag"
+msgstr "Non foi posible analizar '--%1$s %2$s' como indicador"
+
+#: src/openscad.cc:1042
+#, c-format
+msgid "Unknown rendering backend '%1$s'."
+msgstr "Motor de renderización descoñecido «%1$s»."
+
+#: src/openscad.cc:1070
+#, c-format
+msgid ""
+"Unknown --view option '%1$s' ignored. Use -h to list available options."
+msgstr ""
+"Ignórase a opción --view descoñecida «%1$s». Use -h para listar as opcións "
+"dispoñibles."
+
+#: src/openscad.cc:1139
+#, c-format
+msgid ""
+"Unknown --export-format option '%1$s'.  Use -h to list available options."
+msgstr ""
+"Opción --export-format descoñecida «%1$s». Use -h para listar as opcións "
+"dispoñibles."
+
+#: src/openscad.cc:1150
+msgid "Option --animate is not supported when exporting to stdout."
+msgstr "A opción --animate non é compatible ao exportar á saída estándar."
+
+#: src/openscad.cc:1207
+msgid "Error writing deps"
+msgstr "Erro ao escribir as dependencias"
+
+#: src/openscad.cc:1214
+msgid "Ignoring --export-format option"
+msgstr "Ignorando a opción --export-format"
+
+#: src/openscad.cc:1224
+msgid "Requested GUI mode but can't open display!\n"
+msgstr "Solicitouse o modo gráfico, pero non se pode abrir a pantalla!\n"
+
+#: src/platform/PlatformUtils-win.cc:69
+msgid "Could not find My Documents location"
+msgstr "Non foi posible atopar a localización de Os meus documentos"
+
+#: src/platform/PlatformUtils-win.cc:78
+msgid "Could not find Local AppData location"
+msgstr "Non foi posible atopar a localización de Local AppData"
+
+#: src/platform/PlatformUtils.cc:104
+#, c-format
+msgid "Creating library folder %1$s"
+msgstr "Creando o cartafol de bibliotecas %1$s"
+
+#: src/platform/PlatformUtils.cc:108 src/platform/PlatformUtils.cc:179
+#, c-format
+msgid "Cannot create %1$s"
+msgstr "Non se pode crear %1$s"
+
+#: src/python/pyopenscad.cc:440
+msgid "Python not found. Is it installed ?"
+msgstr "Non se atopou Python. Está instalado?"
+
+#: src/utils/boost-utils.h:38
+#, c-format
+msgid "Problem converting this number: %1$s"
+msgstr "Problema ao converter este número: %1$s"
+
+#: src/utils/boost-utils.h:40
+#, c-format
+msgid "setting result to %1$u"
+msgstr "establecendo o resultado a %1$u"
