@@ -127,7 +127,8 @@ Color4f getColor(const std::string& col, const Color4f& defaultcolor)
   const auto parsed = parse_color(col);
 
   if (!parsed) {
-    LOG(message_group::Warning, "Unable to parse color \"%1$s\", reverting to default color.", col);
+    LOG(message_group::Warning,
+        _("Unable to parse color \"%1$s\", reverting to default color.", "console"), col);
   }
 
   return parsed.value_or(defaultcolor);

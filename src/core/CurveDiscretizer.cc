@@ -34,21 +34,23 @@ CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const Location&
   fa = parameters["$fa"].toDouble();
 
   if (fn < 0.0) {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fn negative - setting to 0");
+    LOG(message_group::Warning, loc, parameters.documentRoot(),
+        _("$fn negative - setting to 0", "console"));
     fn = 0.0;
   }
   if (Feature::ExperimentalDiscretizationByError.is_enabled() && fe < 0.0) {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fe negative - setting to 0");
+    LOG(message_group::Warning, loc, parameters.documentRoot(),
+        _("$fe negative - setting to 0", "console"));
     fe = 0.0;
   }
   if (fs < F_MINIMUM) {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fs too small - clamping to %1$f",
-        F_MINIMUM);
+    LOG(message_group::Warning, loc, parameters.documentRoot(),
+        _("$fs too small - clamping to %1$f", "console"), F_MINIMUM);
     fs = F_MINIMUM;
   }
   if (fa < F_MINIMUM) {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fa too small - clamping to %1$f",
-        F_MINIMUM);
+    LOG(message_group::Warning, loc, parameters.documentRoot(),
+        _("$fa too small - clamping to %1$f", "console"), F_MINIMUM);
     fa = F_MINIMUM;
   }
 }

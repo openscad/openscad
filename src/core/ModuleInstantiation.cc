@@ -67,7 +67,8 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
 static void NOINLINE print_trace(EvaluationException& e, const ModuleInstantiation *mod,
                                  const std::shared_ptr<const Context>& context)
 {
-  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
+  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), _("called by '%1$s'", "console"),
+        mod->name());
 }
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(

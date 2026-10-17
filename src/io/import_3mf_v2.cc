@@ -110,7 +110,7 @@ std::string collect_mesh_objects(const Lib3MF::PModel& model, MeshObjectList& ob
   // https://axotron.se/blog/microscope-adapter-for-mobile-phone-camera/
   const auto is_valid_object = object->IsValid();
   if (!is_valid_object) {
-    LOG(message_group::Warning, "Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d", name, uuid, loc.firstLine());
+    LOG(message_group::Warning, _("Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d", "console"), name, uuid, loc.firstLine());
   }
 #endif
 
@@ -300,7 +300,7 @@ std::string read_metadata(const Lib3MF::PModel& model)
   }
 
   if (!mmd.title.empty()) {
-    LOG("Reading 3MF with title '%1$s'", mmd.title);
+    LOG(_("Reading 3MF with title '%1$s'", "console"), mmd.title);
   }
 
   return "";
@@ -344,7 +344,7 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
     if (interfaceVersionMajor != LIB3MF_VERSION_MAJOR) {
       LOG(message_group::Error,
-          "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+          _("Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", "console"),
           interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, LIB3MF_VERSION_MAJOR,
           LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
       return PolySet::createEmpty();
@@ -358,7 +358,7 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   try {
     model = wrapper->CreateModel();
     if (!model) {
-      LOG(message_group::Error, "Could not create model");
+      LOG(message_group::Error, _("Could not create model", "console"));
       return PolySet::createEmpty();
     }
   } catch (const Lib3MF::ELib3MFException& e) {
@@ -370,19 +370,19 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   try {
     reader = model->QueryReader("3mf");
     if (!reader) {
-      LOG(message_group::Error, "Could not create 3MF reader");
+      LOG(message_group::Error, _("Could not create 3MF reader", "console"));
       return PolySet::createEmpty();
     }
   } catch (const Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, "Could create 3MF reader, import() at line %1$d: %2$s",
-        loc.firstLine(), e.what());
+    LOG(message_group::Export_Error,
+        _("Could create 3MF reader, import() at line %1$d: %2$s", "console"), loc.firstLine(), e.what());
     return PolySet::createEmpty();
   }
 
   try {
     reader->ReadFromFile(filename);
   } catch (const Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d: %3$s",
+    LOG(message_group::Warning, _("Could not read file '%1$s', import() at line %2$d: %3$s", "console"),
         filename.c_str(), loc.firstLine(), e.what());
     return PolySet::createEmpty();
   }
@@ -392,7 +392,7 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   try {
     Lib3MF::PBuildItemIterator builditem_it = model->GetBuildItems();
     if (!builditem_it) {
-      LOG(message_group::Warning, "Could not retrieve build items, import() at line %2$d",
+      LOG(message_group::Warning, _("Could not retrieve build items, import() at line %2$d", "console"),
           filename.c_str(), loc.firstLine());
       return PolySet::createEmpty();
     }
@@ -420,8 +420,8 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
       MeshObjectList object_list;
       std::string errmsg = collect_mesh_objects(model, object_list, object, m, loc);
       if (!errmsg.empty()) {
-        LOG(message_group::Warning, "Error collecting meshes, import() at line %2$d", filename.c_str(),
-            loc.firstLine());
+        LOG(message_group::Warning, _("Error collecting meshes, import() at line %2$d", "console"),
+            filename.c_str(), loc.firstLine());
         return PolySet::createEmpty();
       }
 
@@ -433,7 +433,8 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
             continue;
           }
         } else {
-          LOG(message_group::Warning, "%1$s, import() at line %2$d", errmsg, loc.firstLine());
+          LOG(message_group::Warning, _("%1$s, import() at line %2$d", "console"), errmsg,
+              loc.firstLine());
           return PolySet::createEmpty();
         }
 

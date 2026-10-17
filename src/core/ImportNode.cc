@@ -77,7 +77,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
-      LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
+      LOG(message_group::Deprecated, _("filename= is deprecated. Please use file=", "console"));
     }
     filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(),
                            inst->location().filePath().parent_path().string());
@@ -106,7 +106,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& layername = parameters["layername"];
     if (layername.isDefined()) {
-      LOG(message_group::Deprecated, "layername= is deprecated. Please use layer=");
+      LOG(message_group::Deprecated, _("layername= is deprecated. Please use layer=", "console"));
       node->layer = layername.toString();
     }
   }
@@ -124,7 +124,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
   if (origin.isDefined() && !originOk) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "Unable to convert import(..., origin=%1$s) parameter to vec2", origin.toEchoStringNoThrow());
+        _("Unable to convert import(..., origin=%1$s) parameter to vec2", "console"),
+        origin.toEchoStringNoThrow());
   }
 
   const auto& center = parameters["center"];
@@ -141,8 +142,9 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
       std::string filePath =
         fs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
       LOG(message_group::Warning,
-          "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, "
-          "file %2$s, import() at line %3$d",
+          _("Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, "
+            "file %2$s, import() at line %3$d",
+            "console"),
           origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine());
     } else {
       node->dpi = val;
@@ -250,9 +252,10 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   }
 #endif
   default:
-    LOG(message_group::Error,
-        "Unsupported file format while trying to import file '%1$s', import() at line %2$d",
-        this->filename, loc.firstLine());
+    LOG(
+      message_group::Error,
+      _("Unsupported file format while trying to import file '%1$s', import() at line %2$d", "console"),
+      this->filename, loc.firstLine());
     g = PolySet::createEmpty();
   }
 

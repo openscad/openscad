@@ -437,7 +437,7 @@ void initPython(const std::string& binDir, double time)
 
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
-      LOG(message_group::Error, "Python not found. Is it installed ?");
+      LOG(message_group::Error, _("Python not found. Is it installed ?", "console"));
       return;
     }
     PyConfig_Clear(&config);

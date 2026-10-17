@@ -200,13 +200,14 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
         CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
         newN.p3 = std::make_shared<CGAL_Nef_polyhedron3>(nef_bigbox.intersection(*N.p3));
       } catch (const CGAL::Failure_exception& e) {
-        LOG(message_group::Error, " CGAL error in CGALUtils::project during bigbox intersection: %1$s",
+        LOG(message_group::Error,
+            _(" CGAL error in CGALUtils::project during bigbox intersection: %1$s", "console"),
             e.what());
       }
     }
 
     if (!newN.p3 || newN.p3->is_empty()) {
-      LOG(message_group::Warning, "Projection() failed.");
+      LOG(message_group::Warning, _("Projection() failed.", "console"));
       return poly;
     }
 
@@ -228,7 +229,8 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
       }
       poly = convertToPolygon2d(*zremover.output_nefpoly2d);
     } catch (const CGAL::Failure_exception& e) {
-      LOG(message_group::Error, "CGAL error in CGALUtils::project while flattening: %1$s", e.what());
+      LOG(message_group::Error, _("CGAL error in CGALUtils::project while flattening: %1$s", "console"),
+          e.what());
     }
     PRINTD("</svg>");
 
@@ -238,7 +240,7 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
     if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3)) {
       poly = PolySetUtils::project(*ps);
     } else {
-      LOG(message_group::Error, "Nef->PolySet failed");
+      LOG(message_group::Error, _("Nef->PolySet failed", "console"));
       return poly;
     }
   }

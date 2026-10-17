@@ -235,6 +235,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QSettingsCached settings;
   if (settings.value("advanced/localization", true).toBool()) {
     localization_init();
+  } else {
+    localization_disable();
   }
   if (reset_window_settings) {
     const auto keys = std::array<std::string, 20>{

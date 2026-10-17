@@ -83,7 +83,7 @@ const Value& Parameters::get(const std::initializer_list<std::string> names) con
         matchName = name;
         matchValue = value;
       } else {
-        LOG(message_group::Warning, loc, documentRoot(), "Specified both %1$s and %2$s",
+        LOG(message_group::Warning, loc, documentRoot(), _("Specified both %1$s and %2$s", "console"),
             quoteVar(matchName), quoteVar(name));
       }
     }
@@ -120,7 +120,7 @@ bool Parameters::valid_required(const std::string& name, Value::Type type)
 {
   boost::optional<const Value&> value = lookup(name);
   if (!value) {
-    LOG(message_group::Warning, loc, documentRoot(), "%1$s: missing argument %2$s", caller,
+    LOG(message_group::Warning, loc, documentRoot(), _("%1$s: missing argument %2$s", "console"), caller,
         quoteVar(name));
     return false;
   }
@@ -147,7 +147,8 @@ bool Parameters::validate_number(const std::string& name, double& out)
       return true;
     } else {
       LOG(message_group::Warning, loc, documentRoot(),
-          "%1$s(..., %2$s=%3$s) argument cannot be infinite or nan", caller, name, value->toString());
+          _("%1$s(..., %2$s=%3$s) argument cannot be infinite or nan", "console"), caller, name,
+          value->toString());
       return false;
     }
   }
@@ -179,10 +180,10 @@ static ContextFrame parse_without_defaults(Arguments arguments, const Location& 
       name = *argument.name;
       if (named_arguments.count(name)) {
         LOG(message_group::Warning, loc, arguments.documentRoot(),
-            "argument %1$s supplied more than once", quoteVar(name));
+            _("argument %1$s supplied more than once", "console"), quoteVar(name));
       } else if (output.lookup_local_variable(name)) {
         LOG(message_group::Warning, loc, arguments.documentRoot(),
-            "argument %1$s overrides positional argument", quoteVar(name));
+            _("argument %1$s overrides positional argument", "console"), quoteVar(name));
       } else if (warn_for_unexpected_arguments && !ContextFrame::is_config_variable(name)) {
         bool found = false;
         for (const auto& parameter : required_parameters) {
@@ -199,7 +200,7 @@ static ContextFrame parse_without_defaults(Arguments arguments, const Location& 
         }
         if (!found) {
           LOG(message_group::Warning, loc, arguments.documentRoot(),
-              "variable %1$s not specified as parameter", quoteVar(name));
+              _("variable %1$s not specified as parameter", "console"), quoteVar(name));
         }
       }
       named_arguments.insert(name);
@@ -218,7 +219,7 @@ static ContextFrame parse_without_defaults(Arguments arguments, const Location& 
       if (name.empty()) {
         if (warn_for_unexpected_arguments && !warned_for_extra_arguments) {
           LOG(message_group::Warning, loc, arguments.documentRoot(),
-              "Too many unnamed arguments supplied");
+              _("Too many unnamed arguments supplied", "console"));
           warned_for_extra_arguments = true;
         }
         continue;
@@ -286,7 +287,8 @@ void print_argCnt_warning(const std::string& name, int found, const std::string&
                           const Location& loc, const std::string& documentRoot)
 {
   LOG(message_group::Warning, loc, documentRoot,
-      "%1$s() number of parameters does not match: expected %2$s, found %3$i", name, expected, found);
+      _("%1$s() number of parameters does not match: expected %2$s, found %3$i", "console"), name,
+      expected, found);
 }
 
 void print_argConvert_positioned_warning(const std::string& calledName, const std::string& where,

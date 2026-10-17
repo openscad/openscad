@@ -99,7 +99,7 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
     {
       std::ifstream ifs(filename.c_str());
       if (!ifs.is_open()) {
-        LOG(message_group::Warning, "Can't open library file '%1$s'\n", filename);
+        LOG(message_group::Warning, _("Can't open library file '%1$s'\n", "console"), filename);
         return 0;
       }
       text = STR(ifs.rdbuf(), "\n\x03\n", commandline_commands);

@@ -74,7 +74,8 @@ const Value& EvaluationSession::lookup_special_variable(const std::string& name,
 {
   boost::optional<const Value&> result = try_lookup_special_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
+    LOG(message_group::Warning, loc, documentRoot(), _("Ignoring unknown variable %1$s", "console"),
+        quoteVar(name));
     return Value::undefined;
   }
   return *result;
@@ -89,7 +90,8 @@ boost::optional<CallableFunction> EvaluationSession::lookup_special_function(con
       return result;
     }
   }
-  LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown function '%1$s'", name);
+  LOG(message_group::Warning, loc, documentRoot(), _("Ignoring unknown function '%1$s'", "console"),
+      name);
   return boost::none;
 }
 
@@ -102,6 +104,6 @@ boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(con
       return result;
     }
   }
-  LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown module '%1$s'", name);
+  LOG(message_group::Warning, loc, documentRoot(), _("Ignoring unknown module '%1$s'", "console"), name);
   return boost::none;
 }

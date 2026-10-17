@@ -257,7 +257,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // Does it fit? (in points)
   const bool inpaper = (spanX <= pdfX - MARGIN) && (spanY <= pdfY - MARGIN);
   if (!inpaper) {
-    LOG(message_group::Export_Warning, "Geometry is too large to fit into selected size.");
+    LOG(message_group::Export_Warning, _("Geometry is too large to fit into selected size.", "console"));
   }
 
   //  Center on page.  Still in points.
@@ -347,7 +347,8 @@ std::string get_cairo_version()
 
 void export_pdf(const std::shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&)
 {
-  LOG(message_group::Error, "Export to PDF format was not enabled when building the application.");
+  LOG(message_group::Error,
+      _("Export to PDF format was not enabled when building the application.", "console"));
 }
 
 #endif  // ENABLE_CAIRO

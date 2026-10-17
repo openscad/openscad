@@ -18,13 +18,14 @@ bool ParameterSets::readFile(const std::string& filename)
 
   std::ifstream f(std::filesystem::u8path(filename));
   if (!f.good()) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s' for reading", filename);
+    LOG(message_group::Error, _("Cannot open Parameter Set '%1$s' for reading", "console"), filename);
     return false;
   }
   try {
     boost::property_tree::read_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s': %2$s", filename, e.what());
+    LOG(message_group::Error, _("Cannot open Parameter Set '%1$s': %2$s", "console"), filename,
+        e.what());
     return false;
   }
 
@@ -64,12 +65,13 @@ void ParameterSets::writeFile(const std::string& filename) const
 
   std::ofstream f(std::filesystem::u8path(filename));
   if (!f.good()) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s' for writing", filename);
+    LOG(message_group::Error, _("Cannot open Parameter Set '%1$s' for writing", "console"), filename);
     return;
   }
   try {
     boost::property_tree::write_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
-    LOG(message_group::Error, "Cannot write Parameter Set '%1$s': %2$s", filename, e.what());
+    LOG(message_group::Error, _("Cannot write Parameter Set '%1$s': %2$s", "console"), filename,
+        e.what());
   }
 }

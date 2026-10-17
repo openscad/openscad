@@ -162,7 +162,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 
   int initialEglVersion = gladLoaderLoadEGL(nullptr);
   if (!initialEglVersion) {
-    LOG("gladLoaderLoadEGL(nullptr): Unable to load EGL");
+    LOG(_("gladLoaderLoadEGL(nullptr): Unable to load EGL", "console"));
     return nullptr;
   }
   PRINTDB("GLAD: Loaded EGL %d.%d on first load",
@@ -203,13 +203,13 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   }
 
   if (ctx->eglDisplay == EGL_NO_DISPLAY) {
-    LOG("No EGL display found");
+    LOG(_("No EGL display found", "console"));
     return nullptr;
   }
 
   EGLint major, minor;
   if (!eglInitialize(ctx->eglDisplay, &major, &minor)) {
-    LOG("Unable to initialize EGL: %1$s", eglGetErrorString(eglGetError()));
+    LOG(_("Unable to initialize EGL: %1$s", "console"), eglGetErrorString(eglGetError()));
     return nullptr;
   }
 
@@ -218,7 +218,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 
   const auto eglVersion = gladLoaderLoadEGL(ctx->eglDisplay);
   if (!eglVersion) {
-    LOG("gladLoaderLoadEGL(eglDisplay): Unable to reload EGL");
+    LOG(_("gladLoaderLoadEGL(eglDisplay): Unable to reload EGL", "console"));
     return nullptr;
   }
   PRINTDB("GLAD: Loaded EGL %d.%d after reload",
@@ -229,17 +229,17 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   EGLConfig config;
   bool gotConfig = eglChooseConfig(ctx->eglDisplay, configAttribs, &config, 1, &numConfigs);
   if (!gotConfig || numConfigs == 0) {
-    LOG("Failed to choose config (eglError: %1$x)", eglGetError());
+    LOG(_("Failed to choose config (eglError: %1$x)", "console"), eglGetError());
     return nullptr;
   }
   if (!eglBindAPI(gles ? EGL_OPENGL_ES_API : EGL_OPENGL_API)) {
-    LOG("eglBindAPI() failed!");
+    LOG(_("eglBindAPI() failed!", "console"));
     return nullptr;
   }
 
   ctx->createSurface(config, width, height);
   if (ctx->eglSurface == EGL_NO_SURFACE) {
-    LOG("Unable to create EGL surface (eglError: %1$x)", eglGetError());
+    LOG(_("Unable to create EGL surface (eglError: %1$x)", "console"), eglGetError());
     return nullptr;
   }
 
@@ -257,7 +257,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   ctxattr.push_back(EGL_NONE);
   ctx->eglContext = eglCreateContext(ctx->eglDisplay, config, EGL_NO_CONTEXT, ctxattr.data());
   if (ctx->eglContext == EGL_NO_CONTEXT) {
-    LOG("Unable to create EGL context (eglError: %1$x)", eglGetError());
+    LOG(_("Unable to create EGL context (eglError: %1$x)", "console"), eglGetError());
     return nullptr;
   }
 

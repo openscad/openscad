@@ -82,8 +82,8 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
   // Open file and position at the end
   std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
-        loc.firstLine());
+    LOG(message_group::Warning, _("Can't open import file '%1$s', import() at line %2$d", "console"),
+        filename, loc.firstLine());
     return PolySet::createEmpty();
   }
 
@@ -120,8 +120,9 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
     std::string line;
 
     auto AsciiError = [&](const auto& errstr) {
-      LOG(message_group::Error, loc, "", "STL line %1$s, %2$s line '%3$s' importing file '%4$s'", lineno,
-          errstr, line, filename);
+      LOG(message_group::Error, loc, "",
+          _("STL line %1$s, %2$s line '%3$s' importing file '%4$s'", "console"), lineno, errstr, line,
+          filename);
     };
 
     std::getline(f, line);
@@ -190,15 +191,16 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
       } catch (...) {
       }
       if (offset < 0) {
-        LOG(message_group::Error, loc, "", "Binary STL '%1$s' error: %3$s", filename, ex.what());
+        LOG(message_group::Error, loc, "", _("Binary STL '%1$s' error: %3$s", "console"), filename,
+            ex.what());
       } else {
-        LOG(message_group::Error, loc, "", "Binary STL '%1$s' error at byte %2$s: %3$s", filename,
-            offset, ex.what());
+        LOG(message_group::Error, loc, "", _("Binary STL '%1$s' error at byte %2$s: %3$s", "console"),
+            filename, offset, ex.what());
       }
       return PolySet::createEmpty();
     }
   } else {
-    LOG(message_group::Error, loc, "", "STL format not recognized in '%1$s'.", filename);
+    LOG(message_group::Error, loc, "", _("STL format not recognized in '%1$s'.", "console"), filename);
     return PolySet::createEmpty();
   }
   return builder.build();

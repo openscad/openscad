@@ -112,8 +112,9 @@ void FreetypeRenderer::ShapeResults::calc_offsets_horiz(const FreetypeRenderer::
     x_offset = 0;
   } else {
     LOG(message_group::Warning, params.loc, params.documentPath,
-        "Unknown value for the halign parameter"
-        " (use \"left\", \"right\" or \"center\"): '%1$s'",
+        _("Unknown value for the halign parameter"
+          " (use \"left\", \"right\" or \"center\"): '%1$s'",
+          "console"),
         params.halign);
     x_offset = 0;
   }
@@ -129,8 +130,9 @@ void FreetypeRenderer::ShapeResults::calc_offsets_horiz(const FreetypeRenderer::
     y_offset = 0;
   } else {
     LOG(message_group::Warning, params.loc, params.documentPath,
-        "Unknown value for the valign parameter"
-        " (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%1$s'",
+        _("Unknown value for the valign parameter"
+          " (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%1$s'",
+          "console"),
         params.valign);
     y_offset = 0;
   }
@@ -147,15 +149,16 @@ void FreetypeRenderer::ShapeResults::calc_offsets_vert(const FreetypeRenderer::P
     x_offset = 0;
   } else {
     LOG(message_group::Warning, params.loc, params.documentPath,
-        "Unknown value for the halign parameter"
-        " (use \"left\", \"right\" or \"center\"): '%1$s'",
+        _("Unknown value for the halign parameter"
+          " (use \"left\", \"right\" or \"center\"): '%1$s'",
+          "console"),
         params.halign);
     x_offset = 0;
   }
 
   if (params.valign == "baseline") {
     LOG(message_group::Warning, params.loc, params.documentPath,
-        "Don't use valign=\"baseline\" with vertical layouts", params.valign);
+        _("Don't use valign=\"baseline\" with vertical layouts", "console"), params.valign);
     y_offset = 0;
   } else if (params.valign == "center") {
     y_offset = -advance_y / 2.0;
@@ -168,8 +171,9 @@ void FreetypeRenderer::ShapeResults::calc_offsets_vert(const FreetypeRenderer::P
     y_offset = 0;
   } else {
     LOG(message_group::Warning, params.loc, params.documentPath,
-        "Unknown value for the valign parameter"
-        " (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%1$s'",
+        _("Unknown value for the valign parameter"
+          " (use \"baseline\", \"bottom\", \"top\" or \"center\"): '%1$s'",
+          "console"),
         params.valign);
   }
 }
@@ -278,13 +282,13 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
 {
   FontCache *cache = FontCache::instance();
   if (!cache->is_init_ok()) {
-    LOG(message_group::Warning, loc, documentPath, "Font cache initialization failed");
+    LOG(message_group::Warning, loc, documentPath, _("Font cache initialization failed", "console"));
     return nullptr;
   }
 
   const FontFacePtr face = cache->get_font(font);
   if (!face) {
-    LOG(message_group::Warning, loc, documentPath, "Can't get font %1$s", font);
+    LOG(message_group::Warning, loc, documentPath, _("Can't get font %1$s", "console"), font);
     return nullptr;
   }
 
@@ -301,7 +305,8 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
   // and we set the size based on that to cancel out the error that we introduce here.
   FT_Error error = FT_Set_Char_Size(face->face_, 0, scale, 100, 100);
   if (error) {
-    LOG(message_group::Warning, loc, documentPath, "Can't set font size for font %1$s", font);
+    LOG(message_group::Warning, loc, documentPath, _("Can't set font size for font %1$s", "console"),
+        font);
     return nullptr;
   }
   return face;
@@ -338,8 +343,8 @@ FreetypeRenderer::Params::Params(Parameters& parameters)
   const Value& emParam = parameters.get("em");
   if (emParam.isDefined()) {
     if (parameters.get("size").isDefined()) {
-      LOG(message_group::Warning, loc, documentPath, "%1$s: \"size\" ignored when \"em\" is set",
-          parameters.get_caller());
+      LOG(message_group::Warning, loc, documentPath,
+          _("%1$s: \"size\" ignored when \"em\" is set", "console"), parameters.get_caller());
     }
     size = emParam.toDouble() * 72.0 / 100.0;
   } else {
@@ -399,7 +404,7 @@ FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& par
       }
     } else {
       LOG(message_group::Warning, params.loc, params.documentPath,
-          "Ignoring text with invalid UTF-8 encoding: \"%1$s\"", params.text.c_str());
+          _("Ignoring text with invalid UTF-8 encoding: \"%1$s\"", "console"), params.text.c_str());
     }
   } else {
     hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0,
@@ -432,8 +437,9 @@ FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& par
     error = FT_Load_Glyph(face->face_, glyph_index, FT_LOAD_DEFAULT);
     if (error) {
       LOG(message_group::Warning, params.loc, params.documentPath,
-          "Could not load glyph %1$u"
-          " for char at index %2$u in text '%3$s'",
+          _("Could not load glyph %1$u"
+            " for char at index %2$u in text '%3$s'",
+            "console"),
           glyph_index, idx, params.text);
       continue;
     }
@@ -442,8 +448,9 @@ FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& par
     error = FT_Get_Glyph(face->face_->glyph, &glyph);
     if (error) {
       LOG(message_group::Warning, params.loc, params.documentPath,
-          "Could not get glyph %1$u"
-          " for char at index %2$u in text '%3$s'",
+          _("Could not get glyph %1$u"
+            " for char at index %2$u in text '%3$s'",
+            "console"),
           glyph_index, idx, params.text);
       continue;
     }

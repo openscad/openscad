@@ -108,7 +108,7 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
     if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
       appendPolySet(*ps);
     } else {
-      LOG(message_group::Error, "Nef->PolySet failed");
+      LOG(message_group::Error, _("Nef->PolySet failed", "console"));
     }
 #endif  // ifdef ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD

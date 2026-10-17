@@ -34,7 +34,7 @@ boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const st
     }
 
     LOG(message_group::Warning, loc, documentRoot(),
-        "Experimental builtin function '%1$s' is not enabled", name);
+        _("Experimental builtin function '%1$s' is not enabled", "console"), name);
   }
   return Context::lookup_local_function(name, loc);
 }
@@ -47,12 +47,13 @@ boost::optional<InstantiableModule> BuiltinContext::lookup_local_module(const st
     AbstractModule *m = search->second;
     if (!m->is_enabled()) {
       LOG(message_group::Warning, loc, documentRoot(),
-          "Experimental builtin module '%1$s' is not enabled", name);
+          _("Experimental builtin module '%1$s' is not enabled", "console"), name);
     }
     std::string replacement = Builtins::instance().isDeprecated(name);
     if (!replacement.empty()) {
       LOG(message_group::Deprecated, loc, documentRoot(),
-          "The %1$s() module will be removed in future releases. Use %2$s instead.", name, replacement);
+          _("The %1$s() module will be removed in future releases. Use %2$s instead.", "console"), name,
+          replacement);
     }
     if (m->is_enabled()) {
       return InstantiableModule{get_shared_ptr(), m};
