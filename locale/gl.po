@@ -2374,14 +2374,14 @@ msgstr "Funcionalidades experimentais"
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2571
 msgid ""
 "These features are experimental.  They may change or be removed entirely "
-"without notice. You may enable them and use them and comment on them, but you"
-" must assume that they may not be in their final form and may never appear in"
-" an OpenSCAD release in any form."
+"without notice. You may enable them and use them and comment on them, but "
+"you must assume that they may not be in their final form and may never "
+"appear in an OpenSCAD release in any form."
 msgstr ""
 "Estas funcionalidades son experimentais. Poden cambiar ou eliminarse por "
 "completo sen aviso previo. Pode activalas, usalas e comentalas, pero debe "
-"asumir que poden non estar na súa forma final e que poden non aparecer nunca "
-"en ningunha versión de OpenSCAD."
+"asumir que poden non estar na súa forma final e que poden non aparecer nunca"
+" en ningunha versión de OpenSCAD."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2572
 msgid "General"
@@ -2836,8 +2836,8 @@ msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f, fov = %.2f"
 msgstr ""
-"Vista: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance "
-"= %.2f, fov = %.2f"
+"Vista: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance"
+" = %.2f, fov = %.2f"
 
 #: src/gui/ai/ChatWidget.cc:101 src/gui/ai/ChatWidget.cc:454
 msgid "Thinking..."
@@ -2864,8 +2864,8 @@ msgid ""
 "Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
 "\"draw a sphere\" or \"create a box with a hole\"."
 msgstr ""
-"Ola! Son o seu asistente de IA de OpenSCAD. Pídame que escriba código, p. ex."
-" \"debuxa unha esfera\" ou \"crea unha caixa cun burato\"."
+"Ola! Son o seu asistente de IA de OpenSCAD. Pídame que escriba código, p. "
+"ex. \"debuxa unha esfera\" ou \"crea unha caixa cun burato\"."
 
 #: src/gui/ai/ChatWidget.cc:215
 msgid "AI proposed code changes:"
@@ -2995,8 +2995,8 @@ msgstr "Gardar o contido da consola"
 
 #: src/gui/Export3mfDialog.cc:78
 msgid ""
-"This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for "
-"export needs version 2 or later."
+"This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for"
+" export needs version 2 or later."
 msgstr ""
 "Esta compilación de OpenSCAD usa a versión 1 de lib3mf. Para definir a "
 "precisión decimal na exportación precísase a versión 2 ou posterior."
@@ -3034,7 +3034,8 @@ msgstr ""
 
 #: src/gui/input/AxisConfigWidget.h:92
 msgid ""
-"The DBUS driver is not for actual devices but for remote control, Linux only."
+"The DBUS driver is not for actual devices but for remote control, Linux "
+"only."
 msgstr ""
 "O controlador DBUS non é para dispositivos reais senón para control remoto, "
 "só en Linux."
@@ -3051,13 +3052,13 @@ msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
-"O controlador SpaceNav activa os dispositivos de entrada 3D mediante o daemon"
-" spacenavd, só en Linux."
+"O controlador SpaceNav activa os dispositivos de entrada 3D mediante o "
+"daemon spacenavd, só en Linux."
 
 #: src/gui/input/AxisConfigWidget.h:98
 msgid ""
-"The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0),"
-" Linux only."
+"The Joystick driver uses the Linux joystick device (fixed to "
+"/dev/input/js0), Linux only."
 msgstr ""
 "O controlador Joystick usa o dispositivo joystick de Linux (fixado en "
 "/dev/input/js0), só en Linux."
@@ -3091,8 +3092,8 @@ msgid ""
 " For details see the <a href=\"#errorlog\">error log</a> and <a "
 "href=\"#console\">console window</a>."
 msgstr ""
-" Para máis detalles consulte o <a href=\"#errorlog\">rexistro de erros</a> e "
-"a <a href=\"#console\">xanela da consola</a>."
+" Para máis detalles consulte o <a href=\"#errorlog\">rexistro de erros</a> e"
+" a <a href=\"#console\">xanela da consola</a>."
 
 #: src/gui/MainWindow.cc:1320
 msgid "Trusted Files"
@@ -3459,48 +3460,92 @@ msgid ""
 "OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
 "software for creating 3D models (such as Blender) it does not focus on the "
 "artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
-"might be the application you are looking for when you are planning to create "
-"3D models of machine parts but pretty sure is not what you are looking for "
+"might be the application you are looking for when you are planning to create"
+" 3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
 "OpenSCAD é un software para crear modelos CAD 3D de sólidos. A diferenza da "
-"maioría do software libre para crear modelos 3D (como Blender), non se centra"
-" nos aspectos artísticos do modelado 3D senón nos aspectos CAD. Por iso pode "
-"ser a aplicación que busca se planea crear modelos 3D de pezas de máquinas, "
-"pero seguramente non é o que busca se lle interesa máis crear películas de "
-"animación por computador."
+"maioría do software libre para crear modelos 3D (como Blender), non se "
+"centra nos aspectos artísticos do modelado 3D senón nos aspectos CAD. Por "
+"iso pode ser a aplicación que busca se planea crear modelos 3D de pezas de "
+"máquinas, pero seguramente non é o que busca se lle interesa máis crear "
+"películas de animación por computador."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:28
 msgid ""
 "OpenSCAD is not an interactive modeller. Instead it is something like a "
-"3D-compiler that reads in a script file that describes the object and renders"
-" the 3D model from this script file. This gives you (the designer) full "
-"control over the modelling process and enables you to easily change any step "
-"in the modelling process or make designs that are defined by configurable "
-"parameters."
+"3D-compiler that reads in a script file that describes the object and "
+"renders the 3D model from this script file. This gives you (the designer) "
+"full control over the modelling process and enables you to easily change any"
+" step in the modelling process or make designs that are defined by "
+"configurable parameters."
 msgstr ""
 "OpenSCAD non é un modelador interactivo. En troques, é algo así como un "
-"compilador 3D que le un ficheiro de script que describe o obxecto e renderiza"
-" o modelo 3D a partir dese ficheiro. Isto dálle a vostede (o deseñador) "
-"control total sobre o proceso de modelado e permite cambiar facilmente "
-"calquera paso do proceso ou facer deseños definidos por parámetros "
-"configurables."
+"compilador 3D que le un ficheiro de script que describe o obxecto e "
+"renderiza o modelo 3D a partir dese ficheiro. Isto dálle a vostede (o "
+"deseñador) control total sobre o proceso de modelado e permite cambiar "
+"facilmente calquera paso do proceso ou facer deseños definidos por "
+"parámetros configurables."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in2:29
 msgid ""
-"OpenSCAD provides two main modelling techniques: First there is constructive "
-"solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
+"OpenSCAD provides two main modelling techniques: First there is constructive"
+" solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
 "data exchange format for this 2D outlines Autocad DXF files are used. In "
 "addition to 2D paths for extrusion it is also possible to read design "
-"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
-"models in the STL and OFF file formats."
+"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D"
+" models in the STL and OFF file formats."
 msgstr ""
 "OpenSCAD ofrece dúas técnicas principais de modelado: en primeiro lugar a "
 "xeometría sólida construtiva (tamén chamada CSG) e en segundo lugar a "
 "extrusión de contornos 2D. Como formato de intercambio para estes contornos "
 "2D úsanse ficheiros DXF de Autocad. Ademais de camiños 2D para extrusión, "
 "tamén é posible ler parámetros de deseño desde ficheiros DXF. Ademais dos "
-"ficheiros DXF, OpenSCAD pode ler e crear modelos 3D nos formatos de ficheiro "
-"STL e OFF."
+"ficheiros DXF, OpenSCAD pode ler e crear modelos 3D nos formatos de ficheiro"
+" STL e OFF."
+
+#: src/gui/MainWindow.ui
+msgid "&Hide Editor Toolbar"
+msgstr "&Ocultar a barra de ferramentas do editor"
+
+#: src/gui/MainWindow.ui
+msgid "&Library Info"
+msgstr "Información das &bibliotecas"
+
+#: src/gui/MainWindow.ui
+msgid "Cop&y Viewport Rotation"
+msgstr "Cop&iar a rotación da vista"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Vie&wport Distance"
+msgstr "Copiar a distancia da vi&sta"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Vie&wport FOV"
+msgstr "Copiar o campo de visión (fov) da &vista"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Viewport Ima&ge"
+msgstr "Copiar a ima&xe da vista"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Viewport Transl&ation"
+msgstr "Copiar a transl&ación da vista"
+
+#: src/gui/MainWindow.ui
+msgid "Hide &3D View Toolbar"
+msgstr "Ocultar a barra de ferramentas da vista &3D"
+
+#: src/gui/MainWindow.ui
+msgid "J&ump to Next Error"
+msgstr "Ir ao segui&nte erro"
+
+#: src/gui/MainWindow.ui
+msgid "Jump to &Previous Bookmark"
+msgstr "Ir ao marcador &anterior"
+
+#: src/gui/MainWindow.ui
+msgid "Jump to Next &Bookmark"
+msgstr "Ir ao seguinte &marcador"
