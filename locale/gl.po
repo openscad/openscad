@@ -602,33 +602,40 @@ msgstr "&Amosar"
 msgid "All"
 msgstr "Todo"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:102
 msgid "ERROR"
-msgstr "ERRO"
+msgstr "ERROR"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:103
 msgid "WARNING"
-msgstr "AVISO"
+msgstr "WARNING"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:104
 msgid "UI-WARNING"
-msgstr "AVISO-IU"
+msgstr "UI-WARNING"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:105
 msgid "FONT-WARNING"
-msgstr "AVISO-TIPO DE LETRA"
+msgstr "FONT-WARNING"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:106
 msgid "EXPORT-WARNING"
-msgstr "AVISO-EXPORTACIÓN"
+msgstr "EXPORT-WARNING"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:107
 msgid "EXPORT-ERROR"
-msgstr "ERRO-EXPORTACIÓN"
+msgstr "EXPORT-ERROR"
 
+# Must match the message group name used by the error log filter.
 #: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:108
 msgid "DEPRECATED"
-msgstr "OBSOLETO"
+msgstr "DEPRECATED"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:457
 msgid "Export 3MF Options"
