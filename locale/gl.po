@@ -1,0 +1,6118 @@
+# Galician translation for OpenSCAD.
+# Copyright (C) 2026 THE OpenSCAD'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the OpenSCAD package.
+# Martín Pardiñas <martindetecnoloxia@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenSCAD 2026.09.06\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-06 23:38+0200\n"
+"PO-Revision-Date: 2026-10-17 12:00+0200\n"
+"Last-Translator: Martín Pardiñas <martindetecnoloxia@gmail.com>\n"
+"Language-Team: Galician\n"
+"Language: gl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:102
+#: src/gui/AboutDialog.h:20
+msgid "About OpenSCAD"
+msgstr "Acerca de OpenSCAD"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:104
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:304
+msgid ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+msgstr ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;\">O modelador CAD 3D de sólidos para programadores</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:111
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:516
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:634
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:222
+#: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:110
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:186
+msgid "OK"
+msgstr "Aceptar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:275
+msgid "Animate"
+msgstr "Animar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:276
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:278
+msgid "Toggle animation pause/unpause"
+msgstr "Alternar pausa/continuación da animación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:280
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:282
+msgid "Move to beginning (first frame)"
+msgstr "Ir ao comezo (primeiro fotograma)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:284
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:286
+msgid "Step one frame back"
+msgstr "Retroceder un fotograma"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:288
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:290
+msgid "Step one frame forward"
+msgstr "Avanzar un fotograma"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:292
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:294
+msgid "Move to end (last frame)"
+msgstr "Ir ao final (último fotograma)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:296
+msgid "Time:"
+msgstr "Tempo:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:297
+msgid "FPS:"
+msgstr "FPS:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:298
+msgid "Steps:"
+msgstr "Pasos:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:299
+msgid "Dump Pictures"
+msgstr "Gardar imaxes"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:852
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:362
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:214
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2464
+msgid "Preferences"
+msgstr "Preferencias"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:853
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:854
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:858
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:862
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:864
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:866
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:868
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:870
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:881
+msgid "Trim"
+msgstr "Axuste"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:855
+msgid "Reset Trim"
+msgstr "Restablecer axuste"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:856
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:859
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:860
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:861
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:863
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:865
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:867
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:869
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:880
+msgid "DeadZone"
+msgstr "Zona morta"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:857
+msgid "Auto Trim Axes"
+msgstr "Axuste automático dos eixos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:871
+msgid "Axis 2"
+msgstr "Eixo 2"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:872
+msgid "Axis 0"
+msgstr "Eixo 0"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:873
+msgid "Axis 3"
+msgstr "Eixo 3"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:874
+msgid "Axis 6"
+msgstr "Eixo 6"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:875
+msgid "Axis 8"
+msgstr "Eixo 8"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:876
+msgid "Axis 7"
+msgstr "Eixo 7"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:877
+msgid "Axis 5"
+msgstr "Eixo 5"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:878
+msgid "Axis 1"
+msgstr "Eixo 1"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:879
+msgid "Axis 4"
+msgstr "Eixo 4"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:882
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:279
+msgid "Rotation"
+msgstr "Rotación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:883
+msgid "Zoom"
+msgstr "Zoom"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:884
+msgid "X"
+msgstr "X"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:885
+msgid "Gain"
+msgstr "Ganancia"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:886
+msgid "Y"
+msgstr "Y"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:887
+msgid "Z"
+msgstr "Z"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:888
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:280
+msgid "Translation"
+msgstr "Translación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:889
+msgid "ViewPort rel.<br/>Translation"
+msgstr "Translación<br/>rel. á vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:890
+msgid "ViewPort rel.<br />Rotation"
+msgstr "Rotación<br />rel. á vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:891
+msgid "Axis Setup:"
+msgstr "Configuración dos eixos:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:892
+msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
+msgstr ""
+"<b>Selección do controlador:</b> <i>(os cambios requiren reiniciar "
+"OpenSCAD)</i>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:893
+msgid "SpaceNav"
+msgstr "SpaceNav"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:894
+msgid "HIDAPI"
+msgstr "HIDAPI"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:895
+msgid "QGamepad"
+msgstr "QGamepad"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:896
+msgid "Joystick"
+msgstr "Joystick"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:897
+msgid "DBus"
+msgstr "DBus"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:898
+msgid "Axes Mapping:"
+msgstr "Asignación dos eixos:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:899
+msgid "Status:"
+msgstr "Estado:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:900
+msgid "TextLabel"
+msgstr "TextLabel"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:901
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2468
+msgid "Update"
+msgstr "Actualizar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:363
+msgid "Button 19"
+msgstr "Botón 19"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:364
+msgid "Button 5"
+msgstr "Botón 5"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:365
+msgid "Button 14"
+msgstr "Botón 14"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:366
+msgid "Button 7"
+msgstr "Botón 7"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:367
+msgid "Button 16"
+msgstr "Botón 16"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:368
+msgid "Button 20"
+msgstr "Botón 20"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:369
+msgid "Button 1"
+msgstr "Botón 1"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:370
+msgid "Button 21"
+msgstr "Botón 21"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:371
+msgid "Button 18"
+msgstr "Botón 18"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:372
+msgid "Button 0"
+msgstr "Botón 0"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:373
+msgid "Button 4"
+msgstr "Botón 4"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:374
+msgid "Button 10"
+msgstr "Botón 10"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:375
+msgid "Button 6"
+msgstr "Botón 6"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:376
+msgid "Button 8"
+msgstr "Botón 8"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:377
+msgid "Button 15"
+msgstr "Botón 15"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:378
+msgid "Button 11"
+msgstr "Botón 11"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:379
+msgid "Button 3"
+msgstr "Botón 3"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:380
+msgid "Button 23"
+msgstr "Botón 23"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:381
+msgid "Button 9"
+msgstr "Botón 9"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:382
+msgid "Button 2"
+msgstr "Botón 2"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:383
+msgid "Button 13"
+msgstr "Botón 13"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:384
+msgid "Button 12"
+msgstr "Botón 12"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:385
+msgid "Button 17"
+msgstr "Botón 17"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:386
+msgid "Button 22"
+msgstr "Botón 22"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:194
+msgid "AI Chat"
+msgstr "Chat de IA"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:195
+#: src/gui/ai/ChatWidget.cc:138
+msgid "AI Assistant"
+msgstr "Asistente de IA"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:197
+msgid "Chat options"
+msgstr "Opcións do chat"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:199
+msgid "☰"
+msgstr "☰"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:201
+#: src/gui/ai/ChatWidget.cc:140
+msgid "Clear chat history"
+msgstr "Borrar o historial do chat"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:203
+#: build/OpenSCADLibInternal_autogen/include/ui_Console.h:42
+#: src/gui/ai/ChatWidget.cc:139
+msgid "Clear"
+msgstr "Borrar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:204
+#: src/gui/ai/ChatWidget.cc:141 src/gui/ai/ChatWidget.cc:630
+msgid "Send"
+msgstr "Enviar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:206
+msgid "Grab active 3D viewport frame and camera metadata"
+msgstr "Capturar o fotograma da vista 3D activa e os metadatos da cámara"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:208
+msgid "Analyze Screen"
+msgstr "Analizar a pantalla"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:210
+msgid "Attach local image file"
+msgstr "Anexar un ficheiro de imaxe local"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:212
+#: src/gui/ai/ChatWidget.cc:508
+msgid "Attach Image"
+msgstr "Anexar imaxe"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:214
+msgid ""
+"Agentic mode: allow the AI to call tools in multiple automatic turns per "
+"request"
+msgstr ""
+"Modo axéntico: permite que a IA chame a ferramentas en varias quendas "
+"automáticas por solicitude"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:216
+msgid "Agentic"
+msgstr "Axéntico"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:399
+msgid "Color List"
+msgstr "Lista de cores"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:400
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:402
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:404
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:406
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:292
+msgid "Reset Sample Text"
+msgstr "Restablecer o texto de mostra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:408
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:410
+msgid "Copy Color Name"
+msgstr "Copiar o nome da cor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:412
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:414
+msgid "Copy Color RGB"
+msgstr "Copiar a cor RGB"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:416
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:305
+msgid "Filter"
+msgstr "Filtro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:417
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:446
+msgid "Color name"
+msgstr "Nome da cor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:418
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:309
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2522
+#: src/core/Settings.cc:161 src/core/Settings.cc:498
+msgid "Fixed"
+msgstr "Fixo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:419
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:310
+#: src/core/Settings.cc:499
+msgid "Wildcard"
+msgstr "Comodín"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:420
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:311
+#: src/core/Settings.cc:500
+msgid "RegExp"
+msgstr "Expresión regular"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:422
+msgid "Sort order"
+msgstr "Orde"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:423
+msgid "Ascending"
+msgstr "Ascendente"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:424
+msgid "Descending"
+msgstr "Descendente"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:425
+msgid "Alphabetically"
+msgstr "Alfabeticamente"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:426
+#: src/core/Settings.cc:510
+msgid "By color"
+msgstr "Por cor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:427
+#: src/core/Settings.cc:511
+msgid "By color warmth"
+msgstr "Por calidez da cor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:428
+#: src/core/Settings.cc:512
+msgid "By lightness"
+msgstr "Por luminosidade"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:430
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:316
+msgid "Selection"
+msgstr "Selección"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:433
+msgid "Reset background color"
+msgstr "Restablecer a cor de fondo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:435
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:439
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:451
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:455
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:476
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:477
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:513
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:620
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:621
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:627
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:628
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:631
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:209
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:210
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:216
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:217
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:220
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:177
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2597
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2604
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2652
+msgid "..."
+msgstr "..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:437
+msgid "Select background color"
+msgstr "Seleccionar a cor de fondo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:440
+msgid "Color RGB"
+msgstr "Cor RGB"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:441
+msgid "As Foreground"
+msgstr "Como primeiro plano"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:442
+msgid "As Background"
+msgstr "Como fondo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:443
+msgid "R:"
+msgstr "R:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:444
+msgid "G:"
+msgstr "G:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:445
+msgid "B:"
+msgstr "B:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:449
+msgid "Reset foreground color"
+msgstr "Restablecer a cor de primeiro plano"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:453
+msgid "Select foreground color"
+msgstr "Seleccionar a cor de primeiro plano"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Console.h:44
+msgid "Clear console"
+msgstr "Borrar a consola"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Console.h:46
+msgid "Save As..."
+msgstr "Gardar como..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Console.h:48
+msgid "Save console content to file"
+msgstr "Gardar o contido da consola nun ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:92
+msgid "Error Log"
+msgstr "Rexistro de erros"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:93
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:267
+msgid "RowSelected"
+msgstr "RowSelected"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:95
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:269
+msgid "Return"
+msgstr "Volver"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:98
+msgid "double click to jump to file and line"
+msgstr "faga dobre clic para ir ao ficheiro e liña"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:100
+msgid "&Show"
+msgstr "&Amosar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:101
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:306
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1307
+msgid "All"
+msgstr "Todo"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:102
+msgid "ERROR"
+msgstr "ERROR"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:103
+msgid "WARNING"
+msgstr "WARNING"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:104
+msgid "UI-WARNING"
+msgstr "UI-WARNING"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:105
+msgid "FONT-WARNING"
+msgstr "FONT-WARNING"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:106
+msgid "EXPORT-WARNING"
+msgstr "EXPORT-WARNING"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:107
+msgid "EXPORT-ERROR"
+msgstr "EXPORT-ERROR"
+
+# Must match the message group name used by the error log filter.
+#: build/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:108
+msgid "DEPRECATED"
+msgstr "DEPRECATED"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:457
+msgid "Export 3MF Options"
+msgstr "Opcións de exportación 3MF"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:459
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:552
+msgid ""
+"<html><head/><body><p>Set the PDF page (paper) size.  </p></body></html>"
+msgstr ""
+"<html><head/><body><p>Define o tamaño da páxina (papel) do PDF.  "
+"</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:461
+msgid "Unit"
+msgstr "Unidade"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:462
+#: src/core/Settings.cc:443
+msgid "Micron"
+msgstr "Micra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:463
+msgid "Millimeter (default)"
+msgstr "Milímetro (predeterminado)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:464
+#: src/core/Settings.cc:445
+msgid "Centimeter"
+msgstr "Centímetro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:465
+#: src/core/Settings.cc:446
+msgid "Meter"
+msgstr "Metro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:466
+#: src/core/Settings.cc:447
+msgid "Inch"
+msgstr "Polgada"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:467
+msgid "Foot"
+msgstr "Pé"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:471
+msgid "Colors"
+msgstr "Cores"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:472
+msgid "Use colors from model and color scheme"
+msgstr "Usar as cores do modelo e do esquema de cores"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:473
+#: src/core/Settings.cc:436
+msgid "No colors"
+msgstr "Sen cores"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:474
+msgid "Use selected color for all objects"
+msgstr "Usar a cor seleccionada para todos os obxectos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:478
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:563
+msgid "Meta data"
+msgstr "Metadatos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:479
+msgid ""
+"The fields Title, Application and CreationDate are always filled in the "
+"exported file when meta data is enabled."
+msgstr ""
+"Os campos Título, Aplicación e Data de creación énchense sempre no ficheiro "
+"exportado cando os metadatos están activados."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:481
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:572
+msgid "A copyright associated with this document"
+msgstr "Un copyright asociado a este documento"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:483
+msgid "Copyright"
+msgstr "Copyright"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:484
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:569
+msgid "Title, leave empty to use the file name"
+msgstr "Título, déixeo baleiro para usar o nome do ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:485
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:100
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:101
+msgid "Description"
+msgstr "Descrición"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:486
+msgid "Designer"
+msgstr "Deseñador"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:487
+msgid "License terms"
+msgstr "Condicións da licenza"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:489
+msgid "An industry rating associated with this document"
+msgstr "Unha clasificación do sector asociada a este documento"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:494
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:576
+msgid "A name for a designer of this document"
+msgstr "Un nome de deseñador deste documento"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:498
+msgid "Rating"
+msgstr "Clasificación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:500
+msgid "License information associated with this document"
+msgstr "Información da licenza asociada a este documento"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:504
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:566
+msgid "A description of the document"
+msgstr "Unha descrición do documento"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:507
+msgid "Format"
+msgstr "Formato"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:508
+msgid "Decimal precision"
+msgstr "Precisión decimal"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:509
+msgid "Export colors as"
+msgstr "Exportar as cores como"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:511
+msgid "Reset value to the default decimal precision value."
+msgstr "Restablecer o valor á precisión decimal predeterminada."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:514
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:632
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:184
+msgid "Always show dialog"
+msgstr "Amosar sempre o diálogo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:515
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:633
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:221
+#: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:109
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:185
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:550
+msgid "Export PDF Options"
+msgstr "Opcións de exportación PDF"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:554
+msgid "Page Size"
+msgstr "Tamaño da páxina"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:555
+#: src/core/Settings.cc:388
+msgid "A6 (105 x 148 mm)"
+msgstr "A6 (105 x 148 mm)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:556
+#: src/core/Settings.cc:389
+msgid "A5 (148 x 210 mm)"
+msgstr "A5 (148 x 210 mm)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:557
+#: src/core/Settings.cc:390
+msgid "A4 (210x297 mm)"
+msgstr "A4 (210x297 mm)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:558
+#: src/core/Settings.cc:391
+msgid "A3 (297x420 mm)"
+msgstr "A3 (297x420 mm)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:559
+#: src/core/Settings.cc:392
+msgid "Letter (8.5x11 in)"
+msgstr "Carta (8.5x11 in)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:560
+#: src/core/Settings.cc:393
+msgid "Legal (8.5x14 in)"
+msgstr "Legal (8.5x14 in)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:561
+#: src/core/Settings.cc:394
+msgid "Tabloid (11x17 in)"
+msgstr "Tabloide (11x17 in)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:564
+msgid ""
+"The fields Title, Creator and CreateDate are always filled in the exported "
+"file when meta data is enabled."
+msgstr ""
+"Os campos Título, Creador e Data de creación énchense sempre no ficheiro "
+"exportado cando os metadatos están activados."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:570
+msgid "Subject"
+msgstr "Asunto"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:574
+msgid "Keywords"
+msgstr "Palabras clave"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:579
+msgid "Author"
+msgstr "Autor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:582
+msgid ""
+"<html><head/><body><p>Set the direction of the largest page "
+"dimension.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Define a dirección da maior dimensión da "
+"páxina.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:584
+msgid "Page Orientation"
+msgstr "Orientación da páxina"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:585
+#: src/core/Settings.cc:398
+msgid "Portrait (Vertical)"
+msgstr "Retrato (vertical)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:587
+#: src/core/Settings.cc:399
+msgid "Landscape (Horizontal)"
+msgstr "Paisaxe (horizontal)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:589
+msgid ""
+"<html><head/><body><p>Determine best orientation based on maximum geometry "
+"dimension.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Determina a mellor orientación segundo a dimensión "
+"máxima da xeometría.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:591
+#: src/core/Settings.cc:400
+msgid "Auto"
+msgstr "Automática"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:592
+msgid "Annotations"
+msgstr "Anotacións"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:594
+msgid ""
+"<html><head/><body><p>Include design filename on page.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Inclúe o nome do ficheiro do deseño na "
+"páxina.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:596
+msgid "Show Design Filename"
+msgstr "Amosar o nome do ficheiro do deseño"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:598
+msgid ""
+"<html><head/><body><p>Include rulers on page to confirm 1:1 printing "
+"scale.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Inclúe regras na páxina para confirmar a escala de "
+"impresión 1:1.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:600
+msgid "Show Scale"
+msgstr "Amosar a escala"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:602
+msgid ""
+"<html><head/><body><p>Include a grid of the selected size on the "
+"page.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Inclúe unha grade do tamaño seleccionado na "
+"páxina.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:604
+msgid "Show Grid"
+msgstr "Amosar a grade"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:605
+msgid "2mm"
+msgstr "2mm"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:606
+msgid "2.5mm"
+msgstr "2.5mm"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:607
+msgid "4mm"
+msgstr "4mm"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:608
+msgid "5mm"
+msgstr "5mm"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:609
+msgid "10mm"
+msgstr "10mm"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:611
+msgid ""
+"<html><head/><body><p>Include text describing usage of "
+"scale.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Inclúe un texto que describe o uso da "
+"escala.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:613
+msgid "Show Scale Usage"
+msgstr "Amosar o uso da escala"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:614
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:203
+msgid "Fill and Stroke"
+msgstr "Recheo e trazo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:616
+msgid ""
+"<html><head/><body><p>Enable filling of exported geometry with a "
+"color.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Activa o recheo da xeometría exportada cunha "
+"cor.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:618
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:207
+msgid "Fill Geometry"
+msgstr "Encher a xeometría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:623
+msgid ""
+"<html><head/><body><p>Enable outline stroke for exported "
+"geometry.</p></body></html>"
+msgstr ""
+"<html><head/><body><p>Activa o trazo do contorno da xeometría "
+"exportada.</p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:625
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:214
+msgid "Stroke Outline"
+msgstr "Trazar o contorno"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:629
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:218
+msgid "Stroke Width:"
+msgstr "Grosor do trazo:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:630
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:219
+msgid " mm"
+msgstr " mm"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:202
+msgid "Export SVG Options"
+msgstr "Opcións de exportación SVG"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:205
+msgid "Enable filling of exported geometry with a color."
+msgstr "Activa o recheo da xeometría exportada cunha cor."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:212
+msgid "Enable outline stroke for exported geometry."
+msgstr "Activa o trazo do contorno da xeometría exportada."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:291
+msgid "Font List"
+msgstr "Lista de tipos de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:293
+msgid "Open Font Folder"
+msgstr "Abrir o cartafol de tipos de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:294
+msgid "Copy Font Folder"
+msgstr "Copiar o cartafol de tipos de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:295
+msgid "Copy Full Path to Font"
+msgstr "Copiar a ruta completa ao tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:296
+msgid "Copy Font Style"
+msgstr "Copiar o estilo do tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:297
+msgid "Copy Font Name"
+msgstr "Copiar o nome do tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:298
+msgid "Show Font Name"
+msgstr "Amosar o nome do tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:299
+msgid "Show Styled Font Name"
+msgstr "Amosar o nome do tipo de letra con estilo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:300
+msgid "Show Font Style"
+msgstr "Amosar o estilo do tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:301
+msgid "Show Sample Text"
+msgstr "Amosar o texto de mostra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:302
+msgid "ShowFileName"
+msgstr "Amosar o nome do ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:303
+msgid "Show File Path"
+msgstr "Amosar a ruta do ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:304
+msgid "Reset Columns"
+msgstr "Restablecer as columnas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:307
+msgid "Any"
+msgstr "Calquera"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:313
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:317
+#: src/gui/FontList.cc:402
+msgid "Font name"
+msgstr "Nome do tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:314
+#: src/gui/FontList.cc:406
+msgid "Sample text"
+msgstr "Texto de mostra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:315
+msgid "Chars"
+msgstr "Caracteres"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:318
+msgid "Font path"
+msgstr "Ruta do tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:319
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2521
+msgid "Style"
+msgstr "Estilo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:293
+msgid "Welcome to OpenSCAD"
+msgstr "Benvido/a a OpenSCAD"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:294
+msgid "New"
+msgstr "Novo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:295
+msgid "Open"
+msgstr "Abrir"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:296
+msgid "Help"
+msgstr "Axuda"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:297
+msgid "Recents"
+msgstr "Recentes"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:298
+msgid "Open Recent"
+msgstr "Abrir recente"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:299
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:301
+msgid "Examples"
+msgstr "Exemplos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:302
+msgid "Open Example"
+msgstr "Abrir exemplo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:311
+msgid "Don't show again"
+msgstr "Non amosar de novo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:312
+msgid "Version"
+msgstr "Versión"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:75
+msgid "Lib & Build Info"
+msgstr "Info. de bibliotecas e compilación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:76
+msgid "OpenSCAD Detailed Library and Build Information"
+msgstr "Información detallada das bibliotecas e da compilación de OpenSCAD"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:77
+msgid "&OK"
+msgstr "&Aceptar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1006
+msgid "&New File"
+msgstr "&Novo ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1008
+msgid "Ctrl+N"
+msgstr "Ctrl+N"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1010
+msgid "New &Window"
+msgstr "Nova &xanela"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1011
+msgid "&Open File..."
+msgstr "&Abrir ficheiro..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1013
+msgid "Ctrl+O"
+msgstr "Ctrl+O"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1015
+msgid "Open in New Windo&w"
+msgstr "Abrir nunha nova &xanela"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1016
+msgid "&Save"
+msgstr "&Gardar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1018
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1020
+msgid "Save &As..."
+msgstr "Gardar &como..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1022
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1024
+msgid "Save a C&opy..."
+msgstr "Gardar unha c&opia..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1025
+msgid "S&ave All"
+msgstr "Gardar &todo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1026
+msgid "&Reload"
+msgstr "&Recargar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1028
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1030
+msgid "&Quit"
+msgstr "&Saír"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1032
+msgid "Ctrl+Q"
+msgstr "Ctrl+Q"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1034
+msgid "&Undo"
+msgstr "&Desfacer"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1036
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1038
+msgid "&Redo"
+msgstr "&Refacer"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1040
+msgid "Ctrl+Shift+Z"
+msgstr "Ctrl+Shift+Z"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1043
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1045
+msgid "Cu&t"
+msgstr "Cor&tar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1047
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1049
+msgid "&Copy"
+msgstr "&Copiar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1051
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1053
+msgid "&Paste"
+msgstr "&Pegar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1055
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1057
+msgid "&Indent"
+msgstr "&Sangrar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1059
+msgid "Ctrl+I"
+msgstr "Ctrl+I"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1061
+msgid "C&omment"
+msgstr "C&omentar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1063
+msgid "Ctrl+D"
+msgstr "Ctrl+D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1065
+msgid "Unco&mment"
+msgstr "Desco&mentar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1067
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1069
+msgid "Mo&ve Line Up"
+msgstr "Mo&ver a liña arriba"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1071
+msgid "Ctrl+Alt+Up"
+msgstr "Ctrl+Alt+Up"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1073
+msgid "Mo&ve Line Down"
+msgstr "Mo&ver a liña abaixo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1075
+msgid "Ctrl+Alt+Down"
+msgstr "Ctrl+Alt+Down"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1077
+msgid "Show &Next Tab"
+msgstr "Amosar a lapela segui&nte"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1079
+msgid "Ctrl+Tab"
+msgstr "Ctrl+Tab"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1081
+msgid "Show P&revious Tab"
+msgstr "Amosar a lapela ante&rior"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1083
+msgid "Ctrl+Shift+Tab"
+msgstr "Ctrl+Shift+Tab"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1085
+msgid "Copy viewport ima&ge"
+msgstr "Copiar a ima&xe da vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1087
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1089
+msgid "Copy viewport transl&ation"
+msgstr "Copiar a transl&ación da vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1091
+msgid "Ctrl+T"
+msgstr "Ctrl+T"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1093
+msgid "Cop&y viewport rotation"
+msgstr "Cop&iar a rotación da vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1094
+msgid "Copy vie&wport distance"
+msgstr "Copiar a distancia da vi&sta"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1095
+msgid "Copy vie&wport fov"
+msgstr "Copiar o campo de visión (fov) da &vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1096
+msgid "Increase Font &Size"
+msgstr "Aumentar o &tamaño da letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1098
+msgid "Ctrl++"
+msgstr "Ctrl++"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1100
+msgid "Decrease Font Si&ze"
+msgstr "Diminuír o tama&ño da letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1102
+msgid "Ctrl+-"
+msgstr "Ctrl+-"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1104
+msgid "&Reload and Preview"
+msgstr "&Recargar e previsualizar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1106
+msgid "F4"
+msgstr "F4"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1108
+msgid "&Preview"
+msgstr "&Previsualizar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1110
+msgid "F5"
+msgstr "F5"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1112
+msgid "R&ender"
+msgstr "R&enderizar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1114
+msgid "F6"
+msgstr "F6"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1116
+msgid "&3D Print"
+msgstr "Impresión &3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1118
+msgid "F8"
+msgstr "F8"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1120
+msgid "Measure &Distance"
+msgstr "Medir a &distancia"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1122
+msgid "D"
+msgstr "D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1124
+msgid "Measure &Angle"
+msgstr "Medir o &ángulo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1126
+msgid "A"
+msgstr "A"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1128
+msgid "&Check Validity"
+msgstr "&Comprobar a validez"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1129
+msgid "Display A&ST"
+msgstr "Amosar a A&ST"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1130
+msgid "Display CSG &Tree"
+msgstr "Amosar a árbore CS&G"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1131
+msgid "Display CSG Pr&oducts"
+msgstr "Amosar os pr&odutos CSG"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1132
+msgid "Export as &STL (binary)..."
+msgstr "Exportar como &STL (binario)..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1133
+msgid "Export as &STL (ascii)..."
+msgstr "Exportar como &STL (ascii)..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1134
+msgid "Export as &OBJ..."
+msgstr "Exportar como &OBJ..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1135
+msgid "Export as &POV..."
+msgstr "Exportar como &POV..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1136
+msgid "Export as &OFF..."
+msgstr "Exportar como &OFF..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1137
+msgid "Export as &WRL..."
+msgstr "Exportar como &WRL..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1138
+msgid "P&review"
+msgstr "P&revisualización"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1140
+msgid "F9"
+msgstr "F9"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1142
+msgid "T&hrown Together"
+msgstr "&Xuntar todo (Thrown Together)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1144
+msgid "F12"
+msgstr "F12"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1146
+msgid "&Show Edges"
+msgstr "Amosar as &arestas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1148
+msgid "Ctrl+1"
+msgstr "Ctrl+1"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1150
+msgid "Show A&xes"
+msgstr "Amosar os e&ixos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1152
+msgid "Ctrl+2"
+msgstr "Ctrl+2"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1154
+msgid "Show &Crosshairs"
+msgstr "Amosar a &cruz central"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1156
+msgid "Ctrl+3"
+msgstr "Ctrl+3"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1158
+msgid "Show Scale &Markers"
+msgstr "Amosar as &marcas de escala"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1159
+msgid "&Top"
+msgstr "&Superior"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1161
+msgid "Ctrl+4"
+msgstr "Ctrl+4"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1163
+msgid "&Bottom"
+msgstr "&Inferior"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1165
+msgid "Ctrl+5"
+msgstr "Ctrl+5"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1167
+msgid "&Left"
+msgstr "&Esquerda"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1169
+msgid "Ctrl+6"
+msgstr "Ctrl+6"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1171
+msgid "&Right"
+msgstr "&Dereita"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1173
+msgid "Ctrl+7"
+msgstr "Ctrl+7"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1175
+msgid "&Front"
+msgstr "&Fronte"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1177
+msgid "Ctrl+8"
+msgstr "Ctrl+8"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1179
+msgid "Bac&k"
+msgstr "&Traseira"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1181
+msgid "Ctrl+9"
+msgstr "Ctrl+9"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1183
+msgid "&Diagonal"
+msgstr "D&iagonal"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1185
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1187
+msgid "Ce&nter"
+msgstr "Ce&ntrar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1189
+msgid "Ctrl+Shift+0"
+msgstr "Ctrl+Shift+0"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1191
+msgid "&Perspective"
+msgstr "&Perspectiva"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1192
+msgid "&Orthogonal"
+msgstr "&Ortogonal"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1193
+msgid "&About"
+msgstr "&Acerca de"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1194
+msgid "&Documentation"
+msgstr "&Documentación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1195
+msgid "&Offline Documentation"
+msgstr "Documentación sen &conexión"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1196
+msgid "&Offline Cheat Sheet"
+msgstr "Chuleta sen c&onexión"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1197
+msgid "Clear Recent"
+msgstr "Borrar os recentes"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1198
+msgid "Export as &DXF..."
+msgstr "Exportar como &DXF..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1199
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1201
+msgid "Revoke Trusted Python Files"
+msgstr "Revogar os ficheiros Python de confianza"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1203
+msgid "&Close"
+msgstr "&Pechar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1205
+msgid "Ctrl+W"
+msgstr "Ctrl+W"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1207
+msgid "&Preferences"
+msgstr "&Preferencias"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1208
+msgid "&Find..."
+msgstr "&Buscar..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1210
+msgid "Ctrl+F"
+msgstr "Ctrl+F"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1212
+msgid "Fin&d and Replace..."
+msgstr "Buscar e su&bstituír..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1214
+msgid "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+F"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1216
+msgid "Find Ne&xt"
+msgstr "Buscar o segui&nte"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1218
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1220
+msgid "Find Pre&vious"
+msgstr "Buscar o ante&rior"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1222
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1224
+msgid "Use Se&lection for Find"
+msgstr "Usar a se&lección para buscar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1226
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1228
+msgid "J&ump to next error"
+msgstr "Ir ao segui&nte erro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1230
+msgid "Ctrl+Alt+E"
+msgstr "Ctrl+Alt+E"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1232
+msgid "&Flush Caches"
+msgstr "&Baleirar as cachés"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1233
+msgid "&OpenSCAD Homepage"
+msgstr "Páxina web de &OpenSCAD"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1234
+msgid "&Automatic Reload and Preview"
+msgstr "Recarga e previsualización &automáticas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1235
+msgid "Export as &Image..."
+msgstr "Exportar como &imaxe..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1236
+msgid "Export as &CSG..."
+msgstr "Exportar como &CSG..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1237
+msgid "&Library info"
+msgstr "Información das &bibliotecas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1238
+msgid "Show &Library Folder"
+msgstr "Amosar o cartafol de &bibliotecas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1239
+msgid "Reset &View"
+msgstr "Restablecer a &vista"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1240
+msgid "Export as S&VG..."
+msgstr "Exportar como S&VG..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1241
+msgid "Export as &3MF..."
+msgstr "Exportar como &3MF..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1242
+msgid "Zoom &In"
+msgstr "&Achegar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1244
+msgid "Ctrl+]"
+msgstr "Ctrl+]"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1246
+msgid "&Zoom Out"
+msgstr "A&fastar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1248
+msgid "Ctrl+["
+msgstr "Ctrl+["
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1250
+msgid "View &All"
+msgstr "Ver &todo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1252
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1254
+msgid "Conv&ert Tabs to Spaces"
+msgstr "Conv&erter tabulacións en espazos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1255
+msgid "&Toggle Bookmark"
+msgstr "&Alternar marcador"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1257
+msgid "Ctrl+F2"
+msgstr "Ctrl+F2"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1259
+msgid "Jump to next &bookmark"
+msgstr "Ir ao seguinte &marcador"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1261
+msgid "F2"
+msgstr "F2"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1263
+msgid "Jump to &previous bookmark"
+msgstr "Ir ao marcador &anterior"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1265
+msgid "Shift+F2"
+msgstr "Shift+F2"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1267
+msgid "&Hide Editor toolbar"
+msgstr "&Ocultar a barra de ferramentas do editor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1268
+msgid "U&nindent"
+msgstr "&Quitar sangría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1270
+msgid "Ctrl+Shift+I"
+msgstr "Ctrl+Shift+I"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1272
+msgid "&Cheat Sheet"
+msgstr "&Chuleta"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1273
+msgid "Export as PDF..."
+msgstr "Exportar como PDF..."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1274
+msgid "Hide &3D View toolbar"
+msgstr "Ocultar a barra de ferramentas da vista &3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1275
+msgid "&Next Window\tCtrl+K"
+msgstr "&Seguinte xanela\tCtrl+K"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1276
+msgid "&Previous Window\tCtrl+H"
+msgstr "&Anterior xanela\tCtrl+H"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1277
+msgid "Insert Template"
+msgstr "Inserir modelo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1279
+msgid "Alt+Ins"
+msgstr "Alt+Ins"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1281
+msgid "Fold/Unfold All"
+msgstr "Pregar/despregar todo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1282
+msgid "&Jump To"
+msgstr "&Ir a"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1284
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1286
+#: src/gui/MainWindow.cc:1335 src/gui/MainWindow.cc:1342
+#: src/gui/MainWindow.cc:1355 src/gui/MainWindow.cc:1360
+msgid "Create Virtual Environment"
+msgstr "Crear un contorno virtual"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1287
+#: src/gui/MainWindow.cc:1377
+msgid "Select Virtual Environment"
+msgstr "Seleccionar un contorno virtual"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1288
+#: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:107
+msgid "Message"
+msgstr "Mensaxe"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1291
+msgid "&File"
+msgstr "&Ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1292
+msgid "Recen&t Files"
+msgstr "Ficheiros recen&tes"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1293
+msgid "&Examples"
+msgstr "&Exemplos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1294
+msgid "E&xport"
+msgstr "E&xportar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1295
+msgid "Python"
+msgstr "Python"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1296
+msgid "&Edit"
+msgstr "&Editar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1297
+msgid "&Design"
+msgstr "&Deseño"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1298
+msgid "&View"
+msgstr "&Ver"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1299
+msgid "&Help"
+msgstr "A&xuda"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1300
+msgid "&Window"
+msgstr "Xa&nela"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1301
+msgid "Find"
+msgstr "Buscar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1302
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1306
+msgid "Replace"
+msgstr "Substituír"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1304
+msgid "Search string"
+msgstr "Texto que buscar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1305
+msgid "Replacement string"
+msgstr "Texto de substitución"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1308
+msgid "Previous"
+msgstr "Anterior"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1309
+msgid "Next"
+msgstr "Seguinte"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1310
+msgid "Done"
+msgstr "Feito"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1311
+msgid "Customizer Widget"
+msgstr "Widget do personalizador"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:215
+msgid "Ctrl + Shift + Middle-click"
+msgstr "Ctrl + Maiús + clic central"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:216
+msgid "Left-click"
+msgstr "Clic esquerdo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:217
+msgid "Ctrl + Left-click"
+msgstr "Ctrl + clic esquerdo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:218
+msgid "Shift + Left-click"
+msgstr "Maiús + clic esquerdo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:219
+msgid "Ctrl + Shift + Right-click"
+msgstr "Ctrl + Maiús + clic dereito"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:220
+msgid "Preset"
+msgstr "Predefinición"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:221
+msgid "Right-click"
+msgstr "Clic dereito"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:222
+msgid "Ctrl + Middle-click"
+msgstr "Ctrl + clic central"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:223
+msgid "Shift + Middle-click"
+msgstr "Maiús + clic central"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:224
+msgid "Ctrl + Right-click"
+msgstr "Ctrl + clic dereito"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:225
+msgid "Ctrl + Shift + Left-click"
+msgstr "Ctrl + Maiús + clic esquerdo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:226
+msgid "Shift + Right-click"
+msgstr "Maiús + clic dereito"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:227
+msgid "Middle-click"
+msgstr "Clic central"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:106
+msgid "OctoPrint API Key Request"
+msgstr "Solicitude de chave API de OctoPrint"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:108
+msgid "Retry"
+msgstr "Tentar de novo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:76
+msgid "OpenGL Warning"
+msgstr "Aviso de OpenGL"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:77
+msgid ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>"
+msgstr ""
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:82
+msgid "Show this message again"
+msgstr "Amosar esta mensaxe de novo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:83
+msgid "Close"
+msgstr "Pechar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterCheckBox.h:60
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterComboBox.h:56
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:98
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterSlider.h:86
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterSpinBox.h:69
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterText.h:55
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterVector.h:108
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:154
+msgid "Form"
+msgstr "Formulario"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:99
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2598
+msgid "Parameter"
+msgstr "Parámetro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:155
+msgid "Automatic Preview"
+msgstr "Previsualización automática"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:156
+msgid "Show Details"
+msgstr "Amosar detalles"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:157
+msgid "Inline Details"
+msgstr "Detalles en liña"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:158
+msgid "Hide Details"
+msgstr "Ocultar detalles"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:159
+msgid "Description Only"
+msgstr "Só a descrición"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:161
+msgid "<design default>"
+msgstr "<predeterminado do deseño>"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:164
+msgid "preset selection"
+msgstr "selección de predefinición"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:167
+msgid "Add new preset"
+msgstr "Engadir unha nova predefinición"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:169
+msgid "+"
+msgstr "+"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:171
+msgid "Remove current preset"
+msgstr "Eliminar a predefinición actual"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:173
+msgid "-"
+msgstr "-"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:175
+msgid "More actions"
+msgstr "Máis accións"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2465
+msgid "3D View"
+msgstr "Vista 3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2466
+msgctxt "preferences"
+msgid "Advanced"
+msgstr "Avanzado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2467
+msgid "Editor"
+msgstr "Editor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2469
+msgid "Experimental"
+msgstr "Experimental"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2471
+msgid "Enable/Disable experimental features"
+msgstr "Activar/desactivar as funcionalidades experimentais"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2473
+msgid "Axes"
+msgstr "Eixos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2475
+msgid "Input driver configuration and Axis mapping"
+msgstr "Configuración do controlador de entrada e asignación de eixos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2477
+msgid "Buttons"
+msgstr "Botóns"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2478
+msgid "Mouse"
+msgstr "Rato"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2479
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:178
+msgid "3D Print"
+msgstr "Impresión 3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2481
+msgid "3D Printing Services"
+msgstr "Servizos de impresión 3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2483
+msgid "Dialogs"
+msgstr "Diálogos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2484
+msgid "AI"
+msgstr "IA"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2486
+msgid "AI and LLM configurations"
+msgstr "Configuracións de IA e LLM"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2488
+msgid "Directory of the output file"
+msgstr "Directorio do ficheiro de saída"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2489
+msgid "Extension of the output file without leading dot"
+msgstr "Extensión do ficheiro de saída sen o punto inicial"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2490
+msgid "Full path to the main source file"
+msgstr "Ruta completa ao ficheiro fonte principal"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2491
+msgid "Directory of the main source file"
+msgstr "Directorio do ficheiro fonte principal"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2492
+msgid "Full path to the output file"
+msgstr "Ruta completa ao ficheiro de saída"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2493
+msgid "Color scheme:"
+msgstr "Esquema de cores:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2494
+msgid "Show Warnings and Errors in 3D View"
+msgstr "Amosar avisos e erros na vista 3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2495
+msgid "mouse centric zoom"
+msgstr "zoom centrado no rato"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2496
+msgid "Number Scroll"
+msgstr "Desprazamento de números"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2497
+#: src/core/Settings.cc:198
+msgid "Alt"
+msgstr "Alt"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2498
+#: src/core/Settings.cc:199
+msgid "Left Mouse Button"
+msgstr "Botón esquerdo do rato"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2499
+#: src/core/Settings.cc:200
+msgid "Either"
+msgstr "Calquera"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2501
+msgid "Step Size"
+msgstr "Tamaño do paso"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2502
+msgid "Number Scroll Via Mouse Wheel"
+msgstr "Desprazamento de números coa roda do rato"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2503
+msgid "Modifier For Wheel Scroll "
+msgstr "Modificador para o desprazamento coa roda "
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2504
+msgid "Autocomplete"
+msgstr "Autocompletado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2505
+msgid " Include defined modules"
+msgstr " Incluír os módulos definidos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2506
+msgid "Character Threshold"
+msgstr "Limiar de caracteres"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2507
+msgid " Include defined functions"
+msgstr " Incluír as funcións definidas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2508
+msgid "Enable Autocompletion"
+msgstr "Activar o autocompletado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2509
+msgid " Include defined variables"
+msgstr " Incluír as variables definidas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2510
+msgid "Mode"
+msgstr "Modo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2511
+#: src/core/Settings.cc:519
+msgid "Parsed File Mode"
+msgstr "Modo de ficheiro analizado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2512
+#: src/core/Settings.cc:520
+msgid "Regex Input Text Mode"
+msgstr "Modo de texto de entrada con expresións regulares"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2514
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2539
+msgid "Line wrap"
+msgstr "Axuste de liña"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2515
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2528
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2534
+#: src/core/Settings.cc:45 src/core/Settings.cc:155 src/core/Settings.cc:166
+#: src/core/Settings.cc:172 src/gui/input/ButtonConfigWidget.cc:248
+msgid "None"
+msgstr "Ningún"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2516
+#: src/core/Settings.cc:156
+msgid "Wrap at character boundaries"
+msgstr "Axustar nos límites de carácter"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2517
+#: src/core/Settings.cc:157
+msgid "Wrap at word boundaries"
+msgstr "Axustar nos límites de palabra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2519
+msgid "Line wrap indentation"
+msgstr "Sangría do axuste de liña"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2520
+msgid "Line wrap visualization"
+msgstr "Visualización do axuste de liña"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2523
+#: src/core/Settings.cc:161
+msgid "Same"
+msgstr "Igual"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2524
+#: src/core/Settings.cc:161
+msgid "Indented"
+msgstr "Sangrado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2526
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2557
+#: src/core/Settings.cc:189
+msgid "Indent"
+msgstr "Sangría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2527
+msgid "Start"
+msgstr "Inicio"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2529
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2535
+#: src/core/Settings.cc:167 src/core/Settings.cc:173
+msgid "Text"
+msgstr "Texto"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2530
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2536
+#: src/core/Settings.cc:168 src/core/Settings.cc:174
+msgid "Border"
+msgstr "Bordo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2531
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2537
+#: src/core/Settings.cc:169 src/core/Settings.cc:175
+msgid "Margin"
+msgstr "Marxe"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2533
+msgid "End"
+msgstr "Fin"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2540
+msgid "Display"
+msgstr "Visualización"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2541
+msgid "Highlight current line"
+msgstr "Realzar a liña actual"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2542
+msgid "Display Line Numbers"
+msgstr "Amosar os números de liña"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2543
+msgid "Enable brace matching"
+msgstr "Activar a correspondencia de chaves"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2544
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2617
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2629
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2631
+msgid "Font"
+msgstr "Tipo de letra"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2545
+msgid "Color syntax highlighting"
+msgstr "Realce de sintaxe con cores"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2546
+msgid "Ctrl/Cmd-Mouse-wheel zooms text"
+msgstr "Ctrl/Cmd + roda do rato fai zoom no texto"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2547
+msgid "Indentation"
+msgstr "Sangría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2548
+msgid "Auto Indent"
+msgstr "Sangría automática"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2549
+msgid "Backspace unindents"
+msgstr "A tecla de retroceso quita a sangría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2550
+msgid "Indent using"
+msgstr "Sangrar con"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2551
+#: src/core/Settings.cc:187
+msgid "Spaces"
+msgstr "Espazos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2552
+#: src/core/Settings.cc:187
+msgid "Tabs"
+msgstr "Tabulacións"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2554
+msgid "Indentation width"
+msgstr "Largura da sangría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2555
+msgid "Tab width"
+msgstr "Largura da tabulación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2556
+msgid "Tab key function"
+msgstr "Función da tecla Tab"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2558
+#: src/core/Settings.cc:190
+msgid "Insert Tab"
+msgstr "Inserir tabulación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2560
+msgid "Show whitespace"
+msgstr "Amosar os espazos en branco"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2561
+#: src/core/Settings.cc:178
+msgid "Never"
+msgstr "Nunca"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2562
+#: src/core/Settings.cc:179
+msgid "Always"
+msgstr "Sempre"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2563
+msgid "Only after indentation"
+msgstr "Só despois da sangría"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2565
+msgid "Size"
+msgstr "Tamaño"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2566
+msgid "Automatically check for updates"
+msgstr "Buscar actualizacións automaticamente"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2567
+msgid "Include development snapshots"
+msgstr "Incluír as versións de desenvolvemento"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2568
+msgid "Check Now"
+msgstr "Comprobar agora"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2569
+msgid "Last checked: "
+msgstr "Última comprobación: "
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2570
+msgid "Experimental Features"
+msgstr "Funcionalidades experimentais"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2571
+msgid ""
+"These features are experimental.  They may change or be removed entirely "
+"without notice. You may enable them and use them and comment on them, but "
+"you must assume that they may not be in their final form and may never "
+"appear in an OpenSCAD release in any form."
+msgstr ""
+"Estas funcionalidades son experimentais. Poden cambiar ou eliminarse por "
+"completo sen aviso previo. Pode activalas, usalas e comentalas, pero debe "
+"asumir que poden non estar na súa forma final e que poden non aparecer nunca"
+" en ningunha versión de OpenSCAD."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2572
+msgid "General"
+msgstr "Xeral"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2573
+msgid "Default Print Service"
+msgstr "Servizo de impresión predeterminado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2574
+msgid "Enable remote print services"
+msgstr "Activar os servizos de impresión remotos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2575
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:181
+#: src/gui/Preferences.cc:606
+msgid "OctoPrint"
+msgstr "OctoPrint"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2576
+msgid "URL"
+msgstr "URL"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2577
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2667
+msgid "API Key"
+msgstr "Chave API"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2578
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2579
+msgid "Load"
+msgstr "Cargar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2581
+msgid "Check"
+msgstr "Comprobar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2582
+msgid "Slicing Profile"
+msgstr "Perfil de laminado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2583
+msgid "Slicing Engine"
+msgstr "Motor de laminado"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2584
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2590
+msgid "File Format"
+msgstr "Formato de ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2585
+msgid "Action"
+msgstr "Acción"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2586
+msgid "Request"
+msgstr "Solicitar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2587
+msgid "Show"
+msgstr "Amosar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2588
+msgid "Note: The API key is stored unencrypted in the application settings."
+msgstr "Nota: a chave API gárdase sen cifrar na configuración da aplicación."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2589
+#: src/gui/Preferences.cc:607
+msgid "Local Application"
+msgstr "Aplicación local"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2591
+msgid "File"
+msgstr "Ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2596
+msgid "Executable"
+msgstr "Executable"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2600
+msgid ""
+"Directory for storing the exported file, leave empty to use the default "
+"system location."
+msgstr ""
+"Directorio onde gardar o ficheiro exportado; déixeo baleiro para usar a "
+"localización predeterminada do sistema."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2603
+msgid "Temp Dir"
+msgstr "Directorio temporal"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2605
+msgid "3D Preview (OpenCSG)"
+msgstr "Previsualización 3D (OpenCSG)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2606
+msgid "Show capability warning"
+msgstr "Amosar o aviso de capacidades"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2607
+msgid "Turn off rendering at "
+msgstr "Desactivar a renderización a partir de "
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2608
+msgid "elements"
+msgstr "elementos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2609
+msgid "Force Goldfeather"
+msgstr "Forzar Goldfeather"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2610
+msgid "3D Rendering"
+msgstr "Renderización 3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2611
+msgid "Backend"
+msgstr "Motor"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2612
+msgid "CGAL Cache size"
+msgstr "Tamaño da caché de CGAL"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2613
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2615
+msgid "MB"
+msgstr "MB"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2614
+msgid "PolySet Cache size"
+msgstr "Tamaño da caché de PolySet"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2616
+msgid "User Interface"
+msgstr "Interface de usuario"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2618
+msgid "Enable docking helper widgets in different places"
+msgstr "Activar o ancorado dos widgets auxiliares en distintos lugares"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2619
+msgid "Enable undocking of helper widgets to separate windows"
+msgstr "Activar o desancorado dos widgets auxiliares en xanelas separadas"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2620
+msgid "Enable user interface localization (requires restart of OpenSCAD)"
+msgstr ""
+"Activar a localización da interface de usuario (require reiniciar OpenSCAD)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2621
+msgid "Bring window to front after automatic reload"
+msgstr "Traer a xanela á fronte despois da recarga automática"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2622
+msgid "Play sound notification on render complete"
+msgstr "Reproducir un son ao completar a renderización"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2623
+msgid "Play sound when render completion time is at least"
+msgstr "Reproducir un son cando o tempo de renderización sexa polo menos de"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2624
+msgid "sec"
+msgstr "s"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2625
+msgid "Console"
+msgstr "Consola"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2626
+msgid "Clear console before Preview/Render"
+msgstr "Borrar a consola antes de previsualizar/renderizar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2627
+msgid "Maximum lines for Console to keep:"
+msgstr "Número máximo de liñas que garda a consola:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2628
+msgid "(0 for unlimited)"
+msgstr "(0 para ilimitado)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2630
+msgid "Customizer"
+msgstr "Personalizador"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2632
+msgid "OpenSCAD Language Features"
+msgstr "Funcionalidades da linguaxe OpenSCAD"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2633
+msgid "Warnings"
+msgstr "Avisos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2634
+msgid "Stop on the first warning"
+msgstr "Deterse no primeiro aviso"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2635
+msgid "Check the parameter range for builtin modules"
+msgstr "Comprobar o rango dos parámetros nos módulos integrados"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2636
+msgid "Warn when there is a parameter mismatch in user module calls"
+msgstr ""
+"Avisar cando non coincidan os parámetros nas chamadas a módulos de usuario"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2637
+msgid "Trace"
+msgstr "Traza"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2638
+msgid "Trace depth:"
+msgstr "Profundidade da traza:"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2639
+msgid "(max. number or trace messages)"
+msgstr "(número máx. de mensaxes de traza)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2640
+msgid "Show parameters of usermodule calls in trace"
+msgstr "Amosar os parámetros das chamadas a módulos de usuario na traza"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2641
+msgid "Render Summary"
+msgstr "Resumo da renderización"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2642
+msgid "Camera"
+msgstr "Cámara"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2643
+msgid "Bounding Box"
+msgstr "Caixa delimitadora"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2644
+msgid "Measurements: Area"
+msgstr "Medidas: área"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2645
+msgid "Export Features"
+msgstr "Funcionalidades de exportación"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2646
+msgid "Toolbar Export 3D"
+msgstr "Barra de ferramentas Exportar 3D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2647
+msgid "Toolbar Export 2D"
+msgstr "Barra de ferramentas Exportar 2D"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2648
+msgid "Debugging"
+msgstr "Depuración"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2649
+msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
+msgstr "Activar a traza dos eventos HIDAPI (require reiniciar OpenSCAD)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2650
+msgid "Network"
+msgstr "Rede"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2651
+msgid "Custom CA certificates (PEM)"
+msgstr "Certificados de CA personalizados (PEM)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2653
+msgid "Skip TLS certificate verification (insecure)"
+msgstr "Omitir a verificación do certificado TLS (inseguro)"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2654
+msgid "Dialog visibility"
+msgstr "Visibilidade dos diálogos"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2655
+msgid "Always show Welcome screen"
+msgstr "Amosar sempre a pantalla de benvida"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2656
+msgid "Always show PDF export dialog"
+msgstr "Amosar sempre o diálogo de exportación PDF"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2657
+msgid "Always show 3MF export dialog"
+msgstr "Amosar sempre o diálogo de exportación 3MF"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2658
+msgid "Always show Print Service dialog"
+msgstr "Amosar sempre o diálogo do servizo de impresión"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2659
+msgid "AI Preferences"
+msgstr "Preferencias de IA"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2660
+msgid ""
+"AI assistant integration is active. Configure your connection profiles and "
+"parameters below."
+msgstr ""
+"A integración do asistente de IA está activa. Configure a continuación os "
+"seus perfís de conexión e parámetros."
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2661
+msgid "Profiles"
+msgstr "Perfís"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2662
+msgid "Active Profile"
+msgstr "Perfil activo"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2663
+msgid "New Profile"
+msgstr "Novo perfil"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2664
+msgid "Delete"
+msgstr "Eliminar"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2665
+msgid "API Configuration"
+msgstr "Configuración da API"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2666
+msgid "API Endpoint"
+msgstr "Punto de acceso da API"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2668
+msgid "System Prompt / Instructions"
+msgstr "Indicacións do sistema / instrucións"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2669
+msgid "Default User Prompt"
+msgstr "Indicación de usuario predeterminada"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2670
+msgid "API Parameters"
+msgstr "Parámetros da API"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2671
+msgid "Add Parameter"
+msgstr "Engadir parámetro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2672
+msgid "Remove Parameter"
+msgstr "Eliminar parámetro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:180
+msgid "Run local Application"
+msgstr "Executar a aplicación local"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:182
+msgid "File format"
+msgstr "Formato de ficheiro"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:183
+msgid "Enable remote services that need network access"
+msgstr "Activar os servizos remotos que precisan acceso á rede"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ProgressWidget.h:70
+msgid "%v / %m"
+msgstr "%v / %m"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:271
+msgid "Aspect Ratio"
+msgstr "Proporción"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:272
+msgid "Width"
+msgstr "Largura"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:273
+msgid "Height"
+msgstr "Altura"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:275
+msgid "Lock"
+msgstr "Bloquear"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:276
+msgid "Details"
+msgstr "Detalles"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:277
+msgid "Distance"
+msgstr "Distancia"
+
+#: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:278
+msgid "FOV"
+msgstr "FOV"
+
+#: src/core/Settings.cc:49
+#, c-format
+msgid "Axis %d"
+msgstr "Eixo %d"
+
+#: src/core/Settings.cc:53
+#, c-format
+msgid "Axis %d (inverted)"
+msgstr "Eixo %d (invertido)"
+
+#: src/core/Settings.cc:181
+msgid "After indentation"
+msgstr "Despois da sangría"
+
+#: src/core/Settings.cc:215
+msgid "Upload only"
+msgstr "Só subir"
+
+#: src/core/Settings.cc:216
+msgid "Upload & Slice"
+msgstr "Subir e laminar"
+
+#: src/core/Settings.cc:217
+msgid "Upload, Slice & Select for printing"
+msgstr "Subir, laminar e seleccionar para imprimir"
+
+#: src/core/Settings.cc:218
+msgid "Upload, Slice & Start printing"
+msgstr "Subir, laminar e comezar a imprimir"
+
+#: src/core/Settings.cc:435
+msgid "Use colors from model"
+msgstr "Usar as cores do modelo"
+
+#: src/core/Settings.cc:437
+msgid "Use selected color only"
+msgstr "Usar só a cor seleccionada"
+
+#: src/core/Settings.cc:444
+msgid "Millimeter"
+msgstr "Milímetro"
+
+#: src/core/Settings.cc:448
+msgid "Feet"
+msgstr "Pés"
+
+#: src/core/Settings.cc:456
+msgid "Color"
+msgstr "Cor"
+
+#: src/core/Settings.cc:457
+msgid "Base Material"
+msgstr "Material base"
+
+#: src/core/Settings.cc:509
+msgid "Alphabetical"
+msgstr "Alfabética"
+
+#: src/glview/Camera.cc:208
+#, c-format
+msgid ""
+"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+"distance = %.2f, fov = %.2f"
+msgstr ""
+"Vista: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance"
+" = %.2f, fov = %.2f"
+
+#: src/gui/ai/ChatWidget.cc:101 src/gui/ai/ChatWidget.cc:454
+msgid "Thinking..."
+msgstr "Pensando..."
+
+#: src/gui/ai/ChatWidget.cc:110
+msgid "Thinking"
+msgstr "Pensando"
+
+#: src/gui/ai/ChatWidget.cc:153
+msgid "Export Chat..."
+msgstr "Exportar o chat..."
+
+#: src/gui/ai/ChatWidget.cc:154
+msgid "Import Chat..."
+msgstr "Importar un chat..."
+
+#: src/gui/ai/ChatWidget.cc:156
+msgid "Copy as Markdown"
+msgstr "Copiar como Markdown"
+
+#: src/gui/ai/ChatWidget.cc:200 src/gui/ai/ChatWidget.cc:613
+msgid ""
+"Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
+"\"draw a sphere\" or \"create a box with a hole\"."
+msgstr ""
+"Ola! Son o seu asistente de IA de OpenSCAD. Pídame que escriba código, p. "
+"ex. \"debuxa unha esfera\" ou \"crea unha caixa cun burato\"."
+
+#: src/gui/ai/ChatWidget.cc:215
+msgid "AI proposed code changes:"
+msgstr "Cambios de código propostos pola IA:"
+
+#: src/gui/ai/ChatWidget.cc:218
+msgid "Review & Apply"
+msgstr "Revisar e aplicar"
+
+#: src/gui/ai/ChatWidget.cc:223
+msgid "Discard"
+msgstr "Descartar"
+
+#: src/gui/ai/ChatWidget.cc:291 src/gui/ai/ChatWidget.cc:634
+msgid "Stop"
+msgstr "Deter"
+
+#: src/gui/ai/ChatWidget.cc:481 src/gui/ai/ChatWidget.cc:488
+msgid "Viewport Error"
+msgstr "Erro da vista"
+
+#: src/gui/ai/ChatWidget.cc:482
+msgid "Could not find active 3D Viewport to grab screen."
+msgstr "Non se atopou ningunha vista 3D activa para capturar a pantalla."
+
+#: src/gui/ai/ChatWidget.cc:488
+msgid "Failed to capture 3D viewport frame."
+msgstr "Non foi posible capturar o fotograma da vista 3D."
+
+#: src/gui/ai/ChatWidget.cc:509
+msgid "Image Files (*.png *.jpg *.jpeg *.webp)"
+msgstr "Ficheiros de imaxe (*.png *.jpg *.jpeg *.webp)"
+
+#: src/gui/ai/ChatWidget.cc:517
+msgid "File Error"
+msgstr "Erro de ficheiro"
+
+#: src/gui/ai/ChatWidget.cc:517
+msgid "Could not open the selected image file."
+msgstr "Non foi posible abrir o ficheiro de imaxe seleccionado."
+
+#: src/gui/ai/ChatWidget.cc:577
+msgid "[Img]"
+msgstr "[Img]"
+
+#: src/gui/ai/ChatWidget.cc:582
+msgid "Remove attachment"
+msgstr "Eliminar o anexo"
+
+#: src/gui/ai/ChatWidget.cc:902
+msgid "Export Chat History"
+msgstr "Exportar o historial do chat"
+
+#: src/gui/ai/ChatWidget.cc:902 src/gui/ai/ChatWidget.cc:949
+msgid "JSON Files (*.json)"
+msgstr "Ficheiros JSON (*.json)"
+
+#: src/gui/ai/ChatWidget.cc:938
+msgid "Export Warning"
+msgstr "Aviso de exportación"
+
+#: src/gui/ai/ChatWidget.cc:938
+msgid "Could not write to the chosen file."
+msgstr "Non foi posible escribir no ficheiro escollido."
+
+#: src/gui/ai/ChatWidget.cc:943
+msgid "Export Successful"
+msgstr "Exportación correcta"
+
+#: src/gui/ai/ChatWidget.cc:943
+msgid "Chat history exported successfully."
+msgstr "O historial do chat exportouse correctamente."
+
+#: src/gui/ai/ChatWidget.cc:949
+msgid "Import Chat History"
+msgstr "Importar o historial do chat"
+
+#: src/gui/ai/ChatWidget.cc:957 src/gui/ai/ChatWidget.cc:965
+#: src/gui/ai/ChatWidget.cc:970 src/gui/ai/ChatWidget.cc:1013
+msgid "Import Warning"
+msgstr "Aviso de importación"
+
+#: src/gui/ai/ChatWidget.cc:957
+msgid "Could not open the selected file."
+msgstr "Non foi posible abrir o ficheiro seleccionado."
+
+#: src/gui/ai/ChatWidget.cc:971
+msgid "Selected file does not contain a valid chat history array."
+msgstr ""
+"O ficheiro seleccionado non contén unha matriz de historial de chat válida."
+
+#: src/gui/ai/ChatWidget.cc:1016
+msgid "Import Successful"
+msgstr "Importación correcta"
+
+#: src/gui/ai/ChatWidget.cc:1016
+msgid "Chat history imported successfully."
+msgstr "O historial do chat importouse correctamente."
+
+#: src/gui/ai/ChatWidget.cc:1051
+msgid "Chat Copied"
+msgstr "Chat copiado"
+
+#: src/gui/ai/ChatWidget.cc:1052
+msgid "Chat conversation copied to clipboard as Markdown."
+msgstr "A conversa copiouse ao portapapeis como Markdown."
+
+#: src/gui/Animate.cc:207
+msgid "press to pause animation"
+msgstr "prema para pausar a animación"
+
+#: src/gui/Animate.cc:211
+msgid "press to start animation"
+msgstr "prema para iniciar a animación"
+
+#: src/gui/Animate.cc:214
+msgid "incorrect values"
+msgstr "valores incorrectos"
+
+#: src/gui/ColorList.cc:207
+msgid "Filter (%1 colors found)"
+msgstr "Filtro (%1 cores atopadas)"
+
+#: src/gui/Console.cc:188
+msgid "Save console content"
+msgstr "Gardar o contido da consola"
+
+#: src/gui/Export3mfDialog.cc:78
+msgid ""
+"This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for"
+" export needs version 2 or later."
+msgstr ""
+"Esta compilación de OpenSCAD usa a versión 1 de lib3mf. Para definir a "
+"precisión decimal na exportación precísase a versión 2 ou posterior."
+
+#: src/gui/ExternalToolInterface.cc:188
+msgid "Exported design exceeds the service upload limit of (%1 MB)."
+msgstr "O deseño exportado supera o límite de subida do servizo (%1 MB)."
+
+#: src/gui/FontList.cc:403
+msgid "Styled font name"
+msgstr "Nome do tipo de letra con estilo"
+
+#: src/gui/FontList.cc:404
+msgid "Font style"
+msgstr "Estilo do tipo de letra"
+
+#: src/gui/FontList.cc:407
+msgid "File name"
+msgstr "Nome do ficheiro"
+
+#: src/gui/FontList.cc:408
+msgid "File path"
+msgstr "Ruta do ficheiro"
+
+#: src/gui/FontList.cc:409
+msgid "Hash"
+msgstr "Hash"
+
+#: src/gui/input/AxisConfigWidget.h:89
+msgid ""
+"This driver was not enabled during build time and is thus not available."
+msgstr ""
+"Este controlador non se activou no momento da compilación e polo tanto non "
+"está dispoñible."
+
+#: src/gui/input/AxisConfigWidget.h:92
+msgid ""
+"The DBUS driver is not for actual devices but for remote control, Linux "
+"only."
+msgstr ""
+"O controlador DBUS non é para dispositivos reais senón para control remoto, "
+"só en Linux."
+
+#: src/gui/input/AxisConfigWidget.h:94
+msgid ""
+"The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
+msgstr ""
+"O controlador HIDAPI comunícase directamente cos ratos 3D, en Windows e "
+"macOS."
+
+#: src/gui/input/AxisConfigWidget.h:96
+msgid ""
+"The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
+"Linux only."
+msgstr ""
+"O controlador SpaceNav activa os dispositivos de entrada 3D mediante o "
+"daemon spacenavd, só en Linux."
+
+#: src/gui/input/AxisConfigWidget.h:98
+msgid ""
+"The Joystick driver uses the Linux joystick device (fixed to "
+"/dev/input/js0), Linux only."
+msgstr ""
+"O controlador Joystick usa o dispositivo joystick de Linux (fixado en "
+"/dev/input/js0), só en Linux."
+
+#: src/gui/input/AxisConfigWidget.h:100
+msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
+msgstr ""
+"O controlador QGAMEPAD ofrece compatibilidade multiplataforma con mandos de "
+"xogo."
+
+#: src/gui/input/ButtonConfigWidget.cc:249
+msgid "Toggle Perspective"
+msgstr "Alternar a perspectiva"
+
+#: src/gui/MainWindow.cc:861
+msgid "Compile error."
+msgstr "Erro de compilación."
+
+#: src/gui/MainWindow.cc:864
+msgid "Error while compiling '%1'."
+msgstr "Erro ao compilar «%1»."
+
+#: src/gui/MainWindow.cc:869
+msgid "Compilation generated %1 warning."
+msgid_plural "Compilation generated %1 warnings."
+msgstr[0] "A compilación xerou %1 aviso."
+msgstr[1] "A compilación xerou %1 avisos."
+
+#: src/gui/MainWindow.cc:882
+msgid ""
+" For details see the <a href=\"#errorlog\">error log</a> and <a "
+"href=\"#console\">console window</a>."
+msgstr ""
+" Para máis detalles consulte o <a href=\"#errorlog\">rexistro de erros</a> e"
+" a <a href=\"#console\">xanela da consola</a>."
+
+#: src/gui/MainWindow.cc:1320
+msgid "Trusted Files"
+msgstr "Ficheiros de confianza"
+
+#: src/gui/MainWindow.cc:1704
+msgid ""
+"Python files can potentially contain harmful stuff.\n"
+"Do you trust this file ?\n"
+msgstr ""
+"Os ficheiros Python poden conter código daniño.\n"
+"Confía neste ficheiro?\n"
+
+#: src/gui/MainWindow.cc:1810
+msgid "Application"
+msgstr "Aplicación"
+
+#: src/gui/MainWindow.cc:1811
+msgid ""
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+msgstr ""
+"O documento foi modificado.\n"
+"Realmente quere recargar o ficheiro?"
+
+#: src/gui/MainWindow.cc:2564
+msgid "Export %1 File"
+msgstr "Exportar ficheiro %1"
+
+#: src/gui/MainWindow.cc:2565
+msgid "%1 Files (*%2)"
+msgstr "Ficheiros %1 (*%2)"
+
+#: src/gui/MainWindow.cc:2613
+msgid "Export CSG File"
+msgstr "Exportar ficheiro CSG"
+
+#: src/gui/MainWindow.cc:2614
+msgid "CSG Files (*.csg)"
+msgstr "Ficheiros CSG (*.csg)"
+
+#: src/gui/MainWindow.cc:2637
+msgid "Export Image"
+msgstr "Exportar imaxe"
+
+#: src/gui/MainWindow.cc:2637
+msgid "PNG Files (*.png)"
+msgstr "Ficheiros PNG (*.png)"
+
+#: src/gui/MainWindow.cc:3027 src/gui/MainWindow.cc:3787
+msgid "&AI Chat"
+msgstr "Chat de &IA"
+
+#: src/gui/MainWindow.cc:3129 src/gui/TabManager.cc:735
+#: src/gui/TabManager.cc:786
+msgid "Untitled.scad"
+msgstr "Sen_titulo.scad"
+
+#: src/gui/MainWindow.cc:3779
+msgid "&Editor"
+msgstr "&Editor"
+
+#: src/gui/MainWindow.cc:3780
+msgid "&Console"
+msgstr "&Consola"
+
+#: src/gui/MainWindow.cc:3781
+msgid "C&ustomizer"
+msgstr "&Personalizador"
+
+#: src/gui/MainWindow.cc:3782
+msgid "Error &Log"
+msgstr "&Rexistro de erros"
+
+#: src/gui/MainWindow.cc:3783
+msgid "&Animate"
+msgstr "&Animar"
+
+#: src/gui/MainWindow.cc:3784
+msgid "&Font List"
+msgstr "Lista de &tipos de letra"
+
+#: src/gui/MainWindow.cc:3785
+msgid "C&olor List"
+msgstr "Lista de c&ores"
+
+#: src/gui/MainWindow.cc:3786
+msgid "&Viewport Control"
+msgstr "Control da &vista"
+
+#: src/gui/Network.h:168
+msgid "Timeout error"
+msgstr "Erro de tempo de espera"
+
+#: src/gui/OctoPrintApiKeyDialog.cc:58
+msgid "API key created, waiting for approval in OctoPrint..."
+msgstr "Chave API creada, agardando a aprobación en OctoPrint..."
+
+#: src/gui/OctoPrintApiKeyDialog.cc:89
+msgid "API key approved."
+msgstr "Chave API aprobada."
+
+#: src/gui/OctoPrintApiKeyDialog.cc:99
+msgid "API key approval failed."
+msgstr "Fallou a aprobación da chave API."
+
+#: src/gui/OpenSCADApp.cc:66
+msgid "Unknown error"
+msgstr "Erro descoñecido"
+
+#: src/gui/OpenSCADApp.cc:70
+msgid "Critical Error"
+msgstr "Erro crítico"
+
+#: src/gui/OpenSCADApp.cc:71
+msgid ""
+"A critical error was caught. The application may have become unstable:\n"
+"%1"
+msgstr ""
+"Detectouse un erro crítico. A aplicación pode ter quedado inestable:\n"
+"%1"
+
+#: src/gui/OpenSCADApp.cc:97
+msgid ""
+"Fontconfig needs to update its font cache.\n"
+"This can take up to a couple of minutes."
+msgstr ""
+"Fontconfig precisa actualizar a súa caché de tipos de letra.\n"
+"Isto pode levar un par de minutos."
+
+#: src/gui/parameter/ParameterWidget.cc:72
+msgid "Collapse All"
+msgstr "Contraer todo"
+
+#: src/gui/parameter/ParameterWidget.cc:75
+msgid "Expand All"
+msgstr "Expandir todo"
+
+#: src/gui/parameter/ParameterWidget.cc:116
+msgid "Saving presets"
+msgstr "Gardando as predefinicións"
+
+#: src/gui/parameter/ParameterWidget.cc:117
+msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
+msgstr "Atopouse %1, pero non se puido ler. Quere sobrescribir %1?"
+
+#: src/gui/parameter/ParameterWidget.cc:228
+msgid "Create new set of parameter"
+msgstr "Crear un novo conxunto de parámetros"
+
+#: src/gui/parameter/ParameterWidget.cc:228
+msgid "Enter name of the parameter set"
+msgstr "Introduza o nome do conxunto de parámetros"
+
+#: src/gui/parameter/ParameterWidget.cc:284
+msgid "New set "
+msgstr "Novo conxunto "
+
+#: src/gui/Preferences.cc:273
+msgid "Parameter Key"
+msgstr "Chave do parámetro"
+
+#: src/gui/Preferences.cc:273
+msgid "Parameter Value"
+msgstr "Valor do parámetro"
+
+#: src/gui/Preferences.cc:289 src/gui/Preferences.cc:294
+msgid "Ollama Local"
+msgstr "Ollama Local"
+
+#: src/gui/Preferences.cc:446 src/gui/Preferences.cc:451
+#: src/gui/Preferences.cc:1384 src/gui/Preferences.cc:1423
+msgid "<Default>"
+msgstr "<Predeterminado>"
+
+#: src/gui/Preferences.cc:605
+msgid "NONE"
+msgstr "NINGÚN"
+
+#: src/gui/Preferences.cc:1113
+msgid "Select CA certificate"
+msgstr "Seleccionar un certificado de CA"
+
+#: src/gui/Preferences.cc:1114
+msgid "Certificate files (*.pem *.crt *.cer);;All files (*)"
+msgstr "Ficheiros de certificado (*.pem *.crt *.cer);;Todos os ficheiros (*)"
+
+#: src/gui/Preferences.cc:1367
+msgid "Success: Server Version = %2, API Version = %1"
+msgstr "Correcto: versión do servidor = %2, versión da API = %1"
+
+#: src/gui/Preferences.cc:1369 src/gui/Preferences.cc:1394
+#: src/gui/Preferences.cc:1433
+msgid "Error"
+msgstr "Erro"
+
+#: src/gui/Preferences.cc:1484
+msgid "New AI Profile"
+msgstr "Novo perfil de IA"
+
+#: src/gui/Preferences.cc:1484
+msgid "Profile name:"
+msgstr "Nome do perfil:"
+
+#: src/gui/Preferences.cc:1489
+msgid "Duplicate Profile"
+msgstr "Perfil duplicado"
+
+#: src/gui/Preferences.cc:1489
+msgid "A profile with that name already exists."
+msgstr "Xa existe un perfil con ese nome."
+
+#: src/gui/Preferences.cc:1551
+msgid "Delete AI Profile"
+msgstr "Eliminar o perfil de IA"
+
+#: src/gui/Preferences.cc:1552
+msgid "Delete profile \"%1\"?"
+msgstr "Eliminar o perfil «%1»?"
+
+#: src/gui/QGLView.cc:188
+msgid ""
+"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n"
+"\n"
+msgstr ""
+"Aviso: faltan capacidades de OpenGL para OpenCSG - desactivouse OpenCSG.\n"
+"\n"
+
+#: src/gui/QGLView.cc:190
+msgid ""
+"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or later.\n"
+"Your renderer information is as follows:\n"
+msgstr ""
+"Recoméndase encarecidamente usar OpenSCAD nun sistema con OpenGL 2.0 ou posterior.\n"
+"A información do seu renderizador é a seguinte:\n"
+
+#: src/gui/QGLView.cc:194
+msgid ""
+"GLEW version %1\n"
+"%2 (%3)\n"
+"OpenGL version %4\n"
+msgstr ""
+"Versión de GLEW %1\n"
+"%2 (%3)\n"
+"Versión de OpenGL %4\n"
+
+#: src/gui/QGLView.cc:200
+msgid ""
+"GLAD version %1\n"
+"%2 (%3)\n"
+"OpenGL version %4\n"
+msgstr ""
+"Versión de GLAD %1\n"
+"%2 (%3)\n"
+"Versión de OpenGL %4\n"
+
+#: src/gui/TabManager.cc:436
+msgid "Copy file name"
+msgstr "Copiar o nome do ficheiro"
+
+#: src/gui/TabManager.cc:442
+msgid "Copy full path"
+msgstr "Copiar a ruta completa"
+
+#: src/gui/TabManager.cc:448
+msgid "Open Folder"
+msgstr "Abrir o cartafol"
+
+#: src/gui/TabManager.cc:453
+msgid "Close Tab"
+msgstr "Pechar a lapela"
+
+#: src/gui/TabManager.cc:458
+msgid "Close All But This Tab"
+msgstr "Pechar todas as lapelas agás esta"
+
+#: src/gui/TabManager.cc:607
+msgid "The document has been modified."
+msgstr "O documento foi modificado."
+
+#: src/gui/TabManager.cc:608
+msgid "Do you want to save your changes?"
+msgstr "Quere gardar os cambios?"
+
+#: src/gui/TabManager.cc:639
+msgid "Some tabs have unsaved changes."
+msgstr "Algunhas lapelas teñen cambios sen gardar."
+
+#: src/gui/TabManager.cc:640
+msgid "Do you want to save all your changes?"
+msgstr "Quere gardar todos os cambios?"
+
+#: src/gui/TabManager.cc:702 src/gui/TabManager.cc:815
+msgid "Failed to open file for writing"
+msgstr "Non foi posible abrir o ficheiro para escribir"
+
+#: src/gui/TabManager.cc:726 src/gui/TabManager.cc:829
+msgid "Error saving design"
+msgstr "Erro ao gardar o deseño"
+
+#: src/gui/TabManager.cc:737
+msgid "Save File"
+msgstr "Gardar ficheiro"
+
+#: src/gui/TabManager.cc:737
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "Deseños de OpenSCAD (*.scad)"
+
+#: src/gui/TabManager.cc:752
+msgid ""
+"%1 already exists.\n"
+"Do you want to replace it?"
+msgstr ""
+"%1 xa existe.\n"
+"Quere substituílo?"
+
+#: src/gui/ViewportControl.cc:204 src/gui/ViewportControl.cc:207
+#: src/gui/ViewportControl.cc:220
+msgid "extreme values might may lead to strange behavior"
+msgstr "os valores extremos poden provocar un comportamento estraño"
+
+#: src/gui/ViewportControl.cc:217
+msgid "negative distances are not supported"
+msgstr "as distancias negativas non son compatibles"
+
+#: src/io/export.cc:249
+#, c-format
+msgid "Can't open file \"%1$s\" for export"
+msgstr "Non se pode abrir o ficheiro \"%1$s\" para exportar"
+
+#: src/io/export.cc:265
+#, c-format
+msgid "\"%1$s\" write error. (Disk full?)"
+msgstr "Erro de escritura en \"%1$s\". (Disco cheo?)"
+
+#: examples
+msgid "Parametric"
+msgstr "Paramétrico"
+
+#: examples
+msgid "Functions"
+msgstr "Funcións"
+
+#: examples
+msgid "Old"
+msgstr "Antigo"
+
+#: examples
+msgid "Advanced"
+msgstr "Avanzado"
+
+#: examples
+msgid "Basics"
+msgstr "Básico"
+
+#. (itstool) path: component/summary
+#: openscad.appdata.xml.in2:6
+msgid "The Programmers Solid 3D CAD Modeller"
+msgstr "O modelador CAD 3D de sólidos para programadores"
+
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in2:27
+msgid ""
+"OpenSCAD is a software for creating solid 3D CAD models. Unlike most free "
+"software for creating 3D models (such as Blender) it does not focus on the "
+"artistic aspects of 3D modelling but instead on the CAD aspects. Thus it "
+"might be the application you are looking for when you are planning to create"
+" 3D models of machine parts but pretty sure is not what you are looking for "
+"when you are more interested in creating computer-animated movies."
+msgstr ""
+"OpenSCAD é un software para crear modelos CAD 3D de sólidos. A diferenza da "
+"maioría do software libre para crear modelos 3D (como Blender), non se "
+"centra nos aspectos artísticos do modelado 3D senón nos aspectos CAD. Por "
+"iso pode ser a aplicación que busca se planea crear modelos 3D de pezas de "
+"máquinas, pero seguramente non é o que busca se lle interesa máis crear "
+"películas de animación por computador."
+
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in2:28
+msgid ""
+"OpenSCAD is not an interactive modeller. Instead it is something like a "
+"3D-compiler that reads in a script file that describes the object and "
+"renders the 3D model from this script file. This gives you (the designer) "
+"full control over the modelling process and enables you to easily change any"
+" step in the modelling process or make designs that are defined by "
+"configurable parameters."
+msgstr ""
+"OpenSCAD non é un modelador interactivo. En troques, é algo así como un "
+"compilador 3D que le un ficheiro de script que describe o obxecto e "
+"renderiza o modelo 3D a partir dese ficheiro. Isto dálle a vostede (o "
+"deseñador) control total sobre o proceso de modelado e permite cambiar "
+"facilmente calquera paso do proceso ou facer deseños definidos por "
+"parámetros configurables."
+
+#. (itstool) path: description/p
+#: openscad.appdata.xml.in2:29
+msgid ""
+"OpenSCAD provides two main modelling techniques: First there is constructive"
+" solid geometry (aka CSG) and second there is extrusion of 2D outlines. As "
+"data exchange format for this 2D outlines Autocad DXF files are used. In "
+"addition to 2D paths for extrusion it is also possible to read design "
+"parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D"
+" models in the STL and OFF file formats."
+msgstr ""
+"OpenSCAD ofrece dúas técnicas principais de modelado: en primeiro lugar a "
+"xeometría sólida construtiva (tamén chamada CSG) e en segundo lugar a "
+"extrusión de contornos 2D. Como formato de intercambio para estes contornos "
+"2D úsanse ficheiros DXF de Autocad. Ademais de camiños 2D para extrusión, "
+"tamén é posible ler parámetros de deseño desde ficheiros DXF. Ademais dos "
+"ficheiros DXF, OpenSCAD pode ler e crear modelos 3D nos formatos de ficheiro"
+" STL e OFF."
+
+#: src/gui/MainWindow.ui
+msgid "&Hide Editor Toolbar"
+msgstr "&Ocultar a barra de ferramentas do editor"
+
+#: src/gui/MainWindow.ui
+msgid "&Library Info"
+msgstr "Información das &bibliotecas"
+
+#: src/gui/MainWindow.ui
+msgid "Cop&y Viewport Rotation"
+msgstr "Cop&iar a rotación da vista"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Vie&wport Distance"
+msgstr "Copiar a distancia da vi&sta"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Vie&wport FOV"
+msgstr "Copiar o campo de visión (fov) da &vista"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Viewport Ima&ge"
+msgstr "Copiar a ima&xe da vista"
+
+#: src/gui/MainWindow.ui
+msgid "Copy Viewport Transl&ation"
+msgstr "Copiar a transl&ación da vista"
+
+#: src/gui/MainWindow.ui
+msgid "Hide &3D View Toolbar"
+msgstr "Ocultar a barra de ferramentas da vista &3D"
+
+#: src/gui/MainWindow.ui
+msgid "J&ump to Next Error"
+msgstr "Ir ao segui&nte erro"
+
+#: src/gui/MainWindow.ui
+msgid "Jump to &Previous Bookmark"
+msgstr "Ir ao marcador &anterior"
+
+#: src/gui/MainWindow.ui
+msgid "Jump to Next &Bookmark"
+msgstr "Ir ao seguinte &marcador"
+
+#: src/Cache.h:194
+#, c-format
+msgid "Trimming cache: %1$s (%2$d bytes)"
+msgstr "Recortando a caché: %1$s (%2$d bytes)"
+
+#: src/Feature.cc:97
+#, c-format
+msgid "Ignoring request to enable unknown feature '%1$s'."
+msgstr ""
+"Ignorando a solicitude para activar a funcionalidade descoñecida «%1$s»."
+
+#: src/FontCache.cc:153
+msgid ""
+"Can't initialize fontconfig library, text() objects will not be rendered"
+msgstr ""
+"Non se pode inicializar a biblioteca fontconfig; os obxectos text() non se "
+"renderizarán"
+
+#: src/FontCache.cc:205
+msgid "Can't initialize freetype library, text() objects will not be rendered"
+msgstr ""
+"Non se pode inicializar a biblioteca freetype; os obxectos text() non se "
+"renderizarán"
+
+#: src/FontCache.cc:244
+#, c-format
+msgid "Can't register font '%1$s'"
+msgstr "Non se pode rexistrar o tipo de letra «%1$s»"
+
+#: src/FontCache.cc:254
+#, c-format
+msgid "Can't register font directory '%1$s'"
+msgstr "Non se pode rexistrar o directorio de tipos de letra «%1$s»"
+
+#: src/FontCache.cc:411
+#, c-format
+msgid "Could not parse font '%1$s'"
+msgstr "Non foi posible analizar o tipo de letra «%1$s»"
+
+#: src/FontCache.cc:471
+#, c-format
+msgid "Could not select a char map for font '%1$s/%2$s'"
+msgstr ""
+"Non foi posible seleccionar un mapa de caracteres para o tipo de letra "
+"«%1$s/%2$s»"
+
+#: src/RenderStatistic.cc:226
+msgid "Top level object is a list of objects:"
+msgstr "O obxecto de nivel superior é unha lista de obxectos:"
+
+#: src/RenderStatistic.cc:227
+#, c-format
+msgid "   Objects:    %1$d"
+msgstr "   Obxectos:   %1$d"
+
+#: src/RenderStatistic.cc:232
+msgid "Top level object is a 2D object:"
+msgstr "O obxecto de nivel superior é un obxecto 2D:"
+
+#: src/RenderStatistic.cc:233
+#, c-format
+msgid "   Contours:   %1$6d"
+msgstr "   Contornos:  %1$6d"
+
+#: src/RenderStatistic.cc:236 src/RenderStatistic.cc:250
+msgid "Bounding box:"
+msgstr "Caixa delimitadora:"
+
+#: src/RenderStatistic.cc:237
+#, c-format
+msgid "   Min:  %1$.2f, %2$.2f"
+msgstr "   Mín.:    %1$.2f, %2$.2f"
+
+#: src/RenderStatistic.cc:238
+#, c-format
+msgid "   Max:  %1$.2f, %2$.2f"
+msgstr "   Máx.:    %1$.2f, %2$.2f"
+
+#: src/RenderStatistic.cc:239
+#, c-format
+msgid "   Size: %1$.2f, %2$.2f"
+msgstr "   Tamaño:  %1$.2f, %2$.2f"
+
+#: src/RenderStatistic.cc:242
+msgid "Measurements:"
+msgstr "Medidas:"
+
+#: src/RenderStatistic.cc:243
+#, c-format
+msgid "   Area: %1$.2f"
+msgstr "   Área: %1$.2f"
+
+#: src/RenderStatistic.cc:251
+#, c-format
+msgid "   Min:  %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Mín.:    %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:252
+#, c-format
+msgid "   Max:  %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Máx.:    %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:253
+#, c-format
+msgid "   Size: %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Tamaño:  %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:261
+msgid "Top level object is a 3D object (PolySet):"
+msgstr "O obxecto de nivel superior é un obxecto 3D (PolySet):"
+
+#: src/RenderStatistic.cc:262
+#, c-format
+msgid "   Convex:       %1$s"
+msgstr "   Convexo:      %1$s"
+
+#: src/RenderStatistic.cc:264
+#, c-format
+msgid "   Triangles: %1$6d"
+msgstr "   Triángulos: %1$6d"
+
+#: src/RenderStatistic.cc:266
+#, c-format
+msgid "   Facets:    %1$6d"
+msgstr "   Facetas:    %1$6d"
+
+#: src/RenderStatistic.cc:276
+msgid "Top level object is a 3D object (Nef polyhedron):"
+msgstr "O obxecto de nivel superior é un obxecto 3D (poliedro Nef):"
+
+#: src/RenderStatistic.cc:277
+#, c-format
+msgid "   Simple:     %1$s"
+msgstr "   Simple:       %1$s"
+
+#: src/RenderStatistic.cc:278 src/RenderStatistic.cc:300
+#, c-format
+msgid "   Vertices:   %1$6d"
+msgstr "   Vértices:     %1$6d"
+
+#: src/RenderStatistic.cc:279
+#, c-format
+msgid "   Halfedges:  %1$6d"
+msgstr "   Semiarestas:  %1$6d"
+
+#: src/RenderStatistic.cc:280
+#, c-format
+msgid "   Edges:      %1$6d"
+msgstr "   Arestas:      %1$6d"
+
+#: src/RenderStatistic.cc:281
+#, c-format
+msgid "   Halffacets: %1$6d"
+msgstr "   Semifacetas:  %1$6d"
+
+#: src/RenderStatistic.cc:282 src/RenderStatistic.cc:301
+#, c-format
+msgid "   Facets:     %1$6d"
+msgstr "   Facetas:      %1$6d"
+
+#: src/RenderStatistic.cc:283
+#, c-format
+msgid "   Volumes:    %1$6d"
+msgstr "   Volumes:      %1$6d"
+
+#: src/RenderStatistic.cc:285
+msgid "Object may not be a valid 2-manifold and may need repair!"
+msgstr ""
+"Pode que o obxecto non sexa unha 2-variedade válida e que precise "
+"reparación!"
+
+#: src/RenderStatistic.cc:295
+msgid "   Top level object is a 3D object (manifold):"
+msgstr "   O obxecto de nivel superior é un obxecto 3D (manifold):"
+
+#: src/RenderStatistic.cc:298
+#, c-format
+msgid "   Status:     %1$s"
+msgstr "   Estado:     %1$s"
+
+#: src/RenderStatistic.cc:299
+#, c-format
+msgid "   Genus:      %1$d"
+msgstr "   Xénero:     %1$d"
+
+#: src/RenderStatistic.cc:309
+msgid "Camera:"
+msgstr "Cámara:"
+
+#: src/RenderStatistic.cc:310
+#, c-format
+msgid "   Translation: %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Translación: %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:312
+#, c-format
+msgid "   Rotation:    %1$.2f, %2$.2f, %3$.2f"
+msgstr "   Rotación:    %1$.2f, %2$.2f, %3$.2f"
+
+#: src/RenderStatistic.cc:314
+#, c-format
+msgid "   Distance:    %1$.2f"
+msgstr "   Distancia:   %1$.2f"
+
+#: src/RenderStatistic.cc:315
+#, c-format
+msgid "   FOV:         %1$.2f"
+msgstr "   FOV:         %1$.2f"
+
+#: src/RenderStatistic.cc:331
+#, c-format
+msgid "Total rendering time: %1$d:%2$02d:%3$02d.%4$03d"
+msgstr "Tempo total de renderización: %1$d:%2$02d:%3$02d.%4$03d"
+
+#: src/core/BuiltinContext.cc:37
+#, c-format
+msgid "Experimental builtin function '%1$s' is not enabled"
+msgstr "A función integrada experimental «%1$s» non está activada"
+
+#: src/core/BuiltinContext.cc:50
+#, c-format
+msgid "Experimental builtin module '%1$s' is not enabled"
+msgstr "O módulo integrado experimental «%1$s» non está activado"
+
+#: src/core/BuiltinContext.cc:55
+#, c-format
+msgid ""
+"The %1$s() module will be removed in future releases. Use %2$s instead."
+msgstr ""
+"O módulo %1$s() eliminarase en versións futuras. Use %2$s no seu lugar."
+
+#: src/core/CSGTreeEvaluator.cc:277 src/geometry/GeometryEvaluator.cc:745
+msgid ""
+"Transformation matrix contains Not-a-Number and/or Infinity - removing "
+"object."
+msgstr ""
+"A matriz de transformación contén Not-a-Number e/ou Infinity - eliminando o "
+"obxecto."
+
+#: src/core/ColorNode.cc:62
+#, c-format
+msgid ""
+"color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range"
+msgstr ""
+"color() espera números entre 0.0 e 1.0. O valor %1$.1f está fóra do rango"
+
+#: src/core/ColorNode.cc:73
+#, c-format
+msgid "Unable to parse color \"%1$s\""
+msgstr "Non foi posible analizar a cor \"%1$s\""
+
+#: src/core/ColorNode.cc:75
+msgid ""
+"For a list of valid color names, see the <a href=\"open-"
+"window://colorlist\"><b>Color List</b></a> window."
+msgstr ""
+"Para ver unha lista de nomes de cor válidos, consulte a xanela <a "
+"href=\"open-window://colorlist\"><b>Lista de cores</b></a>."
+
+#: src/core/ColorNode.cc:83
+#, c-format
+msgid ""
+"color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range"
+msgstr ""
+"color() espera un alfa entre 0.0 e 1.0. O valor %1$.1f está fóra do rango"
+
+#: src/core/ColorUtil.cc:130
+#, c-format
+msgid "Unable to parse color \"%1$s\", reverting to default color."
+msgstr "Non foi posible analizar a cor \"%1$s\"; volvendo á cor predeterminada."
+
+#: src/core/Context.cc:93 src/core/EvaluationSession.cc:77
+#, c-format
+msgid "Ignoring unknown variable %1$s"
+msgstr "Ignorando a variable descoñecida %1$s"
+
+#: src/core/Context.cc:111 src/core/EvaluationSession.cc:92
+#, c-format
+msgid "Ignoring unknown function '%1$s'"
+msgstr "Ignorando a función descoñecida «%1$s»"
+
+#: src/core/Context.cc:127 src/core/EvaluationSession.cc:105
+#, c-format
+msgid "Ignoring unknown module '%1$s'"
+msgstr "Ignorando o módulo descoñecido «%1$s»"
+
+#: src/core/CurveDiscretizer.cc:37
+msgid "$fn negative - setting to 0"
+msgstr "$fn negativo - estableceuse a 0"
+
+#: src/core/CurveDiscretizer.cc:41
+msgid "$fe negative - setting to 0"
+msgstr "$fe negativo - estableceuse a 0"
+
+#: src/core/CurveDiscretizer.cc:45
+#, c-format
+msgid "$fs too small - clamping to %1$f"
+msgstr "$fs demasiado pequeno - limitado a %1$f"
+
+#: src/core/CurveDiscretizer.cc:50
+#, c-format
+msgid "$fa too small - clamping to %1$f"
+msgstr "$fa demasiado pequeno - limitado a %1$f"
+
+#: src/core/Expression.cc:257
+#, c-format
+msgid "begin %1$s than the end, but step %2$s"
+msgstr "inicio %1$s que o final, pero paso %2$s"
+
+#: src/core/Expression.cc:269
+#, c-format
+msgid "Unable to convert [%1$s:...:%2$s] to a range"
+msgstr "Non foi posible converter [%1$s:...:%2$s] nun rango"
+
+#: src/core/Expression.cc:279
+#, c-format
+msgid "Unable to convert [...:%1$s:...] to a step value"
+msgstr "Non foi posible converter [...:%1$s:...] nun valor de paso"
+
+#: src/core/Expression.cc:466 src/core/Expression.cc:628
+#, c-format
+msgid "Recursion detected calling function '%1$s'"
+msgstr "Detectouse recursión ao chamar á función «%1$s»"
+
+#: src/core/Expression.cc:480 src/core/ModuleInstantiation.cc:70
+#, c-format
+msgid "called by '%1$s'"
+msgstr "chamado por «%1$s»"
+
+#: src/core/Expression.cc:511
+#, c-format
+msgid "Can't call function on %1$s"
+msgstr "Non se pode chamar a unha función sobre %1$s"
+
+#: src/core/Expression.cc:682
+#, c-format
+msgid "Assertion%1$s failed%2$s"
+msgstr "A aserción%1$s fallou%2$s"
+
+#: src/core/Expression.cc:743
+#, c-format
+msgid "Assignment without variable name %1$s"
+msgstr "Asignación sen nome de variable %1$s"
+
+#: src/core/Expression.cc:747
+#, c-format
+msgid "Ignoring duplicate variable assignment %1$s = %2$s"
+msgstr "Ignorando a asignación duplicada da variable %1$s = %2$s"
+
+#: src/core/Expression.cc:823 src/core/Expression.cc:895
+#, c-format
+msgid "Bad range parameter in for statement: too many elements (%1$lu)"
+msgstr ""
+"Parámetro de rango incorrecto na instrución for: demasiados elementos "
+"(%1$lu)"
+
+#: src/core/Expression.cc:987
+msgid "For loop counter exceeded limit"
+msgstr "O contador do bucle for superou o límite"
+
+#: src/core/FreetypeRenderer.cc:115 src/core/FreetypeRenderer.cc:150
+#, c-format
+msgid ""
+"Unknown value for the halign parameter (use \"left\", \"right\" or "
+"\"center\"): '%1$s'"
+msgstr ""
+"Valor descoñecido para o parámetro halign (use \"left\", \"right\" ou "
+"\"center\"): «%1$s»"
+
+#: src/core/FreetypeRenderer.cc:132 src/core/FreetypeRenderer.cc:171
+#, c-format
+msgid ""
+"Unknown value for the valign parameter (use \"baseline\", \"bottom\", "
+"\"top\" or \"center\"): '%1$s'"
+msgstr ""
+"Valor descoñecido para o parámetro valign (use \"baseline\", \"bottom\", "
+"\"top\" ou \"center\"): «%1$s»"
+
+#: src/core/FreetypeRenderer.cc:158
+msgid "Don't use valign=\"baseline\" with vertical layouts"
+msgstr "Non use valign=\"baseline\" con disposicións verticais"
+
+#: src/core/FreetypeRenderer.cc:281
+msgid "Font cache initialization failed"
+msgstr "Fallou a inicialización da caché de tipos de letra"
+
+#: src/core/FreetypeRenderer.cc:287
+#, c-format
+msgid "Can't get font %1$s"
+msgstr "Non se pode obter o tipo de letra %1$s"
+
+#: src/core/FreetypeRenderer.cc:304
+#, c-format
+msgid "Can't set font size for font %1$s"
+msgstr "Non se pode definir o tamaño do tipo de letra %1$s"
+
+#: src/core/FreetypeRenderer.cc:341
+#, c-format
+msgid "%1$s: \"size\" ignored when \"em\" is set"
+msgstr "%1$s: ignórase \"size\" cando se define \"em\""
+
+#: src/core/FreetypeRenderer.cc:402
+#, c-format
+msgid "Ignoring text with invalid UTF-8 encoding: \"%1$s\""
+msgstr "Ignorando un texto cunha codificación UTF-8 non válida: \"%1$s\""
+
+#: src/core/FreetypeRenderer.cc:435
+#, c-format
+msgid "Could not load glyph %1$u for char at index %2$u in text '%3$s'"
+msgstr ""
+"Non foi posible cargar o glifo %1$u para o carácter na posición %2$u do "
+"texto «%3$s»"
+
+#: src/core/FreetypeRenderer.cc:445
+#, c-format
+msgid "Could not get glyph %1$u for char at index %2$u in text '%3$s'"
+msgstr ""
+"Non foi posible obter o glifo %1$u para o carácter na posición %2$u do texto"
+" «%3$s»"
+
+#: src/core/HTTPClient.cc:548
+#, c-format
+msgid "Could not load custom CA certificates from '%1$s': %2$s"
+msgstr ""
+"Non foi posible cargar os certificados de CA personalizados desde «%1$s»: "
+"%2$s"
+
+#: src/core/ImportNode.cc:80
+msgid "filename= is deprecated. Please use file="
+msgstr "filename= está obsoleto. Use file="
+
+#: src/core/ImportNode.cc:109
+msgid "layername= is deprecated. Please use layer="
+msgstr "layername= está obsoleto. Use layer="
+
+#: src/core/ImportNode.cc:127
+#, c-format
+msgid "Unable to convert import(..., origin=%1$s) parameter to vec2"
+msgstr ""
+"Non foi posible converter o parámetro import(..., origin=%1$s) en vec2"
+
+#: src/core/ImportNode.cc:144
+#, c-format
+msgid ""
+"Invalid dpi value giving, using default of %1$f dpi. Value must be positive "
+"and >= 0.001, file %2$s, import() at line %3$d"
+msgstr ""
+"Valor de dpi non válido; úsase o predeterminado de %1$f dpi. O valor debe "
+"ser positivo e >= 0.001, ficheiro %2$s, import() na liña %3$d"
+
+#: src/core/ImportNode.cc:254
+#, c-format
+msgid ""
+"Unsupported file format while trying to import file '%1$s', import() at line"
+" %2$d"
+msgstr ""
+"Formato de ficheiro non compatible ao tentar importar o ficheiro «%1$s», "
+"import() na liña %2$d"
+
+#: src/core/LinearExtrudeNode.cc:60
+msgid "v when specified should be a 3d vector"
+msgstr "v, se se especifica, debe ser un vector 3D"
+
+#: src/core/LinearExtrudeNode.cc:68
+msgid "height when specified should be a number"
+msgstr "height, se se especifica, debe ser un número"
+
+#: src/core/LinearExtrudeNode.cc:84
+#, c-format
+msgid "linear_extrude(..., scale=%1$s) could not be converted"
+msgstr "Non foi posible converter linear_extrude(..., scale=%1$s)"
+
+#: src/core/OffsetNode.cc:61
+#, c-format
+msgid "Ignoring %1$s argument as %2$s is defined too."
+msgstr "Ignorando o argumento %1$s porque tamén se definiu %2$s."
+
+#: src/core/Parameters.cc:86
+#, c-format
+msgid "Specified both %1$s and %2$s"
+msgstr "Especificáronse %1$s e %2$s á vez"
+
+#: src/core/Parameters.cc:123
+#, c-format
+msgid "%1$s: missing argument %2$s"
+msgstr "%1$s: falta o argumento %2$s"
+
+#: src/core/Parameters.cc:150
+#, c-format
+msgid "%1$s(..., %2$s=%3$s) argument cannot be infinite or nan"
+msgstr "O argumento %1$s(..., %2$s=%3$s) non pode ser infinito nin nan"
+
+#: src/core/Parameters.cc:182
+#, c-format
+msgid "argument %1$s supplied more than once"
+msgstr "o argumento %1$s indicouse máis dunha vez"
+
+#: src/core/Parameters.cc:185
+#, c-format
+msgid "argument %1$s overrides positional argument"
+msgstr "o argumento %1$s substitúe un argumento posicional"
+
+#: src/core/Parameters.cc:202
+#, c-format
+msgid "variable %1$s not specified as parameter"
+msgstr "a variable %1$s non se especificou como parámetro"
+
+#: src/core/Parameters.cc:221
+msgid "Too many unnamed arguments supplied"
+msgstr "Indicáronse demasiados argumentos sen nome"
+
+#: src/core/Parameters.cc:289
+#, c-format
+msgid "%1$s() number of parameters does not match: expected %2$s, found %3$i"
+msgstr ""
+"O número de parámetros de %1$s() non coincide: esperábanse %2$s, atopáronse "
+"%3$i"
+
+#: src/core/RotateExtrudeNode.cc:71
+msgid ""
+"In future releases, rotational extrusion without \"angle\" will start at "
+"zero, the +X axis.  Set start=180 to explicitly start on the -X axis."
+msgstr ""
+"En versións futuras, a extrusión rotacional sen \"angle\" comezará en cero, "
+"no eixo +X. Defina start=180 para comezar explicitamente no eixo -X."
+
+#: src/core/ScopeContext.cc:23
+#, c-format
+msgid "Parameter %1$s is overwritten with a literal"
+msgstr "O parámetro %1$s sobrescríbese cun literal"
+
+#: src/core/ScopeContext.cc:29
+#, c-format
+msgid "assignment to %1$s"
+msgstr "asignación a %1$s"
+
+#: src/core/ScopeContext.cc:33
+#, c-format
+msgid ""
+"overwritten assignment to %1$s (this is where the assignment is evaluated)"
+msgstr "asignación sobrescrita a %1$s (aquí é onde se avalía a asignación)"
+
+#: src/core/ScopeContext.cc:36
+#, c-format
+msgid "overwriting assignment to %1$s"
+msgstr "sobrescribindo a asignación a %1$s"
+
+#: src/core/SourceFile.cc:80
+#, c-format
+msgid "Can't read font with path '%1$s'"
+msgstr "Non se pode ler o tipo de letra coa ruta «%1$s»"
+
+#: src/core/SourceFileCache.cc:102
+#, c-format
+msgid "Can't open library file '%1$s'\n"
+msgstr "Non se pode abrir o ficheiro de biblioteca «%1$s»\n"
+
+#: src/core/SurfaceNode.cc:129
+#, c-format
+msgid "bad_alloc caught for '%1$s'."
+msgstr "Capturouse bad_alloc para «%1$s»."
+
+#: src/core/SurfaceNode.cc:134
+#, c-format
+msgid "The file '%1$s' couldn't be opened."
+msgstr "Non foi posible abrir o ficheiro «%1$s»."
+
+#: src/core/SurfaceNode.cc:147 src/core/SurfaceNode.cc:159
+#, c-format
+msgid "Can't read PNG image '%1$s'"
+msgstr "Non se pode ler a imaxe PNG «%1$s»"
+
+#: src/core/SurfaceNode.cc:175
+#, c-format
+msgid "Can't open DAT file '%1$s'."
+msgstr "Non se pode abrir o ficheiro DAT «%1$s»."
+
+#: src/core/SurfaceNode.cc:211
+#, c-format
+msgid "Illegal value in '%1$s': %2$s"
+msgstr "Valor non permitido en «%1$s»: %2$s"
+
+#: src/core/TransformNode.cc:66
+#, c-format
+msgid ""
+"Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of "
+"numbers or a number"
+msgstr ""
+"Non foi posible converter o parámetro de scale(%1$s) nun número, nun vec3 ou"
+" vec2 de números ou nun número"
+
+#: src/core/TransformNode.cc:73
+#, c-format
+msgid "scale(%1$s)"
+msgstr "scale(%1$s)"
+
+#: src/core/TransformNode.cc:124
+#, c-format
+msgid ""
+"When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)"
+msgstr ""
+"Cando o parámetro a se indica como vector, ignórase v rotate(a=%1$s, v=%2$s)"
+
+#: src/core/TransformNode.cc:130 src/core/TransformNode.cc:158
+#, c-format
+msgid "Problem converting rotate(a=%1$s, v=%2$s) parameter"
+msgstr "Problema ao converter o parámetro de rotate(a=%1$s, v=%2$s)"
+
+#: src/core/TransformNode.cc:134 src/core/TransformNode.cc:163
+#, c-format
+msgid "Problem converting rotate(a=%1$s) parameter"
+msgstr "Problema ao converter o parámetro de rotate(a=%1$s)"
+
+#: src/core/TransformNode.cc:155
+#, c-format
+msgid "Problem converting rotate(..., v=%1$s) parameter"
+msgstr "Problema ao converter o parámetro de rotate(..., v=%1$s)"
+
+#: src/core/TransformNode.cc:180
+#, c-format
+msgid "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers"
+msgstr ""
+"Non foi posible converter o parámetro de mirror(%1$s) nun vec3 ou vec2 de "
+"números"
+
+#: src/core/TransformNode.cc:221
+#, c-format
+msgid ""
+"Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers"
+msgstr ""
+"Non foi posible converter o parámetro de translate(%1$s) nun vec3 ou vec2 de"
+" números"
+
+#: src/core/UserModule.cc:54
+#, c-format
+msgid "Recursion detected calling module '%1$s'"
+msgstr "Detectouse recursión ao chamar ao módulo «%1$s»"
+
+#: src/core/UserModule.cc:86
+#, c-format
+msgid "call of '%1$s(%2$s)'"
+msgstr "chamada a «%1$s(%2$s)»"
+
+#: src/core/Value.cc:583
+#, c-format
+msgid "Bad range parameter in for statement: too many elements (%1$lu)."
+msgstr ""
+"Parámetro de rango incorrecto na instrución for: demasiados elementos "
+"(%1$lu)."
+
+#: src/core/Value.cc:1142
+#, c-format
+msgid "Matrix must be rectangular. Problem at row %1$lu"
+msgstr "A matriz debe ser rectangular. Problema na fila %1$lu"
+
+#: src/core/Value.cc:1146
+#, c-format
+msgid "Vector must contain only numbers. Problem at index %1$lu"
+msgstr "O vector só debe conter números. Problema na posición %1$lu"
+
+#: src/core/Value.cc:1150
+#, c-format
+msgid "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu"
+msgstr ""
+"A matriz só debe conter números. Problema na fila %1$lu, columna %2$lu"
+
+#: src/core/builtin_functions.cc:161
+msgid "rands() range min cannot be infinite"
+msgstr "o mínimo do rango de rands() non pode ser infinito"
+
+#: src/core/builtin_functions.cc:163 src/core/builtin_functions.cc:170
+#, c-format
+msgid "resetting to %1f"
+msgstr "restablecendo a %1f"
+
+#: src/core/builtin_functions.cc:168
+msgid "rands() range max cannot be infinite"
+msgstr "o máximo do rango de rands() non pode ser infinito"
+
+#: src/core/builtin_functions.cc:181
+msgid "rands() cannot create an infinite number of results"
+msgstr "rands() non pode crear un número infinito de resultados"
+
+#: src/core/builtin_functions.cc:182
+msgid "resetting number of results to 1"
+msgstr "restablecendo o número de resultados a 1"
+
+#: src/core/builtin_functions.cc:438
+#, c-format
+msgid "ord() argument '%1$s' is not a valid utf8 string"
+msgstr "o argumento «%1$s» de ord() non é unha cadea utf8 válida"
+
+#: src/core/builtin_functions.cc:609
+#, c-format
+msgid "lookup(%1$s, ...) first argument is not a number"
+msgstr "o primeiro argumento de lookup(%1$s, ...) non é un número"
+
+#: src/core/builtin_functions.cc:742
+#, c-format
+msgid ""
+"Invalid entry in search vector at index %1$d, required number of values in "
+"the entry: %2$d. Invalid entry: %3$s"
+msgstr ""
+"Entrada non válida no vector de busca na posición %1$d; número de valores "
+"necesario na entrada: %2$d. Entrada non válida: %3$s"
+
+#: src/core/builtin_functions.cc:879
+#, c-format
+msgid "Negative parent module index (%1$d) not allowed"
+msgstr "Non se permite un índice de módulo pai negativo (%1$d)"
+
+#: src/core/builtin_functions.cc:884
+#, c-format
+msgid ""
+"Parent module index (%1$d) greater than the number of modules on the stack"
+msgstr "O índice de módulo pai (%1$d) é maior que o número de módulos na pila"
+
+#: src/core/builtin_functions.cc:901
+msgid "Incorrect arguments to norm()"
+msgstr "Argumentos incorrectos para norm()"
+
+#: src/core/builtin_functions.cc:922
+msgid "Invalid vector size of parameter for cross()"
+msgstr "Tamaño de vector non válido no parámetro de cross()"
+
+#: src/core/builtin_functions.cc:928
+msgid "Invalid value in parameter vector for cross()"
+msgstr "Valor non válido no vector de parámetros de cross()"
+
+#: src/core/builtin_functions.cc:935
+msgid "Invalid value (NaN) in parameter vector for cross()"
+msgstr "Valor non válido (NaN) no vector de parámetros de cross()"
+
+#: src/core/builtin_functions.cc:940
+msgid "Invalid value (INF) in parameter vector for cross()"
+msgstr "Valor non válido (INF) no vector de parámetros de cross()"
+
+#: src/core/builtin_functions.cc:1122
+#, c-format
+msgid "No file extension or type while trying to import '%1$s'"
+msgstr "Non hai extensión nin tipo de ficheiro ao tentar importar «%1$s»"
+
+#: src/core/builtin_functions.cc:1126
+#, c-format
+msgid "Unsupported file extension '%1$s' while trying to import '%2$s'"
+msgstr "Extensión de ficheiro «%1$s» non compatible ao tentar importar «%2$s»"
+
+#: src/core/builtin_functions.cc:1135
+#, c-format
+msgid "Unsupported file type '%1$s' while trying to import '%2$s'"
+msgstr "Tipo de ficheiro «%1$s» non compatible ao tentar importar «%2$s»"
+
+#: src/core/control.cc:61
+#, c-format
+msgid "Children index (%1$d) out of bounds (%2$d children)"
+msgstr "Índice de fillo (%1$d) fóra dos límites (%2$d fillos)"
+
+#: src/core/control.cc:73
+#, c-format
+msgid ""
+"Bad parameter type (%1$s) for children, only accept: empty, number, vector, "
+"range."
+msgstr ""
+"Tipo de parámetro incorrecto (%1$s) para children; só se aceptan: baleiro, "
+"número, vector, rango."
+
+#: src/core/control.cc:121
+#, c-format
+msgid "Bad range parameter for children: too many elements (%1$lu)"
+msgstr ""
+"Parámetro de rango incorrecto para children: demasiados elementos (%1$lu)"
+
+#: src/core/control.cc:135
+#, c-format
+msgid ""
+"Bad parameter type (%1$s) for children, only accept: empty, number, vector, "
+"range"
+msgstr ""
+"Tipo de parámetro incorrecto (%1$s) para children; só se aceptan: baleiro, "
+"número, vector, rango"
+
+#: src/core/customizer/ParameterObject.cc:438
+#, c-format
+msgid ""
+"Parameter %1$s: value %2$g is below the declared minimum %3$g, adjusting "
+"minimum value"
+msgstr ""
+"Parámetro %1$s: o valor %2$g é inferior ao mínimo declarado %3$g; axustando "
+"o valor mínimo"
+
+#: src/core/customizer/ParameterObject.cc:445
+#, c-format
+msgid ""
+"Parameter %1$s: value %2$g is above the declared maximum %3$g, adjusting "
+"maximum value"
+msgstr ""
+"Parámetro %1$s: o valor %2$g é superior ao máximo declarado %3$g; axustando "
+"o valor máximo"
+
+#: src/core/customizer/ParameterSet.cc:21
+#, c-format
+msgid "Cannot open Parameter Set '%1$s' for reading"
+msgstr "Non se pode abrir o conxunto de parámetros «%1$s» para lectura"
+
+#: src/core/customizer/ParameterSet.cc:27
+#, c-format
+msgid "Cannot open Parameter Set '%1$s': %2$s"
+msgstr "Non se pode abrir o conxunto de parámetros «%1$s»: %2$s"
+
+#: src/core/customizer/ParameterSet.cc:67
+#, c-format
+msgid "Cannot open Parameter Set '%1$s' for writing"
+msgstr "Non se pode abrir o conxunto de parámetros «%1$s» para escritura"
+
+#: src/core/customizer/ParameterSet.cc:73
+#, c-format
+msgid "Cannot write Parameter Set '%1$s': %2$s"
+msgstr "Non se pode escribir o conxunto de parámetros «%1$s»: %2$s"
+
+#: src/core/module.cc:81
+#, c-format
+msgid "module %1$s() does not support child modules%2$s%3$s"
+msgstr "o módulo %1$s() non admite módulos fillos%2$s%3$s"
+
+#: src/core/primitives.cc:89
+#, c-format
+msgid "Ignoring radius variable %1$s as diameter %2$s is defined too."
+msgstr ""
+"Ignorando a variable de raio %1$s porque tamén se definiu o diámetro %2$s."
+
+#: src/core/primitives.cc:152
+#, c-format
+msgid ""
+"Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of "
+"numbers"
+msgstr ""
+"Non foi posible converter o parámetro de cube(size=%1$s, ...) nun número ou "
+"nun vec3 de números"
+
+#: src/core/primitives.cc:158
+#, c-format
+msgid "cube(size=%1$s, ...)"
+msgstr "cube(size=%1$s, ...)"
+
+#: src/core/primitives.cc:427
+#, c-format
+msgid "sphere(r=%1$s)"
+msgstr "sphere(r=%1$s)"
+
+#: src/core/primitives.cc:438
+#, c-format
+msgid "sphere(style=\"%1$s\") is not \"orig\" or \"octa\", using \"%2$s\""
+msgstr "sphere(style=\"%1$s\") non é \"orig\" nin \"octa\"; úsase \"%2$s\""
+
+#: src/core/primitives.cc:528
+msgid "Cylinder parameters ambiguous"
+msgstr "Os parámetros de cylinder son ambiguos"
+
+#: src/core/primitives.cc:544
+#, c-format
+msgid "cylinder(h=%1$s, ...)"
+msgstr "cylinder(h=%1$s, ...)"
+
+#: src/core/primitives.cc:550
+#, c-format
+msgid "cylinder(r1=%1$s, r2=%2$s, ...)"
+msgstr "cylinder(r1=%1$s, r2=%2$s, ...)"
+
+#: src/core/primitives.cc:627 src/core/primitives.cc:866
+#, c-format
+msgid "Unable to convert points = %1$s to a vector of coordinates"
+msgstr "Non foi posible converter points = %1$s nun vector de coordenadas"
+
+#: src/core/primitives.cc:637
+#, c-format
+msgid "Unable to convert points[%1$d] = %2$s to a vec3 of numbers"
+msgstr "Non foi posible converter points[%1$d] = %2$s nun vec3 de números"
+
+#: src/core/primitives.cc:648
+#, c-format
+msgid "Unable to convert faces = %1$s to a vector of vector of point indices"
+msgstr ""
+"Non foi posible converter faces = %1$s nun vector de vectores de índices de "
+"puntos"
+
+#: src/core/primitives.cc:657
+#, c-format
+msgid "Unable to convert faces[%1$d] = %2$s to a vector of numbers"
+msgstr "Non foi posible converter faces[%1$d] = %2$s nun vector de números"
+
+#: src/core/primitives.cc:665
+#, c-format
+msgid "Unable to convert faces[%1$d][%2$d] = %3$s to a number"
+msgstr "Non foi posible converter faces[%1$d][%2$d] = %3$s nun número"
+
+#: src/core/primitives.cc:673
+#, c-format
+msgid "Point index %1$d is out of bounds (from faces[%2$d][%3$d])"
+msgstr ""
+"O índice de punto %1$d está fóra dos límites (desde faces[%2$d][%3$d])"
+
+#: src/core/primitives.cc:725
+#, c-format
+msgid ""
+"Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of "
+"numbers"
+msgstr ""
+"Non foi posible converter o parámetro de square(size=%1$s, ...) nun número "
+"ou nun vec2 de números"
+
+#: src/core/primitives.cc:733
+#, c-format
+msgid "square(size=%1$s, ...)"
+msgstr "square(size=%1$s, ...)"
+
+#: src/core/primitives.cc:776
+#, c-format
+msgid "circle(r=%1$s)"
+msgstr "circle(r=%1$s)"
+
+#: src/core/primitives.cc:875
+#, c-format
+msgid "Unable to convert points[%1$d] = %2$s to a vec2 of numbers"
+msgstr "Non foi posible converter points[%1$d] = %2$s nun vec2 de números"
+
+#: src/core/primitives.cc:888
+#, c-format
+msgid "Unable to convert paths[%1$d] = %2$s to a vector of numbers"
+msgstr "Non foi posible converter paths[%1$d] = %2$s nun vector de números"
+
+#: src/core/primitives.cc:896
+#, c-format
+msgid "Unable to convert paths[%1$d][%2$d] = %3$s to a number"
+msgstr "Non foi posible converter paths[%1$d][%2$d] = %3$s nun número"
+
+#: src/core/primitives.cc:904
+#, c-format
+msgid "Point index %1$d is out of bounds (from paths[%2$d][%3$d])"
+msgstr ""
+"O índice de punto %1$d está fóra dos límites (desde paths[%2$d][%3$d])"
+
+#: src/core/primitives.cc:916
+#, c-format
+msgid "Unable to convert paths = %1$s to a vector of vector of point indices"
+msgstr ""
+"Non foi posible converter paths = %1$s nun vector de vectores de índices de "
+"puntos"
+
+#: src/geometry/ClipperUtils.cc:165
+msgid "Range check failed for polygon. skipping"
+msgstr "Fallou a comprobación de rango do polígono. Omitindo"
+
+#: src/geometry/Geometry.cc:55
+msgid "Mixing 2D and 3D objects is not supported."
+msgstr "Non se admite mesturar obxectos 2D e 3D."
+
+#: src/geometry/GeometryCache.cc:30
+#, c-format
+msgid "Geometry Cache %1$s: %2$s (%3$d bytes)"
+msgstr "Caché de xeometría %1$s: %2$s (%3$d bytes)"
+
+#: src/geometry/GeometryCache.cc:58
+#, c-format
+msgid "Geometries in cache: %1$d"
+msgstr "Xeometrías na caché: %1$d"
+
+#: src/geometry/GeometryCache.cc:59
+#, c-format
+msgid "Geometry cache size in bytes: %1$d"
+msgstr "Tamaño da caché de xeometría en bytes: %1$d"
+
+#: src/geometry/GeometryEvaluator.cc:121
+msgid "Mixing 2D and 3D objects is not supported"
+msgstr "Non se admite mesturar obxectos 2D e 3D"
+
+#: src/geometry/GeometryEvaluator.cc:157
+msgid "fill() not yet implemented for 3D"
+msgstr "fill() aínda non está implementado para 3D"
+
+#: src/geometry/GeometryEvaluator.cc:263
+#, c-format
+msgid "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s"
+msgstr "GeometryEvaluator::applyHull2D() durante CGAL::convex_hull_2(): %1$s"
+
+#: src/geometry/GeometryEvaluator.cc:320
+msgid "Ignoring 3D child object for 2D operation"
+msgstr "Ignorando un obxecto fillo 3D nunha operación 2D"
+
+#: src/geometry/GeometryEvaluator.cc:360
+msgid "GeometryEvaluator: Node didn't fit into cache."
+msgstr "GeometryEvaluator: o nodo non cabía na caché."
+
+#: src/geometry/GeometryEvaluator.cc:402
+msgid "Ignoring 2D child object for 3D operation"
+msgstr "Ignorando un obxecto fillo 2D nunha operación 3D"
+
+#: src/geometry/GeometryEvaluator.cc:448
+#, c-format
+msgid "Unknown boolean operation %1$d"
+msgstr "Operación booleana descoñecida %1$d"
+
+#: src/geometry/PolySetBuilder.cc:111
+#: src/geometry/cgal/cgalutils-project.cc:241 src/io/export_stl.cc:206
+msgid "Nef->PolySet failed"
+msgstr "Fallou Nef->PolySet"
+
+#: src/geometry/PolySetUtils.cc:162
+msgid "PolySet has degenerate polygons"
+msgstr "O PolySet ten polígonos dexenerados"
+
+#: src/geometry/PolySetUtils.cc:193 src/geometry/cgal/cgalutils.cc:529
+msgid "Nef->PolySet failed."
+msgstr "Fallou Nef->PolySet."
+
+#: src/geometry/Polygon2d.cc:94
+msgid "Scaling a 2D object with 0 - removing object"
+msgstr "Escalando un obxecto 2D por 0 - eliminando o obxecto"
+
+#: src/geometry/cgal/CGALCache.cc:27
+#, c-format
+msgid "CGAL Cache hit: %1$s (%2$d bytes)"
+msgstr "Acerto na caché de CGAL: %1$s (%2$d bytes)"
+
+#: src/geometry/cgal/CGALCache.cc:49
+#, c-format
+msgid "CGAL Cache %1$s: %2$s (%3$d bytes)"
+msgstr "Caché de CGAL %1$s: %2$s (%3$d bytes)"
+
+#: src/geometry/cgal/CGALCache.cc:82
+#, c-format
+msgid "CGAL Polyhedrons in cache: %1$d"
+msgstr "Poliedros CGAL na caché: %1$d"
+
+#: src/geometry/cgal/CGALCache.cc:83
+#, c-format
+msgid "CGAL cache size in bytes: %1$d"
+msgstr "Tamaño da caché de CGAL en bytes: %1$d"
+
+#: src/geometry/cgal/CGALNefGeometry.cc:110
+msgid "Scaling a 3D object with 0 - removing object"
+msgstr "Escalando un obxecto 3D por 0 - eliminando o obxecto"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:81
+#, c-format
+msgid "CGAL error in CGALUtils::applyUnion3D: %1$s"
+msgstr "Erro de CGAL en CGALUtils::applyUnion3D: %1$s"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:130
+#: src/geometry/manifold/manifold-applyops.cc:98
+#, c-format
+msgid "Unsupported CGAL operator: %1$d"
+msgstr "Operador de CGAL non compatible: %1$d"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:142
+#, c-format
+msgid "CGAL error in CGALUtils::applyOperator3D %1$s: %2$s"
+msgstr "Erro de CGAL en CGALUtils::applyOperator3D %1$s: %2$s"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:151
+#, c-format
+msgid "exception in CGALUtils::applyOperator3D %1$s: %2$s"
+msgstr "excepción en CGALUtils::applyOperator3D %1$s: %2$s"
+
+#: src/geometry/cgal/cgalutils-applyops.cc:211
+#, c-format
+msgid "CGAL error in applyHull3D(): %1$s"
+msgstr "Erro de CGAL en applyHull3D(): %1$s"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:125
+#, c-format
+msgid "Failed to add face with %1$lu vertices!"
+msgstr "Non foi posible engadir unha cara con %1$lu vértices!"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:142
+msgid ""
+"Attempted to remove too many vertices around this copied face, remesh "
+"aborted!"
+msgstr ""
+"Tentouse eliminar demasiados vértices arredor desta cara copiada; abortouse "
+"a remallaxe!"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:172
+msgid ""
+"Attempted to remove too many vertices around this added face, remesh "
+"aborted!"
+msgstr ""
+"Tentouse eliminar demasiados vértices arredor desta cara engadida; abortouse"
+" a remallaxe!"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:181
+msgid "Remeshing output isn't valid"
+msgstr "O resultado da remallaxe non é válido"
+
+#: src/geometry/cgal/cgalutils-mesh-edits.h:185
+msgid "Remeshing output isn't closed"
+msgstr "O resultado da remallaxe non está pechado"
+
+#: src/geometry/cgal/cgalutils-polyhedron.cc:297
+#, c-format
+msgid "CGAL error in CGAL_Nef_polyhedron3(): %1$s. Attempting union..."
+msgstr "Erro de CGAL en CGAL_Nef_polyhedron3(): %1$s. Tentando unha unión..."
+
+#: src/geometry/cgal/cgalutils-polyhedron.cc:322
+#, c-format
+msgid ""
+"CGALUtils::convertSurfaceMeshToNef: Discarded %1$d facets during Nef "
+"conversion."
+msgstr ""
+"CGALUtils::convertSurfaceMeshToNef: descartáronse %1$d facetas durante a "
+"conversión a Nef."
+
+#: src/geometry/cgal/cgalutils-polyhedron.cc:342
+#, c-format
+msgid "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s"
+msgstr "Erro de CGAL en CGALUtils::createPolyhedronFromPolySet: %1$s"
+
+#: src/geometry/cgal/cgalutils-project.cc:203
+#, c-format
+msgid " CGAL error in CGALUtils::project during bigbox intersection: %1$s"
+msgstr ""
+" Erro de CGAL en CGALUtils::project durante a intersección coa caixa grande:"
+" %1$s"
+
+#: src/geometry/cgal/cgalutils-project.cc:209
+msgid "Projection() failed."
+msgstr "Fallou projection()."
+
+#: src/geometry/cgal/cgalutils-project.cc:231
+#, c-format
+msgid "CGAL error in CGALUtils::project while flattening: %1$s"
+msgstr "Erro de CGAL en CGALUtils::project ao aplanar: %1$s"
+
+#: src/geometry/cgal/cgalutils-triangulate.cc:133
+#, c-format
+msgid "CGAL error in Polygon2d::tesselate(): %1$s"
+msgstr "Erro de CGAL en Polygon2d::tesselate(): %1$s"
+
+#: src/geometry/cgal/cgalutils.cc:98
+msgid "The given mesh is not closed! Unable to convert to CGALNefGeometry."
+msgstr ""
+"A malla indicada non está pechada! Non se pode converter en CGALNefGeometry."
+
+#: src/geometry/cgal/cgalutils.cc:100
+msgid "The given mesh is invalid! Unable to convert to CGALNefGeometry."
+msgstr ""
+"A malla indicada non é válida! Non se pode converter en CGALNefGeometry."
+
+#: src/geometry/cgal/cgalutils.cc:111
+msgid "PolySet has nonplanar faces. Attempting alternate construction"
+msgstr "O PolySet ten caras non planas. Tentando unha construción alternativa"
+
+#: src/geometry/cgal/cgalutils.cc:114
+#, c-format
+msgid "CGAL error in CGAL_Nef_polyhedron3(): %1$s"
+msgstr "Erro de CGAL en CGAL_Nef_polyhedron3(): %1$s"
+
+#: src/geometry/cgal/cgalutils.cc:127
+#, c-format
+msgid ""
+"Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s"
+msgstr ""
+"Fallou a construción alternativa. Erro de CGAL en CGAL_Nef_polyhedron3(): "
+"%1$s"
+
+#: src/geometry/cgal/cgalutils.cc:340
+#, c-format
+msgid "Non-manifold mesh encountered: %1$d unconnected edges"
+msgstr "Atopouse unha malla non variedade: %1$d arestas non conectadas"
+
+#: src/geometry/cgal/cgalutils.cc:406
+#, c-format
+msgid "Non-manifold mesh created: %1$d unconnected edges"
+msgstr "Creouse unha malla non variedade: %1$d arestas non conectadas"
+
+#: src/geometry/cgal/cgalutils.cc:485
+msgid "Resize in direction normal to flat object is not implemented"
+msgstr ""
+"O redimensionamento en dirección normal a un obxecto plano non está "
+"implementado"
+
+#: src/geometry/manifold/ManifoldGeometry.cc:254
+#, c-format
+msgid "CGAL error in ManifoldGeometry::toPolyhedron(): %1$s"
+msgstr "Erro de CGAL en ManifoldGeometry::toPolyhedron(): %1$s"
+
+#: src/geometry/manifold/ManifoldGeometry.cc:310
+#, c-format
+msgid "Nef minkoswki operation failed: %1$s\n"
+msgstr "Fallou a operación de Minkowski con Nef: %1$s\n"
+
+#: src/geometry/manifold/ManifoldGeometry.cc:312
+msgid "Nef minkowski hard-crashed"
+msgstr "A operación de Minkowski con Nef fallou gravemente"
+
+#: src/geometry/manifold/manifold-applyops-minkowski.cc:109
+msgid "Minkowski: Nef polyhedron converted from mesh is invalid!"
+msgstr "Minkowski: o poliedro Nef convertido desde a malla non é válido!"
+
+#: src/geometry/manifold/manifold-applyops-minkowski.cc:244
+#, c-format
+msgid ""
+"[manifold] Minkowski failed with error, falling back to Nef operation: "
+"%1$s\n"
+msgstr ""
+"[manifold] Minkowski fallou cun erro; recorrendo á operación Nef: %1$s\n"
+
+#: src/geometry/manifold/manifold-applyops-minkowski.cc:246
+msgid "[manifold] Minkowski hard-crashed, falling back to Nef operation."
+msgstr "[manifold] Minkowski fallou gravemente; recorrendo á operación Nef."
+
+#: src/geometry/manifold/manifoldutils.cc:147
+#, c-format
+msgid ""
+"PolySet -> Manifold conversion failed: %1$s\n"
+"Trying to repair and reconstruct mesh.."
+msgstr ""
+"Fallou a conversión PolySet -> Manifold: %1$s\n"
+"Tentando reparar e reconstruír a malla.."
+
+#: src/geometry/manifold/manifoldutils.cc:183
+msgid "[manifold] Input mesh is not closed!"
+msgstr "[manifold] A malla de entrada non está pechada!"
+
+#: src/geometry/manifold/manifoldutils.cc:191
+#, c-format
+msgid "[manifold] CGAL error: %1$s"
+msgstr "[manifold] Erro de CGAL: %1$s"
+
+#: src/geometry/manifold/manifoldutils.cc:277
+#, c-format
+msgid "[manifold] Surface_mesh -> Manifold conversion failed: %1$s"
+msgstr "[manifold] Fallou a conversión Surface_mesh -> Manifold: %1$s"
+
+#: src/geometry/rotate_extrude.cc:96
+#, c-format
+msgid ""
+"Children of rotate_extrude() may not lie across the Y axis (Range of X "
+"coords for all children [%1$.2f : %2$.2f])"
+msgstr ""
+"Os fillos de rotate_extrude() non poden cruzar o eixo Y (rango de "
+"coordenadas X de todos os fillos [%1$.2f : %2$.2f])"
+
+#: src/glview/Camera.cc:115
+#, c-format
+msgid "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers"
+msgstr "Non foi posible converter $vpr=%1$s nun vec3 ou vec2 de números"
+
+#: src/glview/Camera.cc:126
+#, c-format
+msgid "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers"
+msgstr "Non foi posible converter $vpt=%1$s nun vec3 ou vec2 de números"
+
+#: src/glview/Camera.cc:137
+#, c-format
+msgid "Unable to convert $vpd=%1$s to a number"
+msgstr "Non foi posible converter $vpd=%1$s nun número"
+
+#: src/glview/Camera.cc:147
+#, c-format
+msgid "Unable to convert $vpf=%1$s to a number"
+msgstr "Non foi posible converter $vpf=%1$s nun número"
+
+#: src/glview/Camera.cc:152
+msgid "Viewall and autocenter disabled in favor of $vp*"
+msgstr "Viewall e autocenter desactivados en favor de $vp*"
+
+#: src/glview/ColorMap.cc:76
+#, c-format
+msgid "Error reading color scheme file: '%1$s': %2$s"
+msgstr "Erro ao ler o ficheiro de esquema de cores: «%1$s»: %2$s"
+
+#: src/glview/CsgInfo.cc:23 src/gui/MainWindow.cc:1105
+msgid "Compiling design (CSG Products normalization)..."
+msgstr "Compilando o deseño (normalización dos produtos CSG)..."
+
+#: src/glview/CsgInfo.cc:30
+#, c-format
+msgid "Normalized CSG tree has %1$d elements"
+msgstr "A árbore CSG normalizada ten %1$d elementos"
+
+#: src/glview/CsgInfo.cc:33 src/gui/MainWindow.cc:1119
+msgid "CSG normalization resulted in an empty tree"
+msgstr "A normalización CSG deu como resultado unha árbore baleira"
+
+#: src/glview/CsgInfo.cc:38
+#, c-format
+msgid "Compiling highlights (%1$i CSG Trees)..."
+msgstr "Compilando os realces (%1$i árbores CSG)..."
+
+#: src/glview/CsgInfo.cc:47
+#, c-format
+msgid "Compiling background (%1$i CSG Trees)..."
+msgstr "Compilando o fondo (%1$i árbores CSG)..."
+
+#: src/glview/GLView.cc:167
+#, c-format
+msgid "GLView: unknown colorscheme %1$s"
+msgstr "GLView: esquema de cores descoñecido %1$s"
+
+#: src/glview/OffscreenContextCGL.cc:36
+#, c-format
+msgid "CGLSetCurrentContext() failed: %1$s (%2$d)"
+msgstr "Fallou CGLSetCurrentContext(): %1$s (%2$d)"
+
+#: src/glview/OffscreenContextCGL.cc:65
+#, c-format
+msgid "CGLChoosePixelFormat() failed: %1$s (%2$d)"
+msgstr "Fallou CGLChoosePixelFormat(): %1$s (%2$d)"
+
+#: src/glview/OffscreenContextEGL.cc:165
+msgid "gladLoaderLoadEGL(nullptr): Unable to load EGL"
+msgstr "gladLoaderLoadEGL(nullptr): non foi posible cargar EGL"
+
+#: src/glview/OffscreenContextEGL.cc:206
+msgid "No EGL display found"
+msgstr "Non se atopou ningunha pantalla EGL"
+
+#: src/glview/OffscreenContextEGL.cc:212
+#, c-format
+msgid "Unable to initialize EGL: %1$s"
+msgstr "Non foi posible inicializar EGL: %1$s"
+
+#: src/glview/OffscreenContextEGL.cc:221
+msgid "gladLoaderLoadEGL(eglDisplay): Unable to reload EGL"
+msgstr "gladLoaderLoadEGL(eglDisplay): non foi posible recargar EGL"
+
+#: src/glview/OffscreenContextEGL.cc:232
+#, c-format
+msgid "Failed to choose config (eglError: %1$x)"
+msgstr "Non foi posible escoller a configuración (eglError: %1$x)"
+
+#: src/glview/OffscreenContextEGL.cc:236
+msgid "eglBindAPI() failed!"
+msgstr "Fallou eglBindAPI()!"
+
+#: src/glview/OffscreenContextEGL.cc:242
+#, c-format
+msgid "Unable to create EGL surface (eglError: %1$x)"
+msgstr "Non foi posible crear a superficie EGL (eglError: %1$x)"
+
+#: src/glview/OffscreenContextEGL.cc:260
+#, c-format
+msgid "Unable to create EGL context (eglError: %1$x)"
+msgstr "Non foi posible crear o contexto EGL (eglError: %1$x)"
+
+#: src/glview/OffscreenContextFactory.cc:75
+msgid "GLES is not supported on macOS"
+msgstr "GLES non é compatible con macOS"
+
+#: src/glview/OffscreenContextFactory.cc:78
+msgid "Compatibility context is not available on macOS"
+msgstr "O contexto de compatibilidade non está dispoñible en macOS"
+
+#: src/glview/OffscreenContextFactory.cc:116
+msgid "GLES is not supported on Windows"
+msgstr "GLES non é compatible con Windows"
+
+#: src/glview/OffscreenContextFactory.cc:127
+#, c-format
+msgid "GL context provider '%1$s' not found"
+msgstr "Non se atopou o provedor de contexto GL «%1$s»"
+
+#: src/glview/OffscreenContextGLX.cc:97
+msgid "glXChooseFBConfig() failed"
+msgstr "Fallou glXChooseFBConfig()"
+
+#: src/glview/OffscreenContextGLX.cc:102
+msgid "glXGetVisualFromFBConfig failed"
+msgstr "Fallou glXGetVisualFromFBConfig"
+
+#: src/glview/OffscreenContextGLX.cc:124
+#, c-format
+msgid "XCreateWindow() failed: %1$s"
+msgstr "Fallou XCreateWindow(): %1$s"
+
+#: src/glview/OffscreenContextGLX.cc:141
+msgid "Unable to create GLX context using glXCreateContextAttribsARB()"
+msgstr "Non foi posible crear o contexto GLX con glXCreateContextAttribsARB()"
+
+#: src/glview/OffscreenContextGLX.cc:147
+msgid "Unable to create GLX context using glXCreateNewContext()"
+msgstr "Non foi posible crear o contexto GLX con glXCreateNewContext()"
+
+#: src/glview/OffscreenContextGLX.cc:173
+msgid "Unable to open a connection to the X server."
+msgstr "Non foi posible abrir unha conexión co servidor X."
+
+#: src/glview/OffscreenContextGLX.cc:175
+#, c-format
+msgid "  DISPLAY=%1$s"
+msgstr "  DISPLAY=%1$s"
+
+#: src/glview/OffscreenContextGLX.cc:181
+msgid "GLAD: Unable to load GLX"
+msgstr "GLAD: non foi posible cargar GLX"
+
+#: src/glview/OffscreenContextGLX.cc:193
+#, c-format
+msgid "Error: GLX version 1.3 functions missing. Your GLX version: %1$d.%2$d"
+msgstr "Erro: faltan as funcións de GLX 1.3. A súa versión de GLX: %1$d.%2$d"
+
+#: src/glview/OffscreenContextOSMesa.cc:51
+msgid "OSMesa context is null"
+msgstr "O contexto OSMesa é nulo"
+
+#: src/glview/OffscreenContextOSMesa.cc:55
+msgid "OSMesaMakeCurrent() failed"
+msgstr "Fallou OSMesaMakeCurrent()"
+
+#: src/glview/OffscreenContextOSMesa.cc:90
+#, c-format
+msgid "OSMesaCreateContext failed for GL %1$d.%2$d"
+msgstr "Fallou OSMesaCreateContext para GL %1$d.%2$d"
+
+#: src/glview/OffscreenView.cc:119
+msgid "OpenSCAD recommended OpenGL version is 2.0."
+msgstr "A versión de OpenGL recomendada para OpenSCAD é a 2.0."
+
+#: src/glview/PolySetRenderer.cc:101
+#, c-format
+msgid "Unsupported geom '%1$s' in PolySetRenderer"
+msgstr "Xeometría non compatible «%1$s» en PolySetRenderer"
+
+#: src/glview/PolySetRenderer.cc:221
+msgid "PolySetRenderer::prepare() called with both polysets and polygons"
+msgstr "Chamouse a PolySetRenderer::prepare() con polysets e polígonos á vez"
+
+#: src/glview/Renderer.cc:29 src/glview/ShaderUtils.cc:21
+#, c-format
+msgid "Cannot open shader source file: '%1$s'"
+msgstr "Non se pode abrir o ficheiro fonte do shader: «%1$s»"
+
+#: src/glview/cgal/CGALRenderer.cc:244
+msgid "CGALRenderer::prepare() called with both polysets and polygons"
+msgstr "Chamouse a CGALRenderer::prepare() con polysets e polígonos á vez"
+
+#: src/glview/fbo.cc:43
+#, c-format
+msgid "glCheckFramebufferStatus(): %1$s"
+msgstr "glCheckFramebufferStatus(): %1$s"
+
+#: src/glview/fbo.cc:57
+msgid "Framebuffer Objects not supported"
+msgstr "Os Framebuffer Objects non son compatibles"
+
+#: src/glview/fbo.cc:80
+msgid "Problem with OpenGL framebuffer after specifying color render buffer."
+msgstr ""
+"Problema co framebuffer de OpenGL despois de especificar o búfer de "
+"renderizado de cor."
+
+#: src/glview/fbo.cc:92
+msgid "Problem with OpenGL framebuffer after specifying depth render buffer."
+msgstr ""
+"Problema co framebuffer de OpenGL despois de especificar o búfer de "
+"renderizado de profundidade."
+
+#: src/glview/preview/CSGTreeNormalizer.cc:100
+#, c-format
+msgid "Normalized tree is growing past %1$d elements. Aborting normalization.\n"
+msgstr ""
+"A árbore normalizada supera os %1$d elementos. Abortando a normalización.\n"
+
+#: src/glview/system-gl.h:34
+#, c-format
+msgid ""
+"OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
+"              %5$s\n"
+msgstr ""
+"Erro de OpenGL: %1$s (0x%2$04x) en %3$s:%4$d\n"
+"              %5$s\n"
+
+#: src/gui/CaCerts.h:59
+#, c-format
+msgid "Could not open CA certificate file: %1$s"
+msgstr "Non foi posible abrir o ficheiro de certificados de CA: %1$s"
+
+#: src/gui/CaCerts.h:77
+#, c-format
+msgid "Malformed CA certificate file, missing end marker: %1$s"
+msgstr ""
+"Ficheiro de certificados de CA mal formado, falta o marcador final: %1$s"
+
+#: src/gui/CaCerts.h:84
+#, c-format
+msgid "Skipping unparseable certificate in CA certificate file: %1$s"
+msgstr ""
+"Omitindo un certificado que non se pode analizar no ficheiro de certificados"
+" de CA: %1$s"
+
+#: src/gui/CaCerts.h:92
+#, c-format
+msgid "No valid certificates found in CA certificate file: %1$s"
+msgstr ""
+"Non se atoparon certificados válidos no ficheiro de certificados de CA: %1$s"
+
+#: src/gui/Console.cc:194
+#, c-format
+msgid "Console content saved to '%1$s'."
+msgstr "Gardouse o contido da consola en «%1$s»."
+
+#: src/gui/EditorColorMap.cc:20
+#, c-format
+msgid "Error reading color scheme file '%1$s': %2$s"
+msgstr "Erro ao ler o ficheiro de esquema de cores «%1$s»: %2$s"
+
+#: src/gui/ExternalToolInterface.cc:80
+msgid "Could not open temporary file."
+msgstr "Non foi posible abrir o ficheiro temporal."
+
+#: src/gui/ExternalToolInterface.cc:90
+#, c-format
+msgid "Exported temporary file %1$s"
+msgstr "Exportouse o ficheiro temporal %1$s"
+
+#: src/gui/ExternalToolInterface.cc:122
+#, c-format
+msgid "Configured temporary directory does not exist: '%1$s'"
+msgstr "O directorio temporal configurado non existe: «%1$s»"
+
+#: src/gui/ExternalToolInterface.cc:138
+msgid ""
+"No application configured, check Preferences -> 3D Print -> Local "
+"Application"
+msgstr ""
+"Non hai ningunha aplicación configurada; comprobe Preferencias -> Impresión "
+"3D -> Aplicación local"
+
+#: src/gui/ExternalToolInterface.cc:167
+#, c-format
+msgid "Could not start local application '%1$s': %2$s"
+msgstr "Non foi posible iniciar a aplicación local «%1$s»: %2$s"
+
+#: src/gui/ExternalToolInterface.cc:171
+#, c-format
+msgid "Output: %1$s"
+msgstr "Saída: %1$s"
+
+#: src/gui/ExternalToolInterface.cc:182
+msgid "Unable to open exported STL file."
+msgstr "Non foi posible abrir o ficheiro STL exportado."
+
+#: src/gui/GeometryWorker.cc:63
+msgid "Rendering cancelled due to unknown manifold error."
+msgstr "Renderización cancelada por un erro descoñecido de manifold."
+
+#: src/gui/GeometryWorker.cc:67
+msgid "Rendering cancelled."
+msgstr "Renderización cancelada."
+
+#: src/gui/GeometryWorker.cc:69
+msgid "Rendering cancelled on first warning."
+msgstr "Renderización cancelada no primeiro aviso."
+
+#: src/gui/GeometryWorker.cc:71
+#, c-format
+msgid "Rendering cancelled by exception %1$s"
+msgstr "Renderización cancelada pola excepción %1$s"
+
+#: src/gui/GeometryWorker.cc:73
+msgid "Rendering cancelled by unknown exception."
+msgstr "Renderización cancelada por unha excepción descoñecida."
+
+#: src/gui/MainWindow.cc:239
+#, c-format
+msgid "%1$s export finished: %2$s"
+msgstr "Exportación %1$s finalizada: %2$s"
+
+#: src/gui/MainWindow.cc:267
+#, c-format
+msgid "Unknown print service \"%1$s\""
+msgstr "Servizo de impresión descoñecido \"%1$s\""
+
+#: src/gui/MainWindow.cc:815
+#, c-format
+msgid "Used file cache size: %1$d files"
+msgstr "Tamaño usado da caché de ficheiros: %1$d ficheiros"
+
+#: src/gui/MainWindow.cc:1019
+msgid "Compiling design (CSG Tree generation)..."
+msgstr "Compilando o deseño (xeración da árbore CSG)..."
+
+#: src/gui/MainWindow.cc:1047 src/openscad.cc:440
+msgid "More than one Root Modifier (!)"
+msgstr "Hai máis dun modificador raíz (!)"
+
+#: src/gui/MainWindow.cc:1058
+msgid "Compilation failed! (no top level object found)"
+msgstr ""
+"Fallou a compilación! (non se atopou ningún obxecto de nivel superior)"
+
+#: src/gui/MainWindow.cc:1060
+msgid "Compilation failed!"
+msgstr "Fallou a compilación!"
+
+#: src/gui/MainWindow.cc:1076
+msgid "Compiling design (CSG Products generation)..."
+msgstr "Compilando o deseño (xeración dos produtos CSG)..."
+
+#: src/gui/MainWindow.cc:1098
+msgid "CSG generation cancelled."
+msgstr "Xeración CSG cancelada."
+
+#: src/gui/MainWindow.cc:1100
+msgid "CSG generation cancelled due to hardwarning being enabled."
+msgstr ""
+"Xeración CSG cancelada porque está activado deterse no primeiro aviso."
+
+#: src/gui/MainWindow.cc:1126
+#, c-format
+msgid "Compiling highlights (%1$d CSG Trees)..."
+msgstr "Compilando os realces (%1$d árbores CSG)..."
+
+#: src/gui/MainWindow.cc:1142
+#, c-format
+msgid "Compiling background (%1$d CSG Trees)..."
+msgstr "Compilando o fondo (%1$d árbores CSG)..."
+
+#: src/gui/MainWindow.cc:1158 src/gui/MainWindow.cc:1163
+#, c-format
+msgid "Normalized tree has %1$d elements!"
+msgstr "A árbore normalizada ten %1$d elementos!"
+
+#: src/gui/MainWindow.cc:1159
+msgid "OpenCSG rendering has been disabled."
+msgstr "Desactivouse a renderización con OpenCSG."
+
+#: src/gui/MainWindow.cc:1170
+msgid "Compile and preview finished."
+msgstr "Compilación e previsualización finalizadas."
+
+#: src/gui/MainWindow.cc:1294
+#, c-format
+msgid "Saved backup file: %1$s"
+msgstr "Gardouse a copia de seguranza: %1$s"
+
+#: src/gui/MainWindow.cc:1301
+#, c-format
+msgid "Cannot create backup path: %1$s"
+msgstr "Non se pode crear a ruta da copia de seguranza: %1$s"
+
+#: src/gui/MainWindow.cc:1324
+msgid "Failed to create backup file"
+msgstr "Non foi posible crear a copia de seguranza"
+
+#: src/gui/MainWindow.cc:1376
+#, c-format
+msgid "Creating Python virtual environment in '%1$s'..."
+msgstr "Creando o contorno virtual de Python en «%1$s»..."
+
+#: src/gui/MainWindow.cc:1382
+msgid "Python virtual environment creation successfull."
+msgstr "O contorno virtual de Python creouse correctamente."
+
+#: src/gui/MainWindow.cc:1387
+msgid "Python virtual environment creation failed."
+msgstr "Fallou a creación do contorno virtual de Python."
+
+#: src/gui/MainWindow.cc:1422
+#, c-format
+msgid "Library path %1$s doesn't exist. Creating"
+msgstr "A ruta de bibliotecas %1$s non existe. Creándoa"
+
+#: src/gui/MainWindow.cc:1424
+#, c-format
+msgid "Cannot create library path: %1$s"
+msgstr "Non se pode crear a ruta de bibliotecas: %1$s"
+
+#: src/gui/MainWindow.cc:1428
+#, c-format
+msgid "Opening file browser for %1$s"
+msgstr "Abrindo o explorador de ficheiros para %1$s"
+
+#: src/gui/MainWindow.cc:1767 src/openscad.cc:602
+msgid "Python is not enabled"
+msgstr "Python non está activado"
+
+#: src/gui/MainWindow.cc:1777
+#, c-format
+msgid "Running %1$s without venv."
+msgstr "Executando %1$s sen venv."
+
+#: src/gui/MainWindow.cc:1780
+#, c-format
+msgid "Running %1$s in venv '%2$s'."
+msgstr "Executando %1$s no venv «%2$s»."
+
+#: src/gui/MainWindow.cc:1880
+msgid "Parsing design (AST generation)..."
+msgstr "Analizando o deseño (xeración da AST)..."
+
+#: src/gui/MainWindow.cc:1987
+#, c-format
+msgid "Selected File format: %1$s"
+msgstr "Formato de ficheiro seleccionado: %1$s"
+
+#: src/gui/MainWindow.cc:1992
+#, c-format
+msgid "Error: Unable to create service: %1$d %2$s %3$d"
+msgstr "Erro: non foi posible crear o servizo: %1$d %2$s %3$d"
+
+#: src/gui/MainWindow.cc:2020
+#, c-format
+msgid "Rendering Polygon Mesh using %1$s..."
+msgstr "Renderizando a malla poligonal con %1$s..."
+
+#: src/gui/MainWindow.cc:2050
+msgid "Rendering finished."
+msgstr "Renderización finalizada."
+
+#: src/gui/MainWindow.cc:2072
+msgid "No top level geometry to render"
+msgstr "Non hai xeometría de nivel superior para renderizar"
+
+#: src/gui/MainWindow.cc:2409
+msgid "Execution aborted"
+msgstr "Execución abortada"
+
+#: src/gui/MainWindow.cc:2419
+msgid "Compilation aborted by unknown exception"
+msgstr "Compilación abortada por unha excepción descoñecida"
+
+#: src/gui/MainWindow.cc:2421
+#, c-format
+msgid "Compilation aborted by exception: %1$s"
+msgstr "Compilación abortada pola excepción: %1$s"
+
+#: src/gui/MainWindow.cc:2478
+msgid "Nothing to validate! Try building first (press F6)."
+msgstr "Non hai nada que validar! Probe a construír primeiro (prema F6)."
+
+#: src/gui/MainWindow.cc:2483
+msgid "Current top level object is not a 3D object."
+msgstr "O obxecto de nivel superior actual non é un obxecto 3D."
+
+#: src/gui/MainWindow.cc:2498
+#, c-format
+msgid "Valid:      %1$6s"
+msgstr "Válido:     %1$6s"
+
+#: src/gui/MainWindow.cc:2507
+msgid "Nothing to export! Try rendering first (press F6)"
+msgstr "Non hai nada que exportar! Probe a renderizar primeiro (prema F6)"
+
+#: src/gui/MainWindow.cc:2534 src/openscad.cc:206
+#, c-format
+msgid "Current top level object is not a %1$dD object."
+msgstr "O obxecto de nivel superior actual non é un obxecto %1$dD."
+
+#: src/gui/MainWindow.cc:2539 src/openscad.cc:210
+msgid "Current top level object is empty."
+msgstr "O obxecto de nivel superior actual está baleiro."
+
+#: src/gui/MainWindow.cc:2547
+msgid ""
+"Object may not be a valid 2-manifold and may need repair! See "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+msgstr ""
+"Pode que o obxecto non sexa unha 2-variedade válida e que precise "
+"reparación! Consulte "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+
+#: src/gui/MainWindow.cc:2555
+#, c-format
+msgid ""
+"Object may not be a valid manifold and may need repair! Error message: %1$s."
+" See "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+msgstr ""
+"Pode que o obxecto non sexa unha variedade válida e que precise reparación! "
+"Mensaxe de erro: %1$s. Consulte "
+"https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+
+#: src/gui/MainWindow.cc:2624
+msgid "Nothing to export. Please try compiling first."
+msgstr "Non hai nada que exportar. Probe a compilar primeiro."
+
+#: src/gui/MainWindow.cc:2660
+#, c-format
+msgid "Can't open file \"%1$s\" for export image"
+msgstr "Non se pode abrir o ficheiro \"%1$s\" para exportar a imaxe"
+
+#: src/gui/MainWindow.cc:2702
+msgid "Caches Flushed"
+msgstr "Cachés baleiradas"
+
+#: src/gui/MouseSelector.cc:77
+msgid ""
+"MouseSelector: Failed to create framebuffer; disabling mouse selection."
+msgstr ""
+"MouseSelector: non foi posible crear o framebuffer; desactivando a selección"
+" co rato."
+
+#: src/gui/OctoPrint.cc:192
+#, c-format
+msgid "Uploaded successfully to %1$s"
+msgstr "Subiuse correctamente a %1$s"
+
+#: src/gui/OctoPrint.cc:219
+msgid "Slice command successfully executed."
+msgstr "A orde de laminado executouse correctamente."
+
+#: src/gui/PrintInitDialog.cc:95
+msgid "No external print services found"
+msgstr "Non se atoparon servizos de impresión externos"
+
+#: src/gui/PrintInitDialog.cc:219
+#, c-format
+msgid "fileformat::fromIdentifier error: id '%1$s' not recognized"
+msgstr "Erro en fileformat::fromIdentifier: non se recoñece o id «%1$s»"
+
+#: src/gui/PrintService.cc:196
+#, c-format
+msgid "Upload finished, opening URL %1$s."
+msgstr "Subida finalizada; abrindo o URL %1$s."
+
+#: src/gui/ScintillaEditor.cc:285
+#, c-format
+msgid "Error reading template file '%1$s': %2$s"
+msgstr "Erro ao ler o ficheiro de modelo «%1$s»: %2$s"
+
+#: src/gui/TabManager.cc:580
+#, c-format
+msgid "Failed to open file %1$s: %2$s"
+msgstr "Non foi posible abrir o ficheiro %1$s: %2$s"
+
+#: src/gui/TabManager.cc:588
+#, c-format
+msgid "Loaded design '%1$s'."
+msgstr "Cargouse o deseño «%1$s»."
+
+#: src/gui/TabManager.cc:719 src/gui/TabManager.cc:830
+#, c-format
+msgid "Saved design '%1$s'."
+msgstr "Gardouse o deseño «%1$s»."
+
+#: src/io/DxfData.cc:85
+#, c-format
+msgid "Can't open DXF file '%1$s'."
+msgstr "Non se pode abrir o ficheiro DXF «%1$s»."
+
+#: src/io/DxfData.cc:144
+#, c-format
+msgid "Illegal ID '%1$s' in `%2$s'"
+msgstr "ID non permitido «%1$s» en «%2$s»"
+
+#: src/io/DxfData.cc:362
+#, c-format
+msgid "Illegal value '%1$s'in `%2$s'"
+msgstr "Valor non permitido «%1$s» en «%2$s»"
+
+#: src/io/DxfData.cc:364
+#, c-format
+msgid "Not enough input values for %1$s. in '%2$s'"
+msgstr "Non hai suficientes valores de entrada para %1$s en «%2$s»"
+
+#: src/io/DxfData.cc:370
+#, c-format
+msgid "Unsupported DXF Entity '%1$s' (%2$x) in %3$s."
+msgstr "Entidade DXF non compatible «%1$s» (%2$x) en %3$s."
+
+#: src/io/DxfData.cc:373
+#, c-format
+msgid "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s"
+msgstr "Entidade DXF non compatible «%1$s» (%2$x) na capa «%3$s» de %4$s"
+
+#: src/io/DxfData.cc:396 src/io/DxfData.cc:425 src/io/DxfData.cc:466
+#, c-format
+msgid "Bad DXF line index in %1$s."
+msgstr "Índice de liña DXF incorrecto en %1$s."
+
+#: src/io/dxfdim.cc:72
+#, c-format
+msgid "dxf_dim(..., origin=%1$s) could not be converted"
+msgstr "Non foi posible converter dxf_dim(..., origin=%1$s)"
+
+#: src/io/dxfdim.cc:88 src/io/dxfdim.cc:193
+#, c-format
+msgid "Can't open DXF file '%1$s'!"
+msgstr "Non se pode abrir o ficheiro DXF «%1$s»!"
+
+#: src/io/dxfdim.cc:149
+#, c-format
+msgid "Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!"
+msgstr "A cota «%1$s» en «%2$s», capa «%3$s», ten un tipo non compatible!"
+
+#: src/io/dxfdim.cc:154
+#, c-format
+msgid "Can't find dimension '%1$s' in '%2$s', layer '%3$s'!"
+msgstr "Non se atopa a cota «%1$s» en «%2$s», capa «%3$s»!"
+
+#: src/io/dxfdim.cc:178
+#, c-format
+msgid "dxf_cross(..., origin=%1$s) could not be converted"
+msgstr "Non foi posible converter dxf_cross(..., origin=%1$s)"
+
+#: src/io/dxfdim.cc:245
+#, c-format
+msgid "Can't find cross in '%1$s', layer '%2$s'!"
+msgstr "Non se atopa a cruz en «%1$s», capa «%2$s»!"
+
+#: src/io/export_3mf_dummy.cc:36
+msgid "Export to 3MF format was not enabled when building the application."
+msgstr "A exportación ao formato 3MF non se activou ao compilar a aplicación."
+
+#: src/io/export_3mf_v1.cc:220 src/io/export_3mf_v1.cc:285
+#: src/io/export_3mf_v2.cc:135 src/io/export_3mf_v2.cc:374
+#: src/io/export_3mf_v2.cc:383
+msgid "Invalid color in 3MF export"
+msgstr "Cor non válida na exportación 3MF"
+
+#: src/io/export_3mf_v1.cc:313 src/io/export_3mf_v2.cc:245
+msgid "Export failed, empty geometry."
+msgstr "Fallou a exportación: xeometría baleira."
+
+#: src/io/export_3mf_v1.cc:319 src/io/export_3mf_v2.cc:251
+#: src/io/export_stl.cc:200 src/io/export_stl.cc:224
+msgid "Exported object may not be a valid 2-manifold and may need repair"
+msgstr ""
+"Pode que o obxecto exportado non sexa unha 2-variedade válida e que precise "
+"reparación"
+
+#: src/io/export_3mf_v1.cc:382 src/io/import_3mf_v1.cc:435
+msgid "Error reading 3MF library version"
+msgstr "Erro ao ler a versión da biblioteca 3MF"
+
+#: src/io/export_3mf_v1.cc:388 src/io/export_3mf_v2.cc:316
+#: src/io/export_3mf_v2.cc:328 src/io/import_3mf_v1.cc:441
+#: src/io/import_3mf_v2.cc:347
+#, c-format
+msgid ""
+"Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d"
+msgstr ""
+"Versión principal da biblioteca 3MF non válida %1$d.%2$d.%3$d; esperábase "
+"%4$d.%5$d.%6$d"
+
+#: src/io/export_3mf_v1.cc:397 src/io/export_3mf_v2.cc:338
+msgid "Can't create 3MF model."
+msgstr "Non se pode crear o modelo 3MF."
+
+#: src/io/export_3mf_v1.cc:476
+msgid "Error writing 3MF model."
+msgstr "Erro ao escribir o modelo 3MF."
+
+#: src/io/export_3mf_v2.cc:431
+#, c-format
+msgid "Error setting decimal precision for export: %1$s"
+msgstr "Erro ao definir a precisión decimal para a exportación: %1$s"
+
+#: src/io/export_nef.cc:43 src/io/export_nef.cc:53
+msgid "Not a CGALNefPoly. Add some CSG ops?"
+msgstr "Non é un CGALNefPoly. Engadir algunhas operacións CSG?"
+
+#: src/io/export_off.cc:73
+msgid "Invalid color in OFF export"
+msgstr "Cor non válida na exportación OFF"
+
+#: src/io/export_pdf.cc:260
+msgid "Geometry is too large to fit into selected size."
+msgstr "A xeometría é demasiado grande para o tamaño seleccionado."
+
+#: src/io/export_pdf.cc:350
+msgid "Export to PDF format was not enabled when building the application."
+msgstr "A exportación ao formato PDF non se activou ao compilar a aplicación."
+
+#: src/io/export_png.cc:91
+#, c-format
+msgid "Can't create OffscreenView: %1$s."
+msgstr "Non se pode crear OffscreenView: %1$s."
+
+#: src/io/export_stl.cc:231
+msgid "Manifold->PolySet failed"
+msgstr "Fallou Manifold->PolySet"
+
+#: src/io/export_stl.cc:284
+msgid "Triangle count exceeded 4294967295, so the STL file is not valid"
+msgstr ""
+"O número de triángulos superou 4294967295, polo que o ficheiro STL non é "
+"válido"
+
+#: src/io/export_wrl.cc:91
+msgid "Invalid color in WRL export"
+msgstr "Cor non válida na exportación WRL"
+
+#: src/io/import_3mf_dummy.cc:44
+#, c-format
+msgid ""
+"Import from 3MF format was not enabled when building the application, "
+"import() at line %1$d"
+msgstr ""
+"A importación desde o formato 3MF non se activou ao compilar a aplicación, "
+"import() na liña %1$d"
+
+#: src/io/import_3mf_v1.cc:190 src/io/import_3mf_v2.cc:113
+#, c-format
+msgid "Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d"
+msgstr "O obxecto «%1$s» co UUID «%2$s» non é válido, import() na liña %3$d"
+
+#: src/io/import_3mf_v1.cc:421 src/io/import_3mf_v2.cc:303
+#, c-format
+msgid "Reading 3MF with title '%1$s'"
+msgstr "Lendo 3MF co título «%1$s»"
+
+#: src/io/import_3mf_v1.cc:450
+#, c-format
+msgid "Could not create model: %1$08lx"
+msgstr "Non foi posible crear o modelo: %1$08lx"
+
+#: src/io/import_3mf_v1.cc:457
+#, c-format
+msgid "Could not create 3MF reader: %1$08lx"
+msgstr "Non foi posible crear o lector 3MF: %1$08lx"
+
+#: src/io/import_3mf_v1.cc:464
+#, c-format
+msgid "Could not read file '%1$s', import() at line %2$d"
+msgstr "Non foi posible ler o ficheiro «%1$s», import() na liña %2$d"
+
+#: src/io/import_3mf_v2.cc:361
+msgid "Could not create model"
+msgstr "Non foi posible crear o modelo"
+
+#: src/io/import_3mf_v2.cc:373
+msgid "Could not create 3MF reader"
+msgstr "Non foi posible crear o lector 3MF"
+
+#: src/io/import_3mf_v2.cc:377
+#, c-format
+msgid "Could create 3MF reader, import() at line %1$d: %2$s"
+msgstr "Non foi posible crear o lector 3MF, import() na liña %1$d: %2$s"
+
+#: src/io/import_3mf_v2.cc:385
+#, c-format
+msgid "Could not read file '%1$s', import() at line %2$d: %3$s"
+msgstr "Non foi posible ler o ficheiro «%1$s», import() na liña %2$d: %3$s"
+
+#: src/io/import_3mf_v2.cc:395
+msgid "Could not retrieve build items, import() at line %2$d"
+msgstr ""
+"Non foi posible obter os elementos de construción, import() na liña %2$d"
+
+#: src/io/import_3mf_v2.cc:423
+msgid "Error collecting meshes, import() at line %2$d"
+msgstr "Erro ao recoller as mallas, import() na liña %2$d"
+
+#: src/io/import_3mf_v2.cc:436 src/io/import_svg.cc:213
+#, c-format
+msgid "%1$s, import() at line %2$d"
+msgstr "%1$s, import() na liña %2$d"
+
+#: src/io/import_json.cc:87
+#, c-format
+msgid "Could not read file '%1$s'"
+msgstr "Non foi posible ler o ficheiro «%1$s»"
+
+#: src/io/import_json.cc:90
+#, c-format
+msgid "Failed to parse file '%1$s': %2$s"
+msgstr "Non foi posible analizar o ficheiro «%1$s»: %2$s"
+
+#: src/io/import_nef.cc:22 src/io/import_obj.cc:27 src/io/import_stl.cc:85
+#, c-format
+msgid "Can't open import file '%1$s', import() at line %2$d"
+msgstr ""
+"Non se pode abrir o ficheiro de importación «%1$s», import() na liña %2$d"
+
+#: src/io/import_nef.cc:32
+#, c-format
+msgid "Failure trying to import '%1$s', import() at line %2$d"
+msgstr "Fallo ao tentar importar «%1$s», import() na liña %2$d"
+
+#: src/io/import_obj.cc:45
+#, c-format
+msgid "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'"
+msgstr ""
+"Ficheiro OBJ liña %1$s, %2$s liña «%3$s» ao importar o ficheiro «%4$s»"
+
+#: src/io/import_obj.cc:77
+#, c-format
+msgid "Invalid Face index in File %1$s in Line %2$d"
+msgstr "Índice de cara non válido no ficheiro %1$s na liña %2$d"
+
+#: src/io/import_obj.cc:83
+#, c-format
+msgid "Index %1$d out of range in Line %2$d"
+msgstr "Índice %1$d fóra do rango na liña %2$d"
+
+#: src/io/import_obj.cc:96
+#, c-format
+msgid "Unrecognized Line  %1$s in line Line %2$d"
+msgstr "Liña non recoñecida %1$s na liña %2$d"
+
+#: src/io/import_off.cc:50
+#, c-format
+msgid "OFF File line %1$s, %2$s line '%3$s' importing file '%4$s'"
+msgstr ""
+"Ficheiro OFF liña %1$s, %2$s liña «%3$s» ao importar o ficheiro «%4$s»"
+
+#: src/io/import_stl.cc:123
+#, c-format
+msgid "STL line %1$s, %2$s line '%3$s' importing file '%4$s'"
+msgstr "STL liña %1$s, %2$s liña «%3$s» ao importar o ficheiro «%4$s»"
+
+#: src/io/import_stl.cc:193
+msgid "Binary STL '%1$s' error: %3$s"
+msgstr "Erro no STL binario «%1$s»: %3$s"
+
+#: src/io/import_stl.cc:195
+#, c-format
+msgid "Binary STL '%1$s' error at byte %2$s: %3$s"
+msgstr "Erro no STL binario «%1$s» no byte %2$s: %3$s"
+
+#: src/io/import_stl.cc:201
+#, c-format
+msgid "STL format not recognized in '%1$s'."
+msgstr "Non se recoñece o formato STL en «%1$s»."
+
+#: src/io/import_svg.cc:130
+msgid "import() filter %2$s did not match anything"
+msgstr "O filtro %2$s de import() non coincidiu con nada"
+
+#: src/openscad.cc:225
+#, c-format
+msgid ""
+"Usage: %1$s [options] file.scad\n"
+"%2$s"
+msgstr ""
+"Uso: %1$s [opcións] ficheiro.scad\n"
+"%2$s"
+
+#: src/openscad.cc:232
+#, c-format
+msgid "Section '%1$s':"
+msgstr "Sección «%1$s»:"
+
+#: src/openscad.cc:242
+#, c-format
+msgid "OpenSCAD version %1$s\n"
+msgstr "OpenSCAD versión %1$s\n"
+
+#: src/openscad.cc:243
+msgid "List of settings that can be given using the -O option using the"
+msgstr ""
+"Lista de opcións de configuración que se poden indicar coa opción -O usando "
+"o"
+
+#: src/openscad.cc:244
+msgid "format '<section>/<key>=value', e.g.:"
+msgstr "formato '<sección>/<chave>=valor', p. ex.:"
+
+#: src/openscad.cc:245
+msgid "openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n"
+msgstr "openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n"
+
+#: src/openscad.cc:254
+#, c-format
+msgid "OpenSCAD version %1$s"
+msgstr "OpenSCAD versión %1$s"
+
+#: src/openscad.cc:266
+#, c-format
+msgid "Can't create OpenGL OffscreenView: %1$s. Exiting.\n"
+msgstr "Non se pode crear o OffscreenView de OpenGL: %1$s. Saíndo.\n"
+
+#: src/openscad.cc:306
+msgid "--animate_sharding requires <shard>/<num_shards>"
+msgstr "--animate_sharding require <shard>/<num_shards>"
+
+#: src/openscad.cc:313
+msgid "--animate_sharding parameters need to be positive integers"
+msgstr "Os parámetros de --animate_sharding deben ser enteiros positivos"
+
+#: src/openscad.cc:317
+msgid "--animate_sharding: shard needs to be in range <1..num_shards>"
+msgstr "--animate_sharding: shard debe estar no rango <1..num_shards>"
+
+#: src/openscad.cc:339
+msgid "Camera setup requires numbers as parameters"
+msgstr "A configuración da cámara require números como parámetros"
+
+#: src/openscad.cc:342
+msgid ""
+"Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for "
+"Vector Camera"
+msgstr ""
+"A configuración da cámara require 7 números para a cámara Gimbal ou 6 "
+"números para a cámara Vector"
+
+#: src/openscad.cc:365
+msgid "projection needs to be 'o' or 'p' for ortho or perspective\n"
+msgstr "projection debe ser 'o' ou 'p' para ortogonal ou perspectiva\n"
+
+#: src/openscad.cc:374 src/openscad.cc:383
+msgid "Need 2 numbers for imgsize"
+msgstr "imgsize necesita 2 números"
+
+#: src/openscad.cc:508
+msgid "Converted to backend-specific geometry"
+msgstr "Convertido á xeometría específica do motor"
+
+#: src/openscad.cc:558
+#, c-format
+msgid ""
+"Invalid suffix %1$s. Either add a valid suffix or specify one using the "
+"--export-format option."
+msgstr ""
+"Sufixo non válido %1$s. Engada un sufixo válido ou especifique un coa opción"
+" --export-format."
+
+#: src/openscad.cc:572
+#, c-format
+msgid ""
+"\n"
+"'%1$s' is not a directory for output file %2$s - Skipping\n"
+msgstr ""
+"\n"
+"«%1$s» non é un directorio para o ficheiro de saída %2$s - Omitindo\n"
+
+#: src/openscad.cc:590
+#, c-format
+msgid "Can't open input file '%1$s'!\n"
+msgstr "Non se pode abrir o ficheiro de entrada «%1$s»!\n"
+
+#: src/openscad.cc:622
+#, c-format
+msgid "Can't parse file '%1$s'!\n"
+msgstr "Non se pode analizar o ficheiro «%1$s»!\n"
+
+#: src/openscad.cc:674
+#, c-format
+msgid "Exporting %1$s..."
+msgstr "Exportando %1$s..."
+
+#: src/openscad.cc:750
+#, c-format
+msgid "Unknown color scheme '%1$s', using default '%2$s'."
+msgstr "Esquema de cores descoñecido «%1$s»; úsase o predeterminado «%2$s»."
+
+#: src/openscad.cc:771
+#, c-format
+msgid "Could not initialize localization (application path is '%1$s')."
+msgstr ""
+"Non foi posible inicializar a localización (a ruta da aplicación é «%1$s»)."
+
+#: src/openscad.cc:867
+msgid "Allowed options"
+msgstr "Opcións permitidas"
+
+#: src/openscad.cc:871
+msgid ""
+"overrides format of exported scad file when using option '-o', arg can be "
+"any of its supported file extensions.  For ASCII stl export, specify "
+"'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is "
+"the current stl default, but binary stl is planned as the future default so "
+"asciistl should be explicitly specified in scripts when needed.\n"
+msgstr ""
+"substitúe o formato do ficheiro scad exportado ao usar a opción '-o'; arg "
+"pode ser calquera das súas extensións de ficheiro compatibles. Para exportar"
+" STL en ASCII, indique 'asciistl', e para STL binario, indique 'binstl'. A "
+"exportación ASCII é o formato STL predeterminado actual, pero está previsto "
+"que o binario sexa o predeterminado no futuro, así que nos scripts debería "
+"indicarse explicitamente asciistl cando sexa necesario.\n"
+
+#: src/openscad.cc:876
+msgid ""
+"output specified file instead of running the GUI. The file extension "
+"specifies the type: stl, off, wrl, 3mf, csg, dxf, svg, pdf, png, echo, ast, "
+"term, nef3, nefdbg, param, pov. May be used multiple times for different "
+"exports. Use '-' for stdout.\n"
+msgstr ""
+"xera o ficheiro indicado en vez de executar a interface gráfica. A extensión"
+" do ficheiro indica o tipo: stl, off, wrl, 3mf, csg, dxf, svg, pdf, png, "
+"echo, ast, term, nef3, nefdbg, param, pov. Pódese usar varias veces para "
+"distintas exportacións. Use '-' para a saída estándar.\n"
+
+#: src/openscad.cc:880
+msgid ""
+"pass settings value to the file export using the format section/key=value, "
+"e.g export-pdf/paper-size=a3. Use --help-export to list all available "
+"settings."
+msgstr ""
+"pasa un valor de configuración á exportación de ficheiros co formato "
+"sección/chave=valor, p. ex. export-pdf/paper-size=a3. Use --help-export para"
+" listar todas as opcións dispoñibles."
+
+#: src/openscad.cc:882
+msgid "var=val -pre-define variables"
+msgstr "var=val -predefine variables"
+
+#: src/openscad.cc:883
+msgid "customizer parameter file"
+msgstr "ficheiro de parámetros do personalizador"
+
+#: src/openscad.cc:884
+msgid "customizer parameter set"
+msgstr "conxunto de parámetros do personalizador"
+
+#: src/openscad.cc:887
+msgid ""
+"enable experimental features (specify 'all' for enabling all available "
+"features): "
+msgstr ""
+"activa funcionalidades experimentais (indique 'all' para activar todas as "
+"dispoñibles): "
+
+#: src/openscad.cc:893
+msgid "print this help message and exit"
+msgstr "amosa esta mensaxe de axuda e sae"
+
+#: src/openscad.cc:894
+msgid "print list of export parameters and values that can be set via -O"
+msgstr ""
+"amosa a lista de parámetros de exportación e valores que se poden definir "
+"con -O"
+
+#: src/openscad.cc:895
+msgid "print the version"
+msgstr "amosa a versión"
+
+#: src/openscad.cc:896
+msgid "print information about the build process\n"
+msgstr "amosa información sobre o proceso de compilación\n"
+
+#: src/openscad.cc:898
+msgid ""
+"camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
+"=eye_x,y,z,center_x,y,z"
+msgstr ""
+"parámetros da cámara ao exportar png: =translate_x,y,z,rot_x,y,z,dist ou "
+"=eye_x,y,z,center_x,y,z"
+
+#: src/openscad.cc:899
+msgid "adjust camera to look at object's center"
+msgstr "axusta a cámara para mirar ao centro do obxecto"
+
+#: src/openscad.cc:900
+msgid "adjust camera to fit object"
+msgstr "axusta a cámara para encadrar o obxecto"
+
+#: src/openscad.cc:902
+msgid ""
+"3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) "
+"[default]"
+msgstr ""
+"motor de renderización 3D que usar: 'CGAL' (antigo/lento) ou 'Manifold' "
+"(novo/rápido) [predeterminado]"
+
+#: src/openscad.cc:903
+msgid "=width,height of exported png"
+msgstr "=largura,altura do png exportado"
+
+#: src/openscad.cc:905
+msgid "for full geometry evaluation when exporting png"
+msgstr "para a avaliación completa da xeometría ao exportar png"
+
+#: src/openscad.cc:907
+msgid "[=throwntogether] -for ThrownTogether preview png"
+msgstr "[=throwntogether] -para o png de previsualización ThrownTogether"
+
+#: src/openscad.cc:908
+msgid "export N animated frames"
+msgstr "exporta N fotogramas animados"
+
+#: src/openscad.cc:910
+msgid ""
+"Parameter <shard>/<num_shards> - Divide work into <num_shards> and only "
+"output frames for <shard>. E.g. 2/5 only outputs the second 1/5 of frames. "
+"Use to parallelize work on multiple cores or machines."
+msgstr ""
+"Parámetro <shard>/<num_shards> - Divide o traballo en <num_shards> e só xera"
+" os fotogramas de <shard>. P. ex. 2/5 só xera o segundo 1/5 dos fotogramas. "
+"Úseo para paralelizar o traballo en varios núcleos ou máquinas."
+
+#: src/openscad.cc:914
+msgid "=view options: "
+msgstr "=opcións de vista: "
+
+#: src/openscad.cc:915
+msgid "=(o)rtho or (p)erspective when exporting png"
+msgstr "=(o)rtogonal ou (p)erspectiva ao exportar png"
+
+#: src/openscad.cc:916
+msgid "=n -stop rendering at n CSG elements when exporting png"
+msgstr "=n -detén a renderización en n elementos CSG ao exportar png"
+
+#: src/openscad.cc:918
+msgid ""
+"enable additional render summary and statistics: all | cache | time | camera"
+" | geometry | bounding-box | area"
+msgstr ""
+"activa o resumo e as estatísticas adicionais da renderización: all | cache |"
+" time | camera | geometry | bounding-box | area"
+
+#: src/openscad.cc:921
+msgid ""
+"output summary information in JSON format to the given file, using '-' "
+"outputs to stdout"
+msgstr ""
+"xera a información de resumo en formato JSON no ficheiro indicado; '-' "
+"envíaa á saída estándar"
+
+#: src/openscad.cc:923
+msgid "=colorscheme: "
+msgstr "=esquema de cores: "
+
+#: src/openscad.cc:931
+msgid "deps_file -generate a dependency file for make"
+msgstr "deps_file -xera un ficheiro de dependencias para make"
+
+#: src/openscad.cc:932
+msgid "make_cmd -runs make_cmd file if file is missing"
+msgstr "make_cmd -executa make_cmd se falta o ficheiro"
+
+#: src/openscad.cc:933
+msgid "quiet mode (don't print anything *except* errors)"
+msgstr "modo silencioso (non amosa nada *agás* os erros)"
+
+#: src/openscad.cc:934
+msgid "Reset GUI settings for window placement and fonts."
+msgstr ""
+"Restablece a configuración da interface gráfica para a posición das xanelas "
+"e os tipos de letra."
+
+#: src/openscad.cc:936
+msgid "=n, maximum number of trace messages"
+msgstr "=n, número máximo de mensaxes de traza"
+
+#: src/openscad.cc:938
+msgid "=true/false, configure the output of user module parameters in a trace"
+msgstr ""
+"=true/false, configura a saída dos parámetros dos módulos de usuario nunha "
+"traza"
+
+#: src/openscad.cc:940
+msgid ""
+"=true/false, configure the parameter check for user modules and functions"
+msgstr ""
+"=true/false, configura a comprobación de parámetros para módulos e funcións "
+"de usuario"
+
+#: src/openscad.cc:942
+msgid "=true/false, configure the parameter range check for builtin modules"
+msgstr ""
+"=true/false, configura a comprobación do rango de parámetros para os módulos"
+" integrados"
+
+#: src/openscad.cc:944
+msgid "special debug info - specify 'all' or a set of source file names"
+msgstr ""
+"información especial de depuración - indique 'all' ou un conxunto de nomes "
+"de ficheiros fonte"
+
+#: src/openscad.cc:946
+msgid "Trust python"
+msgstr "Confiar en Python"
+
+#: src/openscad.cc:947
+msgid "=module Call pip python module"
+msgstr "=module Chama ao módulo python de pip"
+
+#: src/openscad.cc:954
+msgid "special gui testing mode - run all the tests"
+msgstr ""
+"modo especial de probas da interface gráfica - executa todas as probas"
+
+#: src/openscad.cc:958
+msgid "Hidden options"
+msgstr "Opcións ocultas"
+
+#: src/openscad.cc:962
+msgid "process serial number"
+msgstr "número de serie do proceso"
+
+#: src/openscad.cc:964
+msgid "input file"
+msgstr "ficheiro de entrada"
+
+#: src/openscad.cc:989
+#, c-format
+msgid "Debug on. --debug=%1$s"
+msgstr "Depuración activada. --debug=%1$s"
+
+#: src/openscad.cc:993
+msgid "Python Engine enabled"
+msgstr "Motor de Python activado"
+
+#: src/openscad.cc:1029
+#, c-format
+msgid "Could not parse '--%1$s %2$s' as flag"
+msgstr "Non foi posible analizar '--%1$s %2$s' como indicador"
+
+#: src/openscad.cc:1042
+#, c-format
+msgid "Unknown rendering backend '%1$s'."
+msgstr "Motor de renderización descoñecido «%1$s»."
+
+#: src/openscad.cc:1070
+#, c-format
+msgid ""
+"Unknown --view option '%1$s' ignored. Use -h to list available options."
+msgstr ""
+"Ignórase a opción --view descoñecida «%1$s». Use -h para listar as opcións "
+"dispoñibles."
+
+#: src/openscad.cc:1139
+#, c-format
+msgid ""
+"Unknown --export-format option '%1$s'.  Use -h to list available options."
+msgstr ""
+"Opción --export-format descoñecida «%1$s». Use -h para listar as opcións "
+"dispoñibles."
+
+#: src/openscad.cc:1150
+msgid "Option --animate is not supported when exporting to stdout."
+msgstr "A opción --animate non é compatible ao exportar á saída estándar."
+
+#: src/openscad.cc:1207
+msgid "Error writing deps"
+msgstr "Erro ao escribir as dependencias"
+
+#: src/openscad.cc:1214
+msgid "Ignoring --export-format option"
+msgstr "Ignorando a opción --export-format"
+
+#: src/openscad.cc:1224
+msgid "Requested GUI mode but can't open display!\n"
+msgstr "Solicitouse o modo gráfico, pero non se pode abrir a pantalla!\n"
+
+#: src/platform/PlatformUtils-win.cc:69
+msgid "Could not find My Documents location"
+msgstr "Non foi posible atopar a localización de Os meus documentos"
+
+#: src/platform/PlatformUtils-win.cc:78
+msgid "Could not find Local AppData location"
+msgstr "Non foi posible atopar a localización de Local AppData"
+
+#: src/platform/PlatformUtils.cc:104
+#, c-format
+msgid "Creating library folder %1$s"
+msgstr "Creando o cartafol de bibliotecas %1$s"
+
+#: src/platform/PlatformUtils.cc:108 src/platform/PlatformUtils.cc:179
+#, c-format
+msgid "Cannot create %1$s"
+msgstr "Non se pode crear %1$s"
+
+#: src/python/pyopenscad.cc:440
+msgid "Python not found. Is it installed ?"
+msgstr "Non se atopou Python. Está instalado?"
+
+#: src/utils/boost-utils.h:38
+#, c-format
+msgid "Problem converting this number: %1$s"
+msgstr "Problema ao converter este número: %1$s"
+
+#: src/utils/boost-utils.h:40
+#, c-format
+msgid "setting result to %1$u"
+msgstr "establecendo o resultado a %1$u"

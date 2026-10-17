@@ -66,7 +66,7 @@ std::string PlatformUtils::documentsPath()
 {
   const std::string retval = getFolderPath(CSIDL_PERSONAL);
   if (retval.empty()) {
-    LOG(message_group::Error, "Could not find My Documents location");
+    LOG(message_group::Error, _("Could not find My Documents location"));
   }
   return retval;
 }
@@ -75,7 +75,7 @@ std::string PlatformUtils::userConfigPath()
 {
   const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
   if (retval.empty()) {
-    LOG(message_group::Error, "Could not find Local AppData location");
+    LOG(message_group::Error, _("Could not find Local AppData location"));
   }
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }

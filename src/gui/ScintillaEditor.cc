@@ -282,7 +282,7 @@ void ScintillaEditor::addTemplate(const fs::path& path)
 
         templateMap.insert(key, ScadTemplate(content, cursor_offset));
       } catch (const std::exception& e) {
-        LOG("Error reading template file '%1$s': %2$s", path.generic_string(), e.what());
+        LOG(_("Error reading template file '%1$s': %2$s"), path.generic_string(), e.what());
       }
     }
   }

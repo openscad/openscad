@@ -294,7 +294,7 @@ CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& inputMesh)
   try {
     return CGAL_Nef_polyhedron3(mesh);
   } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Warning, "CGAL error in CGAL_Nef_polyhedron3(): %1$s. Attempting union...",
+    LOG(message_group::Warning, _("CGAL error in CGAL_Nef_polyhedron3(): %1$s. Attempting union..."),
         e.what());
 
     CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
@@ -319,7 +319,7 @@ CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& inputMesh)
     }
     if (discarded_facets > 0) {
       LOG(message_group::Warning,
-          "CGALUtils::convertSurfaceMeshToNef: Discarded %1$d facets during Nef conversion.",
+          _("CGALUtils::convertSurfaceMeshToNef: Discarded %1$d facets during Nef conversion."),
           discarded_facets);
     }
     CGAL_Nef_polyhedron3 nef_union = nary_union.get_union();
@@ -339,7 +339,7 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
     CGAL_Build_PolySet<Polyhedron> builder(ps);
     p.delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+    LOG(message_group::Error, _("CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s"), e.what());
     err = true;
   }
   return err;

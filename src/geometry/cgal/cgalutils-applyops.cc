@@ -78,7 +78,7 @@ std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbe
       return nullptr;
     }
   } catch (const CGAL::Failure_exception& e) {
-    LOG(message_group::Error, "CGAL error in CGALUtils::applyUnion3D: %1$s", e.what());
+    LOG(message_group::Error, _("CGAL error in CGALUtils::applyUnion3D: %1$s"), e.what());
   }
   return nullptr;
 }
@@ -127,7 +127,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
       case OpenSCADOperator::INTERSECTION: *N *= *chN; break;
       case OpenSCADOperator::DIFFERENCE:   *N -= *chN; break;
       case OpenSCADOperator::MINKOWSKI:    N->minkowski(*chN); break;
-      default:                             LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+      default:                             LOG(message_group::Error, _("Unsupported CGAL operator: %1$d"), static_cast<int>(op));
       }
       if (item.first) item.first->progress_report();
     }
@@ -139,7 +139,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
                         : op == OpenSCADOperator::DIFFERENCE ? "difference"
                         : op == OpenSCADOperator::UNION      ? "union"
                                                              : "UNKNOWN";
-    LOG(message_group::Error, "CGAL error in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, _("CGAL error in CGALUtils::applyOperator3D %1$s: %2$s"), opstr, e.what());
   }
   // boost any_cast throws exceptions inside CGAL code, ending here
   // https://github.com/openscad/openscad/issues/3756
@@ -148,7 +148,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
                         : op == OpenSCADOperator::DIFFERENCE ? "difference"
                         : op == OpenSCADOperator::UNION      ? "union"
                                                              : "UNKNOWN";
-    LOG(message_group::Error, "exception in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, _("exception in CGALUtils::applyOperator3D %1$s: %2$s"), opstr, e.what());
   }
   return N;
 }
@@ -208,7 +208,7 @@ std::unique_ptr<PolySet> applyHull3D(const Geometry::Geometries& children)
       // FIXME: Can we guarantee a manifold PolySet here?
       return CGALUtils::createPolySetFromPolyhedron(r);
     } catch (const CGAL::Failure_exception& e) {
-      LOG(message_group::Error, "CGAL error in applyHull3D(): %1$s", e.what());
+      LOG(message_group::Error, _("CGAL error in applyHull3D(): %1$s"), e.what());
     }
   }
   return nullptr;

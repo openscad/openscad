@@ -150,7 +150,7 @@ FontCache::FontCache()
   this->config = FcInitLoadConfig();
   if (!this->config) {
     LOG(message_group::Font_Warning,
-        "Can't initialize fontconfig library, text() objects will not be rendered");
+        _("Can't initialize fontconfig library, text() objects will not be rendered"));
     return;
   }
 
@@ -202,7 +202,7 @@ FontCache::FontCache()
   const FT_Error error = FT_Init_FreeType(&this->library);
   if (error) {
     LOG(message_group::Font_Warning,
-        "Can't initialize freetype library, text() objects will not be rendered");
+        _("Can't initialize freetype library, text() objects will not be rendered"));
     return;
   }
 
@@ -241,7 +241,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 void FontCache::register_font_file(const std::string& path)
 {
   if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't register font '%1$s'", path);
+    LOG(message_group::Warning, Location::NONE, "", _("Can't register font '%1$s'"), path);
   }
 }
 
@@ -251,7 +251,7 @@ void FontCache::add_font_dir(const std::string& path)
     return;
   }
   if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't register font directory '%1$s'", path);
+    LOG(message_group::Warning, Location::NONE, "", _("Can't register font directory '%1$s'"), path);
   }
 }
 
@@ -408,7 +408,7 @@ FontFacePtr FontCache::find_face_fontconfig(const std::string& font) const
 
   FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
   if (!pattern) {
-    LOG(message_group::Font_Warning, "Could not parse font '%1$s'", font);
+    LOG(message_group::Font_Warning, _("Could not parse font '%1$s'"), font);
     return nullptr;
   }
   init_pattern(pattern);
@@ -468,7 +468,7 @@ FontFacePtr FontCache::find_face_fontconfig(const std::string& font) const
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
     if (!charmap_set)
-      LOG(message_group::Font_Warning, "Could not select a char map for font '%1$s/%2$s'",
+      LOG(message_group::Font_Warning, _("Could not select a char map for font '%1$s/%2$s'"),
           face->face_->family_name, face->face_->style_name);
   }
 

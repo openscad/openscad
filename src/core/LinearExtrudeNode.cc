@@ -57,7 +57,7 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   if (parameters["v"].isDefined()) {
     if (!parameters["v"].getVec3(node->height[0], node->height[1], node->height[2])) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "v when specified should be a 3d vector");
+          _("v when specified should be a 3d vector"));
     }
     height = 1.0;
   }
@@ -65,7 +65,7 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   if (heightValue.isDefined()) {
     if (!heightValue.getFiniteDouble(height)) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "height when specified should be a number");
+          _("height when specified should be a number"));
       height = 100.0;
     }
     node->height.normalize();
@@ -81,7 +81,7 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   if ((parameters["scale"].isDefined()) &&
       (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "linear_extrude(..., scale=%1$s) could not be converted",
+        _("linear_extrude(..., scale=%1$s) could not be converted"),
         parameters["scale"].toEchoStringNoThrow());
   }
 

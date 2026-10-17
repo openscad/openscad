@@ -254,7 +254,7 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 static void NOINLINE print_range_err(const std::string& begin, const std::string& step,
                                      const Location& loc, const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Warning, loc, context->documentRoot(), "begin %1$s than the end, but step %2$s",
+  LOG(message_group::Warning, loc, context->documentRoot(), _("begin %1$s than the end, but step %2$s"),
       begin, step);
 }
 
@@ -266,7 +266,7 @@ Value Range::evaluate(const std::shared_ptr<const Context>& context) const
   double end_d;
   if (!begin_val.getDouble(begin_d) || !end_val.getDouble(end_d)) {
     LOG(message_group::Warning, loc, context->documentRoot(),
-        "Unable to convert [%1$s:...:%2$s] to a range", begin_val.toEchoStringNoThrow(),
+        _("Unable to convert [%1$s:...:%2$s] to a range"), begin_val.toEchoStringNoThrow(),
         end_val.toEchoStringNoThrow());
     return Value::undefined.clone();
   }
@@ -276,7 +276,7 @@ Value Range::evaluate(const std::shared_ptr<const Context>& context) const
     const Value& step_val = this->step->evaluate(context);
     if (!step_val.getDouble(step_d)) {
       LOG(message_group::Warning, loc, context->documentRoot(),
-          "Unable to convert [...:%1$s:...] to a step value", step_val.toEchoStringNoThrow());
+          _("Unable to convert [...:%1$s:...] to a step value"), step_val.toEchoStringNoThrow());
       return Value::undefined.clone();
     }
   }
@@ -463,8 +463,8 @@ void FunctionDefinition::print(std::ostream& stream, const std::string& indent) 
 static void NOINLINE print_err(const char *name, const Location& loc,
                                const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling function '%1$s'",
-      name);
+  LOG(message_group::Error, loc, context->documentRoot(),
+      _("Recursion detected calling function '%1$s'"), name);
 }
 
 /**
@@ -477,7 +477,7 @@ static void NOINLINE print_err(const char *name, const Location& loc,
 static void NOINLINE print_trace(EvaluationException& e, const FunctionCall *val,
                                  const std::shared_ptr<const Context>& context)
 {
-  e.LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'",
+  e.LOG(message_group::Trace, val->location(), context->documentRoot(), _("called by '%1$s'"),
         val->get_name());
 }
 
@@ -508,7 +508,7 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(
     if (v.type() == Value::Type::FUNCTION) {
       return CallableFunction{std::move(v)};
     } else {
-      LOG(message_group::Warning, loc, context->documentRoot(), "Can't call function on %1$s",
+      LOG(message_group::Warning, loc, context->documentRoot(), _("Can't call function on %1$s"),
           v.typeName());
       return boost::none;
     }
@@ -625,7 +625,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
         current_call = *simplified_expression->new_active_function_call;
         if (recursion_depth++ == 1000000) {
           LOG(message_group::Error, expression->location(), expression_context->documentRoot(),
-              "Recursion detected calling function '%1$s'", current_call->name);
+              _("Recursion detected calling function '%1$s'"), current_call->name);
           throw RecursionException::create("function", current_call->name, current_call->location());
         }
       }
@@ -679,7 +679,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
     std::string conditionString = conditionExpression ? STR(" '", *conditionExpression, "'") : "";
     std::string messageString =
       parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
-    LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s",
+    LOG(message_group::Error, location, context->documentRoot(), _("Assertion%1$s failed%2$s"),
         conditionString, messageString);
     throw AssertionFailedException("Assertion Failed", location);
   }
@@ -740,11 +740,11 @@ void Let::doSequentialAssignment(const AssignmentList& assignments, const Locati
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
       LOG(message_group::Warning, location, targetContext->documentRoot(),
-          "Assignment without variable name %1$s", value.toEchoStringNoThrow());
+          _("Assignment without variable name %1$s"), value.toEchoStringNoThrow());
     } else if (seen.find(assignment->getName()) != seen.end()) {
       // TODO Should maybe quote the entire assignment with a new quoteExpr() or quoteStmt().
       LOG(message_group::Warning, location, targetContext->documentRoot(),
-          "Ignoring duplicate variable assignment %1$s = %2$s", quoteVar(assignment->getName()),
+          _("Ignoring duplicate variable assignment %1$s = %2$s"), quoteVar(assignment->getName()),
           value.toEchoStringNoThrow());
     } else {
       targetContext->set_variable(assignment->getName(), std::move(value));
@@ -820,7 +820,7 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     uint32_t steps = range.numValues();
     if (steps >= 1000000) {
       LOG(message_group::Warning, loc, context->documentRoot(),
-          "Bad range parameter in for statement: too many elements (%1$lu)", steps);
+          _("Bad range parameter in for statement: too many elements (%1$lu)"), steps);
     } else {
       EmbeddedVectorType vec(context->session());
       vec.reserve(range.numValues());
@@ -892,7 +892,7 @@ static void doForEach(const AssignmentList& assignments, const Location& locatio
     uint32_t steps = range.numValues();
     if (steps >= 1000000) {
       LOG(message_group::Warning, location, context->documentRoot(),
-          "Bad range parameter in for statement: too many elements (%1$lu)", steps);
+          _("Bad range parameter in for statement: too many elements (%1$lu)"), steps);
     } else {
       if (pReserve) {
         (*pReserve)(steps);
@@ -984,7 +984,7 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
     output.emplace_back(this->expr->evaluate(*currentContext));
 
     if (counter++ == 1000000) {
-      LOG(message_group::Error, loc, context->documentRoot(), "For loop counter exceeded limit");
+      LOG(message_group::Error, loc, context->documentRoot(), _("For loop counter exceeded limit"));
       throw LoopCntException::create("for", loc);
     }
 

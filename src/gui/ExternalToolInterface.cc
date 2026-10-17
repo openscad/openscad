@@ -77,7 +77,7 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
   // * Local slicer: Never?
   exportFile.setAutoRemove(false);
   if (!exportFile.open()) {
-    LOG("Could not open temporary file.");
+    LOG(_("Could not open temporary file."));
     return false;
   }
   const QString exportFileName = exportFile.fileName();
@@ -87,7 +87,7 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
   ExportInfo exportInfo = createExportInfo(exportFormat_, fileformat::info(exportFormat_),
                                            sourceFileName.toStdString(), camera, {});
   const bool ok = exportFileByName(rootGeometry, exportedFilename_, exportInfo);
-  LOG("Exported temporary file %1$s", exportedFilename_);
+  LOG(_("Exported temporary file %1$s"), exportedFilename_);
   return ok;
 }
 
@@ -119,7 +119,8 @@ QDir LocalProgramService::getTempDir() const
   }
   const auto tempDir = QDir{QString::fromStdString(tempDirConfig)};
   if (!tempDir.exists()) {
-    LOG(message_group::Warning, "Configured temporary directory does not exist: '%1$s'", tempDirConfig);
+    LOG(message_group::Warning, _("Configured temporary directory does not exist: '%1$s'"),
+        tempDirConfig);
     return QDir::temp();
   }
   return tempDir;
@@ -135,7 +136,7 @@ bool LocalProgramService::process(const std::string& displayName,
 
   if (application.trimmed().isEmpty()) {
     LOG(message_group::Error,
-        "No application configured, check Preferences -> 3D Print -> Local Application");
+        _("No application configured, check Preferences -> 3D Print -> Local Application"));
     return false;
   }
 
@@ -164,11 +165,11 @@ bool LocalProgramService::process(const std::string& displayName,
   PRINTD("Executing: " + application.toStdString() + " " + args.join(" ").toStdString());
   if (!process.startDetached(application, args)) {
 #endif
-    LOG(message_group::Error, "Could not start local application '%1$s': %2$s",
+    LOG(message_group::Error, _("Could not start local application '%1$s': %2$s"),
         application.toStdString(), process.errorString().toStdString());
     const auto output = process.readAll();
     if (output.length() > 0) {
-      LOG(message_group::Error, "Output: %1$s", output.toStdString());
+      LOG(message_group::Error, _("Output: %1$s"), output.toStdString());
     }
   }
   return true;
@@ -179,7 +180,7 @@ bool ExternalPrintService::process(const std::string& displayName,
 {
   QFile file(QString::fromStdString(exportedFilename_));
   if (!file.open(QIODevice::ReadOnly)) {
-    LOG(message_group::Error, "Unable to open exported STL file.");
+    LOG(message_group::Error, _("Unable to open exported STL file."));
     return false;
   }
   const QString fileContentBase64 = file.readAll().toBase64();

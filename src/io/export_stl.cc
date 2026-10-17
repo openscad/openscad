@@ -197,13 +197,13 @@ uint64_t append_stl(const CGALNefGeometry& root_N, std::ostream& output, bool bi
   uint64_t triangle_count = 0;
   if (!root_N.p3->is_simple()) {
     LOG(message_group::Export_Warning,
-        "Exported object may not be a valid 2-manifold and may need repair");
+        _("Exported object may not be a valid 2-manifold and may need repair"));
   }
 
   if (const std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
     triangle_count += append_stl(ps, output, binary);
   } else {
-    LOG(message_group::Export_Error, "Nef->PolySet failed");
+    LOG(message_group::Export_Error, _("Nef->PolySet failed"));
   }
 
   return triangle_count;
@@ -221,14 +221,14 @@ uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output, bool bin
   uint64_t triangle_count = 0;
   if (!mani.isManifold()) {
     LOG(message_group::Export_Warning,
-        "Exported object may not be a valid 2-manifold and may need repair");
+        _("Exported object may not be a valid 2-manifold and may need repair"));
   }
 
   const auto ps = mani.toPolySet();
   if (ps) {
     triangle_count += append_stl(ps, output, binary);
   } else {
-    LOG(message_group::Export_Error, "Manifold->PolySet failed");
+    LOG(message_group::Export_Error, _("Manifold->PolySet failed"));
   }
 
   return triangle_count;
@@ -281,7 +281,7 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
     if (triangle_count > 4294967295) {
       LOG(message_group::Export_Error,
-          "Triangle count exceeded 4294967295, so the STL file is not valid");
+          _("Triangle count exceeded 4294967295, so the STL file is not valid"));
     }
 
     // Updating the triangle count in the buffer

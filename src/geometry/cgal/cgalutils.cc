@@ -95,9 +95,10 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
     auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
     if (!err) {
       if (!P.is_closed()) {
-        LOG(message_group::Error, "The given mesh is not closed! Unable to convert to CGALNefGeometry.");
+        LOG(message_group::Error,
+            _("The given mesh is not closed! Unable to convert to CGALNefGeometry."));
       } else if (!P.is_valid(false, 0)) {
-        LOG(message_group::Error, "The given mesh is invalid! Unable to convert to CGALNefGeometry.");
+        LOG(message_group::Error, _("The given mesh is invalid! Unable to convert to CGALNefGeometry."));
       } else {
         N = std::make_shared<CGAL_Nef_polyhedron3>(P);
       }
@@ -108,10 +109,10 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
          std::string(e.what()).find("has_on") != std::string::npos) ||
         std::string(e.what()).find("ss_plane.has_on(sv_prev->point())") != std::string::npos ||
         std::string(e.what()).find("ss_circle.has_on(sp)") != std::string::npos) {
-      LOG("PolySet has nonplanar faces. Attempting alternate construction");
+      LOG(_("PolySet has nonplanar faces. Attempting alternate construction"));
       plane_error = true;
     } else {
-      LOG(message_group::Error, "CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
+      LOG(message_group::Error, _("CGAL error in CGAL_Nef_polyhedron3(): %1$s"), e.what());
     }
   }
   if (plane_error) try {
@@ -124,7 +125,7 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
       if (!err) N = std::make_shared<CGAL_Nef_polyhedron3>(P);
     } catch (const CGAL::Assertion_exception& e) {
       LOG(message_group::Error,
-          "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
+          _("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s"), e.what());
     }
   return std::make_unique<CGALNefGeometry>(N);
 }
@@ -337,7 +338,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
   // 2. Validate mesh (manifoldness)
   auto unconnected = GeometryUtils::findUnconnectedEdges(polygons);
   if (unconnected > 0) {
-    LOG(message_group::Error, "Non-manifold mesh encountered: %1$d unconnected edges", unconnected);
+    LOG(message_group::Error, _("Non-manifold mesh encountered: %1$d unconnected edges"), unconnected);
   }
   // 3. Triangulate each face
   const auto& verts = allVertices.getArray();
@@ -403,7 +404,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedr
   // 4. Validate mesh (manifoldness)
   auto unconnected2 = GeometryUtils::findUnconnectedEdges(allTriangles);
   if (unconnected2 > 0) {
-    LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
+    LOG(message_group::Error, _("Non-manifold mesh created: %1$d unconnected edges"), unconnected2);
   }
 
   auto polyset = PolySet::createEmpty();
@@ -482,7 +483,7 @@ Transform3d computeResizeTransform(const CGAL::Iso_cuboid_3<K>& bb, unsigned int
   for (unsigned int i = 0; i < dimension; ++i) {
     if (newsize[i]) {
       if (bbox_size[i] == NT(0)) {
-        LOG(message_group::Warning, "Resize in direction normal to flat object is not implemented");
+        LOG(message_group::Warning, _("Resize in direction normal to flat object is not implemented"));
         return Transform3d::Identity();
       } else {
         scale[i] = NT(newsize[i]) / bbox_size[i];
@@ -526,7 +527,7 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
         ps->setConvexity(N->getConvexity());
         return ps;
       }
-      LOG(message_group::Error, "Nef->PolySet failed.");
+      LOG(message_group::Error, _("Nef->PolySet failed."));
     }
     return std::make_shared<PolySet>(3);
   }

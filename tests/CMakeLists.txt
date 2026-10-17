@@ -104,6 +104,9 @@ if(PROJECT_IS_TOP_LEVEL)
   endif()
 endif()
 
+# Console messages are translatable; expected test output is in English.
+list(APPEND CTEST_ENVIRONMENT "LANGUAGE=en")
+
 if(OPENSCAD_BINPATH)
   list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
   # Argument used for import/export tests

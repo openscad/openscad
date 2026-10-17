@@ -20,22 +20,22 @@ bool CsgInfo::compile_products(const Tree& tree)
   std::vector<std::shared_ptr<CSGNode>> highlightNodes = evaluator.getHighlightNodes();
   std::vector<std::shared_ptr<CSGNode>> backgroundNodes = evaluator.getBackgroundNodes();
 
-  LOG("Compiling design (CSG Products normalization)...");
+  LOG(_("Compiling design (CSG Products normalization)..."));
   CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
   if (csgRoot) {
     const std::shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
     if (normalizedRoot) {
       this->root_products = std::make_shared<CSGProducts>();
       this->root_products->import(normalizedRoot);
-      LOG("Normalized CSG tree has %1$d elements", int(this->root_products->size()));
+      LOG(_("Normalized CSG tree has %1$d elements"), int(this->root_products->size()));
     } else {
       this->root_products.reset();
-      LOG(message_group::Warning, "CSG normalization resulted in an empty tree");
+      LOG(message_group::Warning, _("CSG normalization resulted in an empty tree"));
     }
   }
 
   if (highlightNodes.size() > 0) {
-    LOG("Compiling highlights (%1$i CSG Trees)...", highlightNodes.size());
+    LOG(_("Compiling highlights (%1$i CSG Trees)..."), highlightNodes.size());
     this->highlights_products = std::make_shared<CSGProducts>();
     for (auto& highlightNode : highlightNodes) {
       highlightNode = normalizer.normalize(highlightNode);
@@ -44,7 +44,7 @@ bool CsgInfo::compile_products(const Tree& tree)
   }
 
   if (backgroundNodes.size() > 0) {
-    LOG("Compiling background (%1$i CSG Trees)...", backgroundNodes.size());
+    LOG(_("Compiling background (%1$i CSG Trees)..."), backgroundNodes.size());
     this->background_products = std::make_shared<CSGProducts>();
     for (auto& backgroundNode : backgroundNodes) {
       backgroundNode = normalizer.normalize(backgroundNode);

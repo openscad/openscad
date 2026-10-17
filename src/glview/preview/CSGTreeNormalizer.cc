@@ -97,7 +97,7 @@ entrypoint:
     this->nodecount++;
     if (nodecount > this->limit) {
       LOG(message_group::Warning,
-          "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
+          _("Normalized tree is growing past %1$d elements. Aborting normalization.\n"), this->limit);
       this->aborted = true;
       return {};
     }

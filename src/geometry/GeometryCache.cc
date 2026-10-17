@@ -27,7 +27,7 @@ bool GeometryCache::insert(const std::string& id, const std::shared_ptr<const Ge
   auto inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
 #if defined(ENABLE_CGAL) && defined(DEBUG)
   assert(!dynamic_cast<const CGALNefGeometry *>(geom.get()));
-  LOG("Geometry Cache %1$s: %2$s (%3$d bytes)", inserted ? "inserted" : "insert failed",
+  LOG(_("Geometry Cache %1$s: %2$s (%3$d bytes)"), inserted ? "inserted" : "insert failed",
       id.substr(0, 40), geom ? geom->memsize() : 0);
 #endif
   return inserted;
@@ -55,8 +55,8 @@ void GeometryCache::setMaxSizeMB(size_t limit)
 
 void GeometryCache::print()
 {
-  LOG("Geometries in cache: %1$d", this->cache.size());
-  LOG("Geometry cache size in bytes: %1$d", this->cache.totalCost());
+  LOG(_("Geometries in cache: %1$d"), this->cache.size());
+  LOG(_("Geometry cache size in bytes: %1$d"), this->cache.totalCost());
 }
 
 GeometryCache::cache_entry::cache_entry(const std::shared_ptr<const Geometry>& geom) : geom(geom)

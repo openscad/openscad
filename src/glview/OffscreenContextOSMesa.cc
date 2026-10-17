@@ -48,11 +48,11 @@ public:
   bool makeCurrent() const override
   {
     if (!osmesaContext) {
-      LOG(message_group::Error, "OSMesa context is null");
+      LOG(message_group::Error, _("OSMesa context is null"));
       return false;
     }
     if (!OSMesaMakeCurrent(osmesaContext, buffer.data(), GL_UNSIGNED_BYTE, width_, height_)) {
-      LOG(message_group::Error, "OSMesaMakeCurrent() failed");
+      LOG(message_group::Error, _("OSMesaMakeCurrent() failed"));
       return false;
     }
     return true;
@@ -87,7 +87,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextOSMesa(uint32_t width, u
   }
 
   if (!ctx->osmesaContext) {
-    LOG(message_group::Error, "OSMesaCreateContext failed for GL %1$d.%2$d", majorGLVersion,
+    LOG(message_group::Error, _("OSMesaCreateContext failed for GL %1$d.%2$d"), majorGLVersion,
         minorGLVersion);
     return nullptr;
   }

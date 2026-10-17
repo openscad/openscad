@@ -47,7 +47,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   std::string line;
 
   auto AsciiError = [&](const auto& errstr) {
-    LOG(message_group::Error, loc, "", "OFF File line %1$s, %2$s line '%3$s' importing file '%4$s'",
+    LOG(message_group::Error, loc, "", _("OFF File line %1$s, %2$s line '%3$s' importing file '%4$s'"),
         lineno, errstr, line, filename);
   };
 

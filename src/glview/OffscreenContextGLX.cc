@@ -94,12 +94,12 @@ public:
     });
     fbconfigs = glXChooseFBConfig(this->display, DefaultScreen(this->display), attributes, &numConfigs);
     if (fbconfigs == nullptr) {
-      LOG("glXChooseFBConfig() failed");
+      LOG(_("glXChooseFBConfig() failed"));
       return false;
     }
     visinfo = glXGetVisualFromFBConfig(this->display, fbconfigs[0]);
     if (visinfo == nullptr) {
-      LOG("glXGetVisualFromFBConfig failed");
+      LOG(_("glXGetVisualFromFBConfig failed"));
       return false;
     }
 
@@ -121,7 +121,7 @@ public:
     if (xlibLastError != Success) {
       char description[1024];
       XGetErrorText(this->display, xlibLastError, description, 1023);
-      LOG("XCreateWindow() failed: %1$s", description);
+      LOG(_("XCreateWindow() failed: %1$s"), description);
       return false;
     }
 
@@ -138,13 +138,13 @@ public:
       this->glxContext =
         glXCreateContextAttribsARB(this->display, fbconfigs[0], nullptr, 1, context_attributes);
       if (!this->glxContext) {
-        LOG("Unable to create GLX context using glXCreateContextAttribsARB()");
+        LOG(_("Unable to create GLX context using glXCreateContextAttribsARB()"));
       }
     }
     if (!this->glxContext) {
       this->glxContext = glXCreateNewContext(this->display, fbconfigs[0], GLX_RGBA_TYPE, nullptr, 1);
       if (!this->glxContext) {
-        LOG("Unable to create GLX context using glXCreateNewContext()");
+        LOG(_("Unable to create GLX context using glXCreateNewContext()"));
         return false;
       }
     }
@@ -170,15 +170,15 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(size_t width, size_t
 
   ctx->display = XOpenDisplay(nullptr);
   if (ctx->display == nullptr) {
-    LOG("Unable to open a connection to the X server.");
+    LOG(_("Unable to open a connection to the X server."));
     char *dpyenv = getenv("DISPLAY");
-    LOG("  DISPLAY=%1$s", (dpyenv ? dpyenv : ""));
+    LOG(_("  DISPLAY=%1$s"), (dpyenv ? dpyenv : ""));
     return nullptr;
   }
 
   int glxVersion = gladLoaderLoadGLX(ctx->display, DefaultScreen(ctx->display));
   if (!glxVersion) {
-    LOG("GLAD: Unable to load GLX");
+    LOG(_("GLAD: Unable to load GLX"));
     return nullptr;
   }
   int glxMajor = GLAD_VERSION_MAJOR(glxVersion);
@@ -190,7 +190,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(size_t width, size_t
   // we also accept GLX < 1.3 as long as glXGetVisualFromFBConfig() exists.
   // FIXME: Figure out if this is still relevant with GLAD, as we may want to check functions anyway?
   if (glxMajor == 1 && glxMinor <= 2 && glXGetVisualFromFBConfig == nullptr) {
-    LOG("Error: GLX version 1.3 functions missing. Your GLX version: %1$d.%2$d", glxMajor, glxMinor);
+    LOG(_("Error: GLX version 1.3 functions missing. Your GLX version: %1$d.%2$d"), glxMajor, glxMinor);
     return nullptr;
   }
 

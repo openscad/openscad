@@ -60,17 +60,17 @@ void GeometryWorker::work()
       // we should complete evaluation within the worker thread, so computation
       // will not block the GUI.
       if (manifold->getManifold().Status() != manifold::Manifold::Error::NoError)
-        LOG(message_group::Error, "Rendering cancelled due to unknown manifold error.");
+        LOG(message_group::Error, _("Rendering cancelled due to unknown manifold error."));
     }
 #endif
   } catch (const ProgressCancelException& e) {
-    LOG("Rendering cancelled.");
+    LOG(_("Rendering cancelled."));
   } catch (const HardWarningException& e) {
-    LOG("Rendering cancelled on first warning.");
+    LOG(_("Rendering cancelled on first warning."));
   } catch (const std::exception& e) {
-    LOG(message_group::Error, "Rendering cancelled by exception %1$s", e.what());
+    LOG(message_group::Error, _("Rendering cancelled by exception %1$s"), e.what());
   } catch (...) {
-    LOG(message_group::Error, "Rendering cancelled by unknown exception.");
+    LOG(message_group::Error, _("Rendering cancelled by unknown exception."));
   }
 #ifdef ENABLE_PYTHON
   python_unlock();

@@ -56,7 +56,7 @@ inline QList<QSslCertificate> loadCustomCaCerts(const QString& path)
   QList<QSslCertificate> certs;
   QFile file(path);
   if (!file.open(QIODevice::ReadOnly)) {
-    LOG("Could not open CA certificate file: %1$s", path.toStdString());
+    LOG(_("Could not open CA certificate file: %1$s"), path.toStdString());
     return certs;
   }
   const QByteArray data = file.readAll();
@@ -74,14 +74,14 @@ inline QList<QSslCertificate> loadCustomCaCerts(const QString& path)
     }
     const int end = data.indexOf(endMarker, begin + beginLen);
     if (end < 0) {
-      LOG("Malformed CA certificate file, missing end marker: %1$s", path.toStdString());
+      LOG(_("Malformed CA certificate file, missing end marker: %1$s"), path.toStdString());
       break;
     }
     const int blockEnd = end + endLen;
     const QByteArray block = data.mid(begin, blockEnd - begin);
     for (const QSslCertificate& cert : QSslCertificate::fromData(block, QSsl::Pem)) {
       if (cert.isNull()) {
-        LOG("Skipping unparseable certificate in CA certificate file: %1$s", path.toStdString());
+        LOG(_("Skipping unparseable certificate in CA certificate file: %1$s"), path.toStdString());
       } else {
         certs.append(cert);
       }
@@ -89,7 +89,7 @@ inline QList<QSslCertificate> loadCustomCaCerts(const QString& path)
     pos = blockEnd;
   }
   if (certs.empty()) {
-    LOG("No valid certificates found in CA certificate file: %1$s", path.toStdString());
+    LOG(_("No valid certificates found in CA certificate file: %1$s"), path.toStdString());
   }
   return certs;
 }

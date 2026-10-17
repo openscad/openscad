@@ -580,7 +580,7 @@ public:
   {
     const uint32_t steps = v->numValues();
     if (steps >= RangeType::MAX_RANGE_STEPS) {
-      LOG(message_group::Warning, "Bad range parameter in for statement: too many elements (%1$lu).",
+      LOG(message_group::Warning, _("Bad range parameter in for statement: too many elements (%1$lu)."),
           steps);
       return "";
     }
@@ -1139,16 +1139,16 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
     double r_e = 0.0;
     for (size_t j = 0; j < vectorvec.size(); ++j) {
       if (matrixvec[j].type() != Value::Type::VECTOR || matrixvec[j].toVector().size() != firstRowSize) {
-        LOG(message_group::Warning, "Matrix must be rectangular. Problem at row %1$lu", j);
+        LOG(message_group::Warning, _("Matrix must be rectangular. Problem at row %1$lu"), j);
         return Value::undef(STR("Matrix must be rectangular. Problem at row ", j));
       }
       if (vectorvec[j].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, "Vector must contain only numbers. Problem at index %1$lu", j);
+        LOG(message_group::Warning, _("Vector must contain only numbers. Problem at index %1$lu"), j);
         return Value::undef(STR("Vector must contain only numbers. Problem at index ", j));
       }
       if (matrixvec[j].toVector()[i].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu",
-            j, i);
+        LOG(message_group::Warning,
+            _("Matrix must contain only numbers. Problem at row %1$lu, col %2$lu"), j, i);
         return Value::undef(STR("Matrix must contain only numbers. Problem at row ", j, ", col ", i));
       }
       r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();

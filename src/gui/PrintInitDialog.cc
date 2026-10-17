@@ -92,7 +92,7 @@ PrintInitDialog::PrintInitDialog()
   this->checkBoxEnableRemotePrintServices->setChecked(remoteServicesEnabled);
 
   if (remoteServicesEnabled && PrintService::getPrintServices().empty()) {
-    LOG(message_group::UI_Warning, "No external print services found");
+    LOG(message_group::UI_Warning, _("No external print services found"));
   }
 
   const auto& service = S::defaultPrintService.value();
@@ -216,7 +216,7 @@ void PrintInitDialog::setFileFormat(const std::string& id)
   FileFormat fileFormat = FileFormat::ASCII_STL;
   if (!fileformat::fromIdentifier(id, fileFormat)) {
     // FIXME: When would this error happen? Do we need to handle it?
-    LOG("fileformat::fromIdentifier error: id '%1$s' not recognized", id);
+    LOG(_("fileformat::fromIdentifier error: id '%1$s' not recognized"), id);
   }
   this->selectedFileFormat = fileFormat;
 }
