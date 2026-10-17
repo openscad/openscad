@@ -203,11 +203,11 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
                     ExportInfo& exportInfo, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != dimensions) {
-    LOG("Current top level object is not a %1$dD object.", dimensions);
+    LOG(_("Current top level object is not a %1$dD object."), dimensions);
     return false;
   }
   if (root_geom->isEmpty()) {
-    LOG("Current top level object is empty.");
+    LOG(_("Current top level object is empty."));
     return false;
   }
 
@@ -222,14 +222,14 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
 void help(const char *arg0, const po::options_description& desc, bool failure = false)
 {
   const fs::path progpath(arg0);
-  LOG("Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), desc);
+  LOG(_("Usage: %1$s [options] file.scad\n%2$s"), progpath.filename().string(), desc);
   exit(failure ? 1 : 0);
 }
 
 template <std::size_t size>
 void help_export(const std::array<const Settings::SettingsEntryBase *, size>& options)
 {
-  LOG("Section '%1$s':", options.at(0)->category());
+  LOG(_("Section '%1$s':"), options.at(0)->category());
 
   for (const auto option : options) {
     const auto [type, values] = option->help();
@@ -239,10 +239,10 @@ void help_export(const std::array<const Settings::SettingsEntryBase *, size>& op
 
 void help_export()
 {
-  LOG("OpenSCAD version %1$s\n", openscad_versionnumber);
-  LOG("List of settings that can be given using the -O option using the");
-  LOG("format '<section>/<key>=value', e.g.:");
-  LOG("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n");
+  LOG(_("OpenSCAD version %1$s\n"), openscad_versionnumber);
+  LOG(_("List of settings that can be given using the -O option using the"));
+  LOG(_("format '<section>/<key>=value', e.g.:"));
+  LOG(_("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n"));
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
   help_export(Settings::SettingsExportSvg::cmdline);
@@ -251,7 +251,7 @@ void help_export()
 
 void version()
 {
-  LOG("OpenSCAD version %1$s", openscad_versionnumber);
+  LOG(_("OpenSCAD version %1$s"), openscad_versionnumber);
   exit(0);
 }
 
@@ -263,7 +263,7 @@ int info()
     OffscreenView const glview(512, 512);
     std::cout << glview.getRendererInfo() << "\n";
   } catch (const OffscreenViewException& ex) {
-    LOG("Can't create OpenGL OffscreenView: %1$s. Exiting.\n", ex.what());
+    LOG(_("Can't create OpenGL OffscreenView: %1$s. Exiting.\n"), ex.what());
     return 1;
   }
 
@@ -285,7 +285,7 @@ bool with_output(const bool is_stdout, const std::string& filename, const F& f,
   }
   std::ofstream fstream(std::filesystem::u8path(filename), mode);
   if (!fstream.is_open()) {
-    LOG("Can't open file \"%1$s\" for export", filename);
+    LOG(_("Can't open file \"%1$s\" for export"), filename);
     return false;
   } else {
     f(fstream);
@@ -303,18 +303,18 @@ AnimateArgs get_animate(const po::variables_map& vm)
     std::vector<std::string> strs;
     boost::split(strs, vm["animate_sharding"].as<std::string>(), boost::is_any_of("/"));
     if (strs.size() != 2) {
-      LOG("--animate_sharding requires <shard>/<num_shards>");
+      LOG(_("--animate_sharding requires <shard>/<num_shards>"));
       exit(1);
     }
     try {
       animate.shard = boost::lexical_cast<unsigned>(strs[0]);
       animate.num_shards = boost::lexical_cast<unsigned>(strs[1]);
     } catch (const boost::bad_lexical_cast&) {
-      LOG("--animate_sharding parameters need to be positive integers");
+      LOG(_("--animate_sharding parameters need to be positive integers"));
       exit(1);
     }
     if (animate.shard > animate.num_shards || animate.shard == 0) {
-      LOG("--animate_sharding: shard needs to be in range <1..num_shards>");
+      LOG(_("--animate_sharding: shard needs to be in range <1..num_shards>"));
       exit(1);
     }
   }
@@ -336,10 +336,10 @@ Camera get_camera(const po::variables_map& vm)
         }
         camera.setup(cam_parameters);
       } catch (boost::bad_lexical_cast&) {
-        LOG("Camera setup requires numbers as parameters");
+        LOG(_("Camera setup requires numbers as parameters"));
       }
     } else {
-      LOG("Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera");
+      LOG(_("Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera"));
       exit(1);
     }
   } else {
@@ -362,7 +362,7 @@ Camera get_camera(const po::variables_map& vm)
     } else if (proj == "p" || proj == "perspective") {
       camera.projection = Camera::ProjectionType::PERSPECTIVE;
     } else {
-      LOG("projection needs to be 'o' or 'p' for ortho or perspective\n");
+      LOG(_("projection needs to be 'o' or 'p' for ortho or perspective\n"));
       exit(1);
     }
   }
@@ -371,7 +371,7 @@ Camera get_camera(const po::variables_map& vm)
     std::vector<std::string> strs;
     boost::split(strs, vm["imgsize"].as<std::string>(), boost::is_any_of(","));
     if (strs.size() != 2) {
-      LOG("Need 2 numbers for imgsize");
+      LOG(_("Need 2 numbers for imgsize"));
       exit(1);
     } else {
       try {
@@ -380,7 +380,7 @@ Camera get_camera(const po::variables_map& vm)
         camera.pixel_width = w;
         camera.pixel_height = h;
       } catch (boost::bad_lexical_cast&) {
-        LOG("Need 2 numbers for imgsize");
+        LOG(_("Need 2 numbers for imgsize"));
       }
     }
   }
@@ -437,7 +437,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
   if (nextLocation) {
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(),
-        "More than one Root Modifier (!)");
+        _("More than one Root Modifier (!)"));
   }
   Tree tree(root_node, fparent.string());
 
@@ -505,7 +505,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           root_geom = GeometryUtils::getBackendSpecificGeometry(root_geom);
           assert(root_geom != nullptr);
         }
-        LOG("Converted to backend-specific geometry");
+        LOG(_("Converted to backend-specific geometry"));
       }
     }
 
@@ -554,10 +554,9 @@ int cmdline(const CommandLine& cmd)
     boost::algorithm::to_lower(suffix);
 
     if (!fileformat::fromIdentifier(suffix, export_format)) {
-      LOG(
-        "Invalid suffix %1$s. Either add a valid suffix or specify one using the --export-format "
-        "option.",
-        suffix);
+      LOG(_("Invalid suffix %1$s. Either add a valid suffix or specify one using the --export-format "
+            "option."),
+          suffix);
       return 1;
     }
   }
@@ -569,7 +568,7 @@ int cmdline(const CommandLine& cmd)
     output_dir = fs::current_path();
   }
   if (!fs::is_directory(output_dir)) {
-    LOG("\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_dir.generic_string(),
+    LOG(_("\n'%1$s' is not a directory for output file %2$s - Skipping\n"), output_dir.generic_string(),
         cmd.output_file);
     return 1;
   }
@@ -587,7 +586,7 @@ int cmdline(const CommandLine& cmd)
   } else {
     std::ifstream ifs(std::filesystem::u8path(cmd.filename));
     if (!ifs.is_open()) {
-      LOG("Can't open input file '%1$s'!\n", cmd.filename);
+      LOG(_("Can't open input file '%1$s'!\n"), cmd.filename);
       return 1;
     }
     handle_dep(cmd.filename);
@@ -599,7 +598,7 @@ int cmdline(const CommandLine& cmd)
   if (cmd.filename.c_str() != NULL) {
     if (boost::algorithm::ends_with(cmd.filename, ".py")) {
       if (python_trusted == true) python_active = true;
-      else LOG("Python is not enabled");
+      else LOG(_("Python is not enabled"));
     }
   }
 
@@ -619,7 +618,7 @@ int cmdline(const CommandLine& cmd)
     root_file = nullptr;
   }
   if (!root_file) {
-    LOG("Can't parse file '%1$s'!\n", cmd.filename);
+    LOG(_("Can't parse file '%1$s'!\n"), cmd.filename);
     return 1;
   }
 
@@ -671,7 +670,7 @@ int cmdline(const CommandLine& cmd)
       frame_file.replace_extension(extension);
       std::string const frame_str = frame_file.generic_string();
 
-      LOG("Exporting %1$s...", cmd.filename);
+      LOG(_("Exporting %1$s..."), cmd.filename);
 
       CommandLine frame_cmd = cmd;
       frame_cmd.output_file = frame_str;
@@ -747,7 +746,7 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
 
     exit(1);
   } else {
-    LOG("Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme,
+    LOG(_("Unknown color scheme '%1$s', using default '%2$s'."), arg_colorscheme,
         ColorMap::instance().defaultColorSchemeName());
   }
 }
@@ -757,7 +756,7 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
  * determined so we can lookup the resource path for the language translation
  * files.
  */
-void localization_init()
+void localization_init(bool report_errors)
 {
   fs::path const po_dir(PlatformUtils::resourcePath("locale"));
   const std::string& locale_path(po_dir.string());
@@ -767,10 +766,18 @@ void localization_init()
     bindtextdomain("openscad", locale_path.c_str());
     bind_textdomain_codeset("openscad", "UTF-8");
     textdomain("openscad");
-  } else {
-    LOG("Could not initialize localization (application path is '%1$s').",
+  } else if (report_errors) {
+    LOG(_("Could not initialize localization (application path is '%1$s')."),
         PlatformUtils::applicationPath());
   }
+}
+
+/**
+ * Restore the default gettext domain, so all messages are shown untranslated.
+ */
+void localization_disable()
+{
+  textdomain("");
 }
 
 #ifdef Q_OS_MACOS
@@ -850,64 +857,69 @@ int openscad_main(int argc, char **argv)
   const char *deps_output_file = nullptr;
   boost::optional<FileFormat> export_format;
 
+  // Initialize translations before building the option descriptions so the
+  // command line help is localized. Errors are reported later, once we know
+  // whether --quiet was given.
+  localization_init(false);
+
   ViewOptions viewOptions{};
-  po::options_description desc("Allowed options");
+  po::options_description desc(_("Allowed options"));
   // clang-format off
   desc.add_options()
     ("export-format", po::value<std::string>(),
-      "overrides format of exported scad file when using option '-o', arg can be any of its supported "
+      _("overrides format of exported scad file when using option '-o', arg can be any of its supported "
       "file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify "
       "'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future "
-      "default so asciistl should be explicitly specified in scripts when needed.\n")
+      "default so asciistl should be explicitly specified in scripts when needed.\n"))
     ("o,o", po::value<std::vector<std::string>>(),
-      "output specified file instead of running the GUI. The file extension specifies the type: stl, "
+      _("output specified file instead of running the GUI. The file extension specifies the type: stl, "
       "off, wrl, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be "
-      "used multiple times for different exports. Use '-' for stdout.\n")
+      "used multiple times for different exports. Use '-' for stdout.\n"))
     ("O,O", po::value<std::vector<std::string>>(),
-      "pass settings value to the file export using the format section/key=value, e.g "
-      "export-pdf/paper-size=a3. Use --help-export to list all available settings.")
-    ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
-    ("p,p", po::value<std::string>(), "customizer parameter file")
-    ("P,P", po::value<std::string>(), "customizer parameter set")
+      _("pass settings value to the file export using the format section/key=value, e.g "
+      "export-pdf/paper-size=a3. Use --help-export to list all available settings."))
+    ("D,D", po::value<std::vector<std::string>>(), _("var=val -pre-define variables"))
+    ("p,p", po::value<std::string>(), _("customizer parameter file"))
+    ("P,P", po::value<std::string>(), _("customizer parameter set"))
 #ifdef ENABLE_EXPERIMENTAL
     ("enable", po::value<std::vector<std::string>>(),
-      ("enable experimental features (specify 'all' for enabling all available features): " +
+      (_("enable experimental features (specify 'all' for enabling all available features): ") +
       str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
                [](const Feature *feature) { return feature->get_name(); }) +
       "\n")
       .c_str())
 #endif
-    ("help,h", "print this help message and exit")
-    ("help-export", "print list of export parameters and values that can be set via -O")
-    ("version,v", "print the version")
-    ("info", "print information about the build process\n")
+    ("help,h", _("print this help message and exit"))
+    ("help-export", _("print list of export parameters and values that can be set via -O"))
+    ("version,v", _("print the version"))
+    ("info", _("print information about the build process\n"))
     ("camera", po::value<std::string>(),
-      "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
-      "=eye_x,y,z,center_x,y,z")("autocenter", "adjust camera to look at object's center")
-    ("viewall", "adjust camera to fit object")
+      _("camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
+      "=eye_x,y,z,center_x,y,z"))("autocenter", _("adjust camera to look at object's center"))
+    ("viewall", _("adjust camera to fit object"))
     ("backend", po::value<std::string>(),
-      "3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default]")
-    ("imgsize", po::value<std::string>(), "=width,height of exported png")
+      _("3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default]"))
+    ("imgsize", po::value<std::string>(), _("=width,height of exported png"))
     ("render", po::value<std::string>()->implicit_value(""),
-      "for full geometry evaluation when exporting png")
+      _("for full geometry evaluation when exporting png"))
     ("preview", po::value<std::string>()->implicit_value(""),
-      "[=throwntogether] -for ThrownTogether preview png")
-    ("animate", po::value<unsigned>(), "export N animated frames")
+      _("[=throwntogether] -for ThrownTogether preview png"))
+    ("animate", po::value<unsigned>(), _("export N animated frames"))
     ("animate_sharding", po::value<std::string>(),
-      "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
+      _("Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
       "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "
-      "cores or machines.")
+      "cores or machines."))
     ("view", po::value<CommaSeparatedVector>(),
-      ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
-    ("projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")
-    ("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
+      (_("=view options: ") + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
+    ("projection", po::value<std::string>(), _("=(o)rtho or (p)erspective when exporting png"))
+    ("csglimit", po::value<unsigned int>(), _("=n -stop rendering at n CSG elements when exporting png"))
     ("summary", po::value<std::vector<std::string>>(),
-      "enable additional render summary and statistics: all | cache | time | camera | geometry | "
-      "bounding-box | area")
+      _("enable additional render summary and statistics: all | cache | time | camera | geometry | "
+      "bounding-box | area"))
     ("summary-file", po::value<std::string>(),
-      "output summary information in JSON format to the given file, using '-' outputs to stdout")
+      _("output summary information in JSON format to the given file, using '-' outputs to stdout"))
     ("colorscheme", po::value<std::string>(),
-          ("=colorscheme: " +
+          (_("=colorscheme: ") +
            str_join(ColorMap::instance().colorSchemeNames(), " | ",
                     [](const std::string& colorScheme) {
                       return (colorScheme == ColorMap::instance().defaultColorSchemeName() ? "*" : "") +
@@ -915,40 +927,40 @@ int openscad_main(int argc, char **argv)
                     }) +
            "\n")
             .c_str())
-    ("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")
-    ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
-    ("quiet,q", "quiet mode (don't print anything *except* errors)")
-    ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
-    ("hardwarnings", "Stop on the first warning")
-    ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
+    ("d,d", po::value<std::string>(), _("deps_file -generate a dependency file for make"))
+    ("m,m", po::value<std::string>(), _("make_cmd -runs make_cmd file if file is missing"))
+    ("quiet,q", _("quiet mode (don't print anything *except* errors)"))
+    ("reset-window-settings", _("Reset GUI settings for window placement and fonts."))
+    ("hardwarnings", _("Stop on the first warning"))
+    ("trace-depth", po::value<unsigned int>(), _("=n, maximum number of trace messages"))
     ("trace-usermodule-parameters", po::value<std::string>(),
-      "=true/false, configure the output of user module parameters in a trace")
+      _("=true/false, configure the output of user module parameters in a trace"))
     ("check-parameters", po::value<std::string>(),
-      "=true/false, configure the parameter check for user modules and functions")
+      _("=true/false, configure the parameter check for user modules and functions"))
     ("check-parameter-ranges", po::value<std::string>(),
-      "=true/false, configure the parameter range check for builtin modules")
+      _("=true/false, configure the parameter range check for builtin modules"))
     ("debug", po::value<std::string>(),
-      "special debug info - specify 'all' or a set of source file names")
+      _("special debug info - specify 'all' or a set of source file names"))
 #ifdef ENABLE_PYTHON
-    ("trust-python", "Trust python")
-    ("python-module", po::value<std::string>(), "=module Call pip python module")
+    ("trust-python", _("Trust python"))
+    ("python-module", po::value<std::string>(), _("=module Call pip python module"))
 #endif
     ;
   // clang-format on
 
 #ifdef ENABLE_GUI_TESTS
   // clang-format off
-  desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
+  desc.add_options()("run-all-gui-tests", _("special gui testing mode - run all the tests"));
   // clang-format on
 #endif
 
-  po::options_description hidden("Hidden options");
+  po::options_description hidden(_("Hidden options"));
   // clang-format off
   hidden.add_options()
 #ifdef Q_OS_MACOS
-    ("psn", po::value<std::string>(), "process serial number")
+    ("psn", po::value<std::string>(), _("process serial number"))
 #endif
-    ("input-file", po::value<std::vector<std::string>>(), "input file");
+    ("input-file", po::value<std::vector<std::string>>(), _("input file"));
   // clang-format on
 
   po::positional_options_description p;
@@ -973,11 +985,11 @@ int openscad_main(int argc, char **argv)
   OpenSCAD::debug = "";
   if (vm.count("debug")) {
     OpenSCAD::debug = vm["debug"].as<std::string>();
-    LOG("Debug on. --debug=%1$s", OpenSCAD::debug);
+    LOG(_("Debug on. --debug=%1$s"), OpenSCAD::debug);
   }
 #ifdef ENABLE_PYTHON
   if (vm.count("trust-python")) {
-    LOG("Python Engine enabled", OpenSCAD::debug);
+    LOG(_("Python Engine enabled"), OpenSCAD::debug);
     python_trusted = true;
   }
 
@@ -1013,7 +1025,7 @@ int openscad_main(int argc, char **argv)
       try {
         (*(flag.second) = flagConvert(opt));
       } catch (const std::runtime_error& e) {
-        LOG("Could not parse '--%1$s %2$s' as flag", name, opt);
+        LOG(_("Could not parse '--%1$s %2$s' as flag"), name, opt);
       }
     }
   }
@@ -1026,7 +1038,7 @@ int openscad_main(int argc, char **argv)
     auto backend_string = vm["backend"].as<std::string>();
     auto backend = renderBackend3DFromString(backend_string);
     if (!backend) {
-      LOG(message_group::Error, "Unknown rendering backend '%1$s'.", backend_string.c_str());
+      LOG(message_group::Error, _("Unknown rendering backend '%1$s'."), backend_string.c_str());
       return 1;
     }
     RenderSettings::inst()->backend3D = backend.value();
@@ -1054,7 +1066,7 @@ int openscad_main(int argc, char **argv)
       try {
         viewOptions[option] = true;
       } catch (const std::out_of_range& e) {
-        LOG("Unknown --view option '%1$s' ignored. Use -h to list available options.", option);
+        LOG(_("Unknown --view option '%1$s' ignored. Use -h to list available options."), option);
       }
     }
   }
@@ -1123,7 +1135,7 @@ int openscad_main(int argc, char **argv)
       export_format.emplace(format);
 
     } else {
-      LOG("Unknown --export-format option '%1$s'.  Use -h to list available options.", format_str);
+      LOG(_("Unknown --export-format option '%1$s'.  Use -h to list available options."), format_str);
       return 1;
     }
   }
@@ -1134,7 +1146,7 @@ int openscad_main(int argc, char **argv)
   if (animate.frames) {
     for (const auto& filename : output_files) {
       if (filename == "-") {
-        LOG("Option --animate is not supported when exporting to stdout.");
+        LOG(_("Option --animate is not supported when exporting to stdout."));
         return 1;
       }
     }
@@ -1191,14 +1203,14 @@ int openscad_main(int argc, char **argv)
       std::string const deps_out(deps_output_file);
       const std::vector<std::string>& geom_out(output_files);
       if (!write_deps(deps_out, geom_out)) {
-        LOG("Error writing deps");
+        LOG(_("Error writing deps"));
         return 1;
       }
     }
 #ifndef OPENSCAD_NOGUI
   } else if (useGUI()) {
     if (vm.count("export-format")) {
-      LOG("Ignoring --export-format option");
+      LOG(_("Ignoring --export-format option"));
     }
     std::string gui_test = "none";
     if (vm.count("run-all-gui-tests")) {
@@ -1208,7 +1220,7 @@ int openscad_main(int argc, char **argv)
     rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings);
 #endif
   } else {
-    LOG("Requested GUI mode but can't open display!\n");
+    LOG(_("Requested GUI mode but can't open display!\n"));
     return 1;
   }
 

@@ -82,7 +82,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
 {
   std::ifstream stream(std::filesystem::u8path(filename));
   if (!stream.good()) {
-    LOG(message_group::Warning, "Can't open DXF file '%1$s'.", filename);
+    LOG(message_group::Warning, _("Can't open DXF file '%1$s'."), filename);
     return;
   }
 
@@ -141,7 +141,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
       id = boost::lexical_cast<int>(id_str);
     } catch (const boost::bad_lexical_cast& blc) {
       if (!stream.eof()) {
-        LOG(message_group::Warning, "Illegal ID '%1$s' in `%2$s'", id_str, filename);
+        LOG(message_group::Warning, _("Illegal ID '%1$s' in `%2$s'"), id_str, filename);
       }
       break;
     }
@@ -359,18 +359,18 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
         break;
       }
     } catch (boost::bad_lexical_cast& blc) {
-      LOG(message_group::Warning, "Illegal value '%1$s'in `%2$s'", data, filename);
+      LOG(message_group::Warning, _("Illegal value '%1$s'in `%2$s'"), data, filename);
     } catch (const std::out_of_range& oor) {
-      LOG(message_group::Warning, "Not enough input values for %1$s. in '%2$s'", data, filename);
+      LOG(message_group::Warning, _("Not enough input values for %1$s. in '%2$s'"), data, filename);
     }
   }
 
   for (const auto& i : unsupported_entities_list) {
     if (layername.empty()) {
-      LOG(message_group::Warning, "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second,
+      LOG(message_group::Warning, _("Unsupported DXF Entity '%1$s' (%2$x) in %3$s."), i.first, i.second,
           QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
     } else {
-      LOG(message_group::Warning, "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",
+      LOG(message_group::Warning, _("Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s"),
           i.first, i.second, layername, fs_uncomplete(filename, fs::current_path()).generic_string());
     }
   }
@@ -393,7 +393,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
         for (const int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-            LOG(message_group::Warning, "Bad DXF line index in %1$s.",
+            LOG(message_group::Warning, _("Bad DXF line index in %1$s."),
                 QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
           }
@@ -422,7 +422,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-          LOG(message_group::Warning, "Bad DXF line index in %1$s.",
+          LOG(message_group::Warning, _("Bad DXF line index in %1$s."),
               QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
@@ -463,7 +463,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-          LOG(message_group::Warning, "Bad DXF line index in %1$s.",
+          LOG(message_group::Warning, _("Bad DXF line index in %1$s."),
               QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }

@@ -51,7 +51,7 @@ std::vector<std::string> StaticModuleNameStack::stack;
 static void NOINLINE print_err(std::string name, const Location& loc,
                                const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'",
+  LOG(message_group::Error, loc, context->documentRoot(), _("Recursion detected calling module '%1$s'"),
       name);
 }
 
@@ -83,7 +83,7 @@ static void NOINLINE print_trace(EvaluationException& e, const UserModule *mod,
       }
     }
   }
-  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
+  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), _("call of '%1$s(%2$s)'"),
         mod->name, stream.str());
 }
 

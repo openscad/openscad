@@ -90,7 +90,8 @@ const Value& Context::lookup_variable(const std::string& name, const Location& l
 {
   boost::optional<const Value&> result = try_lookup_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
+    LOG(message_group::Warning, loc, documentRoot(), _("Ignoring unknown variable %1$s"),
+        quoteVar(name));
     return Value::undefined;
   }
   return *result;
@@ -108,7 +109,7 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
       return result;
     }
   }
-  LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown function '%1$s'", name);
+  LOG(message_group::Warning, loc, documentRoot(), _("Ignoring unknown function '%1$s'"), name);
   return boost::none;
 }
 
@@ -124,7 +125,7 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string& na
       return result;
     }
   }
-  LOG(message_group::Warning, loc, this->documentRoot(), "Ignoring unknown module '%1$s'", name);
+  LOG(message_group::Warning, loc, this->documentRoot(), _("Ignoring unknown module '%1$s'"), name);
   return boost::none;
 }
 

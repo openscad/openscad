@@ -193,7 +193,7 @@ const QString PrintService::upload(const QString& fileName, const QString& conte
         const QString msg = "Could not get data.cartUrl field from response.";
         throw NetworkException(QNetworkReply::ProtocolFailure, msg);
       }
-      LOG("Upload finished, opening URL %1$s.", cartUrl.toStdString());
+      LOG(_("Upload finished, opening URL %1$s."), cartUrl.toStdString());
       return cartUrl;
     });
 }

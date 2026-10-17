@@ -41,7 +41,7 @@ std::string get_lib3mf_version()
 std::unique_ptr<class PolySet> import_3mf(const std::string&, const Location& loc)
 {
   LOG(message_group::Warning,
-      "Import from 3MF format was not enabled when building the application, import() at line %1$d",
+      _("Import from 3MF format was not enabled when building the application, import() at line %1$d"),
       loc.firstLine());
   return PolySet::createEmpty();
 }

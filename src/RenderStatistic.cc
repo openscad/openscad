@@ -223,34 +223,34 @@ void RenderStatistic::printAll(const std::shared_ptr<const Geometry>& geom, cons
 
 void LogVisitor::visit(const GeometryList& geomlist)
 {
-  LOG("Top level object is a list of objects:");
-  LOG("   Objects:    %1$d", geomlist.getChildren().size());
+  LOG(_("Top level object is a list of objects:"));
+  LOG(_("   Objects:    %1$d"), geomlist.getChildren().size());
 }
 
 void LogVisitor::visit(const Polygon2d& poly)
 {
-  LOG("Top level object is a 2D object:");
-  LOG("   Contours:   %1$6d", poly.outlines().size());
+  LOG(_("Top level object is a 2D object:"));
+  LOG(_("   Contours:   %1$6d"), poly.outlines().size());
   if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
     const auto& bb = poly.getBoundingBox();
-    LOG("Bounding box:");
-    LOG("   Min:  %1$.2f, %2$.2f", bb.min().x(), bb.min().y());
-    LOG("   Max:  %1$.2f, %2$.2f", bb.max().x(), bb.max().y());
-    LOG("   Size: %1$.2f, %2$.2f", bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y());
+    LOG(_("Bounding box:"));
+    LOG(_("   Min:  %1$.2f, %2$.2f"), bb.min().x(), bb.min().y());
+    LOG(_("   Max:  %1$.2f, %2$.2f"), bb.max().x(), bb.max().y());
+    LOG(_("   Size: %1$.2f, %2$.2f"), bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y());
   }
   if (is_enabled(RenderStatistic::AREA)) {
-    LOG("Measurements:");
-    LOG("   Area: %1$.2f", poly.area());
+    LOG(_("Measurements:"));
+    LOG(_("   Area: %1$.2f"), poly.area());
   }
 }
 
 void LogVisitor::printBoundingBox3(const BoundingBox& bb)
 {
   if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
-    LOG("Bounding box:");
-    LOG("   Min:  %1$.2f, %2$.2f, %3$.2f", bb.min().x(), bb.min().y(), bb.min().z());
-    LOG("   Max:  %1$.2f, %2$.2f, %3$.2f", bb.max().x(), bb.max().y(), bb.max().z());
-    LOG("   Size: %1$.2f, %2$.2f, %3$.2f", bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y(),
+    LOG(_("Bounding box:"));
+    LOG(_("   Min:  %1$.2f, %2$.2f, %3$.2f"), bb.min().x(), bb.min().y(), bb.min().z());
+    LOG(_("   Max:  %1$.2f, %2$.2f, %3$.2f"), bb.max().x(), bb.max().y(), bb.max().z());
+    LOG(_("   Size: %1$.2f, %2$.2f, %3$.2f"), bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y(),
         bb.max().z() - bb.min().z());
   }
 }
@@ -258,12 +258,12 @@ void LogVisitor::printBoundingBox3(const BoundingBox& bb)
 void LogVisitor::visit(const PolySet& ps)
 {
   assert(ps.getDimension() == 3);
-  LOG("Top level object is a 3D object (PolySet):");
-  LOG("   Convex:       %1$s", (ps.isConvex() ? "yes" : "no"));
+  LOG(_("Top level object is a 3D object (PolySet):"));
+  LOG(_("   Convex:       %1$s"), (ps.isConvex() ? "yes" : "no"));
   if (ps.isTriangular()) {
-    LOG("   Triangles: %1$6d", ps.numFacets());
+    LOG(_("   Triangles: %1$6d"), ps.numFacets());
   } else {
-    LOG("   Facets:    %1$6d", ps.numFacets());
+    LOG(_("   Facets:    %1$6d"), ps.numFacets());
   }
   printBoundingBox3(ps.getBoundingBox());
 }
@@ -273,16 +273,16 @@ void LogVisitor::visit(const CGALNefGeometry& nef)
 {
   if (nef.getDimension() == 3) {
     const bool simple = nef.p3->is_simple();
-    LOG("Top level object is a 3D object (Nef polyhedron):");
-    LOG("   Simple:     %1$s", (simple ? "yes" : "no"));
-    LOG("   Vertices:   %1$6d", nef.p3->number_of_vertices());
-    LOG("   Halfedges:  %1$6d", nef.p3->number_of_halfedges());
-    LOG("   Edges:      %1$6d", nef.p3->number_of_edges());
-    LOG("   Halffacets: %1$6d", nef.p3->number_of_halffacets());
-    LOG("   Facets:     %1$6d", nef.p3->number_of_facets());
-    LOG("   Volumes:    %1$6d", nef.p3->number_of_volumes());
+    LOG(_("Top level object is a 3D object (Nef polyhedron):"));
+    LOG(_("   Simple:     %1$s"), (simple ? "yes" : "no"));
+    LOG(_("   Vertices:   %1$6d"), nef.p3->number_of_vertices());
+    LOG(_("   Halfedges:  %1$6d"), nef.p3->number_of_halfedges());
+    LOG(_("   Edges:      %1$6d"), nef.p3->number_of_edges());
+    LOG(_("   Halffacets: %1$6d"), nef.p3->number_of_halffacets());
+    LOG(_("   Facets:     %1$6d"), nef.p3->number_of_facets());
+    LOG(_("   Volumes:    %1$6d"), nef.p3->number_of_volumes());
     if (!simple) {
-      LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair!");
+      LOG(message_group::UI_Warning, _("Object may not be a valid 2-manifold and may need repair!"));
     }
     printBoundingBox3(nef.getBoundingBox());
   }
@@ -292,13 +292,13 @@ void LogVisitor::visit(const CGALNefGeometry& nef)
 #ifdef ENABLE_MANIFOLD
 void LogVisitor::visit(const ManifoldGeometry& mani_geom)
 {
-  LOG("   Top level object is a 3D object (manifold):");
+  LOG(_("   Top level object is a 3D object (manifold):"));
   auto& mani = mani_geom.getManifold();
 
-  LOG("   Status:     %1$s", ManifoldUtils::statusToString(mani.Status()));
-  LOG("   Genus:      %1$d", mani.Genus());
-  LOG("   Vertices:   %1$6d", mani.NumVert());
-  LOG("   Facets:     %1$6d", mani.NumTri());
+  LOG(_("   Status:     %1$s"), ManifoldUtils::statusToString(mani.Status()));
+  LOG(_("   Genus:      %1$d"), mani.Genus());
+  LOG(_("   Vertices:   %1$6d"), mani.NumVert());
+  LOG(_("   Facets:     %1$6d"), mani.NumTri());
   printBoundingBox3(mani_geom.getBoundingBox());
 }
 #endif  // ENABLE_MANIFOLD
@@ -306,13 +306,13 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
 void LogVisitor::printCamera(const Camera& camera)
 {
   if (is_enabled(RenderStatistic::CAMERA)) {
-    LOG("Camera:");
-    LOG("   Translation: %1$.2f, %2$.2f, %3$.2f", camera.getVpt().x(), camera.getVpt().y(),
+    LOG(_("Camera:"));
+    LOG(_("   Translation: %1$.2f, %2$.2f, %3$.2f"), camera.getVpt().x(), camera.getVpt().y(),
         camera.getVpt().z());
-    LOG("   Rotation:    %1$.2f, %2$.2f, %3$.2f", camera.getVpr().x(), camera.getVpr().y(),
+    LOG(_("   Rotation:    %1$.2f, %2$.2f, %3$.2f"), camera.getVpr().x(), camera.getVpr().y(),
         camera.getVpr().z());
-    LOG("   Distance:    %1$.2f", camera.zoomValue());
-    LOG("   FOV:         %1$.2f", camera.fovValue());
+    LOG(_("   Distance:    %1$.2f"), camera.zoomValue());
+    LOG(_("   FOV:         %1$.2f"), camera.fovValue());
   }
 }
 
@@ -328,7 +328,7 @@ void LogVisitor::printCacheStatistic()
 void LogVisitor::printRenderingTime(const std::chrono::milliseconds ms)
 {
   // always enabled
-  LOG("Total rendering time: %1$d:%2$02d:%3$02d.%4$03d", (ms.count() / 1000 / 60 / 60),
+  LOG(_("Total rendering time: %1$d:%2$02d:%3$02d.%4$03d"), (ms.count() / 1000 / 60 / 60),
       (ms.count() / 1000 / 60 % 60), (ms.count() / 1000 % 60), (ms.count() % 1000));
 }
 

@@ -118,7 +118,7 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned 
     if (!dim) dim = item.second->getDimension();
     else if (dim != item.second->getDimension() && !item.second->isEmpty()) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
-          "Mixing 2D and 3D objects is not supported");
+          _("Mixing 2D and 3D objects is not supported"));
       return false;
     }
   }
@@ -154,7 +154,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
-          "fill() not yet implemented for 3D");
+          _("fill() not yet implemented for 3D"));
     }
   }
 
@@ -260,8 +260,8 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
       geometry->addOutline(outline);
       geometry->setSanitized(true);
     } catch (const CGAL::Failure_exception& e) {
-      LOG(message_group::Warning, "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s",
-          e.what());
+      LOG(message_group::Warning,
+          _("GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s"), e.what());
     }
   }
 #endif
@@ -317,7 +317,7 @@ std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren
     if (chgeom) {
       if (chgeom->getDimension() == 3) {
         LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
-            "Ignoring 3D child object for 2D operation");
+            _("Ignoring 3D child object for 2D operation"));
         children.push_back(nullptr);  // replace 3D geometry with empty geometry
       } else {
         if (chgeom->isEmpty()) {
@@ -357,7 +357,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
 
     // Perhaps add acceptsGeometry() to GeometryCache as well?
     if (!GeometryCache::instance()->insert(key, geom)) {
-      LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
+      LOG(message_group::Warning, _("GeometryEvaluator: Node didn't fit into cache."));
     }
   }
 }
@@ -399,7 +399,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& no
 
     if (chgeom && chgeom->getDimension() == 2) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(),
-          "Ignoring 2D child object for 3D operation");
+          _("Ignoring 2D child object for 3D operation"));
       children.push_back(
         std::make_pair(item.first, nullptr));  // replace 2D geometry with empty geometry
     } else {
@@ -445,7 +445,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
   case OpenSCADOperator::INTERSECTION: clipType = Clipper2Lib::ClipType::Intersection; break;
   case OpenSCADOperator::DIFFERENCE:   clipType = Clipper2Lib::ClipType::Difference; break;
   default:
-    LOG(message_group::Error, "Unknown boolean operation %1$d", int(op));
+    LOG(message_group::Error, _("Unknown boolean operation %1$d"), int(op));
     return nullptr;
     break;
   }
@@ -742,7 +742,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
       if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
         // due to the way parse/eval works we can't currently distinguish between NaN and Inf
         LOG(message_group::Warning, node.modinst->location(), this->tree.getDocumentPath(),
-            "Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+            _("Transformation matrix contains Not-a-Number and/or Infinity - removing object."));
       } else {
         // First union all children
         ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);

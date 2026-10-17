@@ -236,7 +236,7 @@ QAction *findAction(const QList<QAction *>& actions, const std::string& name)
 
 void fileExportedMessage(const QString& format, const QString& filename)
 {
-  LOG("%1$s export finished: %2$s", format.toUtf8().constData(), filename.toUtf8().constData());
+  LOG(_("%1$s export finished: %2$s"), format.toUtf8().constData(), filename.toUtf8().constData());
 }
 
 void removeExportActions(QToolBar *toolbar, QAction *action)
@@ -264,7 +264,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t
     if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
       return createExternalPrintService(printService, fileFormat);
     }
-    LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+    LOG(_("Unknown print service \"%1$s\""), serviceName.toStdString());
     return nullptr;
     break;
   }
@@ -812,7 +812,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       auto mtime = this->rootFile->handleDependencies();
       if (mtime > this->depsMTime) {
         this->depsMTime = mtime;
-        LOG("Used file cache size: %1$d files", SourceFileCache::instance()->size());
+        LOG(_("Used file cache size: %1$d files"), SourceFileCache::instance()->size());
         didcompile = true;
       }
     }
@@ -1016,7 +1016,7 @@ void MainWindow::instantiateRoot()
 
   if (this->rootFile) {
     // Evaluate CSG tree
-    LOG("Compiling design (CSG Tree generation)...");
+    LOG(_("Compiling design (CSG Tree generation)..."));
     this->processEvents();
 
     AbstractNode::resetIndexCounter();
@@ -1044,7 +1044,7 @@ void MainWindow::instantiateRoot()
       }
       if (nextLocation) {
         LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(),
-            "More than one Root Modifier (!)");
+            _("More than one Root Modifier (!)"));
       }
 
       // FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted
@@ -1055,9 +1055,9 @@ void MainWindow::instantiateRoot()
 
   if (!this->rootNode) {
     if (parser_error_pos < 0) {
-      LOG(message_group::Error, "Compilation failed! (no top level object found)");
+      LOG(message_group::Error, _("Compilation failed! (no top level object found)"));
     } else {
-      LOG(message_group::Error, "Compilation failed!");
+      LOG(message_group::Error, _("Compilation failed!"));
     }
     LOG(" ");
     this->processEvents();
@@ -1073,7 +1073,7 @@ void MainWindow::compileCSG()
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try {
     assert(this->rootNode);
-    LOG("Compiling design (CSG Products generation)...");
+    LOG(_("Compiling design (CSG Products generation)..."));
     this->processEvents();
 
     // Main CSG evaluation
@@ -1095,14 +1095,14 @@ void MainWindow::compileCSG()
       renderStatistic.printCacheStatistic();
       this->processEvents();
     } catch (const ProgressCancelException&) {
-      LOG("CSG generation cancelled.");
+      LOG(_("CSG generation cancelled."));
     } catch (const HardWarningException&) {
-      LOG("CSG generation cancelled due to hardwarning being enabled.");
+      LOG(_("CSG generation cancelled due to hardwarning being enabled."));
     }
     progress_report_fin();
     updateStatusBar(nullptr);
 
-    LOG("Compiling design (CSG Products normalization)...");
+    LOG(_("Compiling design (CSG Products normalization)..."));
     this->processEvents();
 
     const size_t normalizelimit =
@@ -1116,14 +1116,14 @@ void MainWindow::compileCSG()
         this->rootProduct->import(this->normalizedRoot);
       } else {
         this->rootProduct.reset();
-        LOG(message_group::Warning, "CSG normalization resulted in an empty tree");
+        LOG(message_group::Warning, _("CSG normalization resulted in an empty tree"));
         this->processEvents();
       }
     }
 
     const std::vector<std::shared_ptr<CSGNode>>& highlight_terms = csgrenderer.getHighlightNodes();
     if (highlight_terms.size() > 0) {
-      LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
+      LOG(_("Compiling highlights (%1$d CSG Trees)..."), highlight_terms.size());
       this->processEvents();
 
       this->highlightsProducts = std::make_shared<CSGProducts>();
@@ -1139,7 +1139,7 @@ void MainWindow::compileCSG()
 
     const auto& background_terms = csgrenderer.getBackgroundNodes();
     if (background_terms.size() > 0) {
-      LOG("Compiling background (%1$d CSG Trees)...", background_terms.size());
+      LOG(_("Compiling background (%1$d CSG Trees)..."), background_terms.size());
       this->processEvents();
 
       this->backgroundProducts = std::make_shared<CSGProducts>();
@@ -1155,19 +1155,19 @@ void MainWindow::compileCSG()
 
     if (this->rootProduct && (this->rootProduct->size() >
                               GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-      LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
-      LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
+      LOG(message_group::UI_Warning, _("Normalized tree has %1$d elements!"), this->rootProduct->size());
+      LOG(message_group::UI_Warning, _("OpenCSG rendering has been disabled."));
     }
 #ifdef ENABLE_OPENCSG
     else {
-      LOG("Normalized tree has %1$d elements!", (this->rootProduct ? this->rootProduct->size() : 0));
+      LOG(_("Normalized tree has %1$d elements!"), (this->rootProduct ? this->rootProduct->size() : 0));
       this->previewRenderer = std::make_shared<OpenCSGRenderer>(
         this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     }
 #endif  // ifdef ENABLE_OPENCSG
     this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
       this->rootProduct, this->highlightsProducts, this->backgroundProducts);
-    LOG("Compile and preview finished.");
+    LOG(_("Compile and preview finished."));
     renderStatistic.printRenderingTime();
     this->processEvents();
   } catch (const HardWarningException&) {
@@ -1291,14 +1291,14 @@ void MainWindow::writeBackup(QFile *file)
   writer << activeEditor->toPlainText();
   this->activeEditor->parameterWidget->saveBackupFile(file->fileName());
 
-  LOG("Saved backup file: %1$s", file->fileName().toUtf8().constData());
+  LOG(_("Saved backup file: %1$s"), file->fileName().toUtf8().constData());
 }
 
 void MainWindow::saveBackup()
 {
   auto path = PlatformUtils::backupPath();
   if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
+    LOG(message_group::UI_Warning, _("Cannot create backup path: %1$s"), path);
     return;
   }
 
@@ -1321,7 +1321,7 @@ void MainWindow::saveBackup()
   }
 
   if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
-    LOG(message_group::UI_Warning, "Failed to create backup file");
+    LOG(message_group::UI_Warning, _("Failed to create backup file"));
     return;
   }
   return writeBackup(this->tempFile);
@@ -1373,18 +1373,18 @@ void MainWindow::on_fileActionPythonCreateVenv_triggered()
   }
 
   const auto& path = venvDir.absolutePath().toStdString();
-  LOG("Creating Python virtual environment in '%1$s'...", path);
+  LOG(_("Creating Python virtual environment in '%1$s'..."), path);
   int result = pythonCreateVenv(path);
 
   if (result == 0) {
     Settings::SettingsPython::pythonVirtualEnv.setValue(path);
     Settings::Settings::visit(SettingsWriter());
-    LOG("Python virtual environment creation successfull.");
+    LOG(_("Python virtual environment creation successfull."));
     QMessageBox::information(this, _("Create Virtual Environment"),
                              "Virtual environment created, please restart OpenSCAD to activate.",
                              QMessageBox::Ok);
   } else {
-    LOG("Python virtual environment creation failed.");
+    LOG(_("Python virtual environment creation failed."));
     QMessageBox::critical(this, _("Create Virtual Environment"), "Virtual environment creation failed.",
                           QMessageBox::Ok);
   }
@@ -1419,13 +1419,13 @@ void MainWindow::on_fileShowLibraryFolder_triggered()
   auto guard = scopedSetCurrentOutput();
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
-    LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", path);
+    LOG(message_group::UI_Warning, _("Library path %1$s doesn't exist. Creating"), path);
     if (!PlatformUtils::createUserLibraryPath()) {
-      LOG(message_group::UI_Error, "Cannot create library path: %1$s", path);
+      LOG(message_group::UI_Error, _("Cannot create library path: %1$s"), path);
     }
   }
   auto url = QString::fromStdString(path);
-  LOG("Opening file browser for %1$s", url.toStdString());
+  LOG(_("Opening file browser for %1$s"), url.toStdString());
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
@@ -1764,7 +1764,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
     if (Feature::ExperimentalPythonEngine.is_enabled() && trust_python_file(fname, content))
       this->python_active = true;
-    else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    else LOG(message_group::Warning, Location::NONE, "", _("Python is not enabled"));
   }
 
   if (this->python_active) {
@@ -1774,10 +1774,10 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     initPython(venv, this->animateWidget->getAnimTval());
 
     if (venv.empty()) {
-      LOG("Running %1$s without venv.", python_version());
+      LOG(_("Running %1$s without venv."), python_version());
     } else {
       const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
-      LOG("Running %1$s in venv '%2$s'.", python_version(), v);
+      LOG(_("Running %1$s in venv '%2$s'."), python_version(), v);
     }
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
@@ -1877,7 +1877,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
   setCurrentOutput();
   autoReloadTimer->stop();
   LOG(" ");
-  LOG("Parsing design (AST generation)...");
+  LOG(_("Parsing design (AST generation)..."));
   this->processEvents();
   this->afterCompileSlot = afterCompileSlot;
   this->procevents = procevents;
@@ -1984,12 +1984,12 @@ void MainWindow::on_designAction3DPrint_triggered()
     const QString serviceName = printInitDialog.getServiceName();
     const FileFormat fileFormat = printInitDialog.getFileFormat();
 
-    LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
+    LOG(_("Selected File format: %1$s"), fileformat::info(fileFormat).description);
 
     GlobalPreferences::inst()->updateGUI();
     const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
     if (!externalToolService) {
-      LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType),
+      LOG(_("Error: Unable to create service: %1$d %2$s %3$d"), static_cast<int>(serviceType),
           serviceName.toStdString(), static_cast<int>(fileFormat));
       return;
     }
@@ -2017,7 +2017,7 @@ void MainWindow::cgalRender()
   this->geomRenderer = nullptr;
   rootGeom.reset();
 
-  LOG("Rendering Polygon Mesh using %1$s...",
+  LOG(_("Rendering Polygon Mesh using %1$s..."),
       renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
 
   this->progresswidget = new ProgressWidget(this);
@@ -2047,7 +2047,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
       options.emplace_back(RenderStatistic::BOUNDING_BOX);
     }
     renderStatistic.printAll(root_geom, qglview->cam, options);
-    LOG("Rendering finished.");
+    LOG(_("Rendering finished."));
 
     this->rootGeom = root_geom;
 #if defined(USE_POLYSET_FOR_CGAL)
@@ -2069,7 +2069,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     resetMeasurementsState(true, "Click to start measuring");
   } else {
     resetMeasurementsState(false, "No top level geometry; render something to enable measurements");
-    LOG(message_group::UI_Warning, "No top level geometry to render");
+    LOG(message_group::UI_Warning, _("No top level geometry to render"));
   }
 
   updateStatusBar(nullptr);
@@ -2406,7 +2406,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 
 void MainWindow::exceptionCleanup()
 {
-  LOG("Execution aborted");
+  LOG(_("Execution aborted"));
   LOG(" ");
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
@@ -2416,9 +2416,9 @@ void MainWindow::UnknownExceptionCleanup(std::string msg)
 {
   auto guard = scopedSetCurrentOutput();  // we need to show this error
   if (msg.size() == 0) {
-    LOG(message_group::Error, "Compilation aborted by unknown exception");
+    LOG(message_group::Error, _("Compilation aborted by unknown exception"));
   } else {
-    LOG(message_group::Error, "Compilation aborted by exception: %1$s", msg);
+    LOG(message_group::Error, _("Compilation aborted by exception: %1$s"), msg);
   }
   LOG(" ");
   GuiLocker::unlock();
@@ -2475,12 +2475,12 @@ void MainWindow::on_designCheckValidity_triggered()
   auto guard = scopedSetCurrentOutput();
 
   if (!rootGeom) {
-    LOG("Nothing to validate! Try building first (press F6).");
+    LOG(_("Nothing to validate! Try building first (press F6)."));
     return;
   }
 
   if (rootGeom->getDimension() != 3) {
-    LOG("Current top level object is not a 3D object.");
+    LOG(_("Current top level object is not a 3D object."));
     return;
   }
 
@@ -2495,7 +2495,7 @@ void MainWindow::on_designCheckValidity_triggered()
     valid = mani->isValid();
   }
 #endif
-  LOG("Valid:      %1$6s", (valid ? "yes" : "no"));
+  LOG(_("Valid:      %1$6s"), (valid ? "yes" : "no"));
 }
 
 // Returns if we can export (true) or not(false) (bool)
@@ -2504,7 +2504,7 @@ bool MainWindow::canExport(unsigned int dim)
 {
   auto guard = scopedSetCurrentOutput();
   if (!rootGeom) {
-    LOG(message_group::Error, "Nothing to export! Try rendering first (press F6)");
+    LOG(message_group::Error, _("Nothing to export! Try rendering first (press F6)"));
     return false;
   }
 
@@ -2531,12 +2531,12 @@ bool MainWindow::canExport(unsigned int dim)
   }
 
   if (rootGeom->getDimension() != dim) {
-    LOG(message_group::UI_Error, "Current top level object is not a %1$dD object.", dim);
+    LOG(message_group::UI_Error, _("Current top level object is not a %1$dD object."), dim);
     return false;
   }
 
   if (rootGeom->isEmpty()) {
-    LOG(message_group::UI_Error, "Current top level object is empty.");
+    LOG(message_group::UI_Error, _("Current top level object is empty."));
     return false;
   }
 
@@ -2544,17 +2544,17 @@ bool MainWindow::canExport(unsigned int dim)
   auto N = dynamic_cast<const CGALNefGeometry *>(rootGeom.get());
   if (N && !N->p3->is_simple()) {
     LOG(message_group::UI_Warning,
-        "Object may not be a valid 2-manifold and may need repair! See "
-        "https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+        _("Object may not be a valid 2-manifold and may need repair! See "
+          "https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"));
   }
 #endif
 #ifdef ENABLE_MANIFOLD
   auto manifold = dynamic_cast<const ManifoldGeometry *>(rootGeom.get());
   if (manifold && !manifold->isValid()) {
     LOG(message_group::UI_Warning,
-        "Object may not be a valid manifold and may need repair! "
-        "Error message: %1$s. See "
-        "https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
+        _("Object may not be a valid manifold and may need repair! "
+          "Error message: %1$s. See "
+          "https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"),
         ManifoldUtils::statusToString(manifold->getManifold().Status()));
   }
 #endif
@@ -2621,7 +2621,7 @@ void MainWindow::actionExportFileFormat(int fmt)
     auto guard = scopedSetCurrentOutput();
 
     if (!this->rootNode) {
-      LOG(message_group::Error, "Nothing to export. Please try compiling first.");
+      LOG(message_group::Error, _("Nothing to export. Please try compiling first."));
       return;
     }
     const QString suffix = "csg";
@@ -2635,7 +2635,7 @@ void MainWindow::actionExportFileFormat(int fmt)
     auto guard2 = scopedSetCurrentOutput();
     std::ofstream fstream(std::filesystem::u8path(csg_filename.toStdString()));
     if (!fstream.is_open()) {
-      LOG("Can't open file \"%1$s\" for export", csg_filename.toStdString());
+      LOG(_("Can't open file \"%1$s\" for export"), csg_filename.toStdString());
     } else {
       fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
       fstream.close();
@@ -2657,7 +2657,7 @@ void MainWindow::actionExportFileFormat(int fmt)
         auto guard = scopedSetCurrentOutput();
         fileExportedMessage("PNG", img_filename);
       } else {
-        LOG("Can't open file \"%1$s\" for export image", img_filename.toStdString());
+        LOG(_("Can't open file \"%1$s\" for export image"), img_filename.toStdString());
       }
     }
   } break;
@@ -2699,7 +2699,7 @@ void MainWindow::on_designActionFlushCaches_triggered()
   dxf_cross_cache.clear();
   SourceFileCache::instance()->clear();
 
-  LOG("Caches Flushed");
+  LOG(_("Caches Flushed"));
 }
 
 void MainWindow::viewModeActionsUncheck()

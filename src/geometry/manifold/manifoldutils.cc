@@ -144,8 +144,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   }
 
   LOG(message_group::Warning,
-      "PolySet -> Manifold conversion failed: %1$s\n"
-      "Trying to repair and reconstruct mesh..",
+      _("PolySet -> Manifold conversion failed: %1$s\n"
+        "Trying to repair and reconstruct mesh.."),
       ManifoldUtils::statusToString(mani->getManifold().Status()));
 
   // 2. If the PolySet couldn't be converted into a Manifold object, let's try to repair it.
@@ -180,7 +180,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
       if (CGALUtils::isClosed(m)) {
         CGALUtils::orientToBoundAVolume(m);
       } else {
-        LOG(message_group::Error, "[manifold] Input mesh is not closed!");
+        LOG(message_group::Error, _("[manifold] Input mesh is not closed!"));
       }
     }
 
@@ -188,7 +188,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
     return geom;
   } catch (const std::exception& e) {
-    LOG(message_group::Error, "[manifold] CGAL error: %1$s", e.what());
+    LOG(message_group::Error, _("[manifold] CGAL error: %1$s"), e.what());
   }
 #endif
   return std::make_shared<ManifoldGeometry>();
@@ -274,7 +274,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMes
 
   auto mani = manifold::Manifold(meshgl).AsOriginal();
   if (mani.Status() != Error::NoError) {
-    LOG(message_group::Error, "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
+    LOG(message_group::Error, _("[manifold] Surface_mesh -> Manifold conversion failed: %1$s"),
         ManifoldUtils::statusToString(mani.Status()));
     return nullptr;
   }

@@ -191,7 +191,7 @@ void Cache<Key, T>::trim(size_t m)
     Node *u = n;
     n = n->p;
 #ifdef DEBUG
-    LOG("Trimming cache: %1$s (%2$d bytes)", u->keyPtr->substr(0, 40), u->c);
+    LOG(_("Trimming cache: %1$s (%2$d bytes)"), u->keyPtr->substr(0, 40), u->c);
 #endif
     unlink(*u);
   }

@@ -24,7 +24,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
 
   std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
+    LOG(message_group::Warning, _("Can't open import file '%1$s', import() at line %2$d"), filename,
         loc.firstLine());
     return PolySet::createEmpty();
   }
@@ -42,7 +42,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
   std::string line;
 
   auto AsciiError = [&](const auto& errstr) {
-    LOG(message_group::Error, loc, "", "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'",
+    LOG(message_group::Error, loc, "", _("OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'"),
         lineno, errstr, line, filename);
   };
   std::vector<int> vertex_map;
@@ -74,13 +74,14 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         std::vector<std::string> wordindex;
         boost::split(wordindex, word, boost::is_any_of("/"));
         if (wordindex.size() < 1)
-          LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
+          LOG(message_group::Warning, _("Invalid Face index in File %1$s in Line %2$d"), filename,
+              lineno);
         else {
           const size_t ind = boost::lexical_cast<int>(wordindex[0]);
           if (ind >= 1 && ind <= vertex_map.size()) {
             builder.addVertex(vertex_map[ind - 1]);
           } else {
-            LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
+            LOG(message_group::Warning, _("Index %1$d out of range in Line %2$d"), filename, lineno);
           }
         }
       }
@@ -93,7 +94,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
     } else if (boost::regex_search(line, results, ex_s)) {       // ignore smooting
     } else if (boost::regex_search(line, results, ex_g)) {       // ignore group name
     } else {
-      LOG(message_group::Warning, "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
+      LOG(message_group::Warning, _("Unrecognized Line  %1$s in line Line %2$d"), line, lineno);
     }
   }
   return builder.build();

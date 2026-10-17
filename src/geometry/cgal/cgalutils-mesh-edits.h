@@ -122,7 +122,7 @@ public:
         }
         return true;
       } else {
-        LOG(message_group::Warning, "Failed to add face with %1$lu vertices!", polygon.size());
+        LOG(message_group::Warning, _("Failed to add face with %1$lu vertices!"), polygon.size());
         return false;
       }
     };
@@ -139,7 +139,7 @@ public:
       }
       if (polygon.size() < 3) {
         LOG(message_group::Warning,
-            "Attempted to remove too many vertices around this copied face, remesh aborted!");
+            _("Attempted to remove too many vertices around this copied face, remesh aborted!"));
         return false;
       }
 
@@ -169,7 +169,7 @@ public:
       }
       if (polygon.size() < 3) {
         LOG(message_group::Warning,
-            "Attempted to remove too many vertices around this added face, remesh aborted!");
+            _("Attempted to remove too many vertices around this added face, remesh aborted!"));
         return false;
       }
       if (!addFace(polygon)) {
@@ -178,11 +178,11 @@ public:
     }
 
     if (wasValid && !CGAL::is_valid_polygon_mesh(copy)) {
-      LOG(message_group::Warning, "Remeshing output isn't valid");
+      LOG(message_group::Warning, _("Remeshing output isn't valid"));
       return false;
     }
     if (wasClosed && !CGAL::is_closed(copy)) {
-      LOG(message_group::Warning, "Remeshing output isn't closed");
+      LOG(message_group::Warning, _("Remeshing output isn't closed"));
       return false;
     }
 

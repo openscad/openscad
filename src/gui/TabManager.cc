@@ -577,7 +577,7 @@ bool TabManager::refreshDocument()
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      LOG("Failed to open file %1$s: %2$s", editor->filepath.toStdString(),
+      LOG(_("Failed to open file %1$s: %2$s"), editor->filepath.toStdString(),
           file.errorString().toStdString());
     } else {
       QTextStream reader(&file);
@@ -585,7 +585,7 @@ bool TabManager::refreshDocument()
       reader.setCodec("UTF-8");
 #endif
       auto text = reader.readAll();
-      LOG("Loaded design '%1$s'.", editor->filepath.toStdString());
+      LOG(_("Loaded design '%1$s'."), editor->filepath.toStdString());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState();  // since last render
@@ -716,7 +716,7 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     file.cancelWriting();
   }
   if (saveOk) {
-    LOG("Saved design '%1$s'.", path.toStdString());
+    LOG(_("Saved design '%1$s'."), path.toStdString());
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);
@@ -827,7 +827,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
   else {
     saveOk = file.commit();
     if (!saveOk) saveError(file, _("Error saving design"), savefile);
-    else LOG("Saved design '%1$s'.", savefile.toLocal8Bit().constData());
+    else LOG(_("Saved design '%1$s'."), savefile.toLocal8Bit().constData());
   }
   return saveOk;
 }
