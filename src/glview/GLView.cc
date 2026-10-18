@@ -164,7 +164,7 @@ void GLView::setColorScheme(const std::string& cs)
   if (colorscheme) {
     setColorScheme(*colorscheme);
   } else {
-    LOG(message_group::UI_Warning, "GLView: unknown colorscheme %1$s", cs);
+    LOG(message_group::UI_Warning, _("GLView: unknown colorscheme %1$s", "console"), cs);
   }
 }
 

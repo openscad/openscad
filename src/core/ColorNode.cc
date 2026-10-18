@@ -59,7 +59,8 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
       color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
       if (color[i] > 1 || color[i] < 0) {
         LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-            "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", color[i]);
+            _("color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", "console"),
+            color[i]);
       }
     }
     node->color = color;
@@ -70,17 +71,19 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
       node->color = *parsed_color;
     } else {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Unable to parse color \"%1$s\"", colorname);
+          _("Unable to parse color \"%1$s\"", "console"), colorname);
       LOG(message_group::HtmlLink,
-          "For a list of valid color names, see the <a href=\"open-window://colorlist\"><b>Color "
-          "List</b></a> window.");
+          _("For a list of valid color names, see the <a href=\"open-window://colorlist\"><b>Color "
+            "List</b></a> window.",
+            "console"));
     }
   }
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
     node->color.setAlpha(parameters["alpha"].toDouble());
     if (node->color.a() < 0.0f || node->color.a() > 1.0f) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range", node->color.a());
+          _("color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range", "console"),
+          node->color.a());
     }
   }
 

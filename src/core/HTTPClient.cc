@@ -545,7 +545,8 @@ public:
         if (ec) {
           // On error, don't update the applied flag, so the next connection request
           // will try to load the certificates again.
-          LOG("Could not load custom CA certificates from '%1$s': %2$s", caPath, ec.message());
+          LOG(_("Could not load custom CA certificates from '%1$s': %2$s", "console"), caPath,
+              ec.message());
         } else {
           applied_ca_path = caPath;
         }

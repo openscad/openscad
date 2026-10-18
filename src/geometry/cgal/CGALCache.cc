@@ -24,7 +24,7 @@ std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 {
   const auto& geom = this->cache[id]->N;
 #ifdef DEBUG
-  LOG("CGAL Cache hit: %1$s (%2$d bytes)", id.substr(0, 40), geom ? geom->memsize() : 0);
+  LOG(_("CGAL Cache hit: %1$s (%2$d bytes)", "console"), id.substr(0, 40), geom ? geom->memsize() : 0);
 #endif
   return geom;
 }
@@ -46,8 +46,8 @@ bool CGALCache::insert(const std::string& id, const std::shared_ptr<const Geomet
   assert(acceptsGeometry(geom));
   auto inserted = this->cache.insert(id, new cache_entry(geom), geom->memsize());
 #ifdef DEBUG
-  LOG("CGAL Cache %1$s: %2$s (%3$d bytes)", inserted ? "inserted" : "insert failed", id.substr(0, 40),
-      geom->memsize());
+  LOG(_("CGAL Cache %1$s: %2$s (%3$d bytes)", "console"), inserted ? "inserted" : "insert failed",
+      id.substr(0, 40), geom->memsize());
 #endif
   return inserted;
 }
@@ -79,8 +79,8 @@ void CGALCache::clear()
 
 void CGALCache::print()
 {
-  LOG("CGAL Polyhedrons in cache: %1$d", this->cache.size());
-  LOG("CGAL cache size in bytes: %1$d", this->cache.totalCost());
+  LOG(_("CGAL Polyhedrons in cache: %1$d", "console"), this->cache.size());
+  LOG(_("CGAL cache size in bytes: %1$d", "console"), this->cache.totalCost());
 }
 
 CGALCache::cache_entry::cache_entry(const std::shared_ptr<const Geometry>& N) : N(N)

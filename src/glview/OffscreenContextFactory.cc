@@ -72,10 +72,10 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider,
 #ifdef __APPLE__
   if (provider == "nsopengl-old") {
     if (attrib.gles) {
-      LOG("GLES is not supported on macOS");
+      LOG(_("GLES is not supported on macOS", "console"));
     }
     if (attrib.compatibilityProfile) {
-      LOG("Compatibility context is not available on macOS");
+      LOG(_("Compatibility context is not available on macOS", "console"));
     }
     return offscreen_old::CreateOffscreenContextNSOpenGL(attrib.width, attrib.height,
                                                          attrib.majorGLVersion, attrib.minorGLVersion);
@@ -113,7 +113,7 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider,
 #ifdef _WIN32
   if (provider == "wgl-old") {
     if (attrib.gles) {
-      LOG("GLES is not supported on Windows");
+      LOG(_("GLES is not supported on Windows", "console"));
     }
     return offscreen_old::CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion,
                                                     attrib.minorGLVersion, attrib.compatibilityProfile);
@@ -124,7 +124,7 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider,
 #endif
 
 #endif  // NULLGL
-  LOG("GL context provider '%1$s' not found", provider);
+  LOG(_("GL context provider '%1$s' not found", "console"), provider);
   return nullptr;
 }
 

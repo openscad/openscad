@@ -191,7 +191,7 @@ void Console::on_actionSaveAs_triggered()
     QTextStream stream(&file);
     stream << text;
     stream.flush();
-    LOG("Console content saved to '%1$s'.", fileName.toStdString());
+    LOG(_("Console content saved to '%1$s'.", "console"), fileName.toStdString());
   }
 }
 

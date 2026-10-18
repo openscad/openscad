@@ -217,7 +217,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
       DWORD id = 0;
       uint8_t r = 0, g = 0, b = 0, a = 0;
       if (!col.getRgba(r, g, b, a)) {
-        LOG(message_group::Warning, "Invalid color in 3MF export");
+        LOG(message_group::Warning, _("Invalid color in 3MF export", "console"));
       }
       lib3mf_basematerial_addmaterialutf8(ctx.basematerial, colname.c_str(), r, g, b, &id);
       ctx.materialColors.insert(std::pair{col, id});
@@ -282,7 +282,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
   } else if (ctx.usecolors) {
     uint8_t r, g, b, a;
     if (!ctx.defaultColor.getRgba(r, g, b, a)) {
-      LOG(message_group::Warning, "Invalid color in 3MF export");
+      LOG(message_group::Warning, _("Invalid color in 3MF export", "console"));
     }
     lib3mf_defaultpropertyhandler_setcolorrgba(defaultpropertyhandler, r, g, b, a);
   }
@@ -310,13 +310,13 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
 {
   if (!root_N.p3) {
-    LOG(message_group::Export_Error, "Export failed, empty geometry.");
+    LOG(message_group::Export_Error, _("Export failed, empty geometry.", "console"));
     return false;
   }
 
   if (!root_N.p3->is_simple()) {
     LOG(message_group::Export_Warning,
-        "Exported object may not be a valid 2-manifold and may need repair");
+        _("Exported object may not be a valid 2-manifold and may need repair", "console"));
   }
 
   if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
@@ -379,13 +379,13 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   HRESULT result =
     lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Export_Error, "Error reading 3MF library version");
+    LOG(message_group::Export_Error, _("Error reading 3MF library version", "console"));
     return;
   }
 
   if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
     LOG(message_group::Export_Error,
-        "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+        _("Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", "console"),
         interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
         NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
     return;
@@ -394,7 +394,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   PLib3MFModel *model;
   result = lib3mf_createmodel(&model);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Export_Error, "Can't create 3MF model.");
+    LOG(message_group::Export_Error, _("Can't create 3MF model.", "console"));
     return;
   }
   const auto& options3mf =
@@ -473,6 +473,6 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   lib3mf_release(writer);
   lib3mf_release(model);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Export_Error, "Error writing 3MF model.");
+    LOG(message_group::Export_Error, _("Error writing 3MF model.", "console"));
   }
 }

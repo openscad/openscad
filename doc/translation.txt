@@ -85,6 +85,25 @@ respectively is the message context.
 
 Note that msgid and msgctxt are swapped compared to pgettext.
 
+Console and command line messages:
+==================================
+
+Messages printed to the console and the command line (LOG() output,
+--help and the like) use the "console" context:
+
+   LOG(message_group::Warning, _("Can't open file '%1$s'", "console"), path);
+
+There are many of these messages, so the context makes them easy to tell
+apart from the GUI strings. Translators who only want to translate the GUI
+can skip all entries with msgctxt "console"; untranslated messages are
+simply shown in English. To get a .po file without them:
+
+   $ msggrep --invert-match --msgctxt --regexp='^console$' \
+       -o gui-only.po ./locale/$LANGCODE.po
+
+Message group prefixes (WARNING:, ERROR:, ECHO:...) and file locations are
+not translated, so tools parsing the output keep working.
+
 To add a new language:
 ======================
 

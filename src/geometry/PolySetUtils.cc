@@ -159,7 +159,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
     }
   }
   if (degeneratePolygons > 0) {
-    LOG(message_group::Warning, "PolySet has degenerate polygons");
+    LOG(message_group::Warning, _("PolySet has degenerate polygons", "console"));
   }
   return result;
 }
@@ -190,7 +190,7 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
         ps->setConvexity(N->getConvexity());
         return ps;
       }
-      LOG(message_group::Error, "Nef->PolySet failed.");
+      LOG(message_group::Error, _("Nef->PolySet failed.", "console"));
     }
     return PolySet::createEmpty();
   }

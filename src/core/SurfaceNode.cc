@@ -126,12 +126,12 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   try {
     ret_val = lodepng::load_file(png, filename);
   } catch (std::bad_alloc& ba) {
-    LOG(message_group::Warning, "bad_alloc caught for '%1$s'.", ba.what());
+    LOG(message_group::Warning, _("bad_alloc caught for '%1$s'.", "console"), ba.what());
     return data;
   }
 
   if (ret_val == 78) {
-    LOG(message_group::Warning, "The file '%1$s' couldn't be opened.", filename);
+    LOG(message_group::Warning, _("The file '%1$s' couldn't be opened.", "console"), filename);
     return data;
   }
 
@@ -144,7 +144,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   unsigned int width = 0, height = 0;
   unsigned error = lodepng_inspect(&width, &height, &state, png.data(), png.size());
   if (error) {
-    LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
+    LOG(message_group::Warning, _("Can't read PNG image '%1$s'", "console"), filename);
     data.clear();
     return data;
   }
@@ -156,7 +156,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   error = lodepng::decode(img, width, height, state, png);
 
   if (error) {
-    LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
+    LOG(message_group::Warning, _("Can't read PNG image '%1$s'", "console"), filename);
     data.clear();
     return data;
   }
@@ -172,7 +172,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   std::ifstream stream(fs::u8path(filename));
 
   if (!stream.good()) {
-    LOG(message_group::Warning, "Can't open DAT file '%1$s'.", filename);
+    LOG(message_group::Warning, _("Can't open DAT file '%1$s'.", "console"), filename);
     return data;
   }
 
@@ -208,7 +208,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
       }
     } catch (const boost::bad_lexical_cast& blc) {
       if (!stream.eof()) {
-        LOG(message_group::Warning, "Illegal value in '%1$s': %2$s", filename, blc.what());
+        LOG(message_group::Warning, _("Illegal value in '%1$s': %2$s", "console"), filename, blc.what());
       }
       return data;
     }

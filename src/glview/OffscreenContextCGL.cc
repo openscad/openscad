@@ -33,7 +33,8 @@ public:
   {
     const auto err = CGLSetCurrentContext(cglContext);
     if (err != kCGLNoError) {
-      LOG("CGLSetCurrentContext() failed: %1$s (%2$d)", CGLErrorString(err), static_cast<int>(err));
+      LOG(_("CGLSetCurrentContext() failed: %1$s (%2$d)", "console"), CGLErrorString(err),
+          static_cast<int>(err));
       return false;
     }
     return true;
@@ -62,7 +63,8 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextCGL(size_t width, size_t
   GLint numPixelFormats = 0;
   const auto status = CGLChoosePixelFormat(attributes, &pixelFormat, &numPixelFormats);
   if (status != kCGLNoError) {
-    LOG("CGLChoosePixelFormat() failed: %1$s (%2$d)", CGLErrorString(status), static_cast<int>(status));
+    LOG(_("CGLChoosePixelFormat() failed: %1$s (%2$d)", "console"), CGLErrorString(status),
+        static_cast<int>(status));
     return nullptr;
   }
   CGLCreateContext(pixelFormat, nullptr, &ctx->cglContext);

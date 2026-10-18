@@ -130,7 +130,7 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
     }
 
   } catch (const CGAL::Precondition_exception& e) {
-    LOG("CGAL error in Polygon2d::tesselate(): %1$s", e.what());
+    LOG(_("CGAL error in Polygon2d::tesselate(): %1$s", "console"), e.what());
     return nullptr;
   }
 

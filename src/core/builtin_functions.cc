@@ -158,16 +158,18 @@ Value builtin_rands(Arguments arguments, const Location& loc)
 
   double min = arguments[0]->toDouble();
   if (std::isinf(min) || std::isnan(min)) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() range min cannot be infinite");
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        _("rands() range min cannot be infinite", "console"));
     min = -std::numeric_limits<double>::max() / 2;
-    LOG(message_group::Warning, "resetting to %1f", min);
+    LOG(message_group::Warning, _("resetting to %1f", "console"), min);
   }
 
   double max = arguments[1]->toDouble();
   if (std::isinf(max) || std::isnan(max)) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() range max cannot be infinite");
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        _("rands() range max cannot be infinite", "console"));
     max = std::numeric_limits<double>::max() / 2;
-    LOG(message_group::Warning, "resetting to %1f", max);
+    LOG(message_group::Warning, _("resetting to %1f", "console"), max);
   }
   if (max < min) {
     double tmp = min;
@@ -178,8 +180,8 @@ Value builtin_rands(Arguments arguments, const Location& loc)
   double numresultsd = std::abs(arguments[2]->toDouble());
   if (std::isinf(numresultsd) || std::isnan(numresultsd)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "rands() cannot create an infinite number of results");
-    LOG(message_group::Warning, "resetting number of results to 1");
+        _("rands() cannot create an infinite number of results", "console"));
+    LOG(message_group::Warning, _("resetting number of results to 1", "console"));
     numresultsd = 1;
   }
   auto numresults = boost_numeric_cast<size_t, double>(numresultsd);
@@ -435,7 +437,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
   const str_utf8_wrapper& arg_str = arguments[0]->toStrUtf8Wrapper();
   if (!arg_str.utf8_validate()) {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "ord() argument '%1$s' is not a valid utf8 string", arg_str.toString());
+        _("ord() argument '%1$s' is not a valid utf8 string", "console"), arg_str.toString());
     return Value::undefined.clone();
   }
 
@@ -606,7 +608,8 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
   double p = arguments[0]->toDouble();
   if (!std::isfinite(p)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "lookup(%1$s, ...) first argument is not a number", arguments[0]->toEchoStringNoThrow());
+        _("lookup(%1$s, ...) first argument is not a number", "console"),
+        arguments[0]->toEchoStringNoThrow());
     return Value::undefined.clone();
   }
 
@@ -739,8 +742,9 @@ static VectorType search(const str_utf8_wrapper& find, const VectorType& table,
       const auto& entryVec = table[j].toVector();
       if (entryVec.size() <= index_col_num) {
         LOG(message_group::Warning, loc, session->documentRoot(),
-            "Invalid entry in search vector at index %1$d, required number of values in the entry: "
-            "%2$d. Invalid entry: %3$s",
+            _("Invalid entry in search vector at index %1$d, required number of values in the entry: "
+              "%2$d. Invalid entry: %3$s",
+              "console"),
             j, (index_col_num + 1), table[j].toEchoStringNoThrow());
         return {session};
       }
@@ -876,12 +880,12 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
   int s = UserModule::stack_size();
   if (n < 0) {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "Negative parent module index (%1$d) not allowed", n);
+        _("Negative parent module index (%1$d) not allowed", "console"), n);
     return Value::undefined.clone();
   }
   if (n >= s) {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "Parent module index (%1$d) greater than the number of modules on the stack", n);
+        _("Parent module index (%1$d) greater than the number of modules on the stack", "console"), n);
     return Value::undefined.clone();
   }
   return {UserModule::stack_element(s - 1 - n)};
@@ -898,7 +902,8 @@ Value builtin_norm(Arguments arguments, const Location& loc)
       double x = v.toDouble();
       sum += x * x;
     } else {
-      LOG(message_group::Warning, loc, arguments.documentRoot(), "Incorrect arguments to norm()");
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          _("Incorrect arguments to norm()", "console"));
       return Value::undefined.clone();
     }
   }
@@ -919,25 +924,25 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 
   if ((v0.size() != 3) || (v1.size() != 3)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "Invalid vector size of parameter for cross()");
+        _("Invalid vector size of parameter for cross()", "console"));
     return Value::undefined.clone();
   }
   for (unsigned int a = 0; a < 3; ++a) {
     if ((v0[a].type() != Value::Type::NUMBER) || (v1[a].type() != Value::Type::NUMBER)) {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "Invalid value in parameter vector for cross()");
+          _("Invalid value in parameter vector for cross()", "console"));
       return Value::undefined.clone();
     }
     double d0 = v0[a].toDouble();
     double d1 = v1[a].toDouble();
     if (std::isnan(d0) || std::isnan(d1)) {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "Invalid value (NaN) in parameter vector for cross()");
+          _("Invalid value (NaN) in parameter vector for cross()", "console"));
       return Value::undefined.clone();
     }
     if (std::isinf(d0) || std::isinf(d1)) {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "Invalid value (INF) in parameter vector for cross()");
+          _("Invalid value (INF) in parameter vector for cross()", "console"));
       return Value::undefined.clone();
     }
   }
@@ -1119,11 +1124,12 @@ Value builtin_import(Arguments arguments, const Location& loc)
       type = "json";
     } else if (ext.empty()) {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "No file extension or type while trying to import '%1$s'", raw_filename);
+          _("No file extension or type while trying to import '%1$s'", "console"), raw_filename);
       return Value::undefined.clone();
     } else {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "Unsupported file extension '%1$s' while trying to import '%2$s'", ext, raw_filename);
+          _("Unsupported file extension '%1$s' while trying to import '%2$s'", "console"), ext,
+          raw_filename);
       return Value::undefined.clone();
     }
   }
@@ -1132,7 +1138,7 @@ Value builtin_import(Arguments arguments, const Location& loc)
     return import_json(file, session, loc);
   } else {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "Unsupported file type '%1$s' while trying to import '%2$s'", type, raw_filename);
+        _("Unsupported file type '%1$s' while trying to import '%2$s'", "console"), type, raw_filename);
     return Value::undefined.clone();
   }
 }

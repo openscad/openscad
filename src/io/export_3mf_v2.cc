@@ -132,7 +132,7 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
     Lib3MF::sColor materialcolor;
     if (!col.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue,
                      materialcolor.m_Alpha)) {
-      LOG(message_group::Warning, "Invalid color in 3MF export");
+      LOG(message_group::Warning, _("Invalid color in 3MF export", "console"));
     }
     if (ctx.basematerialgroup) {
       col_idx = ctx.basematerialgroup->AddMaterial(
@@ -242,13 +242,13 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
 {
   if (!root_N.p3) {
-    LOG(message_group::Export_Error, "Export failed, empty geometry.");
+    LOG(message_group::Export_Error, _("Export failed, empty geometry.", "console"));
     return false;
   }
 
   if (!root_N.p3->is_simple()) {
     LOG(message_group::Export_Warning,
-        "Exported object may not be a valid 2-manifold and may need repair");
+        _("Exported object may not be a valid 2-manifold and may need repair", "console"));
   }
 
   if (const std::shared_ptr<const PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
@@ -313,7 +313,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
     if (interfaceVersionMajor != LIB3MF_VERSION_MAJOR) {
       LOG(message_group::Error,
-          "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+          _("Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", "console"),
           interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, LIB3MF_VERSION_MAJOR,
           LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
       return;
@@ -325,7 +325,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   if ((interfaceVersionMajor != LIB3MF_VERSION_MAJOR)) {
     LOG(message_group::Export_Error,
-        "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+        _("Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", "console"),
         interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, LIB3MF_VERSION_MAJOR,
         LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
     return;
@@ -335,7 +335,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   try {
     model = wrapper->CreateModel();
     if (!model) {
-      LOG(message_group::Export_Error, "Can't create 3MF model.");
+      LOG(message_group::Export_Error, _("Can't create 3MF model.", "console"));
       return;
     }
   } catch (Lib3MF::ELib3MFException& e) {
@@ -371,7 +371,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       Lib3MF::sColor materialcolor;
       if (!color.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue,
                          materialcolor.m_Alpha)) {
-        LOG(message_group::Warning, "Invalid color in 3MF export");
+        LOG(message_group::Warning, _("Invalid color in 3MF export", "console"));
       }
       materialcolor.m_Alpha = 0xff;
       defaultColorId = basematerialgroup->AddMaterial("Default", materialcolor);
@@ -380,7 +380,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       colorgroup = model->AddColorGroup();
       Lib3MF::sColor groupcolor;
       if (!color.getRgba(groupcolor.m_Red, groupcolor.m_Green, groupcolor.m_Blue, groupcolor.m_Alpha)) {
-        LOG(message_group::Warning, "Invalid color in 3MF export");
+        LOG(message_group::Warning, _("Invalid color in 3MF export", "console"));
       }
       colorgroup->AddColor(groupcolor);
     }
@@ -428,7 +428,8 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   try {
     writer->SetDecimalPrecision(ctx.options->decimalPrecision);
   } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, "Error setting decimal precision for export: %1$s", e.what());
+    LOG(message_group::Export_Error, _("Error setting decimal precision for export: %1$s", "console"),
+        e.what());
   }
 
   try {

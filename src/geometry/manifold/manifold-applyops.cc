@@ -95,7 +95,8 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
     case OpenSCADOperator::INTERSECTION: *geom = *geom * *chN; break;
     case OpenSCADOperator::DIFFERENCE:   *geom = *geom - *chN; break;
     case OpenSCADOperator::MINKOWSKI:    *geom = geom->minkowski(*chN); break;
-    default:                             LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+    default:
+      LOG(message_group::Error, _("Unsupported CGAL operator: %1$d", "console"), static_cast<int>(op));
     }
     if (item.first) item.first->progress_report();
   }

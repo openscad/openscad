@@ -127,8 +127,8 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
 
     const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *)&scadContext);
     if (!match_args.empty() && !scadContext.has_matches()) {
-      LOG(message_group::Warning, loc, "", "import() filter %2$s did not match anything", filename,
-          match_args);
+      LOG(message_group::Warning, loc, "", _("import() filter %2$s did not match anything", "console"),
+          filename, match_args);
     }
 
     double width_mm = 0.0;
@@ -210,7 +210,7 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
     libsvg_free(shapes);
     return ClipperUtils::apply(polygons, Clipper2Lib::ClipType::Union);
   } catch (const std::exception& e) {
-    LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
+    LOG(message_group::Error, _("%1$s, import() at line %2$d", "console"), e.what(), loc.firstLine());
     return std::make_unique<Polygon2d>();
   }
 }

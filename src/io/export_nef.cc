@@ -40,7 +40,7 @@ void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
   if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     output << N->dump();
   } else {
-    LOG("Not a CGALNefPoly. Add some CSG ops?");
+    LOG(_("Not a CGALNefPoly. Add some CSG ops?", "console"));
   }
 }
 
@@ -50,7 +50,7 @@ void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& outp
     output << const_cast<CGAL_Nef_polyhedron3&>(
       *N->p3);  // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
   } else {
-    LOG("Not a CGALNefPoly. Add some CSG ops?");
+    LOG(_("Not a CGALNefPoly. Add some CSG ops?", "console"));
   }
 }
 #endif  // ifdef ENABLE_CGAL

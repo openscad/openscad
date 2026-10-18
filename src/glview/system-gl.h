@@ -31,8 +31,9 @@ namespace {
 {
   if (const auto err = glGetError(); err != GL_NO_ERROR) {
     LOG(message_group::Error, Location::NONE, "",
-        "OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
-        "              %5$s\n",
+        _("OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
+          "              %5$s\n",
+          "console"),
         gluErrorString(err), err, file, line, stmt);
     return false;
   }

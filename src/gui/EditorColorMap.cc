@@ -17,7 +17,7 @@ std::shared_ptr<EditorColorScheme> EditorColorScheme::load(const fs::path& path)
   try {
     boost::property_tree::read_json(path.string(), pt);
   } catch (const std::exception& e) {
-    LOG("Error reading color scheme file '%1$s': %2$s", path.generic_string(), e.what());
+    LOG(_("Error reading color scheme file '%1$s': %2$s", "console"), path.generic_string(), e.what());
     return nullptr;
   }
 

@@ -187,8 +187,9 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
     return "Could not check object validity";
   }
   if (!is_valid_object) {
-    LOG(message_group::Warning, "Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d",
-        name, uuid, loc.firstLine());
+    LOG(message_group::Warning,
+        _("Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d", "console"), name, uuid,
+        loc.firstLine());
   }
 
   if (is_mesh_object) {
@@ -418,7 +419,7 @@ std::string read_metadata(PLib3MFModel *model)
   }
 
   if (!mmd.title.empty()) {
-    LOG("Reading 3MF with title '%1$s'", mmd.title);
+    LOG(_("Reading 3MF with title '%1$s'", "console"), mmd.title);
   }
 
   return "";
@@ -432,13 +433,13 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   HRESULT result =
     lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Error, "Error reading 3MF library version");
+    LOG(message_group::Error, _("Error reading 3MF library version", "console"));
     return PolySet::createEmpty();
   }
 
   if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
     LOG(message_group::Error,
-        "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+        _("Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", "console"),
         interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
         NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
     return PolySet::createEmpty();
@@ -447,22 +448,22 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   PLib3MFModel *model;
   result = lib3mf_createmodel(&model);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Error, "Could not create model: %1$08lx", result);
+    LOG(message_group::Error, _("Could not create model: %1$08lx", "console"), result);
     return import_3mf_error();
   }
 
   PLib3MFModelReader *reader;
   result = lib3mf_model_queryreader(model, "3mf", &reader);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Error, "Could not create 3MF reader: %1$08lx", result);
+    LOG(message_group::Error, _("Could not create 3MF reader: %1$08lx", "console"), result);
     return import_3mf_error(model);
   }
 
   result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
   lib3mf_release(reader);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d", filename.c_str(),
-        loc.firstLine());
+    LOG(message_group::Warning, _("Could not read file '%1$s', import() at line %2$d", "console"),
+        filename.c_str(), loc.firstLine());
     return import_3mf_error(model);
   }
 

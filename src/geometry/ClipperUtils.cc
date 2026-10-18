@@ -162,7 +162,7 @@ std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& pa
     // Note that Clipper up to v6.2.1 incorrectly throws
     // an exception of type char* rather than a clipperException()
     // TODO: Is this needed for Clipper2?
-    LOG(message_group::Warning, "Range check failed for polygon. skipping");
+    LOG(message_group::Warning, _("Range check failed for polygon. skipping", "console"));
   }
   clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::EvenOdd, *result);
   return result;

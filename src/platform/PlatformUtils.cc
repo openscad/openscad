@@ -101,11 +101,11 @@ bool PlatformUtils::createUserLibraryPath()
   bool OK = false;
   try {
     if (!fs::exists(fs::path(path))) {
-      LOG("Creating library folder %1$s", path);
+      LOG(_("Creating library folder %1$s", "console"), path);
       OK = fs::create_directories(path);
     }
     if (!OK) {
-      LOG(message_group::Error, "Cannot create %1$s", path);
+      LOG(message_group::Error, _("Cannot create %1$s", "console"), path);
     }
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());
@@ -176,7 +176,7 @@ bool PlatformUtils::createBackupPath()
       OK = fs::create_directories(path);
     }
     if (!OK) {
-      LOG(message_group::Error, "Cannot create %1$s", path);
+      LOG(message_group::Error, _("Cannot create %1$s", "console"), path);
     }
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());

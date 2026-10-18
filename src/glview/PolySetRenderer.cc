@@ -98,7 +98,7 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
 #endif
   } else {
     const auto& geom_ref = *geom.get();
-    LOG("Unsupported geom '%1$s' in PolySetRenderer", typeid(geom_ref).name());
+    LOG(_("Unsupported geom '%1$s' in PolySetRenderer", "console"), typeid(geom_ref).name());
     assert(false && "Unsupported geom in PolySetRenderer");
   }
 }
@@ -218,7 +218,8 @@ void PolySetRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
   if (polyset_vertex_state_containers_.empty() && polygon_vertex_state_containers_.empty()) {
     if (!this->polysets_.empty() && !this->polygons_.empty()) {
-      LOG(message_group::Error, "PolySetRenderer::prepare() called with both polysets and polygons");
+      LOG(message_group::Error,
+          _("PolySetRenderer::prepare() called with both polysets and polygons", "console"));
     } else if (!this->polysets_.empty()) {
       createPolySetStates(shaderinfo);
     } else if (!this->polygons_.empty()) {

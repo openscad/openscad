@@ -58,7 +58,7 @@ static boost::optional<size_t> validChildIndex(int n, const Children *children,
 {
   if (n < 0 || n >= static_cast<int>(children->size())) {
     LOG(message_group::Warning, inst->location(), context->documentRoot(),
-        "Children index (%1$d) out of bounds (%2$d children)", n, children->size());
+        _("Children index (%1$d) out of bounds (%2$d children)", "console"), n, children->size());
     return boost::none;
   }
   return size_t(n);
@@ -69,9 +69,10 @@ static boost::optional<size_t> validChildIndex(const Value& value, const Childre
                                                const std::shared_ptr<const Context>& context)
 {
   if (value.type() != Value::Type::NUMBER) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(),
-        "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",
-        value.toString());
+    LOG(
+      message_group::Warning, inst->location(), context->documentRoot(),
+      _("Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.", "console"),
+      value.toString());
     return boost::none;
   }
   return validChildIndex(static_cast<int>(value.toDouble()), children, inst, context);
@@ -118,7 +119,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
     uint32_t steps = range.numValues();
     if (steps >= RangeType::MAX_RANGE_STEPS) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Bad range parameter for children: too many elements (%1$lu)", steps);
+          _("Bad range parameter for children: too many elements (%1$lu)", "console"), steps);
       return nullptr;
     }
     std::vector<size_t> indices;
@@ -131,9 +132,10 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
     return children->instantiate(lazyUnionNode(inst), indices);
   } else {
     // Invalid argument
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",
-        parameters["index"].toEchoStringNoThrow());
+    LOG(
+      message_group::Warning, inst->location(), parameters.documentRoot(),
+      _("Bad parameter type (%1$s) for children, only accept: empty, number, vector, range", "console"),
+      parameters["index"].toEchoStringNoThrow());
     return {};
   }
 }

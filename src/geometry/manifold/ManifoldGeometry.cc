@@ -251,7 +251,8 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
     CGALPolyhedronBuilderFromManifold<Polyhedron> builder(meshgl);
     p->delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Error, "CGAL error in ManifoldGeometry::toPolyhedron(): %1$s", e.what());
+    LOG(message_group::Error, _("CGAL error in ManifoldGeometry::toPolyhedron(): %1$s", "console"),
+        e.what());
   }
   return p;
 }
@@ -307,9 +308,9 @@ std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const
       return ManifoldUtils::createManifoldFromPolySet(*ps);
     }
   } catch (const std::exception& e) {
-    LOG(message_group::Error, "Nef minkoswki operation failed: %1$s\n", e.what());
+    LOG(message_group::Error, _("Nef minkoswki operation failed: %1$s\n", "console"), e.what());
   } catch (...) {
-    LOG(message_group::Warning, "Nef minkowski hard-crashed");
+    LOG(message_group::Warning, _("Nef minkowski hard-crashed", "console"));
   }
 #endif
   return {};

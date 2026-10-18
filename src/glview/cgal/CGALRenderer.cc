@@ -241,7 +241,8 @@ void CGALRenderer::prepare(const ShaderUtils::ShaderInfo * /*shaderinfo*/)
   PRINTD("prepare()");
   if (!vertex_state_containers_.size()) {
     if (!this->polysets_.empty() && !this->polygons_.empty()) {
-      LOG(message_group::Error, "CGALRenderer::prepare() called with both polysets and polygons");
+      LOG(message_group::Error,
+          _("CGALRenderer::prepare() called with both polysets and polygons", "console"));
     } else if (!this->polysets_.empty()) {
       createPolySetStates();
     } else if (!this->polygons_.empty()) {

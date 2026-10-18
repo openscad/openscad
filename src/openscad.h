@@ -35,7 +35,8 @@ extern bool parse(class SourceFile *& file, const std::string& text, const std::
 extern std::string commandline_commands;
 
 void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found);
-void localization_init();
+void localization_init(bool report_errors = true);
+void localization_disable();
 
 // Custom argument parser
 std::pair<std::string, std::string> customSyntax(const std::string& s);

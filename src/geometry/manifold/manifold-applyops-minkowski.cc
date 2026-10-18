@@ -106,7 +106,8 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
             convert_timer.start();
             CGAL_Nef_polyhedron3 decomposed_nef = CGALUtils::convertSurfaceMeshToNef(*mesh);
             if (!decomposed_nef.is_valid()) {
-              LOG(message_group::Warning, "Minkowski: Nef polyhedron converted from mesh is invalid!");
+              LOG(message_group::Warning,
+                  _("Minkowski: Nef polyhedron converted from mesh is invalid!", "console"));
               throw 0;
             }
             convert_timer.stop();
@@ -241,9 +242,11 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     return operands[0];
   } catch (const std::exception& e) {
     LOG(message_group::Warning,
-        "[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
+        _("[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", "console"),
+        e.what());
   } catch (...) {
-    LOG(message_group::Warning, "[manifold] Minkowski hard-crashed, falling back to Nef operation.");
+    LOG(message_group::Warning,
+        _("[manifold] Minkowski hard-crashed, falling back to Nef operation.", "console"));
   }
   return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
 }

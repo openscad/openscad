@@ -33,5 +33,5 @@
 
 void export_3mf(const std::shared_ptr<const class Geometry>&, std::ostream&, const ExportInfo&)
 {
-  LOG("Export to 3MF format was not enabled when building the application.");
+  LOG(_("Export to 3MF format was not enabled when building the application.", "console"));
 }

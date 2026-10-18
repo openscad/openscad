@@ -88,7 +88,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
   } catch (const OffscreenViewException& ex) {
-    LOG("Can't create OffscreenView: %1$s.", ex.what());
+    LOG(_("Can't create OffscreenView: %1$s.", "console"), ex.what());
     return nullptr;
   }
 
