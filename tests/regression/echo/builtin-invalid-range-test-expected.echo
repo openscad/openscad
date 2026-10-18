@@ -72,7 +72,7 @@ WARNING: scale(inf) in file builtin-invalid-range-test.scad, line 26
 WARNING: Problem converting rotate(a=inf) parameter in file builtin-invalid-range-test.scad, line 28
 WARNING: Unable to convert translate([0, inf, 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "i=test, transformation test"
-WARNING: Unable to convert scale("test") parameter to a number, a vec3 or vec2 of numbers or a number in file builtin-invalid-range-test.scad, line 26
+WARNING: Unable to convert scale("test") parameter to a number or a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 26
 WARNING: Problem converting rotate(a="test") parameter in file builtin-invalid-range-test.scad, line 28
 WARNING: Unable to convert translate([0, "test", 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "Those are okay"
