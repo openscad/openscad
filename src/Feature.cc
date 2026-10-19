@@ -31,6 +31,8 @@ const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus",
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing",
                                                         "Enable indexing in vertex object renderers");
+const Feature Feature::ExperimentalFnFunction(
+  "fn-function", "Enable fn function returning number of segments in a circle.");
 const Feature Feature::ExperimentalImportFunction(
   "import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalObjectFunction(
