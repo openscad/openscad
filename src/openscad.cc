@@ -192,7 +192,7 @@ protected:
 
 void CLILogHost::printMessage(const Message& msgObj)
 {
-  printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
+  std::cout << msgObj.str() << "\n";
 }
 
 void CLILogHost::printMessageNoCache(const Message& msgObj)
@@ -201,6 +201,28 @@ void CLILogHost::printMessageNoCache(const Message& msgObj)
 }
 
 CLILogHost cliLogHost;
+
+#ifdef Q_OS_MACOS
+// NEEDSWORK:  Perhaps this should move over into src/platform somewhere.
+class NSLogHost : public LogHost
+{
+protected:
+  void printMessage(const Message& msgObj) override;
+  void printMessageNoCache(const Message& msgObj) override;
+};
+
+void NSLogHost::printMessage(const Message& msgObj)
+{
+  printMessageNoCache(msgObj);
+}
+
+void NSLogHost::printMessageNoCache(const Message& msgObj)
+{
+  CocoaUtils::nslog(msgObj.msg);
+}
+
+NSLogHost nsLogHost;
+#endif  // Q_OS_MACOS
 
 namespace {
 
@@ -832,16 +854,17 @@ int openscad_main(int argc, char **argv)
   int rc = 0;
   StackCheck::inst();
 
+  LogClient *logClient = &cliLogHost;
 #ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
   // auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
   if (isGuiLaunched) {
-    // NEEDSWORK
-    // set_output_handler(nslog, nullptr, nullptr);
+    logClient = &nsLogHost;
   }
-#else
-  PlatformUtils::ensureStdIO();
 #endif
+  PlatformUtils::ensureStdIO();
+  ThreadLogProxy logger(logClient);
+  // NEEDSWORK:  How should we switch away from this when/if the GUI takes over?
 
 #ifndef __EMSCRIPTEN__
   const auto applicationPath =

@@ -37,15 +37,14 @@ static thread_local LogClient *threadLogClient = nullptr;
 
 ThreadLogProxy::ThreadLogProxy(LogClient *parent) {
   if (threadLogClient) {
+    // NEEDSWORK may need to rethink this for the CLI-to-GUI transition.
     printf("re-entered TLC!\n"); fflush(stdout);
   }
-  printf("TLC = %p\n", parent); fflush(stdout);
   threadLogClient = parent;
 }
 
 ThreadLogProxy::~ThreadLogProxy() {
   threadLogClient = nullptr;
-  printf("~TLC\n"); fflush(stdout);
 }
 
 void print_messages_push()
