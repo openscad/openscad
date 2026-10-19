@@ -3,6 +3,8 @@
 #include <QObject>
 #include <memory>
 
+#include "utils/printutils.h"
+
 class Tree;
 
 class GeometryWorker : public QObject
@@ -10,7 +12,7 @@ class GeometryWorker : public QObject
   Q_OBJECT;
 
 public:
-  GeometryWorker();
+  GeometryWorker(LogClient *logClient);
   ~GeometryWorker() override;
 
 public slots:
@@ -25,4 +27,7 @@ signals:
 protected:
   class QThread *thread;
   const Tree *tree = nullptr;
+
+private:
+  LogClient *logClient;
 };

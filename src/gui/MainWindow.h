@@ -72,7 +72,7 @@ class AIDock;
 #include "utils/scope_guard.hpp"
 
 class UXTest;
-class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
+class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler, public LogHost
 {
   Q_OBJECT
 
@@ -128,6 +128,9 @@ public:
   ~MainWindow() override;
 
 private:
+  void printMessage(const Message& msgObj) override;
+  void printMessageNoCache(const Message& msgObj) override;
+
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;

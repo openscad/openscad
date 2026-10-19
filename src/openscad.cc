@@ -181,6 +181,25 @@ struct CommandLine {
   const std::string summaryFile;
 };
 
+class CLILogHost : public LogHost
+{
+protected:
+  void printMessage(const Message& msgObj) override;
+  void printMessageNoCache(const Message& msgObj) override;
+};
+
+void CLILogHost::printMessage(const Message& msgObj)
+{
+  printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
+}
+
+void CLILogHost::printMessageNoCache(const Message& msgObj)
+{
+  printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
+}
+
+CLILogHost cliLogHost;
+
 namespace {
 
 #ifndef OPENSCAD_NOGUI

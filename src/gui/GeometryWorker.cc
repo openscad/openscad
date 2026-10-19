@@ -18,8 +18,9 @@
 #include "python/python_public.h"
 #endif
 
-GeometryWorker::GeometryWorker()
+GeometryWorker::GeometryWorker(LogClient *logClient) : logClient(logClient)
 {
+printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
   this->tree = nullptr;
   this->thread = new QThread();
   if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
@@ -29,6 +30,7 @@ GeometryWorker::GeometryWorker()
 
 GeometryWorker::~GeometryWorker()
 {
+printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
   this->thread->quit();
   this->thread->wait();
   delete this->thread;
@@ -45,6 +47,9 @@ void GeometryWorker::start(const Tree& tree)
 
 void GeometryWorker::work()
 {
+printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
+  ThreadLogProxy logger(logClient);
+
   // this is a worker thread: we don't want any exceptions escaping and crashing the app.
 #ifdef ENABLE_PYTHON
   python_lock();
@@ -76,5 +81,6 @@ void GeometryWorker::work()
   python_unlock();
 #endif
   emit done(root_geom);
+printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
   thread->quit();
 }

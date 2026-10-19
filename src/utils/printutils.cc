@@ -33,7 +33,6 @@ namespace {
 std::list<struct Message> log_messages_stack;
 OutputHandlerFunc2 *outputhandler2 = nullptr;
 boost::circular_buffer<std::string> lastmessages(5);
-boost::circular_buffer<struct Message> lastlogmessages(5);
 
 bool no_throw;
 bool deferred;
@@ -61,6 +60,22 @@ bool would_have_thrown()
   return would_throw;
 }
 
+
+static thread_local LogClient *threadLogClient = nullptr;
+
+ThreadLogProxy::ThreadLogProxy(LogClient *parent) {
+  if (threadLogClient) {
+    printf("re-entered TLC!\n"); fflush(stdout);
+  }
+  printf("TLC = %p\n", parent); fflush(stdout);
+  threadLogClient = parent;
+}
+
+ThreadLogProxy::~ThreadLogProxy() {
+  threadLogClient = nullptr;
+  printf("~TLC\n"); fflush(stdout);
+}
+
 void print_messages_push()
 {
   print_messages_stack.emplace_back();
@@ -80,6 +95,7 @@ void print_messages_pop()
 
 void PRINT(const Message& msgObj)
 {
+#if 0
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
 
   if (print_messages_stack.size() > 0) {
@@ -97,14 +113,21 @@ void PRINT(const Message& msgObj)
         msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
     outputhandler2(msgObj, outputhandler_data);
   }
+#else
+  if (threadLogClient) {
+    threadLogClient->printMessage(msgObj);
+  } else {
+    printf("No TLC: %s\n", msgObj.str().c_str()); fflush(stdout);
+  }
+#endif
 }
 
 void PRINT_NOCACHE(const Message& msgObj)
 {
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
 
+  // NEEDSWORK this needs to use LogHost::isDuplicateMessage()
   const auto msg = msgObj.str();
-
   if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
       msgObj.group == message_group::Trace) {
     size_t i;
@@ -114,6 +137,8 @@ void PRINT_NOCACHE(const Message& msgObj)
     if (i == 5) return;  // Suppress output after 5 equal ERROR or WARNING outputs.
     lastmessages.push_back(msg);
   }
+  // KROWSDEEN
+
   if (!deferred)
     if (!OpenSCAD::quiet || msgObj.group == message_group::Error) {
       if (!outputhandler) {
@@ -221,4 +246,21 @@ bool getGroupTextPlain(const enum message_group& group)
 std::string quoteVar(const std::string& varname)
 {
   return '"' + varname + '"';
+}
+
+bool LogHost::isDuplicateMessage(const Message& msgObj)
+{
+  const auto msg = msgObj.str();
+
+  // Suppress duplicate messages.
+  if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
+      msgObj.group == message_group::Trace) {
+    size_t i;
+    for (i = 0; i < lastmessages.size(); ++i) {
+      if (lastmessages[i] != msg) break;
+    }
+    if (i == 5) return true;  // Suppress output after 5 equal ERROR or WARNING outputs.
+    lastmessages.push_back(msg);
+  }
+  return false;
 }

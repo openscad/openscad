@@ -739,6 +739,8 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
+  ThreadLogProxy logProxy(this);  // set up thread-local logging, for this function.
+
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
   OpenSCAD::traceUsermoduleParameters =
@@ -977,6 +979,7 @@ void MainWindow::compileEnded()
 #ifdef ENABLE_GUI_TESTS
 std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile *file)
 {
+  ThreadLogProxy logProxy(this);  // set up thread-local logging, for this function.
   EvaluationSession session{file->getFullpath()};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   setRenderVariables(builtin_context);
@@ -2031,6 +2034,7 @@ void MainWindow::cgalRender()
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
 {
+  ThreadLogProxy logger(this);
 #ifdef ENABLE_PYTHON
   python_lock();
 #endif
@@ -3518,7 +3522,7 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect(this);
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  this->geometryWorker = new GeometryWorker();
+  this->geometryWorker = new GeometryWorker(this);
   connect(this->geometryWorker, &GeometryWorker::done, this, &MainWindow::actionRenderDone);
 
   autoReloadTimer = new QTimer(this);
@@ -4134,4 +4138,50 @@ void MainWindow::changeEvent(QEvent *event)
     setGlobalTheme();
   }
   QMainWindow::changeEvent(event);
+}
+
+void MainWindow::printMessage(const Message& msgObj)
+{
+  if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
+
+  if (print_messages_stack.size() > 0) {
+    if (!print_messages_stack.back().empty()) {
+      print_messages_stack.back() += "\n";
+    }
+    print_messages_stack.back() += msgObj.str();
+  }
+
+  printMessageNoCache(msgObj);
+
+  // to error log
+  if (!(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
+        msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
+// NEEDSWORK check that it shows up in the error log
+printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
+    errorLogOutput(msgObj);
+  }
+
+  if (!std::current_exception()) {
+    if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) ||
+        (no_throw && msgObj.group == message_group::Error)) {
+      if (no_throw) {
+        deferred = true;
+      } else throw HardWarningException(msgObj.msg);
+    }
+  }
+}
+
+void MainWindow::printMessageNoCache(const Message& msgObj)
+{
+printf("%s %d %s: %s\n", __FILE__, __LINE__, __func__, msgObj.str().c_str()); fflush(stdout);
+  if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
+
+  if (isDuplicateMessage(msgObj))
+    return;
+
+  if (!deferred) {
+    if (!OpenSCAD::quiet || msgObj.group == message_group::Error) {
+      consoleOutput(msgObj);
+    }
+  }
 }

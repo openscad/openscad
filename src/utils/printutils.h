@@ -24,6 +24,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <boost/circular_buffer.hpp>
 
 #include "core/AST.h"
 
@@ -128,10 +129,6 @@ void resetSuppressedMessages();
 void PRINT(const Message& msgObj);
 
 void PRINT_NOCACHE(const Message& msgObj);
-#define PRINTB_NOCACHE(_fmt, _arg) \
-  do {                             \
-  } while (0)
-// #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
 /*PRINTD: debugging/verbose output. Usage in code:
    CGAL_Point_3 p0(0,0,0),p1(1,0,0),p2(0,1,0);
@@ -287,3 +284,68 @@ void LOG(Args&&...args)
     PRINT(*msg);
   }
 }
+
+class LogClient
+{
+  friend class LogProxy2;
+
+public:
+  template <typename... Args>
+  void LOG(Args&&...args)
+  {
+    if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
+      printMessage(*msg);
+    }
+  }
+  // NEEDSWORK Should probably be protected.
+  virtual void printMessage(const Message& msgObj) = 0;
+};
+
+class LogHost : public LogClient
+{
+private:
+  virtual void printMessageNoCache(const Message& msgObj) = 0;
+  boost::circular_buffer<std::string> lastmessages{5};
+
+protected:
+  bool no_throw = false;
+  bool deferred = false;
+  bool isDuplicateMessage(const Message& msgObj);
+};
+
+// A log proxy that needs to implement its own printMessage.
+class LogProxy
+{
+public:
+  template <typename... Args>
+  void LOG(Args&&...args) const
+  {
+    if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
+      printMessage(*msg);
+    }
+  }
+  // NEEDSWORK should probably be protected
+  virtual void printMessage(const Message& msgObj) const = 0;
+};
+
+// A log proxy that has direct access to a parent LogClient
+// and so can use a common printMessage().
+class LogProxy2 : public LogProxy
+{
+public:
+  LogProxy2(LogClient *parent) : parent(parent) {}
+
+private:
+  virtual void printMessage(const Message& msgObj) const {
+    parent->printMessage(msgObj);
+  }
+
+  LogClient *parent;
+};
+
+class ThreadLogProxy
+{
+public:
+  ThreadLogProxy(LogClient *parent);
+  ~ThreadLogProxy();
+};
