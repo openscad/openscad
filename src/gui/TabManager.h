@@ -11,7 +11,7 @@
 
 class MainWindow;  // for circular dependency
 
-class TabManager : public QObject
+class TabManager : public QObject, LogProxy
 {
   Q_OBJECT
 

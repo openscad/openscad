@@ -99,12 +99,6 @@ struct Message {
   }
 };
 
-using OutputHandlerFunc = void(const Message&, void *);
-using OutputHandlerFunc2 = void(const Message&, void *);
-
-extern OutputHandlerFunc *outputhandler;
-extern void *outputhandler_data;
-
 namespace OpenSCAD {
 extern std::string debug;
 extern bool quiet;
@@ -115,7 +109,6 @@ extern bool parameterCheck;
 extern bool rangeCheck;
 }  // namespace OpenSCAD
 
-void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata);
 void no_exceptions_for_warnings();
 bool would_have_thrown();
 
@@ -127,8 +120,6 @@ void resetSuppressedMessages();
 /* PRINT statements come out in same window as ECHO.
    usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
 void PRINT(const Message& msgObj);
-
-void PRINT_NOCACHE(const Message& msgObj);
 
 /*PRINTD: debugging/verbose output. Usage in code:
    CGAL_Point_3 p0(0,0,0),p1(1,0,0),p2(0,1,0);
@@ -287,7 +278,7 @@ void LOG(Args&&...args)
 
 class LogClient
 {
-  friend class LogProxy2;
+  friend class LogProxy;
 
 public:
   template <typename... Args>
@@ -313,10 +304,11 @@ protected:
   bool isDuplicateMessage(const Message& msgObj);
 };
 
-// A log proxy that needs to implement its own printMessage.
 class LogProxy
 {
 public:
+  LogProxy(LogClient *parent) : parent(parent) {}
+
   template <typename... Args>
   void LOG(Args&&...args) const
   {
@@ -324,16 +316,6 @@ public:
       printMessage(*msg);
     }
   }
-  // NEEDSWORK should probably be protected
-  virtual void printMessage(const Message& msgObj) const = 0;
-};
-
-// A log proxy that has direct access to a parent LogClient
-// and so can use a common printMessage().
-class LogProxy2 : public LogProxy
-{
-public:
-  LogProxy2(LogClient *parent) : parent(parent) {}
 
 private:
   virtual void printMessage(const Message& msgObj) const {

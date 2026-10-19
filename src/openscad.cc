@@ -135,11 +135,13 @@ class Echostream
 public:
   Echostream(std::ostream& stream) : stream(stream)
   {
-    set_output_handler(&Echostream::output, nullptr, this);
+    // NEEDSWORK
+    // set_output_handler(&Echostream::output, nullptr, this);
   }
   Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
   {
-    set_output_handler(&Echostream::output, nullptr, this);
+    // NEEDSWORK
+    // set_output_handler(&Echostream::output, nullptr, this);
   }
   static void output(const Message& msgObj, void *userdata)
   {
@@ -832,8 +834,11 @@ int openscad_main(int argc, char **argv)
 
 #ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
-  auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
-  if (isGuiLaunched) set_output_handler(nslog, nullptr, nullptr);
+  // auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
+  if (isGuiLaunched) {
+    // NEEDSWORK
+    // set_output_handler(nslog, nullptr, nullptr);
+  }
 #else
   PlatformUtils::ensureStdIO();
 #endif
