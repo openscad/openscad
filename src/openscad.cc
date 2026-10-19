@@ -192,7 +192,7 @@ protected:
 
 void CLILogHost::printMessage(const Message& msgObj)
 {
-  std::cout << msgObj.str() << "\n";
+  std::cerr << msgObj.str() << "\n";
 }
 
 void CLILogHost::printMessageNoCache(const Message& msgObj)
