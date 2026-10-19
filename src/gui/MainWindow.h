@@ -128,6 +128,12 @@ public:
   ~MainWindow() override;
 
 private:
+  bool no_throw = false;
+  bool deferred = false;
+
+  void no_exceptions_for_warnings();
+  bool would_have_thrown();
+
   void printMessage(const Message& msgObj) override;
   void printMessageNoCache(const Message& msgObj) override;
 

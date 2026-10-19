@@ -4100,6 +4100,8 @@ void MainWindow::changeEvent(QEvent *event)
   QMainWindow::changeEvent(event);
 }
 
+// NEEDSWORK is this really thread-safe?  It can be called by the CGAL worker
+// and the GUI at the same time.  (As could the old scheme.)
 void MainWindow::printMessage(const Message& msgObj)
 {
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
@@ -4116,8 +4118,6 @@ void MainWindow::printMessage(const Message& msgObj)
   // to error log
   if (!(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
         msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
-// NEEDSWORK check that it shows up in the error log
-printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
     errorLogOutput(msgObj);
   }
 
@@ -4144,4 +4144,18 @@ printf("%s %d %s: %s\n", __FILE__, __LINE__, __func__, msgObj.str().c_str()); ff
       consoleOutput(msgObj);
     }
   }
+}
+
+void MainWindow::no_exceptions_for_warnings()
+{
+  no_throw = true;
+  deferred = false;
+}
+
+bool MainWindow::would_have_thrown()
+{
+  const auto would_throw = deferred;
+  no_throw = false;
+  deferred = false;
+  return would_throw;
 }

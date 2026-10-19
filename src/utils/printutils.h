@@ -109,9 +109,6 @@ extern bool parameterCheck;
 extern bool rangeCheck;
 }  // namespace OpenSCAD
 
-void no_exceptions_for_warnings();
-bool would_have_thrown();
-
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
@@ -299,8 +296,6 @@ private:
   boost::circular_buffer<std::string> lastmessages{5};
 
 protected:
-  bool no_throw = false;
-  bool deferred = false;
   bool isDuplicateMessage(const Message& msgObj);
 };
 

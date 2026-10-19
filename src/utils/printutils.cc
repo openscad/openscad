@@ -31,25 +31,7 @@ namespace {
 std::list<struct Message> log_messages_stack;
 boost::circular_buffer<std::string> lastmessages(5);
 
-bool no_throw;
-bool deferred;
-
 }  // namespace
-
-void no_exceptions_for_warnings()
-{
-  no_throw = true;
-  deferred = false;
-}
-
-bool would_have_thrown()
-{
-  const auto would_throw = deferred;
-  no_throw = false;
-  deferred = false;
-  return would_throw;
-}
-
 
 static thread_local LogClient *threadLogClient = nullptr;
 
