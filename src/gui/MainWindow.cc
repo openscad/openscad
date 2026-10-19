@@ -653,7 +653,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
   // Disable invokeMethod calls for consoleOutput during shutdown,
   // otherwise will segfault if echos are in progress.
   // NEEDSWORK ensure that this doesn't happen.
-  //hideCurrentOutput();
+  // hideCurrentOutput();
 
   // Make sure all the floating docks are closed too as those
   // would stick around otherwise if the application keeps
@@ -2604,7 +2604,6 @@ void MainWindow::actionExportFileFormat(int fmt)
     actionExport(3, exportInfo);
   } break;
   case FileFormat::CSG: {
-
     if (!this->rootNode) {
       LOG(message_group::Error, "Nothing to export. Please try compiling first.");
       return;

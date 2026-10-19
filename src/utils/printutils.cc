@@ -35,7 +35,8 @@ boost::circular_buffer<std::string> lastmessages(5);
 
 static thread_local LogClient *threadLogClient = nullptr;
 
-ThreadLogProxy::ThreadLogProxy(LogClient *parent) {
+ThreadLogProxy::ThreadLogProxy(LogClient *parent)
+{
   if (threadLogClient) {
     // NEEDSWORK may need to rethink this for the CLI-to-GUI transition.
     printf("re-entered TLC!\n"); fflush(stdout);
@@ -43,7 +44,8 @@ ThreadLogProxy::ThreadLogProxy(LogClient *parent) {
   threadLogClient = parent;
 }
 
-ThreadLogProxy::~ThreadLogProxy() {
+ThreadLogProxy::~ThreadLogProxy()
+{
   threadLogClient = nullptr;
 }
 

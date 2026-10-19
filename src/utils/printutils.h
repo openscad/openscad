@@ -313,9 +313,7 @@ public:
   }
 
 private:
-  virtual void printMessage(const Message& msgObj) const {
-    parent->printMessage(msgObj);
-  }
+  virtual void printMessage(const Message& msgObj) const { parent->printMessage(msgObj); }
 
   LogClient *parent;
 };
