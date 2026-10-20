@@ -130,24 +130,27 @@ bool arg_info = false;
 
 }  // namespace
 
-class Echostream
+class Echostream : public LogHost
 {
 public:
-  Echostream(std::ostream& stream) : stream(stream)
+  Echostream(std::ostream& stream) : stream(stream), logger(this)
   {
-    // NEEDSWORK
-    // set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
+  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream), logger(this)
   {
-    // NEEDSWORK
-    // set_output_handler(&Echostream::output, nullptr, this);
   }
-  static void output(const Message& msgObj, void *userdata)
+  void printMessage(const Message& msgObj)
   {
-    auto self = static_cast<Echostream *>(userdata);
+    printMessageNoCache(msgObj);
+  }
+  void printMessageNoCache(const Message& msgObj)
+  {
+    if (isDuplicateMessage(msgObj))
+      return;
+    if (OpenSCAD::quiet && msgObj.group != message_group::Error)
+      return;
     if (msgObj.group != message_group::HtmlLink) {
-      self->stream << msgObj.str() << "\n";
+      stream << msgObj.str() << "\n";
     }
   }
   ~Echostream()
@@ -158,6 +161,7 @@ public:
 private:
   std::ofstream fstream;
   std::ostream& stream;
+  ThreadLogProxy logger;
 };
 
 struct AnimateArgs {
@@ -197,6 +201,7 @@ void CLILogHost::printMessage(const Message& msgObj)
 
 void CLILogHost::printMessageNoCache(const Message& msgObj)
 {
+  // NEEDSWORK
   printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
 }
 
