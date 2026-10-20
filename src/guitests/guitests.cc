@@ -3,6 +3,7 @@
 
 #include "TestMainWindow.h"
 #include "TestModuleCache.h"
+#include "TestScadLexerFolding.h"
 #include "TestTabManager.h"
 
 template <typename TestClass>
@@ -22,6 +23,7 @@ int runAllTest(MainWindow *window)
   totalTestFailures += runTests<TestTabManager>(window);
   totalTestFailures += runTests<TestMainWindow>(window);
   totalTestFailures += runTests<TestModuleCache>(window);
+  totalTestFailures += runTests<TestScadLexerFolding>(window);
   std::cout << "********************************** RESULTS *********************************"
             << std::endl;
   std::cout << "Failures: " << totalTestFailures << std::endl;
