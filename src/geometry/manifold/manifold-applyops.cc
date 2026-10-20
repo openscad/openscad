@@ -92,7 +92,8 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
     return std::make_shared<ManifoldGeometry>(ManifoldGeometry::batchOp(mani_children, opType));
   }
 
-  // MINKOWSKI stays a left fold (no batch variant; the operation is not associative).
+  // MINKOWSKI stays a left fold (the sum is associative, but manifold has no
+  // batch Minkowski API).
   std::shared_ptr<ManifoldGeometry> geom;
   bool foundFirst = false;
   for (const auto& item : children) {
