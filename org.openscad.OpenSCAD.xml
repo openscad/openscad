@@ -45,12 +45,29 @@
       <arg name="idx" type="u" direction="in"/>
     </method>
     <method name="getRotation">
+      <tp:docstring>
+        Returns the rotation in the user-facing format used by $vpr, Viewport
+        Control and the Copy viewport values menu entries.
+      </tp:docstring>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QList&lt;double>"/>
       <arg name="rotation" type="ad" direction="out"/>
     </method>
     <method name="getTranslation">
+      <tp:docstring>
+        Returns the translation in the user-facing format used by $vpt,
+        Viewport Control and the Copy viewport values menu entries.
+      </tp:docstring>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QList&lt;double>"/>
-      <arg name="rotation" type="ad" direction="out"/>
+      <arg name="translation" type="ad" direction="out"/>
+    </method>
+    <method name="getDistance">
+      <arg name="distance" type="d" direction="out"/>
+    </method>
+    <method name="getFov">
+      <arg name="fov" type="d" direction="out"/>
+    </method>
+    <method name="getProjection">
+      <arg name="projection" type="s" direction="out"/>
     </method>
     <method name="getActions">
       <arg name="names" type="as" direction="out"/>
