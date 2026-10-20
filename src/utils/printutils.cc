@@ -37,15 +37,15 @@ static thread_local LogClient *threadLogClient = nullptr;
 
 ThreadLogProxy::ThreadLogProxy(LogClient *parent)
 {
-  if (threadLogClient) {
-    // NEEDSWORK may need to rethink this for the CLI-to-GUI transition.
-    printf("re-entered TLC!\n"); fflush(stdout);
-  }
+  // NEEDSWORK do we need to do anything when we've already got a LogClient
+  // selected for this thread?
   threadLogClient = parent;
 }
 
 ThreadLogProxy::~ThreadLogProxy()
 {
+  // NEEDSWORK do we need to do anything when, at constructor time, we
+  // already had a LogClient selected?
   threadLogClient = nullptr;
 }
 
@@ -184,4 +184,13 @@ bool LogHost::isDuplicateMessage(const Message& msgObj)
     lastmessages.push_back(msg);
   }
   return false;
+}
+
+void LogHost::maybeThrow(const Message& msgObj)
+{
+  if (!std::current_exception()) {
+    if (OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) {
+      throw HardWarningException(msgObj.msg);
+    }
+  }
 }

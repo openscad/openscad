@@ -142,6 +142,7 @@ public:
   void printMessage(const Message& msgObj)
   {
     printMessageNoCache(msgObj);
+    maybeThrow(msgObj);
   }
   void printMessageNoCache(const Message& msgObj)
   {
@@ -197,6 +198,7 @@ protected:
 void CLILogHost::printMessage(const Message& msgObj)
 {
   std::cerr << msgObj.str() << "\n";
+  maybeThrow(msgObj);
 }
 
 void CLILogHost::printMessageNoCache(const Message& msgObj)
@@ -219,6 +221,7 @@ protected:
 void NSLogHost::printMessage(const Message& msgObj)
 {
   printMessageNoCache(msgObj);
+  maybeThrow(msgObj);
 }
 
 void NSLogHost::printMessageNoCache(const Message& msgObj)

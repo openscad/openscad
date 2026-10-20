@@ -297,6 +297,7 @@ private:
 
 protected:
   bool isDuplicateMessage(const Message& msgObj);
+  void maybeThrow(const Message& msgObj);
 };
 
 class LogProxy
