@@ -46,6 +46,8 @@ ThreadLogProxy::~ThreadLogProxy()
 {
   // NEEDSWORK do we need to do anything when, at constructor time, we
   // already had a LogClient selected?
+  // Maybe we should check to see if it's still the parent we selected,
+  // and do nothing if not.
   threadLogClient = nullptr;
 }
 
