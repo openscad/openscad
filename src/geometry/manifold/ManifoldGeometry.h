@@ -47,6 +47,9 @@ public:
 
   [[nodiscard]] std::shared_ptr<PolySet> toPolySet() const;
 
+  /*! Returns a copy of this geometry with the mesh simplified at the given tolerance (mm). */
+  [[nodiscard]] ManifoldGeometry simplify(double tolerance) const;
+
   template <class Polyhedron>
   [[nodiscard]] std::shared_ptr<Polyhedron> toPolyhedron() const;
 

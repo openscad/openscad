@@ -191,9 +191,11 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
    Converts a single (non-list) geometry to a PolySet suitable for STL
    writing: triangular (tessellated when needed) and, when experimental
    predictable output is enabled, deterministically sorted.
+   Manifold bodies are simplified first when options.simplifyTolerance > 0.
    Returns nullptr when the geometry cannot be converted.
  */
-std::shared_ptr<const PolySet> preparePolySet(const std::shared_ptr<const Geometry>& geom)
+std::shared_ptr<const PolySet> preparePolySet(const std::shared_ptr<const Geometry>& geom,
+                                              const ExportStlOptions& options)
 {
   std::shared_ptr<const PolySet> ps;
   if (const auto p = std::dynamic_pointer_cast<const PolySet>(geom)) {
@@ -217,7 +219,11 @@ std::shared_ptr<const PolySet> preparePolySet(const std::shared_ptr<const Geomet
       LOG(message_group::Export_Warning,
           "Exported object may not be a valid 2-manifold and may need repair");
     }
-    ps = mani->toPolySet();
+    std::shared_ptr<const ManifoldGeometry> m = mani;
+    if (options.simplifyTolerance > 0) {
+      m = std::make_shared<const ManifoldGeometry>(mani->simplify(options.simplifyTolerance));
+    }
+    ps = m->toPolySet();
     if (!ps) {
       LOG(message_group::Export_Error, "Manifold->PolySet failed");
     }
@@ -244,19 +250,20 @@ std::shared_ptr<const PolySet> preparePolySet(const std::shared_ptr<const Geomet
    GeometryLists), each prepared for STL writing, so that the total triangle
    count is known before any bytes are written.
  */
-std::vector<std::shared_ptr<const PolySet>> preparePolysets(const std::shared_ptr<const Geometry>& geom)
+std::vector<std::shared_ptr<const PolySet>> preparePolysets(const std::shared_ptr<const Geometry>& geom,
+                                                            const ExportStlOptions& options)
 {
   std::vector<std::shared_ptr<const PolySet>> polysets;
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       if (!item.second) continue;
-      auto children = preparePolysets(item.second);
+      auto children = preparePolysets(item.second, options);
       polysets.insert(polysets.end(), std::make_move_iterator(children.begin()),
                       std::make_move_iterator(children.end()));
     }
     return polysets;
   }
-  if (const auto ps = preparePolySet(geom)) {
+  if (const auto ps = preparePolySet(geom, options)) {
     polysets.push_back(std::move(ps));
   }
   return polysets;
@@ -264,7 +271,8 @@ std::vector<std::shared_ptr<const PolySet>> preparePolysets(const std::shared_pt
 
 }  // namespace
 
-void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary)
+void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary,
+                const ExportStlOptions& options)
 {
   // FIXME: In lazy union mode, should we export multiple solids?
   //
@@ -272,7 +280,7 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // writing begins. This lets binary STL be streamed directly to output
   // (header first, then triangles) instead of buffering the whole file in
   // memory, which used to hold ~2x the file size in RAM.
-  const auto polysets = preparePolysets(geom);
+  const auto polysets = preparePolysets(geom, options);
 
   if (binary) {
     uint64_t triangle_count = 0;

@@ -209,6 +209,12 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   return ps;
 }
 
+ManifoldGeometry ManifoldGeometry::simplify(double tolerance) const
+{
+  return ManifoldGeometry(manifold_.Simplify(tolerance), originalIDs_, originalIDToColor_,
+                          subtractedIDs_);
+}
+
 #ifdef ENABLE_CGAL
 template <typename Polyhedron>
 class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>

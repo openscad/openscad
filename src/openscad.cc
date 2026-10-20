@@ -246,6 +246,7 @@ void help_export()
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
   help_export(Settings::SettingsExportSvg::cmdline);
+  help_export(Settings::SettingsExportStl::cmdline);
   exit(0);
 }
 
