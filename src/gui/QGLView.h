@@ -4,6 +4,7 @@
 #include "core/Selection.h"
 #include "gui/MouseSelector.h"
 
+#include <functional>
 #include <memory>
 #include <array>
 #include <QImage>
@@ -34,6 +35,12 @@ class QGLView : public QOpenGLWidget, public GLView
 public:
   QGLView(QWidget *parent = nullptr);
   ~QGLView() override;
+
+  // Runs fn with this view's GL context current, restoring whichever context
+  // was current before. Anything owning GL objects - renderers own vertex
+  // buffers - has to be released this way: buffer names are only meaningful in
+  // the context that generated them.
+  void withCurrentContext(const std::function<void()>& fn);
 #ifdef ENABLE_OPENCSG
   bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif
