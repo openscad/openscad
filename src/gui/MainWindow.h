@@ -21,7 +21,6 @@
 #include <QSoundEffect>
 #include <QString>
 #include <QStringList>
-#include <QTemporaryFile>
 #include <QTime>
 #include <QTimer>
 #include <QUrl>
@@ -461,7 +460,6 @@ private:
 
   char const *afterCompileSlot;
   bool procevents{false};
-  QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   GeometryWorker *geometryWorker;
   QMutex consolemutex;
