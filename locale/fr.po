@@ -2546,8 +2546,6 @@ msgstr "Activer l'ancrage des panneaux d'aide à différents endroits"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2619
 msgid "Enable undocking of helper widgets to separate windows"
-"Activer le désancrage de l'Éditeur et de la Console dans des fenêtres "
-"séparées"
 msgstr "Activer le détachement des panneaux d'aide dans des fenêtres séparées"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2620
