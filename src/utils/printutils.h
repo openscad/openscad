@@ -68,7 +68,8 @@ enum class message_group {
   Parser_Error,
   Trace,
   Deprecated,
-  Echo
+  Echo,
+  Debug
 };
 
 std::string getGroupName(const enum message_group& group);
@@ -91,9 +92,8 @@ struct Message {
 
   [[nodiscard]] std::string str() const
   {
-    const auto g = (group == message_group::NONE || group == message_group::HtmlLink)
-                     ? ""
-                     : getGroupName(group) + ": ";
+    auto g = getGroupName(group);
+    if (!g.empty()) g += ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }
@@ -238,6 +238,8 @@ std::optional<Message> make_message_obj(const message_group& msgGroup, Location 
 {
   auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
 
+  // NEEDSWORK deprecation tracking should probably move out to the caller, with the other
+  // filtering mechanisms.
   // check for deprecations
   if (msgGroup == message_group::Deprecated &&
       printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end())

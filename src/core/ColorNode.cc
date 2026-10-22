@@ -71,6 +71,8 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
     } else {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
           "Unable to parse color \"%1$s\"", colorname);
+      // Bug:  with hardwarnings, the LOG() above throws and we will never display the
+      // helpful hint below.
       LOG(message_group::HtmlLink,
           "For a list of valid color names, see the <a href=\"open-window://colorlist\"><b>Color "
           "List</b></a> window.");

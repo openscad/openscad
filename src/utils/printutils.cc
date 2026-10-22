@@ -80,6 +80,12 @@ void printMessage(const Message& msgObj)
   }
 }
 
+// This should really accept the same sort of formatting that LOG() does, rather than relying on
+// the macro using boost::format.
+// NEEDSWORK these messages end up going to either stdio or the Console, kind of randomly.
+// That's true of the old way too, though the details are a bit different.
+// Note that because preview/render use ThreadLogProxy, and ~ThreadLogProxy() sets the TLC to
+// nullptr, debug messages after a preview/render end up with "No TLC".
 void PRINTDEBUG(const std::string& filename, const std::string& msg)
 {
   // see printutils.h for usage instructions
@@ -90,9 +96,8 @@ void PRINTDEBUG(const std::string& filename, const std::string& msg)
   std::string lowdebug(OpenSCAD::debug);
   boost::algorithm::to_lower(lowdebug);
   if (OpenSCAD::debug == "all" || lowdebug.find(lowshortfname) != std::string::npos) {
-    const Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
-    // NEEDSWORK
-    // PRINT_NOCACHE(msgObj);
+    const Message msgObj{shortfname + ": " + msg, message_group::Debug, Location::NONE, ""};
+    printMessage(msgObj);
   }
 }
 
@@ -131,8 +136,8 @@ std::string getGroupName(const enum message_group& group)
 {
   switch (group) {
   case message_group::NONE:
+  case message_group::HtmlLink:       return "";
   case message_group::Warning:
-  case message_group::HtmlLink:
   case message_group::UI_Warning:     return "WARNING";
   case message_group::Error:
   case message_group::UI_Error:       return "ERROR";
@@ -143,6 +148,7 @@ std::string getGroupName(const enum message_group& group)
   case message_group::Trace:          return "TRACE";
   case message_group::Deprecated:     return "DEPRECATED";
   case message_group::Echo:           return "ECHO";
+  case message_group::Debug:          return "DEBUG";
   default:                            assert(false && "Unhandled message group name"); return "";
   }
 }
@@ -159,6 +165,7 @@ std::string getGroupColor(const enum message_group& group)
   case message_group::Export_Error:
   case message_group::Parser_Error: return "#ffb0b0";
   case message_group::Trace:        return "#d0d0ff";
+  case message_group::Debug:
   default:                          return "transparent";
   }
 }
@@ -174,9 +181,11 @@ std::string quoteVar(const std::string& varname)
 }
 
 // NEEDSWORK need to ensure that we do *not* apply this to tracebacks, because
-// the result is just too darned complicated.  If we want deduplication of
+// the result is just too darned complicated, between tail call elimination, message
+// deduplication, and long-trace trimming.  If we want deduplication of
 // recursive calls, we should do it specially in the traceback processing
 // so that it can, e.g., say "a bunch more recursive calls like that".
+// (And tail call elimination should probably count the tail calls, or something.)
 bool LogHost::isDuplicateMessage(const Message& msgObj)
 {
   const auto msg = msgObj.str();

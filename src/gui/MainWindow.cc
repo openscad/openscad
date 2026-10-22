@@ -2117,6 +2117,7 @@ void MainWindow::leftClick(QPoint mouse)
     for (const auto& msg : boost::adaptors::reverse(state.messages)) {
       auto str = msg.display_text;
       if (state.status == Measurement::Result::Status::Success) {
+        // This should use LOG().
         if (auto m = make_message_obj(first ? "%1$s" : "  %1$s", str.toStdString())) {
           this->consoleOutput(*m);
         }
@@ -3357,14 +3358,6 @@ void MainWindow::setFont(const QString& family, uint size)
   activeEditor->setFont(font);
 }
 
-void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
-{
-  // Invoke the method in the main thread in case the output
-  // originates in a worker thread.
-  auto thisp = static_cast<MainWindow *>(userdata);
-  QMetaObject::invokeMethod(thisp, "consoleOutput", Q_ARG(Message, msgObj));
-}
-
 void MainWindow::consoleOutput(const Message& msgObj)
 {
   this->console->addMessage(msgObj);
@@ -3385,12 +3378,6 @@ void MainWindow::consoleOutputRaw(const QString& html)
 {
   this->console->addHtml(html);
   this->processEvents();
-}
-
-void MainWindow::errorLogOutput(const Message& log_msg, void *userdata)
-{
-  auto thisp = static_cast<MainWindow *>(userdata);
-  QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(Message, log_msg));
 }
 
 void MainWindow::errorLogOutput(const Message& log_msg)
@@ -4107,10 +4094,19 @@ void MainWindow::printMessage(const Message& msgObj)
 
   printMessageNoCache(msgObj);
 
+  // NEEDSWORK: should this be a list of types to send to the error log, or a list of types
+  // *not* to send?
   // to error log
-  if (!(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
-        msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
+  switch(msgObj.group) {
+  case message_group::NONE:   // Suppress these.
+  case message_group::Echo:
+  case message_group::Trace:
+  case message_group::HtmlLink:
+  case message_group::Debug:
+    break;
+  default:
     errorLogOutput(msgObj);
+    break;
   }
 
   if (!std::current_exception()) {
@@ -4125,7 +4121,6 @@ void MainWindow::printMessage(const Message& msgObj)
 
 void MainWindow::printMessageNoCache(const Message& msgObj)
 {
-printf("%s %d %s: %s\n", __FILE__, __LINE__, __func__, msgObj.str().c_str()); fflush(stdout);
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
 
   if (isDuplicateMessage(msgObj))
