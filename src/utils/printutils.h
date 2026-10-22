@@ -113,7 +113,6 @@ void resetSuppressedMessages();
 
 /* PRINT statements come out in same window as ECHO.
    usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINT(const Message& msgObj);
 
 /*PRINTD: debugging/verbose output. Usage in code:
    CGAL_Point_3 p0(0,0,0),p1(1,0,0),p2(0,1,0);
@@ -266,9 +265,11 @@ template <typename... Args>
 void LOG(Args&&...args)
 {
   if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
-    PRINT(*msg);
+    printMessage(*msg);
   }
 }
+
+void printMessage(const Message& msgObj);
 
 class LogClient
 {

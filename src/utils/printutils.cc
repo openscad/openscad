@@ -70,7 +70,7 @@ void LogHost::print_messages_pop()
 }
 #endif  // UNUSED
 
-void PRINT(const Message& msgObj)
+void printMessage(const Message& msgObj)
 {
   if (threadLogClient) {
     threadLogClient->printMessage(msgObj);

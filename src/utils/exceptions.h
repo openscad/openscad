@@ -35,13 +35,12 @@ public:
   {
     int frames_skipped = -(traceDepth + tail_msgs.size());
     if (frames_skipped > 0) {
-      ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
-                      message_group::Trace));
+      ::LOG(message_group::Trace, "  *** Excluding %1$d frames ***", frames_skipped);
     }
 
     while (!tail_msgs.empty()) {
       if (auto msg = tail_msgs.front()()) {
-        ::PRINT(*msg);
+        ::printMessage(*msg);
       }
       tail_msgs.pop_front();
     }
