@@ -544,17 +544,7 @@ std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f)
 }
 
 RoofDiscretizer::RoofDiscretizer(const CurveDiscretizer& d, double scale)
-  : max_angle_deviation(M_PI / 180.0 * (d.fn > 0.0 ? 360.0 / d.fn : d.fa) / 2.0),
-    max_segment_sqr_length(d.fn > 0.0 ? 0.0 : d.fs * d.fs * scale * scale)
+  : max_angle(M_PI / 180.0 * (d.fn > 0.0 ? 360.0 / d.fn : d.fa)),
+    max_segment_length(d.fn > 0.0 ? 0.0 : d.fs * scale)
 {
-}
-
-bool RoofDiscretizer::overMaxAngle(double radians) const
-{
-  return radians > max_angle_deviation;
-}
-
-bool RoofDiscretizer::overMaxSegmentSqrLength(double segment_sqr_length) const
-{
-  return segment_sqr_length > max_segment_sqr_length;
 }
