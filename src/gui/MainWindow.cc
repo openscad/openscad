@@ -4105,13 +4105,6 @@ void MainWindow::printMessage(const Message& msgObj)
 {
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
 
-  if (print_messages_stack.size() > 0) {
-    if (!print_messages_stack.back().empty()) {
-      print_messages_stack.back() += "\n";
-    }
-    print_messages_stack.back() += msgObj.str();
-  }
-
   printMessageNoCache(msgObj);
 
   // to error log

@@ -51,12 +51,13 @@ ThreadLogProxy::~ThreadLogProxy()
   threadLogClient = nullptr;
 }
 
-void print_messages_push()
+#ifdef  UNUSED
+void LogHost::print_messages_push()
 {
   print_messages_stack.emplace_back();
 }
 
-void print_messages_pop()
+void LogHost::print_messages_pop()
 {
   const std::string msg = print_messages_stack.back();
   print_messages_stack.pop_back();
@@ -67,6 +68,7 @@ void print_messages_pop()
     print_messages_stack.back() += msg;
   }
 }
+#endif  // UNUSED
 
 void PRINT(const Message& msgObj)
 {

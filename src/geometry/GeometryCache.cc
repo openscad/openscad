@@ -61,5 +61,7 @@ void GeometryCache::print()
 
 GeometryCache::cache_entry::cache_entry(const std::shared_ptr<const Geometry>& geom) : geom(geom)
 {
+#ifdef  UNUSED
   if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();
+#endif
 }

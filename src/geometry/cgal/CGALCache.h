@@ -34,7 +34,9 @@ private:
 
   struct cache_entry {
     std::shared_ptr<const Geometry> N;
+#ifdef  UNUSED
     std::string msg;
+#endif
     cache_entry(const std::shared_ptr<const Geometry>& N);
   };
 
