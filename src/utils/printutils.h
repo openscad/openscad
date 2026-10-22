@@ -273,8 +273,6 @@ void printMessage(const Message& msgObj);
 
 class LogClient
 {
-  friend class LogProxy;
-
 public:
   template <typename... Args>
   void LOG(Args&&...args)
@@ -283,8 +281,11 @@ public:
       printMessage(*msg);
     }
   }
-  // NEEDSWORK Should probably be protected.
+protected:
   virtual void printMessage(const Message& msgObj) = 0;
+
+friend void printMessage(const Message& msgObj);
+friend class LogProxy;
 };
 
 class LogHost : public LogClient
@@ -303,24 +304,6 @@ public:
   void print_messages_push();
   void print_messages_pop();
 #endif
-};
-
-class LogProxy
-{
-public:
-  LogProxy(LogClient *parent) : parent(parent) {}
-
-  template <typename... Args>
-  void LOG(Args&&...args) const
-  {
-    if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
-      printMessage(*msg);
-    }
-  }
-
-private:
-  virtual void printMessage(const Message& msgObj) const { parent->printMessage(msgObj); }
-
 #ifdef  UNUSED
   // This was in PRINT(), which means it would go into printMessage now, but right now there
   // is no central implementation of printMessage.  Besides... the print_messages_stack stuff
@@ -332,6 +315,16 @@ private:
     print_messages_stack.back() += msgObj.str();
   }
 #endif
+
+};
+
+class LogProxy : public LogClient
+{
+public:
+  LogProxy(LogClient *parent) : parent(parent) {}
+
+protected:
+  void printMessage(const Message& msgObj) override { parent->printMessage(msgObj); };
 
   LogClient *parent;
 };

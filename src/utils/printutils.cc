@@ -173,6 +173,10 @@ std::string quoteVar(const std::string& varname)
   return '"' + varname + '"';
 }
 
+// NEEDSWORK need to ensure that we do *not* apply this to tracebacks, because
+// the result is just too darned complicated.  If we want deduplication of
+// recursive calls, we should do it specially in the traceback processing
+// so that it can, e.g., say "a bunch more recursive calls like that".
 bool LogHost::isDuplicateMessage(const Message& msgObj)
 {
   const auto msg = msgObj.str();
