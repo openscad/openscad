@@ -283,11 +283,12 @@ public:
       printMessage(*msg);
     }
   }
+
 protected:
   virtual void printMessage(const Message& msgObj) = 0;
 
-friend void printMessage(const Message& msgObj);
-friend class LogProxy;
+  friend void printMessage(const Message& msgObj);
+  friend class LogProxy;
 };
 
 class LogHost : public LogClient

@@ -33,9 +33,6 @@ private:
 
   struct cache_entry {
     std::shared_ptr<const class Geometry> geom;
-#ifdef  UNUSED
-    std::string msg;
-#endif
     cache_entry(const std::shared_ptr<const Geometry>& geom);
   };
 

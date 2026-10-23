@@ -133,7 +133,7 @@ bool arg_info = false;
 class Echostream : public LogHost
 {
 public:
-  Echostream(std::ostream& stream) : stream(stream), logger(this) { }
+  Echostream(std::ostream& stream) : stream(stream), logger(this) {}
   Echostream(const std::string& filename)
     : fstream(std::filesystem::u8path(filename)), stream(fstream), logger(this)
   {
