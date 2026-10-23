@@ -105,10 +105,6 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
       text = STR(ifs.rdbuf(), "\n\x03\n", commandline_commands);
     }
 
-#ifdef  UNUSED
-    print_messages_push();
-#endif
-
     delete cacheEntry.parsed_file;
     file =
       parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
@@ -117,9 +113,6 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
     cacheEntry.cache_id = cache_id;
     auto mod = file ? file : cacheEntry.parsed_file;
     if (!found && mod) cacheEntry.includes_mtime = mod->includesChanged();
-#ifdef  UNUSED
-    print_messages_pop();
-#endif  // UNUSED
   }
 
   sourceFile = file;

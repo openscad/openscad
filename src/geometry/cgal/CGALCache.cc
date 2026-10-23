@@ -85,7 +85,4 @@ void CGALCache::print()
 
 CGALCache::cache_entry::cache_entry(const std::shared_ptr<const Geometry>& N) : N(N)
 {
-#ifdef  UNUSED
-  if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();
-#endif
 }

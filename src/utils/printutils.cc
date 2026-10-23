@@ -17,7 +17,6 @@
 namespace fs = std::filesystem;
 
 std::set<std::string> printedDeprecations;
-std::list<std::string> print_messages_stack;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
@@ -50,25 +49,6 @@ ThreadLogProxy::~ThreadLogProxy()
   // and do nothing if not.
   threadLogClient = nullptr;
 }
-
-#ifdef  UNUSED
-void LogHost::print_messages_push()
-{
-  print_messages_stack.emplace_back();
-}
-
-void LogHost::print_messages_pop()
-{
-  const std::string msg = print_messages_stack.back();
-  print_messages_stack.pop_back();
-  if (print_messages_stack.size() > 0 && !msg.empty()) {
-    if (!print_messages_stack.back().empty()) {
-      print_messages_stack.back() += "\n";
-    }
-    print_messages_stack.back() += msg;
-  }
-}
-#endif  // UNUSED
 
 void printMessage(const Message& msgObj)
 {

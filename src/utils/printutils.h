@@ -299,25 +299,6 @@ private:
 protected:
   bool isDuplicateMessage(const Message& msgObj);
   void maybeThrow(const Message& msgObj);
-
-#ifdef  UNUSED
-public:
-  std::list<std::string> print_messages_stack;
-  void print_messages_push();
-  void print_messages_pop();
-#endif
-#ifdef  UNUSED
-  // This was in PRINT(), which means it would go into printMessage now, but right now there
-  // is no central implementation of printMessage.  Besides... the print_messages_stack stuff
-  // is unused.
-  if (print_messages_stack.size() > 0) {
-    if (!print_messages_stack.back().empty()) {
-      print_messages_stack.back() += "\n";
-    }
-    print_messages_stack.back() += msgObj.str();
-  }
-#endif
-
 };
 
 class LogProxy : public LogClient
