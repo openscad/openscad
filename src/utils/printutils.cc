@@ -17,9 +17,6 @@
 namespace fs = std::filesystem;
 
 std::set<std::string> printedDeprecations;
-std::list<std::string> print_messages_stack;
-OutputHandlerFunc *outputhandler = nullptr;
-void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
@@ -31,106 +28,44 @@ bool OpenSCAD::rangeCheck = false;
 namespace {
 
 std::list<struct Message> log_messages_stack;
-OutputHandlerFunc2 *outputhandler2 = nullptr;
 boost::circular_buffer<std::string> lastmessages(5);
-boost::circular_buffer<struct Message> lastlogmessages(5);
-
-bool no_throw;
-bool deferred;
 
 }  // namespace
 
-void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata)
+static thread_local LogClient *threadLogClient = nullptr;
+
+ThreadLogProxy::ThreadLogProxy(LogClient *parent)
 {
-  outputhandler = newhandler;
-  outputhandler2 = newhandler2;
-  outputhandler_data = userdata;
+  // NEEDSWORK do we need to do anything when we've already got a LogClient
+  // selected for this thread?
+  threadLogClient = parent;
 }
 
-void no_exceptions_for_warnings()
+ThreadLogProxy::~ThreadLogProxy()
 {
-  no_throw = true;
-  deferred = false;
+  // NEEDSWORK do we need to do anything when, at constructor time, we
+  // already had a LogClient selected?
+  // Maybe we should check to see if it's still the parent we selected,
+  // and do nothing if not.
+  threadLogClient = nullptr;
 }
 
-bool would_have_thrown()
+void printMessage(const Message& msgObj)
 {
-  const auto would_throw = deferred;
-  no_throw = false;
-  deferred = false;
-  return would_throw;
-}
-
-void print_messages_push()
-{
-  print_messages_stack.emplace_back();
-}
-
-void print_messages_pop()
-{
-  const std::string msg = print_messages_stack.back();
-  print_messages_stack.pop_back();
-  if (print_messages_stack.size() > 0 && !msg.empty()) {
-    if (!print_messages_stack.back().empty()) {
-      print_messages_stack.back() += "\n";
-    }
-    print_messages_stack.back() += msg;
+  if (threadLogClient) {
+    threadLogClient->printMessage(msgObj);
+  } else {
+    // NEEDSWORK
+    printf("No TLC: %s\n", msgObj.str().c_str()); fflush(stdout);
   }
 }
 
-void PRINT(const Message& msgObj)
-{
-  if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
-
-  if (print_messages_stack.size() > 0) {
-    if (!print_messages_stack.back().empty()) {
-      print_messages_stack.back() += "\n";
-    }
-    print_messages_stack.back() += msgObj.str();
-  }
-
-  PRINT_NOCACHE(msgObj);
-
-  // to error log
-  if (outputhandler2 &&
-      !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
-        msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
-    outputhandler2(msgObj, outputhandler_data);
-  }
-}
-
-void PRINT_NOCACHE(const Message& msgObj)
-{
-  if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
-
-  const auto msg = msgObj.str();
-
-  if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
-      msgObj.group == message_group::Trace) {
-    size_t i;
-    for (i = 0; i < lastmessages.size(); ++i) {
-      if (lastmessages[i] != msg) break;
-    }
-    if (i == 5) return;  // Suppress output after 5 equal ERROR or WARNING outputs.
-    lastmessages.push_back(msg);
-  }
-  if (!deferred)
-    if (!OpenSCAD::quiet || msgObj.group == message_group::Error) {
-      if (!outputhandler) {
-        std::cerr << msg << "\n";
-      } else {
-        outputhandler(msgObj, outputhandler_data);
-      }
-    }
-  if (!std::current_exception()) {
-    if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) ||
-        (no_throw && msgObj.group == message_group::Error)) {
-      if (no_throw) deferred = true;
-      else throw HardWarningException(msgObj.msg);
-    }
-  }
-}
-
+// This should really accept the same sort of formatting that LOG() does, rather than relying on
+// the macro using boost::format.
+// NEEDSWORK these messages end up going to either stdio or the Console, kind of randomly.
+// That's true of the old way too, though the details are a bit different.
+// Note that because preview/render use ThreadLogProxy, and ~ThreadLogProxy() sets the TLC to
+// nullptr, debug messages after a preview/render end up with "No TLC".
 void PRINTDEBUG(const std::string& filename, const std::string& msg)
 {
   // see printutils.h for usage instructions
@@ -141,8 +76,8 @@ void PRINTDEBUG(const std::string& filename, const std::string& msg)
   std::string lowdebug(OpenSCAD::debug);
   boost::algorithm::to_lower(lowdebug);
   if (OpenSCAD::debug == "all" || lowdebug.find(lowshortfname) != std::string::npos) {
-    const Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
-    PRINT_NOCACHE(msgObj);
+    const Message msgObj{shortfname + ": " + msg, message_group::Debug, Location::NONE, ""};
+    printMessage(msgObj);
   }
 }
 
@@ -181,8 +116,8 @@ std::string getGroupName(const enum message_group& group)
 {
   switch (group) {
   case message_group::NONE:
+  case message_group::HtmlLink:       return "";
   case message_group::Warning:
-  case message_group::HtmlLink:
   case message_group::UI_Warning:     return "WARNING";
   case message_group::Error:
   case message_group::UI_Error:       return "ERROR";
@@ -193,6 +128,7 @@ std::string getGroupName(const enum message_group& group)
   case message_group::Trace:          return "TRACE";
   case message_group::Deprecated:     return "DEPRECATED";
   case message_group::Echo:           return "ECHO";
+  case message_group::Debug:          return "DEBUG";
   default:                            assert(false && "Unhandled message group name"); return "";
   }
 }
@@ -209,6 +145,7 @@ std::string getGroupColor(const enum message_group& group)
   case message_group::Export_Error:
   case message_group::Parser_Error: return "#ffb0b0";
   case message_group::Trace:        return "#d0d0ff";
+  case message_group::Debug:
   default:                          return "transparent";
   }
 }
@@ -221,4 +158,36 @@ bool getGroupTextPlain(const enum message_group& group)
 std::string quoteVar(const std::string& varname)
 {
   return '"' + varname + '"';
+}
+
+// NEEDSWORK need to ensure that we do *not* apply this to tracebacks, because
+// the result is just too darned complicated, between tail call elimination, message
+// deduplication, and long-trace trimming.  If we want deduplication of
+// recursive calls, we should do it specially in the traceback processing
+// so that it can, e.g., say "a bunch more recursive calls like that".
+// (And tail call elimination should probably count the tail calls, or something.)
+bool LogHost::isDuplicateMessage(const Message& msgObj)
+{
+  const auto msg = msgObj.str();
+
+  // Suppress duplicate messages.
+  if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
+      msgObj.group == message_group::Trace) {
+    size_t i;
+    for (i = 0; i < lastmessages.size(); ++i) {
+      if (lastmessages[i] != msg) break;
+    }
+    if (i == 5) return true;  // Suppress output after 5 equal ERROR or WARNING outputs.
+    lastmessages.push_back(msg);
+  }
+  return false;
+}
+
+void LogHost::maybeThrow(const Message& msgObj)
+{
+  if (!std::current_exception()) {
+    if (OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) {
+      throw HardWarningException(msgObj.msg);
+    }
+  }
 }

@@ -18,7 +18,7 @@
 #include "python/python_public.h"
 #endif
 
-GeometryWorker::GeometryWorker()
+GeometryWorker::GeometryWorker(LogClient *logClient) : logClient(logClient)
 {
   this->tree = nullptr;
   this->thread = new QThread();
@@ -45,6 +45,8 @@ void GeometryWorker::start(const Tree& tree)
 
 void GeometryWorker::work()
 {
+  ThreadLogProxy logger(logClient);
+
   // this is a worker thread: we don't want any exceptions escaping and crashing the app.
 #ifdef ENABLE_PYTHON
   python_lock();

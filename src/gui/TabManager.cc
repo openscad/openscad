@@ -37,7 +37,7 @@
 #include "gui/ScintillaEditor.h"
 #include "utils/printutils.h"
 
-TabManager::TabManager(MainWindow *o, const QString& filename)
+TabManager::TabManager(MainWindow *o, const QString& filename) : LogProxy(o)
 {
   parent = o;
 
@@ -679,7 +679,6 @@ void TabManager::saveError(const QIODevice& file, const std::string& msg, const 
 bool TabManager::save(EditorInterface *edt)
 {
   assert(edt != nullptr);
-  auto guard = parent->scopedSetCurrentOutput();
   if (edt->filepath.isEmpty()) {
     return saveAs(edt);
   } else {
@@ -738,8 +737,6 @@ bool TabManager::saveAs(EditorInterface *edt)
   if (filename.isEmpty()) {
     return false;
   }
-
-  auto guard = parent->scopedSetCurrentOutput();
 
   if (QFileInfo(filename).suffix().isEmpty()) {
     filename.append(".scad");
@@ -800,8 +797,6 @@ bool TabManager::saveACopy(EditorInterface *edt)
   saveCopyDialog.setDirectory(dir);
 
   if (saveCopyDialog.exec() != QDialog::Accepted) return false;
-
-  auto guard = parent->scopedSetCurrentOutput();
 
   QStringList selectedFiles = saveCopyDialog.selectedFiles();
   if (selectedFiles.isEmpty()) return false;

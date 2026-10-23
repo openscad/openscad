@@ -130,22 +130,29 @@ bool arg_info = false;
 
 }  // namespace
 
-class Echostream
+class Echostream : public LogHost
 {
 public:
-  Echostream(std::ostream& stream) : stream(stream)
+  Echostream(std::ostream& stream) : stream(stream), logger(this) {}
+  Echostream(const std::string& filename)
+    : fstream(std::filesystem::u8path(filename)), stream(fstream), logger(this)
   {
-    set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
+  void printMessage(const Message& msgObj)
   {
-    set_output_handler(&Echostream::output, nullptr, this);
+    printMessageNoCache(msgObj);
+    maybeThrow(msgObj);
   }
-  static void output(const Message& msgObj, void *userdata)
+  void printMessageNoCache(const Message& msgObj)
   {
-    auto self = static_cast<Echostream *>(userdata);
+    if (isDuplicateMessage(msgObj)) {
+      return;
+    }
+    if (OpenSCAD::quiet && msgObj.group != message_group::Error) {
+      return;
+    }
     if (msgObj.group != message_group::HtmlLink) {
-      self->stream << msgObj.str() << "\n";
+      stream << msgObj.str() << "\n";
     }
   }
   ~Echostream()
@@ -156,6 +163,7 @@ public:
 private:
   std::ofstream fstream;
   std::ostream& stream;
+  ThreadLogProxy logger;
 };
 
 struct AnimateArgs {
@@ -180,6 +188,50 @@ struct CommandLine {
   const std::vector<std::string> summaryOptions;
   const std::string summaryFile;
 };
+
+class CLILogHost : public LogHost
+{
+protected:
+  void printMessage(const Message& msgObj) override;
+  void printMessageNoCache(const Message& msgObj) override;
+};
+
+void CLILogHost::printMessage(const Message& msgObj)
+{
+  std::cerr << msgObj.str() << "\n";
+  maybeThrow(msgObj);
+}
+
+void CLILogHost::printMessageNoCache(const Message& msgObj)
+{
+  // NEEDSWORK
+  printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
+}
+
+CLILogHost cliLogHost;
+
+#ifdef Q_OS_MACOS
+// NEEDSWORK:  Perhaps this should move over into src/platform somewhere.
+class NSLogHost : public LogHost
+{
+protected:
+  void printMessage(const Message& msgObj) override;
+  void printMessageNoCache(const Message& msgObj) override;
+};
+
+void NSLogHost::printMessage(const Message& msgObj)
+{
+  printMessageNoCache(msgObj);
+  maybeThrow(msgObj);
+}
+
+void NSLogHost::printMessageNoCache(const Message& msgObj)
+{
+  CocoaUtils::nslog(msgObj.msg);
+}
+
+NSLogHost nsLogHost;
+#endif  // Q_OS_MACOS
 
 namespace {
 
@@ -811,13 +863,17 @@ int openscad_main(int argc, char **argv)
   int rc = 0;
   StackCheck::inst();
 
+  LogClient *logClient = &cliLogHost;
 #ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
-  auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
-  if (isGuiLaunched) set_output_handler(nslog, nullptr, nullptr);
-#else
-  PlatformUtils::ensureStdIO();
+  // auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
+  if (isGuiLaunched) {
+    logClient = &nsLogHost;
+  }
 #endif
+  PlatformUtils::ensureStdIO();
+  ThreadLogProxy logger(logClient);
+  // NEEDSWORK:  How should we switch away from this when/if the GUI takes over?
 
 #ifndef __EMSCRIPTEN__
   const auto applicationPath =

@@ -24,6 +24,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <boost/circular_buffer.hpp>
 
 #include "core/AST.h"
 
@@ -67,7 +68,8 @@ enum class message_group {
   Parser_Error,
   Trace,
   Deprecated,
-  Echo
+  Echo,
+  Debug
 };
 
 std::string getGroupName(const enum message_group& group);
@@ -90,19 +92,12 @@ struct Message {
 
   [[nodiscard]] std::string str() const
   {
-    const auto g = (group == message_group::NONE || group == message_group::HtmlLink)
-                     ? ""
-                     : getGroupName(group) + ": ";
+    auto g = getGroupName(group);
+    if (!g.empty()) g += ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }
 };
-
-using OutputHandlerFunc = void(const Message&, void *);
-using OutputHandlerFunc2 = void(const Message&, void *);
-
-extern OutputHandlerFunc *outputhandler;
-extern void *outputhandler_data;
 
 namespace OpenSCAD {
 extern std::string debug;
@@ -114,24 +109,10 @@ extern bool parameterCheck;
 extern bool rangeCheck;
 }  // namespace OpenSCAD
 
-void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata);
-void no_exceptions_for_warnings();
-bool would_have_thrown();
-
-extern std::list<std::string> print_messages_stack;
-void print_messages_push();
-void print_messages_pop();
 void resetSuppressedMessages();
 
 /* PRINT statements come out in same window as ECHO.
    usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
-void PRINT(const Message& msgObj);
-
-void PRINT_NOCACHE(const Message& msgObj);
-#define PRINTB_NOCACHE(_fmt, _arg) \
-  do {                             \
-  } while (0)
-// #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
 /*PRINTD: debugging/verbose output. Usage in code:
    CGAL_Point_3 p0(0,0,0),p1(1,0,0),p2(0,1,0);
@@ -257,6 +238,8 @@ std::optional<Message> make_message_obj(const message_group& msgGroup, Location 
 {
   auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
 
+  // NEEDSWORK deprecation tracking should probably move out to the caller, with the other
+  // filtering mechanisms.
   // check for deprecations
   if (msgGroup == message_group::Deprecated &&
       printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end())
@@ -284,6 +267,55 @@ template <typename... Args>
 void LOG(Args&&...args)
 {
   if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
-    PRINT(*msg);
+    printMessage(*msg);
   }
 }
+
+void printMessage(const Message& msgObj);
+
+class LogClient
+{
+public:
+  template <typename... Args>
+  void LOG(Args&&...args)
+  {
+    if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
+      printMessage(*msg);
+    }
+  }
+
+protected:
+  virtual void printMessage(const Message& msgObj) = 0;
+
+  friend void printMessage(const Message& msgObj);
+  friend class LogProxy;
+};
+
+class LogHost : public LogClient
+{
+private:
+  virtual void printMessageNoCache(const Message& msgObj) = 0;
+  boost::circular_buffer<std::string> lastmessages{5};
+
+protected:
+  bool isDuplicateMessage(const Message& msgObj);
+  void maybeThrow(const Message& msgObj);
+};
+
+class LogProxy : public LogClient
+{
+public:
+  LogProxy(LogClient *parent) : parent(parent) {}
+
+protected:
+  void printMessage(const Message& msgObj) override { parent->printMessage(msgObj); };
+
+  LogClient *parent;
+};
+
+class ThreadLogProxy
+{
+public:
+  ThreadLogProxy(LogClient *parent);
+  ~ThreadLogProxy();
+};

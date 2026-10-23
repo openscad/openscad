@@ -33,7 +33,6 @@ private:
 
   struct cache_entry {
     std::shared_ptr<const class Geometry> geom;
-    std::string msg;
     cache_entry(const std::shared_ptr<const Geometry>& geom);
   };
 
