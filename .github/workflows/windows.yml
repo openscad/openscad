@@ -73,3 +73,58 @@ jobs:
           path: |
             build/Testing/Temporary/*_report.html
             build/Testing/Temporary/LastTest.log
+
+  build-windows-arm64:
+    runs-on: windows-11-arm
+    name: Windows ARM64 msvc
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+      - name: Setup (detached) tmate session if enabled
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        with:
+          detached: true
+      - name: Setup MSVC Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: arm64
+      - name: Cache vcpkg dependencies
+        uses: actions/cache@v4
+        with:
+          path: C:\vcpkg\installed
+          key: vcpkg-installed-windows-arm64-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-installed-windows-arm64-
+      - name: Install flex and bison
+        run: |
+          choco install winflexbison3 pkgconfiglite --no-progress -y
+          $shim = (Get-Command win_flex).Source | Split-Path
+          Copy-Item "$shim\win_flex.exe" "$shim\flex.exe" -Force
+          Copy-Item "$shim\win_bison.exe" "$shim\bison.exe" -Force
+      - name: Build OpenSCAD
+        run: |
+          mkdir build && cd build
+          cmake .. -G"Ninja" -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DCMAKE_REQUIRE_FIND_PACKAGE_Lib3MF=OFF -DSNAPSHOT=ON -DHEADLESS=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=arm64-windows -DVCPKG_HOST_TRIPLET=arm64-windows -DVCPKG_MANIFEST_FEATURES=tests -DUSE_BUILTIN_OPENCSG=TRUE
+          cmake --build . -j4
+          cmake --install . --prefix=.
+      - name: Run Test Suite
+        run: |
+          cd build
+          ctest -j4
+      - name: Setup (detached) tmate session if enabled
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+      - name: Upload Test Result Report
+        uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: Test Result Report (Windows arm64 msvc)
+          path: |
+            build/Testing/Temporary/*_report.html
+            build/Testing/Temporary/LastTest.log
