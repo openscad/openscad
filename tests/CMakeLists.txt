@@ -1066,6 +1066,10 @@ add_cmdline_test(render-svg  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES
 add_cmdline_test(export-svg SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG)
 add_cmdline_test(export-svg-fill-stroke SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=cyan -O export-svg/stroke-color=magenta -O export-svg/stroke-width=3)
 add_cmdline_test(export-svg-fill-only SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=blue -O export-svg/stroke=false)
+# Direct export, not the SVG reimport used by export-svg. Reimport drops color().
+add_cmdline_test(export-svg-color OPENSCAD SUFFIX svg FILES ${TEST_SCAD_DIR}/svg/color-squares.scad ARGS --export-format=svg)
+add_cmdline_test(export-dxf-color OPENSCAD SUFFIX dxf FILES ${TEST_SCAD_DIR}/svg/color-squares.scad ARGS --export-format=dxf)
+add_cmdline_test(export-pdf-color SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/svg/color-squares.scad ARGS ${OPENSCAD_EXE_ARG} --format=PDF -O export-pdf/show-scale=false KERNEL Square:2)
 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
