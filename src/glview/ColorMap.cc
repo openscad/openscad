@@ -1,5 +1,6 @@
 #include "glview/ColorMap.h"
 #include "core/ColorUtil.h"
+#include "core/Settings.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
@@ -125,13 +126,21 @@ void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
 {
   const boost::property_tree::ptree& colors = pt.get_child("colors");
   auto color = colors.get<std::string>(key);
-  if ((color.length() == 7) && (color.at(0) == '#')) {
+  if (((color.length() == 7) || (color.length() == 9)) && (color.at(0) == '#')) {
     char *endptr;
-    unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
-    int r = (val >> 16) & 0xff;
-    int g = (val >> 8) & 0xff;
-    int b = val & 0xff;
-    _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
+    unsigned long val = strtoul(color.substr(1).c_str(), &endptr, 16);
+    if (color.length() == 7) {
+      int r = (val >> 16) & 0xff;
+      int g = (val >> 8) & 0xff;
+      int b = val & 0xff;
+      _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b, 255)));
+    } else {
+      int r = (val >> 24) & 0xff;
+      int g = (val >> 16) & 0xff;
+      int b = (val >> 8) & 0xff;
+      int a = val & 0xff;
+      _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b, a)));
+    }
   } else {
     throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color +
                                 "'");
@@ -210,6 +219,10 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
+  if ((rc == RenderColor::BACKGROUND_COLOR || rc == RenderColor::BACKGROUND_STOP_COLOR) &&
+      Settings::Settings::transparentColorSchemeBackground.value()) {
+    return {0.0f, 0.0f, 0.0f, 0.0f};
+  }
   if (cs.count(rc)) return cs.at(rc);
   if (ColorMap::instance().defaultColorScheme().count(rc))
     return ColorMap::instance().defaultColorScheme().at(rc);
