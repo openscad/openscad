@@ -25,6 +25,7 @@ public:
   void clearTemporaryFile()
   {
     if (this->tempFile) {
+      parameterWidget->removeBackupFile(this->tempFile->fileName());
       delete this->tempFile;
       this->tempFile = nullptr;
     }
