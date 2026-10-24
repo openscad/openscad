@@ -25,6 +25,7 @@
  */
 #include "gui/input/InputEventMapper.h"
 
+#include <QCoreApplication>
 #include <QMetaObject>
 #include <QSettings>
 #include <QTimer>
@@ -67,7 +68,11 @@ InputEventMapper::InputEventMapper()
 
   timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, &InputEventMapper::onTimer);
-  timer->start(30);
+  // Don't actually start the timer if there's no QCoreApplication, this
+  // happens for example in the case of running openscad --info.
+  if (QCoreApplication::instance() != nullptr) {
+    timer->start(30);
+  }
 
   onInputMappingUpdated();
   onInputCalibrationUpdated();
