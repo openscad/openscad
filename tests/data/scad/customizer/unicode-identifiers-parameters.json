@@ -4,6 +4,14 @@
         "decomposedKeys": {
             "höhe": "42",
             "wandstärke": "3.5"
+        },
+        "Größ": {
+            "höhe": "42",
+            "wandstärke": "3.5"
+        },
+        "Höhe": {
+            "höhe": "42",
+            "wandstärke": "3.5"
         }
     }
 }

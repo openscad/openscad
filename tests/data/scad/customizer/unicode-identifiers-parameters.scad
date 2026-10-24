@@ -1,7 +1,8 @@
 // Parameter set keys are compared against identifiers from the AST, which the
 // lexer normalises to NFC. The accompanying .json spells both keys in NFD, so
 // this only produces the values below if they are normalised on read.
-// Requires --enable=unicode-identifiers.
+// Set names are also compared in NFC. The .json includes an NFD "Größ" and
+// an NFC "Höhe"; tests select each using the other spelling.
 
 /* [Maße] */
 
