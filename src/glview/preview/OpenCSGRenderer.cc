@@ -38,10 +38,112 @@
 #include <cstddef>
 #include <utility>
 #include <vector>
+#include <list>
+#include <mutex>
+#include <algorithm>
 
 #ifdef ENABLE_OPENCSG
 
 namespace {
+
+struct OpenCSGVBOCacheKey {
+  struct Item {
+    std::shared_ptr<const PolySet> polyset;
+    double matrix[16];
+    float color[4];
+    bool is_intersection;
+  };
+  std::vector<Item> items;
+  bool highlight_mode;
+  bool background_mode;
+  const ShaderUtils::ShaderInfo *shaderinfo;
+  const ColorScheme *colorscheme;
+
+  bool operator==(const OpenCSGVBOCacheKey& o) const
+  {
+    if (highlight_mode != o.highlight_mode || background_mode != o.background_mode ||
+        shaderinfo != o.shaderinfo || colorscheme != o.colorscheme || items.size() != o.items.size()) {
+      return false;
+    }
+    for (size_t i = 0; i < items.size(); ++i) {
+      const auto& a = items[i];
+      const auto& b = o.items[i];
+      if (a.polyset != b.polyset || a.is_intersection != b.is_intersection || a.color[0] != b.color[0] ||
+          a.color[1] != b.color[1] || a.color[2] != b.color[2] || a.color[3] != b.color[3]) {
+        return false;
+      }
+      for (int j = 0; j < 16; ++j) {
+        if (a.matrix[j] != b.matrix[j]) return false;
+      }
+    }
+    return true;
+  }
+};
+
+class OpenCSGRendererCache
+{
+public:
+  struct CacheEntry {
+    OpenCSGVBOCacheKey key;
+    std::shared_ptr<OpenCSGVBOProduct> product;
+  };
+
+  static std::shared_ptr<OpenCSGVBOProduct> get(const OpenCSGVBOCacheKey& key)
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (auto it = cache_.begin(); it != cache_.end(); ++it) {
+      if (it->key == key) {
+        auto entry = *it;
+        cache_.erase(it);
+        cache_.push_front(entry);
+        return entry.product;
+      }
+    }
+    return nullptr;
+  }
+
+  static void put(const OpenCSGVBOCacheKey& key, std::shared_ptr<OpenCSGVBOProduct> product)
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (auto it = cache_.begin(); it != cache_.end(); ++it) {
+      if (it->key == key) {
+        cache_.erase(it);
+        break;
+      }
+    }
+    cache_.push_front({key, product});
+    while (cache_.size() > capacity_) {
+      cache_.pop_back();
+    }
+  }
+
+  //! Holds at least `products` entries from now on. A preview with more products than the
+  //! capacity evicts its own entries while it is being built, so the next preview of the same model
+  //! misses on every one of them -- a repeat preview of 150 products rebuilt all 150 under a fixed
+  //! 100.
+  // ponytail: grows to the largest preview seen and never shrinks; bound it by memory if very large
+  // models make that matter.
+  static void reserve(size_t products)
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    capacity_ = std::max(capacity_, products);
+  }
+
+  static void clear()
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    cache_.clear();
+  }
+
+private:
+  static std::list<CacheEntry> cache_;
+  static std::mutex mutex_;
+  static size_t capacity_;
+};
+
+std::list<OpenCSGRendererCache::CacheEntry> OpenCSGRendererCache::cache_;
+std::mutex OpenCSGRendererCache::mutex_;
+size_t OpenCSGRendererCache::capacity_ = 100;
 
 class OpenCSGVBOPrim : public OpenCSG::Primitive
 {
@@ -99,9 +201,32 @@ OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
   opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
 }
 
+void OpenCSGRenderer::clearCache()
+{
+#ifdef ENABLE_OPENCSG
+  OpenCSGRendererCache::clear();
+#endif
+}
+
+void OpenCSGRenderer::setColorScheme(const ColorScheme& cs)
+{
+  if (colorscheme_ == &cs) return;
+  Renderer::setColorScheme(cs);
+  vertex_state_containers_.clear();
+}
+
 void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
   if (vertex_state_containers_.empty()) {
+#ifdef ENABLE_OPENCSG
+    // Room for every product about to be built, so building them cannot evict their own entries.
+    size_t products = 0;
+    for (const auto *list :
+         {root_products_.get(), background_products_.get(), highlights_products_.get()}) {
+      if (list) products += list->products.size();
+    }
+    OpenCSGRendererCache::reserve(products);
+#endif
     if (root_products_) {
       createCSGVBOProducts(*root_products_, false, false, shaderinfo);
     }
@@ -185,7 +310,46 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = true;
   for (const auto& product : products.products) {
-    std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
+    OpenCSGVBOCacheKey key;
+    key.highlight_mode = highlight_mode;
+    key.background_mode = background_mode;
+    key.shaderinfo = shaderinfo;
+    key.colorscheme = colorscheme_;
+    for (const auto& csgobj : product.intersections) {
+      if (csgobj.leaf->polyset) {
+        OpenCSGVBOCacheKey::Item item;
+        item.polyset = csgobj.leaf->polyset;
+        std::copy(csgobj.leaf->matrix.data(), csgobj.leaf->matrix.data() + 16, item.matrix);
+        item.color[0] = csgobj.leaf->color.r();
+        item.color[1] = csgobj.leaf->color.g();
+        item.color[2] = csgobj.leaf->color.b();
+        item.color[3] = csgobj.leaf->color.a();
+        item.is_intersection = true;
+        key.items.push_back(item);
+      }
+    }
+    for (const auto& csgobj : product.subtractions) {
+      if (csgobj.leaf->polyset) {
+        OpenCSGVBOCacheKey::Item item;
+        item.polyset = csgobj.leaf->polyset;
+        std::copy(csgobj.leaf->matrix.data(), csgobj.leaf->matrix.data() + 16, item.matrix);
+        item.color[0] = csgobj.leaf->color.r();
+        item.color[1] = csgobj.leaf->color.g();
+        item.color[2] = csgobj.leaf->color.b();
+        item.color[3] = csgobj.leaf->color.a();
+        item.is_intersection = false;
+        key.items.push_back(item);
+      }
+    }
+
+    std::shared_ptr<OpenCSGVBOProduct> vertex_state_container = OpenCSGRendererCache::get(key);
+    if (vertex_state_container) {
+      vertex_state_containers_.push_back(vertex_state_container);
+      continue;
+    }
+
+    vertex_state_container = std::make_shared<OpenCSGVBOProduct>();
+    ++vbo_builds_;
 
     Color4f last_color;
     auto& vertex_states = vertex_state_container->states();
@@ -348,7 +512,8 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     vbo_builder.createInterleavedVBOs();
-    vertex_state_containers_.push_back(std::move(vertex_state_container));
+    OpenCSGRendererCache::put(key, vertex_state_container);
+    vertex_state_containers_.push_back(vertex_state_container);
   }
 #endif  // ENABLE_OPENCSG
 }
