@@ -21,7 +21,6 @@
 #include <QSoundEffect>
 #include <QString>
 #include <QStringList>
-#include <QTemporaryFile>
 #include <QTime>
 #include <QTimer>
 #include <QUrl>
@@ -461,7 +460,6 @@ private:
 
   char const *afterCompileSlot;
   bool procevents{false};
-  QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   GeometryWorker *geometryWorker;
   QMutex consolemutex;
@@ -478,7 +476,6 @@ private:
 
   QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
-  std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 
   void resetMeasurementsState(bool enable, const QString& tooltipMessage);
   QActionGroup *measurementGroup;
