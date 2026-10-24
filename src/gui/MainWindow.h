@@ -476,7 +476,6 @@ private:
 
   QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
-  std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 
   void resetMeasurementsState(bool enable, const QString& tooltipMessage);
   QActionGroup *measurementGroup;
