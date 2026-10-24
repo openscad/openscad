@@ -153,7 +153,8 @@ void CGALRenderer::createPolySetStates()
     Color4f color;
     getColorSchemeColor(ColorMode::MATERIAL, color);
     vbo_builder.writeSurface();
-    vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, false);
+    vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, false, false,
+                               schemeFaceColors());
   }
 
   vbo_builder.createInterleavedVBOs();
