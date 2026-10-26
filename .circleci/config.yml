@@ -115,6 +115,9 @@ jobs:
               export LC_ALL=C.UTF-8
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
+              # Use Debian's CPack to avoid the MXE-host CPack ZIP crash.
+              export OPENSCAD_CPACK_EXECUTABLE=/usr/bin/cpack
+              "${OPENSCAD_CPACK_EXECUTABLE}" --version
               export USE_SCCACHE=1
               ln -sf /usr/bin/python{3,}
               if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
