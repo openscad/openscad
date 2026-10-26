@@ -536,10 +536,10 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D =
-    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
+  scadApp->setRenderBackend3D(
+    renderBackend3DFromString(
+      GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
+      .value_or(DEFAULT_RENDERING_BACKEND_3D));
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -643,11 +643,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
   isClosing = true;
   progress_report_fin();
-
-  if (this->tempFile) {
-    delete this->tempFile;
-    this->tempFile = nullptr;
-  }
 
   // Log to stdout from now on
   clearCurrentOutput();
@@ -1296,35 +1291,41 @@ void MainWindow::writeBackup(QFile *file)
 
 void MainWindow::saveBackup()
 {
-  auto path = PlatformUtils::backupPath();
-  if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
-    return;
-  }
+  // There is a good argument that the management of the temporary file name belongs
+  // in EditorInterface, since that's where it lives and where the path of the file
+  // lives.  However, all management of EditorInterface::filepath appears to be in
+  // MainWindow and TabManager, *not* in EditorInterface, so I'm leaving the temporary
+  // file management here.
+  if (!activeEditor->tempFile) {
+    auto path = PlatformUtils::backupPath();
+    if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
+      LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
+      return;
+    }
 
-  auto backupPath = QString::fromLocal8Bit(path.c_str());
-  if (!backupPath.endsWith("/")) backupPath.append("/");
+    auto backupPath = QString::fromLocal8Bit(path.c_str());
+    if (!backupPath.endsWith("/")) backupPath.append("/");
 
-  QString basename = "unsaved";
-  if (!activeEditor->filepath.isEmpty()) {
-    auto fileInfo = QFileInfo(activeEditor->filepath);
-    basename = fileInfo.baseName();
-  }
+    QString basename = "unsaved";
+    if (!activeEditor->filepath.isEmpty()) {
+      auto fileInfo = QFileInfo(activeEditor->filepath);
+      basename = fileInfo.baseName();
+    }
 
-  if (!this->tempFile) {
 #ifdef ENABLE_PYTHON
     const QString suffix = this->python_active ? "py" : "scad";
 #else
     const QString suffix = "scad";
 #endif
-    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
+    activeEditor->tempFile =
+      new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
-  if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
+  if ((!activeEditor->tempFile->isOpen()) && (!activeEditor->tempFile->open())) {
     LOG(message_group::UI_Warning, "Failed to create backup file");
     return;
   }
-  return writeBackup(this->tempFile);
+  return writeBackup(activeEditor->tempFile);
 }
 
 void MainWindow::on_fileActionSave_triggered()
@@ -2389,17 +2390,11 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       delete this->progresswidget;
       this->progresswidget = nullptr;
     }
-    if (versionLabel == nullptr) {
-      versionLabel =
-        new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
-      sb->addPermanentWidget(this->versionLabel);
-    }
+    versionLabel.show();
+    updateBackend3DLabel();  // shows if appropriate
   } else {
-    if (this->versionLabel != nullptr) {
-      sb->removeWidget(this->versionLabel);
-      delete this->versionLabel;
-      this->versionLabel = nullptr;
-    }
+    versionLabel.hide();
+    backend3DLabel.hide();
     sb->addPermanentWidget(progressWidget);
   }
 }
@@ -3595,7 +3590,15 @@ void MainWindow::setupStatusBar()
     }
   )");
   this->statusBar()->setStyleSheet(stylesheet);
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
+
+  this->versionLabel.setText("OpenSCAD " +
+                             QString::fromStdString(std::string(openscad_displayversionnumber)));
+  this->statusBar()->addPermanentWidget(&this->versionLabel);
+
+  connect(scadApp, &OpenSCADApp::backend3DChanged, this, &MainWindow::updateBackend3DLabel);
+  updateBackend3DLabel();
+  this->statusBar()->addPermanentWidget(&this->backend3DLabel);
+
   updateStatusBar(nullptr);
 }
 
@@ -4134,4 +4137,16 @@ void MainWindow::changeEvent(QEvent *event)
     setGlobalTheme();
   }
   QMainWindow::changeEvent(event);
+}
+
+void MainWindow::updateBackend3DLabel()
+{
+  RenderBackend3D backend = RenderSettings::inst()->backend3D;
+
+  if (backend == DEFAULT_RENDERING_BACKEND_3D) {
+    backend3DLabel.hide();
+  } else {
+    backend3DLabel.setText(QString::fromStdString(renderBackend3DToString(backend)));
+    backend3DLabel.show();
+  }
 }
