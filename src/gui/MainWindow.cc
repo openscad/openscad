@@ -186,7 +186,7 @@ std::string SHA256HashString(std::string aString)
 
   sha256_init(&sha256_ctx);
   sha256_update(&sha256_ctx, aString.length(), (uint8_t *)aString.c_str());
-  sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
+  sha256_digest(&sha256_ctx, digest);
 
   base64_encode_ctx base64_ctx;
   char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE) + 1];
