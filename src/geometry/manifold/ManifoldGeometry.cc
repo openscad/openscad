@@ -210,7 +210,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   return ps;
 }
 
-ManifoldGeometry ManifoldGeometry::simplify(double tolerance) const
+ManifoldGeometry ManifoldGeometry::simplify(double tolerance) const noexcept
 {
   return ManifoldGeometry(manifold_.Simplify(tolerance), originalIDs_, originalIDToColor_,
                           subtractedIDs_);
@@ -296,7 +296,7 @@ ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const Mani
 }
 
 ManifoldGeometry ManifoldGeometry::batchOp(
-  const std::vector<std::shared_ptr<const ManifoldGeometry>>& children, manifold::OpType opType)
+  const std::vector<std::shared_ptr<const ManifoldGeometry>>& children, manifold::OpType opType) noexcept
 {
   std::vector<manifold::Manifold> manifolds;
   manifolds.reserve(children.size());

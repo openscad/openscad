@@ -33,6 +33,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -229,10 +230,10 @@ std::shared_ptr<const PolySet> preparePolySet(const std::shared_ptr<const Geomet
     }
   }
 #endif
-  else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {  // NOLINT(bugprone-branch-clone)
-    assert(false && "Unsupported file format");
-  } else {  // NOLINT(bugprone-branch-clone)
-    assert(false && "Not implemented");
+  else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    LOG(message_group::Export_Error, "Polygon2d geometry not supported for STL export");
+  } else {
+    LOG(message_group::Export_Error, "Unsupported geometry type for STL export");
   }
 
   if (!ps) return nullptr;
@@ -288,21 +289,21 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       triangle_count += ps->indices.size();
     }
 
-    if (triangle_count > 4294967295) {
+    if (triangle_count > std::numeric_limits<uint32_t>::max()) {
       LOG(message_group::Export_Error,
-          "Triangle count exceeded 4294967295, so the STL file is not valid");
+          "Triangle count exceeded UINT32_MAX, so the STL file is not valid");
     }
 
     // 80-byte title (zero padded) + 4-byte little-endian triangle count
-    char header[84] = {};
-    static const char title[] = "OpenSCAD Model\n";
-    std::memcpy(header, title, sizeof(title) - 1);
+    std::array<char, 84> header{};
+    static constexpr std::string_view title = "OpenSCAD Model\n";
+    std::copy(title.begin(), title.end(), header.begin());
     const auto count = static_cast<uint32_t>(triangle_count);
-    header[80] = static_cast<char>(count & 0xff);
-    header[81] = static_cast<char>((count >> 8) & 0xff);
-    header[82] = static_cast<char>((count >> 16) & 0xff);
-    header[83] = static_cast<char>((count >> 24) & 0xff);
-    output.write(header, sizeof(header));
+    header[80] = static_cast<char>(count & 0xFF);
+    header[81] = static_cast<char>((count >> 8) & 0xFF);
+    header[82] = static_cast<char>((count >> 16) & 0xFF);
+    header[83] = static_cast<char>((count >> 24) & 0xFF);
+    output.write(header.data(), header.size());
 
     // Stream triangles directly to the output
     for (const auto& ps : polysets) {
@@ -310,12 +311,15 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     }
   } else {
     // ASCII mode: Write directly to the output stream
-    setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
+    // Use std::locale::classic() to ensure radix is . (not ,) in output.
+    // This is thread-safe unlike setlocale().
+    const std::locale old_locale = output.getloc();
+    output.imbue(std::locale::classic());
     output << "solid OpenSCAD_Model\n";
     for (const auto& ps : polysets) {
       append_stl(ps, output, false);
     }
     output << "endsolid OpenSCAD_Model\n";
-    setlocale(LC_NUMERIC, "");  // Restore default locale
+    output.imbue(old_locale);
   }
 }

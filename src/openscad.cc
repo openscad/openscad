@@ -569,11 +569,23 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       // next node boundary instead of killing the process mid-evaluation.
       CliExportProgress progress_state;
       progress_state.tty = cli_export_stderr_is_tty();
+
 #ifndef _WIN32
-      struct sigaction old_sigint_sa{};
-      cli_export_cancel_requested = 0;
-      cli_export_install_sigint_handler(&old_sigint_sa);
+      // RAII guard to ensure SIGINT handler is always restored, even on exception.
+      struct SigintGuard {
+        struct sigaction old_sa;
+        SigintGuard() {
+          cli_export_cancel_requested = 0;
+          cli_export_install_sigint_handler(&old_sa);
+        }
+        ~SigintGuard() {
+          cli_export_restore_sigint_handler(&old_sa);
+          cli_export_cancel_requested = 0;
+        }
+      };
+      SigintGuard sigint_guard;
 #endif
+
       progress_report_prep(std::const_pointer_cast<AbstractNode>(root_node), cli_export_progress_func,
                            &progress_state);
       bool cancelled = false;
@@ -583,10 +595,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         cancelled = true;
       }
       progress_report_fin();
-#ifndef _WIN32
-      cli_export_restore_sigint_handler(&old_sigint_sa);
-      cli_export_cancel_requested = 0;
-#endif
       if (progress_state.tty) std::fputc('\n', stderr);
       if (cancelled) {
         LOG("Export cancelled.");

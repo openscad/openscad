@@ -1318,14 +1318,14 @@ void MainWindow::saveBackup()
     const QString suffix = "scad";
 #endif
     activeEditor->tempFile =
-      new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
+      std::make_unique<QTemporaryFile>(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
   if ((!activeEditor->tempFile->isOpen()) && (!activeEditor->tempFile->open())) {
     LOG(message_group::UI_Warning, "Failed to create backup file");
     return;
   }
-  return writeBackup(activeEditor->tempFile);
+  return writeBackup(activeEditor->tempFile.get());
 }
 
 void MainWindow::on_fileActionSave_triggered()
