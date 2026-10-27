@@ -1290,7 +1290,21 @@ void MainWindow::navigatePreviewObject(int direction)
     sourceEditor->clearAllSelectionIndicators();
     int firstLine = location.firstLine(), firstColumn = location.firstColumn();
     int lastLine = location.lastLine(), lastColumn = location.lastColumn();
-    node->getCodeLocation(0, 0, &firstLine, &firstColumn, &lastLine, &lastColumn, 0);
+    const bool pythonSource =
+      QString::fromStdString(location.filePath().extension().string())
+        .compare(QStringLiteral(".py"), Qt::CaseInsensitive) == 0;
+    if (pythonSource) {
+      // Python objects are created directly by calls; selecting the complete
+      // descendant range would make a parent operation point at its first child.
+      const auto sourceLines = sourceEditor->toPlainText().split(QLatin1Char('\n'));
+      if (firstLine > 0 && firstLine <= static_cast<int>(sourceLines.size())) {
+        lastLine = firstLine;
+        firstColumn = 1;
+        lastColumn = static_cast<int>(sourceLines.at(firstLine - 1).size()) + 1;
+      }
+    } else {
+      node->getCodeLocation(0, 0, &firstLine, &firstColumn, &lastLine, &lastColumn, 0);
+    }
     editorDock->show();
     sourceEditor->selectRange(firstLine - 1, firstColumn - 1, lastLine - 1, lastColumn - 1);
 
@@ -1921,7 +1935,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
       LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
-    auto error = evaluatePython(fulltext_py, false);
+    auto error = evaluatePython(fulltext_py, false, fname);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }

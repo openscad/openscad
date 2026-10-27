@@ -28,6 +28,8 @@ __all__ = [
     "divmatrix",
     "offset",
     "color",
+    "highlight",
+    "transparent",
     "show",
     "linear_extrude",
     "rotate_extrude",
