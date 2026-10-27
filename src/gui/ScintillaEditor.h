@@ -115,6 +115,7 @@ public slots:
   void unindentSelection() override;
   void commentSelection() override;
   void uncommentSelection() override;
+  void formatSelection() override;
   void insert(const QString&) override;
   void setText(const QString&) override;
   void undo() override;

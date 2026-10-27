@@ -30,6 +30,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/Settings.h"
@@ -992,13 +993,21 @@ void ScintillaEditor::commentSelection()
 
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
+  qsci->beginUndoAction();
   for (int line = lineFrom; line <= lineTo; ++line) {
-    qsci->insertAt("//", line, 0);
+    const QString lineText = qsci->text(line);
+    int marker = 0;
+    while (marker < lineText.size() &&
+           (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
+      ++marker;
+    }
+    qsci->insertAt("//", line, marker);
   }
 
   if (hasSelection) {
     qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
   }
+  qsci->endUndoAction();
 }
 
 void ScintillaEditor::uncommentSelection()
@@ -1007,16 +1016,108 @@ void ScintillaEditor::uncommentSelection()
 
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
+  qsci->beginUndoAction();
   for (int line = lineFrom; line <= lineTo; ++line) {
-    QString lineText = qsci->text(line);
-    if (lineText.startsWith("//")) {
-      qsci->setSelection(line, 0, line, 2);
+    const QString lineText = qsci->text(line);
+    int marker = 0;
+    while (marker < lineText.size() &&
+           (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
+      ++marker;
+    }
+    if (lineText.mid(marker, 2) == "//") {
+      qsci->setSelection(line, marker, line, marker + 2);
       qsci->removeSelectedText();
     }
   }
   if (hasSelection) {
     qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
   }
+  qsci->endUndoAction();
+}
+
+void ScintillaEditor::formatSelection()
+{
+  int lineFrom = 0;
+  int lineTo = qsci->lines() - 1;
+  if (qsci->hasSelectedText()) {
+    getRange(&lineFrom, &lineTo);
+  }
+  if (lineTo < lineFrom) return;
+
+  int depth = 0;
+  int continuationDepth = 0;
+  bool inBlockComment = false;
+  auto updateDepth = [&depth, &continuationDepth, &inBlockComment](const QString& line,
+                                                                  bool adjustIndent) {
+    int first = 0;
+    while (first < line.size() && line.at(first).isSpace()) ++first;
+    int lineDepth = depth + continuationDepth;
+    if (adjustIndent && first < line.size() && line.at(first) == QLatin1Char('}')) {
+      lineDepth = std::max(0, depth - 1) + continuationDepth;
+    }
+
+    bool inString = false;
+    bool escaped = false;
+    bool hasCode = false;
+    bool hasBrace = false;
+    QChar lastCodeChar;
+    for (int i = 0; i < line.size(); ++i) {
+      const QChar ch = line.at(i);
+      const QChar next = i + 1 < line.size() ? line.at(i + 1) : QChar();
+      if (inBlockComment) {
+        if (ch == QLatin1Char('*') && next == QLatin1Char('/')) {
+          inBlockComment = false;
+          ++i;
+        }
+        continue;
+      }
+      if (inString) {
+        lastCodeChar = ch;
+        if (escaped) escaped = false;
+        else if (ch == QLatin1Char('\\')) escaped = true;
+        else if (ch == QLatin1Char('"')) inString = false;
+        continue;
+      }
+      if (ch == QLatin1Char('/') && next == QLatin1Char('/')) break;
+      if (ch == QLatin1Char('/') && next == QLatin1Char('*')) {
+        inBlockComment = true;
+        ++i;
+      } else if (ch == QLatin1Char('"')) {
+        hasCode = true;
+        lastCodeChar = ch;
+        inString = true;
+      } else if (!ch.isSpace()) {
+        hasCode = true;
+        lastCodeChar = ch;
+        if (ch == QLatin1Char('{') || ch == QLatin1Char('}')) hasBrace = true;
+        if (ch == QLatin1Char('{')) {
+          ++depth;
+        } else if (ch == QLatin1Char('}')) {
+          depth = std::max(0, depth - 1);
+        }
+      }
+    }
+    if (hasCode) {
+      if (hasBrace || lastCodeChar == QLatin1Char(';')) continuationDepth = 0;
+      else ++continuationDepth;
+    }
+    return std::pair<int, int>{lineDepth, first};
+  };
+
+  for (int line = 0; line < lineFrom; ++line) {
+    updateDepth(qsci->text(line), false);
+  }
+
+  qsci->beginUndoAction();
+  const int indentWidth = std::max(1, qsci->indentationWidth());
+  for (int line = lineFrom; line <= lineTo; ++line) {
+    const QString lineText = qsci->text(line);
+    const auto [lineDepth, first] = updateDepth(lineText, true);
+    if (first < lineText.size()) {
+      qsci->setIndentation(line, lineDepth * indentWidth);
+    }
+  }
+  qsci->endUndoAction();
 }
 
 QString ScintillaEditor::selectedText()
