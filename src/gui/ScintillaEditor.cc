@@ -169,6 +169,17 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   QShortcut *shortcutAutocomplete;
   shortcutAutocomplete = new QShortcut(modifier | Qt::Key_Space, this);
   connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAPIs(); });
+#ifdef Q_OS_MACOS
+  // Qt maps Command to CTRL and the physical Control key to META on macOS.
+  // The existing META+Space shortcut above already provides Control+Space.
+  auto *shortcutDeleteLine = new QShortcut(Qt::CTRL | Qt::Key_Backspace, this);
+  connect(shortcutDeleteLine, &QShortcut::activated,
+          [=]() { qsci->SendScintilla(QsciScintilla::SCI_LINEDELETE); });
+
+  auto *shortcutFormatCode = new QShortcut(Qt::ALT | Qt::CTRL | Qt::Key_L, this);
+  shortcutFormatCode->setContext(Qt::WidgetWithChildrenShortcut);
+  connect(shortcutFormatCode, &QShortcut::activated, this, &ScintillaEditor::formatSelection);
+#endif
   // NOLINTEND(bugprone-suspicious-enum-usage)
 
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
@@ -1132,6 +1143,20 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
     if (keyEvent->key() == Qt::Key_Escape) {
       emit escapePressed();
     }
+#ifdef Q_OS_MACOS
+    // On macOS ControlModifier is Command; MetaModifier is physical Control.
+    const auto modifiers = keyEvent->modifiers();
+    if (keyEvent->key() == Qt::Key_L &&
+        modifiers == (Qt::ControlModifier | Qt::AltModifier)) {
+      formatSelection();
+      return true;
+    }
+    if (keyEvent->key() == Qt::Key_P &&
+        modifiers == (Qt::ControlModifier | Qt::ShiftModifier)) {
+      toggleHighlightCurrentLine();
+      return true;
+    }
+#endif
   }
   if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) ||
       QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
@@ -1167,6 +1192,36 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
     if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
       auto *keyEvent = static_cast<QKeyEvent *>(e);
 
+#ifdef Q_OS_MACOS
+      if (e->type() == QEvent::KeyPress &&
+          (keyEvent->modifiers() == Qt::NoModifier || keyEvent->modifiers() == Qt::ShiftModifier)) {
+        const bool extend = keyEvent->modifiers() == Qt::ShiftModifier;
+        unsigned int command = 0;
+        switch (keyEvent->key()) {
+        case Qt::Key_PageUp:
+          command = extend ? QsciScintilla::SCI_DOCUMENTSTARTEXTEND
+                           : QsciScintilla::SCI_DOCUMENTSTART;
+          break;
+        case Qt::Key_PageDown:
+          command = extend ? QsciScintilla::SCI_DOCUMENTENDEXTEND
+                           : QsciScintilla::SCI_DOCUMENTEND;
+          break;
+        case Qt::Key_Home:
+          command = extend ? QsciScintilla::SCI_HOMEEXTEND : QsciScintilla::SCI_HOME;
+          break;
+        case Qt::Key_End:
+          command = extend ? QsciScintilla::SCI_LINEENDEXTEND : QsciScintilla::SCI_LINEEND;
+          break;
+        default:
+          break;
+        }
+        if (command != 0) {
+          qsci->SendScintilla(command);
+          return true;
+        }
+      }
+#endif
+
       PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
               (e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
                 (keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
@@ -1176,9 +1231,6 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
                 (keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
                 (keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
 
-      if (handleKeyEventNavigateNumber(keyEvent)) {
-        return true;
-      }
       if (handleKeyEventBlockCopy(keyEvent)) {
         return true;
       }
@@ -1190,6 +1242,29 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
   } else return EditorInterface::eventFilter(obj, e);
 
   return false;
+}
+
+void ScintillaEditor::toggleHighlightCurrentLine()
+{
+  int line, column;
+  qsci->getCursorPosition(&line, &column);
+  (void)column;
+  const QString lineText = qsci->text(line);
+  int marker = 0;
+  while (marker < lineText.size() &&
+         (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
+    ++marker;
+  }
+
+  qsci->beginUndoAction();
+  if (lineText.mid(marker, 1) == "#") {
+    qsci->setSelection(line, marker, line, marker + 1);
+    qsci->removeSelectedText();
+  } else {
+    qsci->insertAt("#", line, marker);
+  }
+  qsci->endUndoAction();
+  emit previewRequest();
 }
 
 bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
@@ -1296,47 +1371,6 @@ bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
   return true;
 }
 
-bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
-{
-  static bool previewAfterUndo = false;
-
-#ifdef Q_OS_MACOS
-  unsigned int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier;
-#else
-  unsigned int navigateOnNumberModifiers = Qt::AltModifier;
-#endif
-  if (keyEvent->modifiers() == navigateOnNumberModifiers) {
-    switch (keyEvent->key()) {
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-      if (keyEvent->type() == QEvent::KeyPress) {
-        navigateOnNumber(keyEvent->key());
-      }
-      return true;
-
-    case Qt::Key_Up:
-    case Qt::Key_Down:
-      if (keyEvent->type() == QEvent::KeyPress) {
-        if (modifyNumber(keyEvent->key())) {
-          previewAfterUndo = true;
-        }
-      }
-      return true;
-    }
-  }
-  if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
-    int k = keyEvent->key() | keyEvent->modifiers();
-    auto *cmd = qsci->standardCommands()->boundTo(k);
-    if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
-      QTimer::singleShot(0, this, &ScintillaEditor::previewRequest);
-    else if (cmd || !keyEvent->text().isEmpty()) {
-      // any insert or command (but not undo/redo) cancels the preview after undo
-      previewAfterUndo = false;
-    }
-  }
-  return false;
-}
-
 bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
 {
   const auto& modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
@@ -1380,39 +1414,6 @@ bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
     }
   }
   return false;
-}
-
-void ScintillaEditor::navigateOnNumber(int key)
-{
-  int line, index;
-  qsci->getCursorPosition(&line, &index);
-  auto text = qsci->text(line);
-  auto left = text.left(index);
-  auto dotOnLeft = left.contains(QRegularExpression("\\.\\d*$"));
-  auto dotJustLeft = index > 1 && text[index - 2] == '.';
-  auto dotJustRight = text[index] == '.';
-  auto numOnLeft = left.contains(QRegularExpression("\\d\\.?$")) || left.endsWith("-.");
-  auto numOnRight = text.indexOf(QRegularExpression("\\.?\\d"), index) == index;
-
-  switch (key) {
-  case Qt::Key_Left:
-    if (numOnLeft) qsci->setCursorPosition(line, index - (dotJustLeft ? 2 : 1));
-    break;
-
-  case Qt::Key_Right:
-    if (numOnRight) qsci->setCursorPosition(line, index + (dotJustRight ? 2 : 1));
-    else if (numOnLeft) {
-      // add trailing zero
-      if (!dotOnLeft) {
-        qsci->insert(".0");
-        index++;
-      } else {
-        qsci->insert("0");
-      }
-      qsci->setCursorPosition(line, index + 1);
-    }
-    break;
-  }
 }
 
 bool ScintillaEditor::modifyNumber(int key)
