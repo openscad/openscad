@@ -55,7 +55,7 @@ msgstr ""
 #: build/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:110
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:186
 msgid "OK"
-msgstr "TAMAM"
+msgstr "Tamam"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:275
 msgid "Animate"
@@ -100,7 +100,7 @@ msgstr "Adımlar:"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Animate.h:299
 msgid "Dump Pictures"
-msgstr "Döküm Resimleri"
+msgstr "Resimleri kaydet"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:852
 #: build/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:362
@@ -135,7 +135,7 @@ msgstr "Trim'i Sıfırla"
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:869
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:880
 msgid "DeadZone"
-msgstr "ÖlüBölge"
+msgstr "Ölü bölge"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:857
 msgid "Auto Trim Axes"
@@ -205,15 +205,15 @@ msgstr "Z"
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:888
 #: build/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:280
 msgid "Translation"
-msgstr "Çeviri"
+msgstr "Öteleme"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:889
 msgid "ViewPort rel.<br/>Translation"
-msgstr "BağlantıNoktasını Görüntüle<br/>Çeviri"
+msgstr "Görünüm alanına göre<br/>Öteleme"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:890
 msgid "ViewPort rel.<br />Rotation"
-msgstr "BağlantıNoktasını Görüntüle.<br />Döndürme"
+msgstr "Görünüm alanına göre<br />Döndürme"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:891
 msgid "Axis Setup:"
@@ -227,7 +227,7 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:893
 msgid "SpaceNav"
-msgstr "BoşlukGezin"
+msgstr "SpaceNav"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:894
 msgid "HIDAPI"
@@ -235,7 +235,7 @@ msgstr "HIDAPI"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:895
 msgid "QGamepad"
-msgstr "QOyun Kumandası"
+msgstr "QGamepad"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:896
 msgid "Joystick"
@@ -243,7 +243,7 @@ msgstr "Oyun kolu"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:897
 msgid "DBus"
-msgstr "VYolu"
+msgstr "DBus"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:898
 msgid "Axes Mapping:"
@@ -457,7 +457,7 @@ msgstr "Renk adı"
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2522
 #: src/core/Settings.cc:161 src/core/Settings.cc:498
 msgid "Fixed"
-msgstr "Onarıldı"
+msgstr "Sabit"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:419
 #: build/OpenSCADLibInternal_autogen/include/ui_FontList.h:310
@@ -1113,7 +1113,7 @@ msgstr "Yardım"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:297
 msgid "Recents"
-msgstr "Son bilgiler"
+msgstr "Son kullanılanlar"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:298
 msgid "Open Recent"
@@ -1382,7 +1382,7 @@ msgstr "F6"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1116
 msgid "&3D Print"
-msgstr "&3B Yazıcı"
+msgstr "&3B Yazdır"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1118
 msgid "F8"
@@ -1438,7 +1438,7 @@ msgstr "&POV olarak dışa aktar..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1136
 msgid "Export as &OFF..."
-msgstr "&KAPALI olarak dışa aktar..."
+msgstr "&OFF olarak dışa aktar..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1137
 msgid "Export as &WRL..."
@@ -1558,7 +1558,7 @@ msgstr "&Perspektif"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1192
 msgid "&Orthogonal"
-msgstr "&Dikey"
+msgstr "&Ortogonal"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1193
 msgid "&About"
@@ -1787,7 +1787,7 @@ msgstr "Tümünü Daralt/Genişlet"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1282
 msgid "&Jump To"
-msgstr "&Git"
+msgstr "Şuraya &Git"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1284
 msgid "Ctrl+J"
@@ -1860,11 +1860,11 @@ msgstr "Yer değiştir"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1304
 msgid "Search string"
-msgstr "Arama dizisi"
+msgstr "Aranacak metin"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1305
 msgid "Replacement string"
-msgstr "Yedek dize"
+msgstr "Yerine konacak metin"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1308
 msgid "Previous"
@@ -2044,7 +2044,7 @@ msgstr "Diğer işlemler"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2465
 msgid "3D View"
-msgstr "3D Görünüm"
+msgstr "3B Görünüm"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2466
 msgctxt "preferences"
@@ -2161,7 +2161,7 @@ msgstr "Fare Tekerleği Üzerinden Sayı Kaydırma"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2503
 msgid "Modifier For Wheel Scroll "
-msgstr "Tekerlerk Kaydırma İçin Değiştirici "
+msgstr "Tekerlek Kaydırma İçin Değiştirici "
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2504
 msgid "Autocomplete"
@@ -2235,7 +2235,7 @@ msgstr "Satır sarma görselleştirme"
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2523
 #: src/core/Settings.cc:161
 msgid "Same"
-msgstr "Benzer"
+msgstr "Aynı"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2524
 #: src/core/Settings.cc:161
@@ -2315,7 +2315,7 @@ msgstr "Otomatik Girinti"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2549
 msgid "Backspace unindents"
-msgstr "Girintileri geri al"
+msgstr "Geri silme girintiyi azaltır"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2550
 msgid "Indent using"
@@ -2418,7 +2418,7 @@ msgstr "Uzak baskı hizmetlerini etkinleştir"
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:181
 #: src/gui/Preferences.cc:606
 msgid "OctoPrint"
-msgstr "Sekiz Baskı"
+msgstr "OctoPrint"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2576
 msgid "URL"
@@ -2510,7 +2510,7 @@ msgstr "öğeler"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2609
 msgid "Force Goldfeather"
-msgstr "Altın tüyü zorla"
+msgstr "Goldfeather'ı zorla"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2610
 msgid "3D Rendering"
@@ -2531,7 +2531,7 @@ msgstr "MB"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2614
 msgid "PolySet Cache size"
-msgstr "Çoklu Ayar Önbellek boyutu"
+msgstr "PolySet önbellek boyutu"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2616
 msgid "User Interface"
@@ -2857,7 +2857,7 @@ msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f, fov = %.2f"
 msgstr ""
-"Görünüm alanı: çeviri = [ %.2f %.2f %.2f ], döndür = [ %.2f %.2f %.2f ], "
+"Görünüm alanı: öteleme = [ %.2f %.2f %.2f ], döndürme = [ %.2f %.2f %.2f ], "
 "mesafe = %.2f, fov = %.2f"
 
 #: src/gui/ai/ChatWidget.cc:101 src/gui/ai/ChatWidget.cc:454
