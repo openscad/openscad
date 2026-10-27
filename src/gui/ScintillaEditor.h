@@ -79,11 +79,10 @@ private:
                    const QColor& defaultColor);
 
   bool eventFilter(QObject *obj, QEvent *event) override;
-  bool handleKeyEventNavigateNumber(QKeyEvent *);
   bool handleWheelEventNavigateNumber(QWheelEvent *);
   bool handleKeyEventBlockCopy(QKeyEvent *);
   bool handleKeyEventBlockMove(QKeyEvent *);
-  void navigateOnNumber(int key);
+  void toggleHighlightCurrentLine();
   bool modifyNumber(int key);
   void noColor();
 
