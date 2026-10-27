@@ -6,7 +6,7 @@ orbs:
 executors:
   mxe-executor:
     docker:
-      - image: openscad/mxe-x86_64-gui:latest
+      - image: openscad/mxe-x86_64-gui:ci-build
     resource_class: large
   docker-x86_64:
     machine:
