@@ -1138,6 +1138,19 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
+  if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
+    const auto *keyEvent = static_cast<QKeyEvent *>(e);
+    // Qt marks arrow keys with KeypadModifier on macOS.
+    auto modifiers = keyEvent->modifiers();
+    modifiers.setFlag(Qt::KeypadModifier, false);
+    if (modifiers == Qt::AltModifier &&
+        (keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up)) {
+      if (e->type() == QEvent::KeyPress) {
+        emit previewObjectNavigationRequest(keyEvent->key() == Qt::Key_Down ? 1 : -1);
+      }
+      return true;
+    }
+  }
   if (e->type() == QEvent::KeyPress) {
     auto keyEvent = static_cast<QKeyEvent *>(e);
     if (keyEvent->key() == Qt::Key_Escape) {
@@ -1265,6 +1278,19 @@ void ScintillaEditor::toggleHighlightCurrentLine()
   }
   qsci->endUndoAction();
   emit previewRequest();
+}
+
+void ScintillaEditor::selectRange(int lineFrom, int colFrom, int lineTo, int colTo)
+{
+  qsci->ensureLineVisible(lineFrom);
+  qsci->ensureLineVisible(lineTo);
+  qsci->setSelection(lineFrom, colFrom, lineTo, colTo);
+  setFocus();
+}
+
+void ScintillaEditor::clearSelection()
+{
+  qsci->selectAll(false);
 }
 
 bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
