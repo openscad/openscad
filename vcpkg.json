@@ -2,8 +2,28 @@
   "name": "openscad",
   "version-string": "1.0.0",
   "dependencies": [
-    "boost-regex",
+    "boost-algorithm",
+    "boost-asio",
+    "boost-assign",
+    "boost-beast",
+    "boost-circular-buffer",
+    "boost-container",
+    "boost-dll",
+    "boost-foreach",
+    "boost-format",
+    "boost-functional",
+    "boost-lexical-cast",
+    "boost-logic",
+    "boost-nowide",
+    "boost-polygon",
+    "boost-predef",
     "boost-program-options",
+    "boost-property-tree",
+    "boost-range",
+    "boost-regex",
+    "boost-serialization",
+    "boost-spirit",
+    "boost-tokenizer",
     "eigen3",
     "cgal",
     "cairo",
@@ -11,11 +31,40 @@
     "fontconfig",
     "double-conversion",
     "opencsg",
+    "openssl",
     "libxml2",
     "libzip",
     "glib",
     "gperf",
-    "qscintilla",
-    "tbb"
-  ]
+    "tbb",
+    {
+      "name": "gettext",
+      "host": true,
+      "features": [
+        "tools"
+      ]
+    }
+  ],
+  "features": {
+    "gui": {
+      "description": "Build the Qt based GUI",
+      "dependencies": [
+        "qscintilla",
+        "qt5compat",
+        "qtbase",
+        "qtmultimedia",
+        "qtsvg",
+        {
+          "name": "qttools",
+          "host": true
+        }
+      ]
+    },
+    "tests": {
+      "description": "Dependencies required to build and run the test suite",
+      "dependencies": [
+        "catch2"
+      ]
+    }
+  }
 }
