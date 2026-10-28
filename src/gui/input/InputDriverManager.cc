@@ -94,6 +94,8 @@ void InputDriverManager::init()
   doOpen(true);
   connect(timer, &QTimer::timeout, this, &InputDriverManager::onTimeout);
   timer->start(10 * 1000);
+
+  mapper.start();
 }
 
 void InputDriverManager::onTimeout()

@@ -47,8 +47,6 @@ InputEventMapper *InputEventMapper::self = nullptr;
 
 InputEventMapper::InputEventMapper()
 {
-  stopRequest = false;
-
   for (size_t a = 0; a < getMaxAxis(); ++a) {
     axisRawValue[a] = 0.0;
     axisTrimValue[a] = 0.0;
@@ -67,7 +65,6 @@ InputEventMapper::InputEventMapper()
 
   timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, &InputEventMapper::onTimer);
-  timer->start(30);
 
   onInputMappingUpdated();
   onInputCalibrationUpdated();
@@ -318,9 +315,13 @@ void InputEventMapper::onAxisTrimReset()
   considerGeneratingDeferredEvents();
 }
 
+void InputEventMapper::start()
+{
+  timer->start(30);
+}
+
 void InputEventMapper::stop()
 {
-  stopRequest = true;
   timer->stop();
 }
 
