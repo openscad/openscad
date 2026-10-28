@@ -1,4 +1,5 @@
 /build*
+!/build.sh
 .venv
 .uuid
 .cache/

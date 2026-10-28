@@ -27,7 +27,14 @@ The module also provides `union`, `difference`, `intersection`, `hull`, `minkows
 
 ## Running Python models
 
-Build OpenSCAD with Python enabled (`ENABLE_PYTHON=ON`). In the GUI, enable **python-engine** under **Preferences → Features**, open a `.py` file, and trust it when prompted. Python scripts can execute arbitrary Python code, so only trust scripts from sources you trust.
+Python support is optional and disabled by default, so builds do not require Python development files. On macOS, the repository's `build.sh` explicitly enables Python. To configure a build manually, use:
+
+```sh
+cmake -S . -B build -DENABLE_PYTHON=ON
+cmake --build build --target OpenSCADExe -j4
+```
+
+The Python-enabled build requires a Python interpreter and development headers/libraries for the target platform. In the GUI, enable **python-engine** under **Preferences → Features**, open a `.py` file, and trust it when prompted. Python scripts can execute arbitrary Python code, so only trust scripts from sources you trust.
 
 For IDE imports and completions with a normal Python interpreter, install the placeholder package from the repository root:
 
