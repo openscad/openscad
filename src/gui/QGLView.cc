@@ -72,6 +72,7 @@
 
 #include "gui/qt-obsolete.h"
 #include "gui/Measurement.h"
+#include "Feature.h"
 
 namespace {
 
@@ -82,6 +83,10 @@ QSurfaceFormat compatibleWidgetFormat()
   format.setProfile(QSurfaceFormat::CompatibilityProfile);
   if (format.depthBufferSize() < 24) format.setDepthBufferSize(24);
   if (format.stencilBufferSize() < 8) format.setStencilBufferSize(8);
+  // An alpha channel is needed for transparent image export: grabFramebuffer() only keeps alpha
+  // if the surface format has it. This does not make the window itself translucent, because
+  // GLView::paintGL scrubs alpha back to 1 at the end of every ordinary paint (issue #3689).
+  if (format.alphaBufferSize() < 8) format.setAlphaBufferSize(8);
   return format;
 }
 
@@ -448,11 +453,29 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_moved = false;
 }
 
-const QImage& QGLView::grabFrame()
+const QImage& QGLView::grabFrame(bool transparent)
 {
+  if (transparent) {
+    // Re-render with a transparent background, grab that, then put the view back the way it was.
+    // The restore matters: GLView::paintGL's alpha-scrubbing pass is disabled while the flag is
+    // set, and leaving it off would let Qt composite the viewport's own alpha (issue #3689).
+    setTransparentBackground(true);
+    // grabFramebuffer() repaints into its own framebuffer object, so this picks up the flag.
+    // A transparent render always leaves the buffer premultiplied. Reinterpret it as such and let
+    // Qt undo the premultiplication, since PNG stores straight alpha.
+    QImage grabbed = grabFramebuffer().convertToFormat(QImage::Format_RGBA8888);
+    grabbed.reinterpretAsFormat(QImage::Format_RGBA8888_Premultiplied);
+    this->frame = grabbed.convertToFormat(QImage::Format_RGBA8888);
+    setTransparentBackground(false);
+    update();
+    return this->frame;
+  }
+
   // Force reading from front buffer. Some configurations will read from the back buffer here.
   glReadBuffer(GL_FRONT);
-  this->frame = grabFramebuffer();
+  // Drop any alpha the surface format may carry: the default export has always been opaque, and
+  // some PNG consumers interpret alpha inconsistently.
+  this->frame = grabFramebuffer().convertToFormat(QImage::Format_RGB32);
   return this->frame;
 }
 
