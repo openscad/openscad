@@ -60,23 +60,53 @@
 #include "python/pyopenscad.h"
 #include "utils/degree_trig.h"
 
+static PyObject *python_vector_from_args(PyObject *args, Py_ssize_t start)
+{
+  PyObject *vector = PyList_New(3);
+  if (!vector) return nullptr;
+  for (Py_ssize_t i = 0; i < 3; ++i) {
+    PyObject *value = PyTuple_GetItem(args, start + i);
+    Py_INCREF(value);
+    PyList_SET_ITEM(vector, i, value);
+  }
+  return vector;
+}
+
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
   auto node = std::make_shared<CubeNode>(instance);
 
-  char *kwlist[] = {"size", "center", NULL};
+  char *kwlist[] = {"size", "center", "y", "z", NULL};
   PyObject *size = NULL;
-
   PyObject *center = NULL;
+  PyObject *y = NULL;
+  PyObject *z = NULL;
+  PyObject *dimensions = NULL;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist, &size, &center)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOOO", kwlist, &size, &center, &y, &z)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing cube(size)");
     return NULL;
   }
 
+  if (y != NULL || z != NULL) {
+    if (size == NULL || center == NULL || y == NULL || z != NULL) {
+      PyErr_SetString(PyExc_TypeError, "cube(x, y, z) requires exactly three dimensions");
+      return NULL;
+    }
+    dimensions = PyList_New(3);
+    if (!dimensions) return NULL;
+    Py_INCREF(size); PyList_SET_ITEM(dimensions, 0, size);
+    Py_INCREF(center); PyList_SET_ITEM(dimensions, 1, center);
+    Py_INCREF(y); PyList_SET_ITEM(dimensions, 2, y);
+    size = dimensions;
+    center = NULL;
+  }
+
   if (size != NULL) {
-    if (python_vectorval(size, 3, 3, &(node->x), &(node->y), &(node->z))) {
+    const int invalidSize = python_vectorval(size, 3, 3, &(node->x), &(node->y), &(node->z));
+    Py_XDECREF(dimensions);
+    if (invalidSize) {
       PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions");
       return NULL;
     }
@@ -565,6 +595,13 @@ PyObject *python_scale_core(PyObject *obj, PyObject *val_v)
 
 PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 4 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 1);
+    if (!vector) return nullptr;
+    PyObject *result = python_scale_core(PyTuple_GetItem(args, 0), vector);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"obj", "v", NULL};
   PyObject *obj = NULL;
   PyObject *val_v = NULL;
@@ -577,6 +614,13 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 3 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 0);
+    if (!vector) return nullptr;
+    PyObject *result = python_scale_core(obj, vector);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"v", NULL};
   PyObject *val_v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &val_v)) {
@@ -680,6 +724,13 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 4 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 1);
+    if (!vector) return nullptr;
+    PyObject *result = python_rotate_core(PyTuple_GetItem(args, 0), vector, nullptr);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"obj", "a", "v", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
@@ -693,6 +744,13 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 3 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 0);
+    if (!vector) return nullptr;
+    PyObject *result = python_rotate_core(obj, vector, nullptr);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"a", "v", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
@@ -770,6 +828,13 @@ PyObject *python_mirror_core(PyObject *obj, PyObject *val_v)
 
 PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 4 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 1);
+    if (!vector) return nullptr;
+    PyObject *result = python_mirror_core(PyTuple_GetItem(args, 0), vector);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"obj", "v", NULL};
 
   PyObject *obj = NULL;
@@ -783,6 +848,13 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 3 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 0);
+    if (!vector) return nullptr;
+    PyObject *result = python_mirror_core(obj, vector);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"v", NULL};
 
   PyObject *val_v = NULL;
@@ -810,6 +882,13 @@ PyObject *python_translate_core(PyObject *obj, PyObject *v)
 
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 4 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 1);
+    if (!vector) return nullptr;
+    PyObject *result = python_translate_core(PyTuple_GetItem(args, 0), vector);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"obj", "v", NULL};
   PyObject *obj = NULL;
   PyObject *v = NULL;
@@ -822,6 +901,16 @@ PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_translate(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
+  if ((!kwargs || PyDict_Size(kwargs) == 0) && PyTuple_Size(args) == 1) {
+    return python_translate_core(obj, PyTuple_GetItem(args, 0));
+  }
+  if ((!kwargs || PyDict_Size(kwargs) == 0) && PyTuple_Size(args) == 3) {
+    PyObject *vector = python_vector_from_args(args, 0);
+    if (!vector) return nullptr;
+    PyObject *result = python_translate_core(obj, vector);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"v", NULL};
   PyObject *v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &v)) {
@@ -1704,6 +1793,13 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
 
 PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 4 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 1);
+    if (!vector) return nullptr;
+    PyObject *result = python_resize_core(PyTuple_GetItem(args, 0), vector, nullptr, 2);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"obj", "newsize", "auto", "convexity", NULL};
   PyObject *obj;
   PyObject *newsize = NULL;
@@ -1720,6 +1816,13 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
+  if (PyTuple_Size(args) == 3 && (!kwargs || PyDict_Size(kwargs) == 0)) {
+    PyObject *vector = python_vector_from_args(args, 0);
+    if (!vector) return nullptr;
+    PyObject *result = python_resize_core(obj, vector, nullptr, 2);
+    Py_DECREF(vector);
+    return result;
+  }
   char *kwlist[] = {"newsize", "auto", "convexity", NULL};
   PyObject *newsize = NULL;
   PyObject *autosize = NULL;

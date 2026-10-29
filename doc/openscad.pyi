@@ -19,10 +19,10 @@ class OpenSCADObject:
     """Base class for OpenSCAD objects."""
 
     origin: Matrix4x4
-    """4x4 transformation matrix representing the object's origin. 
+    """4x4 transformation matrix representing the object's origin.
     Initialized as identity matrix."""
 
-    def translate(self, v: Vector3) -> "OpenSCADObject":
+    def translate(self, v: Union[Vector3, float], y: Optional[float] = None, z: Optional[float] = None) -> "OpenSCADObject":
         """Translate this object.
 
         Args:
@@ -34,7 +34,7 @@ class OpenSCADObject:
         ...
 
     def rotate(
-        self, a: Union[float, Vector3], v: Optional[Vector3] = None
+        self, a: Union[float, Vector3], v: Optional[Union[Vector3, float]] = None, z: Optional[float] = None
     ) -> "OpenSCADObject":
         """Rotate this object.
 
@@ -47,7 +47,7 @@ class OpenSCADObject:
         """
         ...
 
-    def scale(self, v: Union[float, Vector3]) -> "OpenSCADObject":
+    def scale(self, v: Union[float, Vector3], y: Optional[float] = None, z: Optional[float] = None) -> "OpenSCADObject":
         """Scale this object.
 
         Args:
@@ -58,7 +58,7 @@ class OpenSCADObject:
         """
         ...
 
-    def mirror(self, v: Vector3) -> "OpenSCADObject":
+    def mirror(self, v: Union[Vector3, float], y: Optional[float] = None, z: Optional[float] = None) -> "OpenSCADObject":
         """Mirror this object.
 
         Args:
@@ -181,7 +181,10 @@ class OpenSCADObject:
         """
         ...
 
-    def resize(self, newsize: Vector3, convexity: int = 2) -> "OpenSCADObject":
+    def resize(
+        self, newsize: Union[Vector3, float], y: Optional[float] = None,
+        z: Optional[float] = None, convexity: int = 2
+    ) -> "OpenSCADObject":
         """Modifies the size of the object to match the given x,y, and z sizes.
 
         Args:
@@ -456,7 +459,8 @@ def textmetrics(
     ...
 
 def cube(
-    size: Optional[Union[float, Vector3]] = None, center: Optional[bool] = None
+    size: Optional[Union[float, Vector3]] = None, center: Optional[Union[bool, float]] = None,
+    y: Optional[float] = None, z: Optional[float] = None
 ) -> OpenSCADObject:
     """Create a cube primitive.
 
@@ -553,7 +557,7 @@ def polyhedron(
     ...
 
 @overload
-def translate(obj: OpenSCADObjects, v: Vector3) -> OpenSCADObject:
+def translate(obj: OpenSCADObjects, v: Union[Vector3, float], y: Optional[float] = None, z: Optional[float] = None) -> OpenSCADObject:
     """Translate an object or list of objects.
 
     Args:
@@ -566,7 +570,7 @@ def translate(obj: OpenSCADObjects, v: Vector3) -> OpenSCADObject:
     ...
 
 @overload
-def translate(matrix: Matrix4x4, v: Vector3) -> Matrix4x4:
+def translate(matrix: Matrix4x4, v: Union[Vector3, float], y: Optional[float] = None, z: Optional[float] = None) -> Matrix4x4:
     """Apply translation to a 4x4 transformation matrix.
 
     Args:
@@ -580,7 +584,7 @@ def translate(matrix: Matrix4x4, v: Vector3) -> Matrix4x4:
 
 @overload
 def rotate(
-    obj: OpenSCADObjects, a: Union[float, Vector3], v: Optional[Vector3] = None
+    obj: OpenSCADObjects, a: Union[float, Vector3], v: Optional[Union[Vector3, float]] = None, z: Optional[float] = None
 ) -> OpenSCADObject:
     """Rotate an object or list of objects.
 
@@ -596,7 +600,7 @@ def rotate(
 
 @overload
 def rotate(
-    matrix: Matrix4x4, a: Union[float, Vector3], v: Optional[Vector3] = None
+    matrix: Matrix4x4, a: Union[float, Vector3], v: Optional[Union[Vector3, float]] = None, z: Optional[float] = None
 ) -> Matrix4x4:
     """Apply rotation to a 4x4 transformation matrix.
 
@@ -611,7 +615,7 @@ def rotate(
     ...
 
 @overload
-def scale(obj: OpenSCADObjects, v: Union[float, Vector3]) -> OpenSCADObject:
+def scale(obj: OpenSCADObjects, v: Union[float, Vector3], y: Optional[float] = None, z: Optional[float] = None) -> OpenSCADObject:
     """Scale an object or list of objects.
 
     Args:
@@ -624,7 +628,7 @@ def scale(obj: OpenSCADObjects, v: Union[float, Vector3]) -> OpenSCADObject:
     ...
 
 @overload
-def scale(matrix: Matrix4x4, v: Union[float, Vector3]) -> Matrix4x4:
+def scale(matrix: Matrix4x4, v: Union[float, Vector3], y: Optional[float] = None, z: Optional[float] = None) -> Matrix4x4:
     """Apply scaling to a 4x4 transformation matrix.
 
     Args:
@@ -637,7 +641,7 @@ def scale(matrix: Matrix4x4, v: Union[float, Vector3]) -> Matrix4x4:
     ...
 
 @overload
-def mirror(obj: OpenSCADObjects, v: Vector3) -> OpenSCADObject:
+def mirror(obj: OpenSCADObjects, v: Union[Vector3, float], y: Optional[float] = None, z: Optional[float] = None) -> OpenSCADObject:
     """Mirror an object or list of objects.
 
     Args:
@@ -650,7 +654,7 @@ def mirror(obj: OpenSCADObjects, v: Vector3) -> OpenSCADObject:
     ...
 
 @overload
-def mirror(matrix: Matrix4x4, v: Vector3) -> Matrix4x4:
+def mirror(matrix: Matrix4x4, v: Union[Vector3, float], y: Optional[float] = None, z: Optional[float] = None) -> Matrix4x4:
     """Apply mirroring to a 4x4 transformation matrix.
 
     Args:
@@ -880,7 +884,8 @@ def render(obj: OpenSCADObjects, convexity: int = 2) -> OpenSCADObject:
     ...
 
 def resize(
-    obj: OpenSCADObjects, newsize: Vector3, convexity: int = 2
+    obj: OpenSCADObjects, newsize: Union[Vector3, float], y: Optional[float] = None,
+    z: Optional[float] = None, convexity: int = 2
 ) -> OpenSCADObject:
     """Modifies the size of an object to match the given x,y, and z sizes.
 
