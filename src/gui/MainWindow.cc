@@ -985,6 +985,7 @@ std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile *
 
 void MainWindow::instantiateRoot()
 {
+  invalidatePreviewObjectNavigation();
   // Go on and instantiate root_node, then call the continuation slot
 
   // Invalidate renderers before we kill the CSG tree
@@ -1156,17 +1157,171 @@ void MainWindow::compileCSG()
 #ifdef ENABLE_OPENCSG
     else {
       LOG("Normalized tree has %1$d elements!", (this->rootProduct ? this->rootProduct->size() : 0));
-      this->previewRenderer = std::make_shared<OpenCSGRenderer>(
-        this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     }
 #endif  // ifdef ENABLE_OPENCSG
-    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
-      this->rootProduct, this->highlightsProducts, this->backgroundProducts);
+    refreshPreviewRenderers(this->highlightsProducts);
+    previewObjectNavigation.reset(this->rootNode);
+    designActionNextPreviewObject->setEnabled(previewObjectNavigation.size() > 0);
+    designActionPreviousPreviewObject->setEnabled(previewObjectNavigation.size() > 0);
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
   } catch (const HardWarningException&) {
     exceptionCleanup();
+  }
+}
+
+void MainWindow::refreshPreviewRenderers(const std::shared_ptr<CSGProducts>& highlights,
+                                        const std::shared_ptr<CSGProducts>& backgrounds)
+{
+  const auto& previewBackgrounds = backgrounds ? backgrounds : backgroundProducts;
+#ifdef ENABLE_OPENCSG
+  const auto limit = GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+  if (rootProduct && rootProduct->size() > limit) previewRenderer.reset();
+  else {
+    previewRenderer = std::make_shared<OpenCSGRenderer>(rootProduct, highlights, previewBackgrounds);
+  }
+#endif
+  thrownTogetherRenderer =
+    std::make_shared<ThrownTogetherRenderer>(rootProduct, highlights, previewBackgrounds);
+}
+
+void MainWindow::clearPreviewObjectSelection()
+{
+  if (previewObjectEditor) {
+    previewObjectEditor->clearSelection();
+    previewObjectEditor->clearAllSelectionIndicators();
+    previewObjectEditor.clear();
+  }
+  previewObjectNavigation.rewind();
+  designActionClearPreviewObject->setEnabled(false);
+  designActionToggleOtherPreviewTransparency->setEnabled(false);
+  designActionToggleOtherPreviewTransparency->setChecked(false);
+  previewOtherObjectsTransparent = false;
+  if (previewObjectHighlightActive) {
+    previewObjectHighlightActive = false;
+    refreshPreviewRenderers(highlightsProducts);
+    selectPreviewViewMode();
+  }
+}
+
+void MainWindow::invalidatePreviewObjectNavigation()
+{
+  clearPreviewObjectSelection();
+  previewObjectNavigation.clear();
+  designActionNextPreviewObject->setEnabled(false);
+  designActionPreviousPreviewObject->setEnabled(false);
+}
+
+void MainWindow::on_designActionNextPreviewObject_triggered()
+{
+  navigatePreviewObject(1);
+}
+
+void MainWindow::on_designActionPreviousPreviewObject_triggered()
+{
+  navigatePreviewObject(-1);
+}
+
+void MainWindow::on_designActionClearPreviewObject_triggered()
+{
+  if (!GuiLocker::isLocked()) clearPreviewObjectSelection();
+}
+
+void MainWindow::handleToggleOtherPreviewTransparency(bool checked)
+{
+  if (GuiLocker::isLocked() || !previewObjectHighlightActive) return;
+  previewOtherObjectsTransparent = checked;
+  navigatePreviewObject(0);
+}
+
+void MainWindow::navigatePreviewObject(int direction)
+{
+  if (GuiLocker::isLocked()) return;
+  if (!rootNode || !renderedEditor || previewObjectNavigation.size() == 0) {
+    statusBar()->showMessage(_("Press F5 to preview before navigating objects."), 5000);
+    return;
+  }
+
+  const auto node = previewObjectNavigation.step(direction);
+  if (!node) return;
+
+  GuiLocker lock;
+  auto outputGuard = scopedSetCurrentOutput();
+  selectingPreviewObject = true;
+  auto selectionGuard = sg::make_scope_guard([this]() { selectingPreviewObject = false; });
+  try {
+    // Reuse the evaluated tree and cached geometry. Only the temporary CSG
+    // highlight changes; the AST, source text, and normal preview products do not.
+    GeometryEvaluator geometryEvaluator(tree);
+    CSGTreeEvaluator evaluator(tree, &geometryEvaluator, node->index(),
+                               previewOtherObjectsTransparent
+                                 ? previewObjectNavigation.otherObjectIndices()
+                                 : std::vector<int>{});
+    evaluator.buildCSGTree(*rootNode);
+    const auto limit =
+      2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    CSGTreeNormalizer normalizer(limit);
+    auto highlights = std::make_shared<CSGProducts>();
+    for (const auto& term : evaluator.getHighlightNodes()) {
+      if (const auto normalized = normalizer.normalize(term)) highlights->import(normalized);
+    }
+    auto backgrounds = std::make_shared<CSGProducts>();
+    if (previewOtherObjectsTransparent) {
+      if (backgroundProducts) backgrounds->append(*backgroundProducts);
+      for (const auto& term : evaluator.getBackgroundNodes()) {
+        if (const auto normalized = normalizer.normalize(term)) backgrounds->import(normalized);
+      }
+    }
+
+    const auto& location = node->modinst->location();
+    EditorInterface *sourceEditor = renderedEditor;
+    if (!location.fileName().empty() && fs::is_regular_file(location.filePath())) {
+      tabManager->open(QString::fromStdString(location.fileName()));
+      sourceEditor = activeEditor;
+    } else {
+      tabManager->setCurrentEditor(renderedEditor);
+    }
+    if (previewObjectEditor && previewObjectEditor != sourceEditor) {
+      previewObjectEditor->clearSelection();
+      previewObjectEditor->clearAllSelectionIndicators();
+    }
+    previewObjectEditor = sourceEditor;
+    sourceEditor->clearAllSelectionIndicators();
+    int firstLine = location.firstLine(), firstColumn = location.firstColumn();
+    int lastLine = location.lastLine(), lastColumn = location.lastColumn();
+    const bool pythonSource =
+      QString::fromStdString(location.filePath().extension().string())
+        .compare(QStringLiteral(".py"), Qt::CaseInsensitive) == 0;
+    if (pythonSource) {
+      // Python objects are created directly by calls; selecting the complete
+      // descendant range would make a parent operation point at its first child.
+      const auto sourceLines = sourceEditor->toPlainText().split(QLatin1Char('\n'));
+      if (firstLine > 0 && firstLine <= static_cast<int>(sourceLines.size())) {
+        lastLine = firstLine;
+        firstColumn = 1;
+        lastColumn = static_cast<int>(sourceLines.at(firstLine - 1).size()) + 1;
+      }
+    } else {
+      node->getCodeLocation(0, 0, &firstLine, &firstColumn, &lastLine, &lastColumn, 0);
+    }
+    editorDock->show();
+    sourceEditor->selectRange(firstLine - 1, firstColumn - 1, lastLine - 1, lastColumn - 1);
+
+    refreshPreviewRenderers(highlights,
+                            previewOtherObjectsTransparent ? backgrounds : backgroundProducts);
+    previewObjectHighlightActive = true;
+    designActionClearPreviewObject->setEnabled(true);
+    designActionToggleOtherPreviewTransparency->setEnabled(true);
+    selectPreviewViewMode();
+    statusBar()->showMessage(
+      QString(_("Preview object %1 of %2: %3"))
+        .arg(previewObjectNavigation.currentPosition() + 1)
+        .arg(previewObjectNavigation.size())
+        .arg(QString::fromStdString(node->verbose_name())),
+      5000);
+  } catch (const std::exception& error) {
+    LOG(message_group::Error, "Cannot highlight preview object: %1$s", error.what());
   }
 }
 
@@ -1780,7 +1935,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
       LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
-    auto error = evaluatePython(fulltext_py, false);
+    auto error = evaluatePython(fulltext_py, false, fname);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
@@ -1806,6 +1961,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 
 void MainWindow::parseTopLevelDocument()
 {
+  invalidatePreviewObjectNavigation();
   resetSuppressedMessages();
 
   this->lastCompiledDoc = activeEditor->toPlainText();
@@ -2806,6 +2962,7 @@ void MainWindow::editorContentChanged()
 
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != lastCompiledDoc) {
+    if (!selectingPreviewObject) invalidatePreviewObjectNavigation();
     animateWidget->editorContentChanged();
 
     // removes the live selection feedbacks in both the 3d view and editor.
@@ -3160,6 +3317,9 @@ QString MainWindow::getDockBaseName(const QString& title) const
 
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
+  if (closingEditor == renderedEditor || closingEditor == previewObjectEditor) {
+    invalidatePreviewObjectNavigation();
+  }
   // This slots is in charge of closing properly the preview when the
   // associated editor is about to close.
   if (closingEditor == renderedEditor) {
@@ -3500,6 +3660,9 @@ void MainWindow::setupWindow()
 {
   installEventFilter(this);
   setupUi(this);
+  designActionToggleOtherPreviewTransparency->setShortcutContext(Qt::WindowShortcut);
+  connect(designActionToggleOtherPreviewTransparency, &QAction::triggered, this,
+          &MainWindow::handleToggleOtherPreviewTransparency);
   this->setAttribute(Qt::WA_DeleteOnClose);
   scadApp->windowManager.add(this);
   setAcceptDrops(true);

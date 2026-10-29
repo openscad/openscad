@@ -138,6 +138,7 @@ public:
 
   void import(std::shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OpenSCADOperator::UNION,
               CSGNode::Flag flags = CSGNode::FLAG_NONE);
+  void append(const CSGProducts& other);
   [[nodiscard]] std::string dump() const;
   [[nodiscard]] BoundingBox getBoundingBox(bool throwntogether = false) const;
 

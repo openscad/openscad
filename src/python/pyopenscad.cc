@@ -33,6 +33,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <system_error>
 
 #include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
@@ -144,6 +145,28 @@ std::string python_version(void)
   std::ostringstream stream;
   stream << "Python " << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << "." << PY_MICRO_VERSION;
   return stream.str();
+}
+
+Location currentPythonLocation()
+{
+  PyFrameObject *frame = PyEval_GetFrame();
+  if (frame == nullptr) return Location::NONE;
+
+  PyObject *code = reinterpret_cast<PyObject *>(PyFrame_GetCode(frame));
+  if (code == nullptr) return Location::NONE;
+  PyObjectUniquePtr filenameObject(PyObject_GetAttrString(code, "co_filename"), PyObjectDeleter);
+  Py_DECREF(code);
+  if (!filenameObject) return Location::NONE;
+
+  const char *filename = PyUnicode_AsUTF8(filenameObject.get());
+  const int line = PyFrame_GetLineNumber(frame);
+  if (filename == nullptr || filename[0] == '<' || line <= 0) return Location::NONE;
+
+  std::error_code error;
+  auto path = fs::absolute(fs::path(filename), error);
+  if (error) path = fs::path(filename);
+  return {line, 1, line, 1,
+          std::make_shared<fs::path>(std::move(path))};
 }
 
 /*
@@ -465,7 +488,7 @@ void finishPython(void)
 {
 }
 
-std::string evaluatePython(const std::string& code, bool dry_run)
+std::string evaluatePython(const std::string& code, bool dry_run, const std::string& filename)
 {
   std::string error;
   python_result_node = nullptr;
@@ -513,8 +536,11 @@ sys.stderr = stderr_bak\n\
 
   PyRun_SimpleString(python_init_code);
   PyObjectUniquePtr result(nullptr, PyObjectDeleter);
-  result.reset(PyRun_String(code.c_str(), Py_file_input, pythonInitDict.get(),
-                            pythonInitDict.get())); /* actual code is run here */
+  PyObjectUniquePtr compiled(Py_CompileString(code.c_str(), filename.c_str(), Py_file_input),
+                             PyObjectDeleter);
+  if (compiled) {
+    result.reset(PyEval_EvalCode(compiled.get(), pythonInitDict.get(), pythonInitDict.get()));
+  }
 
   if (result == nullptr) {
     PyErr_Print();
