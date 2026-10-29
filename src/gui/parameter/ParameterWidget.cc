@@ -29,6 +29,7 @@
 #include <QInputDialog>
 #include <QLayoutItem>
 #include <QMenu>
+#include <QFile>
 #include <QMessageBox>
 #include <QString>
 #include <QToolButton>
@@ -125,6 +126,11 @@ void ParameterWidget::saveFile(const QString& scadFile)
 
   cleanSets();
   sets.writeFile(jsonFile.toStdString());
+}
+
+void ParameterWidget::removeBackupFile(const QString& scadFile)
+{
+  QFile::remove(getJsonFile(scadFile));
 }
 
 void ParameterWidget::saveBackupFile(const QString& scadFile)

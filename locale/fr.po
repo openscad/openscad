@@ -360,25 +360,25 @@ msgstr "Bouton 22"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:194
 msgid "AI Chat"
-msgstr ""
+msgstr "Discussion IA"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:195
 #: src/gui/ai/ChatWidget.cc:138
 msgid "AI Assistant"
-msgstr ""
+msgstr "Assistant IA"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:197
 msgid "Chat options"
-msgstr ""
+msgstr "Options de discussion"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:199
 msgid "☰"
-msgstr ""
+msgstr "☰"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:201
 #: src/gui/ai/ChatWidget.cc:140
 msgid "Clear chat history"
-msgstr ""
+msgstr "Effacer l'historique de discussion"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:203
 #: build/OpenSCADLibInternal_autogen/include/ui_Console.h:42
@@ -389,34 +389,36 @@ msgstr "Effacer"
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:204
 #: src/gui/ai/ChatWidget.cc:141 src/gui/ai/ChatWidget.cc:630
 msgid "Send"
-msgstr ""
+msgstr "Envoyer"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:206
 msgid "Grab active 3D viewport frame and camera metadata"
-msgstr ""
+msgstr "Capturer l'image de la vue 3D active et les métadonnées de la caméra"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:208
 msgid "Analyze Screen"
-msgstr ""
+msgstr "Analyser l'écran"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:210
 msgid "Attach local image file"
-msgstr ""
+msgstr "Joindre un fichier image local"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:212
 #: src/gui/ai/ChatWidget.cc:508
 msgid "Attach Image"
-msgstr ""
+msgstr "Joindre une image"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:214
 msgid ""
 "Agentic mode: allow the AI to call tools in multiple automatic turns per "
 "request"
 msgstr ""
+"Mode agent : autoriser l'IA à appeler des outils en plusieurs tours "
+"automatiques par requête"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ChatWidget.h:216
 msgid "Agentic"
-msgstr ""
+msgstr "Agent"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ColorList.h:399
 msgid "Color List"
@@ -1155,23 +1157,20 @@ msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1010
-#, fuzzy
 msgid "New &Window"
-msgstr "Nouvelle fenêtre"
+msgstr "Nouvelle &fenêtre"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1011
-#, fuzzy
 msgid "&Open File..."
-msgstr "&Ouvrir un fichier"
+msgstr "&Ouvrir un fichier..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1013
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1015
-#, fuzzy
 msgid "Open in New Windo&w"
-msgstr "Ouvrir dans une nouvelle fenêtre"
+msgstr "Ouvrir dans une nouvelle fenê&tre"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1016
 msgid "&Save"
@@ -1190,14 +1189,12 @@ msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Maj+S"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1024
-#, fuzzy
 msgid "Save a C&opy..."
-msgstr "Enregistrer une copie"
+msgstr "Enregistrer une c&opie..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1025
-#, fuzzy
 msgid "S&ave All"
-msgstr "Tout enregistrer"
+msgstr "&Tout enregistrer"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1026
 msgid "&Reload"
@@ -1285,35 +1282,31 @@ msgstr "Ctrl+Maj+D"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1069
 msgid "Mo&ve Line Up"
-msgstr ""
+msgstr "Déplacer la ligne vers le &haut"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1071
-#, fuzzy
 msgid "Ctrl+Alt+Up"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+Up"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1073
 msgid "Mo&ve Line Down"
-msgstr ""
+msgstr "Déplacer la ligne vers le &bas"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1075
-#, fuzzy
 msgid "Ctrl+Alt+Down"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+Down"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1077
-#, fuzzy
 msgid "Show &Next Tab"
-msgstr "Afficher l'onglet suivant"
+msgstr "Afficher l'onglet &suivant"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1079
 msgid "Ctrl+Tab"
 msgstr "Ctrl+Tab"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1081
-#, fuzzy
 msgid "Show P&revious Tab"
-msgstr "Afficher l'onglet précédent"
+msgstr "Afficher l'onglet p&récédent"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1083
 msgid "Ctrl+Shift+Tab"
@@ -1416,19 +1409,16 @@ msgid "&Check Validity"
 msgstr "&Vérifier la validité"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1129
-#, fuzzy
 msgid "Display A&ST"
-msgstr "Afficher A&ST..."
+msgstr "Afficher l'A&ST"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1130
-#, fuzzy
 msgid "Display CSG &Tree"
-msgstr "Afficher l’&arbre CSG..."
+msgstr "Afficher l'&arbre CSG"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1131
-#, fuzzy
 msgid "Display CSG Pr&oducts"
-msgstr "Afficher les &produits CSG..."
+msgstr "Afficher les &produits CSG"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1132
 msgid "Export as &STL (binary)..."
@@ -1455,54 +1445,48 @@ msgid "Export as &WRL..."
 msgstr "Exporter comme &WRL..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1138
-#, fuzzy
 msgid "P&review"
-msgstr "Aperçu"
+msgstr "Ap&erçu"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1140
 msgid "F9"
 msgstr "F9"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1142
-#, fuzzy
 msgid "T&hrown Together"
-msgstr "Jeté ensemble"
+msgstr "&Jeté ensemble"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1144
 msgid "F12"
 msgstr "F12"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1146
-#, fuzzy
 msgid "&Show Edges"
-msgstr "Afficher les arêtes"
+msgstr "Afficher les &arêtes"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1148
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1150
-#, fuzzy
 msgid "Show A&xes"
-msgstr "Afficher les axes"
+msgstr "Afficher les a&xes"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1152
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1154
-#, fuzzy
 msgid "Show &Crosshairs"
-msgstr "Afficher la mire"
+msgstr "Afficher la &mire"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1156
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1158
-#, fuzzy
 msgid "Show Scale &Markers"
-msgstr "Afficher les graduations"
+msgstr "Afficher les &graduations"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1159
 msgid "&Top"
@@ -1658,9 +1642,8 @@ msgid "Ctrl+E"
 msgstr "Ctrl+E"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1228
-#, fuzzy
 msgid "J&ump to next error"
-msgstr "Aller à l'erreur suivante"
+msgstr "Aller à l'&erreur suivante"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1230
 msgid "Ctrl+Alt+E"
@@ -1691,14 +1674,12 @@ msgid "&Library info"
 msgstr "Informations &Bibliothèques"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1238
-#, fuzzy
 msgid "Show &Library Folder"
-msgstr "Afficher le dossier des &bibliothèques..."
+msgstr "Afficher le dossier des &bibliothèques"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1239
-#, fuzzy
 msgid "Reset &View"
-msgstr "Réinitialiser la vue"
+msgstr "Réinitialiser la &vue"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1240
 msgid "Export as S&VG..."
@@ -1709,27 +1690,24 @@ msgid "Export as &3MF..."
 msgstr "Exporter comme &3MF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1242
-#, fuzzy
 msgid "Zoom &In"
-msgstr "Zoom avant"
+msgstr "Zoom a&vant"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1244
 msgid "Ctrl+]"
 msgstr "Ctrl+]"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1246
-#, fuzzy
 msgid "&Zoom Out"
-msgstr "Zoom arrière"
+msgstr "&Zoom arrière"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1248
 msgid "Ctrl+["
 msgstr "Ctrl+["
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1250
-#, fuzzy
 msgid "View &All"
-msgstr "Voir tout"
+msgstr "&Tout voir"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1252
 msgid "Ctrl+Shift+V"
@@ -1740,36 +1718,32 @@ msgid "Conv&ert Tabs to Spaces"
 msgstr "Conv&ertir les tabulations en espaces"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1255
-#, fuzzy
 msgid "&Toggle Bookmark"
-msgstr "Basculer le signet"
+msgstr "Basculer le &signet"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1257
 msgid "Ctrl+F2"
 msgstr "Ctrl+F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1259
-#, fuzzy
 msgid "Jump to next &bookmark"
-msgstr "Aller au signet suivant"
+msgstr "Aller au signet &suivant"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1261
 msgid "F2"
 msgstr "F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1263
-#, fuzzy
 msgid "Jump to &previous bookmark"
-msgstr "Aller au signet précédent"
+msgstr "Aller au signet &précédent"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1265
 msgid "Shift+F2"
 msgstr "Maj+F2"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1267
-#, fuzzy
 msgid "&Hide Editor toolbar"
-msgstr "Cacher la barre d'outils de l'éditeur"
+msgstr "&Masquer la barre d'outils de l'éditeur"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1268
 msgid "U&nindent"
@@ -1788,9 +1762,8 @@ msgid "Export as PDF..."
 msgstr "Exporter comme PDF..."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1274
-#, fuzzy
 msgid "Hide &3D View toolbar"
-msgstr "Cacher la barre d'outils de la vue 3D"
+msgstr "Masquer la barre d'outils de la vue &3D"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1275
 msgid "&Next Window\tCtrl+K"
@@ -1809,14 +1782,12 @@ msgid "Alt+Ins"
 msgstr "Alt+Ins"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1281
-#, fuzzy
 msgid "Fold/Unfold All"
-msgstr "Tout plier/déplier"
+msgstr "Tout replier/déplier"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1282
-#, fuzzy
 msgid "&Jump To"
-msgstr "Aller à ..."
+msgstr "&Aller à"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1284
 msgid "Ctrl+J"
@@ -2068,9 +2039,8 @@ msgid "-"
 msgstr "-"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:175
-#, fuzzy
 msgid "More actions"
-msgstr "Annotations"
+msgstr "Plus d'actions"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2465
 msgid "3D View"
@@ -2086,9 +2056,8 @@ msgid "Editor"
 msgstr "Éditeur"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2469
-#, fuzzy
 msgid "Experimental"
-msgstr "Fonctionnalités d'export"
+msgstr "Expérimental"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2471
 msgid "Enable/Disable experimental features"
@@ -2124,13 +2093,12 @@ msgid "Dialogs"
 msgstr "Boîtes de dialogue"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2484
-#, fuzzy
 msgid "AI"
-msgstr "A"
+msgstr "IA"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2486
 msgid "AI and LLM configurations"
-msgstr ""
+msgstr "Configuration de l'IA et des LLM"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2488
 msgid "Directory of the output file"
@@ -2201,7 +2169,7 @@ msgstr "Autocomplétion"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2505
 msgid " Include defined modules"
-msgstr ""
+msgstr " Inclure les modules définis"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2506
 msgid "Character Threshold"
@@ -2209,7 +2177,7 @@ msgstr "Seuil de caractères"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2507
 msgid " Include defined functions"
-msgstr ""
+msgstr " Inclure les fonctions définies"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2508
 msgid "Enable Autocompletion"
@@ -2217,22 +2185,21 @@ msgstr "Activer l'autocomplétion"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2509
 msgid " Include defined variables"
-msgstr ""
+msgstr " Inclure les variables définies"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2510
 msgid "Mode"
-msgstr ""
+msgstr "Mode"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2511
 #: src/core/Settings.cc:519
-#, fuzzy
 msgid "Parsed File Mode"
-msgstr "Fichiers de confiance"
+msgstr "Mode fichier analysé"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2512
 #: src/core/Settings.cc:520
 msgid "Regex Input Text Mode"
-msgstr ""
+msgstr "Mode texte (expression régulière)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2514
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2539
@@ -2420,9 +2387,8 @@ msgid "Last checked: "
 msgstr "Dernière vérification : "
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2570
-#, fuzzy
 msgid "Experimental Features"
-msgstr "Fonctionnalités d'export"
+msgstr "Fonctionnalités expérimentales"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2571
 msgid ""
@@ -2431,6 +2397,11 @@ msgid ""
 "you must assume that they may not be in their final form and may never "
 "appear in an OpenSCAD release in any form."
 msgstr ""
+"Ces fonctionnalités sont expérimentales. Elles peuvent changer ou être "
+"supprimées sans préavis. Vous pouvez les activer, les utiliser et les "
+"commenter, mais elles ne sont peut-être pas dans leur forme définitive et "
+"pourraient ne jamais apparaître, sous quelque forme que ce soit, dans une "
+"version d'OpenSCAD."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2572
 msgid "General"
@@ -2570,16 +2541,12 @@ msgid "User Interface"
 msgstr "Interface utilisateur"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2618
-#, fuzzy
 msgid "Enable docking helper widgets in different places"
-msgstr "Activer l'ancrage de l'Éditeur et de la Console à différents endroits"
+msgstr "Activer l'ancrage des panneaux d'aide à différents endroits"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2619
-#, fuzzy
 msgid "Enable undocking of helper widgets to separate windows"
-msgstr ""
-"Activer le désancrage de l'Éditeur et de la Console dans des fenêtres "
-"séparées"
+msgstr "Activer le détachement des panneaux d'aide dans des fenêtres séparées"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2620
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
@@ -2702,24 +2669,23 @@ msgstr ""
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2650
 msgid "Network"
-msgstr ""
+msgstr "Réseau"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2651
 msgid "Custom CA certificates (PEM)"
-msgstr ""
+msgstr "Certificats d'autorité personnalisés (PEM)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2653
 msgid "Skip TLS certificate verification (insecure)"
-msgstr ""
+msgstr "Ignorer la vérification des certificats TLS (non sécurisé)"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2654
 msgid "Dialog visibility"
 msgstr "Visibilité des boîtes de dialogue"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2655
-#, fuzzy
 msgid "Always show Welcome screen"
-msgstr "Affiche l'écran d'accueil"
+msgstr "Toujours afficher l'écran d'accueil"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2656
 msgid "Always show PDF export dialog"
@@ -2734,65 +2700,60 @@ msgid "Always show Print Service dialog"
 msgstr "Toujours afficher la boîte de dialogue du service d'impression"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2659
-#, fuzzy
 msgid "AI Preferences"
-msgstr "Préférences"
+msgstr "Préférences de l'IA"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2660
 msgid ""
 "AI assistant integration is active. Configure your connection profiles and "
 "parameters below."
 msgstr ""
+"L'intégration de l'assistant IA est active. Configurez ci-dessous vos profils"
+" de connexion et vos paramètres."
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2661
-#, fuzzy
 msgid "Profiles"
-msgstr "Profil de tranchage"
+msgstr "Profils"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2662
-#, fuzzy
 msgid "Active Profile"
-msgstr "Profil de tranchage"
+msgstr "Profil actif"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2663
-#, fuzzy
 msgid "New Profile"
-msgstr "&Nouveau fichier"
+msgstr "Nouveau profil"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2664
 msgid "Delete"
-msgstr ""
+msgstr "Supprimer"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2665
 msgid "API Configuration"
-msgstr ""
+msgstr "Configuration de l'API"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2666
 msgid "API Endpoint"
-msgstr ""
+msgstr "Point d'accès de l'API"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2668
 msgid "System Prompt / Instructions"
-msgstr ""
+msgstr "Invite système / instructions"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2669
 msgid "Default User Prompt"
-msgstr ""
+msgstr "Invite utilisateur par défaut"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2670
-#, fuzzy
 msgid "API Parameters"
-msgstr "Paramètre"
+msgstr "Paramètres de l'API"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2671
-#, fuzzy
 msgid "Add Parameter"
-msgstr "Paramètre"
+msgstr "Ajouter un paramètre"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2672
-#, fuzzy
 msgid "Remove Parameter"
-msgstr "Paramètre"
+msgstr "Supprimer le paramètre"
 
 #: build/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:180
 msgid "Run local Application"
@@ -2893,7 +2854,6 @@ msgid "Base Material"
 msgstr "Matériau de base"
 
 #: src/core/Settings.cc:509
-#, fuzzy
 msgid "Alphabetical"
 msgstr "Alphabétique"
 
@@ -2908,143 +2868,137 @@ msgstr ""
 
 #: src/gui/ai/ChatWidget.cc:101 src/gui/ai/ChatWidget.cc:454
 msgid "Thinking..."
-msgstr ""
+msgstr "Réflexion..."
 
 #: src/gui/ai/ChatWidget.cc:110
 msgid "Thinking"
-msgstr ""
+msgstr "Réflexion"
 
 #: src/gui/ai/ChatWidget.cc:153
-#, fuzzy
 msgid "Export Chat..."
-msgstr "Exporter comme PDF..."
+msgstr "Exporter la discussion..."
 
 #: src/gui/ai/ChatWidget.cc:154
-#, fuzzy
 msgid "Import Chat..."
-msgstr "Exporter comme PDF..."
+msgstr "Importer une discussion..."
 
 #: src/gui/ai/ChatWidget.cc:156
 msgid "Copy as Markdown"
-msgstr ""
+msgstr "Copier en Markdown"
 
 #: src/gui/ai/ChatWidget.cc:200 src/gui/ai/ChatWidget.cc:613
 msgid ""
 "Hello! I am your OpenSCAD AI assistant. Ask me to write some code, e.g. "
 "\"draw a sphere\" or \"create a box with a hole\"."
 msgstr ""
+"Bonjour ! Je suis votre assistant IA OpenSCAD. Demandez-moi d'écrire du code,"
+" par exemple « dessine une sphère » ou « crée une boîte avec un trou »."
 
 #: src/gui/ai/ChatWidget.cc:215
 msgid "AI proposed code changes:"
-msgstr ""
+msgstr "Modifications de code proposées par l'IA :"
 
 #: src/gui/ai/ChatWidget.cc:218
 msgid "Review & Apply"
-msgstr ""
+msgstr "Vérifier & appliquer"
 
 #: src/gui/ai/ChatWidget.cc:223
-#, fuzzy
 msgid "Discard"
-msgstr "Joker"
+msgstr "Ignorer"
 
 #: src/gui/ai/ChatWidget.cc:291 src/gui/ai/ChatWidget.cc:634
 msgid "Stop"
-msgstr ""
+msgstr "Arrêter"
 
 #: src/gui/ai/ChatWidget.cc:481 src/gui/ai/ChatWidget.cc:488
-#, fuzzy
 msgid "Viewport Error"
-msgstr "Contrôle de la vue"
+msgstr "Erreur de la vue 3D"
 
 #: src/gui/ai/ChatWidget.cc:482
 msgid "Could not find active 3D Viewport to grab screen."
-msgstr ""
+msgstr "Impossible de trouver la vue 3D active pour capturer l'écran."
 
 #: src/gui/ai/ChatWidget.cc:488
 msgid "Failed to capture 3D viewport frame."
-msgstr ""
+msgstr "Échec de la capture de l'image de la vue 3D."
 
 #: src/gui/ai/ChatWidget.cc:509
 msgid "Image Files (*.png *.jpg *.jpeg *.webp)"
-msgstr ""
+msgstr "Fichiers image (*.png *.jpg *.jpeg *.webp)"
 
 #: src/gui/ai/ChatWidget.cc:517
-#, fuzzy
 msgid "File Error"
-msgstr "Erreur critique"
+msgstr "Erreur de fichier"
 
 #: src/gui/ai/ChatWidget.cc:517
 msgid "Could not open the selected image file."
-msgstr ""
+msgstr "Impossible d'ouvrir le fichier image sélectionné."
 
 #: src/gui/ai/ChatWidget.cc:577
 msgid "[Img]"
-msgstr ""
+msgstr "[Img]"
 
 #: src/gui/ai/ChatWidget.cc:582
 msgid "Remove attachment"
-msgstr ""
+msgstr "Retirer la pièce jointe"
 
 #: src/gui/ai/ChatWidget.cc:902
 msgid "Export Chat History"
-msgstr ""
+msgstr "Exporter l'historique de discussion"
 
 #: src/gui/ai/ChatWidget.cc:902 src/gui/ai/ChatWidget.cc:949
-#, fuzzy
 msgid "JSON Files (*.json)"
-msgstr "Fichiers CSG (*.csg)"
+msgstr "Fichiers JSON (*.json)"
 
 #: src/gui/ai/ChatWidget.cc:938
-#, fuzzy
 msgid "Export Warning"
-msgstr "Exporter une Image"
+msgstr "Avertissement d'export"
 
 #: src/gui/ai/ChatWidget.cc:938
 msgid "Could not write to the chosen file."
-msgstr ""
+msgstr "Impossible d'écrire dans le fichier choisi."
 
 #: src/gui/ai/ChatWidget.cc:943
-#, fuzzy
 msgid "Export Successful"
-msgstr "Fonctionnalités d'export"
+msgstr "Export réussi"
 
 #: src/gui/ai/ChatWidget.cc:943
 msgid "Chat history exported successfully."
-msgstr ""
+msgstr "Historique de discussion exporté avec succès."
 
 #: src/gui/ai/ChatWidget.cc:949
 msgid "Import Chat History"
-msgstr ""
+msgstr "Importer un historique de discussion"
 
 #: src/gui/ai/ChatWidget.cc:957 src/gui/ai/ChatWidget.cc:965
 #: src/gui/ai/ChatWidget.cc:970 src/gui/ai/ChatWidget.cc:1013
-#, fuzzy
 msgid "Import Warning"
-msgstr "Avertissements OpenGL"
+msgstr "Avertissement d'import"
 
 #: src/gui/ai/ChatWidget.cc:957
 msgid "Could not open the selected file."
-msgstr ""
+msgstr "Impossible d'ouvrir le fichier sélectionné."
 
 #: src/gui/ai/ChatWidget.cc:971
 msgid "Selected file does not contain a valid chat history array."
 msgstr ""
+"Le fichier sélectionné ne contient pas d'historique de discussion valide."
 
 #: src/gui/ai/ChatWidget.cc:1016
 msgid "Import Successful"
-msgstr ""
+msgstr "Import réussi"
 
 #: src/gui/ai/ChatWidget.cc:1016
 msgid "Chat history imported successfully."
-msgstr ""
+msgstr "Historique de discussion importé avec succès."
 
 #: src/gui/ai/ChatWidget.cc:1051
 msgid "Chat Copied"
-msgstr ""
+msgstr "Discussion copiée"
 
 #: src/gui/ai/ChatWidget.cc:1052
 msgid "Chat conversation copied to clipboard as Markdown."
-msgstr ""
+msgstr "Discussion copiée dans le presse-papiers au format Markdown."
 
 #: src/gui/Animate.cc:207
 msgid "press to pause animation"
@@ -3060,7 +3014,7 @@ msgstr "valeurs incorrectes"
 
 #: src/gui/ColorList.cc:207
 msgid "Filter (%1 colors found)"
-msgstr ""
+msgstr "Filtre (%1 couleurs trouvées)"
 
 #: src/gui/Console.cc:188
 msgid "Save console content"
@@ -3216,7 +3170,7 @@ msgstr "Fichiers PNG (*.png)"
 
 #: src/gui/MainWindow.cc:3027 src/gui/MainWindow.cc:3787
 msgid "&AI Chat"
-msgstr ""
+msgstr "&Discussion IA"
 
 #: src/gui/MainWindow.cc:3129 src/gui/TabManager.cc:735
 #: src/gui/TabManager.cc:786
@@ -3224,44 +3178,36 @@ msgid "Untitled.scad"
 msgstr "Untitled.scad"
 
 #: src/gui/MainWindow.cc:3779
-#, fuzzy
 msgid "&Editor"
-msgstr "Éditeur"
+msgstr "&Éditeur"
 
 #: src/gui/MainWindow.cc:3780
-#, fuzzy
 msgid "&Console"
-msgstr "Console"
+msgstr "&Console"
 
 #: src/gui/MainWindow.cc:3781
-#, fuzzy
 msgid "C&ustomizer"
-msgstr "Panneau de personnalisation"
+msgstr "Panneau de &personnalisation"
 
 #: src/gui/MainWindow.cc:3782
-#, fuzzy
 msgid "Error &Log"
-msgstr "Journal des erreurs"
+msgstr "&Journal des erreurs"
 
 #: src/gui/MainWindow.cc:3783
-#, fuzzy
 msgid "&Animate"
-msgstr "Animer"
+msgstr "&Animer"
 
 #: src/gui/MainWindow.cc:3784
-#, fuzzy
 msgid "&Font List"
-msgstr "Liste des polices"
+msgstr "Liste des &polices"
 
 #: src/gui/MainWindow.cc:3785
-#, fuzzy
 msgid "C&olor List"
-msgstr "Liste des couleurs"
+msgstr "Liste des c&ouleurs"
 
 #: src/gui/MainWindow.cc:3786
-#, fuzzy
 msgid "&Viewport Control"
-msgstr "Contrôle de la vue"
+msgstr "Contrôle de la &vue"
 
 #: src/gui/Network.h:168
 msgid "Timeout error"
@@ -3304,13 +3250,12 @@ msgstr ""
 "Cela peut prendre quelques minutes."
 
 #: src/gui/parameter/ParameterWidget.cc:72
-#, fuzzy
 msgid "Collapse All"
-msgstr "Tout enregistrer"
+msgstr "Tout replier"
 
 #: src/gui/parameter/ParameterWidget.cc:75
 msgid "Expand All"
-msgstr ""
+msgstr "Tout déplier"
 
 #: src/gui/parameter/ParameterWidget.cc:116
 msgid "Saving presets"
@@ -3333,18 +3278,16 @@ msgid "New set "
 msgstr "Nouvel ensemble "
 
 #: src/gui/Preferences.cc:273
-#, fuzzy
 msgid "Parameter Key"
-msgstr "Paramètre"
+msgstr "Clé du paramètre"
 
 #: src/gui/Preferences.cc:273
-#, fuzzy
 msgid "Parameter Value"
-msgstr "Paramètre"
+msgstr "Valeur du paramètre"
 
 #: src/gui/Preferences.cc:289 src/gui/Preferences.cc:294
 msgid "Ollama Local"
-msgstr ""
+msgstr "Ollama local"
 
 #: src/gui/Preferences.cc:446 src/gui/Preferences.cc:451
 #: src/gui/Preferences.cc:1384 src/gui/Preferences.cc:1423
@@ -3357,11 +3300,11 @@ msgstr "AUCUN"
 
 #: src/gui/Preferences.cc:1113
 msgid "Select CA certificate"
-msgstr ""
+msgstr "Sélectionner un certificat d'autorité"
 
 #: src/gui/Preferences.cc:1114
 msgid "Certificate files (*.pem *.crt *.cer);;All files (*)"
-msgstr ""
+msgstr "Fichiers de certificat (*.pem *.crt *.cer);;Tous les fichiers (*)"
 
 #: src/gui/Preferences.cc:1367
 msgid "Success: Server Version = %2, API Version = %1"
@@ -3373,31 +3316,28 @@ msgid "Error"
 msgstr "Erreur"
 
 #: src/gui/Preferences.cc:1484
-#, fuzzy
 msgid "New AI Profile"
-msgstr "&Nouveau fichier"
+msgstr "Nouveau profil IA"
 
 #: src/gui/Preferences.cc:1484
-#, fuzzy
 msgid "Profile name:"
-msgstr "Copier le nom du fichier"
+msgstr "Nom du profil :"
 
 #: src/gui/Preferences.cc:1489
-#, fuzzy
 msgid "Duplicate Profile"
-msgstr "Profil de tranchage"
+msgstr "Profil en double"
 
 #: src/gui/Preferences.cc:1489
 msgid "A profile with that name already exists."
-msgstr ""
+msgstr "Un profil portant ce nom existe déjà."
 
 #: src/gui/Preferences.cc:1551
 msgid "Delete AI Profile"
-msgstr ""
+msgstr "Supprimer le profil IA"
 
 #: src/gui/Preferences.cc:1552
 msgid "Delete profile \"%1\"?"
-msgstr ""
+msgstr "Supprimer le profil « %1 » ?"
 
 #: src/gui/QGLView.cc:188
 msgid ""
@@ -3457,7 +3397,7 @@ msgstr "Fermer l'onglet"
 
 #: src/gui/TabManager.cc:458
 msgid "Close All But This Tab"
-msgstr ""
+msgstr "Fermer tous les onglets sauf celui-ci"
 
 #: src/gui/TabManager.cc:607
 msgid "The document has been modified."
