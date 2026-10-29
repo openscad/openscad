@@ -229,6 +229,14 @@ class OpenSCADObject:
         """Mark this object for output/display."""
         ...
 
+    def highlight(self) -> "OpenSCADObject":
+        """Highlight this object in the preview, like the OpenSCAD # modifier."""
+        ...
+
+    def transparent(self) -> "OpenSCADObject":
+        """Show this object transparently in the preview, like the OpenSCAD % modifier."""
+        ...
+
     def projection(
         self, cut: Optional[bool] = None, convexity: int = 2
     ) -> "OpenSCADObject":
@@ -685,6 +693,14 @@ def color(obj: OpenSCADObjects, c: Color, alpha: float = 1.0) -> OpenSCADObject:
     Returns:
         A new object with the color set. The original object is unaffected.
     """
+    ...
+
+def highlight(obj: OpenSCADObjects) -> OpenSCADObject:
+    """Highlight an object in the preview, like the OpenSCAD # modifier."""
+    ...
+
+def transparent(obj: OpenSCADObjects) -> OpenSCADObject:
+    """Show an object transparently in the preview, like the OpenSCAD % modifier."""
     ...
 
 def union(*objects: OpenSCADObjects) -> OpenSCADObject:
