@@ -1000,6 +1000,7 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
+  const char *commentMarker = isPythonFile() ? "#" : "//";
   auto hasSelection = qsci->hasSelectedText();
 
   int lineFrom, lineTo;
@@ -1012,7 +1013,7 @@ void ScintillaEditor::commentSelection()
            (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
       ++marker;
     }
-    qsci->insertAt("//", line, marker);
+    qsci->insertAt(commentMarker, line, marker);
   }
 
   if (hasSelection) {
@@ -1023,6 +1024,7 @@ void ScintillaEditor::commentSelection()
 
 void ScintillaEditor::uncommentSelection()
 {
+  const QString commentMarker = isPythonFile() ? QStringLiteral("#") : QStringLiteral("//");
   auto hasSelection = qsci->hasSelectedText();
 
   int lineFrom, lineTo;
@@ -1035,8 +1037,8 @@ void ScintillaEditor::uncommentSelection()
            (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
       ++marker;
     }
-    if (lineText.mid(marker, 2) == "//") {
-      qsci->setSelection(line, marker, line, marker + 2);
+    if (lineText.mid(marker, commentMarker.size()) == commentMarker) {
+      qsci->setSelection(line, marker, line, marker + commentMarker.size());
       qsci->removeSelectedText();
     }
   }
@@ -1046,8 +1048,182 @@ void ScintillaEditor::uncommentSelection()
   qsci->endUndoAction();
 }
 
+bool ScintillaEditor::isPythonFile() const
+{
+  return filepath.endsWith(QStringLiteral(".py"), Qt::CaseInsensitive);
+}
+
+void ScintillaEditor::formatPythonSelection()
+{
+  struct Bracket {
+    QChar closing;
+    int indentation;
+  };
+
+  int lineFrom = 0;
+  int lineTo = qsci->lines() - 1;
+  if (qsci->hasSelectedText()) getRange(&lineFrom, &lineTo);
+  if (lineTo < lineFrom) return;
+
+  std::vector<int> indentations(qsci->lines(), -1);
+  std::vector<std::vector<std::pair<int, int>>> spacesBeforeAttributeDot(qsci->lines());
+  std::vector<Bracket> brackets;
+  int blockDepth = 0;
+  int explicitContinuationIndent = 0;
+  int previousCodeIndent = 0;
+  int dotContinuationIndent = 0;
+  bool explicitContinuation = false;
+  bool inDotChain = false;
+  QChar stringQuote;
+  bool inTripleString = false;
+  bool escaped = false;
+
+  auto startsWord = [](const QString& text, const QString& word) {
+    return text.startsWith(word) &&
+           (text.size() == word.size() || text.at(word.size()).isSpace() ||
+            text.at(word.size()) == QLatin1Char(':') || text.at(word.size()) == QLatin1Char('*'));
+  };
+
+  for (int line = 0; line < qsci->lines(); ++line) {
+    const QString text = qsci->text(line);
+    int first = 0;
+    while (first < text.size() && (text.at(first) == QLatin1Char(' ') ||
+                                   text.at(first) == QLatin1Char('\t'))) {
+      ++first;
+    }
+    if (first == text.size()) continue;
+
+    const QString code = text.mid(first);
+    if (inTripleString) {
+      indentations[line] = first;
+      for (int i = 0; i + 2 < text.size(); ++i) {
+        if (text.at(i) == stringQuote && text.at(i + 1) == stringQuote &&
+            text.at(i + 2) == stringQuote) {
+          inTripleString = false;
+          i += 2;
+        }
+      }
+      continue;
+    }
+
+    const bool startsDotContinuation = code.size() > 1 && code.at(0) == QLatin1Char('.') &&
+                                       (code.at(1).isLetter() || code.at(1) == QLatin1Char('_'));
+    if (!startsDotContinuation) inDotChain = false;
+
+    bool closesBracket = !brackets.empty() && code.at(0) == brackets.back().closing;
+    if (!startsDotContinuation && brackets.empty() && !explicitContinuation &&
+        (startsWord(code, QStringLiteral("elif")) || startsWord(code, QStringLiteral("else")) ||
+         startsWord(code, QStringLiteral("except")) || startsWord(code, QStringLiteral("finally")))) {
+      blockDepth = std::max(0, blockDepth - 1);
+    }
+
+    int indentation = blockDepth * 4;
+    if (startsDotContinuation) {
+      if (!inDotChain) dotContinuationIndent = previousCodeIndent + 4;
+      indentation = dotContinuationIndent;
+      inDotChain = true;
+    } else if (!brackets.empty()) {
+      indentation = closesBracket ? brackets.back().indentation : brackets.back().indentation + 4;
+    } else if (explicitContinuation) {
+      indentation = explicitContinuationIndent;
+    }
+    indentations[line] = indentation;
+
+    bool hasCode = false;
+    QChar lastCode;
+    for (int i = 0; i < text.size(); ++i) {
+      const QChar ch = text.at(i);
+      const QChar next = i + 1 < text.size() ? text.at(i + 1) : QChar();
+      const QChar next2 = i + 2 < text.size() ? text.at(i + 2) : QChar();
+      if (stringQuote != QChar()) {
+        if (inTripleString) {
+          if (ch == stringQuote && next == stringQuote && next2 == stringQuote) {
+            stringQuote = QChar();
+            inTripleString = false;
+            i += 2;
+          }
+        } else if (escaped) {
+          escaped = false;
+        } else if (ch == QLatin1Char('\\')) {
+          escaped = true;
+        } else if (ch == stringQuote) {
+          stringQuote = QChar();
+        }
+        continue;
+      }
+      if (ch == QLatin1Char('#')) break;
+      if ((ch == QLatin1Char('\'') || ch == QLatin1Char('"')) && next == ch && next2 == ch) {
+        stringQuote = ch;
+        inTripleString = true;
+        hasCode = true;
+        lastCode = ch;
+        i += 2;
+      } else if (ch == QLatin1Char('\'') || ch == QLatin1Char('"')) {
+        stringQuote = ch;
+        hasCode = true;
+        lastCode = ch;
+      } else if (ch == QLatin1Char(' ') || ch == QLatin1Char('\t')) {
+        int next = i + 1;
+        while (next < text.size() &&
+               (text.at(next) == QLatin1Char(' ') || text.at(next) == QLatin1Char('\t'))) {
+          ++next;
+        }
+        const QChar afterDot = next + 1 < text.size() ? text.at(next + 1) : QChar();
+        const bool previousCanHaveAttribute = lastCode.isLetterOrNumber() ||
+                                              lastCode == QLatin1Char('_') ||
+                                              lastCode == QLatin1Char(')') ||
+                                              lastCode == QLatin1Char(']') ||
+                                              lastCode == QLatin1Char('}') ||
+                                              lastCode == QLatin1Char('.') ||
+                                              lastCode == QLatin1Char('\'') ||
+                                              lastCode == QLatin1Char('"');
+        if (previousCanHaveAttribute && next + 1 < text.size() &&
+            text.at(next) == QLatin1Char('.') &&
+            (afterDot.isLetter() || afterDot == QLatin1Char('_'))) {
+          spacesBeforeAttributeDot[line].push_back({i, next - i});
+        }
+        i = next - 1;
+      } else if (!ch.isSpace()) {
+        hasCode = true;
+        lastCode = ch;
+        if (ch == QLatin1Char('(')) brackets.push_back({QLatin1Char(')'), indentation});
+        else if (ch == QLatin1Char('[')) brackets.push_back({QLatin1Char(']'), indentation});
+        else if (ch == QLatin1Char('{')) brackets.push_back({QLatin1Char('}'), indentation});
+        else if (!brackets.empty() && ch == brackets.back().closing) brackets.pop_back();
+      }
+    }
+    if (stringQuote != QChar() && !inTripleString) {
+      stringQuote = QChar();
+      escaped = false;
+    }
+
+    explicitContinuation = hasCode && lastCode == QLatin1Char('\\');
+    explicitContinuationIndent = indentation + 4;
+    if (hasCode && lastCode == QLatin1Char(':') && brackets.empty()) ++blockDepth;
+    if (hasCode) previousCodeIndent = indentation;
+  }
+
+  const bool useTabs = Settings::Settings::indentStyle.value() == "Tabs";
+  qsci->setIndentationsUseTabs(false);
+  qsci->beginUndoAction();
+  for (int line = lineFrom; line <= lineTo; ++line) {
+    for (auto it = spacesBeforeAttributeDot[line].rbegin();
+         it != spacesBeforeAttributeDot[line].rend(); ++it) {
+      qsci->setSelection(line, it->first, line, it->first + it->second);
+      qsci->removeSelectedText();
+    }
+    if (indentations[line] >= 0) qsci->setIndentation(line, indentations[line]);
+  }
+  qsci->endUndoAction();
+  qsci->setIndentationsUseTabs(useTabs);
+}
+
 void ScintillaEditor::formatSelection()
 {
+  if (isPythonFile()) {
+    formatPythonSelection();
+    return;
+  }
   int lineFrom = 0;
   int lineTo = qsci->lines() - 1;
   if (qsci->hasSelectedText()) {

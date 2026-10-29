@@ -92,6 +92,8 @@ private:
   void setLexer(ScadLexer *lexer);
 #endif
   void replaceSelectedText(QString&);
+  bool isPythonFile() const;
+  void formatPythonSelection();
   void addTemplate(const fs::path& path);
   void updateSymbolMarginVisibility();
   void findMarker(int, int, const std::function<int(int)>&);
