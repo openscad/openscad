@@ -30,7 +30,6 @@
 
 %{
 
-#include "Feature.h"
 #include "handle_dep.h"
 #include "core/str_utf8_wrapper.h"
 #include "core/UnicodeIdentifier.h"
@@ -202,6 +201,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 
 %{/* Escape sequences */%}
+\\\r?\n                  { LOCATION_ADD_LINES(parserlloc, 1); }
 \\n                     { stringcontents += '\n'; }
 \\t                     { stringcontents += '\t'; }
 \\r                     { stringcontents += '\r'; }
@@ -379,26 +379,22 @@ static int unicode_identifier(const char *text, size_t length)
 {
   std::string message;
 
-  if (!Feature::UnicodeIdentifiers.is_enabled()) {
-    message = "Non-ASCII identifiers are disabled; enable the unicode-identifiers feature";
-  } else {
-    const auto result = UnicodeIdentifier::normalize(text, length);
-    switch (result.status) {
-    case UnicodeIdentifier::Status::Valid:
-      parserlval.text = strdup(result.identifier.c_str());
-      return TOK_ID;
-    case UnicodeIdentifier::Status::InvalidEncoding:
-      message = "Malformed UTF-8 sequence in identifier";
-      break;
-    case UnicodeIdentifier::Status::InvalidStart:
-      message = "Identifier cannot start with "
-                + UnicodeIdentifier::formatCodePoint(result.codepoint);
-      break;
-    case UnicodeIdentifier::Status::InvalidContinue:
-      message = "Identifier cannot contain "
-                + UnicodeIdentifier::formatCodePoint(result.codepoint);
-      break;
-    }
+  const auto result = UnicodeIdentifier::normalize(text, length);
+  switch (result.status) {
+  case UnicodeIdentifier::Status::Valid:
+    parserlval.text = strdup(result.identifier.c_str());
+    return TOK_ID;
+  case UnicodeIdentifier::Status::InvalidEncoding:
+    message = "Malformed UTF-8 sequence in identifier";
+    break;
+  case UnicodeIdentifier::Status::InvalidStart:
+    message = "Identifier cannot start with "
+              + UnicodeIdentifier::formatCodePoint(result.codepoint);
+    break;
+  case UnicodeIdentifier::Status::InvalidContinue:
+    message = "Identifier cannot contain "
+              + UnicodeIdentifier::formatCodePoint(result.codepoint);
+    break;
   }
 
   parsererror(message.c_str());

@@ -315,6 +315,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/sphere-octa-tests.scad
   ${TEST_SCAD_DIR}/misc/expression-evaluation-tests.scad
   ${TEST_SCAD_DIR}/misc/echo-tests.scad
   ${TEST_SCAD_DIR}/misc/assert-fail1-test.scad
@@ -324,6 +325,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/assert-fail5-test.scad
   ${TEST_SCAD_DIR}/misc/for-c-style-infinite-loop.scad
   ${TEST_SCAD_DIR}/misc/parser-tests.scad
+  ${TEST_SCAD_DIR}/issues/issue6942.scad
   ${TEST_SCAD_DIR}/misc/builtin-tests.scad
   ${TEST_SCAD_DIR}/misc/dim-all.scad
   ${TEST_SCAD_DIR}/misc/string-test.scad
@@ -382,6 +384,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
+  ${TEST_SCAD_DIR}/issues/issue7013.scad
   ${TEST_SCAD_DIR}/misc/isobject-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
 )
@@ -824,20 +827,13 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 
-# Unicode identifiers are enabled by default. Keep NFC normalization and the
-# identifier security profile covered independently of experimental features.
+# Unicode identifiers, NFC normalization, and the identifier security profile
+# are supported independently of experimental features.
 add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad)
-add_cmdline_test(echo-unicode-enabled OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad EXPECTEDDIR echo ARGS --enable=unicode-identifiers)
 add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
 add_cmdline_test(echo-unicode-set-name-nfd OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Größ")
 add_cmdline_test(echo-unicode-set-name-nfc OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Höhe")
 add_failing_test(parsererrors SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1)
-# CSG export succeeds for this source when Unicode identifiers are enabled,
-# even though it contains no geometry; STL export would fail in both modes.
-add_failing_test(unicode-identifiers-disabled SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --retval=1 --disable=unicode-identifiers)
-add_failing_test(unicode-identifiers-disabled-after-enable-all SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --retval=1 --enable=all --disable=unicode-identifiers)
-add_failing_test(unicode-identifiers-disabled-before-enable-all SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --retval=1 --disable=unicode-identifiers --enable=all)
-add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-disabled.scad ARGS --disable=unicode-identifiers)
 
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
@@ -923,40 +919,45 @@ list(APPEND EXPORT_3MF_LAZY_UNION_TEST_FILES ${TEST_SCAD_DIR}/experimental/lazyu
 
 list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
+list(APPEND EXPORT_PARAM_TEST_FILES
+  ${TEST_SCAD_DIR}/issues/issue6597.scad
+  ${TEST_SCAD_DIR}/issues/issue7013.scad
+)
+
 list(APPEND EXPORT_IMPORT_3D_FILES
-${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
-${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
-${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
-${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
-${TEST_SCAD_DIR}/3D/issues/issue1221.scad
-${TEST_SCAD_DIR}/3D/issues/issue1225.scad
-${TEST_SCAD_DIR}/3D/issues/issue1258.scad
-${TEST_SCAD_DIR}/3D/issues/issue2259.scad
-${TEST_SCAD_DIR}/3D/issues/issue5216.scad
-${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
-${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
-${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
-${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
-${TEST_SCAD_DIR}/misc/preview_variable.scad
+  ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
+  ${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1215.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5216.scad
+  ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
+  ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
+  ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
+  ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
+  ${TEST_SCAD_DIR}/misc/preview_variable.scad
 )
 
 list(APPEND EXPORT_IMPORT_3D_DIFFERENT_FILES
-${TEST_SCAD_DIR}/3D/issues/issue904.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
-${TEST_SCAD_DIR}/misc/internal-cavity.scad
-${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
-${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
+  ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 )
 
 list(APPEND EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES
-${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
 
 #
@@ -1002,7 +1003,13 @@ add_cmdline_test(export-pov-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES 
 add_cmdline_test(export-pov-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
 add_cmdline_test(export-pov-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
 
-add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES "${TEST_SCAD_DIR}/issues/issue6597.scad" ARGS --export-format param)
+# Export parameters, observe exported files and console output
+add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES ${EXPORT_PARAM_TEST_FILES} ARGS --export-format param)
+add_failing_test(export-param-hardwarnings        SUFFIX json FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS --retval=1 --export-format param --hardwarnings)
+add_failing_test(export-paramset-hardwarnings     SUFFIX json FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS --retval=1 --export-format param --hardwarnings -p ${TEST_SCAD_DIR}/issues/issue7013.json -P Defaults)
+
+add_cmdline_test(echo-param    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS -p ${TEST_SCAD_DIR}/issues/issue7013.json EXPECTEDDIR echo)
+add_cmdline_test(echo-paramset OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue7013.scad ARGS -p ${TEST_SCAD_DIR}/issues/issue7013.json -P Defaults)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
@@ -1471,10 +1478,11 @@ list(APPEND NEF3_BROKEN_TESTS
 
 # Platform specific test disable
 if(APPLE)
-  set_tests_properties(
+  # This test is EXPERIMENTAL-gated, so it is only registered when
+  # -DEXPERIMENTAL=ON. Use the safe variant, which tolerates its absence.
+  disable_tests_safe(
     # Fails to create a 3MF file to stdout, see #6895
     export-3mf-stdio_3mf-export
-    PROPERTIES DISABLED TRUE
   )
 elseif(UNIX)
 elseif(WIN32 OR MXECROSS)
@@ -1528,6 +1536,16 @@ if(NOT ENABLE_MANIFOLD)
     render-manifold_roof
   )
 endif()
+
+###############################
+# Test harness's own behaviour #
+###############################
+
+# Needs no OpenSCAD binary: it exercises test_pretty_print.py's log-file selection directly.
+add_test(NAME pretty_print_logfile
+  CONFIGURATIONS Default
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print_logfile.py
+)
 
 ####################
 # Extra Debug Info #
