@@ -83,6 +83,7 @@ public slots:
   virtual void unindentSelection() = 0;
   virtual void commentSelection() = 0;
   virtual void uncommentSelection() = 0;
+  virtual void formatSelection() = 0;
   virtual void setPlainText(const QString&) = 0;
   virtual void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus status, int level,
                                            int lineFrom, int colFrom, int lineTo, int colTo) = 0;

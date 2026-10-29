@@ -79,11 +79,10 @@ private:
                    const QColor& defaultColor);
 
   bool eventFilter(QObject *obj, QEvent *event) override;
-  bool handleKeyEventNavigateNumber(QKeyEvent *);
   bool handleWheelEventNavigateNumber(QWheelEvent *);
   bool handleKeyEventBlockCopy(QKeyEvent *);
   bool handleKeyEventBlockMove(QKeyEvent *);
-  void navigateOnNumber(int key);
+  void toggleHighlightCurrentLine();
   bool modifyNumber(int key);
   void noColor();
 
@@ -93,6 +92,8 @@ private:
   void setLexer(ScadLexer *lexer);
 #endif
   void replaceSelectedText(QString&);
+  bool isPythonFile() const;
+  void formatPythonSelection();
   void addTemplate(const fs::path& path);
   void updateSymbolMarginVisibility();
   void findMarker(int, int, const std::function<int(int)>&);
@@ -115,6 +116,7 @@ public slots:
   void unindentSelection() override;
   void commentSelection() override;
   void uncommentSelection() override;
+  void formatSelection() override;
   void insert(const QString&) override;
   void setText(const QString&) override;
   void undo() override;
