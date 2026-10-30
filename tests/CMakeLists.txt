@@ -831,7 +831,11 @@ add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 # are supported independently of experimental features.
 add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad)
 add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
+# Following -P argument: NFC: U+0047, U+0072, U+00F6, U+00DF; UTF-8: 47 72 C3 B6 C3 9F
+# JSON set name: NFD: U+0047, U+0072, U+006F, U+0308, U+00DF; UTF-8: 47 72 6F CC 88 C3 9F
 add_cmdline_test(echo-unicode-set-name-nfd OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Größ")
+# Following -P argument: NFD: U+0048, U+006F, U+0308, U+0068, U+0065; UTF-8: 48 6F CC 88 68 65
+# JSON set name: NFC: U+0048, U+00F6, U+0068, U+0065; UTF-8: 48 C3 B6 68 65
 add_cmdline_test(echo-unicode-set-name-nfc OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Höhe")
 add_failing_test(parsererrors SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1)
 
