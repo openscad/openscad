@@ -17,6 +17,7 @@ public:
   static const Feature ExperimentalLazyUnion;
   static const Feature ExperimentalVxORenderersIndexing;
   static const Feature ExperimentalImportFunction;
+  static const Feature ExperimentalFnFunction;
   static const Feature ExperimentalObjectFunction;
   static const Feature ExperimentalPredictibleOutput;
   static const Feature ExperimentalVectorSwizzle;
