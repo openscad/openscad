@@ -825,6 +825,14 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
     parserretval = parserparse();
   }catch (const HardWarningException &e) {
     yyerror("stop on first warning");
+  } catch (const std::exception& e) {
+    // Any other exception (e.g. std::filesystem errors while resolving include<>/use<>)
+    // must not skip the lexer/scope cleanup below, or the next parse() sees stale state.
+    LOG(message_group::Error, "Parser error: %1$s", e.what());
+    parserretval = 1;
+  } catch (...) {
+    LOG(message_group::Error, "Parser error: unknown exception");
+    parserretval = 1;
   }
 
   lexerdestroy();
