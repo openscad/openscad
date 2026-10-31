@@ -64,6 +64,7 @@ jobs:
               echo "New release detected: $LATEST_RELEASE ($LATEST_COMMIT, current: $CURRENT_COMMIT)"
               echo "new_release_available=true" >> $GITHUB_OUTPUT
               echo "release_tag=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+              echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
             else
               echo "No new release detected."
               echo "new_release_available=false" >> $GITHUB_OUTPUT
@@ -105,11 +106,22 @@ jobs:
         if: steps.compare-releases.outputs.new_release_available == 'true' && steps.check-existing-pr.outputs.existing_pr == ''
         uses: peter-evans/create-pull-request@v8
         with:
-          commit-message: "chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}"
+          commit-message: |
+            chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}
+
+            Bump ${{ env.SUBMODULE_PATH }} from ${{ steps.get-current-submodule.outputs.current_commit }} to ${{ steps.compare-releases.outputs.latest_commit }} (release tag ${{ steps.compare-releases.outputs.release_tag }}).
           title: "chore(submodule): Update ${{ env.SUBMODULE_NAME }} to ${{ steps.compare-releases.outputs.release_tag }}"
           body: |
-            This PR updates the submodule `${{ env.SUBMODULE_NAME }}` from `${{ steps.get-current-submodule.outputs.current_commit }}` to the latest release tag: `${{ steps.compare-releases.outputs.release_tag }}` (Note: Releases are only picked up after a delay of ${{ env.DELAY_DAYS }} days).
-            - **Upstream Release**: https://github.com/elalish/manifold/releases/tag/${{ steps.compare-releases.outputs.release_tag }}
+            This PR updates the submodule `${{ env.SUBMODULE_NAME }}` from `${{ steps.get-current-submodule.outputs.current_tag || steps.get-current-submodule.outputs.current_commit }}` to the latest release tag: `${{ steps.compare-releases.outputs.release_tag }}`.
+
+            - **Previous**: `${{ steps.get-current-submodule.outputs.current_tag || 'n/a' }}` (`${{ steps.get-current-submodule.outputs.current_commit }}`)
+            - **New**: `${{ steps.compare-releases.outputs.release_tag }}` (`${{ steps.compare-releases.outputs.latest_commit }}`)
+            - **Upstream Release**: https://github.com/${{ env.SUBMODULE_REPO }}/releases/tag/${{ steps.compare-releases.outputs.release_tag }}
+
+            Created automatically by the *Check for Manifold Release* workflow. A release is picked up only when:
+            - it is the newest published release (no newer release since it was tagged),
+            - it is at least ${{ env.DELAY_DAYS }} days old, and
+            - it is semver-greater than the currently pinned version.
           branch: "chore/update-manifold-${{ steps.compare-releases.outputs.release_tag }}"
           labels: |
             dependencies
