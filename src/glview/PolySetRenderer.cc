@@ -106,9 +106,17 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
 // Overridden from Renderer
 void PolySetRenderer::setColorScheme(const ColorScheme& cs)
 {
+  // Note the ordering: the colormap below must be refreshed on every call, including the redundant
+  // one the view makes with the scheme already in force. Only discarding the buffers is conditional.
+  const bool changed = colorscheme_ != &cs;
   Renderer::setColorScheme(cs);
   colormap_[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
   colormap_[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
+  if (!changed) return;
+  // Vertex colors are written into the buffers when they are built, and prepare() builds them only
+  // once, so the new scheme reaches the screen only if they are built again.
+  polyset_vertex_state_containers_.clear();
+  polygon_vertex_state_containers_.clear();
 }
 
 void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderinfo)
