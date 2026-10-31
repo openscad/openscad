@@ -58,6 +58,12 @@ public:
   bool getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color,
                       Color4f& outcolor) const;
   virtual void setColorScheme(const ColorScheme& cs);
+  //! The colors a PolySet's color_index_t tags resolve to under the current scheme, or nullptr
+  //! before one is set. Handed to VBOBuilder::create_surface, which does the resolving.
+  const SchemeFaceColors *schemeFaceColors() const
+  {
+    return colorscheme_ ? &scheme_face_colors_ : nullptr;
+  }
 
   /**
    * @brief Find object(s) the mouse is pointing at in the viewport.
@@ -70,5 +76,6 @@ public:
 protected:
   std::map<ColorMode, Color4f> colormap_;
   const ColorScheme *colorscheme_{nullptr};
+  SchemeFaceColors scheme_face_colors_;
   void setupShader();
 };

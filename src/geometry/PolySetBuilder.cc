@@ -203,7 +203,10 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
       }
     }
     for (auto color_index : ps.color_indices) {
-      color_indices_.push_back(color_index < 0 ? -1 : color_map[color_index]);
+      // Remap into colors_'s indexing; any sentinel (no color, or a worker's cutout/default tag)
+      // passes through unchanged, since it doesn't refer to a color in ps.colors to begin with.
+      const auto idx = color_index.index();
+      color_indices_.push_back(idx ? color_index_t(static_cast<int32_t>(color_map[*idx])) : color_index);
     }
   } else if (!color_indices_.empty()) {
     // If we already built color_indices_ but don't have colors with this ps, fill with -1.
