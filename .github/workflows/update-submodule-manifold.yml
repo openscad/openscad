@@ -42,15 +42,21 @@ jobs:
         run: |
           git submodule update --init --recursive "$SUBMODULE_PATH"
           CURRENT_COMMIT=$(git ls-tree HEAD "$SUBMODULE_PATH" | awk '{print $3}')
+          CURRENT_TAG=$(git -C "$SUBMODULE_PATH" tag --points-at "$CURRENT_COMMIT" | head -n1)
           echo "current_commit=$CURRENT_COMMIT" >> $GITHUB_OUTPUT
+          echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
 
       - name: Compare releases
         id: compare-releases
         run: |
           LATEST_RELEASE="${{ steps.get-latest-release.outputs.latest_release }}"
           CURRENT_COMMIT="${{ steps.get-current-submodule.outputs.current_commit }}"
+          CURRENT_TAG="${{ steps.get-current-submodule.outputs.current_tag }}"
           if [ -z "$LATEST_RELEASE" ]; then
             echo "No release older than ${{ env.DELAY_DAYS }} days. Nothing to do."
+            echo "new_release_available=false" >> $GITHUB_OUTPUT
+          elif [ -n "$CURRENT_TAG" ] && [ "$(printf '%s\n%s\n' "$CURRENT_TAG" "$LATEST_RELEASE" | sort -V | tail -n1)" != "$LATEST_RELEASE" ]; then
+            echo "Candidate $LATEST_RELEASE is not semver-newer than pinned $CURRENT_TAG. Skipping."
             echo "new_release_available=false" >> $GITHUB_OUTPUT
           else
             LATEST_COMMIT=$(git -C "$SUBMODULE_PATH" rev-list -n1 "$LATEST_RELEASE")
