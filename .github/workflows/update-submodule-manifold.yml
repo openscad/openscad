@@ -1,4 +1,4 @@
-name: Check for Manifold Release
+name: Check for manifold release
 
 on:
   schedule:
@@ -118,11 +118,11 @@ jobs:
             - **New**: `${{ steps.compare-releases.outputs.release_tag }}` (`${{ steps.compare-releases.outputs.latest_commit }}`)
             - **Upstream Release**: https://github.com/${{ env.SUBMODULE_REPO }}/releases/tag/${{ steps.compare-releases.outputs.release_tag }}
 
-            Created automatically by the *Check for Manifold Release* workflow. A release is picked up only when:
+            Created automatically by Github workflow. A release is picked up only when:
             - it is the newest published release (no newer release since it was tagged),
             - it is at least ${{ env.DELAY_DAYS }} days old, and
             - it is semver-greater than the currently pinned version.
-          branch: "chore/update-manifold-${{ steps.compare-releases.outputs.release_tag }}"
+          branch: "chore/update-${{ env.SUBMODULE_NAME }}-${{ steps.compare-releases.outputs.release_tag }}"
           labels: |
             dependencies
             Tag: ${{ env.SUBMODULE_NAME }}
