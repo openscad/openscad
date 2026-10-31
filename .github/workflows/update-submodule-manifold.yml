@@ -49,13 +49,16 @@ jobs:
           if [ -z "$LATEST_RELEASE" ]; then
             echo "No release older than ${{ env.DELAY_DAYS }} days. Nothing to do."
             echo "new_release_available=false" >> $GITHUB_OUTPUT
-          elif [ "$LATEST_RELEASE" != "$CURRENT_COMMIT" ]; then
-            echo "New release detected: $LATEST_RELEASE (current: $CURRENT_COMMIT)"
-            echo "new_release_available=true" >> $GITHUB_OUTPUT
-            echo "release_tag=$LATEST_RELEASE" >> $GITHUB_OUTPUT
           else
-            echo "No new release detected."
-            echo "new_release_available=false" >> $GITHUB_OUTPUT
+            LATEST_COMMIT=$(git -C "$SUBMODULE_PATH" rev-list -n1 "$LATEST_RELEASE")
+            if [ "$LATEST_COMMIT" != "$CURRENT_COMMIT" ]; then
+              echo "New release detected: $LATEST_RELEASE ($LATEST_COMMIT, current: $CURRENT_COMMIT)"
+              echo "new_release_available=true" >> $GITHUB_OUTPUT
+              echo "release_tag=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+            else
+              echo "No new release detected."
+              echo "new_release_available=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Check for existing PR
