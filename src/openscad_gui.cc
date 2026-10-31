@@ -100,6 +100,11 @@ namespace {
 
 bool isDarkMode()
 {
+  // An explicit choice in Preferences wins over what the platform reports.
+  const auto& theme = Settings::Settings::uiTheme.value();
+  if (theme == "dark") return true;
+  if (theme == "light") return false;
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
   const auto scheme = QGuiApplication::styleHints()->colorScheme();
   return scheme == Qt::ColorScheme::Dark;
@@ -284,6 +289,17 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
                    &OpenSCADApp::setApplicationFont);
   QObject::connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, &app,
                    &OpenSCADApp::setRenderBackend3D);
+
+  // The theme is applied here rather than with setGlobalTheme() above, as the
+  // setting can only be read once the QSettings organization is configured and
+  // GlobalPreferences has loaded it. The icon theme is refreshed to match.
+  app.setUiTheme(QString::fromStdString(Settings::Settings::uiTheme.value()));
+  setGlobalTheme();
+  QObject::connect(GlobalPreferences::inst(), &Preferences::uiThemeChanged, &app,
+                   [&app](const QString& theme) {
+                     app.setUiTheme(theme);
+                     setGlobalTheme();
+                   });
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;

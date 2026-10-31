@@ -12,9 +12,13 @@
 #include <QApplication>
 #include <QEvent>
 #include <QObject>
+#include <QPalette>
 #include <QProgressDialog>
 #include <QString>
 #include <QStringList>
+#include <QStyle>
+#include <QStyleFactory>
+#include <QStyleHints>
 #include <boost/foreach.hpp>
 #include <cassert>
 #include <exception>
@@ -30,6 +34,45 @@ void logHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& ms
   if (msg.contains("Using Qt multimedia with FFmpeg")) return;
 
   if (defaultMessageHandler) defaultMessageHandler(type, ctx, msg);
+}
+
+// Dark palette used with the Fusion style. Disabled roles are set explicitly,
+// since Fusion would otherwise derive them from the light defaults.
+QPalette darkPalette()
+{
+  const QColor window(45, 45, 48);
+  const QColor base(30, 30, 30);
+  const QColor text(220, 220, 220);
+  const QColor disabledText(127, 127, 127);
+  const QColor highlight(42, 130, 218);
+
+  QPalette p;
+  p.setColor(QPalette::Window, window);
+  p.setColor(QPalette::WindowText, text);
+  p.setColor(QPalette::Base, base);
+  p.setColor(QPalette::AlternateBase, window);
+  p.setColor(QPalette::ToolTipBase, base);
+  p.setColor(QPalette::ToolTipText, text);
+  p.setColor(QPalette::PlaceholderText, disabledText);
+  p.setColor(QPalette::Text, text);
+  p.setColor(QPalette::Button, window);
+  p.setColor(QPalette::ButtonText, text);
+  p.setColor(QPalette::BrightText, QColor(255, 80, 80));
+  p.setColor(QPalette::Light, QColor(70, 70, 74));
+  p.setColor(QPalette::Midlight, QColor(60, 60, 64));
+  p.setColor(QPalette::Mid, QColor(40, 40, 42));
+  p.setColor(QPalette::Dark, QColor(25, 25, 25));
+  p.setColor(QPalette::Shadow, QColor(0, 0, 0));
+  p.setColor(QPalette::Link, highlight.lighter(130));
+  p.setColor(QPalette::LinkVisited, QColor(170, 130, 230));
+  p.setColor(QPalette::Highlight, highlight);
+  p.setColor(QPalette::HighlightedText, QColor(255, 255, 255));
+  for (const auto role : {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
+    p.setColor(QPalette::Disabled, role, disabledText);
+  }
+  p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
+  p.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledText);
+  return p;
 }
 
 }  // namespace
@@ -113,6 +156,40 @@ void OpenSCADApp::setRenderBackend3D(RenderBackend3D backend)
   CGALCache::instance()->clear();
   GeometryCache::instance()->clear();
   emit backend3DChanged();
+}
+
+void OpenSCADApp::setUiTheme(const QString& theme)
+{
+  // Remember what the platform gave us, so "Follow system" can go back to it.
+  static const QString nativeStyle = QApplication::style()->objectName();
+  static const QPalette nativePalette = QApplication::palette();
+  static bool overridden = false;
+
+  // Since Qt 6.8 the color scheme can be overridden per application, which
+  // also keeps native dialogs and the title bar in sync with the choice.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+  styleHints()->setColorScheme(theme == "dark"    ? Qt::ColorScheme::Dark
+                               : theme == "light" ? Qt::ColorScheme::Light
+                                                  : Qt::ColorScheme::Unknown);
+#endif
+
+  if (theme == "dark") {
+    // Fusion honors a custom palette consistently on every platform, unlike
+    // the native Windows and macOS styles.
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
+    QApplication::setPalette(darkPalette());
+    overridden = true;
+  } else if (theme == "light") {
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
+    QApplication::setPalette(QApplication::style()->standardPalette());
+    overridden = true;
+  } else if (overridden) {
+    // Only restore when a forced theme was applied before, so the platform
+    // palette is never pinned and live OS theme changes keep working.
+    QApplication::setStyle(QStyleFactory::create(nativeStyle));
+    QApplication::setPalette(nativePalette);
+    overridden = false;
+  }
 }
 
 void OpenSCADApp::setApplicationFont(const QString& family, uint size)

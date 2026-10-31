@@ -426,6 +426,7 @@ void Preferences::init()
   initComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+  initComboBox(this->comboBoxUiTheme, Settings::Settings::uiTheme);
 
   initListBox(this->listWidgetLocalAppParams, Settings::Settings::localAppParameterList);
   connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::dataChanged, this,
@@ -1068,6 +1069,29 @@ void Preferences::on_comboBoxRenderBackend3D_activated(int val)
   auto backend = renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
                    .value_or(DEFAULT_RENDERING_BACKEND_3D);
   emit renderBackend3DChanged(backend);
+}
+
+void Preferences::on_comboBoxUiTheme_activated(int val)
+{
+  applyComboBox(this->comboBoxUiTheme, val, Settings::Settings::uiTheme);
+  const auto theme = QString::fromStdString(Settings::Settings::uiTheme.value());
+
+  // Follow along with the editor and 3D view color schemes, but only while
+  // they are still on the matching default so a user's own choice is kept.
+  const bool dark = theme == "dark";
+  const QString editorFrom = dark ? "For Light Background" : "For Dark Background";
+  const QString editorTo = dark ? "For Dark Background" : "For Light Background";
+  if (theme != "system" && getValue("editor/syntaxhighlight").toString() == editorFrom) {
+    this->syntaxHighlight->setCurrentText(editorTo);
+  }
+  const QString viewFrom = dark ? "Cornfield" : "DeepOcean";
+  const QString viewTo = dark ? "DeepOcean" : "Cornfield";
+  if (theme != "system" && getValue("3dview/colorscheme").toString() == viewFrom) {
+    const auto items = this->colorSchemeChooser->findItems(viewTo, Qt::MatchExactly);
+    if (!items.isEmpty()) this->colorSchemeChooser->setCurrentItem(items.first());
+  }
+
+  emit uiThemeChanged(theme);
 }
 
 void Preferences::on_comboBoxToolbarExport3D_activated(int val)
@@ -1966,6 +1990,7 @@ void Preferences::updateGUI()
     ->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
   updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+  updateComboBox(this->comboBoxUiTheme, Settings::Settings::uiTheme);
 
   BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)
     ->setChecked(Settings::Settings::summaryCamera.value());

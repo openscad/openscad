@@ -2226,6 +2226,37 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutUiTheme">
+                 <item>
+                  <widget class="QLabel" name="labelUiTheme">
+                   <property name="text">
+                    <string>Theme</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxUiTheme">
+                   <property name="toolTip">
+                    <string>Color theme of the user interface. Choosing Light or Dark also switches the editor and 3D view color schemes while they are still on their defaults.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerUiTheme">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayoutApplicationFont">
                  <item>
                   <widget class="QLabel" name="labelApplicationFont">

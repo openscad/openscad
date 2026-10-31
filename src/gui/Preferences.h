@@ -74,6 +74,7 @@ public slots:
   void on_comboBoxRenderBackend3D_activated(int);
   void on_comboBoxToolbarExport3D_activated(int);
   void on_comboBoxToolbarExport2D_activated(int);
+  void on_comboBoxUiTheme_activated(int);
   void on_checkBoxSummaryCamera_toggled(bool);
   void on_checkBoxSummaryArea_toggled(bool);
   void on_checkBoxSummaryBoundingBox_toggled(bool);
@@ -194,6 +195,7 @@ signals:
   void stepSizeChanged(int val) const;
   void toolbarExportChanged() const;
   void renderBackend3DChanged(RenderBackend3D backend) const;
+  void uiThemeChanged(const QString& theme) const;
 
 private slots:
   void on_lineEditStepSize_textChanged(const QString& arg1);

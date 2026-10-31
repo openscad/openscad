@@ -29,6 +29,8 @@ public slots:
   void hideFontCacheDialog();
   void setApplicationFont(const QString& family, uint size);
   void setRenderBackend3D(RenderBackend3D backend);
+  // Apply the application theme: "system", "light" or "dark" (see Settings::uiTheme).
+  void setUiTheme(const QString& theme);
 
 public:
   WindowManager windowManager;

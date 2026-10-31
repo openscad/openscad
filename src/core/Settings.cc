@@ -247,6 +247,13 @@ SettingsEntryEnum<std::string> Settings::toolbarExport3D(
 SettingsEntryEnum<std::string> Settings::toolbarExport2D("advanced", "toolbarExport2D",
                                                          createFileFormatItems(fileformat::all2D()),
                                                          fileformat::info(FileFormat::DXF).description);
+// Application color theme. "system" keeps the platform's style and palette,
+// "light" and "dark" force one regardless of the OS setting.
+SettingsEntryEnum<std::string> Settings::uiTheme("advanced", "uiTheme",
+                                                 {{"system", "system", _("Follow system")},
+                                                  {"light", "light", _("Light")},
+                                                  {"dark", "dark", _("Dark")}},
+                                                 "system");
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);

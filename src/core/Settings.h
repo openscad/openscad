@@ -431,6 +431,7 @@ public:
   static SettingsEntryEnum<std::string> renderBackend3D;
   static SettingsEntryEnum<std::string> toolbarExport3D;
   static SettingsEntryEnum<std::string> toolbarExport2D;
+  static SettingsEntryEnum<std::string> uiTheme;
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;
