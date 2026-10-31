@@ -44,7 +44,7 @@ PACKAGES=(
     "boost 1.92.0 1"
 
     # https://gitlab.com/libeigen/eigen/-/releases
-    "eigen 3.4.1"
+    "eigen 5.0.1"
 
     # https://gmplib.org/#STATUS
     "gmp 6.3.0"
@@ -62,7 +62,7 @@ PACKAGES=(
     "libgraphite2 1.3.15"
 
     # https://github.com/harfbuzz/harfbuzz/releases
-    "harfbuzz 11.4.1 1"
+    "harfbuzz 15.0.0"
 
     # https://github.com/openssl/openssl/releases
     "openssl 3.6.5"
@@ -71,31 +71,31 @@ PACKAGES=(
     "libzip 1.12.1"
 
     # https://www.freedesktop.org/wiki/Software/fontconfig/
-    "fontconfig 2.18.2"
+    "fontconfig 2.18.3"
 
     # https://github.com/libusb/hidapi/releases
     "hidapi 0.15.0"
 
     # https://github.com/3MFConsortium/lib3mf/releases
-    "lib3mf 2.4.1 1"
+    "lib3mf 2.5.0"
 
     # https://github.com/PCRE2Project/pcre2/releases
     "pcre2 10.49"
 
     # https://gitlab.gnome.org/GNOME/glib/-/releases
-    "glib2 2.85.0"
+    "glib2 2.90.1"
 
     # https://gitlab.freedesktop.org/pixman/pixman/-/tags
     "pixman 0.46.4"
 
     # https://www.cairographics.org/news/ 
-    "cairo 1.18.0"
+    "cairo 1.18.6"
 
     # https://github.com/CGAL/cgal/releases
     "cgal 6.2.1"
 
     # https://download.qt.io/archive/qt/6.8/
-    "qt6 6.8.4 1"
+    "qt6 6.8.5"
 
     # https://opencsg.org/news.html
     "opencsg 1.8.2"
@@ -104,7 +104,7 @@ PACKAGES=(
     "qscintilla 2.14.1 1"
 
     # https://github.com/uxlfoundation/oneTBB/releases
-    "onetbb 2022.3.0"
+    "onetbb 2023.2.0"
 
     # https://github.com/PolyClipping/Clipper2/releases
     "clipper2 2.0.1"
@@ -420,7 +420,7 @@ build_onetbb()
   cd oneTBB-$version
   mkdir build
   cd build  
-  cmake .. -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
+  cmake .. -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DTCM_BUILD=OFF -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
 }
 
@@ -727,7 +727,7 @@ build_glib2()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Ddocumentation=false -Dman-pages=disabled -Ddtrace=disabled -Dtests=false build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Ddocumentation=false -Dman-pages=disabled -Ddtrace=disabled -Dtests=false -Dintrospection=disabled -Dsysprof=disabled build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
@@ -776,7 +776,7 @@ build_harfbuzz()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
+    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dchafa=disabled -Dpng=disabled -Draster=disabled -Dvector=disabled -Dgpu=disabled -Dutilities=disabled -Dtests=disabled -Ddocs=disabled
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
@@ -837,13 +837,14 @@ build_lib3mf()
 {
   version=$1
   cd $BASEDIR/src
- rm -rf lib3mf-$version
- if [ ! -f $version.tar.gz ]; then
-   curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
- fi
- tar xzf lib3mf-$version.tar.gz
+  rm -rf lib3mf-$version
+  if [ ! -f lib3mf-$version.tar.gz ]; then
+    curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
+  fi
+  tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
-  patch -p1 < $OPENSCADDIR/patches/lib3mf-macos.patch
+  mkdir -p submodules/fast_float/include
+  ln -s ../../../Libraries/fast_float/Include submodules/fast_float/include/fast_float
   cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
@@ -900,17 +901,10 @@ build_cairo()
   tar xzf "${CAIRO_FILENAME}"
   cd "$CAIRO_DIR"
 
-  # FIXME: Cairo cannot disable lzo2, so we patch it
-  patch -p1 < $OPENSCADDIR/patches/cairo-lzo2-macos.patch
-  
-  # Fix for cairo-1.18 build issue against freetype-2.13
-  # https://lore.kernel.org/buildroot/20231116145113.1828682-1-thomas.devoogdt@barco.com/T/
-  patch -p1 < $OPENSCADDIR/patches/cairo-ft-private.h-fix-missing-FT_Color-error.patch
-  
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dfreetype=enabled -Dfontconfig=enabled -Dxlib=disabled -Dxcb=disabled -Dpng=disabled -Dglib=disabled -Dtests=disabled -Dquartz=disabled build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dfreetype=enabled -Dfontconfig=enabled -Dxlib=disabled -Dxcb=disabled -Dpng=disabled -Dglib=disabled -Dlzo=disabled -Dspectre=disabled -Dsymbol-lookup=disabled -Dtests=disabled -Dquartz=disabled build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
