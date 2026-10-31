@@ -86,7 +86,7 @@ PACKAGES=(
     "glib2 2.90.1"
 
     # https://gitlab.freedesktop.org/pixman/pixman/-/tags
-    "pixman 0.46.4"
+    "pixman 0.46.4 1"
 
     # https://www.cairographics.org/news/ 
     "cairo 1.18.6"
@@ -101,7 +101,7 @@ PACKAGES=(
     "opencsg 1.8.2"
 
     # https://riverbankcomputing.com/software/qscintilla/download
-    "qscintilla 2.14.1 1"
+    "qscintilla 2.14.1 2"
 
     # https://github.com/uxlfoundation/oneTBB/releases
     "onetbb 2023.2.0"
@@ -110,7 +110,7 @@ PACKAGES=(
     "clipper2 2.0.1"
 
     # https://github.com/elalish/manifold/releases
-    "manifold 3.5.4"
+    "manifold 3.5.4 1"
 )
 DEPLOY_PACKAGES=(
     # https://github.com/sparkle-project/Sparkle/releases
@@ -776,7 +776,7 @@ build_harfbuzz()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dchafa=disabled -Dpng=disabled -Draster=disabled -Dvector=disabled -Dgpu=disabled -Dutilities=disabled -Dtests=disabled -Ddocs=disabled
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dchafa=disabled -Dpng=disabled -Draster=disabled -Dvector=disabled -Dgpu=disabled -Dutilities=disabled -Dtests=disabled -Ddocs=disabled
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
@@ -867,7 +867,7 @@ build_pixman()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dlibpng=disabled -Dgtk=disabled -Dtests=disabled -Dneon=disabled -Ddemos=disabled
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt build-$arch -Dlibpng=disabled -Dgtk=disabled -Dtests=disabled -Dneon=disabled -Ddemos=disabled
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
