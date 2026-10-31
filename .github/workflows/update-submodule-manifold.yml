@@ -46,7 +46,10 @@ jobs:
         run: |
           LATEST_RELEASE="${{ steps.get-latest-release.outputs.latest_release }}"
           CURRENT_COMMIT="${{ steps.get-current-submodule.outputs.current_commit }}"
-          if [ "$LATEST_RELEASE" != "$CURRENT_COMMIT" ]; then
+          if [ -z "$LATEST_RELEASE" ]; then
+            echo "No release older than ${{ env.DELAY_DAYS }} days. Nothing to do."
+            echo "new_release_available=false" >> $GITHUB_OUTPUT
+          elif [ "$LATEST_RELEASE" != "$CURRENT_COMMIT" ]; then
             echo "New release detected: $LATEST_RELEASE (current: $CURRENT_COMMIT)"
             echo "new_release_available=true" >> $GITHUB_OUTPUT
             echo "release_tag=$LATEST_RELEASE" >> $GITHUB_OUTPUT
