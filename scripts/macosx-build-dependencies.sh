@@ -38,13 +38,13 @@ OPTION_X86_64=false
 
 PACKAGES=(
     # https://github.com/google/double-conversion/releases
-    "double_conversion 3.3.1"
+    "double_conversion 3.4.0"
 
     # https://www.boost.org/releases/latest/
     "boost 1.92.0 1"
 
     # https://gitlab.com/libeigen/eigen/-/releases
-    "eigen 3.4.0"
+    "eigen 3.4.1"
 
     # https://gmplib.org/#STATUS
     "gmp 6.3.0"
@@ -53,25 +53,25 @@ PACKAGES=(
     "mpfr 4.2.2"
 
     # https://savannah.gnu.org/news/?group=gettext
-    "gettext 0.22.5"
+    "gettext 1.0"
 
     # https://freetype.org/index.html#news
-    "freetype 2.13.3"
+    "freetype 2.15.0"
 
     # https://github.com/silnrsi/graphite/releases
-    "libgraphite2 1.3.14"
+    "libgraphite2 1.3.15"
 
     # https://github.com/harfbuzz/harfbuzz/releases
     "harfbuzz 11.4.1 1"
 
     # https://github.com/openssl/openssl/releases
-    "openssl 3.6.3 1"
+    "openssl 3.6.5"
 
     # https://github.com/nih-at/libzip/releases
-    "libzip 1.11.4"
+    "libzip 1.12.1"
 
     # https://www.freedesktop.org/wiki/Software/fontconfig/
-    "fontconfig 2.18.1"
+    "fontconfig 2.18.2"
 
     # https://github.com/libusb/hidapi/releases
     "hidapi 0.15.0"
@@ -80,19 +80,19 @@ PACKAGES=(
     "lib3mf 2.4.1 1"
 
     # https://github.com/PCRE2Project/pcre2/releases
-    "pcre2 10.45"
+    "pcre2 10.49"
 
     # https://gitlab.gnome.org/GNOME/glib/-/releases
     "glib2 2.85.0"
 
     # https://gitlab.freedesktop.org/pixman/pixman/-/tags
-    "pixman 0.46.0"
+    "pixman 0.46.4"
 
     # https://www.cairographics.org/news/ 
     "cairo 1.18.0"
 
     # https://github.com/CGAL/cgal/releases
-    "cgal 6.2"
+    "cgal 6.2.1"
 
     # https://download.qt.io/archive/qt/6.8/
     "qt6 6.8.4 1"
@@ -106,15 +106,15 @@ PACKAGES=(
     # https://github.com/uxlfoundation/oneTBB/releases
     "onetbb 2022.3.0"
 
-    # https://github.com/AngusJohnson/Clipper2/releases
-    "clipper2 1.5.3"
+    # https://github.com/PolyClipping/Clipper2/releases
+    "clipper2 2.0.1"
 
     # https://github.com/elalish/manifold/releases
-    "manifold 3.5.2"
+    "manifold 3.5.4"
 )
 DEPLOY_PACKAGES=(
     # https://github.com/sparkle-project/Sparkle/releases
-    "sparkle 2.7.0"
+    "sparkle 2.10.1"
 )
 
 printUsage()
@@ -254,10 +254,7 @@ build_qt6()
 
   patch -p1 < $OPENSCADDIR/patches/qt6/qyieldcpu.patch
   patch -p1 < $OPENSCADDIR/patches/qt6/dup3.patch
-  # QTBUG-145793: preserve the shared CoreAudio device rate during playback.
-  if [ "$version" = "6.8.4" ]; then
-    patch -p1 < $OPENSCADDIR/patches/qt6/coreaudio-preserve-device-sample-rate.patch
-  fi
+  patch -p1 < $OPENSCADDIR/patches/qt6/coreaudio-preserve-device-sample-rate.patch
 
   mkdir build
   cd build
@@ -269,6 +266,8 @@ build_qt6()
     -no-feature-qtdiag \
     -- -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED_REV"
   ninja
+  # Clean up any previous Qt installation before installing
+  rm -rf "$DEPLOYDIR"/lib/Qt*.framework "$DEPLOYDIR"/include/Qt* "$DEPLOYDIR"/lib/cmake/Qt6*
   ninja install
 }
 
