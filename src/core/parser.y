@@ -44,6 +44,7 @@
 #include "core/function.h"
 #include "io/fileutils.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 #include <memory>
 #include <sstream>
 #include <stack>
@@ -820,20 +821,26 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
+
+  // lexerdestroy()/lexerlex_destroy() and the scope_stack reset must also run when an
+  // exception escapes parserparse(): callers such as MainWindow::compile() catch it and keep
+  // going, and the next parse() would otherwise start from stale lexer and scope state. The
+  // guard only cleans up; it doesn't catch anything, so the exception still propagates.
+  auto cleanup = sg::make_scope_guard([]() {
+    lexerdestroy();
+    lexerlex_destroy();
+    scope_stack = {};
+  });
+
   int parserretval = -1;
-  try{
+  try {
     parserretval = parserparse();
-  }catch (const HardWarningException &e) {
+  } catch (const HardWarningException &e) {
     yyerror("stop on first warning");
   }
 
-  lexerdestroy();
-  lexerlex_destroy();
-
   file = rootfile;
   if (parserretval != 0) {
-    // Clear scope_stack when parsing aborted
-    scope_stack = {};
     return false;
   }
 
