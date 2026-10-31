@@ -37,8 +37,8 @@ jobs:
       - name: Get current submodule commit
         id: get-current-submodule
         run: |
-          git submodule update --init --recursive --remote "$SUBMODULE_PATH"
-          CURRENT_COMMIT=$(git submodule status "$SUBMODULE_PATH" | awk '{print $1}' | tr -d '-')
+          git submodule update --init --recursive "$SUBMODULE_PATH"
+          CURRENT_COMMIT=$(git ls-tree HEAD "$SUBMODULE_PATH" | awk '{print $3}')
           echo "current_commit=$CURRENT_COMMIT" >> $GITHUB_OUTPUT
 
       - name: Compare releases
