@@ -29,7 +29,10 @@ jobs:
             --exclude-drafts \
             --exclude-pre-releases \
             --json createdAt,tagName \
-            -q "map(select(.createdAt | fromdateiso8601 <= (now - $DELAY_DAYS * 86400))) | .[0].tagName")
+            -q "if length == 0 then empty
+                elif .[0].createdAt | fromdateiso8601 <= (now - $DELAY_DAYS * 86400) then .[0].tagName
+                else empty
+                end")
           echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
