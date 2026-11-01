@@ -920,7 +920,7 @@ int openscad_main(int argc, char **argv)
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
     ("stylesheet", po::value<std::string>(),
-      "=file, Qt style sheet (.qss) to apply to the GUI, as Qt's own -stylesheet option")
+      "=file, Qt style sheet (.qss) to apply to the GUI, like Qt's -stylesheet option")
     ("hardwarnings", "Stop on the first warning")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(),
