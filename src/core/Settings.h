@@ -29,6 +29,7 @@ constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
+constexpr inline auto SECTION_EXPORT_STL = "export-stl";
 constexpr inline auto SECTION_COLOR_LIST = "color-list";
 
 class SettingsEntryBase
@@ -615,6 +616,14 @@ public:
   static constexpr std::array<const SettingsEntryBase *, 5> cmdline{
     &exportSvgFill, &exportSvgFillColor, &exportSvgStroke, &exportSvgStrokeColor, &exportSvgStrokeWidth,
   };
+};
+
+class SettingsExportStl
+{
+public:
+  static SettingsEntryDouble exportStlSimplify;
+
+  static constexpr std::array<const SettingsEntryBase *, 1> cmdline{&exportStlSimplify};
 };
 
 class SettingsColorList

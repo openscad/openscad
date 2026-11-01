@@ -36,6 +36,11 @@
 #endif
 #include <libintl.h>
 
+#ifndef _WIN32
+#include <csignal>
+#include <unistd.h>
+#endif
+
 #include <array>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -55,6 +60,7 @@
 #include <boost/range/iterator_range_core.hpp>
 #include <clocale>
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
@@ -96,6 +102,7 @@
 #include "core/customizer/ParameterSet.h"
 #include "core/node.h"
 #include "core/parsersettings.h"
+#include "core/progress.h"
 #include "core/str_utf8_wrapper.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
@@ -248,6 +255,7 @@ void help_export()
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
   help_export(Settings::SettingsExportSvg::cmdline);
+  help_export(Settings::SettingsExportStl::cmdline);
   exit(0);
 }
 
@@ -390,6 +398,71 @@ Camera get_camera(const po::variables_map& vm)
   return camera;
 }
 
+namespace {
+// Progress and cancellation for one-shot CLI exports (see do_export).
+//
+// The SIGINT handler only sets a flag (async-signal-safe). The progress
+// callback, invoked at node boundaries during geometry evaluation, checks
+// the flag and throws ProgressCancelException, so Ctrl+C aborts the export
+// cleanly. Cancellation takes effect at the next progress tick (node
+// granularity); it does not interrupt a single in-flight engine call.
+
+struct CliExportProgress {
+  bool tty = false;  // only print \r progress when stderr is a terminal
+  int last_percent = -1;
+};
+
+#ifndef _WIN32
+volatile sig_atomic_t cli_export_cancel_requested = 0;
+
+void cli_export_sigint_handler(int)
+{
+  cli_export_cancel_requested = 1;
+}
+#endif
+
+bool cli_export_stderr_is_tty()
+{
+#ifdef _WIN32
+  return _isatty(_fileno(stderr)) != 0;
+#else
+  return isatty(STDERR_FILENO) != 0;
+#endif
+}
+
+void cli_export_progress_func(const std::shared_ptr<const AbstractNode>&, void *userdata, int mark)
+{
+#ifndef _WIN32
+  if (cli_export_cancel_requested) throw ProgressCancelException();
+#endif
+  auto *state = static_cast<CliExportProgress *>(userdata);
+  if (!state->tty || progress_report_count <= 0) return;
+  int percent = (mark * 100) / progress_report_count;
+  if (percent > 100) percent = 100;  // progress_tick() may exceed the node count
+  if (percent > state->last_percent) {
+    state->last_percent = percent;
+    std::fprintf(stderr, "\rEvaluating: %d/%d (%d%%)", mark, progress_report_count, percent);
+    std::fflush(stderr);
+  }
+}
+
+#ifndef _WIN32
+void cli_export_install_sigint_handler(struct sigaction *old_sa)
+{
+  struct sigaction sa{};
+  sa.sa_handler = cli_export_sigint_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, old_sa);
+}
+
+void cli_export_restore_sigint_handler(const struct sigaction *old_sa)
+{
+  sigaction(SIGINT, old_sa, nullptr);
+}
+#endif
+}  // namespace
+
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
               SourceFile *root_file)
 {
@@ -492,7 +565,43 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       // distinguish from CGAL
 
       constexpr bool allownef = true;
-      root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
+
+      // Report geometry-evaluation progress on stderr (terminal only, so piped
+      // output and CI logs stay clean) and let Ctrl+C cancel the export at the
+      // next node boundary instead of killing the process mid-evaluation.
+      CliExportProgress progress_state;
+      progress_state.tty = cli_export_stderr_is_tty();
+
+#ifndef _WIN32
+      // RAII guard to ensure SIGINT handler is always restored, even on exception.
+      struct SigintGuard {
+        struct sigaction old_sa;
+        SigintGuard() {
+          cli_export_cancel_requested = 0;
+          cli_export_install_sigint_handler(&old_sa);
+        }
+        ~SigintGuard() {
+          cli_export_restore_sigint_handler(&old_sa);
+          cli_export_cancel_requested = 0;
+        }
+      };
+      SigintGuard sigint_guard;
+#endif
+
+      progress_report_prep(std::const_pointer_cast<AbstractNode>(root_node), cli_export_progress_func,
+                           &progress_state);
+      bool cancelled = false;
+      try {
+        root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
+      } catch (const ProgressCancelException&) {
+        cancelled = true;
+      }
+      progress_report_fin();
+      if (progress_state.tty) std::fputc('\n', stderr);
+      if (cancelled) {
+        LOG("Export cancelled.");
+        return 1;
+      }
       if (!root_geom) root_geom = std::make_shared<PolySet>(3);
       if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC && root_geom->getDimension() == 3) {
         if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(root_geom)) {

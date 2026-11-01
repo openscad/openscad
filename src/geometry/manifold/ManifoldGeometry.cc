@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
@@ -209,6 +210,12 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   return ps;
 }
 
+ManifoldGeometry ManifoldGeometry::simplify(double tolerance) const noexcept
+{
+  return ManifoldGeometry(manifold_.Simplify(tolerance), originalIDs_, originalIDToColor_,
+                          subtractedIDs_);
+}
+
 #ifdef ENABLE_CGAL
 template <typename Polyhedron>
 class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
@@ -284,6 +291,43 @@ ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const Mani
     // Add the id -> color mapping from the rhs.
     originalIDToColor.insert(rhs.originalIDToColor_.begin(), rhs.originalIDToColor_.end());
     subtractedIDs.insert(rhs.subtractedIDs_.begin(), rhs.subtractedIDs_.end());
+  }
+  return {mani, originalIDs, originalIDToColor, subtractedIDs};
+}
+
+ManifoldGeometry ManifoldGeometry::batchOp(
+  const std::vector<std::shared_ptr<const ManifoldGeometry>>& children, manifold::OpType opType) noexcept
+{
+  std::vector<manifold::Manifold> manifolds;
+  manifolds.reserve(children.size());
+  for (const auto& child : children) {
+    manifolds.push_back(child->manifold_);
+  }
+  auto mani = manifold::Manifold::BatchBoolean(manifolds, opType);
+
+  const auto& first = *children.front();
+  auto originalIDs = first.originalIDs_;
+  auto originalIDToColor = first.originalIDToColor_;
+  auto subtractedIDs = first.subtractedIDs_;
+
+  for (size_t i = 1; i < children.size(); ++i) {
+    const auto& child = *children[i];
+    originalIDs.insert(child.originalIDs_.begin(), child.originalIDs_.end());
+    if (opType == manifold::OpType::Subtract) {
+      // Mark all original ids from this child as subtracted, unless they're mapped to a color.
+      for (const auto id : child.originalIDs_) {
+        auto it = child.originalIDToColor_.find(id);
+        if (it != child.originalIDToColor_.end()) {
+          originalIDToColor[id] = it->second;
+        } else {
+          subtractedIDs.insert(id);
+        }
+      }
+    } else {
+      // Add the id -> color mapping from this child (earlier children win).
+      originalIDToColor.insert(child.originalIDToColor_.begin(), child.originalIDToColor_.end());
+      subtractedIDs.insert(child.subtractedIDs_.begin(), child.subtractedIDs_.end());
+    }
   }
   return {mani, originalIDs, originalIDToColor, subtractedIDs};
 }
