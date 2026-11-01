@@ -921,6 +921,8 @@ int openscad_main(int argc, char **argv)
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
+    ("stylesheet", po::value<std::string>(),
+      "=file, Qt style sheet (.qss) to apply to the GUI, like Qt's -stylesheet option")
     ("hardwarnings", "Stop on the first warning")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(),
@@ -1207,7 +1209,8 @@ int openscad_main(int argc, char **argv)
       gui_test = "all";
     }
     auto reset_window_settings = vm.count("reset-window-settings") > 0;
-    rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings);
+    const auto stylesheet = vm.count("stylesheet") ? vm["stylesheet"].as<std::string>() : "";
+    rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings, stylesheet);
 #endif
   } else {
     LOG("Requested GUI mode but can't open display!\n");

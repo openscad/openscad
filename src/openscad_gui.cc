@@ -201,11 +201,16 @@ void registerDefaultIcon(const QString&)
 #endif
 
 int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
-        char **argv, const std::string& gui_test, const bool reset_window_settings)
+        char **argv, const std::string& gui_test, const bool reset_window_settings,
+        const std::string& stylesheet)
 {
   configureOpenGLContext();
   OpenSCADApp app(argc, argv);
   setGlobalTheme();
+  if (!stylesheet.empty()) {
+    // Same as Qt's own "-stylesheet file" option
+    app.setStyleSheet("file:///" + QString::fromStdString(stylesheet));
+  }
 
   // set up groups for QSettings
   QCoreApplication::setOrganizationName("OpenSCAD");
