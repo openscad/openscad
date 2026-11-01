@@ -428,7 +428,8 @@ void VBOBuilder::create_triangle(const Color4f& color, const Vector3d& p0, const
 // This will usually create a new VertexState and append it to our
 // vertex states
 void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const Color4f& default_color,
-                                bool enable_barycentric, bool force_default_color)
+                                bool enable_barycentric, bool force_default_color,
+                                const SchemeFaceColors *scheme_colors)
 {
   const std::shared_ptr<VertexData> vertex_data = data();
 
@@ -452,11 +453,20 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const C
 
   for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
     const auto& poly = ps.indices[i];
-    const size_t color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
-    const auto& color = !force_default_color && color_index >= 0 && color_index < ps.colors.size() &&
-                            ps.colors[color_index].isValid()
-                          ? ps.colors[color_index]
-                          : default_color;
+    const color_index_t color_index =
+      has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
+    const auto idx = color_index.index();
+    // A tagged face takes its color from the scheme in force now, not from one baked into the
+    // geometry when it was built. Without a scheme to resolve against it falls back as before.
+    const Color4f *tagged = nullptr;
+    if (scheme_colors) {
+      if (color_index.isDefault()) tagged = &scheme_colors->defaultColor;
+      else if (color_index.isCutout()) tagged = &scheme_colors->cutoutColor;
+    }
+    const auto& color = force_default_color                                           ? default_color
+                        : idx && *idx < ps.colors.size() && ps.colors[*idx].isValid() ? ps.colors[*idx]
+                        : tagged                                                      ? *tagged
+                                                                                      : default_color;
     if (poly.size() == 3) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
       const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);

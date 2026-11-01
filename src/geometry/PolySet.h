@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/ColorIndex.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Polygon2d.h"
@@ -22,8 +23,9 @@ public:
   VISITABLE_GEOMETRY();
   PolygonIndices indices;
   std::vector<Vector3d> vertices;
-  // Per polygon color, indexing the colors vector below. Can be empty, and -1 means no specific color.
-  std::vector<int32_t> color_indices;
+  // Per polygon color, indexing the colors vector below. Can be empty; see color_index_t for the
+  // sentinel values a missing entry can hold.
+  std::vector<color_index_t> color_indices;
   std::vector<Color4f> colors;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
