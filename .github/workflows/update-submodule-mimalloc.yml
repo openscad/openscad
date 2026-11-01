@@ -2,11 +2,11 @@ name: Check for mimalloc release
 
 on:
   schedule:
-    - cron: '5 5 2 * *'
+    - cron: '5 5 * * 2'
   workflow_dispatch:
 
 env:
-  DELAY_DAYS: 10
+  DELAY_DAYS: 6
   SUBMODULE_NAME: "mimalloc"
   SUBMODULE_REPO: "microsoft/mimalloc"
   SUBMODULE_PATH: "submodules/mimalloc"
