@@ -1385,7 +1385,7 @@ void register_builtin_functions()
                  {
                    "import(file) -> object",
                  });
-  Builtins::init("fn", new BuiltinFunction(&builtin_fn, &Feature::ExperimentalFnFunction),
+  Builtins::init("fn", new BuiltinFunction(&builtin_fn),
                  {
                    "fn(r|d) -> number",
                  });

@@ -226,7 +226,9 @@ ctest_env_append_value(
 ##################################
 
 # Find all scad files
-file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad)
+file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad
+  ${TEST_SCAD_DIR}/functions/fn.scad
+  )
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
