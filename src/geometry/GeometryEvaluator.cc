@@ -5,6 +5,7 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -265,6 +266,20 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
     }
   }
 #endif
+  std::optional<Color4f> hull_color;
+  bool have_hull_color = false;
+  bool mixed_hull_color = false;
+  for (const auto& child : children) {
+    if (!child || child->isEmpty()) continue;
+    const auto color = child->uniformColor();
+    if (!color || (have_hull_color && *hull_color != *color)) {
+      mixed_hull_color = true;
+      break;
+    }
+    hull_color = *color;
+    have_hull_color = true;
+  }
+  if (!mixed_hull_color && have_hull_color) geometry->setColor(*hull_color);
   return geometry;
 }
 
@@ -760,7 +775,11 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
             // in multiple places A 2D transformation may flip the winding order of a polygon. If that
             // happens with a sanitized polygon, we need to reverse the winding order for it to be
             // correct.
-            if (polygons->isSanitized() && mat2.matrix().determinant() <= 0) {
+            // A mirror flips winding. Sanitized polygons, and polygons whose
+            // contours do not share a color, have to be rebuilt so each color
+            // keeps a consistent hole orientation.
+            if (mat2.matrix().determinant() <= 0 &&
+                (polygons->isSanitized() || !polygons->uniformColor())) {
               geom = ClipperUtils::sanitize(*polygons);
             }
           } else if (geom->getDimension() == 3) {

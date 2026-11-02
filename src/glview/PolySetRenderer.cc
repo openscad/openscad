@@ -79,7 +79,11 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     this->polysets_.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polygons_.emplace_back(poly, std::shared_ptr<const PolySet>(poly->tessellate()));
+    // Edges are taken from the stored outlines. Overlapping colors stay separate
+    // for export, so the view uses their boolean union.
+    std::shared_ptr<const Polygon2d> shown = poly->unionedContours();
+    if (!shown) shown = poly;
+    this->polygons_.emplace_back(shown, std::shared_ptr<const PolySet>(shown->tessellate()));
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     this->polysets_.push_back(mani->toPolySet());

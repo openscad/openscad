@@ -23,8 +23,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <algorithm>
 #include <cassert>
 #include <clocale>
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -198,6 +201,76 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
          << "ENDSEC\n";
 }
 
+// AutoCAD 2020 model-space palette. Index 0 is unused. Group 420 is the exact
+// RGB; group 62 is the nearest ACI for readers that ignore true color.
+static constexpr uint32_t kAciRgb[256] = {
+  0x000000, 0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x0000FF, 0xFF00FF, 0xFFFFFF, 0x808080, 0xC0C0C0,
+  0xFF0000, 0xFF7F7F, 0xA50000, 0xA55252, 0x7F0000, 0x7F3F3F, 0x4C0000, 0x4C2626, 0x260000, 0x261313,
+  0xFF3F00, 0xFF9F7F, 0xA52900, 0xA56752, 0x7F1F00, 0x7F4F3F, 0x4C1300, 0x4C2F26, 0x260900, 0x261713,
+  0xFF7F00, 0xFFBF7F, 0xA55200, 0xA57C52, 0x7F3F00, 0x7F5F3F, 0x4C2600, 0x4C3926, 0x261300, 0x261C13,
+  0xFFBF00, 0xFFDF7F, 0xA57C00, 0xA59152, 0x7F5F00, 0x7F6F3F, 0x4C3900, 0x4C4226, 0x261C00, 0x262113,
+  0xFFFF00, 0xFFFF7F, 0xA5A500, 0xA5A552, 0x7F7F00, 0x7F7F3F, 0x4C4C00, 0x4C4C26, 0x262600, 0x262613,
+  0xBFFF00, 0xDFFF7F, 0x7CA500, 0x91A552, 0x5F7F00, 0x6F7F3F, 0x394C00, 0x424C26, 0x1C2600, 0x212613,
+  0x7FFF00, 0xBFFF7F, 0x52A500, 0x7CA552, 0x3F7F00, 0x5F7F3F, 0x264C00, 0x394C26, 0x132600, 0x1C2613,
+  0x3FFF00, 0x9FFF7F, 0x29A500, 0x67A552, 0x1F7F00, 0x4F7F3F, 0x134C00, 0x2F4C26, 0x092600, 0x172613,
+  0x00FF00, 0x7FFF7F, 0x00A500, 0x52A552, 0x007F00, 0x3F7F3F, 0x004C00, 0x264C26, 0x002600, 0x132613,
+  0x00FF3F, 0x7FFF9F, 0x00A529, 0x52A567, 0x007F1F, 0x3F7F4F, 0x004C13, 0x264C2F, 0x002609, 0x135817,
+  0x00FF7F, 0x7FFFBF, 0x00A552, 0x52A57C, 0x007F3F, 0x3F7F5F, 0x004C26, 0x264C39, 0x002613, 0x13581C,
+  0x00FFBF, 0x7FFFDF, 0x00A57C, 0x52A591, 0x007F5F, 0x3F7F6F, 0x004C39, 0x264C42, 0x00261C, 0x135858,
+  0x00FFFF, 0x7FFFFF, 0x00A5A5, 0x52A5A5, 0x007F7F, 0x3F7F7F, 0x004C4C, 0x264C4C, 0x002626, 0x135858,
+  0x00BFFF, 0x7FDFFF, 0x007CA5, 0x5291A5, 0x005F7F, 0x3F6F7F, 0x00394C, 0x26427E, 0x001C26, 0x135858,
+  0x007FFF, 0x7FBFFF, 0x0052A5, 0x527CA5, 0x003F7F, 0x3F5F7F, 0x00264C, 0x26397E, 0x001326, 0x131C58,
+  0x003FFF, 0x7F9FFF, 0x0029A5, 0x5267A5, 0x001F7F, 0x3F4F7F, 0x00134C, 0x262F7E, 0x000926, 0x131758,
+  0x0000FF, 0x7F7FFF, 0x0000A5, 0x5252A5, 0x00007F, 0x3F3F7F, 0x00004C, 0x26267E, 0x000026, 0x131358,
+  0x3F00FF, 0x9F7FFF, 0x2900A5, 0x6752A5, 0x1F007F, 0x4F3F7F, 0x13004C, 0x2F267E, 0x090026, 0x171358,
+  0x7F00FF, 0xBF7FFF, 0x5200A5, 0x7C52A5, 0x3F007F, 0x5F3F7F, 0x26004C, 0x39267E, 0x130026, 0x1C1358,
+  0xBF00FF, 0xDF7FFF, 0x7C00A5, 0x9152A5, 0x5F007F, 0x6F3F7F, 0x39004C, 0x42264C, 0x1C0026, 0x581358,
+  0xFF00FF, 0xFF7FFF, 0xA500A5, 0xA552A5, 0x7F007F, 0x7F3F7F, 0x4C004C, 0x4C264C, 0x260026, 0x581358,
+  0xFF00BF, 0xFF7FDF, 0xA5007C, 0xA55291, 0x7F005F, 0x7F3F6F, 0x4C0039, 0x4C2642, 0x26001C, 0x581358,
+  0xFF007F, 0xFF7FBF, 0xA50052, 0xA5527C, 0x7F003F, 0x7F3F5F, 0x4C0026, 0x4C2639, 0x260013, 0x58131C,
+  0xFF003F, 0xFF7F9F, 0xA50029, 0xA55267, 0x7F001F, 0x7F3F4F, 0x4C0013, 0x4C262F, 0x260009, 0x581317,
+  0x000000, 0x656565, 0x666666, 0x999999, 0xCCCCCC, 0xFFFFFF,
+};
+
+static int dxfChannel(float value)
+{
+  const float clamped = std::clamp(value, 0.0f, 1.0f);
+  return std::clamp(static_cast<int>(std::lround(clamped * 255.0f)), 0, 255);
+}
+
+static int nearestAci(int r, int g, int b)
+{
+  int best = 7;
+  int bestDist = 1 << 30;
+  for (int index = 1; index < 256; ++index) {
+    const int cr = static_cast<int>((kAciRgb[index] >> 16) & 0xff);
+    const int cg = static_cast<int>((kAciRgb[index] >> 8) & 0xff);
+    const int cb = static_cast<int>(kAciRgb[index] & 0xff);
+    const int dr = cr - r;
+    const int dg = cg - g;
+    const int db = cb - b;
+    const int dist = dr * dr + dg * dg + db * db;
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = index;
+    }
+  }
+  return best;
+}
+
+static void writeDxfColor(std::ostream& output, const Color4f& color)
+{
+  if (!color.hasRgb()) return;
+  const int r = dxfChannel(color.r());
+  const int g = dxfChannel(color.g());
+  const int b = dxfChannel(color.b());
+  const int truecolor = (r << 16) | (g << 8) | b;
+  output << " 62\n"
+         << nearestAci(r, g, b) << "\n"
+         << "420\n"
+         << truecolor << "\n";
+}
+
 static void export_dxf(const Polygon2d& poly, std::ostream& output)
 {
   setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
@@ -241,8 +314,9 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "100\n"
              << "AcDbEntity\n"
              << "  8\n"
-             << "0\n"  // layer 0
-             << "100\n"
+             << "0\n";  // layer 0
+      writeDxfColor(output, o.color);
+      output << "100\n"
              << "AcDbPoint\n"
              << " 10\n"
              << p[0] << "\n"  // x
@@ -260,8 +334,9 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "100\n"
              << "AcDbEntity\n"
              << "  8\n"
-             << "0\n"  // layer 0
-             << "100\n"
+             << "0\n";  // layer 0
+      writeDxfColor(output, o.color);
+      output << "100\n"
              << "AcDbLine\n"
              << " 10\n"
              << p1[0] << "\n"  // x1
@@ -279,8 +354,9 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "100\n"
              << "AcDbEntity\n"
              << "  8\n"
-             << "0\n"  // layer 0
-             << "100\n"
+             << "0\n";  // layer 0
+      writeDxfColor(output, o.color);
+      output << "100\n"
              << "AcDbPolyline\n"
              << " 90\n"
              << o.vertices.size() << "\n"  // number of vertices
