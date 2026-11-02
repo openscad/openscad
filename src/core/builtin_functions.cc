@@ -1352,12 +1352,12 @@ void register_builtin_functions()
                    "is_object(arg) -> boolean",
                  });
 
-  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  Builtins::init("object", new BuiltinFunction(&builtin_object),
                  {
                    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
                  });
 
-  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key),
                  {
                    "has_key(object, key) -> boolean",
                  });
