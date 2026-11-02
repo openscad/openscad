@@ -1286,6 +1286,16 @@ endif()
 add_cmdline_test(dump-discretization-by-error EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_DISCRETIZATION_FILES} EXPECTEDDIR dump-discretization-by-error SUFFIX csg ARGS --enable=discretization-by-error)
 
 
+##################################
+# Multiple output files per call #
+##################################
+# The echo export installs an output handler which must not outlive the export,
+# otherwise the exports that follow it crash (issue #5614).
+
+add_test(NAME multiple-outputs_echo-stl_run CONFIGURATIONS Default COMMAND ${OPENSCAD_BINPATH} ${TEST_SCAD_DIR}/3D/features/cube-tests.scad -o multiple-outputs.echo -o multiple-outputs.stl)
+add_test(NAME multiple-outputs_echo-stl_check CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat multiple-outputs.stl)
+set_tests_properties(multiple-outputs_echo-stl_check PROPERTIES DEPENDS multiple-outputs_echo-stl_run)
+
 ############################
 # Relative filenames tests #
 ############################

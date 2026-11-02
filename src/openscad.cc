@@ -150,6 +150,8 @@ public:
   }
   ~Echostream()
   {
+    // Unregister the handler: it points to this object, and later exports still print messages.
+    set_output_handler(nullptr, nullptr, nullptr);
     if (fstream.is_open()) fstream.close();
   }
 
