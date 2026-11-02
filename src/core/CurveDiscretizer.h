@@ -105,11 +105,11 @@ class RoofDiscretizer
 {
 public:
   RoofDiscretizer(const CurveDiscretizer& d, double scale);
-  bool overMaxAngle(double radians) const;
-  inline bool hasMaxSegmentSqrLength() const { return max_segment_sqr_length > 0.0; }
-  bool overMaxSegmentSqrLength(double segment_sqr_length) const;
+
+  double maxAngle() const { return max_angle; }
+  double maxSegmentLength() const { return max_segment_length; }
 
 private:
-  const double max_angle_deviation;
-  const double max_segment_sqr_length;
+  const double max_angle;
+  const double max_segment_length;
 };
