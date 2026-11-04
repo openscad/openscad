@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2018, Torsten Paul <torsten.paul@gmx.de>,
+ * Copyright (c) 2016-2026, Torsten Paul <torsten.paul@gmx.de>,
  *                          Marius Kintel <marius@kintel.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -166,6 +166,33 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
   xmlFree((void *)(name));
 }
 
+// Never load any external entity or DTD.
+static xmlParserInput *fail_external_entity_loader(const char *URL, const char *publicId,
+                                                   xmlParserCtxt *context)
+{
+  (void)URL;
+  (void)publicId;
+  (void)context;
+  return nullptr;
+}
+
+// Temporarily installs fail_external_entity_loader() as libxml2's external
+// entity loader and restores the previous loader afterwards.  The loader is
+// process-global, so it must not leak beyond a single SVG import.
+class external_entity_loader_guard
+{
+public:
+  explicit external_entity_loader_guard() : previous_loader_(xmlGetExternalEntityLoader())
+  {
+    xmlSetExternalEntityLoader(fail_external_entity_loader);
+  }
+
+  ~external_entity_loader_guard() { xmlSetExternalEntityLoader(previous_loader_); }
+
+private:
+  xmlExternalEntityLoader previous_loader_;
+};
+
 int streamFile(const char *filename, void *context)
 {
   xmlTextReaderPtr reader;
@@ -175,8 +202,12 @@ int streamFile(const char *filename, void *context)
 
   in_defs = false;
   reader = xmlNewTextReaderFilename(filename);
-  xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 1);
   if (reader != nullptr) {
+    // Disable expansion of XML entities and external loading.
+    xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 0);
+    xmlTextReaderSetParserProp(reader, XML_PARSER_LOADDTD, 0);
+    external_entity_loader_guard external_loader_guard;
+
     int ret = xmlTextReaderRead(reader);
     while (ret == 1) {
       processNode(reader, &defs_lookup_list, &temp_defs_storage, context);
@@ -211,7 +242,15 @@ void dump(int idx, shape *s)
 shapes_list_t *libsvg_read_file(const char *filename, void *context)
 {
   shape_list = new shapes_list_t();
-  streamFile(filename, context);
+  try {
+    streamFile(filename, context);
+  } catch (...) {
+    delete shape_list;
+    shape_list = nullptr;
+    stack.clear();
+    in_defs = false;
+    throw;
+  }
 
   // #ifdef DEBUG
   //	if (!shape_list->empty()) {
