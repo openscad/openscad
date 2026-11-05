@@ -20,7 +20,7 @@ executors:
   macos-executor:
     resource_class: m4pro.medium
     macos:
-      xcode: 26.1
+      xcode: 27.2
   python-executor:
     docker:
       - image: cimg/python:3.14
@@ -374,7 +374,7 @@ jobs:
             export HOMEBREW_NO_ASK=1
             brew analytics off
             brew tap
-            brew uninstall -f --cask temurin17
+            brew uninstall -f --cask temurin17 || true
             brew update
             brew install automake libtool cmake pkg-config wget meson python-packaging gnupg
       - restore_cache:
