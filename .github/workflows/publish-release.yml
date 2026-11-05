@@ -1,0 +1,125 @@
+name: Publish from files.openscad.org
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
+jobs:
+  publish-release:
+    name: Publish latest tag as Github release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RC_INDEX_URL: https://files.openscad.org/rc/.rc.js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Get latest tag
+        id: latest-tag
+        run: |
+          TAG=$(git ls-remote --tags --refs origin 'refs/tags/openscad-*' | sed -e 's,.*/,,' | python3 -c '
+          import re
+          import sys
+
+          def key(tag):
+              # openscad-YYYY.MM or openscad-YYYY.MM-RCn; a final release sorts after its RCs
+              m = re.fullmatch(r"openscad-(\d{4})\.(\d{2})(?:-RC(\d+))?", tag)
+              if not m:
+                  return None
+              year, month, rc = int(m.group(1)), int(m.group(2)), m.group(3)
+              return (year, month, 10 ** 9 if rc is None else int(rc))
+
+          tags = [ line.strip() for line in sys.stdin ]
+          ranked = [(k, tag) for tag in tags if (k := key(tag)) is not None]
+          if not ranked:
+              sys.exit("No openscad-YYYY.MM[-RCn] tags found.")
+          ranked.sort()
+          print(ranked[-1][1])
+          ')
+          echo "Latest tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing release
+        id: existing-release
+        run: |
+          TAG="${{ steps.latest-tag.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "A GitHub release for $TAG already exists. Nothing to do."
+            echo "has_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No GitHub release for $TAG. Will create one from files.openscad.org."
+            echo "has_release=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download release files from files.openscad.org
+        if: steps.existing-release.outputs.has_release == 'false'
+        run: |
+          TAG="${{ steps.latest-tag.outputs.tag }}"
+          VERSION="${TAG#openscad-}"
+          curl -fsSL "$RC_INDEX_URL" -o rc.js
+          awk -F"'" -v ver="OpenSCAD $VERSION" '$4 == ver {print $8}' rc.js > urls.txt
+          if [ ! -s urls.txt ]; then
+            echo "::error::No entry for '$VERSION' found in $RC_INDEX_URL"
+            echo "Contents of .rc.js:" >&2
+            cat rc.js >&2
+            exit 1
+          fi
+          mkdir -p downloads
+          while IFS= read -r url ; do
+            file="downloads/$(basename "$url")"
+            for ext in "" .asc .sha256 .sha512 ; do
+              echo "Downloading ${url}${ext}"
+              curl -fL --no-progress-meter --retry 3 --retry-delay 10 -o "${file}${ext}" "${url}${ext}"
+            done
+          done < urls.txt
+          ls -lh downloads/
+          # Verify every file against its sha256sum checksum
+          (
+            cd downloads
+            for file in *; do
+              case "$file" in *.asc|*.sha256|*.sha512) continue ;; esac
+              expected=$(tr 'A-F' 'a-f' < "$file.sha256" | awk '{print $1; exit}')
+              actual=$(sha256sum "$file" | awk '{print $1}')
+              if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
+                echo "::error::SHA256 checksum mismatch for $file (expected: $expected, actual: $actual)"
+                exit 1
+              fi
+              echo "OK: $file ($actual)"
+            done
+          )
+
+      - name: Create GitHub release
+        if: steps.existing-release.outputs.has_release == 'false'
+        run: |
+          TAG="${{ steps.latest-tag.outputs.tag }}"
+          VERSION="${TAG#openscad-}"
+          {
+            echo "## OpenSCAD $VERSION"
+            echo
+            echo "Release files mirrored from https://files.openscad.org/rc/"
+            echo
+            echo "For more information, see the [download](https://openscad.org/downloads.html) page."
+            echo
+            for file in downloads/*; do
+              case "$(basename "$file")" in *.asc|*.sha256|*.sha512) continue ;; esac
+              echo "- $(basename "$file")"
+            done
+          } > release_notes.md
+          EXTRA_ARGS=()
+          case "$VERSION" in
+            *-RC*) EXTRA_ARGS+=("--prerelease") ;;
+          esac
+          gh release create "$TAG" \
+            --title "OpenSCAD $VERSION" \
+            --notes-file release_notes.md \
+            "${EXTRA_ARGS[@]}" \
+            downloads/*
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
