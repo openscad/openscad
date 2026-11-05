@@ -1236,6 +1236,7 @@ void register_builtin_functions()
                  {
                    "len(string) -> number",
                    "len(vector) -> number",
+                   "len(object) -> number",
                  });
 
   Builtins::init("log", new BuiltinFunction(&builtin_log),
