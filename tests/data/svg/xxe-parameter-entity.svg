@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- Security fixture: loads xxe-path-data.txt through an external parameter
+     entity and an external DTD (xxe-parameter-entity.dtd), which define the
+     internal entity "leak" with the file's content. The content is valid
+     path data, so if it gets loaded it ends up as the geometry of the path. -->
+<!DOCTYPE svg [
+  <!ENTITY % file SYSTEM "xxe-path-data.txt">
+  <!ENTITY % dtd SYSTEM "xxe-parameter-entity.dtd">
+  %dtd;
+]>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <path d="&leak;"/>
+</svg>

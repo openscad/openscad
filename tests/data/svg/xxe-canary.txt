@@ -1,0 +1,2 @@
+OPENSCAD-XXE-CANARY-DO-NOT-LEAK
+canary-file-contents
