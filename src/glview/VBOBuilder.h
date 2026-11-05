@@ -11,10 +11,12 @@
 
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
+#include "glview/ColorMap.h"
 #include "glview/Renderer.h"
 #include "glview/system-gl.h"
 #include "utils/printutils.h"
 #include "geometry/linalg.h"
+#include "glview/ColorMap.h"
 #include "Feature.h"
 #include "glview/VertexState.h"
 
@@ -377,7 +379,8 @@ public:
                        size_t primitive_index, size_t shape_size, bool outlines, bool enable_barycentric,
                        bool mirror);
   void create_surface(const PolySet& ps, const Transform3d& m, const Color4f& default_color,
-                      bool enable_barycentric, bool force_default_color = false);
+                      bool enable_barycentric, bool force_default_color = false,
+                      const SchemeFaceColors *scheme_colors = nullptr);
   void create_edges(const Polygon2d& polygon, const Transform3d& m, const Color4f& color);
   void create_polygons(const PolySet& ps, const Transform3d& m, const Color4f& color);
 

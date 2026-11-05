@@ -22,8 +22,6 @@
 #include "geometry/Polygon2d.h"
 #include "geometry/linalg.h"
 #include "geometry/manifold/manifoldutils.h"
-#include "glview/ColorMap.h"
-#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
@@ -144,31 +142,16 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   ps->colors.reserve(originalIDToColor_.size());
   ps->color_indices.reserve(ps->indices.size());
 
-  auto colorScheme = ColorMap::instance().findColorScheme(RenderSettings::inst()->colorscheme);
-  int32_t faceFrontColorIndex = -1;
-  int32_t faceBackColorIndex = -1;
-
   std::map<Color4f, int32_t> colorToIndex;
   std::map<uint32_t, int32_t> originalIDToColorIndex;
 
-  auto getFaceFrontColorIndex = [&]() -> int {
-    if (faceFrontColorIndex < 0) {
-      faceFrontColorIndex = ps->colors.size();
-      ps->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR));
-    }
-    return faceFrontColorIndex;
-  };
-  auto getFaceBackColorIndex = [&]() -> int {
-    if (faceBackColorIndex < 0) {
-      faceBackColorIndex = ps->colors.size();
-      ps->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_BACK_COLOR));
-    }
-    return faceBackColorIndex;
-  };
-
+  // Faces with no color of their own are tagged rather than colored. Resolving them here would
+  // bake the color scheme that happened to be active into geometry that is then cached and
+  // redrawn under whatever scheme the user picks next; the renderers and the exporters resolve
+  // the tags instead, each against the scheme in force when they run.
   auto getColorIndex = [&](uint32_t originalID) -> int32_t {
     if (subtractedIDs_.find(originalID) != subtractedIDs_.end()) {
-      return getFaceBackColorIndex();
+      return color_index_t::kCutout;
     }
     auto colorIndexIt = originalIDToColorIndex.find(originalID);
     if (colorIndexIt != originalIDToColorIndex.end()) {
@@ -176,7 +159,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
     }
     auto colorIt = originalIDToColor_.find(originalID);
     if (colorIt == originalIDToColor_.end()) {
-      return getFaceFrontColorIndex();
+      return color_index_t::kDefault;
     }
     const auto& color = colorIt->second;
 
