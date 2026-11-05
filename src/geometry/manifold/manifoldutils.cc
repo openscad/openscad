@@ -54,10 +54,10 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
 
   std::map<std::optional<Color4f>, std::vector<size_t>> colorToFaceIndices;
   for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
-    auto color_index = i < ps.color_indices.size() ? ps.color_indices[i] : -1;
+    const color_index_t color_index = i < ps.color_indices.size() ? ps.color_indices[i] : -1;
     std::optional<Color4f> color;
-    if (color_index >= 0) {
-      color = ps.colors[color_index];
+    if (const auto idx = color_index.index()) {
+      color = ps.colors[*idx];
     }
     colorToFaceIndices[color].push_back(i);
   }

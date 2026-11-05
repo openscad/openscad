@@ -354,7 +354,7 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
   } else {
     struct ColoredFace {
       IndexedFace face;
-      int32_t color_index;
+      color_index_t color_index;
     };
     std::vector<ColoredFace> faces;
     faces.reserve(ps.indices.size());

@@ -85,7 +85,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   // best estimate without iterating all polygons, to reduce reallocations
   std::vector<IndexedFace> polygons;
   polygons.reserve(polyset.indices.size());
-  std::vector<int32_t> polygon_color_indices;
+  std::vector<color_index_t> polygon_color_indices;
   auto has_colors = !polyset.color_indices.empty();
   if (has_colors) {
     assert(polyset.color_indices.size() == polyset.indices.size());
