@@ -1,2 +1,2 @@
-<!ELEMENT svg (#P)>
+<!ELEMENT svg ANY>
 <!ENTITY dtd_canary "OPENSCAD-XXE-CANARY-DO-NOT-LEAK">

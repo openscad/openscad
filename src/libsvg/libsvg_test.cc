@@ -85,10 +85,32 @@ bool has_shape_named(libsvg::shapes_list_t *shapes, const std::string& name)
   return false;
 }
 
+/* Number of points in the path data of all shapes. */
+size_t path_point_count(const libsvg::shapes_list_t& shapes)
+{
+  size_t count = 0;
+  for (const auto& shape_ptr : shapes) {
+    for (const auto& path : shape_ptr->get_path_list()) {
+      count += path.size();
+    }
+  }
+  return count;
+}
+
 libsvg::shapes_list_t *read(const std::string& svg)
 {
   fnContext ctx(nullptr, 0);
   return libsvg::libsvg_read_file(svg.c_str(), &ctx);
+}
+
+/* Like read(), but returns nullptr if the file is rejected as invalid. */
+libsvg::shapes_list_t *read_or_null(const std::string& svg)
+{
+  try {
+    return read(svg);
+  } catch (const libsvg::SvgException&) {
+    return nullptr;
+  }
 }
 
 }  // namespace
@@ -114,14 +136,36 @@ TEST_CASE("SVG import does not expand external XML entities (XXE)", "[libsvg][Se
   }
 }
 
+TEST_CASE("SVG import does not load files through external parameter entities", "[libsvg][Security]")
+{
+  SECTION("the file content does not end up in path data")
+  {
+    /* Depending on the libxml2 version the undefined entity either makes the
+     * import fail or leaves the path empty; either way no path data may come
+     * from xxe-path-data.txt. */
+    auto shapes = read_or_null(svg_path("xxe-parameter-entity.svg"));
+    if (shapes != nullptr) {
+      CHECK(path_point_count(*shapes) == 0);
+      libsvg::libsvg_free(shapes);
+    } else {
+      SUCCEED("the file was rejected");
+    }
+  }
+}
+
 TEST_CASE("SVG import is not vulnerable to entity expansion bombs", "[libsvg][Security]")
 {
-  SECTION("parsing succeeds and does not expand the entities")
+  SECTION("the entities are not expanded")
   {
-    auto shapes = read(svg_path("bomb.svg"));
-    const std::string text = all_text(shapes);
-    CHECK(text.size() < 64);
-    libsvg::libsvg_free(shapes);
+    /* libxml2 2.9.x rejects this many nested entity levels on its own, so the
+     * import may fail; if it succeeds, nothing may have been expanded. */
+    auto shapes = read_or_null(svg_path("bomb.svg"));
+    if (shapes != nullptr) {
+      CHECK(all_text(shapes).find("lol") == std::string::npos);
+      libsvg::libsvg_free(shapes);
+    } else {
+      SUCCEED("the file was rejected");
+    }
   }
 }
 
@@ -133,6 +177,17 @@ TEST_CASE("SVG import does not load external DTDs", "[libsvg][Security]")
     const std::string text = all_text(shapes);
     CHECK(text.find(kCanary) == std::string::npos);
     CHECK(has_shape_named(shapes, "rect"));
+    libsvg::libsvg_free(shapes);
+  }
+}
+
+TEST_CASE("internal entities in attributes are still expanded", "[libsvg][Security]")
+{
+  SECTION("path data given through an internal entity is imported")
+  {
+    auto shapes = read(svg_path("internal-entity-attribute.svg"));
+    CHECK(has_shape_named(shapes, "path"));
+    CHECK(path_point_count(*shapes) > 0);
     libsvg::libsvg_free(shapes);
   }
 }
