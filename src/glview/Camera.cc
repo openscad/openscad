@@ -140,7 +140,14 @@ void Camera::updateView(const std::shared_ptr<const FileContext>& context, bool 
 
   const auto vpf = context->lookup_local_variable("$vpf");
   if (vpf) {
-    if (vpf->type() == Value::Type::NUMBER) {
+    if (fovLocked) {
+      // An explicit --fov wins over the script, the same way --camera wins over
+      // $vpt/$vpr/$vpd. Don't set noauto: the value was not applied, so it must
+      // not disable --viewall/--autocenter either.
+      if (enableWarning) {
+        LOG(message_group::UI_Warning, "Ignoring $vpf, the field of view is fixed by --fov");
+      }
+    } else if (vpf->type() == Value::Type::NUMBER) {
       setVpf(vpf->toDouble());
       noauto = true;
     } else {

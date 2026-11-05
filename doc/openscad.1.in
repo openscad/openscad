@@ -121,6 +121,16 @@ If exporting an image, specify the pixel width and height
 If exporting an image, specify whether to use orthographic or perspective 
 projection
 .TP
+.B \-\-fov=\fIangle
+If exporting an image, specify the vertical field of view in degrees, the same
+value the design sees as \fB$vpf\fP. Under perspective projection this is the
+view angle. Under \fB\-\-projection=ortho\fP there is no perspective, but the
+value still sets the scale: the visible half\-height is
+\fIdistance\fP * tan(\fIangle\fP / 2), so a larger angle shows more of the
+design. Takes precedence over \fB$vpf\fP set by the design; without this option
+the field of view stays at its default of 22.5 degrees whenever
+\fB\-\-camera\fP is given.
+.TP
 .B \-\-colorscheme=\fIscheme
 If exporting an image, use the specified color scheme for the rendering.
 \fIscheme\fP can be any of \fBCornfield\fP, \fBSunset\fP, \fBMetallic\fP,
