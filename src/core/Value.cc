@@ -783,14 +783,20 @@ Value ObjectType::operator==(const ObjectType& other) const
     return false;
   }
 
+  // Note that we only need to test whether all of the values in A are present and equal in B.
+  // We have already checked that they have the same number of values, so if B has a value not
+  // in A then A must have a value not in B.
   for (size_t i = 0; i < this->ptr->values.size(); i++) {
-    auto key_the_same = this->ptr->keys[i] != other.ptr->keys[i];
-    if (key_the_same) {
+    std::string k = this->ptr->keys[i];
+    if (!other.contains(k)) {
       return false;
     }
-
-    auto value_the_same = this->ptr->values[i] != other.ptr->values[i];
-    if (value_the_same.toBool()) {
+    Value result = ((*this)[k] == other[k]);
+    if (result.isUndefined()) {
+      result.toUndef().append(STR("in object comparison at key ", k));
+      return result;
+    }
+    if (!result.toBool()) {
       return false;
     }
   }
