@@ -1847,6 +1847,10 @@ if(ENABLE_TESTS)
       add_executable(OpenSCADUnitTests ${TEST_SOURCES})
     else()
       add_executable(OpenSCADUnitTests ${TEST_SOURCES} ${GUI_TEST_SOURCES})
+      # Editor headers include UI headers generated for the GUI library.
+      target_include_directories(OpenSCADUnitTests PRIVATE
+        "${CMAKE_CURRENT_BINARY_DIR}/OpenSCADLibInternal_autogen/include"
+        "${CMAKE_CURRENT_BINARY_DIR}/OpenSCADLibInternal_autogen/include_$<CONFIG>")
     endif()
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
     target_compile_definitions(OpenSCADUnitTests PRIVATE
