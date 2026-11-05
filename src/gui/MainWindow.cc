@@ -964,11 +964,20 @@ void MainWindow::selectPreviewViewMode()
 #endif
 }
 
+// A compile request -- preview, render, export, validity check -- runs with the GUI locked so that
+// a reload or an update triggered elsewhere cannot interfere with it. Every path that ends such a
+// request releases that lock and restarts auto-reload together; this is the one place that pair
+// lives.
+void MainWindow::unlockAfterRequest()
+{
+  GuiLocker::unlock();
+  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+}
+
 void MainWindow::compileEnded()
 {
   clearCurrentOutput();
-  GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  unlockAfterRequest();
 #ifdef ENABLE_GUI_TESTS
   emit compilationDone(this->rootFile.get());
 #endif
@@ -2408,8 +2417,7 @@ void MainWindow::exceptionCleanup()
 {
   LOG("Execution aborted");
   LOG(" ");
-  GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  unlockAfterRequest();
 }
 
 void MainWindow::UnknownExceptionCleanup(std::string msg)
@@ -2421,8 +2429,7 @@ void MainWindow::UnknownExceptionCleanup(std::string msg)
     LOG(message_group::Error, "Compilation aborted by exception: %1$s", msg);
   }
   LOG(" ");
-  GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  unlockAfterRequest();
 }
 
 void MainWindow::showTextInWindow(const QString& type, const QString& content)
