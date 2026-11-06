@@ -430,7 +430,9 @@ Outline2d splitOutlineByFn(const Outline2d& o, const double twist, const double 
       q.pop();
     }
 
-    if (seg_total + tmp_q.size() <= fn) {
+    const size_t budget = static_cast<size_t>(fn) - seg_total;
+    if (tmp_q.size() <= budget) {
+      // The whole group fits: give every edge in it one more segment.
       while (!tmp_q.empty()) {
         current = tmp_q.back();
         tmp_q.pop_back();
@@ -440,13 +442,24 @@ Outline2d splitOutlineByFn(const Outline2d& o, const double twist, const double 
         q.push(current);
       }
     } else {
-      // fn too low to segment last group, push back onto queue without change.
-      while (!tmp_q.empty()) {
-        current = tmp_q.back();
-        tmp_q.pop_back();
-        q.push(current);
+      // The group doesn't fully fit. Used to give up on the whole group here, which
+      // left the outline under its requested segment count whenever the last group had
+      // more edges than there was room for (which happens often for symmetric shapes,
+      // where many edges tie on the metric). Spend the remaining budget by stepping
+      // through the group at an even stride (sorted by position around the outline)
+      // instead of an arbitrary subset, so the edges that do get an extra segment stay
+      // as spread out, and the result as symmetric, as the budget allows.
+      std::sort(tmp_q.begin(), tmp_q.end(), [](const segment_tracker& a, const segment_tracker& b) {
+        return a.edge_index < b.edge_index;
+      });
+      for (size_t i = 0; i < budget; ++i) {
+        segment_tracker& picked = tmp_q[(i * tmp_q.size()) / budget];
+        ++picked.segment_count;
+        ++segment_counts[picked.edge_index];
+        ++seg_total;
       }
-      break;
+      for (auto& edge : tmp_q) q.push(edge);
+      tmp_q.clear();
     }
   }
 
