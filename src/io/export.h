@@ -177,6 +177,18 @@ struct ExportPdfOptions {
   }
 };
 
+struct ExportStlOptions {
+  double simplifyTolerance = 0;  // 0 = disabled, >0 = tolerance in mm
+
+  static std::shared_ptr<const ExportStlOptions> withOptions(const CmdLineExportOptions& cmdLineOptions)
+  {
+    return std::make_shared<const ExportStlOptions>(ExportStlOptions{
+      .simplifyTolerance = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_STL,
+                                               Settings::SettingsExportStl::exportStlSimplify),
+    });
+  }
+};
+
 struct Export3mfOptions {
   Export3mfColorMode colorMode;
   Export3mfUnit unit;
@@ -296,6 +308,7 @@ struct ExportInfo {
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
   std::shared_ptr<const ExportSvgOptions> optionsSvg;
+  std::shared_ptr<const ExportStlOptions> optionsStl;
 };
 
 ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,
@@ -307,7 +320,8 @@ bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom,
 bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom,
                       const ExportInfo& exportInfo);
 
-void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary = true);
+void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary,
+                const ExportStlOptions& options);
 void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output);

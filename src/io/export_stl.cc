@@ -32,11 +32,12 @@
 #include <clocale>
 #include <cstddef>
 #include <cstdint>
-#include <ios>
+#include <cstring>
+#include <limits>
 #include <memory>
 #include <ostream>
-#include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Feature.h"
@@ -111,35 +112,35 @@ void write_floats(std::ostream& output, const std::array<float, N>& data)
   }
 }
 
+/*!
+   Writes the triangles of a prepared PolySet to output.
+   The PolySet must be triangular (and, when experimental predictable output
+   is enabled, sorted); see preparePolySet() which does that work up front so
+   that the total triangle count is known before writing begins.
+ */
 uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream& output, bool binary)
 {
   static_assert(sizeof(float) == 4, "Need 32 bit float");
 
-  std::shared_ptr<const PolySet> ps = polyset;
-  if (!ps->isTriangular()) {
-    ps = PolySetUtils::tessellate_faces(*ps);
-  }
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    ps = createSortedPolySet(*ps);
-  }
+  const PolySet& ps = *polyset;
 
   uint64_t triangle_count = 0;
 
   // In ASCII mode only, convert each vertex to string.
   std::vector<std::string> vertexStrings;
   if (!binary) {
-    vertexStrings.resize(ps->vertices.size());
-    std::transform(ps->vertices.begin(), ps->vertices.end(), vertexStrings.begin(),
+    vertexStrings.resize(ps.vertices.size());
+    std::transform(ps.vertices.begin(), ps.vertices.end(), vertexStrings.begin(),
                    [](const auto& p) { return toString(p); });
   }
 
   // Used for binary mode only
   std::array<float, 4lu * 3> coords;
 
-  for (const auto& t : ps->indices) {
-    const auto& p0 = ps->vertices[t[0]];
-    const auto& p1 = ps->vertices[t[1]];
-    const auto& p2 = ps->vertices[t[2]];
+  for (const auto& t : ps.indices) {
+    const auto& p0 = ps.vertices[t[0]];
+    const auto& p1 = ps.vertices[t[1]];
+    const auto& p2 = ps.vertices[t[2]];
 
     // Tessellation already eliminated these cases.
     assert(p0 != p1 && p0 != p2 && p1 != p2);
@@ -187,120 +188,138 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
   return triangle_count;
 }
 
+/*!
+   Converts a single (non-list) geometry to a PolySet suitable for STL
+   writing: triangular (tessellated when needed) and, when experimental
+   predictable output is enabled, deterministically sorted.
+   Manifold bodies are simplified first when options.simplifyTolerance > 0.
+   Returns nullptr when the geometry cannot be converted.
+ */
+std::shared_ptr<const PolySet> preparePolySet(const std::shared_ptr<const Geometry>& geom,
+                                              const ExportStlOptions& options)
+{
+  std::shared_ptr<const PolySet> ps;
+  if (const auto p = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    ps = p;
+  }
 #ifdef ENABLE_CGAL
-/*!
-    Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-    The file must be open.
- */
-uint64_t append_stl(const CGALNefGeometry& root_N, std::ostream& output, bool binary)
-{
-  uint64_t triangle_count = 0;
-  if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning,
-        "Exported object may not be a valid 2-manifold and may need repair");
+  else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
+    if (!N->p3->is_simple()) {
+      LOG(message_group::Export_Warning,
+          "Exported object may not be a valid 2-manifold and may need repair");
+    }
+    ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3));
+    if (!ps) {
+      LOG(message_group::Export_Error, "Nef->PolySet failed");
+    }
   }
-
-  if (const std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
-    triangle_count += append_stl(ps, output, binary);
-  } else {
-    LOG(message_group::Export_Error, "Nef->PolySet failed");
-  }
-
-  return triangle_count;
-}
-
-#endif  // ENABLE_CGAL
-
+#endif
 #ifdef ENABLE_MANIFOLD
-/*!
-   Saves the current 3D Manifold geometry as STL to the given file.
-   The file must be open.
- */
-uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output, bool binary)
-{
-  uint64_t triangle_count = 0;
-  if (!mani.isManifold()) {
-    LOG(message_group::Export_Warning,
-        "Exported object may not be a valid 2-manifold and may need repair");
+  else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    if (!mani->isManifold()) {
+      LOG(message_group::Export_Warning,
+          "Exported object may not be a valid 2-manifold and may need repair");
+    }
+    std::shared_ptr<const ManifoldGeometry> m = mani;
+    if (options.simplifyTolerance > 0) {
+      m = std::make_shared<const ManifoldGeometry>(mani->simplify(options.simplifyTolerance));
+    }
+    ps = m->toPolySet();
+    if (!ps) {
+      LOG(message_group::Export_Error, "Manifold->PolySet failed");
+    }
   }
-
-  const auto ps = mani.toPolySet();
-  if (ps) {
-    triangle_count += append_stl(ps, output, binary);
+#endif
+  else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    LOG(message_group::Export_Error, "Polygon2d geometry not supported for STL export");
   } else {
-    LOG(message_group::Export_Error, "Manifold->PolySet failed");
+    LOG(message_group::Export_Error, "Unsupported geometry type for STL export");
   }
 
-  return triangle_count;
+  if (!ps) return nullptr;
+  if (!ps->isTriangular()) {
+    ps = PolySetUtils::tessellate_faces(*ps);
+  }
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    ps = createSortedPolySet(*ps);
+  }
+  return ps;
 }
-#endif  // ENABLE_MANIFOLD
 
-uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary)
+/*!
+   Collects all PolySets that make up the geometry (one per body for
+   GeometryLists), each prepared for STL writing, so that the total triangle
+   count is known before any bytes are written.
+ */
+std::vector<std::shared_ptr<const PolySet>> preparePolysets(const std::shared_ptr<const Geometry>& geom,
+                                                            const ExportStlOptions& options)
 {
-  uint64_t triangle_count = 0;
+  std::vector<std::shared_ptr<const PolySet>> polysets;
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
-      triangle_count += append_stl(item.second, output, binary);
+      if (!item.second) continue;
+      auto children = preparePolysets(item.second, options);
+      polysets.insert(polysets.end(), std::make_move_iterator(children.begin()),
+                      std::make_move_iterator(children.end()));
     }
-  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    triangle_count += append_stl(ps, output, binary);
-#ifdef ENABLE_CGAL
-  } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
-    triangle_count += append_stl(*N, output, binary);
-#endif
-#ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    triangle_count += append_stl(*mani, output, binary);
-#endif
-  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {  // NOLINT(bugprone-branch-clone)
-    assert(false && "Unsupported file format");
-  } else {  // NOLINT(bugprone-branch-clone)
-    assert(false && "Not implemented");
+    return polysets;
   }
-
-  return triangle_count;
+  if (const auto ps = preparePolySet(geom, options)) {
+    polysets.push_back(std::move(ps));
+  }
+  return polysets;
 }
 
 }  // namespace
 
-void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary)
+void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output, bool binary,
+                const ExportStlOptions& options)
 {
   // FIXME: In lazy union mode, should we export multiple solids?
+  //
+  // Prepare all bodies up front so the total triangle count is known before
+  // writing begins. This lets binary STL be streamed directly to output
+  // (header first, then triangles) instead of buffering the whole file in
+  // memory, which used to hold ~2x the file size in RAM.
+  const auto polysets = preparePolysets(geom, options);
+
   if (binary) {
-    std::ostringstream buffer;  // Using a memory buffer
-    char header[80] = "OpenSCAD Model\n";
-    buffer.write(header, sizeof(header));
-
-    // Placeholder for triangle count
-    uint32_t triangle_count = 0;
-    char tmp_triangle_count[4] = {0, 0, 0, 0};
-    buffer.write(tmp_triangle_count, 4);
-
-    // Writing triangles and counting them
-    triangle_count = append_stl(geom, buffer, binary);
-
-    if (triangle_count > 4294967295) {
-      LOG(message_group::Export_Error,
-          "Triangle count exceeded 4294967295, so the STL file is not valid");
+    uint64_t triangle_count = 0;
+    for (const auto& ps : polysets) {
+      triangle_count += ps->indices.size();
     }
 
-    // Updating the triangle count in the buffer
-    char triangle_count_bytes[4] = {static_cast<char>(triangle_count & 0xff),
-                                    static_cast<char>((triangle_count >> 8) & 0xff),
-                                    static_cast<char>((triangle_count >> 16) & 0xff),
-                                    static_cast<char>((triangle_count >> 24) & 0xff)};
-    buffer.seekp(80, std::ios_base::beg);
-    buffer.write(triangle_count_bytes, 4);
+    if (triangle_count > std::numeric_limits<uint32_t>::max()) {
+      LOG(message_group::Export_Error,
+          "Triangle count exceeded UINT32_MAX, so the STL file is not valid");
+    }
 
-    // Flushing the buffer to the output stream
-    output << buffer.str();
+    // 80-byte title (zero padded) + 4-byte little-endian triangle count
+    std::array<char, 84> header{};
+    static constexpr std::string_view title = "OpenSCAD Model\n";
+    std::copy(title.begin(), title.end(), header.begin());
+    const auto count = static_cast<uint32_t>(triangle_count);
+    header[80] = static_cast<char>(count & 0xFF);
+    header[81] = static_cast<char>((count >> 8) & 0xFF);
+    header[82] = static_cast<char>((count >> 16) & 0xFF);
+    header[83] = static_cast<char>((count >> 24) & 0xFF);
+    output.write(header.data(), header.size());
 
+    // Stream triangles directly to the output
+    for (const auto& ps : polysets) {
+      append_stl(ps, output, true);
+    }
   } else {
     // ASCII mode: Write directly to the output stream
-    setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
+    // Use std::locale::classic() to ensure radix is . (not ,) in output.
+    // This is thread-safe unlike setlocale().
+    const std::locale old_locale = output.getloc();
+    output.imbue(std::locale::classic());
     output << "solid OpenSCAD_Model\n";
-    append_stl(geom, output, binary);
+    for (const auto& ps : polysets) {
+      append_stl(ps, output, false);
+    }
     output << "endsolid OpenSCAD_Model\n";
-    setlocale(LC_NUMERIC, "");  // Restore default locale
+    output.imbue(old_locale);
   }
 }
