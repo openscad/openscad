@@ -11,6 +11,13 @@ ECHO: [[0, 0], [10, 0], [0, 10]]
 ECHO: 3
 ECHO: [10, 10]
 ECHO: [undef, undef]
+ECHO: [0, 0, 1000, 0.25, -150]
+ECHO: ["", "a"b", "åäö", "☠"]
+ECHO: [0, 3, 3, 1]
 ECHO: []
-WARNING: Failed to parse file '../../json/array-unterminated.json': [json.exception.parse_error.101] parse error at line 4, column 1: syntax error while parsing value - unexpected end of input; expected '[', '{', or a literal in file import-json-array.scad, line 33
+WARNING: Failed to parse file '../../json/array-unterminated.json': [json.exception.parse_error.101] parse error at line 4, column 1: syntax error while parsing value - unexpected end of input; expected '[', '{', or a literal in file import-json-array.scad, line 38
+ECHO: undef
+WARNING: Failed to parse file '../../json/array-trailing-data.json': [json.exception.parse_error.101] parse error at line 2, column 1: syntax error while parsing value - unexpected '['; expected end of input in file import-json-array.scad, line 41
+ECHO: undef
+WARNING: Failed to parse file '../../json/array-trailing-comma.json': [json.exception.parse_error.101] parse error at line 1, column 7: syntax error while parsing value - unexpected ']'; expected '[', '{', or a literal in file import-json-array.scad, line 44
 ECHO: undef

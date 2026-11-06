@@ -25,9 +25,20 @@ echo(p.points);
 echo(len(p.points));
 echo(p.points[1] + p.points[2]);
 echo(p.nulls);
+// Number formats inside arrays.
+echo(p.numbers);
+// Strings with escapes and non-ASCII characters inside arrays.
+echo(p.strings);
+echo([for (s = p.strings) len(s)]);
 
 // An empty top-level array.
 echo(import("../../json/array-empty.json"));
 
 // An unterminated array fails to parse.
 echo(import("../../json/array-unterminated.json"));
+
+// Trailing data after a top-level array fails to parse.
+echo(import("../../json/array-trailing-data.json"));
+
+// A trailing comma is not valid JSON.
+echo(import("../../json/array-trailing-comma.json"));

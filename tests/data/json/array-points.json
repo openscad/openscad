@@ -1,4 +1,6 @@
 {
   "points": [ [0, 0], [10, 0], [0, 10] ],
-  "nulls": [ null, null ]
+  "nulls": [ null, null ],
+  "numbers": [ 0, -0, 1e3, 2.5E-1, -1.5e+2 ],
+  "strings": [ "", "a\"b", "åäö", "☠" ]
 }
