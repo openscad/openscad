@@ -29,7 +29,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <clocale>
 #include <cstddef>
 #include <cstdint>
 #include <ios>
@@ -297,10 +296,8 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   } else {
     // ASCII mode: Write directly to the output stream
-    setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
     output << "solid OpenSCAD_Model\n";
     append_stl(geom, output, binary);
     output << "endsolid OpenSCAD_Model\n";
-    setlocale(LC_NUMERIC, "");  // Restore default locale
   }
 }
