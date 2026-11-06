@@ -149,6 +149,9 @@ std::istream& operator>>(std::istream& stream, LocalAppParameter& param)
 
 SettingsEntryBool Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", true);
 SettingsEntryBool Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true);
+SettingsEntryBool Settings::stereo3dView("3dview", "stereo3dView", false);
+SettingsEntryDouble Settings::stereo3dEyeSeparation("3dview", "stereo3dEyeSeparation", 0.0, 0.5, 20.0,
+                                                    3.0);
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
 SettingsEntryInt Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
 SettingsEntryEnum<std::string> Settings::lineWrap("editor", "lineWrap",
