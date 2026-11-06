@@ -129,8 +129,10 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
     }
   }
   if (t1) {
-    if (node.modinst->isBackground() || state.isBackground()) t1->setBackground(true);
-    if (node.modinst->isHighlight() || state.isHighlight()) t1->setHighlight(true);
+    if (node.modinst->isBackground() || state.isBackground() || isPreviewBackground(node)) {
+      t1->setBackground(true);
+    }
+    if (isHighlighted(node) || state.isHighlight()) t1->setHighlight(true);
   }
   this->stored_term[node.index()] = t1;
 }
@@ -157,7 +159,7 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
 {
   if (state.parent()) {
     if (state.isPrefix()) {
-      if (node.modinst->isHighlight()) state.setHighlight(true);
+      if (isHighlighted(node)) state.setHighlight(true);
       if (node.modinst->isBackground()) state.setBackground(true);
     }
     if (state.isPostfix()) {
@@ -236,8 +238,10 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
 
   std::shared_ptr<CSGNode> t(
     new CSGLeaf(ps, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
-  if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
-  if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
+  if (isHighlighted(node) || state.isHighlight()) t->setHighlight(true);
+  if (modinst->isBackground() || state.isBackground() || isPreviewBackground(node)) {
+    t->setBackground(true);
+  }
   return t;
 }
 

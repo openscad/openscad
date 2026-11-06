@@ -53,6 +53,8 @@ public:
   QPoint mapToGlobal(const QPoint&) override;
 
   void setCursorPosition(int line, int col) override;
+  void selectRange(int lineFrom, int colFrom, int lineTo, int colTo) override;
+  void clearSelection() override;
   void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus satuts, int level, int lineFrom,
                                    int colFrom, int lineTo, int colTo) override;
   void clearAllSelectionIndicators() override;
@@ -99,6 +101,7 @@ private:
 
 signals:
   void previewRequest();
+  void previewObjectNavigationRequest(int direction);
   void hyperlinkIndicatorClicked(int val);
   void uriDropped(const QUrl&);
 
