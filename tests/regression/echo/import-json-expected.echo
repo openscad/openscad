@@ -18,5 +18,3 @@ ECHO: undef
 WARNING: Failed to parse file '../../json/leading-data.json': [json.exception.parse_error.101] parse error at line 1, column 2: syntax error while parsing value - unexpected '{'; expected end of input in file import-json.scad, line 30
 ECHO: undef
 ECHO: { a = 1; b = 2; }
-
-
