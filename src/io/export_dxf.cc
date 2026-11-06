@@ -24,7 +24,6 @@
  *
  */
 #include <cassert>
-#include <clocale>
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -200,8 +199,6 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
 
 static void export_dxf(const Polygon2d& poly, std::ostream& output)
 {
-  setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
-
   // find limits
   double xMin, yMin, xMax, yMax;
   xMin = yMin = std::numeric_limits<double>::max(), xMax = yMax = std::numeric_limits<double>::min();
@@ -300,8 +297,6 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
          << "ENDSEC\n";
   output << "  0\n"
          << "EOF\n";
-
-  setlocale(LC_NUMERIC, "");  // set default locale
 }
 
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
