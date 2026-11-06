@@ -1261,6 +1261,7 @@ endif(EXAMPLES_DIR)
 #
 list(APPEND EXPERIMENTAL_IMPORT_FILES
   ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/json/import-json-array.scad
   ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   )
 add_cmdline_test(echo           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
