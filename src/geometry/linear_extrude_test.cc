@@ -36,9 +36,13 @@ inline const CGAL::Gmpq& exact(const CGAL::Gmpq& d)
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
+#endif
 #include "geometry/linalg.h"
+#ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
+#endif
 #include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
 
