@@ -8,12 +8,16 @@
 
 Existing designs may produce errors or different results:
 
-* A malformed escape sequence in a string is now an error #6099
-* Imported files (e.g. via import() or surface()) are no longer looked up in the document root as a fallback; paths are resolved relative to the file that references them. This behavior was previously deprecated. #6997
 * surface() now preserves the full precision of 16-bit PNG heightmaps instead of truncating them to 8 bits #6950
-* Ranges on the form [begin:end] with begin value greater than the end value now yield an empty range #5750
-* SVG import no longer loads external entities or external DTDs, for security reasons; internal entities are still expanded #7180
-* The removals listed under Deprecations below
+* The removals listed under Removed below
+
+**New Warnings**
+
+These don't change the result, but stop rendering if warnings are made fatal (--hardwarnings or "Stop on first warning"):
+
+* A malformed escape sequence in a string #6099
+* offset() with both r= and delta= specified #6348
+* Passing children to modules that don't accept them #3759
 
 **Language Features**
 
@@ -26,15 +30,13 @@ Existing designs may produce errors or different results:
   * fontmetrics() #3684
 * text(), textmetrics(), fontmetrics()
   * Added em= to set the size of the em-square #6656
-* offset()
-  * Specifying both r= and delta= now issues a warning #6348
 * linear_extrude()
   * Added v= and segments= parameters #3770 #5080
   * h= is an alias for height= #5572
 * rotate_extrude()
   * Added start= to specify start angle #5553
   * a= is an alias for angle= #5572
-  * When specifying an angle, rotation starts on angle= instead of angle=180 #5553
+  * When specifying an angle, rotation starts at angle=0 instead of angle=180 #5553
 * import()
   * Added center= parameter #5671
   * Improved SVG import
@@ -47,7 +49,6 @@ Existing designs may produce errors or different results:
   * $ variables as module parameters were evaluated wrongly #1968
   * dxf_dim() and dxf_cross() sometimes didn't locate file correctly #2768
   * positional parameter silently overrides previous named parameter #3672
-  * Passing children to modules that don't accept them now issues a warning #3759
   * modifiers not working properly with children() #1529
   * Can't pass special vars to children #2104
   * Allow trailing comma in let() or lists #2882
@@ -61,7 +62,6 @@ Existing designs may produce errors or different results:
 * Geometry
   * 2D precision issues #3794 
   * Round up number of fragments in rotate_extrude #4540
-  * 3D hull() uses Manifold's convex hull when using the Manifold backend #6723
 
 * Misc
   * Added WASM build #4128
@@ -80,9 +80,9 @@ Existing designs may produce errors or different results:
   * PovRay export, with color support #5288
   * SVG export options for fill and stroke #6057
   * PDF export options for fill and stroke #5863
+  * Security improvements to SVG import #7180
 
 * GUI
-  * Double-click to center now works better #3661
   * Edit call-tips fixes #3744
   * Editor improvements #3749
   * Auto-complete improvements #3901
@@ -139,25 +139,22 @@ Existing designs may produce errors or different results:
   * --reset-window-settings to reset window placement and fonts #6065
 
 
+**Removed:**
+
+No longer supported. Most of these were deprecated in earlier releases:
+
+* Imported files (e.g. via import() or surface()) are no longer looked up in the document root as a fallback; paths are resolved relative to the file that references them #6997
+* Ranges on the form [begin:end] with begin value greater than the end value now yield an empty range #5750
+* AMF import/export #6988
+* Support for OpenGL < 2.1
+* dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off() #5559
+* The -s and -x cmd-line options #5733
+* The child() and assign() modules #6428
+* The triangles= parameter to polyhedron() #6825
+
 **Deprecations:**
-* Removed AMF import/export #6988
-* Removed support for OpenGL < 2.1
-* Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off() #5559
-* Removed deprecated -s and -x cmd-line options #5733
-* Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
-* Removed deprecated child() and assign() modules #6428
-* Removed deprecated triangles= parameter to polyhedron() #6825
 
-**Experimental Features**
-
-The following are available in development snapshots but are not enabled in release builds. They may change or be removed:
-
-* object() function #6012
-* Vector swizzle #4010 (made experimental again in #6307)
-* import() as a function returning data, including .json import #3891 (being made release ready in #7171)
-* Discretization by maximum error using $fe #6361
-* roof()
-* Python engine #5690
+* Identifiers (variable, function and module names) starting with a digit are deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
 
 **Misc:**
 
