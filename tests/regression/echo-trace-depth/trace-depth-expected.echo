@@ -1,0 +1,8 @@
+ERROR: Assertion 'false' failed: "bottom reached" in file trace-depth.scad, line 4
+TRACE: called by 'assert' in file trace-depth.scad, line 4
+TRACE: called by 'if' in file trace-depth.scad, line 4
+TRACE: call of 'recurse(n = 0)' in file trace-depth.scad, line 3
+TRACE:   *** Excluding 58 frames ***
+TRACE: called by 'if' in file trace-depth.scad, line 4
+TRACE: call of 'recurse(n = 20)' in file trace-depth.scad, line 3
+TRACE: called by 'recurse' in file trace-depth.scad, line 8
