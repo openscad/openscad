@@ -843,6 +843,7 @@ add_failing_test(parsererrors SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-ide
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/recursion-test-vector.scad ARGS --trace-usermodule-parameters=false)
+add_cmdline_test(echo-trace-depth OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/trace-depth.scad ARGS --trace-depth=3)
 
 add_cmdline_test(echo-stdio    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/echo-tests.scad STDIO EXPECTEDDIR echo ARGS --export-format echo)
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/builtin-invalid-range-test.scad ARGS --check-parameter-ranges=on)
