@@ -30,6 +30,7 @@
 #include <Eigen/Geometry>
 #include <boost/format.hpp>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -46,6 +47,11 @@ namespace libsvg {
 static bool in_defs = false;
 static shapes_list_t stack;
 static shapes_list_t *shape_list;
+
+// Limit expansion of use elements by default, see MAX_USE_CLONED_SHAPES.
+static size_t use_cloned_shape_count = 0;
+// Set to lift the the use element limitation.
+bool unlimited_use_cloned_shapes = false;
 
 using shapes_defs_list_t = std::map<std::string, std::shared_ptr<shape>>;
 
@@ -114,6 +120,17 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
           if (!id.empty() && defs_lookup_list->find(id) != defs_lookup_list->end()) {
             auto to_clone_child = (*defs_lookup_list)[id];
             auto cloned_children = currentuse->set_clone_child(to_clone_child.get());
+            const size_t would_be_total = use_cloned_shape_count + cloned_children.size();
+            const size_t limit =
+              unlimited_use_cloned_shapes ? std::numeric_limits<size_t>::max() : MAX_USE_CLONED_SHAPES;
+            if (would_be_total > limit) {
+              throw SvgException(
+                (boost::format("<use> elements generated too many shapes (%1%, limit %2%); "
+                               "aborting the SVG import.") %
+                 would_be_total % limit)
+                  .str());
+            }
+            use_cloned_shape_count = would_be_total;
             shape_list->insert(shape_list->end(), cloned_children.begin(), cloned_children.end());
           }
         }
@@ -242,6 +259,7 @@ void dump(int idx, shape *s)
 shapes_list_t *libsvg_read_file(const char *filename, void *context)
 {
   shape_list = new shapes_list_t();
+  use_cloned_shape_count = 0;
   try {
     streamFile(filename, context);
   } catch (...) {
@@ -249,6 +267,7 @@ shapes_list_t *libsvg_read_file(const char *filename, void *context)
     shape_list = nullptr;
     stack.clear();
     in_defs = false;
+    use_cloned_shape_count = 0;
     throw;
   }
 
