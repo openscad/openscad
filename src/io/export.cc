@@ -195,6 +195,8 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
 
   if (format == FileFormat::_3MF) {
     exportInfo.options3mf = Export3mfOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::ASCII_STL || format == FileFormat::BINARY_STL) {
+    exportInfo.optionsStl = ExportStlOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::PDF) {
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::SVG) {
@@ -208,8 +210,8 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
                        const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
-  case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
-  case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
+  case FileFormat::ASCII_STL:  export_stl(root_geom, output, false, *exportInfo.optionsStl); break;
+  case FileFormat::BINARY_STL: export_stl(root_geom, output, true, *exportInfo.optionsStl); break;
   case FileFormat::OBJ:        export_obj(root_geom, output); break;
   case FileFormat::OFF:        export_off(root_geom, output); break;
   case FileFormat::WRL:        export_wrl(root_geom, output); break;

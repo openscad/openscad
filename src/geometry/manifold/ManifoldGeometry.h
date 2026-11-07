@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
@@ -47,6 +48,9 @@ public:
 
   [[nodiscard]] std::shared_ptr<PolySet> toPolySet() const;
 
+  /*! Returns a copy of this geometry with the mesh simplified at the given tolerance (mm). */
+  [[nodiscard]] ManifoldGeometry simplify(double tolerance) const noexcept;
+
   template <class Polyhedron>
   [[nodiscard]] std::shared_ptr<Polyhedron> toPolyhedron() const;
 
@@ -58,6 +62,11 @@ public:
   ManifoldGeometry operator-(const ManifoldGeometry& other) const;
   /*! minkowksi operation. */
   ManifoldGeometry minkowski(const ManifoldGeometry& other) const;
+
+  /*! Applies a single batch boolean operation to all children (one Manifold::BatchBoolean
+      call) and merges the original-id bookkeeping exactly as a left fold would. */
+  static ManifoldGeometry batchOp(const std::vector<std::shared_ptr<const ManifoldGeometry>>& children,
+                                  manifold::OpType opType) noexcept;
 
   Polygon2d slice() const;
   Polygon2d project() const;

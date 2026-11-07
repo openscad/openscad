@@ -128,9 +128,9 @@ void ParameterWidget::saveFile(const QString& scadFile)
   sets.writeFile(jsonFile.toStdString());
 }
 
-void ParameterWidget::removeBackupFile(const QString& scadFile)
+bool ParameterWidget::removeBackupFile(const QString& scadFile)
 {
-  QFile::remove(getJsonFile(scadFile));
+  return QFile::remove(getJsonFile(scadFile));
 }
 
 void ParameterWidget::saveBackupFile(const QString& scadFile)

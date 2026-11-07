@@ -492,6 +492,9 @@ SettingsEntryString SettingsExportSvg::exportSvgStrokeColor(SECTION_EXPORT_SVG, 
 SettingsEntryDouble SettingsExportSvg::exportSvgStrokeWidth(SECTION_EXPORT_SVG, "stroke-width", 0, 0.01,
                                                             999, 0.35);
 
+SettingsEntryDouble SettingsExportStl::exportStlSimplify(SECTION_EXPORT_STL, "simplify", 0, 0.01, 100.0,
+                                                         0);
+
 SettingsEntryEnum<ColorListFilterType> SettingsColorList::colorListFilterType(
   SECTION_COLOR_LIST, "filter-type",
   {

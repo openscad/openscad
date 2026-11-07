@@ -63,40 +63,49 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
     return std::make_shared<ManifoldGeometry>(manifold::Manifold::Hull(pts));
   }
 
+  if (op != OpenSCADOperator::MINKOWSKI) {
+    // UNION / INTERSECTION / DIFFERENCE: one batch boolean over all non-empty children
+    // (equivalent to the old N-1 sequential left fold, but a single Manifold::BatchBoolean).
+    std::vector<std::shared_ptr<const ManifoldGeometry>> mani_children;
+    for (const auto& item : children) {
+      auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
+      if (item.first) item.first->progress_report();
+      if (!chN || chN->isEmpty()) {
+        // Intersecting something with nothing results in nothing
+        if (op == OpenSCADOperator::INTERSECTION) return nullptr;
+        if (op == OpenSCADOperator::DIFFERENCE && mani_children.empty()) return nullptr;
+        continue;
+      }
+      mani_children.push_back(chN);
+    }
+    if (mani_children.empty()) return nullptr;
+    if (mani_children.size() == 1) return std::make_shared<ManifoldGeometry>(*mani_children.front());
+    manifold::OpType opType;
+    switch (op) {
+    case OpenSCADOperator::UNION:        opType = manifold::OpType::Add; break;
+    case OpenSCADOperator::INTERSECTION: opType = manifold::OpType::Intersect; break;
+    case OpenSCADOperator::DIFFERENCE:   opType = manifold::OpType::Subtract; break;
+    default:
+      LOG(message_group::Error, "Unsupported manifold operator: %1$d", static_cast<int>(op));
+      return nullptr;
+    }
+    return std::make_shared<ManifoldGeometry>(ManifoldGeometry::batchOp(mani_children, opType));
+  }
+
+  // MINKOWSKI stays a left fold (the sum is associative, but manifold has no
+  // batch Minkowski API).
   std::shared_ptr<ManifoldGeometry> geom;
-
   bool foundFirst = false;
-
   for (const auto& item : children) {
     auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
-
-    // Intersecting something with nothing results in nothing
-    if (!chN || chN->isEmpty()) {
-      if (op == OpenSCADOperator::INTERSECTION) {
-        geom = nullptr;
-        break;
-      }
-      if (op == OpenSCADOperator::DIFFERENCE && !foundFirst) {
-        geom = nullptr;
-        break;
-      }
-      continue;
-    }
-
+    if (!chN || chN->isEmpty()) continue;
     // Initialize geom with first expected geometric object
     if (!foundFirst) {
       geom = std::make_shared<ManifoldGeometry>(*chN);
       foundFirst = true;
       continue;
     }
-
-    switch (op) {
-    case OpenSCADOperator::UNION:        *geom = *geom + *chN; break;
-    case OpenSCADOperator::INTERSECTION: *geom = *geom * *chN; break;
-    case OpenSCADOperator::DIFFERENCE:   *geom = *geom - *chN; break;
-    case OpenSCADOperator::MINKOWSKI:    *geom = geom->minkowski(*chN); break;
-    default:                             LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
-    }
+    *geom = geom->minkowski(*chN);
     if (item.first) item.first->progress_report();
   }
   return geom;

@@ -7,6 +7,7 @@
 #include <QTemporaryFile>
 #include <QTextEdit>
 #include <QWidget>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,9 +26,10 @@ public:
   void clearTemporaryFile()
   {
     if (this->tempFile) {
-      parameterWidget->removeBackupFile(this->tempFile->fileName());
-      delete this->tempFile;
-      this->tempFile = nullptr;
+      if (!parameterWidget->removeBackupFile(this->tempFile->fileName())) {
+        LOG(message_group::UI_Warning, "Failed to remove backup file: %1$s", this->tempFile->fileName().toStdString());
+      }
+      this->tempFile.reset();
     }
   }
 
@@ -117,5 +119,5 @@ public:
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;
-  QTemporaryFile *tempFile{nullptr};
+  std::unique_ptr<QTemporaryFile> tempFile;
 };
