@@ -63,5 +63,8 @@ public slots:
   void buttonPress(uint idx) const;
   const QList<double> getRotation() const;
   const QList<double> getTranslation() const;
+  double getDistance() const;
+  double getFov() const;
+  QString getProjection() const;
   const QStringList getActions() const;
 };
