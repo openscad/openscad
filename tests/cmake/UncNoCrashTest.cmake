@@ -4,6 +4,10 @@
 #
 # Usage: cmake -DOPENSCAD=<exe> -DINPUT=<file> -DOUTPUT=<file> -P UncNoCrashTest.cmake
 
+if(NOT EXISTS "${OPENSCAD}")
+  message(FATAL_ERROR "OpenSCAD not found: ${OPENSCAD}")
+endif()
+
 execute_process(
   COMMAND "${OPENSCAD}" -o "${OUTPUT}" "${INPUT}"
   RESULT_VARIABLE result
