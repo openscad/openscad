@@ -1038,10 +1038,10 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   return std::move(font_metrics);
 }
 
-Value builtin_fn(Arguments arguments, const Location& loc)
+Value builtin_fragments(Arguments arguments, const Location& loc)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), loc, {"r"}, {"d"});
-  parameters.set_caller("fn");
+  parameters.set_caller("fragments");
 
   double r = 1.0;
   std::string dr_var;
@@ -1383,8 +1383,8 @@ void register_builtin_functions()
                  {
                    "import(file) -> object",
                  });
-  Builtins::init("fn", new BuiltinFunction(&builtin_fn),
+  Builtins::init("fragments", new BuiltinFunction(&builtin_fragments),
                  {
-                   "fn(r|d) -> number",
+                   "fragments(r|d) -> number",
                  });
 }

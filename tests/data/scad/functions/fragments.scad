@@ -26,31 +26,31 @@ r = 20;
 
 // Pick up the default parameters (which are set above), specifying
 // the size using the radius.
-echo(fn(r=r));
+echo(fragments(r=r));
 translate([0*r*3,  0]) circle(r=r);
-translate([0*r*3, r*3]) circle(r=r, $fn=fn(r=r));
+translate([0*r*3, r*3]) circle(r=r, $fn=fragments(r=r));
 
 // Default parameters, specifying the size using the diameter.
-echo(fn(d=2*r));
+echo(fragments(d=2*r));
 translate([1*r*3,  0]) circle(d=2*r);
-translate([1*r*3, r*3]) circle(d=2*r, $fn=fn(d=2*r));
+translate([1*r*3, r*3]) circle(d=2*r, $fn=fragments(d=2*r));
 
 // Default parameters, specifying both radius and diameter - diameter should win,
 // and there should be four warning messages - one for each circle call, and one
 // for each function call.
-echo(fn(r=r/2,d=2*r));
+echo(fragments(r=r/2,d=2*r));
 translate([2*r*3,  0]) circle(r=r/2, d=2*r);
-translate([2*r*3, r*3]) circle(r=r/2, d=2*r, $fn=fn(r=r/2, d=2*r));
+translate([2*r*3, r*3]) circle(r=r/2, d=2*r, $fn=fragments(r=r/2, d=2*r));
 
 // Explicitly specify seven sides.
-echo(fn(r=r, $fn=7));
+echo(fragments(r=r, $fn=7));
 translate([3*r*3,  0]) circle(r=r, $fn=7);
-translate([3*r*3, r*3]) circle(r=r, $fn=fn(r=r, $fn=7));
+translate([3*r*3, r*3]) circle(r=r, $fn=fragments(r=r, $fn=7));
 
 // Set $fs/$fa for this one set of calls, to generate a relatively fine
 // circle.  Note that the dump tests also show that the $fx settings
 // used for the function call are not somehow leaking into the circle()
 // call.
-echo(fn(r=r, $fa=1, $fs=1));
+echo(fragments(r=r, $fa=1, $fs=1));
 translate([4*r*3,  0]) circle(r=r, $fa=1, $fs=1);
-translate([4*r*3, r*3]) circle(r=r, $fn=fn(r=r, $fa=1, $fs=1));
+translate([4*r*3, r*3]) circle(r=r, $fn=fragments(r=r, $fa=1, $fs=1));
