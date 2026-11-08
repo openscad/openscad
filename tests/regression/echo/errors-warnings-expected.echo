@@ -21,9 +21,9 @@ WARNING: Problem converting rotate(a=[inf, inf]) parameter in file errors-warnin
 WARNING: Problem converting rotate(a=nan) parameter in file errors-warnings.scad, line 26
 WARNING: variable "rad" not specified as parameter in file errors-warnings.scad, line 29
 WARNING: Too many unnamed arguments supplied in file errors-warnings.scad, line 31
-WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 33
-WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 34
-WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 35
+WARNING: Cylinder arguments ambiguous: both "r" and "r1" specified in file errors-warnings.scad, line 33
+WARNING: Cylinder arguments ambiguous: both "r" and "r1" specified in file errors-warnings.scad, line 34
+WARNING: Cylinder arguments ambiguous: both "d" and "r1" specified in file errors-warnings.scad, line 35
 WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range in file errors-warnings.scad, line 42
 WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range in file errors-warnings.scad, line 42
 WARNING: Unable to parse color "notAName" in file errors-warnings.scad, line 43
