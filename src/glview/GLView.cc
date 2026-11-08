@@ -441,17 +441,20 @@ void GLView::showSmallaxes(const Color4f& col)
   glGetIntegerv(GL_VIEWPORT, viewport);
 
   GLdouble xlabel_x, xlabel_y, xlabel_z;
-  local_gluProject(labelPosition * dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
+  local_gluProject(labelPosition * dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y,
+                   &xlabel_z);
   xlabel_x = std::round(xlabel_x);
   xlabel_y = std::round(xlabel_y);
 
   GLdouble ylabel_x, ylabel_y, ylabel_z;
-  local_gluProject(0, labelPosition * dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
+  local_gluProject(0, labelPosition * dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y,
+                   &ylabel_z);
   ylabel_x = std::round(ylabel_x);
   ylabel_y = std::round(ylabel_y);
 
   GLdouble zlabel_x, zlabel_y, zlabel_z;
-  local_gluProject(0, 0, labelPosition * dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
+  local_gluProject(0, 0, labelPosition * dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y,
+                   &zlabel_z);
   zlabel_x = std::round(zlabel_x);
   zlabel_y = std::round(zlabel_y);
 
