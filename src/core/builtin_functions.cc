@@ -1044,13 +1044,10 @@ Value builtin_fn(Arguments arguments, const Location& loc)
   parameters.set_caller("fn");
 
   double r = 1.0;
-  const auto rValue = parameters.lookupRadius("d", "r");
+  std::string dr_var;
+  const auto rValue = parameters.lookupRadius(dr_var, "d", "r");
   if (rValue) {
     r = rValue->toDouble();
-    if (OpenSCAD::rangeCheck && ((r <= 0) || !std::isfinite(r))) {
-      LOG(message_group::Warning, loc, parameters.documentRoot(), "fn(r=%1$s)",
-          rValue->toEchoStringNoThrow());
-    }
   }
 
   CurveDiscretizer discretizer(parameters, loc);

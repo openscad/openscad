@@ -384,16 +384,14 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 {
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d", "style"});
+  parameters.set_caller("sphere");
 
   auto node = std::make_shared<SphereNode>(inst, CurveDiscretizer(parameters, inst->location()));
 
-  const auto r = parameters.lookupRadius("d", "r");
+  std::string dr_var;
+  const auto r = parameters.lookupRadius(dr_var, "d", "r");
   if (r) {
     node->r = r->toDouble();
-    if (OpenSCAD::rangeCheck && (node->r <= 0 || !std::isfinite(node->r))) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "sphere(r=%1$s)",
-          r->toEchoStringNoThrow());
-    }
   }
 
   (void)parameters.valid("style", Value::Type::STRING);
@@ -480,18 +478,23 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
+  parameters.set_caller("cylinder");
   auto node = std::make_shared<CylinderNode>(inst, CurveDiscretizer(parameters, inst->location()));
 
   if (parameters["h"].type() == Value::Type::NUMBER) {
     node->h = parameters["h"].toDouble();
   }
 
-  auto r = parameters.lookupRadius("d", "r");
-  auto r1 = parameters.lookupRadius("d1", "r1");
-  auto r2 = parameters.lookupRadius("d2", "r2");
+  std::string dr_var;
+  std::string dr1_var;
+  std::string dr2_var;
+  auto r = parameters.lookupRadius(dr_var, "d", "r");
+  auto r1 = parameters.lookupRadius(dr1_var, "d1", "r1", false);
+  auto r2 = parameters.lookupRadius(dr2_var, "d2", "r2", false);
   if (r && (r1 || r2)) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "Cylinder parameters ambiguous");
+        "Cylinder arguments ambiguous: both %1$s and %2$s specified",
+        quoteVar(dr_var), quoteVar(r1 ? dr1_var : dr2_var));
   }
 
   if (r) {
@@ -510,11 +513,13 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cylinder(h=%1$s, ...)",
           parameters["h"].toEchoStringNoThrow());
     }
-    if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) ||
-        !std::isfinite(node->r2)) {
+
+    // r==0 has already been covered by lookupRadius.
+    if (!r && node->r1 == 0 && node->r2 == 0) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "cylinder(r1=%1$s, r2=%2$s, ...)", (r1 ? r1->toEchoStringNoThrow() : r->toEchoStringNoThrow()),
-          (r2 ? r2->toEchoStringNoThrow() : r->toEchoStringNoThrow()));
+          "cylinder(%1$s=%2$s, %3$s=%4$s, ...): cannot both be zero",
+          dr1_var, parameters[dr1_var].toEchoStringNoThrow(),
+          dr2_var, parameters[dr2_var].toEchoStringNoThrow());
     }
   }
 
@@ -732,15 +737,13 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  parameters.set_caller("circle");
   auto node = std::make_shared<CircleNode>(inst, CurveDiscretizer(parameters, inst->location()));
 
-  const auto r = parameters.lookupRadius("d", "r");
+  std::string dr_var;
+  const auto r = parameters.lookupRadius(dr_var, "d", "r");
   if (r) {
     node->r = r->toDouble();
-    if (OpenSCAD::rangeCheck && ((node->r <= 0) || !std::isfinite(node->r))) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "circle(r=%1$s)",
-          r->toEchoStringNoThrow());
-    }
   }
 
   return node;
