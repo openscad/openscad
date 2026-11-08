@@ -295,8 +295,7 @@ void Parameters::set_caller(const std::string& caller)
  */
 boost::optional<const Value> Parameters::lookupRadius(std::string& found_var,
                                                       const std::string& diameter_var,
-                                                      const std::string& radius_var,
-                                                      bool noZero) const
+                                                      const std::string& radius_var, bool noZero) const
 {
   const auto& d = get(diameter_var);
   const auto& r = get(radius_var);

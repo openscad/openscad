@@ -493,8 +493,8 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
   auto r2 = parameters.lookupRadius(dr2_var, "d2", "r2", false);
   if (r && (r1 || r2)) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "Cylinder arguments ambiguous: both %1$s and %2$s specified",
-        quoteVar(dr_var), quoteVar(r1 ? dr1_var : dr2_var));
+        "Cylinder arguments ambiguous: both %1$s and %2$s specified", quoteVar(dr_var),
+        quoteVar(r1 ? dr1_var : dr2_var));
   }
 
   if (r) {
@@ -517,9 +517,8 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
     // r==0 has already been covered by lookupRadius.
     if (!r && node->r1 == 0 && node->r2 == 0) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "cylinder(%1$s=%2$s, %3$s=%4$s, ...): cannot both be zero",
-          dr1_var, parameters[dr1_var].toEchoStringNoThrow(),
-          dr2_var, parameters[dr2_var].toEchoStringNoThrow());
+          "cylinder(%1$s=%2$s, %3$s=%4$s, ...): cannot both be zero", dr1_var,
+          parameters[dr1_var].toEchoStringNoThrow(), dr2_var, parameters[dr2_var].toEchoStringNoThrow());
     }
   }
 
