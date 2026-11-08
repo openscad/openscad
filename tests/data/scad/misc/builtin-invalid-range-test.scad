@@ -41,6 +41,6 @@ cylinder(h=1, d2=-2);
 
 echo("cylinder with both r/d and r1/r2/d1/d2 specified");
 cylinder(r=1, r1=1);    // Check that it recognizes r+r1 as invalid, and reports r/r1.
-cylinder(r=1, r2=1);    // Check that it recognizez r+r2 as invalid, and reports r2.
+cylinder(r=1, r2=1);    // Check that it recognizes r+r2 as invalid, and reports r2.
 cylinder(d=1, d1=1);    // Check that it reports d/d1.
 // It seems safe to assume that that covers all eight cases {r,d}, {r1,r2,d1,d2}.
