@@ -24,3 +24,12 @@ echo(import("../../json/data.json", type="rose"));
 echo(import("../../json/data"));
 // Test that a file with no extension succeeds when you explicitly specify a known type.
 echo(import("../../json/data", type="json"));
+
+// Test that files with trailing or leading data fail to parse.
+echo(import("../../json/trailing-data.json"));
+echo(import("../../json/leading-data.json"));
+
+// Test that a file with trailing whitespace succeeds.
+echo(import("../../json/trailing-whitespace.json"));
+
+
