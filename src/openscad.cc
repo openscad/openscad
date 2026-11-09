@@ -51,6 +51,7 @@
 #include <boost/program_options/positional_options.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/iterator_range_core.hpp>
 #include <clocale>
@@ -107,6 +108,7 @@
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
 #include "io/export.h"
+#include "libsvg/libsvg.h"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
 #include "platform/PlatformUtils.h"
@@ -731,6 +733,10 @@ static CmdLineExportOptions convert_export_options(const po::variables_map& vm)
   return map;
 }
 
+const std::map<std::string, bool *> import_unlimit_flags{
+  {"svg-use", &libsvg::unlimited_use_cloned_shapes},
+};
+
 }  // namespace
 
 void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found)
@@ -922,6 +928,10 @@ int openscad_main(int argc, char **argv)
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
     ("hardwarnings", "Stop on the first warning")
+    ("import-unlimit", po::value<CommaSeparatedVector>(),
+      ("=Remove specific import limitations, never use with untrusted files: " +
+       boost::algorithm::join(import_unlimit_flags | boost::adaptors::map_keys, " | "))
+        .c_str())
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(),
       "=true/false, configure the output of user module parameters in a trace")
@@ -1116,6 +1126,18 @@ int openscad_main(int argc, char **argv)
 
   if (vm.count("colorscheme")) {
     arg_colorscheme = vm["colorscheme"].as<std::string>();
+  }
+
+  if (vm.count("import-unlimit")) {
+    const auto& importUnlimitValues = vm["import-unlimit"].as<CommaSeparatedVector>();
+    for (const auto& value : importUnlimitValues.values) {
+      const auto flag = import_unlimit_flags.find(value);
+      if (flag == import_unlimit_flags.end()) {
+        LOG("Unknown --import-unlimit value '%1$s' ignored. Use -h to list available values.", value);
+      } else {
+        *flag->second = true;
+      }
+    }
   }
 
   if (vm.count("export-format")) {
