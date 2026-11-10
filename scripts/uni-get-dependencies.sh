@@ -123,7 +123,9 @@ get_qt6_deps_debian()
 {
  apt-get -y install \
   qt6-base-dev qt6-multimedia-dev \
-  libqt6svg6-dev libqt6opengl6-dev libqt6core5compat6-dev
+  libqt6svg6-dev libqt6opengl6-dev libqt6core5compat6-dev \
+  qt6-wayland
+
  apt-get -y install libqscintilla2-qt6-dev || echo "libqscintilla2-qt6-dev is not available"
 }
 
