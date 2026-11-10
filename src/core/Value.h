@@ -313,6 +313,7 @@ public:
     const Value& operator[](const str_utf8_wrapper& v) const;
     [[nodiscard]] const std::vector<std::string>& keys() const;
     [[nodiscard]] const std::vector<Value>& values() const;
+    static bool keyIsIdentifier(const std::string& k);
   };
 
 private:
