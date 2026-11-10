@@ -134,7 +134,7 @@ These don't change the result, but stop rendering if warnings are made fatal (--
   * Rename --render=cgal to --render=force to force-convert to the current backend-specific geometry #4822
   * Set $vpr, $vpt, $vpd, $vpf when run from command line. #4863
   * Add --backend setting / flag to enable manifold in prod builds #5235
-  * --animate_sharding=<shard>/<num_shards> #5473
+  * --animate-sharding=<shard>/<num_shards> #5473 #7203
   * Add -O export option parameter #5577
   * --reset-window-settings to reset window placement and fonts #6065
 
