@@ -97,7 +97,7 @@ If exporting an image, use an OpenCSG preview (optionally in throwntogether mode
 .B \-\-animate[=N]
 Export N animated frames as PNG images.
 .TP
-.B \-\-animate_sharding=\fIshard\fB/\fInum_shards
+.B \-\-animate\-sharding=\fIshard\fB/\fInum_shards
 Together with \fB\-\-animate\fP, divide the frames into \fInum_shards\fP parts
 and export only part number \fIshard\fP (counting from 1). For example,
 \fB2/5\fP exports the second fifth of the frames. This can be used to spread
