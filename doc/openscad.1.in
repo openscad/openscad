@@ -19,12 +19,15 @@ A tutorial can be found at https://en.wikibooks.org/wiki/OpenSCAD_Tutorial.
 
 .TP
 \fB\-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, 3MF, DXF, SVG,
-or PNG format, depending on file extension of \fIoutputfile\fP. If this
-option is given, the GUI will not be started.
+Export the given file to \fIoutputfile\fP in STL, OFF, OBJ, VRML, 3MF, DXF,
+SVG, PDF, POV-Ray or PNG format, depending on file extension of
+\fIoutputfile\fP. If this option is given, the GUI will not be started.
+The option can be given more than once to export several files in one run.
+If \fIoutputfile\fP is \fB\-\fP, the output is written to standard output; use
+\fB\-\-export\-format\fP to select the format.
 
-Known extensions: stl, off, 3mf, csg, dxf, svg, png, echo, ast, term,
-nef3, nefdbg.
+Known extensions: stl, off, obj, wrl, 3mf, csg, dxf, svg, pdf, pov, png, echo,
+ast, term, param, nef3, nefdbg.
 
 Additional formats, which are mainly used for debugging and testing (but can
 also be used in automation), are AST (the input file as parsed and serialized
@@ -43,7 +46,7 @@ can be any of its supported file extensions. For ascii stl export, specify
 the current stl default, but binary stl is planned as the future default so
 \fBasciistl\fP should be explicitly specified in scripts when needed.
 .TP
-\fB\-q
+.B \-q [ \-\-quiet ]
 Quiet mode (don't print anything except errors)
 .TP
 \fB\-d\fP \fIfile.deps\fP
@@ -78,17 +81,27 @@ Print basic program usage.
 .B \-\-help\-export
 Print list of export parameters and values that can be set via -O
 .TP
-.B \-v
+.B \-v [ \-\-version ]
 Print version.
 .TP
 .B \-\-render
 If exporting an image, render the model fully. (Default is preview)
+.TP
+.B \-\-backend=\fIbackend
+Select the 3D geometry backend: \fBManifold\fP (the default) or \fBCGAL\fP.
+The name is not case sensitive.
 .TP
 .B \-\-preview[=throwntogether]
 If exporting an image, use an OpenCSG preview (optionally in throwntogether mode for quicker rendering).
 .TP
 .B \-\-animate[=N]
 Export N animated frames as PNG images.
+.TP
+.B \-\-animate\-sharding=\fIshard\fB/\fInum_shards
+Together with \fB\-\-animate\fP, divide the frames into \fInum_shards\fP parts
+and export only part number \fIshard\fP (counting from 1). For example,
+\fB2/5\fP exports the second fifth of the frames. This can be used to spread
+the work over several processes or machines.
 .TP
 .B \-\-view[=axes|crosshairs|edges|scales]
 View options
@@ -129,10 +142,12 @@ projection
 .TP
 .B \-\-colorscheme=\fIscheme
 If exporting an image, use the specified color scheme for the rendering.
-\fIscheme\fP can be any of \fBCornfield\fP, \fBSunset\fP, \fBMetallic\fP,
-\fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP or \fBDeepOcean\fP
-\fBSolarized\fP, \fBTomorrow\fP, \fBTomorrow 2\fP, \fBTomorrow Night\fP,
-\fBMonotone\fP.
+\fIscheme\fP can be any of \fBCornfield\fP (the default), \fBMetallic\fP,
+\fBSunset\fP, \fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP,
+\fBDaylight Gem\fP, \fBNocturnal Gem\fP, \fBDeepOcean\fP, \fBSolarized\fP,
+\fBTomorrow\fP, \fBTomorrow Night\fP, \fBNord Dark\fP, \fBClearSky\fP,
+\fBNord Light\fP or \fBMonotone\fP. Run \fBopenscad \-\-help\fP to list the
+color schemes available in your installation.
 .TP
 .B \-\-hardwarnings
 Stop on the first warning
@@ -143,9 +158,34 @@ Configure the parameter check for user modules and functions
 .B \-\-check-parameter-ranges=[true|false]
 Configure the parameter range check for builtin modules
 .TP
+.B \-\-trace\-depth=\fIn
+Maximum number of trace messages.
+.TP
+.B \-\-trace\-usermodule\-parameters=[true|false]
+Configure whether the parameters of user modules are included in trace output.
+.TP
 .B \-\-info
 Show which versions of libraries were used to compile the program, and which
 OpenGL details are discovered.
+.TP
+.B \-\-summary=\fIitem
+Print additional render statistics after rendering. \fIitem\fP can be any of
+\fBall\fP, \fBcache\fP, \fBtime\fP, \fBcamera\fP, \fBgeometry\fP,
+\fBbounding-box\fP or \fBarea\fP. More than one \fB\-\-summary\fP option can be
+given.
+.TP
+.B \-\-summary\-file=\fIfile
+Write the summary information in JSON format to \fIfile\fP. If \fIfile\fP is
+\fB\-\fP, it is written to standard output.
+.TP
+.B \-\-reset\-window\-settings
+Reset the saved GUI window placement and font settings to their defaults when
+starting the GUI.
+.TP
+.B \-\-debug=\fIfiles
+Print internal debugging information. Specify \fBall\fP, or one or more
+source file names without extension (e.g. \fBGeometryEvaluator,export\fP) to
+limit the output to messages from those files.
 .SH COMMAND LINE EXAMPLES
 .PP
 
