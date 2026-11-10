@@ -1,4 +1,4 @@
-ECHO: [1, -2.5, "three", true, false, undef, [], { }, [10, [20, [30]]], { name = "first"; value = 1; }, [{ id = 1; }, { id = 2; }]]
+ECHO: [1, -2.5, "three", true, false, undef, [], { }, [10, [20, [30]]], { name : "first", value : 1 }, [{ id : 1 }, { id : 2 }]]
 ECHO: true, 11
 ECHO: "three"
 ECHO: undef
