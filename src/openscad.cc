@@ -1011,8 +1011,8 @@ int openscad_main(int argc, char **argv)
     OpenSCAD::hardwarnings = true;
   }
 
-  if (vm.count("traceDepth")) {
-    OpenSCAD::traceDepth = vm["traceDepth"].as<unsigned int>();
+  if (vm.count("trace-depth")) {
+    OpenSCAD::traceDepth = vm["trace-depth"].as<unsigned int>();
   }
   std::map<std::string, bool *> flags;
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
