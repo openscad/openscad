@@ -1482,7 +1482,7 @@ ObjectType ObjectType::clone() const
 bool ObjectType::keyIsIdentifier(const std::string& k)
 {
   bool first = true;
-  for (auto c: k) {
+  for (auto c : k) {
     if (!isascii(c)) {
       return false;
     }
@@ -1510,7 +1510,7 @@ std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
   std::string sep = " ";
 
   stream << "{";
-  for (auto & k : v.keys()) {
+  for (auto& k : v.keys()) {
     stream << sep;
     if (ObjectType::keyIsIdentifier(k)) {
       stream << k;
