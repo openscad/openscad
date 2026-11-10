@@ -447,7 +447,13 @@ void includefile(const Location& loc)
 
   handle_dep(fullname);
 
+#ifdef _WIN32
+  // fopen() reads the name in the ANSI code page, which breaks non-ASCII
+  // paths (#7198). The wide-character version takes the path as it is.
+  yyin = _wfopen(fullpath.c_str(), L"r");
+#else
   yyin = fopen(fullname.c_str(), "r");
+#endif
   if (!yyin) {
     LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();
