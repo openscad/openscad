@@ -988,6 +988,9 @@ add_cmdline_test(export-stl              EXPERIMENTAL OPENSCAD SUFFIX stl FILES 
 add_cmdline_test(export-stl-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-stl ARGS --enable=predictible-output --render --export-format asciistl)
 if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(export-stl-manifold     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR export-stl ARGS --enable=predictible-output --backend=manifold --render)
+# An inside-out polyhedron must not give an inside-out result (#7201). CGAL triangulates
+# the result differently, so this only runs with Manifold.
+add_cmdline_test(export-stl-manifold     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${TEST_SCAD_DIR}/stl/polyhedron-inside-out.scad ARGS --enable=predictible-output --backend=manifold --render)
 endif()
 
 add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render --export-format binstl)
