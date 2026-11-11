@@ -46,6 +46,8 @@ public:
                           const std::shared_ptr<const Context>& defining_context);
 
   boost::optional<const Value&> lookup(const std::string& name) const;
+  boost::optional<const Value> lookupRadius(std::string& found_var, const std::string& diameter_var,
+                                            const std::string& radius_var, bool noZero = true) const;
 
   void set_caller(const std::string& caller);
   const std::string& get_caller() const { return caller; }

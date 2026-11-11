@@ -22,13 +22,17 @@
 #include <algorithm>
 #include <chrono>
 #include <utility>
+#include <cstdlib>
+#include <filesystem>
+#include <system_error>
+#include <array>
 
 #ifdef _WIN32
 #include <windows.h>
 #include <wincrypt.h>
+#endif
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
-#endif
 
 namespace {
 
@@ -66,6 +70,113 @@ std::string makeHostHeader(const ParsedURL& parsed)
   host += ":" + std::to_string(parsed.port);
   return host;
 }
+
+#ifdef _WIN32
+
+void load_system_certificates(boost::asio::ssl::context& ctx)
+{
+  HCERTSTORE hStore = CertOpenSystemStoreA(0, "ROOT");
+  if (!hStore) {
+    return;
+  }
+
+  X509_STORE *store = SSL_CTX_get_cert_store(ctx.native_handle());
+  if (!store) {
+    CertCloseStore(hStore, 0);
+    return;
+  }
+
+  PCCERT_CONTEXT pContext = nullptr;
+  while ((pContext = CertEnumCertificatesInStore(hStore, pContext)) != nullptr) {
+    const unsigned char *pbCertEncoded = pContext->pbCertEncoded;
+    X509 *x509 = d2i_X509(nullptr, &pbCertEncoded, pContext->cbCertEncoded);
+    if (x509) {
+      X509_STORE_add_cert(store, x509);
+      X509_free(x509);
+    }
+  }
+  CertCloseStore(hStore, 0);
+}
+
+#else  // _WIN32
+
+// Well-known CA bundle locations on common Unix systems.
+// Some context: https://curl.se/mail/lib-2022-05/0038.html
+// https://github.com/curl/curl/blob/41efc221/acinclude.m4#L1009-L1019
+const std::array<std::string, 7> caBundleFiles = {
+  "/etc/ssl/certs/ca-certificates.crt",  // Debian, Ubuntu and derivatives
+  "/etc/pki/tls/certs/ca-bundle.crt",    // Fedora, RHEL, CentOS
+  "/usr/share/ssl/certs/ca-bundle.crt",  // old(er) RedHat
+  "/etc/ssl/ca-bundle.pem",              // openSUSE
+  "/etc/pki/tls/cacert.pem",             // openSUSE (older)
+  "/etc/ca-bundle.pem",                  // SUSE
+  "/etc/ssl/cert.pem",                   // Alpine, FreeBSD
+};
+
+const std::array<std::string, 3> caBundleDirs = {
+  "/etc/ssl/certs",         // Debian, Ubuntu, Arch
+  "/etc/pki/tls/certs",     // Fedora, RHEL, CentOS
+  "/etc/ssl/certificates",  // SUSE
+};
+
+// Whether the default verification paths (SSL_CERT_FILE/SSL_CERT_DIR, or the
+// OpenSSL compiled-in equivalents) point to existing files or directories.
+bool check_default_cert_path()
+{
+  const char *file = std::getenv(X509_get_default_cert_file_env());
+  if (!file) {
+    file = X509_get_default_cert_file();
+  }
+  const char *dir = std::getenv(X509_get_default_cert_dir_env());
+  if (!dir) {
+    dir = X509_get_default_cert_dir();
+  }
+  auto pathExists = [](const char *path) {
+    std::error_code ec;
+    return path && std::filesystem::exists(path, ec);
+  };
+  return pathExists(file) || pathExists(dir);
+}
+
+void load_system_certificates(boost::asio::ssl::context& ctx)
+{
+  boost::system::error_code ec;
+  ctx.set_default_verify_paths(ec);
+  if (ec) {
+    LOG("Could not load default SSL verification paths: %1$s", ec.message());
+  }
+
+  // In some environments, e.g. AppImage the default paths compiled
+  // into the bundled OpenSSL may not exist on the host system, in
+  // which case no CA certificates have been loaded. Fall back to
+  // searching some well-known system CA bundle locations in case the
+  // default cert path does not exist.
+  if (!ec && check_default_cert_path()) {
+    return;
+  }
+
+  for (const auto& path : caBundleFiles) {
+    ec.clear();
+    ctx.load_verify_file(path, ec);
+    if (!ec) {
+      LOG("Loaded system CA certificates from '%1$s'", path);
+      return;
+    }
+  }
+  for (const auto& path : caBundleDirs) {
+    ec.clear();
+    ctx.add_verify_path(path, ec);
+    if (!ec) {
+      LOG("Loaded system CA certificates from '%1$s'", path);
+      return;
+    }
+  }
+
+  LOG(message_group::Warning,
+      "Could not load system CA certificates. HTTPS connections cannot be verified.");
+}
+
+#endif  // _WIN32
 
 }  // namespace
 
@@ -160,38 +271,6 @@ ParsedURL parseURL(const std::string& url)
 
   return parsed;
 }
-
-#ifdef _WIN32
-static void load_system_certificates(boost::asio::ssl::context& ctx)
-{
-  HCERTSTORE hStore = CertOpenSystemStoreA(0, "ROOT");
-  if (!hStore) {
-    return;
-  }
-
-  X509_STORE *store = SSL_CTX_get_cert_store(ctx.native_handle());
-  if (!store) {
-    CertCloseStore(hStore, 0);
-    return;
-  }
-
-  PCCERT_CONTEXT pContext = nullptr;
-  while ((pContext = CertEnumCertificatesInStore(hStore, pContext)) != nullptr) {
-    const unsigned char *pbCertEncoded = pContext->pbCertEncoded;
-    X509 *x509 = d2i_X509(nullptr, &pbCertEncoded, pContext->cbCertEncoded);
-    if (x509) {
-      X509_STORE_add_cert(store, x509);
-      X509_free(x509);
-    }
-  }
-  CertCloseStore(hStore, 0);
-}
-#else
-static void load_system_certificates(boost::asio::ssl::context& ctx)
-{
-  ctx.set_default_verify_paths();
-}
-#endif
 
 // A session representing a single HTTP/HTTPS request/response lifetime
 class CancelableSession

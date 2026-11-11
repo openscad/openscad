@@ -1,8 +1,23 @@
 **Highlights**
 
-* New geometry engine: Manifold - rendering (F6) is now orders of magnitude faster
+* New geometry engine: Manifold, now the default backend - rendering (F6) is now orders of magnitude faster #5833
 * Color support in F6 rendering, and color import/export for OFF and 3MF
 * Significantly improved external file import, with built-in mesh repair
+
+**Breaking Changes**
+
+Existing designs may produce errors or different results:
+
+* surface() now preserves the full precision of 16-bit PNG heightmaps instead of truncating them to 8 bits #6950
+* The removals listed under Removed below
+
+**New Warnings**
+
+These don't change the result, but stop rendering if warnings are made fatal (--hardwarnings or "Stop on first warning"):
+
+* A malformed escape sequence in a string #6099
+* offset() with both r= and delta= specified #6348
+* Passing children to modules that don't accept them #3759
 
 **Language Features**
 
@@ -13,30 +28,27 @@
 * New functions:
   * textmetrics() #3684
   * fontmetrics() #3684
-  * object() #6012
+* text(), textmetrics(), fontmetrics()
+  * Added em= to set the size of the em-square #6656
 * linear_extrude()
   * Added v= and segments= parameters #3770 #5080
   * h= is an alias for height= #5572
 * rotate_extrude()
   * Added start= to specify start angle #5553
   * a= is an alias for angle= #5572
-  * When specifying an angle, rotation starts on angle= instead of angle=180 #5553
+  * When specifying an angle, rotation starts at angle=0 instead of angle=180 #5553
 * import()
-  * Added center= parameter 
-  * Added support for .json import #3891
+  * Added center= parameter #5671
   * Improved SVG import
     * Support $fn, $fs, $fa #3994
-    * TODO: Just for SVG, how is this enforced? Added id= and layer= parameters to SVG import() #4042 #4378
-* Vector swizzle feature #4010
-* Non-ASCII identifiers following Unicode Standard Annex #31, opt-in via --enable=unicode-identifiers #3736
-* Ranges on the form [begin:end] with begin value greater than the end value now yields an empty range #5750
+    * Added id= and layer= parameters #4042 #4378
+* Non-ASCII identifiers following Unicode Standard Annex 31 #3736 #6968 #7101
 
 * Bugfixes
   * Relative includes could resolve to the wrong path #569
   * $ variables as module parameters were evaluated wrongly #1968
   * dxf_dim() and dxf_cross() sometimes didn't locate file correctly #2768
   * positional parameter silently overrides previous named parameter #3672
-  * Passing children to modules that don't accept them now issues a warning #3759
   * modifiers not working properly with children() #1529
   * Can't pass special vars to children #2104
   * Allow trailing comma in let() or lists #2882
@@ -66,9 +78,11 @@
   * VRML export #3883
   * OBJ import and export #4197 
   * PovRay export, with color support #5288
+  * SVG export options for fill and stroke #6057
+  * PDF export options for fill and stroke #5863
+  * Security improvements to SVG import #7180
 
 * GUI
-  * Double-click to center now works better #3661
   * Edit call-tips fixes #3744
   * Editor improvements #3749
   * Auto-complete improvements #3901
@@ -90,6 +104,13 @@
   * Can send rendered geometry to a local slicer instance #5299
   * Add support for multiple 3D print services #5357
   * Cleaned up Window menu and added Ctrl-J Jump To #5630
+  * Color list window #6488
+  * Autocomplete for user-defined variables #6846
+  * "Close all but this tab" action #6659
+  * Nord color schemes #7033
+  * Indicator in the GUI when the CGAL backend is active #7115
+  * Translations: Swedish #5978, Brazilian Portuguese #5813, Galician #7121
+  * Remote print services can be enabled or disabled #5600
   * Customizer
     * Major rework #3755
     * Better behavior when multiple tabs open
@@ -101,6 +122,8 @@
     * Make customizer font and size selectable. #4946
     * add auto clear console option to preferences #4228
     * Add Option to Swap Mouse Buttons on 3DView #4241
+    * Configurable mouse behaviour for 3D navigation #5874
+    * Configurable application font #6064
 
 
 * Cmd-line
@@ -111,21 +134,29 @@
   * Rename --render=cgal to --render=force to force-convert to the current backend-specific geometry #4822
   * Set $vpr, $vpt, $vpd, $vpf when run from command line. #4863
   * Add --backend setting / flag to enable manifold in prod builds #5235
-  * --animate_sharding=<shard>/<num_shards> #5473
+  * --animate-sharding=<shard>/<num_shards> #5473 #7203
   * Add -O export option parameter #5577
+  * --reset-window-settings to reset window placement and fonts #6065
 
+
+**Removed:**
+
+No longer supported. Most of these were deprecated in earlier releases:
+
+* Imported files (e.g. via import() or surface()) are no longer looked up in the document root as a fallback; paths are resolved relative to the file that references them #6997
+* Ranges on the form [begin:end] with begin value greater than the end value now yield an empty range #5750
+* AMF import/export #6988
+* Support for OpenGL < 2.1
+* dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off() #5559
+* The -s and -x cmd-line options #5733
+* The child() and assign() modules #6428
+* The triangles= parameter to polyhedron() #6825
 
 **Deprecations:**
-* Removed AMF import/export
-* Removed support for OpenGL < 2.1
-* Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
-* Removed deprecated -s and -x cmd-line options #5733
-* Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
-* Removed deprecated child() and assign() modules.
-* Removed deprecated trangles= parameter to polyhedron() #6825
+
+* Identifiers (variable, function and module names) starting with a digit are deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
 
 **Misc:**
 
 Stats:
-* ~800 pull requests merged
-
+* ~1,300 pull requests merged

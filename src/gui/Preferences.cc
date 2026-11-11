@@ -84,9 +84,10 @@
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
 
-static const char *featurePropertyName = "FeatureProperty";
-
 namespace {
+
+const char *featurePropertyName = "FeatureProperty";
+
 QString getAISettingsFilePath()
 {
   QString configPath = QString::fromStdString(PlatformUtils::userConfigPath());
@@ -114,6 +115,9 @@ nlohmann::json readAISettings()
 
 void writeAISettings(const nlohmann::json& j)
 {
+  if (!Feature::ExperimentalAiFeatures.is_enabled()) {
+    return;
+  }
   QFile file(getAISettingsFilePath());
   if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     std::string s = j.dump(4);
@@ -121,6 +125,7 @@ void writeAISettings(const nlohmann::json& j)
     file.close();
   }
 }
+
 }  // namespace
 
 using S = Settings::Settings;

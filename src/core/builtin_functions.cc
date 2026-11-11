@@ -1038,6 +1038,22 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   return std::move(font_metrics);
 }
 
+Value builtin_fragments(Arguments arguments, const Location& loc)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"r"}, {"d"});
+  parameters.set_caller("fragments");
+
+  double r = 1.0;
+  std::string dr_var;
+  const auto rValue = parameters.lookupRadius(dr_var, "d", "r");
+  if (rValue) {
+    r = rValue->toDouble();
+  }
+
+  CurveDiscretizer discretizer(parameters, loc);
+  return discretizer.getCircularSegmentCount(r).value_or(3);
+}
+
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
   if (call->arguments.size() != 1) {
@@ -1236,6 +1252,7 @@ void register_builtin_functions()
                  {
                    "len(string) -> number",
                    "len(vector) -> number",
+                   "len(object) -> number",
                  });
 
   Builtins::init("log", new BuiltinFunction(&builtin_log),
@@ -1365,5 +1382,9 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
                  {
                    "import(file) -> object",
+                 });
+  Builtins::init("fragments", new BuiltinFunction(&builtin_fragments),
+                 {
+                   "fragments(r|d) -> number",
                  });
 }
