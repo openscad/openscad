@@ -96,9 +96,8 @@ void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
     std::vector<GLbyte> interleaved_vertex;
     interleaved_vertex.resize(data()->stride());
     data()->getLastVertex(interleaved_vertex);
-    std::pair<ElementsMap::iterator, bool> entry;
-    entry.first = elements_map_.find(interleaved_vertex);
-    if (entry.first == elements_map_.end()) {
+    const auto [element_index, added] = uniqueElementIndex(elements_map_, interleaved_vertex);
+    if (added) {
       // append vertex data if this is a new element
       if (!interleaved_buffer_.empty()) {
         memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(),
@@ -106,30 +105,12 @@ void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
         data()->clear();
       }
       vertices_offset_ += interleaved_vertex.size();
-      entry = elements_map_.emplace(interleaved_vertex, elements_map_.size());
     } else {
       data()->remove();
-#if 0
-      if (OpenSCAD::debug != "") {
-        // in debug, check for bad hash matches
-        size_t i = 0;
-        if (interleaved_vertex.size() != entry.first->first.size()) {
-          PRINTDB("vertex index = %d", entry.first->second);
-          assert(false && "VBORenderer invalid vertex match size!!!");
-        }
-        for (const auto& b : interleaved_vertex) {
-          if (b != entry.first->first[i]) {
-            PRINTDB("vertex index = %d", entry.first->second);
-            assert(false && "VBORenderer invalid vertex value hash match!!!");
-          }
-          i++;
-        }
-      }
-#endif  // 0
     }
 
     // append element data
-    addAttributeValues(*elementsData(), entry.first->second);
+    addAttributeValues(*elementsData(), element_index);
     elements_offset_ += elementsData()->sizeofAttribute();
   } else {  // !useElements()
     if (interleaved_buffer_.empty()) {
