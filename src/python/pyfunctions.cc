@@ -958,6 +958,73 @@ PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_show_core(obj);
 }
 
+PyObject *python_modifier_core(PyObject *obj, bool highlight)
+{
+  PyObject *child_dict;
+  auto child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
+  if (!child) {
+    PyErr_SetString(PyExc_TypeError, "Expected an OpenSCAD object or a list of objects");
+    return nullptr;
+  }
+
+  DECLARE_INSTANCE();
+  instance->tag_highlight = highlight;
+  instance->tag_background = !highlight;
+  auto node = std::make_shared<GroupNode>(instance);
+  node->children.push_back(std::move(child));
+  PyObject *result = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  if (child_dict != nullptr) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while (PyDict_Next(child_dict, &pos, &key, &value)) {
+      PyDict_SetItem(((PyOpenSCADObject *)result)->dict, key, value);
+    }
+  }
+  return result;
+}
+
+PyObject *python_highlight(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  PyObject *obj = nullptr;
+  char *kwlist[] = {"obj", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "Expected highlight(object)");
+    return nullptr;
+  }
+  return python_modifier_core(obj, true);
+}
+
+PyObject *python_transparent(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  PyObject *obj = nullptr;
+  char *kwlist[] = {"obj", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "Expected transparent(object)");
+    return nullptr;
+  }
+  return python_modifier_core(obj, false);
+}
+
+PyObject *python_oo_highlight(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "highlight() takes no arguments");
+    return nullptr;
+  }
+  return python_modifier_core(obj, true);
+}
+
+PyObject *python_oo_transparent(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "transparent() takes no arguments");
+    return nullptr;
+  }
+  return python_modifier_core(obj, false);
+}
+
 PyObject *python__getitem__(PyObject *obj, PyObject *key)
 {
   PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
@@ -2203,6 +2270,10 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"roof", (PyCFunction)python_roof, METH_VARARGS | METH_KEYWORDS, "Roof Object."},
 #endif
   {"color", (PyCFunction)python_color, METH_VARARGS | METH_KEYWORDS, "Color Object."},
+  {"highlight", (PyCFunction)python_highlight, METH_VARARGS | METH_KEYWORDS,
+   "Highlight an object in the preview (OpenSCAD # modifier)."},
+  {"transparent", (PyCFunction)python_transparent, METH_VARARGS | METH_KEYWORDS,
+   "Show an object transparently in the preview (OpenSCAD % modifier)."},
   {"show", (PyCFunction)python_show, METH_VARARGS | METH_KEYWORDS, "Show the result."},
   {"linear_extrude", (PyCFunction)python_linear_extrude, METH_VARARGS | METH_KEYWORDS,
    "Linear_extrude Object."},
@@ -2237,6 +2308,8 @@ PyMethodDef PyOpenSCADMethods[] = {
             OO_METHOD_ENTRY(roof, "Roof Object")
 #endif
               OO_METHOD_ENTRY(color, "Color Object")
+                    OO_METHOD_ENTRY(highlight, "Highlight Object")
+                      OO_METHOD_ENTRY(transparent, "Transparent Object")
                 OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object") OO_METHOD_ENTRY(
                   rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
