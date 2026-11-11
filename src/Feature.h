@@ -16,7 +16,6 @@ public:
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;
   static const Feature ExperimentalVxORenderersIndexing;
-  static const Feature ExperimentalObjectFunction;
   static const Feature ExperimentalPredictibleOutput;
   static const Feature ExperimentalVectorSwizzle;
   static const Feature ExperimentalDiscretizationByError;
