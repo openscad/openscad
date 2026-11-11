@@ -50,12 +50,12 @@ void GroupDisclosureButton::paintEvent(QPaintEvent *event)
 #else
   const auto accent = option.palette.color(QPalette::Highlight);
 #endif
-  const qreal amount = option.state.testFlag(QStyle::State_Sunken) ? 0.08 :
-                       option.state.testFlag(QStyle::State_MouseOver) ? 0.06 : 0.04;
-  const auto surface = QColor::fromRgbF(
-    window.redF() + amount * (accent.redF() - window.redF()),
-    window.greenF() + amount * (accent.greenF() - window.greenF()),
-    window.blueF() + amount * (accent.blueF() - window.blueF()));
+  const qreal amount = option.state.testFlag(QStyle::State_Sunken)      ? 0.08
+                       : option.state.testFlag(QStyle::State_MouseOver) ? 0.06
+                                                                        : 0.04;
+  const auto surface = QColor::fromRgbF(window.redF() + amount * (accent.redF() - window.redF()),
+                                        window.greenF() + amount * (accent.greenF() - window.greenF()),
+                                        window.blueF() + amount * (accent.blueF() - window.blueF()));
   // Change only this paint's palette, so theme changes and child controls are unaffected.
   // Windows 11 uses an explicit Button brush for all states, hence the blends above.
   option.palette.setColor(QPalette::Button, surface);
