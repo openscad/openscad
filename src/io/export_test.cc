@@ -1,8 +1,6 @@
 #include "io/export.h"
 
 #include <catch2/catch_all.hpp>
-#include <filesystem>
-#include <fstream>
 #include <locale>
 #include <memory>
 #include <sstream>
@@ -20,13 +18,9 @@ struct DecimalComma : std::numpunct<char> {
 
 std::string export_to_string(const std::shared_ptr<const Geometry>& geom, FileFormat format)
 {
-  const auto path = std::filesystem::temp_directory_path() / "openscad-export-test.out";
-  const ExportInfo info{.format = format, .info = fileformat::info(format)};
-  REQUIRE(exportFileByName(geom, path.string(), info));
-  std::stringstream content;
-  content << std::ifstream(path).rdbuf();
-  std::filesystem::remove(path);
-  return content.str();
+  std::ostringstream output;  // starts with the global locale, which exportFile() must override
+  exportFile(geom, output, ExportInfo{.format = format, .info = fileformat::info(format)});
+  return output.str();
 }
 
 }  // namespace

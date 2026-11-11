@@ -206,8 +206,8 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
   return exportInfo;
 }
 
-static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
-                       const ExportInfo& exportInfo)
+void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
+                const ExportInfo& exportInfo)
 {
   // Exported files always use '.' as the decimal point, whatever the global C++ locale is.
   const std::locale previous_locale = output.imbue(std::locale::classic());
