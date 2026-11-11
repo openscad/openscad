@@ -1,2 +1,2 @@
-WARNING: Ignoring radius variable "r" as diameter "d" is defined too. in file sphere-octa-tests.scad, line 10
+WARNING: Ignoring radius argument "r" as diameter "d" is defined too. in file sphere-octa-tests.scad, line 10
 WARNING: sphere(style="bogus") is not "orig" or "octa", using "orig" in file sphere-octa-tests.scad, line 24

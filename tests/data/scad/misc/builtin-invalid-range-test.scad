@@ -33,3 +33,14 @@ for(i=tests){
 echo("Those are okay");
 cylinder(r1=1,r2=0,h=10);
 cylinder(r1=0,r2=1,h=10);
+
+echo("cylinder with only r1 or r2 out of range");
+cylinder(h=1, r1=-1);
+cylinder(h=1, r2=-1);
+cylinder(h=1, d2=-2);
+
+echo("cylinder with both r/d and r1/r2/d1/d2 specified");
+cylinder(r=1, r1=1);    // Check that it recognizes r+r1 as invalid, and reports r/r1.
+cylinder(r=1, r2=1);    // Check that it recognizes r+r2 as invalid, and reports r2.
+cylinder(d=1, d1=1);    // Check that it reports d/d1.
+// It seems safe to assume that that covers all eight cases {r,d}, {r1,r2,d1,d2}.
