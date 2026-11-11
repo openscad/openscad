@@ -113,6 +113,22 @@ libsvg::shapes_list_t *read_or_null(const std::string& svg)
   }
 }
 
+/* Temporarily lifts the <use> amplification cap, restoring the previous
+ * value on scope exit even if a check fails in between. */
+class unlimited_use_guard
+{
+public:
+  unlimited_use_guard() : previous(libsvg::unlimited_use_cloned_shapes)
+  {
+    libsvg::unlimited_use_cloned_shapes = true;
+  }
+
+  ~unlimited_use_guard() { libsvg::unlimited_use_cloned_shapes = previous; }
+
+private:
+  bool previous;
+};
+
 }  // namespace
 
 /* ------------------------------------------------------------------ */
@@ -199,6 +215,60 @@ TEST_CASE("benign SVG text is still imported", "[libsvg][Security]")
     auto shapes = read(svg_path("benign.svg"));
     const auto texts = collect_text(*shapes);
     CHECK(std::find(texts.begin(), texts.end(), "hello") != texts.end());
+    libsvg::libsvg_free(shapes);
+  }
+}
+
+TEST_CASE("SVG import caps shape amplification from <use> elements", "[libsvg][Security]")
+{
+  SECTION("a <use> bomb is rejected instead of materializing unbounded shapes")
+  {
+    /* 600 <use> tags reference a 200-shape def, which would clone
+     * 600 x 201 = 120,600 shapes into the global shape list. The
+     * amplification cap aborts the import; read_or_null() maps the
+     * SvgException to nullptr. */
+    auto shapes = read_or_null(svg_path("use-bomb.svg"));
+    CHECK(shapes == nullptr);
+  }
+
+  SECTION("benign <use> repetition below the cap is still imported in full")
+  {
+    /* 3 uses of a 2-shape def must yield exactly 13 shapes: the root <svg>
+     * element plus 3 x (1 use element + 1 cloned group + 2 cloned rects).
+     * No truncation and no rejection, i.e. the cap does not affect
+     * legitimate SVG. */
+    auto shapes = read(svg_path("use-repetition.svg"));
+    REQUIRE(shapes != nullptr);
+    CHECK(shapes->size() == 13);
+    libsvg::libsvg_free(shapes);
+  }
+
+  SECTION("the next import succeeds after a rejected bomb")
+  {
+    /* The rejection must not leave stale process-global state behind:
+     * libsvg_read_file() resets its counter even when it throws. */
+    read_or_null(svg_path("use-bomb.svg"));
+    auto shapes = read(svg_path("benign.svg"));
+    REQUIRE(shapes != nullptr);
+    CHECK(has_shape_named(shapes, "rect"));
+    libsvg::libsvg_free(shapes);
+  }
+}
+
+TEST_CASE("the SVG <use> amplification cap can be removed for advanced users", "[libsvg][Security]")
+{
+  SECTION("with the cap removed the bomb is imported in full")
+  {
+    unlimited_use_guard guard;
+    auto shapes = read(svg_path("use-bomb.svg"));
+    REQUIRE(shapes != nullptr);
+    /*
+     * 1 root <svg> element
+     * + 600 <use> elements
+     * + 600 x (1 cloned group + 200 cloned rects)
+     * = 121,201 shapes, i.e. no truncation.
+     */
+    CHECK(shapes->size() == 121'201);
     libsvg::libsvg_free(shapes);
   }
 }
