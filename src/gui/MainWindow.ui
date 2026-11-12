@@ -322,6 +322,10 @@
     <addaction name="designActionAutoReload"/>
     <addaction name="designActionReloadAndPreview"/>
     <addaction name="designActionPreview"/>
+    <addaction name="designActionNextPreviewObject"/>
+    <addaction name="designActionPreviousPreviewObject"/>
+    <addaction name="designActionClearPreviewObject"/>
+    <addaction name="designActionToggleOtherPreviewTransparency"/>
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
     <addaction name="designActionMeasureDist"/>
@@ -998,6 +1002,53 @@
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="designActionNextPreviewObject">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Next Preview Object</string>
+   </property>
+   <property name="toolTip">
+    <string>Select and highlight the first or next object from the latest preview</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Down</string>
+   </property>
+  </action>
+  <action name="designActionPreviousPreviewObject">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Previous Preview Object</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Up</string>
+   </property>
+  </action>
+  <action name="designActionClearPreviewObject">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Clear Preview Object Selection</string>
+   </property>
+  </action>
+  <action name="designActionToggleOtherPreviewTransparency">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Transparency of Other Preview Objects</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+I</string>
    </property>
   </action>
   <action name="designActionRender">

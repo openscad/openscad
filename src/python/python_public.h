@@ -10,7 +10,9 @@ extern bool python_trusted;
 std::string python_version(void);
 
 void initPython(const std::string& binDir, double time);
-std::string evaluatePython(const std::string& code, bool dry_run = 0);
+std::string evaluatePython(const std::string& code, bool dry_run = 0,
+                           const std::string& filename = "<string>");
+Location currentPythonLocation();
 void finishPython();
 void python_lock(void);
 void python_unlock(void);

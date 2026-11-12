@@ -250,6 +250,18 @@ void CSGProducts::import(std::shared_ptr<CSGNode> csgnode, OpenSCADOperator type
   } while (!callstack.empty());
 }
 
+void CSGProducts::append(const CSGProducts& other)
+{
+  if (other.products.empty()) return;
+  if (products.size() == 1 && products.front().intersections.empty() &&
+      products.front().subtractions.empty()) {
+    products.clear();
+  }
+  products.insert(products.end(), other.products.begin(), other.products.end());
+  currentproduct = &products.back();
+  currentlist = &currentproduct->intersections;
+}
+
 std::string CSGProduct::dump() const
 {
   std::ostringstream dump;
