@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <string>
 namespace fs = std::filesystem;
@@ -118,4 +119,11 @@ void ensureStdIO();
  * a given number of digits.
  */
 std::string toMemorySizeString(uint64_t bytes, int digits);
+
+/**
+ * Open a file like std::fopen(). On Windows this uses _wfopen(), so paths
+ * that can't be represented in the ANSI code page (e.g. with non-ASCII
+ * characters) can be opened too.
+ */
+FILE *fopen(const fs::path& path, const char *mode);
 }  // namespace PlatformUtils

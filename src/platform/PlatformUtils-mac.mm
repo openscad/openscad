@@ -99,3 +99,8 @@ const std::string PlatformUtils::sysinfo(bool extended)
 }
 
 void PlatformUtils::ensureStdIO(void) {}
+
+FILE *PlatformUtils::fopen(const fs::path& path, const char *mode)
+{
+  return ::fopen(path.c_str(), mode);
+}
