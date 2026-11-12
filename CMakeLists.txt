@@ -1623,6 +1623,7 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
+  "src/geometry/*_test.cc"
   "src/io/*_test.cc"
   "src/libsvg/*_test.cc"
 )
