@@ -2,51 +2,51 @@ ECHO: "Primitives"
 ECHO: "i=1, primitive test"
 ECHO: "i=0, primitive test"
 WARNING: cube(size=[1, 0, 1], ...) in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=0) in file builtin-invalid-range-test.scad, line 9
+WARNING: sphere(..., r=0) argument must be greater than zero in file builtin-invalid-range-test.scad, line 9
 WARNING: cylinder(h=0, ...) in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=0, r2=0, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: cylinder(..., r=0) argument must be greater than zero in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=0, ...) in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, 0], ...) in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[0, 1], ...) in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=0) in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(..., r=0) argument must be greater than zero in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=-1, primitive test"
 WARNING: cube(size=[1, -1, 1], ...) in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=-1) in file builtin-invalid-range-test.scad, line 9
+WARNING: sphere(..., r=-1) argument must be greater than zero in file builtin-invalid-range-test.scad, line 9
 WARNING: cylinder(h=-1, ...) in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=-1, r2=-1, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: cylinder(..., r=-1) argument must be greater than zero in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=-1, ...) in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, -1], ...) in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[-1, 1], ...) in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=-1) in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(..., r=-1) argument must be greater than zero in file builtin-invalid-range-test.scad, line 15
 ECHO: "i=-inf, primitive test"
 WARNING: cube(size=[1, -inf, 1], ...) in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=-inf) in file builtin-invalid-range-test.scad, line 9
+WARNING: sphere(..., r=-inf) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 9
 WARNING: cylinder(h=-inf, ...) in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=-inf, r2=-inf, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: cylinder(..., r=-inf) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=-inf, ...) in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, -inf], ...) in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[-inf, 1], ...) in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=-inf) in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(..., r=-inf) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 15
 WARNING: Unable to convert points[4] = [0, 0, -inf] to a vec3 of numbers in file builtin-invalid-range-test.scad, line 16
 ECHO: "i=nan, primitive test"
 WARNING: cube(size=[1, nan, 1], ...) in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=nan) in file builtin-invalid-range-test.scad, line 9
+WARNING: sphere(..., r=nan) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 9
 WARNING: cylinder(h=nan, ...) in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=nan, r2=nan, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: cylinder(..., r=nan) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=nan, ...) in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, nan], ...) in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[nan, 1], ...) in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=nan) in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(..., r=nan) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 15
 WARNING: Unable to convert points[4] = [0, 0, nan] to a vec3 of numbers in file builtin-invalid-range-test.scad, line 16
 ECHO: "i=inf, primitive test"
 WARNING: cube(size=[1, inf, 1], ...) in file builtin-invalid-range-test.scad, line 8
-WARNING: sphere(r=inf) in file builtin-invalid-range-test.scad, line 9
+WARNING: sphere(..., r=inf) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 9
 WARNING: cylinder(h=inf, ...) in file builtin-invalid-range-test.scad, line 10
-WARNING: cylinder(r1=inf, r2=inf, ...) in file builtin-invalid-range-test.scad, line 11
+WARNING: cylinder(..., r=inf) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 11
 WARNING: square(size=inf, ...) in file builtin-invalid-range-test.scad, line 12
 WARNING: square(size=[1, inf], ...) in file builtin-invalid-range-test.scad, line 13
 WARNING: square(size=[inf, 1], ...) in file builtin-invalid-range-test.scad, line 14
-WARNING: circle(r=inf) in file builtin-invalid-range-test.scad, line 15
+WARNING: circle(..., r=inf) argument cannot be infinite or nan in file builtin-invalid-range-test.scad, line 15
 WARNING: Unable to convert points[4] = [0, 0, inf] to a vec3 of numbers in file builtin-invalid-range-test.scad, line 16
 ECHO: "i=test, primitive test"
 WARNING: Unable to convert cube(size=[1, "test", 1], ...) parameter to a number or a vec3 of numbers in file builtin-invalid-range-test.scad, line 8
@@ -76,3 +76,12 @@ WARNING: Unable to convert scale("test") parameter to a number or a vec3 or vec2
 WARNING: Problem converting rotate(a="test") parameter in file builtin-invalid-range-test.scad, line 28
 WARNING: Unable to convert translate([0, "test", 0]) parameter to a vec3 or vec2 of numbers in file builtin-invalid-range-test.scad, line 30
 ECHO: "Those are okay"
+ECHO: "cylinder with only r1 or r2 out of range"
+WARNING: cylinder(..., r1=-1) argument cannot be negative in file builtin-invalid-range-test.scad, line 38
+WARNING: cylinder(..., r2=-1) argument cannot be negative in file builtin-invalid-range-test.scad, line 39
+WARNING: cylinder(..., d2=-2) argument cannot be negative in file builtin-invalid-range-test.scad, line 40
+ECHO: "cylinder with both r/d and r1/r2/d1/d2 specified"
+WARNING: Cylinder arguments ambiguous: both "r" and "r1" specified in file builtin-invalid-range-test.scad, line 43
+WARNING: Cylinder arguments ambiguous: both "r" and "r2" specified in file builtin-invalid-range-test.scad, line 44
+WARNING: Cylinder arguments ambiguous: both "d" and "d1" specified in file builtin-invalid-range-test.scad, line 45
+

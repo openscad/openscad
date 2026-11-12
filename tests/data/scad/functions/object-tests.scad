@@ -48,6 +48,7 @@ testEq( len( object(a=1,b=2,c=3, f=function() 1)), 4, "len of object with 4 entr
 // equality 
 testEq( o1, o1,                                     "same object must be equal");
 testEq( all, all,                                   "same object with all types must be equal");
+testEq( object(a=1, b=2), object(b=2, a=1),         "equality is order-insensitive");
 testEq( object(o1,[["f"]]), object(o1,[["f"]]),     "copy must be equal");
 testNEq( o1, object(o1,[["f"]]),                    "copy must not be equal when f removed");
 testNEq( all, object(all,[["o"]]),                  "copy must not be equal when o removed for all types");
