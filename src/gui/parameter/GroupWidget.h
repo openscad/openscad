@@ -6,12 +6,21 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+class GroupDisclosureButton : public QToolButton
+{
+public:
+  explicit GroupDisclosureButton(QWidget *parent = nullptr);
+
+protected:
+  void paintEvent(QPaintEvent *event) override;
+};
+
 class GroupWidget : public QWidget
 {
   Q_OBJECT
 private:
   QGridLayout mainLayout;
-  QToolButton toggleButton;
+  GroupDisclosureButton toggleButton;
   QWidget contentArea;
   QVBoxLayout contentLayout;
 
