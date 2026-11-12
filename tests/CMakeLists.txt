@@ -871,6 +871,8 @@ if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
+# An inside-out polyhedron must be subtracted like a normal one (#7201).
+add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/polyhedron-inside-out.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(render-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold --hardwarnings)
 endif()
