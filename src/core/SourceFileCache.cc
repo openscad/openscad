@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 #include <cstdio>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -97,7 +98,9 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
 
     std::string text;
     {
-      std::ifstream ifs(filename.c_str());
+      // filename is UTF-8. Opening through a path (instead of a char*) makes
+      // non-ASCII names work on Windows, where narrow names use the ANSI code page.
+      std::ifstream ifs(std::filesystem::u8path(filename));
       if (!ifs.is_open()) {
         LOG(message_group::Warning, "Can't open library file '%1$s'\n", filename);
         return 0;
