@@ -37,6 +37,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <locale>
 #include <map>
 #include <memory>
 #include <string>
@@ -56,6 +57,7 @@
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 
 #define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
@@ -204,9 +206,13 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
   return exportInfo;
 }
 
-static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
-                       const ExportInfo& exportInfo)
+void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
+                const ExportInfo& exportInfo)
 {
+  // Exported files always use '.' as the decimal point, whatever the global C++ locale is.
+  const std::locale previous_locale = output.imbue(std::locale::classic());
+  auto restore_locale = sg::make_scope_guard([&]() { output.imbue(previous_locale); });
+
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
   case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
