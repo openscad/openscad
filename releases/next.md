@@ -26,8 +26,10 @@ These don't change the result, but stop rendering if warnings are made fatal (--
 * New modules:
   * fill() #4348
 * New functions:
-  * textmetrics() #3684
-  * fontmetrics() #3684
+  * textmetrics(), returns size information about text #3684
+  * fontmetrics(), returns general size information about fonts  #3684
+  * object(), creates a name-value data structure akin to JavaScript object, Python dicts #6012
+  * import(file), imports file (currently only JSON) as data #3891
 * text(), textmetrics(), fontmetrics()
   * Added em= to set the size of the em-square #6656
 * linear_extrude()
