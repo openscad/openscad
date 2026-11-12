@@ -26,6 +26,8 @@
 
 #include "core/StatCache.h"
 
+#include "platform/PlatformUtils.h"
+
 #include <chrono>
 #include <filesystem>
 #include <string>
@@ -64,20 +66,7 @@ int stat(const std::string& path, struct ::stat& st)
     }
     statMap.erase(iter);  // Remove stale entry
   }
-#ifdef _WIN32
-  // ::stat() reads the name in the ANSI code page, which breaks non-ASCII
-  // paths (#7198). Use the wide-character version and copy the fields over.
-  struct _stat64 wst;
-  if (auto rv = _wstat64(std::filesystem::u8path(path).c_str(), &wst)) return rv;  // stat failed
-  st = {};
-  st.st_mode = wst.st_mode;
-  st.st_size = wst.st_size;
-  st.st_atime = wst.st_atime;
-  st.st_mtime = wst.st_mtime;
-  st.st_ctime = wst.st_ctime;
-#else
-  if (auto rv = ::stat(path.c_str(), &st)) return rv;  // stat failed
-#endif
+  if (auto rv = PlatformUtils::stat(std::filesystem::u8path(path), st)) return rv;  // stat failed
   statMap[path] = {st, millis_clock()};
   return 0;
 }
