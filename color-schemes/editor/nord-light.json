@@ -1,0 +1,46 @@
+{
+    "name" : "Nord Light",
+    "index" : 2100,
+    "paper" : "#e5e9f0",
+    "text" : "#3b4252",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#434c5e",
+        "line-background" : "#d8dee9"
+    },
+    "colors" : {
+        "keyword1" : "#7FB054",
+        "keyword2" : "#6DB2C5",
+        "keyword3" : "#5E81AC",
+        "commentline" : "#81a1c1",
+        "commentdoc" : "#81a1c1",
+        "commentdockeyword" : "#81a1c1",
+
+        "comment" : "#81a1c1",
+        "number" : "#AD85A6",
+        "string" : "#7FB054",
+        "operator" : "#5980B1",
+        "variables" : "#5a677f",
+
+        "keywords" : "#5980B1",
+        "transformations" : "#6DB2C5",
+        "booleans" : "#6DB2C5",
+        "functions" : "#66A3A2",
+        "models" : "#5E81AC",
+        "special-variables" : "#8fbcbb",
+
+        "whitespace-foreground" : "#eceff4",
+        "selection-foreground" : "#eceff4",
+        "selection-background" : "#B1BDD3",
+        "margin-background" : "#e5e9f0",
+        "margin-foreground" : "#959FB1",
+        "matched-brace-background" : "#81a1c1",
+        "matched-brace-foreground" : "#d8dee9",
+        "unmatched-brace-background" : "#bf616a",
+        "unmatched-brace-foreground" : "#eceff4",
+        "error-marker" : "#bf616a",
+        "error-indicator" : "#bf616a00",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#eceff4"
+    }
+}

@@ -51,7 +51,6 @@ private:
   int rotate[6];
   int zoom;
   int zoom2;
-  volatile bool stopRequest;
 
   double scale(double val);
   double getAxisValue(int config);
@@ -72,6 +71,7 @@ private:
 public:
   InputEventMapper();
 
+  void start();
   void stop();
 
   void onAxisChanged(class InputEventAxisChanged *event) override;

@@ -23,6 +23,6 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 20], [0, 0, 0, 1]]) {
 }
 %cylinder($fn = 40, $fa = 12, $fs = 2, h = 100, r1 = 14, r2 = 14, center = false);
 %multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 100], [0, 0, 0, 1]]) {
-	sphere($fn = 40, $fa = 12, $fs = 2, r = 30);
+	sphere($fn = 40, $fa = 12, $fs = 2, r = 30, style = "orig");
 }
 

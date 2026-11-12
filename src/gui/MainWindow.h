@@ -21,7 +21,6 @@
 #include <QSoundEffect>
 #include <QString>
 #include <QStringList>
-#include <QTemporaryFile>
 #include <QTime>
 #include <QTimer>
 #include <QUrl>
@@ -117,8 +116,6 @@ public:
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
-  QLabel *versionLabel;
-
   Measurement::Measurement meas;
 
   int compileErrors = 0;
@@ -128,6 +125,9 @@ public:
   ~MainWindow() override;
 
 private:
+  QLabel versionLabel;
+  QLabel backend3DLabel;
+
   RubberBandManager rubberBandManager;
 
   std::vector<std::pair<Dock *, QString>> docks;
@@ -156,6 +156,7 @@ private:
   void setupDocks();
   void setupMenusAndActions();
   void restoreWindowState();
+  void restoreToolBarVisibility();
   void openRemainingFiles(const QStringList& filenames);
   void setupAIDock();
 
@@ -172,6 +173,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
+  void updateBackend3DLabel();
 
   // implements the actions to be done when the selection menu is closing
   // the seclection menu is the one that show up when right click on the geometry in the 3d view.
@@ -280,6 +282,7 @@ private slots:
   void compileDone(bool didchange);
   void compileEnded();
   void resetCompileMessageCounts();
+  void selectPreviewViewMode();
 
 private slots:
   void on_editActionCopyVPT_triggered();
@@ -457,7 +460,6 @@ private:
 
   char const *afterCompileSlot;
   bool procevents{false};
-  QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   GeometryWorker *geometryWorker;
   QMutex consolemutex;
@@ -465,8 +467,8 @@ private:
   time_t includesMTime{0};          // latest include mod time
   time_t depsMTime{0};              // latest dependency mod time
   std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last
-  QString exportPath(
-    const QString& suffix);    // look up the last export path and generate one if not found
+  // look up the last export path and generate one if not found
+  QString exportPath(const QString& suffix, const QString& basename = "");
   int lastParserErrorPos{-1};  // last highlighted error position
   int tabCount = 0;
   ExportPdfPaperSize sizeString2Enum(const QString& current);
@@ -474,7 +476,6 @@ private:
 
   QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
-  std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 
   void resetMeasurementsState(bool enable, const QString& tooltipMessage);
   QActionGroup *measurementGroup;

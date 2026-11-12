@@ -200,7 +200,8 @@ case $OS in
         else
             ${CMAKE} --build . -j$NUMCPU
             echo "Creating packages with CPack..."
-            ${MXE_TARGETS}-cpack
+            # CPack runs on the build host, including for cross builds.
+            "${OPENSCAD_CPACK_EXECUTABLE:-${MXE_TARGETS}-cpack}"
             echo "Packaging Complete!"
             exit
         fi

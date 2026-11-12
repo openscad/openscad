@@ -4,46 +4,48 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 
 /*!
-   Returns the absolute path to the given filename, unless it's empty.
-   If the file isn't found in the given path, the fallback path will be
-   used to be backwards compatible with <= 2013.01 (see issue #217).
+   Canonicalizes the specified file path.  Returns empty on failure.
+   - If the path is empty, return empty.
+   - If the path is absolute, return it.
+   - If the path is relative:
+     - If the parent path is empty, return empty.
+     - Else, return the path as an absolute path based on the parent path.
  */
-std::string lookup_file(const std::string& filename, const std::string& path,
-                        const std::string& fallbackpath)
+std::string lookup_file(const std::string& path, const std::string& parent)
 {
   std::string resultfile;
-  if (!filename.empty() && !fs::path(filename).is_absolute()) {
-    fs::path absfile;
-    if (!path.empty()) absfile = fs::absolute(fs::path(path) / filename);
-    fs::path absfile_fallback;
-    if (!fallbackpath.empty()) absfile_fallback = fs::absolute(fs::path(fallbackpath) / filename);
 
-    if (!fs::exists(absfile) && fs::exists(absfile_fallback)) {
-      resultfile = absfile_fallback.string();
-      LOG(message_group::Deprecated,
-          "Imported file (%1$s) found in document root instead of relative to the importing module. "
-          "This behavior is deprecated",
-          std::string(filename));
-    } else {
-      resultfile = absfile.string();
-    }
-  } else {
-    resultfile = filename;
+  if (path.empty()) {
+    return "";
   }
-  return resultfile;
+
+  if (fs::path(path).is_absolute()) {
+    return path;
+  }
+
+  if (parent.empty()) {
+    return "";
+  }
+
+  return fs::absolute(fs::path(parent) / path).string();
 }
 
 fs::path fs_uncomplete(fs::path const& p, fs::path const& base)
 {
   if (p == fs::path{}) return p;
 #ifndef __EMSCRIPTEN__
-  return fs::relative(p, base == fs::path{} ? fs::path{"."} : base);
+  // There isn't always a relative path (e.g. to another drive or a UNC path on
+  // Windows), and fs::relative() can fail; return the path unchanged then.
+  std::error_code ec;
+  const fs::path rel = fs::relative(p, base == fs::path{} ? fs::path{"."} : base, ec);
+  return ec || rel.empty() ? p : rel;
 #else
   return p;
 #endif

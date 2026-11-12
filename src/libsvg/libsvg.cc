@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2018, Torsten Paul <torsten.paul@gmx.de>,
+ * Copyright (c) 2016-2026, Torsten Paul <torsten.paul@gmx.de>,
  *                          Marius Kintel <marius@kintel.net>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -30,6 +30,7 @@
 #include <Eigen/Geometry>
 #include <boost/format.hpp>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -46,6 +47,11 @@ namespace libsvg {
 static bool in_defs = false;
 static shapes_list_t stack;
 static shapes_list_t *shape_list;
+
+// Limit expansion of use elements by default, see MAX_USE_CLONED_SHAPES.
+static size_t use_cloned_shape_count = 0;
+// Set to lift the the use element limitation.
+bool unlimited_use_cloned_shapes = false;
 
 using shapes_defs_list_t = std::map<std::string, std::shared_ptr<shape>>;
 
@@ -114,6 +120,17 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
           if (!id.empty() && defs_lookup_list->find(id) != defs_lookup_list->end()) {
             auto to_clone_child = (*defs_lookup_list)[id];
             auto cloned_children = currentuse->set_clone_child(to_clone_child.get());
+            const size_t would_be_total = use_cloned_shape_count + cloned_children.size();
+            const size_t limit =
+              unlimited_use_cloned_shapes ? std::numeric_limits<size_t>::max() : MAX_USE_CLONED_SHAPES;
+            if (would_be_total > limit) {
+              throw SvgException(
+                (boost::format("<use> elements generated too many shapes (%1%, limit %2%); "
+                               "aborting the SVG import.") %
+                 would_be_total % limit)
+                  .str());
+            }
+            use_cloned_shape_count = would_be_total;
             shape_list->insert(shape_list->end(), cloned_children.begin(), cloned_children.end());
           }
         }
@@ -166,6 +183,33 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
   xmlFree((void *)(name));
 }
 
+// Never load any external entity or DTD.
+static xmlParserInput *fail_external_entity_loader(const char *URL, const char *publicId,
+                                                   xmlParserCtxt *context)
+{
+  (void)URL;
+  (void)publicId;
+  (void)context;
+  return nullptr;
+}
+
+// Temporarily installs fail_external_entity_loader() as libxml2's external
+// entity loader and restores the previous loader afterwards.  The loader is
+// process-global, so it must not leak beyond a single SVG import.
+class external_entity_loader_guard
+{
+public:
+  explicit external_entity_loader_guard() : previous_loader_(xmlGetExternalEntityLoader())
+  {
+    xmlSetExternalEntityLoader(fail_external_entity_loader);
+  }
+
+  ~external_entity_loader_guard() { xmlSetExternalEntityLoader(previous_loader_); }
+
+private:
+  xmlExternalEntityLoader previous_loader_;
+};
+
 int streamFile(const char *filename, void *context)
 {
   xmlTextReaderPtr reader;
@@ -175,8 +219,12 @@ int streamFile(const char *filename, void *context)
 
   in_defs = false;
   reader = xmlNewTextReaderFilename(filename);
-  xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 1);
   if (reader != nullptr) {
+    // Disable expansion of XML entities and external loading.
+    xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 0);
+    xmlTextReaderSetParserProp(reader, XML_PARSER_LOADDTD, 0);
+    external_entity_loader_guard external_loader_guard;
+
     int ret = xmlTextReaderRead(reader);
     while (ret == 1) {
       processNode(reader, &defs_lookup_list, &temp_defs_storage, context);
@@ -211,7 +259,17 @@ void dump(int idx, shape *s)
 shapes_list_t *libsvg_read_file(const char *filename, void *context)
 {
   shape_list = new shapes_list_t();
-  streamFile(filename, context);
+  use_cloned_shape_count = 0;
+  try {
+    streamFile(filename, context);
+  } catch (...) {
+    delete shape_list;
+    shape_list = nullptr;
+    stack.clear();
+    in_defs = false;
+    use_cloned_shape_count = 0;
+    throw;
+  }
 
   // #ifdef DEBUG
   //	if (!shape_list->empty()) {

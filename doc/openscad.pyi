@@ -508,6 +508,7 @@ def cylinder(
 def sphere(
     r: Optional[float] = None,
     d: Optional[float] = None,
+    style: Optional[str] = None,
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
@@ -517,6 +518,9 @@ def sphere(
     Args:
         r: Radius of the sphere. Must be positive. Cannot be used with d.
         d: Diameter of the sphere. Must be positive. Cannot be used with r.
+        style: Tessellation style, "orig" (default, rings of latitude) or
+            "octa" (subdivided octahedron with vertices on the poles and
+            equators matching cylinder()).
         fn: Number of fragments for sphere approximation.
         fa: Minimum angle for each fragment.
         fs: Minimum size for each fragment.
