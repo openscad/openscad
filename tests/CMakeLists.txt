@@ -1287,6 +1287,34 @@ add_test(NAME multiple-outputs_echo-stl_run CONFIGURATIONS Default COMMAND ${OPE
 add_test(NAME multiple-outputs_echo-stl_check CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat multiple-outputs.stl)
 set_tests_properties(multiple-outputs_echo-stl_check PROPERTIES DEPENDS multiple-outputs_echo-stl_run)
 
+#####################
+# UNC path tests    #
+#####################
+# Windows: open some test files through a UNC path (\\localhost\<drive>$\...), which MinGW's
+# std::filesystem doesn't parse as an absolute path (#5425). For now these only check that
+# OpenSCAD doesn't crash; files included or used from a UNC path aren't found yet.
+# Skipped when the administrative share isn't reachable, e.g. without admin rights.
+if(WIN32)
+  string(REGEX REPLACE "^([A-Za-z]):" "//localhost/\\1$" UNC_TEST_SCAD_DIR "${TEST_SCAD_DIR}")
+  if(NOT UNC_TEST_SCAD_DIR STREQUAL TEST_SCAD_DIR AND EXISTS "${UNC_TEST_SCAD_DIR}/misc/use-tests.scad")
+    foreach(UNC_TEST_FILE
+        misc/use-tests.scad              # use<> from subdirectories
+        misc/include-tests.scad          # include<> from subdirectories
+        misc/concat-tests.scad           # a warning during evaluation
+        misc/unicode-identifiers-fail.scad  # a parse error
+      )
+      get_filename_component(UNC_TEST_NAME "${UNC_TEST_FILE}" NAME_WE)
+      file(TO_NATIVE_PATH "${UNC_TEST_SCAD_DIR}/${UNC_TEST_FILE}" UNC_TEST_PATH)
+      add_test(NAME unc-nocrash_${UNC_TEST_NAME} CONFIGURATIONS Default
+        COMMAND ${CMAKE_COMMAND} -DOPENSCAD=${OPENSCAD_BINPATH} -DINPUT=${UNC_TEST_PATH}
+                -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/unc-nocrash_${UNC_TEST_NAME}.echo
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UncNoCrashTest.cmake)
+    endforeach()
+  else()
+    message(STATUS "UNC path tests disabled: ${UNC_TEST_SCAD_DIR} is not reachable")
+  endif()
+endif()
+
 ############################
 # Relative filenames tests #
 ############################
