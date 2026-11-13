@@ -2577,7 +2577,7 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   if (!canExport(dim)) return;
 
   auto title = QString(_("Export %1 File")).arg(type_name);
-  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
+  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, "." + suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
   auto guard2 = scopedSetCurrentOutput();
   if (exportFilename.isEmpty()) {
