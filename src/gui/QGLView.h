@@ -20,6 +20,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "glview/GLView.h"
+#include "gui/Stereo3dView.h"
 #include "../core/MouseConfig.h"
 
 class QGLView : public QOpenGLWidget, public GLView
@@ -37,6 +38,8 @@ public:
 #ifdef ENABLE_OPENCSG
   bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif
+  // The surface format the 3D view asks for
+  static QSurfaceFormat compatibleWidgetFormat();
   // Properties
   bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
   void setOrthoMode(bool enabled);
@@ -83,6 +86,7 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
+  Stereo3dView stereo3d{*this};
   // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
   // zoom 2-vector.
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
@@ -125,3 +129,4 @@ signals:
 class QOpenGLContext;
 QOpenGLContext *getGLContext();
 void setGLContext(QOpenGLContext *);
+QSurfaceFormat createdContextFormat(const QSurfaceFormat& format);

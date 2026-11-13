@@ -107,6 +107,40 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxStereo3dView">
+          <property name="toolTip">
+           <string>Draws the 3D view once for each eye, for a stereo capable display. Takes effect after a restart.</string>
+          </property>
+          <property name="text">
+           <string>stereo 3D view (after restart)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayoutStereo3dEyeSeparation">
+          <item>
+           <widget class="QLabel" name="labelStereo3dEyeSeparation">
+            <property name="text">
+             <string>eye separation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxStereo3dEyeSeparation">
+            <property name="toolTip">
+             <string>Distance between the eyes, as a percentage of the distance to the point looked at</string>
+            </property>
+            <property name="suffix">
+             <string> %</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
