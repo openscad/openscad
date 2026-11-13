@@ -21,6 +21,7 @@ public:
                          QString::fromStdString(std::string(openscad_shortversionnumber)));
     QString tmp = this->aboutText->toHtml();
     tmp.replace("__VERSION__", QString::fromStdString(std::string(openscad_detailedversionnumber)));
+    tmp.replace("__YEAR__", QString::number(openscad_version_year));
     this->aboutText->setHtml(tmp);
   }
 
