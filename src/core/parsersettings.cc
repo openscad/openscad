@@ -109,7 +109,13 @@ inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& loc
 fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,
                          const std::vector<std::string> *openfilenames)
 {
-  return {find_valid_path_(sourcepath, localpath, openfilenames).generic_string()};
+  try {
+    return {find_valid_path_(sourcepath, localpath, openfilenames).generic_string()};
+  } catch (const fs::filesystem_error&) {
+    // A candidate that can't be inspected (e.g. permission denied on a parent directory) is
+    // treated like a missing file: all callers already handle an empty result as "not found".
+    return {};
+  }
 }
 
 static bool path_contains_file(fs::path dir, fs::path file)
