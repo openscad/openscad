@@ -114,6 +114,20 @@ void QGLView::resetView()
   cam.resetView();
 }
 
+void QGLView::withCurrentContext(const std::function<void()>& fn)
+{
+  // See the discussion at QGLView::mouseDoubleClickEvent() for why the
+  // previous context is saved and restored rather than simply dropped.
+  QOpenGLContext *oldContext = getGLContext();
+  this->makeCurrent();
+  auto guard = sg::make_scope_guard([this, oldContext] {
+    this->doneCurrent();
+    setGLContext(oldContext);
+  });
+
+  fn();
+}
+
 void QGLView::viewAll()
 {
   if (auto renderer = this->getRenderer()) {
