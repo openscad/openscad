@@ -226,7 +226,9 @@ ctest_env_append_value(
 ##################################
 
 # Find all scad files
-file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad)
+file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad
+  ${TEST_SCAD_DIR}/functions/fragments.scad
+  )
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
@@ -316,6 +318,9 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
   ${TEST_SCAD_DIR}/3D/features/sphere-octa-tests.scad
+  ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/json/import-json-array.scad
+  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   ${TEST_SCAD_DIR}/misc/expression-evaluation-tests.scad
   ${TEST_SCAD_DIR}/misc/echo-tests.scad
   ${TEST_SCAD_DIR}/misc/assert-fail1-test.scad
@@ -827,10 +832,23 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 
+# Unicode identifiers, NFC normalization, and the identifier security profile
+# are supported independently of experimental features.
+add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad)
+add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
+# Following -P argument: NFC: U+0047, U+0072, U+00F6, U+00DF; UTF-8: 47 72 C3 B6 C3 9F
+# JSON set name: NFD: U+0047, U+0072, U+006F, U+0308, U+00DF; UTF-8: 47 72 6F CC 88 C3 9F
+add_cmdline_test(echo-unicode-set-name-nfd OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Größ")
+# Following -P argument: NFD: U+0048, U+006F, U+0308, U+0068, U+0065; UTF-8: 48 6F CC 88 68 65
+# JSON set name: NFC: U+0048, U+00F6, U+0068, U+0065; UTF-8: 48 C3 B6 68 65
+add_cmdline_test(echo-unicode-set-name-nfc OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad EXPECTEDDIR echo ARGS -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P "Höhe")
+add_failing_test(parsererrors SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1)
+
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/recursion-test-vector.scad ARGS --trace-usermodule-parameters=false)
+add_cmdline_test(echo-trace-depth OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/trace-depth.scad ARGS --trace-depth=3)
 
 add_cmdline_test(echo-stdio    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/echo-tests.scad STDIO EXPECTEDDIR echo ARGS --export-format echo)
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/builtin-invalid-range-test.scad ARGS --check-parameter-ranges=on)
@@ -853,6 +871,8 @@ if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
+# An inside-out polyhedron must be subtracted like a normal one (#7201).
+add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/polyhedron-inside-out.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(render-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold --hardwarnings)
 endif()
@@ -878,14 +898,6 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/box-w-holes.scad
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
-
-#
-# OBJECT echo tests
-#
-
-file(GLOB OBJECT_TEST ${TEST_SCAD_DIR}/experimental/object/*.scad)
-add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${OBJECT_TEST} ARGS --enable object-function)
-
 
 #
 # Export/import tests
@@ -1245,25 +1257,9 @@ if(EXAMPLES_DIR)
 endif(EXAMPLES_DIR)
 
 #
-# --enable=import-function tests
-#
-list(APPEND EXPERIMENTAL_IMPORT_FILES
-  ${TEST_SCAD_DIR}/json/import-json.scad
-  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
-  )
-add_cmdline_test(echo           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
-
-#
 # --enable=vector-swizzle tests
 #
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle)
-
-#
-# --enable=unicode-identifiers tests
-#
-add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers.scad ARGS --enable=unicode-identifiers)
-add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.scad ARGS --enable=unicode-identifiers -p ${TEST_CUSTOMIZER_DIR}/unicode-identifiers-parameters.json -P decomposedKeys)
-add_failing_test(parsererrors SUFFIX stl FILES ${TEST_SCAD_DIR}/misc/unicode-identifiers-fail.scad ARGS --retval=1 --enable=unicode-identifiers)
 
 #
 # --enable=discretization-by-error tests
@@ -1280,6 +1276,16 @@ if (ENABLE_MANIFOLD_TESTS)
 endif()
 add_cmdline_test(dump-discretization-by-error EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_DISCRETIZATION_FILES} EXPECTEDDIR dump-discretization-by-error SUFFIX csg ARGS --enable=discretization-by-error)
 
+
+##################################
+# Multiple output files per call #
+##################################
+# The echo export installs an output handler which must not outlive the export,
+# otherwise the exports that follow it crash (issue #5614).
+
+add_test(NAME multiple-outputs_echo-stl_run CONFIGURATIONS Default COMMAND ${OPENSCAD_BINPATH} ${TEST_SCAD_DIR}/3D/features/cube-tests.scad -o multiple-outputs.echo -o multiple-outputs.stl)
+add_test(NAME multiple-outputs_echo-stl_check CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat multiple-outputs.stl)
+set_tests_properties(multiple-outputs_echo-stl_check PROPERTIES DEPENDS multiple-outputs_echo-stl_run)
 
 ############################
 # Relative filenames tests #

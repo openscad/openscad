@@ -1,4 +1,4 @@
-ECHO: { array-mixed = ["one", 1, false]; array-string = ["one", "two", "three"]; array_number = [0, 1, 2, 3, 5]; bool = true; float = 3.5e-10; number = 2; object = { name = "The object name"; nested = { value = 42; }; number = 4; }; string = "hallo world!"; }
+ECHO: { "array-mixed" : ["one", 1, false], "array-string" : ["one", "two", "three"], array_number : [0, 1, 2, 3, 5], bool : true, float : 3.5e-10, number : 2, object : { name : "The object name", nested : { value : 42 }, number : 4 }, string : "hallo world!" }
 ECHO: "hallo world!"
 ECHO: [0, 1, 2, 3, 5]
 ECHO: ["one", "two", "three"]
@@ -7,9 +7,14 @@ ECHO: 42
 ECHO: 0
 WARNING: Unsupported file extension '.rose' while trying to import '../../json/data.rose' in file import-json.scad, line 16
 ECHO: undef
-ECHO: { array-mixed = ["one", 1, false]; array-string = ["one", "two", "three"]; array_number = [0, 1, 2, 3, 5]; bool = true; float = 3.5e-10; number = 2; object = { name = "The object name"; nested = { value = 42; }; number = 4; }; string = "hallo world!"; }
+ECHO: { "array-mixed" : ["one", 1, false], "array-string" : ["one", "two", "three"], array_number : [0, 1, 2, 3, 5], bool : true, float : 3.5e-10, number : 2, object : { name : "The object name", nested : { value : 42 }, number : 4 }, string : "hallo world!" }
 WARNING: Unsupported file type 'rose' while trying to import '../../json/data.json' in file import-json.scad, line 20
 ECHO: undef
 WARNING: No file extension or type while trying to import '../../json/data' in file import-json.scad, line 24
 ECHO: undef
-ECHO: { array-mixed = ["one", 1, false]; array-string = ["one", "two", "three"]; array_number = [0, 1, 2, 3, 5]; bool = true; float = 3.5e-10; number = 2; object = { name = "The object name"; nested = { value = 42; }; number = 4; }; string = "hallo world!"; }
+ECHO: { "array-mixed" : ["one", 1, false], "array-string" : ["one", "two", "three"], array_number : [0, 1, 2, 3, 5], bool : true, float : 3.5e-10, number : 2, object : { name : "The object name", nested : { value : 42 }, number : 4 }, string : "hallo world!" }
+WARNING: Failed to parse file '../../json/trailing-data.json': [json.exception.parse_error.101] parse error at line 4, column 0: syntax error while parsing value - unexpected number literal; expected end of input in file import-json.scad, line 29
+ECHO: undef
+WARNING: Failed to parse file '../../json/leading-data.json': [json.exception.parse_error.101] parse error at line 1, column 2: syntax error while parsing value - unexpected '{'; expected end of input in file import-json.scad, line 30
+ECHO: undef
+ECHO: { a : 1, b : 2 }

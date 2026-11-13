@@ -490,7 +490,7 @@ macro(find_graphics)
       set(GLEW_SOURCES src/glview/glew-utils.cc)
     endif()
 
-    find_package(OpenGL REQUIRED QUIET)
+    find_package(OpenGL QUIET REQUIRED OpenGL)
     target_link_libraries(OpenSCADLibInternal PUBLIC ${OPENGL_LIBRARIES})
     message(STATUS "OpenGL: ${OPENGL_LIBRARIES}")
   endif()
@@ -1620,7 +1620,9 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
+  "src/geometry/*_test.cc"
   "src/io/*_test.cc"
+  "src/libsvg/*_test.cc"
 )
 file(GLOB_RECURSE GUI_TEST_SOURCES
   "src/gui/*_test.cc"
@@ -1692,6 +1694,10 @@ if (USE_QT6)
   endif()
   if(MXECROSS)
     target_link_libraries(OpenSCADLibInternal PUBLIC Qt6::QSvgPlugin)
+    # Issue #7105 / PR #7118
+    # We need to research why libmp3lame has this as a dependency, and why we're pulling in an
+    # MP3 library in the first place.
+    target_link_libraries(OpenSCADLibInternal PUBLIC mpg123 shlwapi)
   endif()
 else()
   if(NOT HEADLESS)

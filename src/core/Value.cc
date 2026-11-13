@@ -427,19 +427,7 @@ public:
     stream << ']';
   }
 
-  void operator()(const ObjectType& v) const
-  {
-    if (StackCheck::inst().check()) {
-      throw VectorEchoStringException::create();
-    }
-    stream << "{ ";
-    for (auto& key : v.keys()) {
-      stream << key << " = ";
-      std::visit(*this, v.get(key).getVariant());
-      stream << "; ";
-    }
-    stream << '}';
-  }
+  void operator()(const ObjectType& v) const { stream << v; }
 
   void operator()(const str_utf8_wrapper& v) const { stream << '"' << v.toString() << '"'; }
 
@@ -783,14 +771,20 @@ Value ObjectType::operator==(const ObjectType& other) const
     return false;
   }
 
+  // Note that we only need to test whether all of the values in A are present and equal in B.
+  // We have already checked that they have the same number of values, so if B has a value not
+  // in A then A must have a value not in B.
   for (size_t i = 0; i < this->ptr->values.size(); i++) {
-    auto key_the_same = this->ptr->keys[i] != other.ptr->keys[i];
-    if (key_the_same) {
+    std::string k = this->ptr->keys[i];
+    if (!other.contains(k)) {
       return false;
     }
-
-    auto value_the_same = this->ptr->values[i] != other.ptr->values[i];
-    if (value_the_same.toBool()) {
+    Value result = ((*this)[k] == other[k]);
+    if (result.isUndefined()) {
+      result.toUndef().append(STR("in object comparison at key ", k));
+      return result;
+    }
+    if (!result.toBool()) {
       return false;
     }
   }
@@ -1474,17 +1468,58 @@ ObjectType ObjectType::clone() const
   return ObjectType(this->ptr);
 }
 
-std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+// Perhaps "true", "false", "undef", and maybe a couple of others
+// should be reserved for non-string keys, when they become available.
+// That is, in the future maybe { true: value, false: value } would refer
+// to boolean keys, not string keys.
+//
+// On the other hand, JavaScript always converts keys
+// to strings, so x[true] and x["true"] are the same.
+//
+// FIXME:  This should be expanded to support non-ASCII identifiers.
+// They will *work*, but they will unnecessarily get presented as
+// strings.
+bool ObjectType::keyIsIdentifier(const std::string& k)
 {
-  stream << "{ ";
-  auto iter = v.ptr->keys.begin();
-  if (iter != v.ptr->keys.end()) {
-    str_utf8_wrapper k(*iter);
-    for (; iter != v.ptr->keys.end(); ++iter) {
-      str_utf8_wrapper k2(*iter);
-      stream << k2.toString() << " = " << v[k2] << "; ";
+  bool first = true;
+  for (auto c : k) {
+    if (!isascii(c)) {
+      return false;
+    }
+    if (first) {
+      first = false;
+      if (!isalpha(c) && c != '$' && c != '_') {
+        return false;
+      }
+    } else {
+      if (!isalnum(c) && c != '_') {
+        return false;
+      }
     }
   }
-  stream << "}";
+  return true;
+}
+
+// This is used for echo() and str().
+std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+{
+  if (StackCheck::inst().check()) {
+    throw VectorEchoStringException::create();
+  }
+
+  std::string sep = " ";
+
+  stream << "{";
+  for (auto& k : v.keys()) {
+    stream << sep;
+    if (ObjectType::keyIsIdentifier(k)) {
+      stream << k;
+    } else {
+      stream << QuotedString(k);
+    }
+    stream << " : " << v[k];
+    sep = ", ";
+  }
+  stream << " }";
   return stream;
 }

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openscad-ide-shim"
+version = "0.1.0"
+description = "IDE-only placeholder for OpenSCAD's embedded Python API"
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Typing :: Typed",
+]
+
+[tool.setuptools]
+packages = ["openscad"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+openscad = ["*.pyi", "py.typed"]
