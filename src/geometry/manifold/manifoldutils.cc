@@ -99,6 +99,18 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
     }
   }
 
+  // A closed mesh with all faces pointing inwards is still a valid manifold, but it
+  // has negative volume and booleans with it give wrong results (#7201). Flip it,
+  // like the CGAL backend does.
+  if (mani.Status() == Error::NoError && mani.Volume() < 0) {
+    for (size_t i = 0; i + 2 < mesh.triVerts.size(); i += 3) {
+      std::swap(mesh.triVerts[i + 1], mesh.triVerts[i + 2]);
+    }
+    mani = manifold::Manifold(mesh);
+    // Reversing every triangle keeps the mesh manifold.
+    assert(mani.Status() == Error::NoError);
+  }
+
   return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
 }
 

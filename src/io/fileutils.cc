@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "utils/printutils.h"
 
@@ -40,7 +41,11 @@ fs::path fs_uncomplete(fs::path const& p, fs::path const& base)
 {
   if (p == fs::path{}) return p;
 #ifndef __EMSCRIPTEN__
-  return fs::relative(p, base == fs::path{} ? fs::path{"."} : base);
+  // There isn't always a relative path (e.g. to another drive or a UNC path on
+  // Windows), and fs::relative() can fail; return the path unchanged then.
+  std::error_code ec;
+  const fs::path rel = fs::relative(p, base == fs::path{} ? fs::path{"."} : base, ec);
+  return ec || rel.empty() ? p : rel;
 #else
   return p;
 #endif

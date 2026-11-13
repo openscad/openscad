@@ -1038,6 +1038,22 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   return std::move(font_metrics);
 }
 
+Value builtin_fragments(Arguments arguments, const Location& loc)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"r"}, {"d"});
+  parameters.set_caller("fragments");
+
+  double r = 1.0;
+  std::string dr_var;
+  const auto rValue = parameters.lookupRadius(dr_var, "d", "r");
+  if (rValue) {
+    r = rValue->toDouble();
+  }
+
+  CurveDiscretizer discretizer(parameters, loc);
+  return discretizer.getCircularSegmentCount(r).value_or(3);
+}
+
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
   if (call->arguments.size() != 1) {
@@ -1353,18 +1369,22 @@ void register_builtin_functions()
                    "is_object(arg) -> boolean",
                  });
 
-  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  Builtins::init("object", new BuiltinFunction(&builtin_object),
                  {
                    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
                  });
 
-  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key),
                  {
                    "has_key(object, key) -> boolean",
                  });
 
-  Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
+  Builtins::init("import", new BuiltinFunction(&builtin_import),
                  {
-                   "import(file) -> object",
+                   "import(file [, type]) -> value",
+                 });
+  Builtins::init("fragments", new BuiltinFunction(&builtin_fragments),
+                 {
+                   "fragments(r|d) -> number",
                  });
 }

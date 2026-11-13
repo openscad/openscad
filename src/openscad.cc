@@ -67,10 +67,12 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -303,22 +305,29 @@ AnimateArgs get_animate(const po::variables_map& vm)
   if (vm.count("animate")) {
     animate.frames = vm["animate"].as<unsigned>();
   }
-  if (vm.count("animate_sharding")) {
+  std::optional<std::string> sharding;
+  if (vm.count("animate-sharding")) {
+    sharding = vm["animate-sharding"].as<std::string>();
+  } else if (vm.count("animate_sharding")) {
+    LOG(message_group::Deprecated, "--animate_sharding is deprecated, use --animate-sharding instead");
+    sharding = vm["animate_sharding"].as<std::string>();
+  }
+  if (sharding) {
     std::vector<std::string> strs;
-    boost::split(strs, vm["animate_sharding"].as<std::string>(), boost::is_any_of("/"));
+    boost::split(strs, *sharding, boost::is_any_of("/"));
     if (strs.size() != 2) {
-      LOG("--animate_sharding requires <shard>/<num_shards>");
+      LOG("--animate-sharding requires <shard>/<num_shards>");
       exit(1);
     }
     try {
       animate.shard = boost::lexical_cast<unsigned>(strs[0]);
       animate.num_shards = boost::lexical_cast<unsigned>(strs[1]);
     } catch (const boost::bad_lexical_cast&) {
-      LOG("--animate_sharding parameters need to be positive integers");
+      LOG("--animate-sharding parameters need to be positive integers");
       exit(1);
     }
     if (animate.shard > animate.num_shards || animate.shard == 0) {
-      LOG("--animate_sharding: shard needs to be in range <1..num_shards>");
+      LOG("--animate-sharding: shard needs to be in range <1..num_shards>");
       exit(1);
     }
   }
@@ -392,6 +401,18 @@ Camera get_camera(const po::variables_map& vm)
   return camera;
 }
 
+// Changing the working directory can fail, e.g. for a UNC path with MinGW's std::filesystem
+// (#5425). Warn and keep the current working directory instead of aborting.
+static void change_current_path(const fs::path& path)
+{
+  std::error_code ec;
+  fs::current_path(path, ec);
+  if (ec) {
+    LOG(message_group::Warning, "Could not change the working directory to '%1$s': %2$s",
+        path.generic_string(), ec.message());
+  }
+}
+
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
               SourceFile *root_file)
 {
@@ -401,7 +422,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   auto fparent = fpath.parent_path();
 
   // set CWD relative to source file
-  fs::current_path(fparent);
+  change_current_path(fparent);
 
   EvaluationSession session{fparent.string()};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
@@ -431,7 +452,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
 
   // restore CWD after module instantiation finished
-  fs::current_path(cmd.original_path);
+  change_current_path(cmd.original_path);
 
   // Do we have an explicit root node (! modifier)?
   std::shared_ptr<const AbstractNode> root_node;
@@ -451,16 +472,16 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     // statements become relative. But unfortunately they become relative to
     // the current working dir and neither to the location of the input nor
     // the output.
-    fs::current_path(fparent);  // Force exported filenames to be relative to document path
+    change_current_path(fparent);  // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream& stream) {
       stream << tree.getString(*root_node, "\t") << "\n";
     });
-    fs::current_path(cmd.original_path);
+    change_current_path(cmd.original_path);
   } else if (export_format == FileFormat::AST) {
-    fs::current_path(fparent);  // Force exported filenames to be relative to document path
+    change_current_path(fparent);  // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str,
                 [root_file](std::ostream& stream) { stream << root_file->dump(""); });
-    fs::current_path(cmd.original_path);
+    change_current_path(cmd.original_path);
   } else if (export_format == FileFormat::PARAM) {
     with_output(cmd.is_stdout, filename_str,
                 [&root_file, &fpath](std::ostream& stream) { export_param(root_file, fpath, stream); });
@@ -901,7 +922,7 @@ int openscad_main(int argc, char **argv)
     ("preview", po::value<std::string>()->implicit_value(""),
       "[=throwntogether] -for ThrownTogether preview png")
     ("animate", po::value<unsigned>(), "export N animated frames")
-    ("animate_sharding", po::value<std::string>(),
+    ("animate-sharding", po::value<std::string>(),
       "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
       "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "
       "cores or machines.")
@@ -960,7 +981,9 @@ int openscad_main(int argc, char **argv)
 #ifdef Q_OS_MACOS
     ("psn", po::value<std::string>(), "process serial number")
 #endif
-    ("input-file", po::value<std::vector<std::string>>(), "input file");
+    ("input-file", po::value<std::vector<std::string>>(), "input file")
+    // Deprecated spelling of --animate-sharding, kept for scripts written against snapshots.
+    ("animate_sharding", po::value<std::string>(), "deprecated, use --animate-sharding");
   // clang-format on
 
   po::positional_options_description p;
@@ -1011,8 +1034,8 @@ int openscad_main(int argc, char **argv)
     OpenSCAD::hardwarnings = true;
   }
 
-  if (vm.count("traceDepth")) {
-    OpenSCAD::traceDepth = vm["traceDepth"].as<unsigned int>();
+  if (vm.count("trace-depth")) {
+    OpenSCAD::traceDepth = vm["trace-depth"].as<unsigned int>();
   }
   std::map<std::string, bool *> flags;
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
