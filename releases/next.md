@@ -153,6 +153,7 @@ No longer supported. Most of these were deprecated in earlier releases:
 * The -s and -x cmd-line options #5733
 * The child() and assign() modules #6428
 * The triangles= parameter to polyhedron() #6825
+* The MCAD library is no longer bundled with OpenSCAD; it can be downloaded separately from https://github.com/openscad/MCAD/releases/tag/2026.11 #6982
 
 **Deprecations:**
 

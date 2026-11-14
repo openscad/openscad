@@ -164,9 +164,7 @@ void parser_init()
   add_librarydir(PlatformUtils::userLibraryPath());
 
   fs::path libpath = PlatformUtils::resourcePath("libraries");
-  // std::filesystem::absolute() will throw if passed empty path
-  if (libpath.empty()) {
-    libpath = fs::current_path();
+  if (!libpath.empty()) {
+    add_librarydir(fs::absolute(libpath).string());
   }
-  add_librarydir(fs::absolute(libpath).string());
 }

@@ -142,7 +142,7 @@ Install git (https://git-scm.com/) onto your system. Then run a clone:
 
 This will download the latest sources into a directory named `openscad`.
 
-To pull the various submodules (incl. the [MCAD library](https://github.com/openscad/MCAD)), do the following:
+To pull the various submodules, do the following:
 
     cd openscad
     git submodule update --init --recursive
