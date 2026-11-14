@@ -110,6 +110,7 @@
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
 #include "io/export.h"
+#include "io/fileutils.h"
 #include "libsvg/libsvg.h"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
@@ -418,7 +419,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   // Avoid possibility of fs::absolute throwing when passed an empty path
-  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
+  auto fpath = cmd.filename.empty() ? fs::current_path() : fs_absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
 
   // set CWD relative to source file

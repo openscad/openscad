@@ -44,6 +44,7 @@
 #include "core/StatCache.h"
 #include "core/node.h"
 #include "core/parsersettings.h"
+#include "io/fileutils.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 
@@ -148,7 +149,7 @@ time_t SourceFile::handleDependencies(bool is_root)
     if (!fs::path(filename).is_absolute()) {
       auto fullpath = find_valid_path(this->path, filename);
       if (!fullpath.empty()) {
-        auto newfilename = fullpath.generic_string();
+        auto newfilename = fs_generic_string(fullpath);
         updates.emplace_back(filename, newfilename);
         filename = newfilename;
       } else {
@@ -206,7 +207,7 @@ const std::string SourceFile::getFullpath() const
   if (fs::path(this->filename).is_absolute()) {
     return this->filename;
   } else if (!this->path.empty()) {
-    return (fs::path(this->path) / fs::path(this->filename)).generic_string();
+    return fs_generic_string(fs::path(this->path) / fs::path(this->filename));
   } else {
     return "";
   }

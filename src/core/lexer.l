@@ -38,6 +38,7 @@
 #include "core/Assignment.h"
 #include "parser.hxx"
 #include "core/SourceFile.h"
+#include "io/fileutils.h"
 #include "platform/PlatformUtils.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
@@ -187,7 +188,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
                                 parserlval.text = strdup(filename.c_str());
                             } else {
-                                handle_dep(fullpath.generic_string());
+                                handle_dep(fs_generic_string(fullpath));
                                 parserlval.text = strdup(fullpath.string().c_str());
                             }
                             return TOK_USE;
@@ -433,7 +434,7 @@ void includefile(const Location& loc)
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcefile()->parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootfile->registerInclude(localpath.generic_string(), fullpath.generic_string(), lexer_is_main_file() ? loc : Location::NONE);
+    rootfile->registerInclude(localpath.generic_string(), fs_generic_string(fullpath), lexer_is_main_file() ? loc : Location::NONE);
   }
   else {
     rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
@@ -441,7 +442,7 @@ void includefile(const Location& loc)
     return;
   };
 
-  std::string fullname = fullpath.generic_string();
+  std::string fullname = fs_generic_string(fullpath);
 
   filepath.clear();
   filename_stack.push_back(std::make_shared<fs::path>(fullpath));

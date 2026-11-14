@@ -10,6 +10,35 @@
 
 namespace fs = std::filesystem;
 
+bool fs_is_unc(const fs::path& p)
+{
+#ifdef _WIN32
+  const auto& s = p.native();
+  const auto is_sep = [](auto c) { return c == '\\' || c == '/'; };
+  return s.size() > 2 && is_sep(s[0]) && is_sep(s[1]) && !is_sep(s[2]);
+#else
+  (void)p;
+  return false;
+#endif
+}
+
+fs::path fs_absolute(const fs::path& p)
+{
+  return fs_is_unc(p) ? p : fs::absolute(p);
+}
+
+fs::path fs_canonical(const fs::path& p)
+{
+  return fs_is_unc(p) ? p : fs::canonical(p);
+}
+
+std::string fs_generic_string(const fs::path& p)
+{
+  std::string s = p.generic_string();
+  if (fs_is_unc(p) && s.compare(0, 2, "//") != 0) s.insert(0, "/");
+  return s;
+}
+
 /*!
    Canonicalizes the specified file path.  Returns empty on failure.
    - If the path is empty, return empty.
@@ -26,7 +55,7 @@ std::string lookup_file(const std::string& path, const std::string& parent)
     return "";
   }
 
-  if (fs::path(path).is_absolute()) {
+  if (fs::path(path).is_absolute() || fs_is_unc(path)) {
     return path;
   }
 
@@ -34,7 +63,7 @@ std::string lookup_file(const std::string& path, const std::string& parent)
     return "";
   }
 
-  return fs::absolute(fs::path(parent) / path).string();
+  return fs_absolute(fs::path(parent) / path).string();
 }
 
 fs::path fs_uncomplete(fs::path const& p, fs::path const& base)

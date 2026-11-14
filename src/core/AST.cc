@@ -30,7 +30,7 @@ bool Location::isNone() const
 std::string Location::toRelativeString(const std::string& docPath) const
 {
   if (this->isNone()) return "location unknown";
-  return "in file " + fs_uncomplete((*path), docPath).generic_string() + ", " + "line " +
+  return "in file " + fs_generic_string(fs_uncomplete((*path), docPath)) + ", " + "line " +
          std::to_string(this->firstLine());
 }
 
