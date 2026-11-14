@@ -28,14 +28,14 @@ include </>
 //Test with absolute path
 include <@CMAKE_CURRENT_SOURCE_DIR@/data/scad/misc/sub2/test7.scad>
 
-// Test simple MCAD include
-include <MCAD/constants.scad>
+// Test simple library include
+include <testlib/constants.scad>
 
-// Test MCAD include which includes another file
-include <MCAD/math.scad>
+// Test library include which includes another file
+include <testlib/math.scad>
 
-// Test MCAD include which uses another file
-include <MCAD/servos.scad>
+// Test library include which uses another file
+include <testlib/servos.scad>
 
 module test1()
 {

@@ -29,14 +29,14 @@ use </>
 //Test with absolute path
 use <@CMAKE_CURRENT_SOURCE_DIR@/data/scad/misc/sub2/test7.scad>
 
-// Test simple MCAD library
-use <MCAD/teardrop.scad>
+// Test simple library
+use <testlib/teardrop.scad>
 
-// Test MCAD library which includes another file
-use <MCAD/math.scad>
+// Test library which includes another file
+use <testlib/math.scad>
 
-// Test MCAD library which uses another file
-use <MCAD/servos.scad>
+// Test library which uses another file
+use <testlib/servos.scad>
 
 module test1()
 {

@@ -55,7 +55,6 @@ else() # !PROJECT_IS_TOP_LEVEL
   # Very commonly used cmake-provided paths
   set(CBD ${CMAKE_BINARY_DIR}) # build top level
   set(CSD ${CMAKE_SOURCE_DIR}) # project top level
-  set(LIBRARIES_DIR "${CSD}/libraries")
 
   if(APPLE)
     set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
@@ -66,12 +65,6 @@ else() # !PROJECT_IS_TOP_LEVEL
   else()
     set(OPENSCAD_BINPATH "${CBD}/openscad${SUFFIX_WITH_DASH}")
   endif()
-
-  # MCAD
-  if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
-    message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
-  endif()
-  list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
   find_package(Lib3MF QUIET)
   # Disable LIB3MF tests if library was disabled in build
@@ -137,6 +130,7 @@ set(TEST_DATA_DIR       "${CCSD}/data")
 set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
+list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${TEST_DATA_DIR}/libraries")
 # Test runner Python scripts
 set(STLEXPORTSANITYTEST_PY   "${CCSD}/stlexportsanitytest.py")
 set(EXPORT_IMPORT_PNGTEST_PY "${CCSD}/export_import_pngtest.py")
