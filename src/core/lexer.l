@@ -98,6 +98,7 @@ extern YYLTYPE parserlloc;
 extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
 void includefile(const Location& loc);
+static void check_mcad_missing(const fs::path& localpath);
 static int unicode_identifier(const char *text, size_t length);
 std::shared_ptr<fs::path> sourcefile();
 std::shared_ptr<fs::path> parser_sourcefile;
@@ -185,6 +186,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
                             if (fullpath.empty()) {
                             LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
+                                check_mcad_missing(fs::path(filename));
                                 parserlval.text = strdup(filename.c_str());
                             } else {
                                 handle_dep(fullpath.generic_string());
@@ -421,6 +423,19 @@ bool lexer_is_main_file()
   return loc_stack.empty();
 }
 
+static void check_mcad_missing(const fs::path& localpath)
+{
+  if (!localpath.empty() && *localpath.begin() == "MCAD") {
+    LOG(message_group::HtmlLink,
+        "The MCAD library is no longer bundled with OpenSCAD. Download "
+        "<a href=\"https://github.com/openscad/MCAD/releases/download/2026.11/MCAD.zip\">MCAD.zip</a> "
+        "from <a href=\"https://github.com/openscad/MCAD/releases/tag/2026.11\">"
+        "https://github.com/openscad/MCAD/releases/tag/2026.11</a> "
+        "and unzip it in your library folder '%1$s' (<b>File &rarr; Show Library Folder</b>).",
+        PlatformUtils::userLibraryPath());
+  }
+}
+
 /*
   Rules for include <path/file>
   1) include <sourcepath/path/file>
@@ -438,6 +453,7 @@ void includefile(const Location& loc)
   else {
     rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
     LOG(message_group::Warning,LOCATION(parserlloc),"","Can't find include file '%1$s'.",localpath.generic_string());
+    check_mcad_missing(localpath);
     return;
   };
 

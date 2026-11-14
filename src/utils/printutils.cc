@@ -117,7 +117,9 @@ void PRINT_NOCACHE(const Message& msgObj)
   if (!deferred)
     if (!OpenSCAD::quiet || msgObj.group == message_group::Error) {
       if (!outputhandler) {
-        std::cerr << msg << "\n";
+        if (msgObj.group != message_group::HtmlLink) {
+          std::cerr << msg << "\n";
+        }
       } else {
         outputhandler(msgObj, outputhandler_data);
       }
