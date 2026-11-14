@@ -897,6 +897,7 @@ endforeach()
 
 add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/box-w-holes.scad
+  ${TEST_SCAD_DIR}/svg/extruded/center-viewbox-offset.scad
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
