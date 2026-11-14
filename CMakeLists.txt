@@ -1666,6 +1666,7 @@ if(APPLE AND NOT APPLE_UNIX)
   if(ENABLE_GUI_TESTS)
     file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
+         ${CMAKE_SOURCE_DIR}/tests/data/libraries
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
          DESTINATION ${BUNDLE_RESOURCES_DIR}/tests/data)
   endif()
