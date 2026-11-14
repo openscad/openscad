@@ -930,7 +930,7 @@ build_clipper2()
   cd $BASEDIR/src
   rm -rf "Clipper2-Clipper2_$version"
   if [ ! -f "Clipper2_$version.tar.gz" ]; then
-    curl -LO https://github.com/AngusJohnson/Clipper2/archive/refs/tags/Clipper2_$version.tar.gz
+    curl -LO https://github.com/PolyClipping/Clipper2/archive/refs/tags/Clipper2_$version.tar.gz
   fi
   tar xzf "Clipper2_$version.tar.gz"
   cd "Clipper2-Clipper2_$version"

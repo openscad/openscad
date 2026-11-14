@@ -15,4 +15,4 @@
 	url = https://github.com/floriankirsch/OpenCSG.git
 [submodule "Clipper2"]
 	path = submodules/Clipper2
-	url = https://github.com/AngusJohnson/Clipper2.git
+	url = https://github.com/PolyClipping/Clipper2.git
