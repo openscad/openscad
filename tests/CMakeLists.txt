@@ -1475,6 +1475,16 @@ disable_tests_safe(
   render-csg-cgal_import_3mf-tests
   throwntogether-cgal_import_3mf-tests
   throwntogether-manifold_import_3mf-tests
+
+  # Requires MCAD which is no longer bundled (#6982)
+  dump-examples_example023
+  render-cgal_example023
+  render-manifold_example023
+  preview-cgal_example023
+  preview-manifold_example023
+  throwntogether-cgal_example023
+  throwntogether-manifold_example023
+  render-csg-cgal_example023
 )
 
 list(APPEND NEF3_BROKEN_TESTS
