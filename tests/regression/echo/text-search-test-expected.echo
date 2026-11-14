@@ -1,0 +1,8 @@
+ECHO: "PASS:", "search indices for 'OpenSCAD Rocks!'"
+ECHO: "PASS:", "character code lookup for 'OpenSCAD Rocks!'"
+ECHO: "PASS:", "round-trip string from table lookup"
+ECHO: "PASS:", "search indices for 'ABC'"
+ECHO: "PASS:", "table value lookup for 'ABC'"
+ECHO: "PASS:", "search indices for '123'"
+ECHO: "PASS:", "table value lookup for '123'"
+
