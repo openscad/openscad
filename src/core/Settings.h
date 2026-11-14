@@ -337,6 +337,11 @@ struct LocalAppParameter {
   operator bool() const { return type != LocalAppParameterType::invalid; }
 };
 
+#ifdef _MSC_VER
+std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param);
+std::istream& operator>>(std::istream& stream, LocalAppParameter& param);
+#endif
+
 template <typename item_type>
 class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
