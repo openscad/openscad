@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "io/fileutils.h"
 #include "platform/PlatformUtils.h"
 
 namespace fs = std::filesystem;
@@ -61,7 +62,7 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
     // LOG(message_group::Warning,,"%1$s invalid - points to a directory",p);
     return false;
   }
-  const std::string& fullname = p.generic_string();
+  const std::string fullname = fs_generic_string(p);
   // Detect circular includes
   if (openfilenames) {
     for (const auto& s : *openfilenames) {
@@ -86,10 +87,10 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
 inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& localpath,
                                  const std::vector<std::string> *openfilenames)
 {
-  if (localpath.is_absolute()) {
+  if (localpath.is_absolute() || fs_is_unc(localpath)) {
     if (check_valid(localpath, openfilenames)) {
 #ifndef __EMSCRIPTEN__
-      return fs::canonical(localpath);
+      return fs_canonical(localpath);
 #else
       return localpath;
 #endif
@@ -97,7 +98,7 @@ inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& loc
   } else {
     fs::path fpath = sourcepath / localpath;
 #ifndef __EMSCRIPTEN__
-    if (fs::exists(fpath)) fpath = fs::canonical(fpath);
+    if (fs::exists(fpath)) fpath = fs_canonical(fpath);
 #endif
     if (check_valid(fpath, openfilenames)) return fpath;
     fpath = search_libs(localpath);
@@ -109,7 +110,7 @@ inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& loc
 fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,
                          const std::vector<std::string> *openfilenames)
 {
-  return {find_valid_path_(sourcepath, localpath, openfilenames).generic_string()};
+  return {fs_generic_string(find_valid_path_(sourcepath, localpath, openfilenames))};
 }
 
 static bool path_contains_file(fs::path dir, fs::path file)

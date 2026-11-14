@@ -795,8 +795,8 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
 {
   fs::path filepath;
   try {
-    filepath = filename.empty() ? fs::current_path() : fs::absolute(fs::path{filename});
-    mainFilePath = mainFile.empty() ? fs::current_path() : fs::absolute(fs::path{mainFile});
+    filepath = filename.empty() ? fs::current_path() : fs_absolute(fs::path{filename});
+    mainFilePath = mainFile.empty() ? fs::current_path() : fs_absolute(fs::path{mainFile});
   } catch (const std::filesystem::filesystem_error& fs_err) {
     LOG(message_group::Error, "Parser error: file system error: %1$s", fs_err.what());
     return false;
@@ -807,7 +807,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   }
 
   parsingMainFile = mainFilePath == filepath;
-  fs::path parser_sourcefile = fs::path(filepath).generic_string();
+  fs::path parser_sourcefile = fs_generic_string(filepath);
   lexer_set_parser_sourcefile(parser_sourcefile);
 
   lexerin = NULL;
