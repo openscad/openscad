@@ -29,14 +29,14 @@ use </>
 //Test with absolute path
 use <@CMAKE_CURRENT_SOURCE_DIR@/data/scad/misc/sub2/test7.scad>
 
-// Test simple MCAD library
-use <MCAD/teardrop.scad>
+// Test simple library
+use <testlib/lib-simple.scad>
 
-// Test MCAD library which includes another file
-use <MCAD/math.scad>
+// Test library which includes another file
+use <testlib/lib-include.scad>
 
-// Test MCAD library which uses another file
-use <MCAD/servos.scad>
+// Test library which uses another file
+use <testlib/lib-use.scad>
 
 module test1()
 {
@@ -52,10 +52,10 @@ module test1()
   // test2_variable won't be visible
   translate([0,-2,0]) sphere(test2_variable, $fn=16);
 
-  // MCAD
-  translate([0,-4,0]) teardrop(0.3, 1.5, 90);
-  translate([-2,-4,0]) cube([deg(0.5)/20,0.5,0.5], center=true);
-  translate([2,-4,-0.5]) scale(0.05) alignds420([0,0,0], [0,0,0]);
+  // Library tests
+  translate([0,-4,0]) lib_mod1();
+  translate([-2,-4,0]) cube([lib_func(1),0.5,0.5], center=true);
+  translate([2,-4,0]) lib_use_mod();
 }
 
 test1();
