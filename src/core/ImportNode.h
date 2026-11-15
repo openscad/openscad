@@ -34,7 +34,7 @@ public:
   std::string name() const override;
 
   ImportType type;
-  Filename filename;
+  fs::path filename;
   boost::optional<std::string> id;
   boost::optional<std::string> layer;
   int convexity;

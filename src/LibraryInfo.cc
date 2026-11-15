@@ -86,8 +86,9 @@ const std::string mimalloc_version = "<not enabled>";
 #include "platform/PlatformUtils.h"
 #include "version.h"
 
-extern std::vector<std::string> librarypath;
-extern std::vector<std::string> fontpath;
+// NEEDSWORK why aren't these in a header file?
+extern std::vector<fs::path> librarypath;
+extern std::vector<fs::path> fontpath;
 extern std::string get_cairo_version();
 extern const char *LODEPNG_VERSION_STRING;
 

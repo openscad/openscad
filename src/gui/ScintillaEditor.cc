@@ -271,18 +271,19 @@ void ScintillaEditor::addTemplate(const fs::path& path)
       if (!fs::is_regular_file(dirEntry.status())) continue;
 
       const auto& path = dirEntry.path();
+      // NEEDSWORK: other extension comparisons are case-insensitive.
       if (!(path.extension() == ".json")) continue;
 
       boost::property_tree::ptree pt;
       try {
-        boost::property_tree::read_json(path.generic_string().c_str(), pt);
+        boost::property_tree::read_json(path.u8string(), pt);
         const QString key = QString::fromStdString(pt.get<std::string>("key"));
         const QString content = QString::fromStdString(pt.get<std::string>("content"));
         const int cursor_offset = pt.get<int>("offset", -1);
 
         templateMap.insert(key, ScadTemplate(content, cursor_offset));
       } catch (const std::exception& e) {
-        LOG("Error reading template file '%1$s': %2$s", path.generic_string(), e.what());
+        LOG("Error reading template file %1$s: %2$s", quotePath(path), e.what());
       }
     }
   }

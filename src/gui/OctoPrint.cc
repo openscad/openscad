@@ -41,6 +41,7 @@
 #include "core/Settings.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
+#include "gui/UIUtils.h"
 
 const QString OctoPrint::url() const
 {
@@ -157,7 +158,7 @@ const std::pair<int, QString> OctoPrint::pollApiKeyApproval(const QString& token
     });
 }
 
-const QString OctoPrint::upload(const QString& exportFileName, const QString& fileName,
+const QString OctoPrint::upload(const fs::path& exportFileName, const QString& fileName,
                                 const network_progress_func_t& progress_func) const
 {
   auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -166,7 +167,7 @@ const QString OctoPrint::upload(const QString& exportFileName, const QString& fi
                      QVariant{R"(form-data; name="file"; filename=")" + fileName + "\""});
   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant{"application/octet-stream"});
 
-  auto *file = new QFile(exportFileName, multiPart);
+  auto *file = new QFile(UIUtils::pathToQString(exportFileName), multiPart);
   file->open(QIODevice::ReadOnly);
   filePart.setBodyDevice(file);
 

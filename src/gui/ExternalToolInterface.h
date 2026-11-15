@@ -31,6 +31,9 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #include "core/Settings.h"
 #include "geometry/Geometry.h"
@@ -53,9 +56,9 @@ public:
   virtual QDir getTempDir() const { return QDir::temp(); };
 
 protected:
-  std::string sourceFilename_;
+  fs::path sourceFilename_;
   FileFormat exportFormat_;
-  std::string exportedFilename_;
+  fs::path exportedFilename_;
 };
 
 class ExternalPrintService : public ExternalToolInterface

@@ -55,7 +55,7 @@ Arguments Arguments::clone() const
   return output;
 }
 
-const std::string& Arguments::documentRoot() const
+const fs::path& Arguments::documentRoot() const
 {
   return evaluation_session->documentRoot();
 }

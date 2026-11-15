@@ -17,7 +17,8 @@ fs::path fs_absolute(const fs::path& p);
 fs::path fs_canonical(const fs::path& p);
 std::string fs_generic_string(const fs::path& p);
 
-std::string lookup_file(const std::string& path, const std::string& parent);
+fs::path lookup_file(const fs::path& path, const fs::path& parent);
 
 fs::path fs_uncomplete(fs::path const& p, fs::path const& base);
 int64_t fs_timestamp(fs::path const& path);
+fs::path u8path(std::string);

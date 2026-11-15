@@ -28,9 +28,12 @@
 
 #include <string>
 #include <utility>
+#include <filesystem>
 
-extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename,
-                  const std::string& mainFile, int debug);
+namespace fs = std::filesystem;
+
+extern bool parse(class SourceFile *& file, const std::string& text, const fs::path& filename,
+                  const fs::path& mainFile, int debug);
 
 extern std::string commandline_commands;
 

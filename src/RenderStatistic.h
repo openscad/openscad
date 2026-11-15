@@ -78,7 +78,7 @@ public:
    * Print all available statistic information.
    */
   void printAll(const std::shared_ptr<const Geometry>& geom, const Camera& camera,
-                const std::vector<std::string>& options = {}, const std::string& filename = {});
+                const std::vector<std::string>& options = {}, const fs::path& filename = {});
 
 private:
   std::chrono::steady_clock::time_point begin;

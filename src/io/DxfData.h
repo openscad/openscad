@@ -3,9 +3,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "core/CurveDiscretizer.h"
 #include "geometry/linalg.h"
+
+namespace fs = std::filesystem;
 
 class DxfData
 {
@@ -40,7 +43,7 @@ public:
   std::vector<Dim> dims;
 
   DxfData() = default;
-  DxfData(CurveDiscretizer discretizer, const std::string& filename, const std::string& layername = "",
+  DxfData(CurveDiscretizer discretizer, const fs::path& filename, const std::string& layername = "",
           double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
 
   int addPoint(double x, double y);

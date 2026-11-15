@@ -11,6 +11,7 @@
 #include <filesystem>
 
 #include "utils/printutils.h"
+#include "gui/UIUtils.h"
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
@@ -70,8 +71,8 @@ void ErrorLog::showtheErrorInGUI(const Message& logMsg)
   if (!logMsg.loc.isNone()) {
     const auto& filePath = logMsg.loc.filePath();
     if (is_regular_file(filePath)) {
-      const auto path = QString::fromStdString(filePath.generic_string());
-      fileName = new QStandardItem(QString::fromStdString(filePath.filename().generic_string()));
+      const auto path = UIUtils::pathToQString(filePath);
+      fileName = new QStandardItem(UIUtils::pathToQString(filePath));
       fileName->setToolTip(path);
       fileName->setData(path, Qt::UserRole);
     } else {
@@ -158,7 +159,8 @@ void ErrorLog::onIndexSelected(const QModelIndex& index)
   if (index.isValid()) {
     const int r = index.row();
     const int line = getLine(r, errorLog_column::lineNo);
-    const auto path = logTable->model()->index(r, errorLog_column::file).data(Qt::UserRole).toString();
+    const auto path = UIUtils::QStringToPath(
+      logTable->model()->index(r, errorLog_column::file).data(Qt::UserRole).toString());
     emit openFile(path, line - 1);
   }
 }

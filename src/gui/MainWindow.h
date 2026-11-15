@@ -96,7 +96,7 @@ public:
   bool python_active;
   std::string trusted_edit_document_name;
   std::string untrusted_edit_document_name;
-  bool trust_python_file(const std::string& file, const std::string& content);
+  bool trust_python_file(const fs::path& file, const std::string& content);
 #endif
   Tree tree;
   EditorInterface *activeEditor = nullptr;
@@ -121,7 +121,7 @@ public:
   int compileErrors = 0;
   int compileWarnings = 0;
 
-  MainWindow(const QStringList& filenames);
+  MainWindow(const std::vector<fs::path>& filenames);
   ~MainWindow() override;
 
 private:
@@ -144,7 +144,7 @@ private:
   void setupStatusBar();
   void setupConsole();
   void setupErrorLog();
-  void setupEditor(const QStringList& filenames);
+  void setupEditor(const std::vector<fs::path>& filenames);
   void setupCustomizer();
   void setupAnimate();
   void setupFontList();
@@ -157,7 +157,7 @@ private:
   void setupMenusAndActions();
   void restoreWindowState();
   void restoreToolBarVisibility();
-  void openRemainingFiles(const QStringList& filenames);
+  void openRemainingFiles(const std::vector<fs::path>& filenames);
   void setupAIDock();
 
 protected:
@@ -218,7 +218,7 @@ public:
   void showFind(bool doFindAndReplace);
 
 private:
-  [[nodiscard]] QString getCurrentFileName() const;
+  [[nodiscard]] fs::path getCurrentFileName() const;
 
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
@@ -256,7 +256,7 @@ private:
 
 public slots:
   void updateExportActions();
-  void updateRecentFiles(const QString& FileSavedOrOpened);
+  void updateRecentFiles(const fs::path& FileSavedOrOpened);
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
 
@@ -398,7 +398,7 @@ public slots:
   void on_toolButtonCompileResultClose_clicked();
   void processEvents();
   void jumpToLine(int, int);
-  void openFileFromPath(const QString&, int);
+  void openFileFromPath(const fs::path&, int);
 
   void viewModeRender();
 #ifdef ENABLE_OPENCSG
@@ -466,9 +466,10 @@ private:
   EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time
   time_t depsMTime{0};              // latest dependency mod time
-  std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last
+  std::unordered_map<std::string, fs::path>
+    exportPaths;  // for each file type, where it was exported to last
   // look up the last export path and generate one if not found
-  QString exportPath(const QString& suffix, const QString& basename = "");
+  fs::path exportPath(const std::string& suffix, const fs::path& basename = {});
   int lastParserErrorPos{-1};  // last highlighted error position
   int tabCount = 0;
   ExportPdfPaperSize sizeString2Enum(const QString& current);

@@ -3,6 +3,9 @@
 #include <ctime>
 #include <string>
 #include <unordered_map>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 class SourceFile;
 
@@ -18,9 +21,8 @@ public:
     return inst;
   }
 
-  std::time_t process(const std::string& mainFile, const std::string& filename,
-                      SourceFile *& sourceFile);
-  SourceFile *lookup(const std::string& filename);
+  std::time_t process(const fs::path& mainFile, const fs::path& filename, SourceFile *& sourceFile);
+  SourceFile *lookup(const fs::path& filename);
   size_t size() const { return this->entries.size(); }
   void clear();
   static void clear_markers();
@@ -38,5 +40,5 @@ private:
     std::time_t mtime{};           // time file last modified
     std::time_t includes_mtime{};  // time the includes last changed
   };
-  std::unordered_map<std::string, cache_entry> entries;
+  std::unordered_map<fs::path, cache_entry> entries;
 };

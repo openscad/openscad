@@ -69,10 +69,10 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "center", "convexity"}, {"invert"});
 
-  std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-  auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string());
+  fs::path fileval = parameters["file"].toPath();
+  auto filename = lookup_file(fileval, inst->location().filePath().parent_path());
   node->filename = filename;
-  handle_dep(fs::path(filename).generic_string());
+  handle_dep(filename);
 
   if (parameters["center"].type() == Value::Type::BOOL) {
     node->center = parameters["center"].toBool();
@@ -118,20 +118,20 @@ bool SurfaceNode::is_png(std::vector<uint8_t>& png) const
   return (png.size() >= pngHeaderLength && std::memcmp(png.data(), pngHeader, pngHeaderLength) == 0);
 }
 
-img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
+img_data_t SurfaceNode::read_png_or_dat(fs::path filename) const
 {
   img_data_t data;
   std::vector<uint8_t> png;
   int ret_val = 0;
   try {
-    ret_val = lodepng::load_file(png, filename);
+    ret_val = lodepng::load_file(png, filename.u8string());
   } catch (std::bad_alloc& ba) {
     LOG(message_group::Warning, "bad_alloc caught for '%1$s'.", ba.what());
     return data;
   }
 
   if (ret_val == 78) {
-    LOG(message_group::Warning, "The file '%1$s' couldn't be opened.", filename);
+    LOG(message_group::Warning, "The file '%1$s' couldn't be opened.", quotePath(filename));
     return data;
   }
 
@@ -144,7 +144,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   unsigned int width = 0, height = 0;
   unsigned error = lodepng_inspect(&width, &height, &state, png.data(), png.size());
   if (error) {
-    LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
+    LOG(message_group::Warning, "Can't read PNG image %1$s", quotePath(filename));
     data.clear();
     return data;
   }
@@ -156,7 +156,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   error = lodepng::decode(img, width, height, state, png);
 
   if (error) {
-    LOG(message_group::Warning, "Can't read PNG image '%1$s'", filename);
+    LOG(message_group::Warning, "Can't read PNG image %1$s", quotePath(filename));
     data.clear();
     return data;
   }
@@ -166,13 +166,13 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   return data;
 }
 
-img_data_t SurfaceNode::read_dat(std::string filename) const
+img_data_t SurfaceNode::read_dat(fs::path filename) const
 {
   img_data_t data;
-  std::ifstream stream(fs::u8path(filename));
+  std::ifstream stream(filename);
 
   if (!stream.good()) {
-    LOG(message_group::Warning, "Can't open DAT file '%1$s'.", filename);
+    LOG(message_group::Warning, "Can't open DAT file %1$s.", quotePath(filename));
     return data;
   }
 
@@ -208,7 +208,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
       }
     } catch (const boost::bad_lexical_cast& blc) {
       if (!stream.eof()) {
-        LOG(message_group::Warning, "Illegal value in '%1$s': %2$s", filename, blc.what());
+        LOG(message_group::Warning, "Illegal value in %1$s: %2$s", quotePath(filename), blc.what());
       }
       return data;
     }
@@ -314,14 +314,13 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 std::string SurfaceNode::toString() const
 {
   std::ostringstream stream;
-  fs::path path{static_cast<std::string>(this->filename)};  // gcc-4.6
 
-  stream << this->name() << "(file = " << this->filename
+  stream << this->name() << "(file = " << csgPath(this->filename)
          << ", center = " << (this->center ? "true" : "false")
          << ", invert = " << (this->invert ? "true" : "false")
          << ", "
             "timestamp = "
-         << fs_timestamp(path) << ")";
+         << fs_timestamp(this->filename) << ")";
 
   return stream.str();
 }

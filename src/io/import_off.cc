@@ -33,7 +33,7 @@ constexpr unsigned long max_reserve_faces = 10'000'000;
 // References:
 // http://www.geomview.org/docs/html/OFF.html
 
-std::unique_ptr<PolySet> import_off(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_off(const fs::path& filename, const Location& loc)
 {
   const boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?(n)?OFF( BINARY)? *)");
   // XXX: are ST C N always in order?
@@ -41,14 +41,14 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   const boost::regex ex_comment(R"(\s*#.*$)");
   boost::smatch results;
 
-  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
+  std::ifstream f(filename, std::ios::in | std::ios::binary);
 
   int lineno = 0;
   std::string line;
 
   auto AsciiError = [&](const auto& errstr) {
-    LOG(message_group::Error, loc, "", "OFF File line %1$s, %2$s line '%3$s' importing file '%4$s'",
-        lineno, errstr, line, filename);
+    LOG(message_group::Error, loc, "", "OFF File line %1$s, %2$s line '%3$s' importing file %4$s",
+        lineno, errstr, line, quotePath(filename));
   };
 
   auto getline_clean = [&](const auto& errstr) {

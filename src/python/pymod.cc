@@ -39,13 +39,13 @@ namespace fs = std::filesystem;
 
 using SP = Settings::SettingsPython;
 
-std::string venvBinDirFromSettings()
+fs::path venvBinDirFromSettings()
 {
   const auto& venv = fs::path(SP::pythonVirtualEnv.value()) / "bin";
   if (fs::is_directory(venv)) {
-    return venv.generic_string();
+    return venv;
   }
-  return "";
+  return {};
 }
 
 int pythonRunArgs(int argc, char **argv)
@@ -117,7 +117,7 @@ int pythonRunModule(const std::string& appPath, const std::string& module,
 {
   PyStatus status;
   const auto name = "openscad-python";
-  const auto exe = PlatformUtils::applicationPath() + "/" + name;
+  const auto exe = PlatformUtils::applicationPath() / name;
 
   PyPreConfig preconfig;
   PyPreConfig_InitPythonConfig(&preconfig);
@@ -135,7 +135,7 @@ int pythonRunModule(const std::string& appPath, const std::string& module,
     goto done;
   }
 
-  status = PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
+  status = PyConfig_SetBytesString(&config, &config.executable, exe.u8string().c_str());
   if (PyStatus_Exception(status)) {
     goto done;
   }
@@ -161,7 +161,7 @@ int pythonRunModule(const std::string& appPath, const std::string& module,
   }
 
   /* Override executable computed by PyConfig_Read() */
-  status = PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
+  status = PyConfig_SetBytesString(&config, &config.executable, exe.u8string().c_str());
   if (PyStatus_Exception(status)) {
     goto done;
   }

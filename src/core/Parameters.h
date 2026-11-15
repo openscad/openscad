@@ -68,7 +68,7 @@ public:
 
   ContextFrame to_context_frame() &&;
 
-  const std::string& documentRoot() const { return frame.documentRoot(); }
+  const fs::path& documentRoot() const { return frame.documentRoot(); }
   const Location& location() const { return loc; }
 
   static constexpr auto THIS_PARAMETER = "this";
@@ -102,10 +102,10 @@ bool Parameters::validate_integral(const std::string& name, T& out, T lo, T hi)
 }
 
 void print_argCnt_warning(const std::string& name, int found, const std::string& expected,
-                          const Location& loc, const std::string& documentRoot);
+                          const Location& loc, const fs::path& documentRoot);
 void print_argConvert_positioned_warning(const std::string& calledName, const std::string& where,
                                          const Value& found, std::vector<Value::Type> expected,
-                                         const Location& loc, const std::string& documentRoot);
+                                         const Location& loc, const fs::path& documentRoot);
 void print_argConvert_warning(const std::string& calledName, const std::string& argName,
                               const Value& found, std::vector<Value::Type> expected, const Location& loc,
-                              const std::string& documentRoot);
+                              const fs::path& documentRoot);

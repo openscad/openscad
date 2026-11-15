@@ -2,7 +2,10 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 extern const char *make_command;
-void handle_dep(const std::string& filename);
-bool write_deps(const std::string& filename, const std::vector<std::string>& output_files);
+void handle_dep(const fs::path& filename);
+bool write_deps(const fs::path& filename, const std::vector<fs::path>& output_files);

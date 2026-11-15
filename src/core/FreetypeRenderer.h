@@ -71,7 +71,7 @@ public:
     Params(const ParamsOptions& opts);
 
     void set_loc(const Location& loc) { this->loc = loc; }
-    void set_documentPath(const std::string& path) { this->documentPath = path; }
+    void set_documentPath(const fs::path& path) { this->documentPath = path; }
     [[nodiscard]] const FontFacePtr get_font_face() const;
     void detect_properties();
     friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params);
@@ -93,7 +93,7 @@ public:
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;
-    std::string documentPath = "";
+    fs::path documentPath{};
     static bool is_ignored_script(const hb_script_t script);
     hb_script_t detect_script(hb_glyph_info_t *glyph_info, unsigned int glyph_count) const;
     [[nodiscard]] hb_direction_t detect_direction(const hb_script_t script) const;

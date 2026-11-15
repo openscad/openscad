@@ -4,6 +4,7 @@
 
 #include "platform/PlatformUtils.h"
 
+// NEEDSWORK convert to fs::path
 QString UXTest::fixturePath(const QString& relative)
 {
   return QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/data/" + relative;

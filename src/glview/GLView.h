@@ -22,6 +22,7 @@
 #include <Eigen/Geometry>
 #include <string>
 #include <vector>
+#include <filesystem>
 #include "glview/Camera.h"
 #include "glview/ShaderUtils.h"
 #include "geometry/linalg.h"
@@ -29,6 +30,8 @@
 #include "glview/system-gl.h"
 #include "core/Selection.h"
 #include "glview/Renderer.h"
+
+namespace fs = std::filesystem;
 
 class GLView
 {
@@ -62,7 +65,7 @@ public:
   [[nodiscard]] bool showCrosshairs() const { return this->showcrosshairs; }
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
-  virtual bool save(const char *filename) const = 0;
+  virtual bool save(const fs::path& filename) const = 0;
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
   virtual float getDPI() { return 1.0f; }
 
