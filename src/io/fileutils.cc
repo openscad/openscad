@@ -10,6 +10,8 @@
 
 namespace fs = std::filesystem;
 
+namespace {
+
 bool fs_is_unc(const fs::path& p)
 {
 #ifdef _WIN32
@@ -20,6 +22,13 @@ bool fs_is_unc(const fs::path& p)
   (void)p;
   return false;
 #endif
+}
+
+}  // namespace
+
+bool fs_is_absolute(const fs::path& p)
+{
+  return p.is_absolute() || fs_is_unc(p);
 }
 
 fs::path fs_absolute(const fs::path& p)
@@ -55,7 +64,7 @@ std::string lookup_file(const std::string& path, const std::string& parent)
     return "";
   }
 
-  if (fs::path(path).is_absolute() || fs_is_unc(path)) {
+  if (fs_is_absolute(path)) {
     return path;
   }
 

@@ -87,7 +87,7 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
 inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& localpath,
                                  const std::vector<std::string> *openfilenames)
 {
-  if (localpath.is_absolute() || fs_is_unc(localpath)) {
+  if (fs_is_absolute(localpath)) {
     if (check_valid(localpath, openfilenames)) {
 #ifndef __EMSCRIPTEN__
       return fs_canonical(localpath);

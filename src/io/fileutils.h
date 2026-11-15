@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 // fs::absolute() puts the current drive in front of it, generic_string() drops
 // one of the leading slashes and fs::canonical() fails. These keep UNC paths
 // intact (#5425); for other paths they're the same as the std functions.
-bool fs_is_unc(const fs::path& p);
+bool fs_is_absolute(const fs::path& p);
 fs::path fs_absolute(const fs::path& p);
 fs::path fs_canonical(const fs::path& p);
 std::string fs_generic_string(const fs::path& p);
