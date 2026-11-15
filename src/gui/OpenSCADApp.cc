@@ -76,7 +76,7 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
 /*!
    Requests to open a file from an external event, e.g. by double-clicking a filename.
  */
-void OpenSCADApp::requestOpenFile(const QString& filename)
+void OpenSCADApp::requestOpenFile(const fs::path& filename)
 {
   for (auto win : this->windowManager.getWindows()) {
     // if we have an empty open window, use that one
@@ -87,7 +87,7 @@ void OpenSCADApp::requestOpenFile(const QString& filename)
   }
 
   // ..otherwise, create a new one
-  new MainWindow(QStringList(filename));
+  new MainWindow(std::vector<fs::path>({filename}));
 }
 
 void OpenSCADApp::showFontCacheDialog()

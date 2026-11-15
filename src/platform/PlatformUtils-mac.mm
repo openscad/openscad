@@ -1,6 +1,9 @@
 #include "PlatformUtils.h"
 
 #include <sstream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -16,24 +19,24 @@ std::string PlatformUtils::pathSeparatorChar()
   return ":";
 }
 
-std::string PlatformUtils::userDocumentsPath()
+fs::path PlatformUtils::userDocumentsPath()
 {
   return documentsPath();
 }
 
-std::string PlatformUtils::documentsPath()
+fs::path PlatformUtils::documentsPath()
 {
-  return std::string([[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] UTF8String]);
+  return fs::path(std::string([[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] UTF8String]));
 }
 
-std::string PlatformUtils::userConfigPath()
+fs::path PlatformUtils::userConfigPath()
 {
   NSError *error = nullptr;
   NSURL *appSupportDir = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
   if (error) {
     return "";
   }
-  return std::string([[appSupportDir path] UTF8String]) + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
+  return fs::path(std::string([[appSupportDir path] UTF8String])) / PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
 unsigned long PlatformUtils::stackLimit()

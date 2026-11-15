@@ -337,7 +337,7 @@ void python_catch_error(std::string& errorstr)
   }
 }
 
-void initPython(const std::string& binDir, double time)
+void initPython(const fs::path& binDir, double time)
 {
   if (pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
@@ -403,6 +403,8 @@ void initPython(const std::string& binDir, double time)
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
 
+#ifdef UNUSED
+    // As best I can tell, this entire block yields a stream that is then unused.
     std::string sep = "";
     std::ostringstream stream;
 #ifdef _WIN32
@@ -430,9 +432,10 @@ void initPython(const std::string& binDir, double time)
 #endif
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sepchar << ".";
+#endif  // UNUSED
 
     if (!binDir.empty()) {
-      PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
+      PyConfig_SetBytesString(&config, &config.executable, (binDir / "python").generic_string().c_str());
     }
 
     PyStatus status = Py_InitializeFromConfig(&config);

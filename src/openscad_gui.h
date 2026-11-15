@@ -30,6 +30,8 @@
 #include <string>
 #include <vector>
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
-        char **argv, const std::string&, const bool);
+namespace fs = std::filesystem;
+
+int gui(std::vector<fs::path>& inputFiles, const fs::path& original_path, int argc, char **argv,
+        const std::string&, const bool);
 void setGlobalTheme();

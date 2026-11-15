@@ -49,7 +49,7 @@ public:
   static bool is_config_variable(const std::string& name);
 
   EvaluationSession *session() const { return evaluation_session; }
-  const std::string& documentRoot() const;
+  const fs::path& documentRoot() const;
 
 protected:
   ValueMap lexical_variables;

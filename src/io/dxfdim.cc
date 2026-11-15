@@ -56,11 +56,11 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   const Parameters parameters =
     Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
 
-  std::string rawFilename;
-  std::string filename;
+  fs::path rawFilename;
+  fs::path filename;
   if (parameters.contains("file")) {
-    rawFilename = parameters["file"].toString();
-    filename = lookup_file(rawFilename, loc.filePath().parent_path().string());
+    rawFilename = parameters["file"].toPath();
+    filename = lookup_file(rawFilename, loc.filePath().parent_path());
   }
   double xorigin = 0;
   double yorigin = 0;
@@ -76,24 +76,23 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   const double scale = parameters.get("scale", 1);
   std::string name = parameters.get("name", "");
 
-  const fs::path filepath(std::filesystem::u8path(filename));
   uintmax_t filesize = -1;
   int64_t lastwritetime = -1;
-  if (fs::exists(filepath)) {
-    if (fs::is_regular_file(filepath)) {
-      filesize = fs::file_size(filepath);
-      lastwritetime = fs_timestamp(filepath);
+  if (fs::exists(filename)) {
+    if (fs::is_regular_file(filename)) {
+      filesize = fs::file_size(filename);
+      lastwritetime = fs_timestamp(filename);
     }
   } else {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!",
-        rawFilename);
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file %1$s!",
+        quotePath(rawFilename));
     return Value::undefined.clone();
   }
   const std::string key = STR(filename, "|", layername, "|", name, "|", xorigin, "|", yorigin, "|",
                               scale, "|", lastwritetime, "|", filesize);
   auto result = dxf_dim_cache.find(key);
   if (result != dxf_dim_cache.end()) return {result->second};
-  handle_dep(filepath.string());
+  handle_dep(filename);
   // The value of 36 for fn go back to the first commit in Github.
   // Unknown why it is that.
   DxfData dxf(CurveDiscretizer(36), filename, layername, xorigin, yorigin, scale);
@@ -146,12 +145,13 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
     }
 
     LOG(message_group::Warning, loc, parameters.documentRoot(),
-        "Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!", name, rawFilename, layername);
+        "Dimension '%1$s' in %2$s, layer '%3$s' has unsupported type!", name, quotePath(rawFilename),
+        layername);
     return Value::undefined.clone();
   }
 
   LOG(message_group::Warning, loc, parameters.documentRoot(),
-      "Can't find dimension '%1$s' in '%2$s', layer '%3$s'!", name, rawFilename, layername);
+      "Can't find dimension '%1$s' in %2$s, layer '%3$s'!", name, quotePath(rawFilename), layername);
 
   return Value::undefined.clone();
 }
@@ -162,11 +162,11 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
   const Parameters parameters =
     Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
 
-  std::string rawFilename;
-  std::string filename;
+  fs::path rawFilename;
+  fs::path filename;
   if (parameters.contains("file")) {
-    rawFilename = parameters["file"].toString();
-    filename = lookup_file(rawFilename, loc.filePath().parent_path().string());
+    rawFilename = parameters["file"].toPath();
+    filename = lookup_file(rawFilename, loc.filePath().parent_path());
   }
   double xorigin = 0;
   double yorigin = 0;
@@ -181,17 +181,16 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
   std::string layername = parameters.get("layer", "");
   const double scale = parameters.get("scale", 1);
 
-  const fs::path filepath(std::filesystem::u8path(filename));
   uintmax_t filesize = -1;
   int64_t lastwritetime = -1;
-  if (fs::exists(filepath)) {
-    if (fs::is_regular_file(filepath)) {
-      filesize = fs::file_size(filepath);
-      lastwritetime = fs_timestamp(filepath);
+  if (fs::exists(filename)) {
+    if (fs::is_regular_file(filename)) {
+      filesize = fs::file_size(filename);
+      lastwritetime = fs_timestamp(filename);
     }
   } else {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!",
-        rawFilename);
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file %1$s!",
+        quotePath(rawFilename));
     return Value::undefined.clone();
   }
 
@@ -207,7 +206,7 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     }
     return {std::move(ret)};
   }
-  handle_dep(filepath.string());
+  handle_dep(filename);
   DxfData dxf(CurveDiscretizer(36), filename, layername, xorigin, yorigin, scale);
 
   double coords[4][2];
@@ -241,8 +240,8 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     }
   }
 
-  LOG(message_group::Warning, loc, parameters.documentRoot(),
-      "Can't find cross in '%1$s', layer '%2$s'!", rawFilename, layername);
+  LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't find cross in %1$s, layer '%2$s'!",
+      quotePath(rawFilename), layername);
   return Value::undefined.clone();
 }
 

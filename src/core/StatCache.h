@@ -28,10 +28,12 @@
 
 #include <sys/stat.h>
 
-#include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace StatCache {
 
-int stat(const std::string& path, struct ::stat& st);
+int stat(const fs::path& path, struct ::stat& st);
 
 }

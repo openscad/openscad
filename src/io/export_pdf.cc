@@ -322,7 +322,9 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     "Measure between tick 0 and last tick";
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.48);
   // Design Filename
-  if (options->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.0);
+  if (options->showDesignFilename) {
+    draw_text(exportInfo.sourceFilePath.u8string().c_str(), cr, Mlx, Mby, 10.0);
+  }
   // Scale
   if (options->showScale) {
     draw_axes(cr, Mlx, Mrx, Mty, Mby);

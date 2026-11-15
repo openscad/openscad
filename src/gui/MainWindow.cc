@@ -239,9 +239,9 @@ QAction *findAction(const QList<QAction *>& actions, const std::string& name)
   return nullptr;
 }
 
-void fileExportedMessage(const QString& format, const QString& filename)
+void fileExportedMessage(const QString& format, const fs::path& filename)
 {
-  LOG("%1$s export finished: %2$s", format.toUtf8().constData(), filename.toUtf8().constData());
+  LOG("%1$s export finished: %2$s", format.toUtf8().constData(), quotePath(filename));
 }
 
 void removeExportActions(QToolBar *toolbar, QAction *action)
@@ -281,7 +281,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t
 
 }  // namespace
 
-MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
+MainWindow::MainWindow(const std::vector<fs::path>& filenames) : rubberBandManager(this)
 {
   // Main UI setup
   setupWindow();
@@ -425,12 +425,12 @@ void MainWindow::updateExportActions()
   }
 }
 
-void MainWindow::openFileFromPath(const QString& path, int line)
+void MainWindow::openFileFromPath(const fs::path& path, int line)
 {
   if (editorDock->isVisible()) {
     auto guard = scopedSetCurrentOutput();
     activeEditor->setFocus();
-    if (!path.isEmpty()) tabManager->open(path);
+    if (!path.empty()) tabManager->open(path);
     activeEditor->setFocus();
     activeEditor->setCursorPosition(line, 0);
   }
@@ -715,8 +715,9 @@ bool MainWindow::network_progress_func(const double permille)
   return (progresswidget && progresswidget->wasCanceled());
 }
 
-void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
+void MainWindow::updateRecentFiles(const fs::path& p)
 {
+  QString FileSavedOrOpened = UIUtils::pathToQString(p);
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
   QSettingsCached settings;  // already set up properly via main.cpp
@@ -870,11 +871,11 @@ void MainWindow::updateCompileResult()
 
   QString msg;
   if (compileErrors > 0) {
-    if (activeEditor->filepath.isEmpty()) {
+    if (activeEditor->filepath.empty()) {
       msg = QString(_("Compile error."));
     } else {
-      const QFileInfo fileInfo(activeEditor->filepath);
-      msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
+      msg = QString(_("Error while compiling '%1'."))
+              .arg(UIUtils::pathToQString(activeEditor->filepath.filename()));
     }
     toolButtonCompileResultIcon->setIcon(
       QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
@@ -1009,7 +1010,7 @@ void MainWindow::instantiateRoot()
   this->rootNode.reset();
   this->tree.setRoot(nullptr);
 
-  const std::filesystem::path doc(activeEditor->filepath.toStdString());
+  const fs::path doc = activeEditor->filepath;
   this->tree.setDocumentPath(doc.parent_path().string());
 
   renderedEditor = activeEditor;
@@ -1178,28 +1179,28 @@ void MainWindow::compileCSG()
 void MainWindow::on_fileActionOpen_triggered()
 {
   auto guard = scopedSetCurrentOutput();
-  auto fileInfoList = UIUtils::openFiles(this);
-  for (auto& i : fileInfoList) {
-    if (!i.exists()) {
+  auto files = UIUtils::openFiles(this);
+  for (auto& i : files) {
+    if (!fs::exists(i)) {
       return;
     }
-    tabManager->open(i.filePath());
+    tabManager->open(i);
   }
 }
 
 void MainWindow::on_fileActionNewWindow_triggered()
 {
-  new MainWindow(QStringList());
+  new MainWindow(std::vector<fs::path>());
 }
 
 void MainWindow::on_fileActionOpenWindow_triggered()
 {
-  auto fileInfoList = UIUtils::openFiles(this);
-  for (auto& i : fileInfoList) {
-    if (!i.exists()) {
+  auto files = UIUtils::openFiles(this);
+  for (auto& i : files) {
+    if (!fs::exists(i)) {
       return;
     }
-    new MainWindow(QStringList(i.filePath()));
+    new MainWindow(std::vector<fs::path>({i}));
   }
 }
 
@@ -1207,7 +1208,7 @@ void MainWindow::actionOpenRecent()
 {
   auto guard = scopedSetCurrentOutput();
   auto action = qobject_cast<QAction *>(sender());
-  tabManager->open(action->data().toString());
+  tabManager->open(UIUtils::QStringToPath(action->data().toString()));
 }
 
 void MainWindow::on_fileActionClearRecent_triggered()
@@ -1275,11 +1276,13 @@ void MainWindow::actionOpenExample()
   auto guard = scopedSetCurrentOutput();
   const auto action = qobject_cast<QAction *>(sender());
   if (action) {
-    const auto& path = action->data().toString();
-    tabManager->open(path);
+    tabManager->open(UIUtils::QStringToPath(action->data().toString()));
   }
 }
 
+// NEEDSWORK should this take a fs::path?  That would be better for
+// consistency, but the caller is using QFile mechanisms, and this uses
+// QFile mechanisms.
 void MainWindow::writeBackup(QFile *file)
 {
   // see MainWindow::saveBackup()
@@ -1289,9 +1292,11 @@ void MainWindow::writeBackup(QFile *file)
   writer.setCodec("UTF-8");
 #endif
   writer << activeEditor->toPlainText();
-  this->activeEditor->parameterWidget->saveBackupFile(file->fileName());
 
-  LOG("Saved backup file: %1$s", file->fileName().toUtf8().constData());
+  fs::path path = UIUtils::QStringToPath(file->fileName());
+  this->activeEditor->parameterWidget->saveBackupFile(path);
+
+  LOG("Saved backup file: %1$s", quotePath(path));
 }
 
 void MainWindow::saveBackup()
@@ -1302,28 +1307,26 @@ void MainWindow::saveBackup()
   // MainWindow and TabManager, *not* in EditorInterface, so I'm leaving the temporary
   // file management here.
   if (!activeEditor->tempFile) {
-    auto path = PlatformUtils::backupPath();
-    if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-      LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
+    auto backupPath = PlatformUtils::backupPath();
+    if ((!fs::exists(backupPath)) && (!PlatformUtils::createBackupPath())) {
+      LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", quotePath(backupPath));
       return;
     }
 
-    auto backupPath = QString::fromLocal8Bit(path.c_str());
-    if (!backupPath.endsWith("/")) backupPath.append("/");
-
-    QString basename = "unsaved";
-    if (!activeEditor->filepath.isEmpty()) {
-      auto fileInfo = QFileInfo(activeEditor->filepath);
-      basename = fileInfo.baseName();
+    fs::path basename = "unsaved";
+    if (!activeEditor->filepath.empty()) {
+      basename = activeEditor->filepath.stem();
     }
 
 #ifdef ENABLE_PYTHON
-    const QString suffix = this->python_active ? "py" : "scad";
+    const std::string suffix = this->python_active ? "py" : "scad";
 #else
-    const QString suffix = "scad";
+    const std::string suffix = "scad";
 #endif
-    activeEditor->tempFile =
-      new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
+    basename += "-backup-XXXXXXXX.";
+    basename += suffix;
+    fs::path backupPattern = backupPath / basename;
+    activeEditor->tempFile = new QTemporaryFile(UIUtils::pathToQString(backupPattern));
   }
 
   if ((!activeEditor->tempFile->isOpen()) && (!activeEditor->tempFile->open())) {
@@ -1425,14 +1428,13 @@ void MainWindow::on_fileShowLibraryFolder_triggered()
   auto guard = scopedSetCurrentOutput();
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
-    LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", path);
+    LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", quotePath(path));
     if (!PlatformUtils::createUserLibraryPath()) {
-      LOG(message_group::UI_Error, "Cannot create library path: %1$s", path);
+      LOG(message_group::UI_Error, "Cannot create library path: %1$s", quotePath(path));
     }
   }
-  auto url = QString::fromStdString(path);
-  LOG("Opening file browser for %1$s", url.toStdString());
-  QDesktopServices::openUrl(QUrl::fromLocalFile(url));
+  LOG("Opening file browser for %1$s", quotePath(path));
+  QDesktopServices::openUrl(QUrl::fromLocalFile(UIUtils::pathToQString(path)));
 }
 
 void MainWindow::on_fileActionReload_triggered()
@@ -1678,10 +1680,10 @@ void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
  */
 bool MainWindow::fileChangedOnDisk()
 {
-  if (!activeEditor->filepath.isEmpty()) {
+  if (!activeEditor->filepath.empty()) {
     struct stat st;
     memset(&st, 0, sizeof(struct stat));
-    const bool valid = (stat(activeEditor->filepath.toLocal8Bit(), &st) == 0);
+    const bool valid = (PlatformUtils::stat(activeEditor->filepath, st) == 0);
     // If file isn't there, just return and use current editor text
     if (!valid) return false;
 
@@ -1699,14 +1701,14 @@ bool MainWindow::fileChangedOnDisk()
  */
 
 #ifdef ENABLE_PYTHON
-bool MainWindow::trust_python_file(const std::string& file, const std::string& content)
+bool MainWindow::trust_python_file(const fs::path& file, const std::string& content)
 {
   QSettingsCached settings;
   char setting_key[256];
   if (python_trusted) return true;
 
   std::string act_hash, ref_hash;
-  snprintf(setting_key, sizeof(setting_key) - 1, "python_hash/%s", file.c_str());
+  snprintf(setting_key, sizeof(setting_key) - 1, "python_hash/%s", file.u8string().c_str());
   act_hash = SHA256HashString(content);
 
   if (file == this->untrusted_edit_document_name) return false;
@@ -1763,10 +1765,10 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   auto document = editor->toPlainText();
   auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
 
-  const std::string fname = editor->filepath.isEmpty() ? "" : editor->filepath.toStdString();
+  const fs::path fname = editor->filepath.empty() ? fs::path{} : editor->filepath;
 #ifdef ENABLE_PYTHON
   this->python_active = false;
-  if (boost::algorithm::ends_with(fname, ".py")) {
+  if (fname.extension() == ".py") {
     std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
     if (Feature::ExperimentalPythonEngine.is_enabled() && trust_python_file(fname, content))
       this->python_active = true;
@@ -1822,7 +1824,7 @@ void MainWindow::parseTopLevelDocument()
 
 void MainWindow::checkAutoReload()
 {
-  if (!activeEditor->filepath.isEmpty()) {
+  if (!activeEditor->filepath.empty()) {
     actionReloadRenderPreview();
   }
 }
@@ -1928,11 +1930,11 @@ void MainWindow::csgRender()
   if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
     const QImage img = this->qglview->grabFrame();
-    const QString filename = exportPath("png", QString("frame%1").arg(steps, 5, 10, QChar('0')));
-    QImageWriter writer(filename, "PNG");
+    const fs::path filename =
+      exportPath("png", UIUtils::QStringToPath(QString("frame%1").arg(steps, 5, 10, QChar('0'))));
+    QImageWriter writer(UIUtils::pathToQString(filename), "PNG");
     if (!writer.write(img)) {
-      LOG(message_group::Error, "%1$s: %2$s", filename.toStdString(),
-          writer.errorString().toStdString());
+      LOG(message_group::Error, "%1$s: %2$s", quotePath(filename), writer.errorString().toStdString());
       animateWidget->pauseAnimation();
     }
   }
@@ -1942,8 +1944,7 @@ void MainWindow::csgRender()
 
 void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 {
-  const QFileInfo activeFile(activeEditor->filepath);
-  QString activeFileName = activeFile.fileName();
+  QString activeFileName = UIUtils::pathToQString(activeEditor->filepath.filename());
   if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
   // TODO: Replace suffix to match exported file format?
 
@@ -2208,21 +2209,19 @@ void MainWindow::rightClick(QPoint position)
       const fs::path libpath = get_library_for_path(location.filePath());
       if (!libpath.empty()) {
         // Display the library (without making the window too wide!)
-        ss << name << " (library " << location.fileName().substr(libpath.string().length() + 1) << ":"
+        ss << name << " (library " << fs_uncomplete(location.fileName(), libpath) << ":"
            << location.firstLine() << ")";
-      } else if (renderedEditor->filepath.toStdString() == location.fileName()) {
+      } else if (renderedEditor->filepath == location.fileName()) {
         // removes the "module" prefix if any as it makes it not clear if it is module declaration or
         // call.
-        ss << name << " (" << location.filePath().filename().string() << ":" << location.firstLine()
+        ss << name << " (" << location.filePath().filename().u8string() << ":" << location.firstLine()
            << ")";
       } else {
         auto relative_filename =
-          fs_uncomplete(location.filePath(),
-                        fs::path(renderedEditor->filepath.toStdString()).parent_path())
-            .generic_string();
+          fs_uncomplete(location.filePath(), renderedEditor->filepath.parent_path());
 
         // Set the displayed name relative to the active editor window
-        ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
+        ss << name << " (" << relative_filename.u8string() << ":" << location.firstLine() << ")";
       }
       // Prepare the action to be sent
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
@@ -2279,7 +2278,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
       continue;
     }
     auto& location = node->modinst->location();
-    if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
+    if (location.filePath() != editor->filepath) {
       level++;
       continue;
     }
@@ -2330,8 +2329,8 @@ void MainWindow::setSelection(int index)
 
   // Unsaved files do have the pwd as current path, therefore we will not open a new
   // tab on click
-  if (!fs::is_directory(fs::path(file))) {
-    tabManager->open(QString::fromStdString(file));
+  if (!fs::is_directory(file)) {
+    tabManager->open(file);
   }
 
   // removes all previsly configure selection indicators.
@@ -2565,7 +2564,7 @@ bool MainWindow::canExport(unsigned int dim)
 void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
 {
   const auto type_name = QString::fromStdString(exportInfo.info.description);
-  const auto suffix = QString::fromStdString(exportInfo.info.suffix);
+  const auto suffix = exportInfo.info.suffix;
 
   // Setting filename skips the file selection dialog and uses the path provided instead.
   if (GuiLocker::isLocked()) return;
@@ -2577,15 +2576,16 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   if (!canExport(dim)) return;
 
   auto title = QString(_("Export %1 File")).arg(type_name);
-  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, "." + suffix);
-  auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
+  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, "." + QString::fromStdString(suffix));
+  auto exportFilename = UIUtils::QStringToPath(
+    QFileDialog::getSaveFileName(this, title, UIUtils::pathToQString(exportPath(suffix)), filter));
   auto guard2 = scopedSetCurrentOutput();
-  if (exportFilename.isEmpty()) {
+  if (exportFilename.empty()) {
     return;
   }
   this->exportPaths[suffix] = exportFilename;
 
-  const bool exportResult = exportFileByName(rootGeom, exportFilename.toStdString(), exportInfo);
+  const bool exportResult = exportFileByName(rootGeom, exportFilename, exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
 }
@@ -2595,8 +2595,7 @@ void MainWindow::actionExportFileFormat(int fmt)
   const auto format = static_cast<FileFormat>(fmt);
   const FileFormatInfo& info = fileformat::info(format);
 
-  ExportInfo exportInfo =
-    createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam, {});
+  ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath, &qglview->cam, {});
 
   switch (format) {
   case FileFormat::PDF: {
@@ -2624,18 +2623,18 @@ void MainWindow::actionExportFileFormat(int fmt)
       LOG(message_group::Error, "Nothing to export. Please try compiling first.");
       return;
     }
-    const QString suffix = "csg";
-    auto csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"), exportPath(suffix),
-                                                     _("CSG Files (*.csg)"));
+    const std::string suffix = "csg";
+    auto csg_filename = UIUtils::QStringToPath(QFileDialog::getSaveFileName(
+      this, _("Export CSG File"), UIUtils::pathToQString(exportPath(suffix)), _("CSG Files (*.csg)")));
 
-    if (csg_filename.isEmpty()) {
+    if (csg_filename.empty()) {
       return;
     }
 
     auto guard2 = scopedSetCurrentOutput();
-    std::ofstream fstream(std::filesystem::u8path(csg_filename.toStdString()));
+    std::ofstream fstream(csg_filename);
     if (!fstream.is_open()) {
-      LOG("Can't open file \"%1$s\" for export", csg_filename.toStdString());
+      LOG("Can't open file \"%1$s\" for export", quotePath(csg_filename));
     } else {
       fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
       fstream.close();
@@ -2647,17 +2646,17 @@ void MainWindow::actionExportFileFormat(int fmt)
   case FileFormat::PNG: {
     // Grab first to make sure dialog box isn't part of the grabbed image
     qglview->grabFrame();
-    const QString suffix = "png";
-    auto img_filename =
-      QFileDialog::getSaveFileName(this, _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
-    if (!img_filename.isEmpty()) {
-      const bool saveResult = qglview->save(img_filename.toStdString().c_str());
+    const std::string suffix = "png";
+    auto img_filename = UIUtils::QStringToPath(QFileDialog::getSaveFileName(
+      this, _("Export Image"), UIUtils::pathToQString(exportPath(suffix)), _("PNG Files (*.png)")));
+    if (!img_filename.empty()) {
+      const bool saveResult = qglview->save(img_filename);
       if (saveResult) {
         this->exportPaths[suffix] = img_filename;
         auto guard = scopedSetCurrentOutput();
         fileExportedMessage("PNG", img_filename);
       } else {
-        LOG("Can't open file \"%1$s\" for export image", img_filename.toStdString());
+        LOG("Can't open file %1$s for export image", quotePath(img_filename));
       }
     }
   } break;
@@ -3136,14 +3135,14 @@ void MainWindow::on_editActionFoldAll_triggered()
   activeEditor->foldUnfold();
 }
 
-QString MainWindow::getCurrentFileName() const
+fs::path MainWindow::getCurrentFileName() const
 {
   if (activeEditor == nullptr) return {};
-
-  const QFileInfo fileInfo(activeEditor->filepath);
-  QString fname = _("Untitled.scad");
-  if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
-  return fname.replace("&", "&&");
+  if (activeEditor->filepath.empty()) {
+    return fs::path(_("Untitled.scad"));
+  } else {
+    return activeEditor->filepath;
+  }
 }
 
 /**
@@ -3219,15 +3218,15 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   parameterDock->setWidget(newEditor->parameterWidget);
   editActionUndo->setEnabled(newEditor->canUndo());
 
-  const QString name = getCurrentFileName();
-  setWindowTitle(name);
+  const QString title = UIUtils::pathToQString(getCurrentFileName()).replace("&", "&&");
+  setWindowTitle(title);
 
-  consoleDock->setNameSuffix(name);
-  errorLogDock->setNameSuffix(name);
-  animateDock->setNameSuffix(name);
-  fontListDock->setNameSuffix(name);
-  colorListDock->setNameSuffix(name);
-  viewportControlDock->setNameSuffix(name);
+  consoleDock->setNameSuffix(title);
+  errorLogDock->setNameSuffix(title);
+  animateDock->setNameSuffix(title);
+  fontListDock->setNameSuffix(title);
+  colorListDock->setNameSuffix(title);
+  viewportControlDock->setNameSuffix(title);
 
   // If there is no renderedEditor we request for a new preview if the
   // auto-reload is enabled.
@@ -3298,14 +3297,13 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::handleFileDrop(const QUrl& url)
 {
   if (url.scheme() != "file") return;
-  const auto fileName = url.toLocalFile();
-  const auto fileInfo = QFileInfo{fileName};
-  const auto suffix = fileInfo.suffix().toLower();
+  const fs::path fileName = UIUtils::QStringToPath(url.toLocalFile());
+  QString suffix = UIUtils::pathToQString(fileName.extension()).toLower();
   const auto cmd = Importer::knownFileExtensions[suffix];
   if (cmd.isEmpty()) {
     tabManager->open(fileName);
   } else {
-    activeEditor->insert(cmd.arg(fileName));
+    activeEditor->insert(cmd.arg(UIUtils::pathToQString(fileName)));
   }
 }
 
@@ -3448,27 +3446,26 @@ void MainWindow::processEvents()
   if (this->procevents) QApplication::processEvents();
 }
 
-QString MainWindow::exportPath(const QString& suffix, const QString& basename)
+fs::path MainWindow::exportPath(const std::string& suffix, const fs::path& basename)
 {
   // Derive the directory.
   const auto path_it = this->exportPaths.find(suffix);
-  QString dir;
+  fs::path dir;
   if (path_it != exportPaths.end()) {
-    dir = QFileInfo(path_it->second).absolutePath();
-  } else if (!activeEditor->filepath.isEmpty()) {
-    dir = QFileInfo(activeEditor->filepath).absolutePath();
+    dir = fs::absolute(path_it->second);
+  } else if (!activeEditor->filepath.empty()) {
+    dir = fs::absolute(activeEditor->filepath);
   } else {
-    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
+    dir = PlatformUtils::userDocumentsPath();
   }
 
   // Derive the base name.
-  const auto derivedBasename = !basename.isEmpty() ? basename
-                               : !activeEditor->filepath.isEmpty()
-                                 ? QFileInfo(activeEditor->filepath).completeBaseName()
-                                 : "Untitled";
-
+  auto derivedBasename = !basename.empty()                 ? basename
+                         : !activeEditor->filepath.empty() ? activeEditor->filepath.stem()
+                                                           : fs::path("Untitled");
+  derivedBasename += suffix;
   // Construct the full path.
-  return QString("%1/%2.%3").arg(dir, derivedBasename, suffix);
+  return dir / derivedBasename;
 }
 
 void MainWindow::jumpToLine(int line, int col)
@@ -3647,9 +3644,9 @@ void MainWindow::setupErrorLog()
 /**
   Set up resources related to the Editor dock widget
  */
-void MainWindow::setupEditor(const QStringList& filenames)
+void MainWindow::setupEditor(const std::vector<fs::path>& filenames)
 {
-  tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
+  tabManager = new TabManager(this, filenames.empty() ? fs::path{} : filenames[0]);
   activeEditor = tabManager->editor;
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
@@ -4129,7 +4126,7 @@ void MainWindow::restoreToolBarVisibility()
   viewerToolBar->setVisible(!hide3DViewToolBar);
 }
 
-void MainWindow::openRemainingFiles(const QStringList& filenames)
+void MainWindow::openRemainingFiles(const std::vector<fs::path>& filenames)
 {
   for (int i = 1; i < filenames.size(); ++i) tabManager->createTab(filenames[i]);
 

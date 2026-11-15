@@ -77,13 +77,13 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet)
 #endif
 }
 
-std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_stl(const fs::path& filename, const Location& loc)
 {
   // Open file and position at the end
-  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary | std::ios::ate);
+  std::ifstream f(filename, std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
-        loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file %1$s, import() at line %2$d",
+        quotePath(filename), loc.firstLine());
     return PolySet::createEmpty();
   }
 

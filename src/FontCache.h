@@ -34,8 +34,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <filesystem>
 #include FT_FREETYPE_H
 #include <fontconfig/fontconfig.h>
+
+namespace fs = std::filesystem;
 
 std::string get_fontconfig_version();
 std::string get_harfbuzz_version();
@@ -44,19 +47,19 @@ std::string get_freetype_version();
 class FontInfo
 {
 public:
-  FontInfo(std::string family, std::string style, std::string file, uint32_t hash);
+  FontInfo(std::string family, std::string style, fs::path file, uint32_t hash);
   virtual ~FontInfo() = default;
 
   [[nodiscard]] const std::string& get_family() const;
   [[nodiscard]] const std::string& get_style() const;
-  [[nodiscard]] const std::string& get_file() const;
+  [[nodiscard]] const fs::path& get_file() const;
   [[nodiscard]] const uint32_t get_hash() const;
   bool operator<(const FontInfo& rhs) const;
 
 private:
   std::string family;
   std::string style;
-  std::string file;
+  fs::path file;
   uint32_t hash;
 };
 
@@ -102,7 +105,7 @@ public:
   [[nodiscard]] bool is_init_ok() const;
   FontFacePtr get_font(const std::string& font);
   [[nodiscard]] bool is_windows_symbol_font(const FT_Face& face) const;
-  void register_font_file(const std::string& path);
+  void register_font_file(const fs::path& path);
   void clear();
   [[nodiscard]] FontInfoList *list_fonts() const;
   [[nodiscard]] std::vector<uint32_t> filter(const std::u32string&) const;
@@ -131,7 +134,7 @@ private:
   void check_cleanup();
   void dump_cache(const std::string& info);
 
-  void add_font_dir(const std::string& path);
+  void add_font_dir(const fs::path& path);
   void init_pattern(FcPattern *pattern) const;
 
   [[nodiscard]] FontFacePtr find_face(const std::string& font) const;

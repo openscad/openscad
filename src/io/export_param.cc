@@ -57,7 +57,7 @@ bool export_param(SourceFile *sourceFile, const fs::path& path, std::ostream& ou
   }
 
   json paramFile;
-  paramFile["title"] = path.has_stem() ? path.stem().generic_string() : "Unnamed";
+  paramFile["title"] = path.has_stem() ? path.stem().u8string() : "Unnamed";
   if (params.size() > 0) {
     paramFile["parameters"] = params;
   }

@@ -21,7 +21,7 @@ public:
 
   virtual ~ParameterObject() = default;
   static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment,
-                                                         const std::string& docPath);
+                                                         const fs::path& docPath);
 
   [[nodiscard]] ParameterType type() const { return type_; }
   [[nodiscard]] const std::string& name() const { return name_; }

@@ -31,6 +31,7 @@
 
 #include "FontCache.h"
 #include "utils/printutils.h"
+#include "gui/UIUtils.h"
 
 FontItemDelegate::FontItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {
@@ -428,7 +429,7 @@ void FontList::update_font_list()
     styledFamily->setToolTip(toolTip.arg(family->text()).arg(style->text()));
     model->setItem(idx, COL_STYLED_FONT_NAME, styledFamily);
 
-    const QFileInfo fileInfo(QString::fromStdString(font_info.get_file()));
+    const QFileInfo fileInfo(UIUtils::pathToQString(font_info.get_file()));
     auto *file = new QStandardItem(fileInfo.fileName());
     file->setEditable(false);
     file->setToolTip(fileInfo.canonicalFilePath());

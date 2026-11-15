@@ -6,6 +6,9 @@
 #include <functional>
 #include <string>
 #include <tuple>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #include "gui/Editor.h"
 
@@ -16,13 +19,13 @@ class TabManager : public QObject
   Q_OBJECT
 
 public:
-  TabManager(MainWindow *o, const QString& filename);
+  TabManager(MainWindow *o, const fs::path& filename);
   QWidget *getTabContent();
   EditorInterface *editor;
   QSet<EditorInterface *> editorList;
 
-  void createTab(const QString& filename);
-  void openTabFile(const QString& filename);
+  void createTab(const fs::path& filename);
+  void openTabFile(const fs::path& filename);
 
   // returns the name and tooltip of the tab for the given provided editor
   // if there is a path associated with an editor this is the filepath
@@ -39,9 +42,9 @@ public:
   bool shouldClose();
   bool save(EditorInterface *edt);
   bool saveAs(EditorInterface *edt);
-  bool saveAs(EditorInterface *edt, const QString& filepath);
+  bool saveAs(EditorInterface *edt, const fs::path& filepath);
   bool saveACopy(EditorInterface *edt);
-  void open(const QString& filename);
+  void open(const fs::path& filename);
   size_t count();
 
 public:
@@ -66,8 +69,8 @@ private:
   QTabWidget *tabWidget;
 
   bool maybeSave(int);
-  bool save(EditorInterface *edt, const QString& path);
-  void saveError(const QIODevice& file, const std::string& msg, const QString& filepath);
+  bool save(EditorInterface *edt, const fs::path& path);
+  void saveError(const QIODevice& file, const std::string& msg, const fs::path& filepath);
   void applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func);
   void setTabsCloseButtonVisibility(int tabIndice, bool isVisible);
 

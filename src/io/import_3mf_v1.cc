@@ -295,7 +295,7 @@ Color4f get_triangle_color(PLib3MFModel *model, PLib3MFPropertyHandler *property
   return {};
 }
 
-std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, PLib3MFModel *model,
+std::string import_3mf_mesh(const fs::path& filename, unsigned int mesh_idx, PLib3MFModel *model,
                             std::unique_ptr<MeshObject>& mo, std::unique_ptr<PolySet>& ps)
 {
   DWORD vertex_count = 0;
@@ -310,9 +310,9 @@ std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, 
   if (lib3mf_object_gettype(mo->obj, &object_type) != LIB3MF_OK) {
     return "Could not read object type";
   }
-  PRINTDB(
-    "%s: mesh %d, type: %s, vertex count: %lu, triangle count: %lu",
-    filename.c_str() % mesh_idx % get_object_type_name(object_type) % vertex_count % triangle_count);
+  PRINTDB("%s: mesh %d, type: %s, vertex count: %lu, triangle count: %lu",
+          quotePath(filename).c_str() % mesh_idx % get_object_type_name(object_type) % vertex_count %
+            triangle_count);
 
   PLib3MFPropertyHandler *propertyhandler = nullptr;
   if (lib3mf_meshobject_createpropertyhandler(mo->obj, &propertyhandler) != LIB3MF_OK) {
@@ -426,7 +426,7 @@ std::string read_metadata(PLib3MFModel *model)
 
 }  // namespace
 
-std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_3mf(const fs::path& filename, const Location& loc)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result =
@@ -458,10 +458,10 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
     return import_3mf_error(model);
   }
 
-  result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
+  result = lib3mf_reader_readfromfileutf8(reader, filename.u8string().c_str());
   lib3mf_release(reader);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d", filename.c_str(),
+    LOG(message_group::Warning, "Could not read file %1$s, import() at line %2$d", quotePath(filename),
         loc.firstLine());
     return import_3mf_error(model);
   }

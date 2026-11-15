@@ -1,10 +1,12 @@
 #pragma once
 
-#include <string>
 #include <utility>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct IndicatorData {
-  IndicatorData(int firstLine, int firstCol, int lastLine, int lastCol, std::string path)
+  IndicatorData(int firstLine, int firstCol, int lastLine, int lastCol, fs::path path)
     : first_line(firstLine),
       first_col(firstCol),
       last_line(lastLine),
@@ -17,5 +19,5 @@ struct IndicatorData {
   int first_col;
   int last_line;
   int last_col;
-  std::string path;
+  fs::path path;
 };

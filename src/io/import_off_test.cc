@@ -3,13 +3,16 @@
 #include <catch2/catch_all.hpp>
 #include <memory>
 #include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #include "core/AST.h"
 #include "geometry/PolySet.h"
 
-static std::string get_off_file_path(const std::string& name)
+static fs::path get_off_file_path(const fs::path& name)
 {
-  return std::string(OPENSCAD_TEST_DATA_DIR) + "/off/" + name;
+  return fs::path(OPENSCAD_TEST_DATA_DIR) / "off" / name;
 }
 
 static const Location test_location{0, 0, 0, 0, nullptr};

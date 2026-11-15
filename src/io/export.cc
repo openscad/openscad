@@ -184,15 +184,19 @@ bool is2D(FileFormat format)
 }  // namespace fileformat
 
 ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,
-                            const std::string& filepath, const Camera *camera,
+                            const fs::path& sourcefilepath, const Camera *camera,
                             const CmdLineExportOptions& cmdLineOptions)
 {
   const auto colorScheme = ColorMap::instance().findColorScheme(RenderSettings::inst()->colorscheme);
+  std::string title = sourcefilepath.filename().u8string();
+  if (title.empty()) {
+    title = "<stdin>";
+  }
   auto exportInfo = ExportInfo{
     .format = format,
     .info = info,
-    .title = std::filesystem::path(filepath).filename().string(),
-    .sourceFilePath = filepath,
+    .title = title,
+    .sourceFilePath = sourcefilepath,
     .camera = camera,
     .defaultColor = ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR),
     .colorScheme = colorScheme,
@@ -267,7 +271,7 @@ bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Ex
   return true;
 }
 
-bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename,
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const fs::path& filename,
                       const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
@@ -275,10 +279,9 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
       exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  const std::filesystem::path path(filename);
-  std::ofstream fstream(path, mode);
+  std::ofstream fstream(filename, mode);
   if (!fstream.is_open()) {
-    LOG(_("Can't open file \"%1$s\" for export"), filename);
+    LOG(_("Can't open file %1$s for export"), quotePath(filename));
     return false;
   } else {
     bool onerror = false;

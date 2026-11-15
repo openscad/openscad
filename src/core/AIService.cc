@@ -9,18 +9,18 @@
 #include <fstream>
 #include <cstdlib>
 
-static std::string getAISettingsPath()
+static fs::path getAISettingsPath()
 {
-  std::string configPath = PlatformUtils::userConfigPath();
+  fs::path configPath = PlatformUtils::userConfigPath();
   if (configPath.empty()) {
     char *home = std::getenv("HOME");
     if (home) {
-      configPath = std::string(home) + "/.openscad";
+      configPath = fs::path(home) / ".openscad";
     } else {
-      configPath = ".";
+      configPath = fs::path(".");
     }
   }
-  return configPath + "/ai_settings.json";
+  return configPath / "ai_settings.json";
 }
 
 static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)

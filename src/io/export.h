@@ -288,7 +288,7 @@ struct ExportInfo {
   FileFormat format;
   FileFormatInfo info;
   std::string title;
-  std::string sourceFilePath;  // Full path to the OpenSCAD source file
+  fs::path sourceFilePath;  // Full path to the OpenSCAD source file
   const Camera *camera;
   const Color4f defaultColor;
   const ColorScheme *colorScheme;
@@ -299,13 +299,13 @@ struct ExportInfo {
 };
 
 ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,
-                            const std::string& filepath, const Camera *camera,
+                            const fs::path& filepath, const Camera *camera,
                             const CmdLineExportOptions& cmdLineOptions);
 
 void exportFile(const std::shared_ptr<const class Geometry>& root_geom, std::ostream& output,
                 const ExportInfo& exportInfo);
-bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom,
-                      const std::string& filename, const ExportInfo& exportInfo);
+bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const fs::path& filename,
+                      const ExportInfo& exportInfo);
 bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom,
                       const ExportInfo& exportInfo);
 

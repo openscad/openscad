@@ -278,7 +278,7 @@ bool HidApiInputDriver::open()
 {
   if (Settings::Settings::inputEnableDriverHIDAPILog.value()) {
     logtime = ch::system_clock::now();
-    logstream.open(PlatformUtils::backupPath() + "/hidapi.log");
+    logstream.open(PlatformUtils::backupPath() / "hidapi.log");
   }
 
   HIDAPI_LOG("HidApiInputDriver::open()");

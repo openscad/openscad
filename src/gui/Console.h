@@ -88,7 +88,7 @@ public:
 
 signals:
   void linkActivated(QString);
-  void openFile(QString, int);
+  void openFile(fs::path, int);
   void openWindowRequested(const QString& window);
 
 public slots:

@@ -30,8 +30,10 @@
 
 #include <chrono>
 #include <filesystem>
-#include <string>
+#include <filesystem>
 #include <unordered_map>
+
+namespace fs = std::filesystem;
 
 namespace {
 
@@ -50,13 +52,13 @@ struct CacheEntry {
   double timestamp;  // the time stat was called
 };
 
-std::unordered_map<std::string, CacheEntry> statMap;
+std::unordered_map<fs::path, CacheEntry> statMap;
 
 }  // namespace
 
 namespace StatCache {
 
-int stat(const std::string& path, struct ::stat& st)
+int stat(const fs::path& path, struct ::stat& st)
 {
   auto iter = statMap.find(path);
   if (iter != statMap.end()) {  // Have we got an entry for this file?
@@ -66,7 +68,7 @@ int stat(const std::string& path, struct ::stat& st)
     }
     statMap.erase(iter);  // Remove stale entry
   }
-  if (auto rv = PlatformUtils::stat(std::filesystem::u8path(path), st)) return rv;  // stat failed
+  if (auto rv = PlatformUtils::stat(path, st)) return rv;  // stat failed
   statMap[path] = {st, millis_clock()};
   return 0;
 }

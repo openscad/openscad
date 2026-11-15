@@ -83,24 +83,25 @@
 #include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
+#include "gui/UIUtils.h"
 
 namespace {
 
 const char *featurePropertyName = "FeatureProperty";
 
-QString getAISettingsFilePath()
+fs::path getAISettingsFilePath()
 {
-  QString configPath = QString::fromStdString(PlatformUtils::userConfigPath());
-  if (configPath.isEmpty()) {
-    configPath = QDir::homePath() + "/.openscad";
+  fs::path configPath = PlatformUtils::userConfigPath();
+  if (configPath.empty()) {
+    configPath = UIUtils::QStringToPath(QDir::homePath()) / ".openscad";
   }
-  QDir().mkpath(configPath);
-  return configPath + "/ai_settings.json";
+  QDir().mkpath(UIUtils::pathToQString(configPath));
+  return configPath / "ai_settings.json";
 }
 
 nlohmann::json readAISettings()
 {
-  QFile file(getAISettingsFilePath());
+  QFile file(UIUtils::pathToQString(getAISettingsFilePath()));
   if (!file.open(QIODevice::ReadOnly)) {
     return nlohmann::json::object();
   }
@@ -118,7 +119,7 @@ void writeAISettings(const nlohmann::json& j)
   if (!Feature::ExperimentalAiFeatures.is_enabled()) {
     return;
   }
-  QFile file(getAISettingsFilePath());
+  QFile file(UIUtils::pathToQString(getAISettingsFilePath()));
   if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     std::string s = j.dump(4);
     file.write(s.c_str(), s.length());

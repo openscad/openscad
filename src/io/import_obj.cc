@@ -18,14 +18,14 @@
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 
-std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_obj(const fs::path& filename, const Location& loc)
 {
   PolySetBuilder builder;
 
-  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
+  std::ifstream f(filename, std::ios::in | std::ios::binary);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
-        loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file %1$s, import() at line %2$d",
+        quotePath(filename), loc.firstLine());
     return PolySet::createEmpty();
   }
   const boost::regex ex_comment(R"(^\s*#)");
@@ -43,8 +43,8 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
   std::string line;
 
   auto AsciiError = [&](const auto& errstr) {
-    LOG(message_group::Error, loc, "", "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'",
-        lineno, errstr, line, filename);
+    LOG(message_group::Error, loc, "", "OBJ File line %1$s, %2$s line '%3$s' importing file %4$s",
+        lineno, errstr, line, quotePath(filename));
   };
   std::vector<int> vertex_map;
 
@@ -83,8 +83,8 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
           if (ind >= 1 && ind <= num_vertices) {
             builder.addVertex(vertex_map[ind - 1]);
           } else {
-            LOG(message_group::Warning, "Index %1$s out of range in file '%2$s', line %3$d",
-                wordindex[0], filename, lineno);
+            LOG(message_group::Warning, "Index %1$s out of range in file %2$s, line %3$d", wordindex[0],
+                quotePath(filename), lineno);
           }
         } catch (const boost::bad_lexical_cast& blc) {
           AsciiError("can't parse face");

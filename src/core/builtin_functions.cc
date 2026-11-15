@@ -1122,24 +1122,23 @@ Value builtin_import(Arguments arguments, const Location& loc)
   auto session = arguments.session();
   const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "type"});
   std::string type = parameters.get("type", "");
-  std::string raw_filename = parameters.get("file", "");
+  auto raw_filename = u8path(parameters.get("file", ""));
 
-  std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string());
+  fs::path file = lookup_file(raw_filename, loc.filePath().parent_path());
   if (!file.empty()) handle_dep(file);
 
   if (type.empty()) {
     // Not explicitly specified; derive the file type from its extension.
-    std::string extraw = fs::path(file).extension().generic_string();
-    std::string ext = boost::algorithm::to_lower_copy(extraw);
+    const std::string ext = pathExtensionLower(file);
     if (ext == ".json") {
       type = "json";
     } else if (ext.empty()) {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "No file extension or type while trying to import '%1$s'", raw_filename);
+          "No file extension or type while trying to import %1$s", quotePath(raw_filename));
       return Value::undefined.clone();
     } else {
       LOG(message_group::Warning, loc, arguments.documentRoot(),
-          "Unsupported file extension '%1$s' while trying to import '%2$s'", ext, raw_filename);
+          "Unsupported file extension '%1$s' while trying to import %2$s", ext, quotePath(raw_filename));
       return Value::undefined.clone();
     }
   }
@@ -1148,7 +1147,7 @@ Value builtin_import(Arguments arguments, const Location& loc)
     return import_json(file, session, loc);
   } else {
     LOG(message_group::Warning, loc, arguments.documentRoot(),
-        "Unsupported file type '%1$s' while trying to import '%2$s'", type, raw_filename);
+        "Unsupported file type '%1$s' while trying to import %2$s", type, quotePath(raw_filename));
     return Value::undefined.clone();
   }
 }

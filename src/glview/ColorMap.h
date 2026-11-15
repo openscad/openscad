@@ -63,7 +63,7 @@ public:
   [[nodiscard]] const boost::property_tree::ptree& propertyTree() const;
 
 private:
-  [[nodiscard]] std::string path() const;
+  [[nodiscard]] fs::path path() const;
   [[nodiscard]] std::string error() const;
   void addColor(RenderColor colorKey, const std::string& key);
 

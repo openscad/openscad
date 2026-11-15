@@ -177,7 +177,7 @@ input
         | input
           TOK_USE
             {
-              rootfile->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
+              rootfile->registerUse(fs::path($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
               free($2);
             }
         | input statement
@@ -737,7 +737,7 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 {
 	LOG(message_group::Warning,
 			loc,
-			path.parent_path().generic_string(),
+			path.parent_path(),
 			"%1$s was assigned on line %2$i but was overwritten",
 			quoteVar(assignment->getName()),
 			assignment->location().firstLine());
@@ -748,11 +748,11 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 {
 	LOG(message_group::Warning,
 			loc,
-			path1.parent_path().generic_string(),
+			path1.parent_path(),
 			"%1$s was assigned on line %2$i of %3$s but was overwritten",
 			quoteVar(assignment->getName()),
 			assignment->location().firstLine(),
-			path2);
+			quotePath(path2));
 }
 
 void handle_assignment(const std::string token, Expression *expr, const Location loc)
@@ -760,7 +760,6 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 	bool found = false;
 	for (auto &assignment : scope_stack.top()->assignments) {
 		if (assignment->getName() == token) {
-			auto mainFile = mainFilePath.generic_string();
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 
@@ -768,7 +767,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			const auto uncPathPrev = fs_uncomplete(prevFile, mainFilePath.parent_path());
 			if (fileEnded) {
 				//assignments via commandline
-			} else if (prevFile == mainFile && currFile == mainFile) {
+			} else if (prevFile == mainFilePath && currFile == mainFilePath) {
 				//both assignments in the mainFile
 				warn_reassignment(loc, assignment, mainFilePath);
 			} else if (uncPathCurr == uncPathPrev) {
@@ -777,7 +776,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				if (assignment->location().firstLine() != loc.firstLine()) {
 					warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 				}
-			} else if (prevFile == mainFile && currFile != mainFile) {
+			} else if (prevFile == mainFilePath && currFile != mainFilePath) {
 				//assignment from the mainFile overwritten by an include
 				warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 			}
@@ -792,13 +791,13 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 	}
 }
 
-bool parse(SourceFile *&file, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
+bool parse(SourceFile *&file, const std::string& text, const fs::path &filename, const fs::path &mainFile, int debug)
 {
   fs::path filepath;
   try {
-    filepath = filename.empty() ? fs::current_path() : fs_absolute(fs::path{filename});
-    mainFilePath = mainFile.empty() ? fs::current_path() : fs_absolute(fs::path{mainFile});
-  } catch (const std::filesystem::filesystem_error& fs_err) {
+    filepath = filename.empty() ? fs::current_path() : fs_absolute(filename);
+    mainFilePath = mainFile.empty() ? fs::current_path() : fs_absolute(mainFile);
+  } catch (const fs::filesystem_error& fs_err) {
     LOG(message_group::Error, "Parser error: file system error: %1$s", fs_err.what());
     return false;
   } catch (...) {
@@ -808,7 +807,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   }
 
   parsingMainFile = mainFilePath == filepath;
-  fs::path parser_sourcefile = fs_generic_string(filepath);
+  fs::path parser_sourcefile = filepath;
   lexer_set_parser_sourcefile(parser_sourcefile);
 
   lexerin = NULL;
@@ -816,7 +815,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   parser_input_buffer = text.c_str();
   fileEnded = false;
 
-  rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+  rootfile = new SourceFile(parser_sourcefile.parent_path(), parser_sourcefile.filename());
   scope_stack.push(rootfile->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 

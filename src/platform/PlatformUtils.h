@@ -15,8 +15,8 @@ static constexpr size_t STACK_LIMIT_DEFAULT = size_t{STACKSIZE} - STACK_BUFFER_S
 namespace PlatformUtils {
 extern const char *OPENSCAD_FOLDER_NAME;
 
-void registerApplicationPath(const std::string& applicationpath);
-std::string applicationPath();
+void registerApplicationPath(const fs::path& applicationpath);
+fs::path applicationPath();
 
 /**
  * The OpenSCAD document path which is used for searching user
@@ -27,7 +27,7 @@ std::string applicationPath();
  *
  * @return the application documents path
  */
-std::string documentsPath();
+fs::path documentsPath();
 /**
  * The user documents path where files are saved/exported to by
  * default. On Linux this is the $XDG_DOCUMENTS_DIR, if this is
@@ -36,12 +36,12 @@ std::string documentsPath();
  *
  * @return the path for saving user documents
  */
-std::string userPath(const std::string& name);
-std::string userDocumentsPath();
-std::string resourceBasePath();
+fs::path userPath(const std::string& name);
+fs::path userDocumentsPath();
+fs::path resourceBasePath();
 fs::path resourcePath(const std::string& resource);
-std::string userLibraryPath();
-std::string userExamplesPath();
+fs::path userLibraryPath();
+fs::path userExamplesPath();
 
 /**
  * Base path where user configuration can be read and written to. On
@@ -53,10 +53,10 @@ std::string userExamplesPath();
  * @return absolute path to the writable configuration folder or
  * an empty string if the config path does not exist.
  */
-std::string userConfigPath();
+fs::path userConfigPath();
 
 bool createUserLibraryPath();
-std::string backupPath();
+fs::path backupPath();
 bool createBackupPath();
 
 /**
@@ -92,7 +92,7 @@ const std::string user_agent();
  * @param value the value to set for the environment variable.
  * @return 0 on success.
  */
-int setenv(const char *name, const char *value, int overwrite);
+int setenv(const char *name, const std::string value, int overwrite);
 
 /**
  * Return system defined stack limit. If the system does not define
