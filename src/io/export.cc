@@ -40,6 +40,7 @@
 #include <locale>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -237,7 +238,20 @@ bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Ex
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
-  exportFile(root_geom, std::cout, exportInfo);
+  if (exportInfo.format == FileFormat::_3MF) {
+    // lib3mf needs to seek in its output, which isn't possible when stdout is a pipe
+    // (#6895), so build the file in memory first.
+    std::stringstream buffer;
+    exportFile(root_geom, buffer, exportInfo);
+    std::cout << buffer.rdbuf();
+  } else {
+    exportFile(root_geom, std::cout, exportInfo);
+  }
+  std::cout.flush();
+  if (!std::cout) {
+    LOG(message_group::Error, _("Error writing to standard output."));
+    return false;
+  }
   return true;
 }
 
