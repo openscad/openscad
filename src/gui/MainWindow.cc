@@ -3625,12 +3625,12 @@ void MainWindow::setupConsole()
   consoleOutputRaw(
     QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber))));
   consoleOutputRaw(QString("<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>"));
-  consoleOutputRaw(
-    QString("<p>Copyright (C) 2009-2026 The OpenSCAD Developers</p>"
-            "<p>This program is free software; you can redistribute it and/or modify "
-            "it under the terms of the GNU General Public License as published by "
-            "the Free Software Foundation; either version 2 of the License, or "
-            "(at your option) any later version.</p>"));
+  consoleOutputRaw(QString("<p>Copyright (C) 2009-%1 The OpenSCAD Developers</p>"
+                           "<p>This program is free software; you can redistribute it and/or modify "
+                           "it under the terms of the GNU General Public License as published by "
+                           "the Free Software Foundation; either version 2 of the License, or "
+                           "(at your option) any later version.</p>")
+                     .arg(openscad_version_year));
 }
 
 /**

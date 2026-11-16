@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 std::vector<std::string> librarypath;
 
-static void add_librarydir(const std::string& libdir)
+void add_librarydir(const std::string& libdir)
 {
   librarypath.push_back(libdir);
 }
