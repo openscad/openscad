@@ -245,6 +245,7 @@ endif()
 
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
+  ${TEST_SCAD_DIR}/svg/center-viewbox-offset.scad
   ${TEST_SCAD_DIR}/svg/display.scad
   ${TEST_SCAD_DIR}/svg/id-selection-test.scad
   ${TEST_SCAD_DIR}/svg/id-layer-selection-test.scad
@@ -896,7 +897,6 @@ endforeach()
 
 add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/box-w-holes.scad
-  ${TEST_SCAD_DIR}/svg/extruded/center-viewbox-offset.scad
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
