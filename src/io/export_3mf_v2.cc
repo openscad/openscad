@@ -35,7 +35,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "Feature.h"
 #include "core/ColorUtil.h"
 #include "export_enums.h"
 #include "geometry/Geometry.h"
@@ -203,10 +202,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
       return true;
     };
 
-    std::shared_ptr<const PolySet> out_ps = ps;
-    if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-      out_ps = createSortedPolySet(*ps);
-    }
+    auto out_ps = createSortedPolySet(*ps);
 
     for (const auto& v : out_ps->vertices) {
       if (!vertexFunc(v)) {

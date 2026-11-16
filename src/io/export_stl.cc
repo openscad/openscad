@@ -38,7 +38,6 @@
 #include <string>
 #include <vector>
 
-#include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
@@ -118,9 +117,7 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
   if (!ps->isTriangular()) {
     ps = PolySetUtils::tessellate_faces(*ps);
   }
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    ps = createSortedPolySet(*ps);
-  }
+  ps = createSortedPolySet(*ps);
 
   uint64_t triangle_count = 0;
 
