@@ -190,6 +190,23 @@ TEST_CASE("SVG import handles <use> elements nested in <defs>", "[libsvg]")
   libsvg::libsvg_free(shapes);
 }
 
+TEST_CASE("SVG import handles <use> elements referring to any element", "[libsvg]")
+{
+  auto shapes = read(svg_path("use-any-element.svg"));
+
+  std::set<std::pair<double, double>> positions;
+  size_t squares = 0;
+  for (const auto& shape_ptr : *shapes) {
+    if (shape_ptr->get_path_list().empty()) continue;
+    squares++;
+    const auto& p = shape_ptr->get_path_list().front().front();
+    positions.insert({p.x(), p.y()});
+  }
+  CHECK(squares == 4);
+  CHECK(positions == std::set<std::pair<double, double>>{{0, 0}, {10, 0}, {20, 0}, {30, 0}});
+  libsvg::libsvg_free(shapes);
+}
+
 TEST_CASE("SVG import is not vulnerable to entity expansion bombs", "[libsvg][Security]")
 {
   SECTION("the entities are not expanded")
