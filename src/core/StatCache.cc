@@ -26,7 +26,10 @@
 
 #include "core/StatCache.h"
 
+#include "platform/PlatformUtils.h"
+
 #include <chrono>
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -63,7 +66,7 @@ int stat(const std::string& path, struct ::stat& st)
     }
     statMap.erase(iter);  // Remove stale entry
   }
-  if (auto rv = ::stat(path.c_str(), &st)) return rv;  // stat failed
+  if (auto rv = PlatformUtils::stat(std::filesystem::u8path(path), st)) return rv;  // stat failed
   statMap[path] = {st, millis_clock()};
   return 0;
 }

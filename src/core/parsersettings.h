@@ -12,6 +12,7 @@ extern int parser_error_pos;
  * Initialize library path.
  */
 void parser_init();
+void add_librarydir(const std::string& libdir);
 
 fs::path search_libs(const fs::path& localpath);
 fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,

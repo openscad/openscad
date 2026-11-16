@@ -38,6 +38,7 @@
 #include "core/Assignment.h"
 #include "parser.hxx"
 #include "core/SourceFile.h"
+#include "platform/PlatformUtils.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <filesystem>
@@ -447,7 +448,7 @@ void includefile(const Location& loc)
 
   handle_dep(fullname);
 
-  yyin = fopen(fullname.c_str(), "r");
+  yyin = PlatformUtils::fopen(fullpath, "r");
   if (!yyin) {
     LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();

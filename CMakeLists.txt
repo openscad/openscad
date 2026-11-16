@@ -490,10 +490,7 @@ macro(find_graphics)
       set(GLEW_SOURCES src/glview/glew-utils.cc)
     endif()
 
-    find_package(OpenGL QUIET COMPONENTS OpenGL)
-    if (NOT (OpenGL_FOUND OR OpenGL_OpenGL_FOUND))
-      message(FATAL_ERROR "OpenGL not found")
-    endif()
+    find_package(OpenGL QUIET REQUIRED OpenGL)
     target_link_libraries(OpenSCADLibInternal PUBLIC ${OPENGL_LIBRARIES})
     message(STATUS "OpenGL: ${OPENGL_LIBRARIES}")
   endif()
@@ -573,6 +570,7 @@ else()
 
   find_package(FontConfig 2.8.0 REQUIRED QUIET)
   message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
+  target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${FONTCONFIG_INCLUDE_DIR})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${FONTCONFIG_LIBRARIES})
 
   find_package(GLIB2 2.26 REQUIRED QUIET)
@@ -965,7 +963,7 @@ if(NULLGL)
 endif()
 if(APPLE)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_OS="Mac OS X")
-  set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
+  set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-lodepng.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
@@ -1623,6 +1621,7 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES
   "src/utils/*_test.cc"
   "src/core/*_test.cc"
+  "src/geometry/*_test.cc"
   "src/io/*_test.cc"
   "src/libsvg/*_test.cc"
 )
@@ -1668,6 +1667,7 @@ if(APPLE AND NOT APPLE_UNIX)
   if(ENABLE_GUI_TESTS)
     file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
+         ${CMAKE_SOURCE_DIR}/tests/data/libraries
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
          DESTINATION ${BUNDLE_RESOURCES_DIR}/tests/data)
   endif()

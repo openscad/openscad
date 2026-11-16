@@ -1,6 +1,7 @@
 #include "platform/PlatformUtils.h"
 
 #include <algorithm>
+#include <cstring>
 #include <filesystem>
 #include <ios>
 #include <map>
@@ -214,4 +215,25 @@ void PlatformUtils::ensureStdIO(void)
 #ifdef USE_MIMALLOC
   mi_register_output(&mi_output, nullptr);
 #endif
+}
+
+FILE *PlatformUtils::fopen(const fs::path& path, const char *mode)
+{
+  // The mode is plain ASCII, so widening each character is enough.
+  const std::wstring wmode(mode, mode + std::strlen(mode));
+  return _wfopen(path.c_str(), wmode.c_str());
+}
+
+int PlatformUtils::stat(const fs::path& path, struct ::stat& st)
+{
+  // Use the wide-character version and copy over the fields struct stat has.
+  struct _stat64 wst;
+  if (auto rv = _wstat64(path.c_str(), &wst)) return rv;
+  st = {};
+  st.st_mode = wst.st_mode;
+  st.st_size = wst.st_size;
+  st.st_atime = wst.st_atime;
+  st.st_mtime = wst.st_mtime;
+  st.st_ctime = wst.st_ctime;
+  return 0;
 }

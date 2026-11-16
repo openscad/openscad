@@ -2,8 +2,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <string>
+
+#include <sys/stat.h>
 namespace fs = std::filesystem;
 
 static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
@@ -118,4 +121,17 @@ void ensureStdIO();
  * a given number of digits.
  */
 std::string toMemorySizeString(uint64_t bytes, int digits);
+
+/**
+ * Open a file like std::fopen(). On Windows this uses _wfopen(), so paths
+ * that can't be represented in the ANSI code page (e.g. with non-ASCII
+ * characters) can be opened too.
+ */
+FILE *fopen(const fs::path& path, const char *mode);
+
+/**
+ * Like ::stat(), but on Windows uses _wstat64(), so paths that can't be
+ * represented in the ANSI code page can be used too. Returns 0 on success.
+ */
+int stat(const fs::path& path, struct ::stat& st);
 }  // namespace PlatformUtils

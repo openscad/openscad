@@ -55,7 +55,6 @@ else() # !PROJECT_IS_TOP_LEVEL
   # Very commonly used cmake-provided paths
   set(CBD ${CMAKE_BINARY_DIR}) # build top level
   set(CSD ${CMAKE_SOURCE_DIR}) # project top level
-  set(LIBRARIES_DIR "${CSD}/libraries")
 
   if(APPLE)
     set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
@@ -66,12 +65,6 @@ else() # !PROJECT_IS_TOP_LEVEL
   else()
     set(OPENSCAD_BINPATH "${CBD}/openscad${SUFFIX_WITH_DASH}")
   endif()
-
-  # MCAD
-  if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
-    message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
-  endif()
-  list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
   find_package(Lib3MF QUIET)
   # Disable LIB3MF tests if library was disabled in build
@@ -137,6 +130,7 @@ set(TEST_DATA_DIR       "${CCSD}/data")
 set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
+list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${TEST_DATA_DIR}/libraries")
 # Test runner Python scripts
 set(STLEXPORTSANITYTEST_PY   "${CCSD}/stlexportsanitytest.py")
 set(EXPORT_IMPORT_PNGTEST_PY "${CCSD}/export_import_pngtest.py")
@@ -250,6 +244,7 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/id-layer-selection-test.scad
   ${TEST_SCAD_DIR}/svg/line-cap-line-join.scad
   ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
+  ${TEST_SCAD_DIR}/svg/tessellation-test.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
   ${TEST_SCAD_DIR}/svg/size-percent.scad
@@ -304,6 +299,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/special-consts.scad
   ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
   ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
+  ${TEST_SCAD_DIR}/misc/linear_extrude-segments-parameter-tests.scad
 )
 
 list(APPEND FAILING_FILES
@@ -871,6 +867,8 @@ if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
+# An inside-out polyhedron must be subtracted like a normal one (#7201).
+add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/polyhedron-inside-out.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(render-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold --hardwarnings)
 endif()
@@ -989,6 +987,13 @@ add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES 
 add_cmdline_test(export-binstl-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --enable=predictible-output --render --export-format binstl)
 
 add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output)
+
+# linear_extrude(segments=...): the exported vertices show how each outline is subdivided.
+# The expected faces depend on how the caps are triangulated, which differs without Manifold.
+if (ENABLE_MANIFOLD_TESTS)
+file(GLOB LINEAR_EXTRUDE_SEGMENTS_FILES ${TEST_SCAD_DIR}/linear_extrude/linear_extrude-segments-*.scad)
+add_cmdline_test(linear_extrude-segments EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${LINEAR_EXTRUDE_SEGMENTS_FILES} ARGS --enable=predictible-output)
+endif()
 if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_LAZY_UNION_TEST_FILES} ARGS --enable=predictible-output --enable=lazy-union)
@@ -1470,6 +1475,16 @@ disable_tests_safe(
   render-csg-cgal_import_3mf-tests
   throwntogether-cgal_import_3mf-tests
   throwntogether-manifold_import_3mf-tests
+
+  # Requires MCAD which is no longer bundled (#6982)
+  dump-examples_example023
+  render-cgal_example023
+  render-manifold_example023
+  preview-cgal_example023
+  preview-manifold_example023
+  throwntogether-cgal_example023
+  throwntogether-manifold_example023
+  render-csg-cgal_example023
 )
 
 list(APPEND NEF3_BROKEN_TESTS

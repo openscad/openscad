@@ -2,11 +2,11 @@ name: Check for manifold release
 
 on:
   schedule:
-    - cron: '5 5 1 * *'
+    - cron: '5 5 * * 1'
   workflow_dispatch:
 
 env:
-  DELAY_DAYS: 10
+  DELAY_DAYS: 6
   SUBMODULE_NAME: "Manifold"
   SUBMODULE_REPO: "elalish/manifold"
   SUBMODULE_PATH: "submodules/manifold"
