@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <istream>
 #include <iterator>
@@ -97,6 +98,21 @@ std::string SettingsEntryInt::encode() const
   return STR(_value);
 }
 
+bool SettingsEntryBool::validate(const std::string& encoded) const
+{
+  const std::string trimmed = boost::algorithm::trim_copy(encoded);
+  if (trimmed == "true" || trimmed == "false") return true;
+  bool value;
+  return boost::conversion::try_lexical_convert(trimmed, value);
+}
+
+bool SettingsEntryInt::validate(const std::string& encoded) const
+{
+  int value;
+  if (!boost::conversion::try_lexical_convert(boost::algorithm::trim_copy(encoded), value)) return false;
+  return value >= _minimum && value <= _maximum;
+}
+
 const int SettingsEntryInt::decode(const std::string& encoded) const
 {
   try {
@@ -109,6 +125,13 @@ const int SettingsEntryInt::decode(const std::string& encoded) const
 std::string SettingsEntryDouble::encode() const
 {
   return STR(_value);
+}
+
+bool SettingsEntryDouble::validate(const std::string& encoded) const
+{
+  double value;
+  if (!boost::conversion::try_lexical_convert(boost::algorithm::trim_copy(encoded), value)) return false;
+  return std::isfinite(value) && value >= _minimum && value <= _maximum;
 }
 
 const double SettingsEntryDouble::decode(const std::string& encoded) const
