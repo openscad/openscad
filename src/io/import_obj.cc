@@ -29,7 +29,8 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
     return PolySet::createEmpty();
   }
   const boost::regex ex_comment(R"(^\s*#)");
-  const boost::regex ex_v(R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
+  // x y z, optionally followed by w or by vertex colors, which are ignored
+  const boost::regex ex_v(R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)(\s+.*)?$)");
   const boost::regex ex_f(R"(^\s*f\s+(.*)$)");
   const boost::regex ex_vt(R"(^\s*vt)");
   const boost::regex ex_vn(R"(^\s*vn)");
@@ -38,7 +39,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
   const boost::regex ex_o(R"(^\s*o)");
   const boost::regex ex_s(R"(^\s*s)");
   const boost::regex ex_g(R"(^\s*g)");
-  int lineno = 1;
+  int lineno = 0;
   std::string line;
 
   auto AsciiError = [&](const auto& errstr) {
@@ -68,20 +69,26 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
       std::vector<std::string> words;
-      boost::split(words, results[1], boost::is_any_of(" \t"));
+      boost::split(words, results[1], boost::is_any_of(" \t"), boost::token_compress_on);
       builder.beginPolygon(words.size());
       for (const std::string& word : words) {
         std::vector<std::string> wordindex;
         boost::split(wordindex, word, boost::is_any_of("/"));
-        if (wordindex.size() < 1)
-          LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
-        else {
-          const size_t ind = boost::lexical_cast<int>(wordindex[0]);
-          if (ind >= 1 && ind <= vertex_map.size()) {
+        try {
+          // Indices are 1-based. Negative indices are relative to the vertices read
+          // so far, -1 is the last one.
+          const int num_vertices = static_cast<int>(vertex_map.size());
+          int ind = boost::lexical_cast<int>(wordindex[0]);
+          if (ind < 0) ind += num_vertices + 1;
+          if (ind >= 1 && ind <= num_vertices) {
             builder.addVertex(vertex_map[ind - 1]);
           } else {
-            LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
+            LOG(message_group::Warning, "Index %1$s out of range in file '%2$s', line %3$d",
+                wordindex[0], filename, lineno);
           }
+        } catch (const boost::bad_lexical_cast& blc) {
+          AsciiError("can't parse face");
+          return PolySet::createEmpty();
         }
       }
 
@@ -93,7 +100,8 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
     } else if (boost::regex_search(line, results, ex_s)) {       // ignore smooting
     } else if (boost::regex_search(line, results, ex_g)) {       // ignore group name
     } else {
-      LOG(message_group::Warning, "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
+      LOG(message_group::Warning, "Unrecognized line '%1$s' in file '%2$s', line %3$d", line, filename,
+          lineno);
     }
   }
   return builder.build();
