@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 
 std::vector<std::string> librarypath;
 
-static void add_librarydir(const std::string& libdir)
+void add_librarydir(const std::string& libdir)
 {
   librarypath.push_back(libdir);
 }
@@ -110,7 +110,13 @@ inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& loc
 fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,
                          const std::vector<std::string> *openfilenames)
 {
-  return {fs_generic_string(find_valid_path_(sourcepath, localpath, openfilenames))};
+  try {
+    return {fs_generic_string(find_valid_path_(sourcepath, localpath, openfilenames))};
+  } catch (const fs::filesystem_error&) {
+    // A candidate that can't be inspected (e.g. permission denied on a parent directory) is
+    // treated like a missing file: all callers already handle an empty result as "not found".
+    return {};
+  }
 }
 
 static bool path_contains_file(fs::path dir, fs::path file)

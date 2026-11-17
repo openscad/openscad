@@ -219,11 +219,9 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
   }
 
   if (is_stdout) {
-    exportFileStdOut(root_geom, exportInfo);
-  } else {
-    exportFileByName(root_geom, filename, exportInfo);
+    return exportFileStdOut(root_geom, exportInfo);
   }
-  return true;
+  return exportFileByName(root_geom, filename, exportInfo);
 }
 
 void help(const char *arg0, const po::options_description& desc, bool failure = false)

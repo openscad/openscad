@@ -8,6 +8,7 @@
 
 Existing designs may produce errors or different results:
 
+* extra commas - e.g. `[1,,2]` or `foo(1,,2)` - were previously ignored and are no longer allowed.
 * surface() now preserves the full precision of 16-bit PNG heightmaps instead of truncating them to 8 bits #6950
 * The removals listed under Removed below
 
@@ -18,6 +19,7 @@ These don't change the result, but stop rendering if warnings are made fatal (--
 * A malformed escape sequence in a string #6099
 * offset() with both r= and delta= specified #6348
 * Passing children to modules that don't accept them #3759
+* New deprecations as listed below.
 
 **Language Features**
 
