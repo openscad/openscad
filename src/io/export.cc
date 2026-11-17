@@ -28,9 +28,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cerrno>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
@@ -243,13 +245,23 @@ bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Ex
     // (#6895), so build the file in memory first.
     std::stringstream buffer;
     exportFile(root_geom, buffer, exportInfo);
+    buffer.seekp(0, std::ios::end);
+    if (buffer.tellp() <= 0) {
+      // The exporter has already logged the reason
+      LOG(message_group::Error, _("Export failed, nothing was written to standard output."));
+      return false;
+    }
+    errno = 0;
     std::cout << buffer.rdbuf();
   } else {
+    errno = 0;
     exportFile(root_geom, std::cout, exportInfo);
   }
   std::cout.flush();
   if (!std::cout) {
-    LOG(message_group::Error, _("Error writing to standard output."));
+    const int error = errno;
+    LOG(message_group::Error, _("Error writing to standard output: %1$s"),
+        error != 0 ? std::strerror(error) : "unknown error");
     return false;
   }
   return true;
