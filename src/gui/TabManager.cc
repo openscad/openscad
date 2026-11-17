@@ -415,6 +415,11 @@ void TabManager::showContextMenuEvent(const QPoint& pos)
   menu->addAction(parent->editActionFindNext);
   menu->addAction(parent->editActionFindPrevious);
   menu->addSeparator();
+  auto *formatAction = menu->addAction(_("Format code"));
+  connect(formatAction, &QAction::triggered, editor, &EditorInterface::formatSelection);
+  menu->addAction(parent->editActionComment);
+  menu->addAction(parent->editActionUncomment);
+  menu->addSeparator();
   menu->addAction(parent->editActionInsertTemplate);
   menu->addAction(parent->editActionFoldAll);
   menu->exec(editor->mapToGlobal(pos));
