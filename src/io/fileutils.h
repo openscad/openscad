@@ -11,6 +11,8 @@ namespace fs = std::filesystem;
 // one of the leading slashes and fs::canonical() fails. These keep UNC paths
 // intact (#5425); for other paths they're the same as the std functions.
 bool fs_is_absolute(const fs::path& p);
+// For file names stored as UTF-8 strings
+bool fs_is_absolute(const std::string& p);
 fs::path fs_absolute(const fs::path& p);
 fs::path fs_canonical(const fs::path& p);
 std::string fs_generic_string(const fs::path& p);

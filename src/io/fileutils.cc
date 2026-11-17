@@ -31,6 +31,11 @@ bool fs_is_absolute(const fs::path& p)
   return p.is_absolute() || fs_is_unc(p);
 }
 
+bool fs_is_absolute(const std::string& p)
+{
+  return fs_is_absolute(fs::u8path(p));
+}
+
 fs::path fs_absolute(const fs::path& p)
 {
   return fs_is_unc(p) ? p : fs::absolute(p);
