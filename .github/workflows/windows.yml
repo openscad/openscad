@@ -15,12 +15,8 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        qt: [ qt5, qt6 ]
     runs-on: windows-latest
-    name: windows-latest ${{ matrix.qt }}
+    name: windows-latest
     defaults:
       run:
         shell: msys2 {0}
@@ -38,7 +34,7 @@ jobs:
         shell: bash
         run: |
           pwd
-          ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
+          ./scripts/msys2-install-dependencies.sh
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         id: msys2
@@ -55,7 +51,7 @@ jobs:
       - name: Build OpenSCAD
         run: |
           mkdir build && cd build
-          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_QT6=${{ matrix.qt == 'qt6' && 'ON' || 'OFF' }}
+          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
           cmake --build . -j4
           cmake --install . --prefix=.
       - name: Run Test Suite
@@ -69,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
-          name: Test Result Report (Windows ${{ matrix.qt }})
+          name: Test Result Report (Windows)
           path: |
             build/Testing/Temporary/*_report.html
             build/Testing/Temporary/LastTest.log
