@@ -1,0 +1,9 @@
+# negative indices are relative to the vertices read so far
+v 0 0 0
+v 1 0 0
+v 0 1 0
+v 0 0 1
+f -4 -2 -3
+f -4 -3 -1
+f -3 -2 -1
+f -2 -4 -1
