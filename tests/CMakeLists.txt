@@ -239,6 +239,7 @@ endif()
 
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
+  ${TEST_SCAD_DIR}/svg/center-viewbox-offset.scad
   ${TEST_SCAD_DIR}/svg/display.scad
   ${TEST_SCAD_DIR}/svg/id-selection-test.scad
   ${TEST_SCAD_DIR}/svg/id-layer-selection-test.scad
@@ -1496,12 +1497,6 @@ list(APPEND NEF3_BROKEN_TESTS
 
 # Platform specific test disable
 if(APPLE)
-  # This test is EXPERIMENTAL-gated, so it is only registered when
-  # -DEXPERIMENTAL=ON. Use the safe variant, which tolerates its absence.
-  disable_tests_safe(
-    # Fails to create a 3MF file to stdout, see #6895
-    export-3mf-stdio_3mf-export
-  )
 elseif(UNIX)
 elseif(WIN32 OR MXECROSS)
   set_tests_properties(
