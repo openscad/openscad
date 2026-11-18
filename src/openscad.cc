@@ -218,11 +218,9 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
   }
 
   if (is_stdout) {
-    exportFileStdOut(root_geom, exportInfo);
-  } else {
-    exportFileByName(root_geom, filename, exportInfo);
+    return exportFileStdOut(root_geom, exportInfo);
   }
-  return true;
+  return exportFileByName(root_geom, filename, exportInfo);
 }
 
 void help(const char *arg0, const po::options_description& desc, bool failure = false)
@@ -744,11 +742,50 @@ static CmdLineExportOptions convert_export_options(const po::variables_map& vm)
     return {};
   }
 
+  // All settings that can be given with -O, by section and name
+  std::map<std::string, std::map<std::string, const Settings::SettingsEntryBase *>> known;
+  const auto add_known = [&known](const auto& entries) {
+    for (const auto *entry : entries) {
+      known[entry->category()][entry->name()] = entry;
+    }
+  };
+  add_known(Settings::SettingsExportPdf::cmdline);
+  add_known(Settings::SettingsExport3mf::cmdline);
+  add_known(Settings::SettingsExportSvg::cmdline);
+
   CmdLineExportOptions map;
   const auto& options = vm["O"].as<std::vector<std::string>>();
   for (const auto& option : options) {
     const auto [key, value] = simple_split(option, '=');
     const auto [section, name] = simple_split(key, '/');
+    if (section.empty() || name.empty()) {
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s', expected the format <section>/<key>=value.", option);
+      continue;
+    }
+    const auto section_it = known.find(section);
+    if (section_it == known.end()) {
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s': unknown section '%2$s'. Use --help-export to list all "
+          "available settings.",
+          option, section);
+      continue;
+    }
+    const auto entry_it = section_it->second.find(name);
+    if (entry_it == section_it->second.end()) {
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s': unknown setting '%2$s' in section '%3$s'. Use --help-export "
+          "to list all available settings.",
+          option, name, section);
+      continue;
+    }
+    if (!entry_it->second->validate(value)) {
+      const auto [type, values] = entry_it->second->help();
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s': invalid value '%2$s', expected %3$s %4$s.", option, value,
+          type, values);
+      continue;
+    }
     map[section][name] = value;
   }
   return map;

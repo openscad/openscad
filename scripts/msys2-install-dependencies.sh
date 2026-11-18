@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-QT="$1"
-
 date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
 if [[ -z "${GITHUB_RUN_ID}" ]]; then
@@ -25,14 +23,11 @@ if [[ -z "${GITHUB_RUN_ID}" ]]; then
     #            name:  disables any translation for name
 fi
 
-if [[ "$QT" == "qt5" ]]; then
-  QT_PACKAGES="qscintilla-qt5:p qt5-multimedia:p qt5-svg:p"
-else
-  QT_PACKAGES="qscintilla-qt6:p qt6-5compat:p qt6-multimedia:p qt6-svg:p"
-fi
-
 PACKAGE_LIST=(
-    "$QT_PACKAGES"
+    "qscintilla-qt6:p"
+    "qt6-5compat:p"
+    "qt6-multimedia:p"
+    "qt6-svg:p"
     "git:"
     "make:"
     "bison:"

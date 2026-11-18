@@ -31,10 +31,6 @@ const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus",
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing",
                                                         "Enable indexing in vertex object renderers");
-const Feature Feature::ExperimentalPredictibleOutput(
-  "predictible-output",
-  "Attempt to produce predictible, diffable outputs (e.g. sorting the STL, or remeshing in a determined "
-  "order)");
 const Feature Feature::ExperimentalVectorSwizzle(
   "vector-swizzle", "Enable vector swizzling (e.g. <code>vec4.zyx</code> to reverse a 3D vector).");
 const Feature Feature::ExperimentalDiscretizationByError(

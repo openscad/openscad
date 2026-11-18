@@ -131,7 +131,10 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
                   .str());
             }
             use_cloned_shape_count = would_be_total;
-            shape_list->insert(shape_list->end(), cloned_children.begin(), cloned_children.end());
+            // The clones have the <use> element as their ancestor, so they need to be
+            // stored in the same list to not outlive it.
+            auto *target_list = in_defs ? temp_defs_storage : shape_list;
+            target_list->insert(target_list->end(), cloned_children.begin(), cloned_children.end());
           }
         }
 

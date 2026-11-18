@@ -570,6 +570,7 @@ else()
 
   find_package(FontConfig 2.8.0 REQUIRED QUIET)
   message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
+  target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${FONTCONFIG_INCLUDE_DIR})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${FONTCONFIG_LIBRARIES})
 
   find_package(GLIB2 2.26 REQUIRED QUIET)

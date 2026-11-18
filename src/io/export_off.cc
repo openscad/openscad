@@ -30,7 +30,6 @@
 #include <memory>
 #include <ostream>
 
-#include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
@@ -46,10 +45,7 @@
 
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    ps = createSortedPolySet(*ps);
-  }
+  auto ps = createSortedPolySet(*PolySetUtils::getGeometryAsPolySet(geom));
   const auto& v = ps->vertices;
   const size_t numverts = v.size();
 
