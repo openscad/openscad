@@ -140,6 +140,13 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
     Eigen::Vector2d align{0.0, 0.0};
     Eigen::Vector2d viewbox{0.0, 0.0};
 
+    // Maps an SVG point to OpenSCAD coordinates, before the final translation.
+    // The bounding box must use the same mapping as the output, otherwise
+    // center = true is off by the viewBox origin.
+    const auto map_point = [&scale, &viewbox](const Eigen::Vector3d& v) {
+      return Eigen::Vector2d{scale.x() * (v.x() - viewbox.x()), scale.y() * (-viewbox.y() - v.y())};
+    };
+
     for (const auto& shape_ptr : *shapes) {
       const auto page = dynamic_cast<libsvg::svgpage *>(shape_ptr.get());
       if (page) {
@@ -181,13 +188,13 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           for (const auto& v : p) {
-            bbox.extend(Eigen::Vector2d{scale.x() * v.x(), scale.y() * v.y()});
+            bbox.extend(map_point(v));
           }
         }
       }
     }
-    const double cx = center ? bbox.center().x() : -align.x();
-    const double cy = center ? bbox.center().y() : height_mm - align.y();
+    const Eigen::Vector2d offset =
+      center ? Eigen::Vector2d(-bbox.center()) : Eigen::Vector2d(align.x(), height_mm - align.y());
 
     std::vector<std::shared_ptr<const Polygon2d>> polygons;
     for (const auto& shape_ptr : *shapes) {
@@ -197,9 +204,7 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
           for (const auto& v : p) {
-            const double x = scale.x() * (-viewbox.x() + v.x()) - cx;
-            const double y = scale.y() * (-viewbox.y() - v.y()) + cy;
-            outline.vertices.emplace_back(x, y);
+            outline.vertices.emplace_back(map_point(v) + offset);
             outline.positive = true;
           }
           poly->addOutline(outline);
