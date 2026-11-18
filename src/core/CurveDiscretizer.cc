@@ -431,6 +431,7 @@ Outline2d splitOutlineByFn(const Outline2d& o, const double twist, const double 
     }
 
     const size_t budget = static_cast<size_t>(fn) - seg_total;
+    if (budget == 0) break;
     if (tmp_q.size() <= budget) {
       // The whole group fits: give every edge in it one more segment.
       while (!tmp_q.empty()) {
