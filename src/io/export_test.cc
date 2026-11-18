@@ -25,6 +25,27 @@ std::string export_to_string(const std::shared_ptr<const Geometry>& geom, FileFo
 
 }  // namespace
 
+TEST_CASE("SVG export escapes the colors from the export options", "[io][export]")
+{
+  Outline2d outline;
+  outline.vertices = {{0, 0}, {1, 0}, {0, 1}};
+  const auto shape = std::make_shared<const Polygon2d>(outline);
+
+  ExportSvgOptions options;
+  options.fill = true;
+  options.fillColor = R"(red" onload="x)";
+  options.strokeColor = "<&'>";
+  std::ostringstream output;
+  exportFile(shape, output,
+             ExportInfo{.format = FileFormat::SVG,
+                        .info = fileformat::info(FileFormat::SVG),
+                        .optionsSvg = std::make_shared<const ExportSvgOptions>(options)});
+  const std::string svg = output.str();
+  CHECK(svg.find(R"(fill="red&quot; onload=&quot;x")") != std::string::npos);
+  CHECK(svg.find(R"(stroke="&lt;&amp;&apos;&gt;")") != std::string::npos);
+  CHECK(svg.find("onload=\"") == std::string::npos);
+}
+
 TEST_CASE("Exports use '.' as the decimal point whatever the global C++ locale is", "[io][export]")
 {
   const std::locale comma_locale(std::locale::classic(), new DecimalComma);
