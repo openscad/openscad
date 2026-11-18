@@ -30,7 +30,9 @@
 #include <catch2/catch_all.hpp>
 
 #include <functional>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -167,6 +169,25 @@ TEST_CASE("SVG import does not load files through external parameter entities", 
       SUCCEED("the file was rejected");
     }
   }
+}
+
+TEST_CASE("SVG import handles <use> elements nested in <defs>", "[libsvg]")
+{
+  auto shapes = read(svg_path("use-nested.svg"));
+
+  // Each of the 2 uses of "pair" has 2 uses of "square". The first point of
+  // each shape with path data shows where it ended up.
+  std::set<std::pair<double, double>> positions;
+  size_t squares = 0;
+  for (const auto& shape_ptr : *shapes) {
+    if (shape_ptr->get_path_list().empty()) continue;
+    squares++;
+    const auto& p = shape_ptr->get_path_list().front().front();
+    positions.insert({p.x(), p.y()});
+  }
+  CHECK(squares == 4);
+  CHECK(positions == std::set<std::pair<double, double>>{{0, 0}, {10, 0}, {0, 10}, {10, 10}});
+  libsvg::libsvg_free(shapes);
 }
 
 TEST_CASE("SVG import is not vulnerable to entity expansion bombs", "[libsvg][Security]")
