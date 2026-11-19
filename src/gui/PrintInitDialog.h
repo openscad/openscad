@@ -41,13 +41,20 @@
 // Property name for remote print servive buttons
 constexpr inline auto PROPERTY_NAME = "printServiceName";
 
-enum class print_service_t : std::uint8_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCAL_APPLICATION };
+enum class print_service_t : std::uint8_t {
+  NONE,
+  PRINT_SERVICE,
+  OCTOPRINT,
+  LOCAL_APPLICATION,
+  PRUSASLICER
+};
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog, public InitConfigurator
 {
   constexpr static auto urlDialog = "qrc:/html/PrintInitDialog.html";
   constexpr static auto urlOctoPrint = "qrc:/html/OctoPrintInfo.html";
   constexpr static auto urlLocalApp = "qrc:/html/LocalApplicationInfo.html";
+  constexpr static auto urlPrusaSlicer = "qrc:/html/PrusaSlicerInfo.html";
 
   Q_OBJECT;
 
@@ -62,6 +69,7 @@ public:
 public slots:
   void on_pushButtonOctoPrint_clicked();
   void on_pushButtonLocalApplication_clicked();
+  void on_pushButtonPrusaSlicer_clicked();
   void on_comboBoxFileFormat_currentIndexChanged(int);
   void on_checkBoxEnableRemotePrintServices_toggled(bool);
   void on_pushButtonOk_clicked();

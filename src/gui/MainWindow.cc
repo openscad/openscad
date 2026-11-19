@@ -275,6 +275,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t
   }
   case print_service_t::OCTOPRINT:         return createOctoPrintService(fileFormat); break;
   case print_service_t::LOCAL_APPLICATION: return createLocalProgramService(fileFormat); break;
+  case print_service_t::PRUSASLICER:       return createPrusaSlicerService(fileFormat); break;
   }
   return {};
 }

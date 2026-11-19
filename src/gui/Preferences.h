@@ -137,6 +137,9 @@ public slots:
   void on_lineEditLocalAppTempDir_editingFinished();
   void on_toolButtonLocalAppSelectTempDir_clicked();
   void on_comboBoxLocalAppFileFormat_activated(int);
+  void on_comboBoxPrusaSlicerFileFormat_activated(int);
+  void on_lineEditPrusaSlicerExecutable_editingFinished();
+  void on_toolButtonPrusaSlicerSelectExecutable_clicked();
   void on_toolButtonLocalAppParameterRemove_clicked();
   void on_toolButtonLocalAppParameterAdd_clicked();
   void on_toolButtonLocalAppParameterUp_clicked();
@@ -225,6 +228,7 @@ private:
   void updateGUIFontFamily(QFontComboBox *fontSelector, const QString& setting);
   void updateGUIFontSize(QComboBox *fsSelector, const QString& setting);
   void updateLocalAppParams();
+  void updatePrusaSlicerDetected();
   void addLocalAppParameter(const Settings::LocalAppParameterType&);
   void moveListBoxRow(QListWidget *listBox, int offset);
 

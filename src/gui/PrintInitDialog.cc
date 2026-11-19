@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "core/Settings.h"
+#include "gui/ExternalToolInterface.h"
 #include "gui/PrintService.h"
 #include "io/export.h"
 #include "utils/printutils.h"
@@ -48,6 +49,7 @@ QString toString(print_service_t printServiceType)
   case print_service_t::PRINT_SERVICE:     return "PRINT_SERVICE";
   case print_service_t::OCTOPRINT:         return "OCTOPRINT";
   case print_service_t::LOCAL_APPLICATION: return "LOCAL_APPLICATION";
+  case print_service_t::PRUSASLICER:       return "PRUSASLICER";
   default:                                 return "NONE";
   }
 }
@@ -60,6 +62,8 @@ print_service_t fromString(const std::string& printServiceType)
     return print_service_t::OCTOPRINT;
   } else if (printServiceType == "LOCAL_APPLICATION") {
     return print_service_t::LOCAL_APPLICATION;
+  } else if (printServiceType == "PRUSASLICER") {
+    return print_service_t::PRUSASLICER;
   } else return print_service_t::NONE;
 }
 
@@ -114,6 +118,7 @@ PrintInitDialog::PrintInitDialog()
     } break;
     case print_service_t::OCTOPRINT:         on_pushButtonOctoPrint_clicked(); break;
     case print_service_t::LOCAL_APPLICATION: on_pushButtonLocalApplication_clicked(); break;
+    case print_service_t::PRUSASLICER:       on_pushButtonPrusaSlicer_clicked(); break;
     default:                                 break;
     }
   }
@@ -211,6 +216,27 @@ void PrintInitDialog::on_pushButtonLocalApplication_clicked()
   PRINTDB("LOCAL_APPLICATION: %s", fileFormatIdentifier);
 }
 
+void PrintInitDialog::on_pushButtonPrusaSlicer_clicked()
+{
+  this->pushButtonPrusaSlicer->setChecked(true);
+  this->textBrowser->setSource(QUrl{urlPrusaSlicer});
+  const auto installation = PrusaSlicerService::locate();
+  const bool found = installation.kind != PrusaSlicerService::InstallKind::NotFound;
+  this->textBrowser->append(
+    found ? QString("<p><b>%1</b> %2</p>").arg(_("Found:")).arg(installation.describe().toHtmlEscaped())
+          : QString("<p><b>%1</b></p>")
+              .arg(_("PrusaSlicer was not found. Install it, or set its path in "
+                     "Preferences &rarr; 3D Print &rarr; PrusaSlicer.")));
+
+  initComboBox(this->comboBoxFileFormat, S::prusaSlicerFileFormat);
+  this->on_comboBoxFileFormat_currentIndexChanged(this->comboBoxFileFormat->currentIndex());
+  this->selectedPrintService = print_service_t::PRUSASLICER;
+  this->selectedServiceName = "";
+
+  this->comboBoxFileFormat->setEnabled(true);
+  this->pushButtonOk->setEnabled(found);
+}
+
 void PrintInitDialog::setFileFormat(const std::string& id)
 {
   FileFormat fileFormat = FileFormat::ASCII_STL;
@@ -240,6 +266,7 @@ void PrintInitDialog::on_pushButtonOk_clicked()
   case print_service_t::PRINT_SERVICE:     S::printServiceFileFormat.setValue(fileFormatIdentifier); break;
   case print_service_t::OCTOPRINT:         S::octoPrintFileFormat.setValue(fileFormatIdentifier); break;
   case print_service_t::LOCAL_APPLICATION: S::localAppFileFormat.setValue(fileFormatIdentifier); break;
+  case print_service_t::PRUSASLICER:       S::prusaSlicerFileFormat.setValue(fileFormatIdentifier); break;
   default:                                 break;
   }
   // FIXME: Add support for executable selection

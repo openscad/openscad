@@ -28,6 +28,8 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QProcess>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryFile>
@@ -223,4 +225,204 @@ std::unique_ptr<OctoPrintService> createOctoPrintService(FileFormat fileFormat)
 std::unique_ptr<LocalProgramService> createLocalProgramService(FileFormat fileFormat)
 {
   return std::make_unique<LocalProgramService>(fileFormat);
+}
+
+namespace {
+
+constexpr auto PRUSASLICER_FLATPAK_ID = "com.prusa3d.PrusaSlicer";
+constexpr auto PRUSASLICER_SNAP_NAME = "prusa-slicer";
+
+bool isExecutableFile(const QString& path)
+{
+  const QFileInfo info(path);
+  return info.exists() && info.isFile() && info.isExecutable();
+}
+
+// Snap binaries live in /snap/bin and are wrappers around /usr/bin/snap.
+bool isSnapWrapper(const QString& path)
+{
+  return QFileInfo(path).absoluteFilePath().startsWith("/snap/");
+}
+
+PrusaSlicerService::Installation classifyExplicit(const QString& configured)
+{
+  using Kind = PrusaSlicerService::InstallKind;
+  if (configured.endsWith(".app") || configured.endsWith(".app/")) {
+    return {Kind::MacApp, configured};
+  }
+  if (configured == PRUSASLICER_FLATPAK_ID) {
+    const auto flatpak = QStandardPaths::findExecutable("flatpak");
+    if (!flatpak.isEmpty()) return {Kind::Flatpak, flatpak};
+  }
+  QString path = configured;
+  if (!QFileInfo(path).isAbsolute()) {
+    const auto found = QStandardPaths::findExecutable(path);
+    if (!found.isEmpty()) path = found;
+  }
+  return {isSnapWrapper(path) ? Kind::Snap : Kind::Executable, path};
+}
+
+}  // namespace
+
+QString PrusaSlicerService::Installation::describe() const
+{
+  switch (kind) {
+  case InstallKind::Executable: return path;
+  case InstallKind::Flatpak:    return QString("Flatpak %1").arg(PRUSASLICER_FLATPAK_ID);
+  case InstallKind::Snap:       return QString("Snap %1").arg(path);
+  case InstallKind::MacApp:     return path;
+  default:                      return "not found";
+  }
+}
+
+PrusaSlicerService::Installation PrusaSlicerService::locate()
+{
+  const QString configured =
+    QString::fromStdString(Settings::Settings::prusaSlicerExecutable.value()).trimmed();
+  if (!configured.isEmpty()) {
+    return classifyExplicit(configured);
+  }
+
+  const QString home = QDir::homePath();
+
+#if defined(Q_OS_MACOS)
+  for (const auto& app :
+       {QString("/Applications/PrusaSlicer.app"), home + "/Applications/PrusaSlicer.app",
+        QString("/Applications/Original Prusa Drivers/PrusaSlicer.app")}) {
+    if (QFileInfo(app).isDir()) return {InstallKind::MacApp, app};
+  }
+#elif defined(Q_OS_WIN)
+  for (const auto& name : {"prusa-slicer.exe", "prusa-slicer-console.exe"}) {
+    const auto found = QStandardPaths::findExecutable(name);
+    if (!found.isEmpty()) return {InstallKind::Executable, found};
+  }
+  QStringList roots;
+  for (const auto& var : {"ProgramW6432", "ProgramFiles", "ProgramFiles(x86)"}) {
+    const auto v = qEnvironmentVariable(var);
+    if (!v.isEmpty() && !roots.contains(v)) roots << v;
+  }
+  for (const auto& root : roots) {
+    for (const auto& sub : {"Prusa3D/PrusaSlicer", "PrusaSlicer"}) {
+      const auto exe = QDir(root).filePath(QString(sub) + "/prusa-slicer.exe");
+      if (QFileInfo::exists(exe)) return {InstallKind::Executable, exe};
+    }
+  }
+#else
+  // Native install on PATH (distro package, extracted tarball, AppImage symlink).
+  QString snapCandidate;
+  for (const auto& name : {"prusa-slicer", "PrusaSlicer", "prusaslicer"}) {
+    const auto found = QStandardPaths::findExecutable(name);
+    if (found.isEmpty()) continue;
+    if (isSnapWrapper(found)) {
+      if (snapCandidate.isEmpty()) snapCandidate = found;
+      continue;
+    }
+    return {InstallKind::Executable, found};
+  }
+
+  // Flatpak (user or system install). Preferred over Snap: it is what Prusa publishes.
+  const auto flatpak = QStandardPaths::findExecutable("flatpak");
+  if (!flatpak.isEmpty()) {
+    const QStringList flatpakRoots = {home + "/.local/share/flatpak/app", "/var/lib/flatpak/app"};
+    for (const auto& root : flatpakRoots) {
+      if (QFileInfo(QDir(root).filePath(PRUSASLICER_FLATPAK_ID)).isDir()) {
+        return {InstallKind::Flatpak, flatpak};
+      }
+    }
+  }
+
+  // AppImage dropped into a usual place; pick the newest by name.
+  for (const auto& dir : {home + "/Applications", home + "/.local/bin", home + "/bin",
+                          home + "/Downloads", home + "/opt", QString("/opt")}) {
+    auto images =
+      QDir(dir).entryList({"PrusaSlicer*.AppImage", "prusa-slicer*.AppImage", "PrusaSlicer*.appimage"},
+                          QDir::Files, QDir::Name | QDir::Reversed);
+    for (const auto& image : images) {
+      const auto path = QDir(dir).filePath(image);
+      if (isExecutableFile(path)) return {InstallKind::Executable, path};
+    }
+  }
+
+  if (!snapCandidate.isEmpty()) return {InstallKind::Snap, snapCandidate};
+#endif
+  return {};
+}
+
+PrusaSlicerService::PrusaSlicerService(FileFormat fileFormat)
+  : ExternalToolInterface(fileFormat), installation_(locate())
+{
+}
+
+QDir PrusaSlicerService::getTempDir() const
+{
+  // Sandboxed builds cannot see the host /tmp, so drop the file where the sandbox can read it.
+  QString dir;
+  switch (installation_.kind) {
+  case InstallKind::Flatpak:
+    dir = QDir::homePath() + "/.var/app/" + PRUSASLICER_FLATPAK_ID + "/cache/openscad";
+    break;
+  case InstallKind::Snap:
+    dir = QDir::homePath() + "/snap/" + PRUSASLICER_SNAP_NAME + "/common/openscad";
+    break;
+  default: {
+    const auto& tempDirConfig = Settings::Settings::localAppTempDir.value();
+    if (!tempDirConfig.empty() && QDir(QString::fromStdString(tempDirConfig)).exists()) {
+      return QDir{QString::fromStdString(tempDirConfig)};
+    }
+    return QDir::temp();
+  }
+  }
+  if (!QDir().mkpath(dir)) {
+    LOG(message_group::Warning, "Could not create directory '%1$s', using system temp dir",
+        dir.toStdString());
+    return QDir::temp();
+  }
+  return QDir{dir};
+}
+
+bool PrusaSlicerService::process(const std::string& /*displayName*/,
+                                 std::function<bool(double)> /*progress_cb*/)
+{
+  if (installation_.kind == InstallKind::NotFound) {
+    LOG(message_group::Error,
+        "PrusaSlicer not found. Install it, or set its path in Preferences -> 3D Print -> "
+        "PrusaSlicer.");
+    return false;
+  }
+
+  const QString file = QString::fromStdString(exportedFilename_);
+  QString program;
+  QStringList args;
+  switch (installation_.kind) {
+  case InstallKind::MacApp:
+    // `open` hands the file to an already running instance, or starts one.
+    program = "open";
+    args << "-a" << installation_.path << file;
+    break;
+  case InstallKind::Flatpak:
+    program = installation_.path;
+    args << "run" << QString("--filesystem=%1:ro").arg(QFileInfo(file).absolutePath())
+         << PRUSASLICER_FLATPAK_ID << "--single-instance" << file;
+    break;
+  case InstallKind::Snap:
+  case InstallKind::Executable:
+  default:
+    program = installation_.path;
+    // Reuse a running PrusaSlicer window instead of spawning a new one each time.
+    args << "--single-instance" << file;
+    break;
+  }
+
+  LOG("Opening in PrusaSlicer (%1$s): %2$s", installation_.describe().toStdString(), file.toStdString());
+  PRINTD("Executing: " + program.toStdString() + " " + args.join(" ").toStdString());
+  if (!QProcess::startDetached(program, args)) {
+    LOG(message_group::Error, "Could not start PrusaSlicer '%1$s'", program.toStdString());
+    return false;
+  }
+  return true;
+}
+
+std::unique_ptr<PrusaSlicerService> createPrusaSlicerService(FileFormat fileFormat)
+{
+  return std::make_unique<PrusaSlicerService>(fileFormat);
 }

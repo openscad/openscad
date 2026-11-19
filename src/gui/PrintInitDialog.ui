@@ -55,6 +55,25 @@
         <item>
          <layout class="QHBoxLayout" name="printServiceLayout">
           <item>
+           <widget class="QPushButton" name="pushButtonPrusaSlicer">
+            <property name="focusPolicy">
+             <enum>Qt::TabFocus</enum>
+            </property>
+            <property name="text">
+             <string>PrusaSlicer</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoDefault">
+             <bool>false</bool>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButtonLocalApplication">
             <property name="focusPolicy">
              <enum>Qt::TabFocus</enum>
@@ -194,6 +213,7 @@
  </widget>
  <tabstops>
   <tabstop>pushButtonOk</tabstop>
+  <tabstop>pushButtonPrusaSlicer</tabstop>
   <tabstop>pushButtonLocalApplication</tabstop>
   <tabstop>pushButtonOctoPrint</tabstop>
   <tabstop>comboBoxFileFormat</tabstop>

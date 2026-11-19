@@ -447,6 +447,9 @@ public:
   static SettingsEntryList<LocalAppParameter> localAppParameterList;
   static SettingsEntryEnum<std::string> localAppFileFormat;
 
+  static SettingsEntryString prusaSlicerExecutable;
+  static SettingsEntryEnum<std::string> prusaSlicerFileFormat;
+
   static SettingsEntryString caCertPath;
   static SettingsEntryBool tlsSkipVerify;
 

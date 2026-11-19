@@ -69,6 +69,7 @@
 #include "core/Settings.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
+#include "gui/ExternalToolInterface.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
@@ -423,6 +424,7 @@ void Preferences::init()
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxLocalAppFileFormat, Settings::Settings::localAppFileFormat);
+  initComboBox(this->comboBoxPrusaSlicerFileFormat, Settings::Settings::prusaSlicerFileFormat);
   initComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
@@ -447,6 +449,9 @@ void Preferences::init()
     ->setText(QString::fromStdString(Settings::Settings::localAppExecutable.value()));
   BlockSignals<QLineEdit *>(this->lineEditLocalAppTempDir)
     ->setText(QString::fromStdString(Settings::Settings::localAppTempDir.value()));
+  BlockSignals<QLineEdit *>(this->lineEditPrusaSlicerExecutable)
+    ->setText(QString::fromStdString(Settings::Settings::prusaSlicerExecutable.value()));
+  updatePrusaSlicerDetected();
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -610,6 +615,7 @@ void Preferences::setup3DPrintPage()
     {"NONE", _("NONE")},
     {"OCTOPRINT", _("OctoPrint")},
     {"LOCAL_APPLICATION", _("Local Application")},
+    {"PRUSASLICER", _("PrusaSlicer")},
   };
 
   comboBoxDefaultPrintService->addItem(services.at("NONE"), QStringList{"NONE", ""});
@@ -626,6 +632,7 @@ void Preferences::setup3DPrintPage()
   comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"), QStringList{"OCTOPRINT", ""});
   comboBoxDefaultPrintService->addItem(services.at("LOCAL_APPLICATION"),
                                        QStringList{"LOCAL_APPLICATION", ""});
+  comboBoxDefaultPrintService->addItem(services.at("PRUSASLICER"), QStringList{"PRUSASLICER", ""});
 
   auto it = services.find(currentPrintService);
   if (it != services.end()) {
@@ -1208,6 +1215,38 @@ void Preferences::on_toolButtonLocalAppSelectExecutable_clicked()
 
   this->lineEditLocalAppExecutable->setText(fileName);
   on_lineEditLocalAppExecutable_editingFinished();
+}
+
+void Preferences::on_comboBoxPrusaSlicerFileFormat_activated(int val)
+{
+  applyComboBox(this->comboBoxPrusaSlicerFileFormat, val, Settings::Settings::prusaSlicerFileFormat);
+  writeSettings();
+}
+
+void Preferences::on_lineEditPrusaSlicerExecutable_editingFinished()
+{
+  Settings::Settings::prusaSlicerExecutable.setValue(
+    this->lineEditPrusaSlicerExecutable->text().trimmed().toStdString());
+  writeSettings();
+  updatePrusaSlicerDetected();
+}
+
+void Preferences::on_toolButtonPrusaSlicerSelectExecutable_clicked()
+{
+  const QString fileName = QFileDialog::getOpenFileName(this, _("Select PrusaSlicer"));
+  if (fileName.isEmpty()) {
+    return;
+  }
+  this->lineEditPrusaSlicerExecutable->setText(fileName);
+  on_lineEditPrusaSlicerExecutable_editingFinished();
+}
+
+void Preferences::updatePrusaSlicerDetected()
+{
+  const auto installation = PrusaSlicerService::locate();
+  this->labelPrusaSlicerDetected->setText(installation.kind == PrusaSlicerService::InstallKind::NotFound
+                                            ? QString(_("PrusaSlicer not found"))
+                                            : QString(_("Using: %1")).arg(installation.describe()));
 }
 
 void Preferences::on_lineEditLocalAppTempDir_editingFinished()

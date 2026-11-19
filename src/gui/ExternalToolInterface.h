@@ -28,6 +28,7 @@
 
 #include <QDir>
 #include <QString>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
@@ -99,3 +100,28 @@ public:
 };
 
 std::unique_ptr<LocalProgramService> createLocalProgramService(FileFormat fileFormat);
+
+// Sends the exported model straight into PrusaSlicer. The executable is auto-detected
+// unless set explicitly in Preferences -> 3D Print -> PrusaSlicer.
+class PrusaSlicerService : public ExternalToolInterface
+{
+public:
+  // How the located PrusaSlicer has to be launched.
+  enum class InstallKind : std::uint8_t { NotFound, Executable, Flatpak, Snap, MacApp };
+  struct Installation {
+    InstallKind kind = InstallKind::NotFound;
+    QString path;  // executable, flatpak binary, or .app bundle
+    QString describe() const;
+  };
+
+  PrusaSlicerService(FileFormat fileFormat);
+  bool process(const std::string& displayName, std::function<bool(double)>) override;
+  QDir getTempDir() const override;
+
+  static Installation locate();
+
+private:
+  Installation installation_;
+};
+
+std::unique_ptr<PrusaSlicerService> createPrusaSlicerService(FileFormat fileFormat);

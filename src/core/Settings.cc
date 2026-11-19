@@ -258,6 +258,14 @@ SettingsEntryEnum<std::string> Settings::localAppFileFormat(
 SettingsEntryList<LocalAppParameter> Settings::localAppParameterList("printing",
                                                                      "localAppParameterList");
 
+// Empty executable means auto-detect (PATH, Flatpak, Snap, AppImage, default install locations).
+SettingsEntryString Settings::prusaSlicerExecutable("printing", "prusaSlicerExecutable", "");
+SettingsEntryEnum<std::string> Settings::prusaSlicerFileFormat(
+  "printing", "prusaSlicerFileFormat",
+  createFileFormatItems({FileFormat::_3MF, FileFormat::BINARY_STL, FileFormat::ASCII_STL,
+                         FileFormat::OBJ}),
+  fileformat::info(FileFormat::_3MF).description);
+
 SettingsEntryString Settings::caCertPath("network", "caCertPath", "");
 SettingsEntryBool Settings::tlsSkipVerify("network", "tlsSkipVerify", false);
 
