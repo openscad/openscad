@@ -1295,8 +1295,8 @@ set_tests_properties(multiple-outputs_echo-stl_check PROPERTIES DEPENDS multiple
 # UNC path tests    #
 #####################
 # Windows: open some test files through a UNC path (\\localhost\<drive>$\...), which MinGW's
-# std::filesystem doesn't parse as an absolute path (#5425). For now these only check that
-# OpenSCAD doesn't crash; files included or used from a UNC path aren't found yet.
+# std::filesystem doesn't parse as an absolute path (#5425). Checks that OpenSCAD doesn't crash
+# and, where an expected echo file exists, that use<> and include<> still find their files.
 # Skipped when the administrative share isn't reachable, e.g. without admin rights.
 if(WIN32)
   string(REGEX REPLACE "^([A-Za-z]):" "//localhost/\\1$" UNC_TEST_SCAD_DIR "${TEST_SCAD_DIR}")
@@ -1309,10 +1309,18 @@ if(WIN32)
       )
       get_filename_component(UNC_TEST_NAME "${UNC_TEST_FILE}" NAME_WE)
       file(TO_NATIVE_PATH "${UNC_TEST_SCAD_DIR}/${UNC_TEST_FILE}" UNC_TEST_PATH)
-      add_test(NAME unc-nocrash_${UNC_TEST_NAME} CONFIGURATIONS Default
+      set(UNC_TEST_EXPECTED "${CMAKE_CURRENT_SOURCE_DIR}/regression/echo/${UNC_TEST_NAME}-expected.echo")
+      if(EXISTS "${UNC_TEST_EXPECTED}")
+        set(UNC_TEST_EXPECTED_ARG "-DEXPECTED=${UNC_TEST_EXPECTED}")
+      else()
+        set(UNC_TEST_EXPECTED_ARG "")
+      endif()
+      add_test(NAME unc_${UNC_TEST_NAME} CONFIGURATIONS Default
         COMMAND ${CMAKE_COMMAND} -DOPENSCAD=${OPENSCAD_BINPATH} -DINPUT=${UNC_TEST_PATH}
-                -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/unc-nocrash_${UNC_TEST_NAME}.echo
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UncNoCrashTest.cmake)
+                -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/unc_${UNC_TEST_NAME}.echo ${UNC_TEST_EXPECTED_ARG}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UncPathTest.cmake)
+      # Same environment as the echo tests, e.g. OPENSCADPATH for the test libraries
+      set_property(TEST unc_${UNC_TEST_NAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endforeach()
   else()
     message(STATUS "UNC path tests disabled: ${UNC_TEST_SCAD_DIR} is not reachable")
