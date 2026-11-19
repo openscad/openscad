@@ -44,6 +44,7 @@
 #include "core/function.h"
 #include "io/fileutils.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 #include <memory>
 #include <sstream>
 #include <stack>
@@ -795,8 +796,8 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
 {
   fs::path filepath;
   try {
-    filepath = filename.empty() ? fs::current_path() : fs::absolute(fs::path{filename});
-    mainFilePath = mainFile.empty() ? fs::current_path() : fs::absolute(fs::path{mainFile});
+    filepath = filename.empty() ? fs::current_path() : fs_absolute(fs::path{filename});
+    mainFilePath = mainFile.empty() ? fs::current_path() : fs_absolute(fs::path{mainFile});
   } catch (const std::filesystem::filesystem_error& fs_err) {
     LOG(message_group::Error, "Parser error: file system error: %1$s", fs_err.what());
     return false;
@@ -807,7 +808,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   }
 
   parsingMainFile = mainFilePath == filepath;
-  fs::path parser_sourcefile = fs::path(filepath).generic_string();
+  fs::path parser_sourcefile = fs_generic_string(filepath);
   lexer_set_parser_sourcefile(parser_sourcefile);
 
   lexerin = NULL;
@@ -820,20 +821,26 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
+
+  // lexerdestroy()/lexerlex_destroy() and the scope_stack reset must also run when an
+  // exception escapes parserparse(): callers such as MainWindow::compile() catch it and keep
+  // going, and the next parse() would otherwise start from stale lexer and scope state. The
+  // guard only cleans up; it doesn't catch anything, so the exception still propagates.
+  auto cleanup = sg::make_scope_guard([]() {
+    lexerdestroy();
+    lexerlex_destroy();
+    scope_stack = {};
+  });
+
   int parserretval = -1;
-  try{
+  try {
     parserretval = parserparse();
-  }catch (const HardWarningException &e) {
+  } catch (const HardWarningException &e) {
     yyerror("stop on first warning");
   }
 
-  lexerdestroy();
-  lexerlex_destroy();
-
   file = rootfile;
   if (parserretval != 0) {
-    // Clear scope_stack when parsing aborted
-    scope_stack = {};
     return false;
   }
 

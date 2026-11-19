@@ -8,6 +8,7 @@
 
 Existing designs may produce errors or different results:
 
+* extra commas - e.g. `[1,,2]` or `foo(1,,2)` - were previously ignored and are no longer allowed.
 * surface() now preserves the full precision of 16-bit PNG heightmaps instead of truncating them to 8 bits #6950
 * The removals listed under Removed below
 
@@ -18,6 +19,7 @@ These don't change the result, but stop rendering if warnings are made fatal (--
 * A malformed escape sequence in a string #6099
 * offset() with both r= and delta= specified #6348
 * Passing children to modules that don't accept them #3759
+* New deprecations as listed below.
 
 **Language Features**
 
@@ -83,6 +85,7 @@ These don't change the result, but stop rendering if warnings are made fatal (--
   * SVG export options for fill and stroke #6057
   * PDF export options for fill and stroke #5863
   * Security improvements to SVG import #7180
+  * 3D mesh exports (STL, OFF, OBJ, VRML, 3MF, POV-Ray) are now sorted for predictable, diffable output #420 #4950 #7229
 
 * GUI
   * Edit call-tips fixes #3744
@@ -153,6 +156,7 @@ No longer supported. Most of these were deprecated in earlier releases:
 * The -s and -x cmd-line options #5733
 * The child() and assign() modules #6428
 * The triangles= parameter to polyhedron() #6825
+* The MCAD library is no longer bundled with OpenSCAD; it can be downloaded separately from https://github.com/openscad/MCAD/releases/tag/2026.11 #6982
 
 **Deprecations:**
 

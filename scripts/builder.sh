@@ -153,7 +153,7 @@ get_openscad_source_code()
 			echo git pull origin $BRANCH_TO_BUILD failed
 			exit 1
 		fi
-		git submodule update # MCAD
+		git submodule update
 		return
 	else
 		git clone http://github.com/openscad/openscad.git
@@ -176,7 +176,7 @@ get_openscad_source_code()
 		echo git checkout $BRANCH_TO_BUILD failed
 		exit 1
 	fi
-	git submodule update --init # MCAD
+	git submodule update --init
 }
 
 build_win64()
