@@ -83,8 +83,10 @@ const std::string use::get_href_id() const
 std::vector<std::shared_ptr<shape>> use::set_clone_child(shape *child)
 {
   shape *copy = child->clone();
-  copy->set_parent(this);
   auto cloned_objects = copy->clone_children();
+  // Make the copy a real child, so that cloning this <use> element (when it's
+  // part of a group referenced by another <use>) also clones what it refers to.
+  this->add_child(copy);
   cloned_objects.insert(cloned_objects.begin(), std::shared_ptr<shape>(copy));
   return cloned_objects;
 }

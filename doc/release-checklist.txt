@@ -6,17 +6,6 @@ o Pre-release preparations
     - Send emails to translation managers, see .po files:
       https://github.com/openscad/openscad/tree/master/locale
   - Update resources/html/AboutDialog.html with new contributors etc.
-  - Merge MCAD
-    o In MCAD clone:
-      $ git fetch upstream
-      $ git merge upstream/master
-      $ git push
-    o In OpenSCAD:
-      $ cd libraries/MCAD
-      $ git pull
-      $ cd ../..
-      $ git commit -m "Updated MCAD" libraries/MCAD
-      $ git push
 
 (See bottom of this file for how to build release binaries)
 
