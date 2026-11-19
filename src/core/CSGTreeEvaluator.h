@@ -1,9 +1,11 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <list>
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "core/BaseVisitable.h"
@@ -21,8 +23,10 @@ class Tree;
 class CSGTreeEvaluator : public NodeVisitor
 {
 public:
-  CSGTreeEvaluator(const Tree& tree, GeometryEvaluator *geomevaluator = nullptr)
-    : tree(tree), geomevaluator(geomevaluator)
+  CSGTreeEvaluator(const Tree& tree, GeometryEvaluator *geomevaluator = nullptr,
+                   int previewHighlightIndex = -1, std::vector<int> previewBackgroundIndices = {})
+    : tree(tree), geomevaluator(geomevaluator), previewHighlightIndex(previewHighlightIndex),
+      previewBackgroundIndices(std::move(previewBackgroundIndices))
   {
   }
 
@@ -49,6 +53,15 @@ public:
   }
 
 private:
+  bool isHighlighted(const AbstractNode& node) const
+  {
+    return node.index() == previewHighlightIndex || node.modinst->isHighlight();
+  }
+  bool isPreviewBackground(const AbstractNode& node) const
+  {
+    return std::find(previewBackgroundIndices.begin(), previewBackgroundIndices.end(), node.index()) !=
+           previewBackgroundIndices.end();
+  }
   void addToParent(const State& state, const AbstractNode& node);
   void applyToChildren(State& state, const AbstractNode& node, OpenSCADOperator op);
   std::shared_ptr<CSGNode> evaluateCSGNodeFromGeometry(State& state,
@@ -63,6 +76,8 @@ private:
 protected:
   const Tree& tree;
   GeometryEvaluator *geomevaluator;
+  const int previewHighlightIndex;
+  const std::vector<int> previewBackgroundIndices;
   std::shared_ptr<CSGNode> rootNode;
   std::vector<std::shared_ptr<CSGNode>> highlightNodes;
   std::vector<std::shared_ptr<CSGNode>> backgroundNodes;

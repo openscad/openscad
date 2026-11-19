@@ -16,6 +16,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QPoint>
+#include <QPointer>
 #include <QShortcut>
 #include <QSignalMapper>
 #include <QSoundEffect>
@@ -34,6 +35,7 @@
 #include <vector>
 
 #include "core/Context.h"
+#include "core/PreviewObjectNavigator.h"
 #include "core/SourceFile.h"
 #include "glview/Camera.h"
 #include "glview/Renderer.h"
@@ -138,6 +140,10 @@ private:
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                    EditorSelectionIndicatorStatus status);
+  void refreshPreviewRenderers(const std::shared_ptr<CSGProducts>& highlights,
+                               const std::shared_ptr<CSGProducts>& backgrounds = nullptr);
+  void clearPreviewObjectSelection();
+  void invalidatePreviewObjectNavigation();
 
   void setupWindow();
   void setupCoreSubsystems();
@@ -348,7 +354,12 @@ protected:
 public slots:
   void actionRenderPreview();
   void on_designActionPreview_triggered();
+  void navigatePreviewObject(int direction);
 private slots:
+  void on_designActionNextPreviewObject_triggered();
+  void on_designActionPreviousPreviewObject_triggered();
+  void on_designActionClearPreviewObject_triggered();
+  void handleToggleOtherPreviewTransparency(bool checked);
   void csgRender();
   void csgReloadRender();
   void on_designAction3DPrint_triggered();
@@ -457,13 +468,18 @@ private:
   std::shared_ptr<CSGProducts> highlightsProducts;
   std::shared_ptr<CSGProducts> backgroundProducts;
   int currentlySelectedObject{-1};
+  PreviewObjectNavigator previewObjectNavigation;
+  QPointer<EditorInterface> previewObjectEditor;
+  bool previewObjectHighlightActive{false};
+  bool previewOtherObjectsTransparent{false};
+  bool selectingPreviewObject{false};
 
   char const *afterCompileSlot;
   bool procevents{false};
   ProgressWidget *progresswidget{nullptr};
   GeometryWorker *geometryWorker;
   QMutex consolemutex;
-  EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
+  EditorInterface *renderedEditor{nullptr};  // editor which has been most recently rendered
   time_t includesMTime{0};          // latest include mod time
   time_t depsMTime{0};              // latest dependency mod time
   std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last

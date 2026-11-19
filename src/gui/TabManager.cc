@@ -165,6 +165,11 @@ void TabManager::open(const QString& filename)
   }
 }
 
+void TabManager::setCurrentEditor(EditorInterface *editor)
+{
+  if (editorList.contains(editor)) tabWidget->setCurrentWidget(editor);
+}
+
 void TabManager::createTab(const QString& filename)
 {
   assert(parent != nullptr);
@@ -193,6 +198,8 @@ void TabManager::createTab(const QString& filename)
 
   connect(scintillaEditor, &ScintillaEditor::uriDropped, parent, &MainWindow::handleFileDrop);
   connect(scintillaEditor, &ScintillaEditor::previewRequest, parent, &MainWindow::actionRenderPreview);
+  connect(scintillaEditor, &ScintillaEditor::previewObjectNavigationRequest, parent,
+          &MainWindow::navigatePreviewObject);
   connect(editor, &EditorInterface::showContextMenuEvent, this, &TabManager::showContextMenuEvent);
   connect(editor, &EditorInterface::focusIn, this, [this]() { parent->setLastFocus(editor); });
 
