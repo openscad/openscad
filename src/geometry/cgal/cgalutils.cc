@@ -59,9 +59,33 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
 
   // Since is_convex doesn't work well with non-planar faces,
   // we tessellate the polyset before checking.
-  PolySet psq(ps);
+  //
+  // Vertices are quantized to a grid to reduce the cost of exact arithmetic and to make
+  // almost-planar faces planar. However, if vertices are closer to each other than the grid
+  // resolution, quantization may invert or degenerate faces, creating a self-intersecting mesh
+  // which results in a corrupt Nef polyhedron (see issue #6582). In that case, retry with
+  // successively finer grids. Using power-of-two resolutions keeps the vertices exactly
+  // representable with small rationals.
+  constexpr int max_refinements = 3;
+  constexpr double refinement_factor = 16.0;
+  double grid_resolution = GRID_FINE;
+  std::unique_ptr<PolySet> quantized;
   std::vector<Vector3d> points3d;
-  psq.quantizeVertices(&points3d);
+  for (int i = 0;; ++i) {
+    quantized = std::make_unique<PolySet>(ps);
+    points3d.clear();
+    const size_t num_invalidated = quantized->quantizeVertices(&points3d, grid_resolution);
+    if (num_invalidated == 0) break;
+    if (i == max_refinements) {
+      LOG(message_group::Warning,
+          "Vertex quantization inverted or collapsed %1$d faces; CGAL operations may fail.",
+          num_invalidated);
+      break;
+    }
+    PRINTDB("Vertex quantization invalidated %d faces; refining grid", num_invalidated);
+    grid_resolution /= refinement_factor;
+  }
+  const PolySet& psq = *quantized;
   auto ps_tri = PolySetUtils::tessellate_faces(psq);
   if (ps_tri->isConvex()) {
     using Hull_kernel = CGAL::Epick;
@@ -92,7 +116,7 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
   auto plane_error = false;
   try {
     CGAL_Polyhedron P;
-    auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
+    auto err = CGALUtils::createPolyhedronFromPolySet(psq, P, grid_resolution);
     if (!err) {
       if (!P.is_closed()) {
         LOG(message_group::Error, "The given mesh is not closed! Unable to convert to CGALNefGeometry.");
@@ -116,7 +140,7 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
   }
   if (plane_error) try {
       CGAL_Polyhedron P;
-      auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
+      auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P, grid_resolution);
       if (!err) {
         PRINTDB("Polyhedron is closed: %d", P.is_closed());
         PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
