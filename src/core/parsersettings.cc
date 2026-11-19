@@ -89,17 +89,17 @@ fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,
   try {
     if (fs_is_absolute(localpath)) {
       if (check_valid(localpath, openfilenames)) {
-  #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         return fs_canonical(localpath);
-  #else
+#else
         return localpath;
-  #endif
+#endif
       }
     } else {
       fs::path fpath = sourcepath / localpath;
-  #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
       if (fs::exists(fpath)) fpath = fs_canonical(fpath);
-  #endif
+#endif
       if (check_valid(fpath, openfilenames)) return fpath;
       fpath = search_libs(localpath);
       if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
