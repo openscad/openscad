@@ -735,9 +735,11 @@ static Location debug_location(const std::string& info, const YYLTYPE& loc)
 
 static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignment>& assignment, const fs::path& path)
 {
+	auto documentRootPath = path.empty() ? fs::path{} : path.parent_path();
+
 	LOG(message_group::Warning,
 			loc,
-			path.parent_path().generic_string(),
+			documentRootPath.generic_string(),
 			"%1$s was assigned on line %2$i but was overwritten",
 			quoteVar(assignment->getName()),
 			assignment->location().firstLine());
@@ -746,9 +748,11 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 
 static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignment>& assignment, const fs::path& path1, const fs::path& path2)
 {
+	auto documentRootPath = path1.empty() ? fs::path{} : path1.parent_path();
+
 	LOG(message_group::Warning,
 			loc,
-			path1.parent_path().generic_string(),
+			documentRootPath.generic_string(),
 			"%1$s was assigned on line %2$i of %3$s but was overwritten",
 			quoteVar(assignment->getName()),
 			assignment->location().firstLine(),
@@ -796,8 +800,8 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
 {
   fs::path filepath;
   try {
-    filepath = filename.empty() ? fs::current_path() : fs_absolute(fs::path{filename});
-    mainFilePath = mainFile.empty() ? fs::current_path() : fs_absolute(fs::path{mainFile});
+    filepath = filename.empty() ? fs::path{} : fs_absolute(fs::path{filename});
+    mainFilePath = mainFile.empty() ? fs::path{} : fs_absolute(fs::path{mainFile});
   } catch (const std::filesystem::filesystem_error& fs_err) {
     LOG(message_group::Error, "Parser error: file system error: %1$s", fs_err.what());
     return false;
