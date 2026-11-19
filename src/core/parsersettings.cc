@@ -14,14 +14,14 @@
 
 namespace fs = std::filesystem;
 
-std::vector<std::string> librarypath;
+std::vector<fs::path> librarypath;
 
-void add_librarydir(const std::string& libdir)
+void add_librarydir(const fs::path& libdir)
 {
   librarypath.push_back(libdir);
 }
 
-const std::vector<std::string>& get_library_path()
+const std::vector<fs::path>& get_library_path()
 {
   return librarypath;
 }
@@ -33,9 +33,9 @@ const std::vector<std::string>& get_library_path()
 fs::path search_libs(const fs::path& localpath)
 {
   for (const auto& dir : librarypath) {
-    fs::path usepath = fs::path(dir) / localpath;
+    fs::path usepath = dir / localpath;
     if (fs::exists(usepath) && !fs::is_directory(usepath)) {
-      return usepath.string();
+      return usepath;
     }
   }
   return {};
@@ -44,7 +44,7 @@ fs::path search_libs(const fs::path& localpath)
 // files must be 'ordinary' - they must exist and be non-directories
 // FIXME: We cannot print any output here since these function is called periodically
 // from "Automatic reload and compile"
-static bool check_valid(const fs::path& p, const std::vector<std::string> *openfilenames)
+static bool check_valid(const fs::path& p, const std::vector<fs::path> *openfilenames)
 {
   if (p.empty()) {
     // LOG(message_group::Warning,,"File path is blank: %1$s",p);
@@ -62,12 +62,11 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
     // LOG(message_group::Warning,,"%1$s invalid - points to a directory",p);
     return false;
   }
-  const std::string fullname = fs_generic_string(p);
   // Detect circular includes
   if (openfilenames) {
     for (const auto& s : *openfilenames) {
-      if (s == fullname) {
-        // LOG(message_group::Warning,,"circular include file %1$s",fullname);
+      if (s == p) {
+        // LOG(message_group::Warning,,"circular include file %1$s", quotePath(p));
         return false;
       }
     }
@@ -84,39 +83,34 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
    Returns the absolute path to a valid file, or an empty path if no
    valid files could be found.
  */
-inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& localpath,
-                                 const std::vector<std::string> *openfilenames)
-{
-  if (fs_is_absolute(localpath)) {
-    if (check_valid(localpath, openfilenames)) {
-#ifndef __EMSCRIPTEN__
-      return fs_canonical(localpath);
-#else
-      return localpath;
-#endif
-    }
-  } else {
-    fs::path fpath = sourcepath / localpath;
-#ifndef __EMSCRIPTEN__
-    if (fs::exists(fpath)) fpath = fs_canonical(fpath);
-#endif
-    if (check_valid(fpath, openfilenames)) return fpath;
-    fpath = search_libs(localpath);
-    if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
-  }
-  return {};
-}
-
 fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,
-                         const std::vector<std::string> *openfilenames)
+                         const std::vector<fs::path> *openfilenames)
 {
   try {
-    return {fs_generic_string(find_valid_path_(sourcepath, localpath, openfilenames))};
+    if (fs_is_absolute(localpath)) {
+      if (check_valid(localpath, openfilenames)) {
+#ifndef __EMSCRIPTEN__
+        return fs_canonical(localpath);
+#else
+        return localpath;
+#endif
+      }
+    } else {
+      fs::path fpath = sourcepath / localpath;
+#ifndef __EMSCRIPTEN__
+      if (fs::exists(fpath)) fpath = fs_canonical(fpath);
+#endif
+      if (check_valid(fpath, openfilenames)) return fpath;
+      fpath = search_libs(localpath);
+      if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
+    }
   } catch (const fs::filesystem_error&) {
     // A candidate that can't be inspected (e.g. permission denied on a parent directory) is
     // treated like a missing file: all callers already handle an empty result as "not found".
+    // NEEDSWORK perhaps there should be a warning logged here.
     return {};
   }
+  return {};
 }
 
 static bool path_contains_file(fs::path dir, fs::path file)
@@ -164,7 +158,7 @@ void parser_init()
          it != string_split_iterator(); ++it) {
       auto str{boost::copy_range<std::string>(*it)};
       fs::path abspath = str.empty() ? fs::current_path() : fs::absolute(fs::path(str));
-      add_librarydir(abspath.generic_string());
+      add_librarydir(abspath);
     }
   }
 
@@ -172,6 +166,6 @@ void parser_init()
 
   fs::path libpath = PlatformUtils::resourcePath("libraries");
   if (!libpath.empty()) {
-    add_librarydir(fs::absolute(libpath).string());
+    add_librarydir(fs::absolute(libpath));
   }
 }

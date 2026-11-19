@@ -53,7 +53,7 @@ namespace fs = std::filesystem;
 
 #include "FontCache.h"
 
-SourceFile::SourceFile(std::string path, std::string filename)
+SourceFile::SourceFile(fs::path path, fs::path filename)
   : ASTNode(Location::NONE),
     scope(std::make_shared<LocalScope>()),
     path(std::move(path)),
@@ -66,37 +66,37 @@ void SourceFile::print(std::ostream& stream, const std::string& indent) const
   scope->print(stream, indent);
 }
 
-void SourceFile::registerUse(const std::string& path, const Location& loc)
+void SourceFile::registerUse(const fs::path& useFile, const Location& loc)
 {
   PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this % loc.firstLine() % loc.firstColumn() %
                                                               loc.lastLine() % loc.lastColumn() %
-                                                              loc.fileName() % path);
+                                                              loc.fileName() % quotePath(useFile));
 
-  auto ext = fs::path(path).extension().generic_string();
+  auto ext = pathExtensionLower(useFile);
 
-  if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
-    if (fs::is_regular_file(path)) {
-      FontCache::instance()->register_font_file(path);
+  if (ext == ".otf" || ext == ".ttf") {
+    if (fs::is_regular_file(useFile)) {
+      FontCache::instance()->register_font_file(useFile);
     } else {
-      LOG(message_group::Error, "Can't read font with path '%1$s'", path);
+      LOG(message_group::Error, "Can't read font with path %1$s", quotePath(useFile));
     }
   } else {
-    auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);
+    auto pos = std::find(usedlibs.begin(), usedlibs.end(), useFile);
     if (pos != usedlibs.end()) usedlibs.erase(pos);
-    usedlibs.insert(usedlibs.begin(), path);
+    usedlibs.insert(usedlibs.begin(), useFile);
     if (!loc.isNone()) {
       indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
-                                 path);
+                                 useFile);
     }
   }
 }
 
-void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath,
+void SourceFile::registerInclude(const fs::path& localpath, const fs::path& fullpath,
                                  const Location& loc)
 {
   PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s",
-          this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() % localpath %
-            fullpath);
+          this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
+            quotePath(localpath) % quotePath(fullpath));
 
   this->includes[localpath] = fullpath;
   if (!loc.isNone()) {
@@ -115,7 +115,7 @@ time_t SourceFile::includesChanged() const
   return latest;
 }
 
-time_t SourceFile::include_modified(const std::string& filename) const
+time_t SourceFile::include_modified(const fs::path& filename) const
 {
   struct stat st;
 
@@ -136,7 +136,7 @@ time_t SourceFile::handleDependencies(bool is_root)
   else if (this->is_handling_dependencies) return 0;
   this->is_handling_dependencies = true;
 
-  std::vector<std::pair<std::string, std::string>> updates;
+  std::vector<std::pair<fs::path, fs::path>> updates;
 
   // If a lib in usedlibs was previously missing, we need to relocate it
   // by searching the applicable paths. We can identify a previously missing module
@@ -149,9 +149,8 @@ time_t SourceFile::handleDependencies(bool is_root)
     if (!fs_is_absolute(filename)) {
       auto fullpath = find_valid_path(this->path, filename);
       if (!fullpath.empty()) {
-        auto newfilename = fs_generic_string(fullpath);
-        updates.emplace_back(filename, newfilename);
-        filename = newfilename;
+        updates.emplace_back(filename, fullpath);
+        filename = fullpath;
       } else {
         found = false;
       }
@@ -202,13 +201,13 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
 // please preferably use getFilename
 // if you compare filenames (which is the origin of this method),
 // please call getFilename first and use this method only as a fallback
-const std::string SourceFile::getFullpath() const
+const fs::path SourceFile::getFullpath() const
 {
   if (fs_is_absolute(this->filename)) {
     return this->filename;
   } else if (!this->path.empty()) {
-    return fs_generic_string(fs::path(this->path) / fs::path(this->filename));
+    return this->path / this->filename;
   } else {
-    return "";
+    return {};
   }
 }

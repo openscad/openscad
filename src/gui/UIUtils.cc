@@ -80,7 +80,7 @@ bool hasCategory(const QString& name)
 
 void readExamplesDir(const QJsonObject& obj, const fs::path& dir)
 {
-  QString name = obj["name"].toString(QString::fromStdString(dir.filename().generic_string()));
+  QString name = obj["name"].toString(UIUtils::pathToQString(dir.filename()));
 
   if (!hasCategory(name)) {
     _exampleCategories.append(
@@ -98,9 +98,8 @@ void readExamplesDir(const QJsonObject& obj, const fs::path& dir)
     if (path.extension() != ".scad") {
       continue;
     }
-    examples.append(
-      UIUtils::ExampleEntry{.name = QString::fromStdString(path.filename().generic_string()),
-                            .fileInfo = QFileInfo(QString::fromStdString(path.generic_string()))});
+    examples.append(UIUtils::ExampleEntry{.name = UIUtils::pathToQString(path.filename()),
+                                          .fileInfo = QFileInfo(UIUtils::pathToQString(path))});
   }
   std::sort(examples.begin(), examples.end(),
             [](const UIUtils::ExampleEntry& e1, const UIUtils::ExampleEntry& e2) -> bool {
@@ -117,8 +116,7 @@ void enumerateExamples(const fs::path& dir)
     if (!entry.is_directory()) {
       continue;
     }
-    auto fileInfo =
-      QFileInfo{QDir{QString::fromStdString(entry.path().generic_string())}, "example-dir.json"};
+    auto fileInfo = QFileInfo{QDir{UIUtils::pathToQString(entry.path())}, "example-dir.json"};
     QJsonObject obj;
     QFile file(fileInfo.filePath());
     if (file.open(QIODevice::ReadOnly)) {
@@ -159,27 +157,27 @@ QFileInfo UIUtils::openFile(QWidget *parent, QStringList extensions)
   return fileInfo;
 }
 
-QFileInfoList UIUtils::openFiles(QWidget *parent, QStringList extensions)
+std::vector<fs::path> UIUtils::openFiles(QWidget *parent, QStringList extensions)
 {
   QSettingsCached settings;
   const auto last_dirname = settings.value("lastOpenDirName").toString();
   const auto filter = fileOpenFilter("OpenSCAD Designs (%1)", std::move(extensions));
   const auto filenames = QFileDialog::getOpenFileNames(parent, "Open File", last_dirname, filter);
 
-  QFileInfoList fileInfoList;
+  std::vector<fs::path> files;
   for (const QString& filename : filenames) {
     if (filename.isEmpty()) {
       continue;
     }
-    fileInfoList.append(QFileInfo(filename));
+    files.emplace_back(UIUtils::QStringToPath(filename));
   }
 
-  if (!fileInfoList.isEmpty()) {
+  if (!files.empty()) {
     // last_dir is set to directory of last chosen valid file
-    settings.setValue("lastOpenDirName", fileInfoList.back().dir().path());
+    settings.setValue("lastOpenDirName", UIUtils::pathToQString(files.back().parent_path()));
   }
 
-  return fileInfoList;
+  return files;
 }
 
 QStringList UIUtils::recentFiles()
@@ -490,3 +488,13 @@ void UIUtils::dumpSaveState(const QByteArray&)
 {
 }
 #endif  // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+fs::path UIUtils::QStringToPath(const QString& q)
+{
+  return u8path(q.toStdString());
+}
+
+QString UIUtils::pathToQString(const fs::path& p)
+{
+  return QString::fromStdString(p.u8string());
+}

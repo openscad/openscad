@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <fstream>
 
 #include "gui/MainWindow.h"
 #include "gui/Preferences.h"
@@ -113,7 +114,7 @@ void Console::addMessage(const Message& msg)
     auto link =
       isPlain
         ? QString()
-        : QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName()));
+        : QString("%1,%2").arg(msg.loc.firstLine()).arg(UIUtils::pathToQString(msg.loc.fileName()));
     this->msgBuffer.emplace_back(msgstr, link, msg.group, color);
   }
 }
@@ -224,14 +225,15 @@ void Console::hyperlinkClicked(const QString& url)
   const auto match = regEx.match(url);
   if (match.hasMatch()) {
     const auto line = match.captured(1).toInt();
-    const auto file = match.captured(2);
-    const auto info = QFileInfo(file);
-    if (info.isFile()) {
-      if (info.isReadable()) {
+    const auto file = UIUtils::QStringToPath(match.captured(2));
+    if (fs::is_regular_file(file)) {
+      std::ifstream stream(file);
+      if (stream.good()) {
+        stream.close();
         emit openFile(file, line - 1);
       }
     } else {
-      openFile(QString(), line - 1);
+      openFile(fs::path{}, line - 1);
     }
   }
 }

@@ -51,7 +51,7 @@ RenderColorScheme::RenderColorScheme() : _path("")
 RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
 {
   try {
-    boost::property_tree::read_json(path.generic_string().c_str(), pt);
+    boost::property_tree::read_json(path.u8string(), pt);
     _name = pt.get<std::string>("name");
     _index = pt.get<int>("index");
     _show_in_gui = pt.get<bool>("show-in-gui");
@@ -73,7 +73,7 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
       addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
     }
   } catch (const std::exception& e) {
-    LOG("Error reading color scheme file: '%1$s': %2$s", path.generic_string().c_str(), e.what());
+    LOG("Error reading color scheme file: %1$s: %2$s", quotePath(path), e.what());
     _error = e.what();
     _name = "";
     _index = 0;
@@ -101,9 +101,9 @@ bool RenderColorScheme::showInGui() const
   return _show_in_gui;
 }
 
-std::string RenderColorScheme::path() const
+fs::path RenderColorScheme::path() const
 {
-  return _path.string();
+  return _path;
 }
 
 std::string RenderColorScheme::error() const
@@ -188,8 +188,8 @@ void ColorMap::dump() const
       PRINTDB("%6d:%c: %s (built-in)",
               cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
     } else {
-      PRINTDB("%6d:%c: %s from %s",
-              cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
+      PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) %
+                                      quotePath(cs->path()));
     }
   }
   PRINTD("done.");
@@ -220,7 +220,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
 {
   const fs::path color_schemes = basePath / "color-schemes" / "render";
 
-  PRINTDB("Enumerating color schemes from '%s'", color_schemes.generic_string().c_str());
+  PRINTDB("Enumerating color schemes from %s", quotePath(color_schemes));
 
   fs::directory_iterator end_iter;
 
@@ -231,7 +231,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
       }
 
       const fs::path path = (*dir_iter).path();
-      if (!(path.extension() == ".json")) {
+      if (pathExtensionLower(path) != ".json") {
         continue;
       }
 
@@ -239,10 +239,10 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
       if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
         result_set.insert(colorscheme_set_t::value_type(
           colorScheme->index(), std::shared_ptr<RenderColorScheme>(colorScheme)));
-        PRINTDB("Found file '%s' with color scheme '%s' and index %d",
-                colorScheme->path() % colorScheme->name() % colorScheme->index());
+        PRINTDB("Found file %s with color scheme '%s' and index %d",
+                quotePath(colorScheme->path()) % colorScheme->name() % colorScheme->index());
       } else {
-        PRINTDB("Invalid file '%s': %s", colorScheme->path() % colorScheme->error());
+        PRINTDB("Invalid file %s: %s", quotePath(colorScheme->path()) % colorScheme->error());
         delete colorScheme;
       }
     }

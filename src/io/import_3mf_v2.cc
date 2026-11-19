@@ -205,9 +205,8 @@ Color4f get_triangle_color(const Lib3MF::PModel& model, const Lib3MF::PMeshObjec
   }
 }
 
-std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx,
-                            const Lib3MF::PModel& model, const std::unique_ptr<MeshObject>& mo,
-                            std::unique_ptr<PolySet>& ps)
+std::string import_3mf_mesh(const fs::path& filename, unsigned int mesh_idx, const Lib3MF::PModel& model,
+                            const std::unique_ptr<MeshObject>& mo, std::unique_ptr<PolySet>& ps)
 {
   const auto object = mo->obj;
   const auto vertex_count = object->GetVertexCount();
@@ -219,7 +218,7 @@ std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx,
   const auto object_type = get_object_type_name(object->GetType());
 
   PRINTDB("%s: mesh %d, type: %s, vertex count: %lu, triangle count: %lu",
-          filename.c_str() % mesh_idx % object_type % vertex_count % triangle_count);
+          quotePath(filename).c_str() % mesh_idx % object_type % vertex_count % triangle_count);
 
   ps->vertices.reserve(vertex_count);
   ps->indices.reserve(triangle_count);
@@ -334,7 +333,7 @@ std::string get_lib3mf_version()
 #include "geometry/manifold/manifoldutils.h"
 #endif
 
-std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_3mf(const fs::path& filename, const Location& loc)
 {
   Lib3MF::PWrapper wrapper;
 
@@ -380,7 +379,7 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
   }
 
   try {
-    reader->ReadFromFile(filename);
+    reader->ReadFromFile(filename.u8string());
   } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d: %3$s",
         filename.c_str(), loc.firstLine(), e.what());

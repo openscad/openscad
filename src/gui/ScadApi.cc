@@ -13,6 +13,7 @@
 #include "core/EvaluationSession.h"
 #include "core/parsersettings.h"
 #include "gui/ScintillaEditor.h"
+#include "gui/UIUtils.h"
 
 namespace {
 
@@ -87,9 +88,9 @@ void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text
   const auto useDir = QFileInfo{text.left(col).replace(re, "")}.dir().path();
 
   QFileInfoList dirs;
-  dirs << QFileInfo(editor->filepath);
+  dirs << QFileInfo(UIUtils::pathToQString(editor->filepath));
   for (const auto& path : get_library_path()) {
-    dirs << QFileInfo(QString::fromStdString(path) + "/");
+    dirs << QFileInfo(UIUtils::pathToQString(path / ""));
   }
 
   for (const auto& info : dirs) {

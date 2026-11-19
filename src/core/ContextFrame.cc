@@ -152,7 +152,7 @@ bool ContextFrame::is_config_variable(const std::string& name)
   return name[0] == '$' && name != "$children";
 }
 
-const std::string& ContextFrame::documentRoot() const
+const fs::path& ContextFrame::documentRoot() const
 {
   return evaluation_session->documentRoot();
 }

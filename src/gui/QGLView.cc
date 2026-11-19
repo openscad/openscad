@@ -33,6 +33,7 @@
 #include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"
+#include "gui/UIUtils.h"
 #include "glview/Renderer.h"
 #include "utils/degree_trig.h"
 #include "utils/scope_guard.hpp"
@@ -456,9 +457,9 @@ const QImage& QGLView::grabFrame()
   return this->frame;
 }
 
-bool QGLView::save(const char *filename) const
+bool QGLView::save(const fs::path& filename) const
 {
-  return this->frame.save(filename, "PNG");
+  return this->frame.save(UIUtils::pathToQString(filename), "PNG");
 }
 
 void QGLView::wheelEvent(QWheelEvent *event)

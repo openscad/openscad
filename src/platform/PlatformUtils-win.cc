@@ -31,7 +31,7 @@ std::string PlatformUtils::pathSeparatorChar()
 }
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
-static const std::string getFolderPath(int nFolder)
+static const fs::path getFolderPath(int nFolder)
 {
   std::wstring path(MAX_PATH, 0);
 
@@ -47,13 +47,12 @@ static const std::string getFolderPath(int nFolder)
     // Use std::filesystem to decide how to convert from wstring
     // to string. Normally the path encoding is system local and
     // we don't want to force conversion to UTF-8.
-    fs::path p(path);
-    return p.string();
+    return fs::path(path);
   }
-  return "";
+  return {};
 }
 
-std::string PlatformUtils::userDocumentsPath()
+fs::path PlatformUtils::userDocumentsPath()
 {
   return documentsPath();
 }
@@ -63,22 +62,22 @@ std::string PlatformUtils::userDocumentsPath()
 // In Vista, 7, 8+ this is 'c:\users\username\documents'
 // This code may have problems with unusual dir types in Vista because
 // Mingw does not provide access to the updated SHGetKnownFolderPath
-std::string PlatformUtils::documentsPath()
+fs::path PlatformUtils::documentsPath()
 {
-  const std::string retval = getFolderPath(CSIDL_PERSONAL);
+  const fs::path retval = getFolderPath(CSIDL_PERSONAL);
   if (retval.empty()) {
     LOG(message_group::Error, "Could not find My Documents location");
   }
   return retval;
 }
 
-std::string PlatformUtils::userConfigPath()
+fs::path PlatformUtils::userConfigPath()
 {
-  const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
+  const fs::path retval = getFolderPath(CSIDL_LOCAL_APPDATA);
   if (retval.empty()) {
     LOG(message_group::Error, "Could not find Local AppData location");
   }
-  return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
+  return retval / PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
 unsigned long PlatformUtils::stackLimit()

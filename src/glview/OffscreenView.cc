@@ -120,11 +120,11 @@ void OffscreenView::display_opencsg_warning()
 }
 #endif
 
-bool OffscreenView::save(const char *filename) const
+bool OffscreenView::save(const fs::path& filename) const
 {
   std::ofstream fstream(filename, std::ios::out | std::ios::binary);
   if (!fstream.is_open()) {
-    std::cerr << "Can't open file " << filename << " for writing";
+    std::cerr << "Can't open file " << quotePath(filename) << " for writing";
     return false;
   } else {
     save_framebuffer(this->ctx.get(), fstream);

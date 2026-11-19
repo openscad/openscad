@@ -30,10 +30,11 @@ namespace {
 [[maybe_unused]] bool glCheck(const char *stmt, const char *file, int line)
 {
   if (const auto err = glGetError(); err != GL_NO_ERROR) {
+    fs::path path = u8path(file);
     LOG(message_group::Error, Location::NONE, "",
         "OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
         "              %5$s\n",
-        gluErrorString(err), err, file, line, stmt);
+        gluErrorString(err), err, path, line, stmt);
     return false;
   }
   return true;

@@ -52,7 +52,7 @@ jobs:
         run: |
           mkdir build && cd build
           cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
-          cmake --build . -j4
+          cmake --build . -j4 -- -k0
           cmake --install . --prefix=.
       - name: Run Test Suite
         run: |

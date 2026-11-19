@@ -44,7 +44,7 @@ private:
   std::list<Message> lastMessages;
 
 signals:
-  void openFile(const QString, int);
+  void openFile(const fs::path, int);
 
 private slots:
   void on_logTable_doubleClicked(const QModelIndex& index);

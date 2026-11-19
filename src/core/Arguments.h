@@ -48,7 +48,7 @@ public:
   [[nodiscard]] Arguments clone() const;
 
   [[nodiscard]] EvaluationSession *session() const { return evaluation_session; }
-  const std::string& documentRoot() const;
+  const fs::path& documentRoot() const;
 
 private:
   EvaluationSession *evaluation_session;

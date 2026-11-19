@@ -48,16 +48,16 @@ private:
   ParameterObjects parameters;
   std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
 
-  QString invalidJsonFile;  // set if a json file was read that could not be parsed
+  fs::path invalidJsonFile;  // set if a json file was read that could not be parsed
   QTimer autoPreviewTimer;
   bool modified = false;
 
 public:
   ParameterWidget(QWidget *parent = nullptr);
-  void readFile(const QString& scadFile);
-  void saveFile(const QString& scadFile);
-  void saveBackupFile(const QString& scadFile);
-  void removeBackupFile(const QString& scadFile);
+  void readFile(const fs::path& scadFile);
+  void saveFile(const fs::path& scadFile);
+  void saveBackupFile(const fs::path& scadFile);
+  void removeBackupFile(const fs::path& scadFile);
   void setParameters(const SourceFile *sourceFile, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
   bool childHasFocus();
@@ -100,6 +100,6 @@ protected:
   std::vector<ParameterGroup> getParameterGroups();
   ParameterVirtualWidget *createParameterWidget(ParameterObject *parameter,
                                                 DescriptionStyle descriptionStyle);
-  QString getJsonFile(const QString& scadFile);
+  fs::path getJsonFile(const fs::path& scadFile);
   void cleanSets();
 };

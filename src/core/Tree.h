@@ -25,16 +25,16 @@ public:
   ~Tree();
 
   void setRoot(const std::shared_ptr<const AbstractNode>& root);
-  void setDocumentPath(const std::string& path);
+  void setDocumentPath(const fs::path& path);
   const std::shared_ptr<const AbstractNode>& root() const { return this->root_node; }
 
   const std::string getString(const AbstractNode& node, const std::string& indent) const;
   const std::string getIdString(const AbstractNode& node) const;
-  const std::string getDocumentPath() const;
+  const fs::path getDocumentPath() const;
 
 private:
   std::shared_ptr<const AbstractNode> root_node;
   // keep a separate nodecache per tuple of NodeDumper constructor parameters
   mutable std::map<std::tuple<std::string, bool>, NodeCache> nodecachemap;
-  std::string document_path;
+  fs::path document_path;
 };

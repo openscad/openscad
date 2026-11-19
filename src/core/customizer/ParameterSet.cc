@@ -12,19 +12,19 @@ static std::string parameterSetsKey("parameterSets");
 static std::string fileFormatVersionKey("fileFormatVersion");
 static std::string fileFormatVersionValue("1");
 
-bool ParameterSets::readFile(const std::string& filename)
+bool ParameterSets::readFile(const fs::path& filename)
 {
   boost::property_tree::ptree root;
 
-  std::ifstream f(std::filesystem::u8path(filename));
+  std::ifstream f(filename);
   if (!f.good()) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s' for reading", filename);
+    LOG(message_group::Error, "Cannot open Parameter Set %1$s for reading", quotePath(filename));
     return false;
   }
   try {
     boost::property_tree::read_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s': %2$s", filename, e.what());
+    LOG(message_group::Error, "Cannot open Parameter Set %1$s: %2$s", quotePath(filename), e.what());
     return false;
   }
 
@@ -47,7 +47,7 @@ bool ParameterSets::readFile(const std::string& filename)
   return true;
 }
 
-void ParameterSets::writeFile(const std::string& filename) const
+void ParameterSets::writeFile(const fs::path& filename) const
 {
   boost::property_tree::ptree sets;
   for (const auto& set : *this) {
@@ -62,14 +62,14 @@ void ParameterSets::writeFile(const std::string& filename) const
   root.put<std::string>(fileFormatVersionKey, fileFormatVersionValue);
   root.push_back(boost::property_tree::ptree::value_type(parameterSetsKey, sets));
 
-  std::ofstream f(std::filesystem::u8path(filename));
+  std::ofstream f(filename);
   if (!f.good()) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s' for writing", filename);
+    LOG(message_group::Error, "Cannot open Parameter Set %1$s for writing", quotePath(filename));
     return;
   }
   try {
     boost::property_tree::write_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
-    LOG(message_group::Error, "Cannot write Parameter Set '%1$s': %2$s", filename, e.what());
+    LOG(message_group::Error, "Cannot write Parameter Set %1$s: %2$s", quotePath(filename), e.what());
   }
 }

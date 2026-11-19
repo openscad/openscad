@@ -61,10 +61,8 @@ std::string fs_generic_string(const fs::path& p)
      - If the parent path is empty, return empty.
      - Else, return the path as an absolute path based on the parent path.
  */
-std::string lookup_file(const std::string& path, const std::string& parent)
+fs::path lookup_file(const fs::path& path, const fs::path& parent)
 {
-  std::string resultfile;
-
   if (path.empty()) {
     return "";
   }
@@ -103,4 +101,13 @@ int64_t fs_timestamp(fs::path const& path)
     seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
   }
   return seconds;
+}
+
+fs::path u8path(const std::string s)
+{
+#if defined(__cpp_lib_char8_t) && (__cpp_lib_char8_t >= 201907L)
+  return fs::path(std::u8string_view(reinterpret_cast<const char8_t *>(s.data()), s.size()));
+#else
+  return fs::u8path(s);
+#endif
 }

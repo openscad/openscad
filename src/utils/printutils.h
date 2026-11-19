@@ -26,6 +26,7 @@
 #include <boost/format.hpp>
 
 #include "core/AST.h"
+#include "io/fileutils.h"
 
 // It seems standard practice to use underscore for gettext, even though it is reserved.
 // Not wanting to risk breaking translations by changing every usage of this,
@@ -53,6 +54,10 @@ inline const char *_(const char *msgid, const char *msgctxt)
 // NOLINTEND(bugprone-reserved-identifier)
 
 std::string quoteVar(const std::string& varname);
+std::string quotePath(const fs::path& path);
+std::string unquotePath(const fs::path& path);
+std::string csgPath(const fs::path& path);
+std::string pathExtensionLower(const fs::path& path);
 
 enum class message_group {
   NONE,
@@ -77,13 +82,13 @@ bool getGroupTextPlain(const enum message_group& group);
 struct Message {
   std::string msg;
   Location loc;
-  std::string docPath;
+  fs::path docPath;
   enum message_group group;
 
   Message() : msg(""), loc(Location::NONE), docPath(""), group(message_group::NONE) {}
 
   Message(std::string msg, message_group group = message_group::NONE, Location loc = Location::NONE,
-          std::string docPath = "")
+          fs::path docPath = "")
     : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
   {
   }
@@ -147,25 +152,27 @@ void PRINT_NOCACHE(const Message& msgObj);
    if (OpenSCAD::debug!="") PRINTDB("PolySet dump: %s",ps->dump());
  */
 
-void PRINTDEBUG(const std::string& filename, const std::string& msg);
+void PRINTDEBUG(const fs::path& filename, const std::string& msg);
 // NOLINTBEGIN
-#define PRINTD(_arg)                         \
-  do {                                       \
-    PRINTDEBUG(std::string(__FILE__), _arg); \
+#define PRINTD(_arg)                    \
+  do {                                  \
+    PRINTDEBUG(u8path(__FILE__), _arg); \
   } while (0)
-#define PRINTDB(_fmt, _arg)                                               \
-  do {                                                                    \
-    try {                                                                 \
-      PRINTDEBUG(std::string(__FILE__), str(boost::format(_fmt) % _arg)); \
-    } catch (const boost::io::format_error& e) {                          \
-      PRINTDEBUG(std::string(__FILE__), "bad PRINTDB usage");             \
-    }                                                                     \
+#define PRINTDB(_fmt, _arg)                                          \
+  do {                                                               \
+    try {                                                            \
+      PRINTDEBUG(u8path(__FILE__), str(boost::format(_fmt) % _arg)); \
+    } catch (const boost::io::format_error& e) {                     \
+      PRINTDEBUG(u8path(__FILE__), "bad PRINTDB usage");             \
+    }                                                                \
   } while (0)
 // NOLINTEND
 
 std::string two_digit_exp_format(std::string doublestr);
 std::string two_digit_exp_format(double x);
+#if UNUSED
 const std::string& quoted_string(const std::string& str);
+#endif
 
 // extremely simple logging, eventually replace with something like boost.log
 // usage: logstream out(5); openscad_loglevel=6; out << "hi";
@@ -251,7 +258,7 @@ public:
 extern std::set<std::string> printedDeprecations;
 
 template <typename... Args>
-std::optional<Message> make_message_obj(const message_group& msgGroup, Location loc, std::string docPath,
+std::optional<Message> make_message_obj(const message_group& msgGroup, Location loc, fs::path docPath,
                                         std::string&& f, Args&&...args)
 {
   auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
@@ -286,3 +293,11 @@ void LOG(Args&&...args)
     PRINT(*msg);
   }
 }
+
+class QuotedString : public std::string
+{
+public:
+  QuotedString() : std::string() {}
+  QuotedString(const std::string& s) : std::string(s) {}
+};
+std::ostream& operator<<(std::ostream& stream, const QuotedString& s);

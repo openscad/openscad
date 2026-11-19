@@ -103,7 +103,7 @@ struct StreamVisitor : public StatisticVisitor {
     : StatisticVisitor(options), stream(stream)
   {
   }
-  StreamVisitor(const std::vector<std::string>& options, const std::string& filename)
+  StreamVisitor(const std::vector<std::string>& options, const fs::path& filename)
     : StatisticVisitor(options), fstream(filename), stream(fstream)
   {
   }
@@ -199,7 +199,7 @@ void RenderStatistic::printRenderingTime()
 }
 
 void RenderStatistic::printAll(const std::shared_ptr<const Geometry>& geom, const Camera& camera,
-                               const std::vector<std::string>& options, const std::string& filename)
+                               const std::vector<std::string>& options, const fs::path& filename)
 {
   // bool is_log = false;
   std::unique_ptr<StatisticVisitor> visitor;

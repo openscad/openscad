@@ -75,21 +75,21 @@ ObjectType to_obj(const json& j, EvaluationSession *session)
 
 }  // namespace
 
-Value import_json(const std::string& filename, EvaluationSession *session, const Location& loc)
+Value import_json(const fs::path& filename, EvaluationSession *session, const Location& loc)
 {
-  std::ifstream i(std::filesystem::u8path(filename));
+  std::ifstream i(filename);
 
   try {
     if (i) {
       json j = json::parse(i);
       return Value{to_value(j, session)};
     } else {
-      LOG(message_group::Warning, loc, session->documentRoot(), "Could not read file '%1$s'",
-          fs_uncomplete(filename, session->documentRoot()).generic_string());
+      LOG(message_group::Warning, loc, session->documentRoot(), "Could not read file %1$s",
+          quotePath(fs_uncomplete(filename, session->documentRoot())));
     }
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, loc, session->documentRoot(), "Failed to parse file '%1$s': %2$s",
-        fs_uncomplete(filename, session->documentRoot()).generic_string(), e.what());
+    LOG(message_group::Warning, loc, session->documentRoot(), "Failed to parse file %1$s: %2$s",
+        quotePath(fs_uncomplete(filename, session->documentRoot())), e.what());
   }
 
   return Value::undefined.clone();

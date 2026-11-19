@@ -16,21 +16,19 @@
 #define RESOURCE_FOLDER(path) path
 #endif
 
-extern std::vector<std::string> librarypath;
-extern std::vector<std::string> fontpath;
-
 namespace {
 bool path_initialized = false;
-std::string applicationpath;
-std::string resourcespath;
+fs::path applicationpath;
+fs::path resourcespath;
 }  // namespace
 
 const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 
-static std::string lookupResourcesPath()
+static fs::path lookupResourcesPath()
 {
+  // resourcedir defaults to applicationPath
   fs::path resourcedir(applicationpath);
-  PRINTDB("Looking up resource folder with application path '%s'", resourcedir.generic_string().c_str());
+  PRINTDB("Looking up resource folder with application path %s", quotePath(resourcedir));
 
 #ifdef __APPLE__
   const char *searchpath[] = {"../Resources",                        // Resources can be bundled on Mac.
@@ -62,32 +60,30 @@ static std::string lookupResourcesPath()
     // The resource folder is the folder which contains "color-schemes" (as well as
     // "examples" and "locale", and optionally "libraries" and "fonts")
     const fs::path checkdir = tmpdir / "color-schemes";
-    PRINTDB("Checking '%s'", checkdir.generic_string().c_str());
+    PRINTDB("Checking %s", quotePath(checkdir));
 
     if (is_directory(checkdir)) {
       resourcedir = tmpdir;
-      PRINTDB("Found resource folder '%s'", tmpdir.generic_string().c_str());
+      PRINTDB("Found resource folder %s", quotePath(tmpdir));
       break;
     }
   }
 
-  // resourcedir defaults to applicationPath
 #ifndef __EMSCRIPTEN__
   resourcedir = fs::canonical(resourcedir);
 #endif
-  std::string result = resourcedir.generic_string();
-  PRINTDB("Using resource folder '%s'", result);
-  return result;
+  PRINTDB("Using resource folder %s", quotePath(resourcedir));
+  return resourcedir;
 }
 
-void PlatformUtils::registerApplicationPath(const std::string& apppath)
+void PlatformUtils::registerApplicationPath(const fs::path& apppath)
 {
   applicationpath = apppath;
   resourcespath = lookupResourcesPath();
   path_initialized = true;
 }
 
-std::string PlatformUtils::applicationPath()
+fs::path PlatformUtils::applicationPath()
 {
   if (!path_initialized) {
     throw std::runtime_error("PlatformUtils::applicationPath(): application path not initialized!");
@@ -97,15 +93,15 @@ std::string PlatformUtils::applicationPath()
 
 bool PlatformUtils::createUserLibraryPath()
 {
-  std::string path = PlatformUtils::userLibraryPath();
+  fs::path path = PlatformUtils::userLibraryPath();
   bool OK = false;
   try {
-    if (!fs::exists(fs::path(path))) {
-      LOG("Creating library folder %1$s", path);
+    if (!fs::exists(path)) {
+      LOG("Creating library folder %1$s", quotePath(path));
       OK = fs::create_directories(path);
     }
     if (!OK) {
-      LOG(message_group::Error, "Cannot create %1$s", path);
+      LOG(message_group::Error, "Cannot create %1$s", quotePath(path));
     }
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());
@@ -113,20 +109,18 @@ bool PlatformUtils::createUserLibraryPath()
   return OK;
 }
 
-std::string PlatformUtils::userPath(const std::string& name)
+fs::path PlatformUtils::userPath(const std::string& name)
 {
   fs::path path;
   try {
-    std::string pathstr = PlatformUtils::documentsPath();
-    if (pathstr == "") return "";
-    path = fs::path(pathstr);
-    if (!fs::exists(path)) return "";
+    path = PlatformUtils::documentsPath();
+    if (!fs::exists(path)) return {};
 #ifndef __EMSCRIPTEN__
     path = fs::canonical(path);
 #endif
     // LOG(message_group::NONE,,"path size %1$i",fs::stringy(path).size());
     // LOG(message_group::NONE,,"lib path found: [%1$s]",path);
-    if (path.empty()) return "";
+    if (path.empty()) return {};
     path /= OPENSCAD_FOLDER_NAME;
     path /= name;
     // LOG(message_group::NONE,,"Appended path %1$s",path);
@@ -134,49 +128,47 @@ std::string PlatformUtils::userPath(const std::string& name)
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());
   }
-  return path.generic_string();
+  return path;
 }
 
-std::string PlatformUtils::userLibraryPath()
+fs::path PlatformUtils::userLibraryPath()
 {
   return userPath("libraries");
 }
 
-std::string PlatformUtils::userExamplesPath()
+fs::path PlatformUtils::userExamplesPath()
 {
   return userPath("examples");
 }
 
-std::string PlatformUtils::backupPath()
+fs::path PlatformUtils::backupPath()
 {
   fs::path path;
   try {
-    std::string pathstr = PlatformUtils::documentsPath();
-    if (pathstr == "") return "";
-    path = fs::path(pathstr);
-    if (!fs::exists(path)) return "";
+    path = PlatformUtils::documentsPath();
+    if (!fs::exists(path)) return {};
 #ifndef __EMSCRIPTEN__
     path = fs::canonical(path);
 #endif
-    if (path.empty()) return "";
+    if (path.empty()) return {};
     path /= OPENSCAD_FOLDER_NAME;
     path /= "backups";
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());
   }
-  return path.generic_string();
+  return path;
 }
 
 bool PlatformUtils::createBackupPath()
 {
-  std::string path = PlatformUtils::backupPath();
+  fs::path path = PlatformUtils::backupPath();
   bool OK = false;
   try {
-    if (!fs::exists(fs::path(path))) {
+    if (!fs::exists(path)) {
       OK = fs::create_directories(path);
     }
     if (!OK) {
-      LOG(message_group::Error, "Cannot create %1$s", path);
+      LOG(message_group::Error, "Cannot create %1$s", quotePath(path));
     }
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());
@@ -185,7 +177,7 @@ bool PlatformUtils::createBackupPath()
 }
 
 // This is the built-in read-only resources path
-std::string PlatformUtils::resourceBasePath()
+fs::path PlatformUtils::resourceBasePath()
 {
   if (!path_initialized) {
     throw std::runtime_error("PlatformUtils::resourcesPath(): application path not initialized!");
@@ -208,19 +200,20 @@ fs::path PlatformUtils::resourcePath(const std::string& resource)
   return resource_dir;
 }
 
-int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
+int PlatformUtils::setenv(const char *name, const std::string svalue, int overwrite)
 {
+  const char *cvalue = svalue.c_str();
 #if defined(_WIN32)
-  const char *ptr = getenv(name);
+  const char *ptr = getenv(cvalue);
   if ((overwrite == 0) && (ptr != nullptr)) {
     return 0;
   }
 
   char buf[4096];
-  snprintf(buf, sizeof(buf), "%s=%s", name, value);
+  snprintf(buf, sizeof(buf), "%s=%s", name, cvalue);
   return _putenv(buf);
 #else
-  return ::setenv(name, value, overwrite);
+  return ::setenv(name, cvalue, overwrite);
 #endif
 }
 

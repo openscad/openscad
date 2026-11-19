@@ -33,7 +33,7 @@ SourceFileCache *SourceFileCache::inst = nullptr;
 
    Returns the latest modification time of the file, its dependencies or includes.
  */
-std::time_t SourceFileCache::process(const std::string& mainFile, const std::string& filename,
+std::time_t SourceFileCache::process(const fs::path& mainFile, const fs::path& filename,
                                      SourceFile *& sourceFile)
 {
   sourceFile = nullptr;
@@ -83,26 +83,25 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
 
 #ifdef DEBUG
   // Causes too much debug output
-  // if (!shouldParse) LOG(message_group::NONE,,"Using cached library: %1$s (%2$p)",filename,file);
+  // if (!shouldParse) LOG(message_group::NONE,,"Using cached library: %1$s (%2$p)",quotePath(filename),
+  //                       file);
 #endif
 
   // If cache lookup failed (non-existing or old timestamp), parse file
   if (shouldParse) {
 #ifdef DEBUG
     if (found) {
-      PRINTDB("Recompiling cached library: %s (%s)", filename % cache_id);
+      PRINTDB("Recompiling cached library: %s (%s)", quotePath(filename) % cache_id);
     } else {
-      PRINTDB("Compiling library '%s'.", filename);
+      PRINTDB("Compiling library %s.", quotePath(filename));
     }
 #endif
 
     std::string text;
     {
-      // filename is UTF-8. Opening through a path (instead of a char*) makes
-      // non-ASCII names work on Windows, where narrow names use the ANSI code page.
-      std::ifstream ifs(std::filesystem::u8path(filename));
+      std::ifstream ifs(filename);
       if (!ifs.is_open()) {
-        LOG(message_group::Warning, "Can't open library file '%1$s'\n", filename);
+        LOG(message_group::Warning, "Can't open library file %1$s", quotePath(filename));
         return 0;
       }
       text = STR(ifs.rdbuf(), "\n\x03\n", commandline_commands);
@@ -113,7 +112,7 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
     delete cacheEntry.parsed_file;
     file =
       parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
-    PRINTDB("parsed file: %s", filename);
+    PRINTDB("parsed file: %s", quotePath(filename));
     cacheEntry.file = file;
     cacheEntry.cache_id = cache_id;
     auto mod = file ? file : cacheEntry.parsed_file;
@@ -133,7 +132,7 @@ void SourceFileCache::clear()
   this->entries.clear();
 }
 
-SourceFile *SourceFileCache::lookup(const std::string& filename)
+SourceFile *SourceFileCache::lookup(const fs::path& filename)
 {
   auto it = this->entries.find(filename);
   return it != this->entries.end() ? it->second.file : nullptr;

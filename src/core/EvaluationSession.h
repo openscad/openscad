@@ -16,7 +16,7 @@ class ContextFrame;
 class EvaluationSession
 {
 public:
-  EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot)) {}
+  EvaluationSession(fs::path documentRoot) : document_root(std::move(documentRoot)) {}
 
   size_t push_frame(ContextFrame *frame);
   void replace_frame(size_t index, ContextFrame *frame);
@@ -29,12 +29,12 @@ public:
   [[nodiscard]] boost::optional<InstantiableModule> lookup_special_module(const std::string& name,
                                                                           const Location& loc) const;
 
-  [[nodiscard]] const std::string& documentRoot() const { return document_root; }
+  [[nodiscard]] const fs::path& documentRoot() const { return document_root; }
   ContextMemoryManager& contextMemoryManager() { return context_memory_manager; }
   HeapSizeAccounting& accounting() { return context_memory_manager.accounting(); }
 
 private:
-  std::string document_root;
+  fs::path document_root;
   std::vector<ContextFrame *> stack;
   ContextMemoryManager context_memory_manager;
 };

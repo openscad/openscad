@@ -5,6 +5,9 @@
 #include <QObject>
 #include <QString>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #include "glview/RenderSettings.h"
 #include "gui/WindowManager.h"
 
@@ -19,7 +22,7 @@ public:
   ~OpenSCADApp() override;
 
   bool notify(QObject *object, QEvent *event) override;
-  void requestOpenFile(const QString& filename);
+  void requestOpenFile(const fs::path& filename);
 
   // See comments in OpenSCADApp.cc.
   static void closeApp();

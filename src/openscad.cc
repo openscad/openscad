@@ -142,7 +142,7 @@ public:
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
+  Echostream(const fs::path& filename) : fstream(filename), stream(fstream)
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
@@ -173,9 +173,9 @@ struct AnimateArgs {
 
 struct CommandLine {
   const bool is_stdin;
-  const std::string& filename;
+  const fs::path& input_file;
   const bool is_stdout;
-  std::string output_file;
+  fs::path output_file;  // NEEDSWORK:  const?
   const fs::path& original_path;
   const std::string& parameterFile;
   const std::string& setName;
@@ -207,7 +207,7 @@ bool useGUI()
 #endif  // OPENSCAD_NOGUI
 
 bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
-                    ExportInfo& exportInfo, const bool is_stdout, const std::string& filename)
+                    ExportInfo& exportInfo, const bool is_stdout, const fs::path& filename)
 {
   if (root_geom->getDimension() != dimensions) {
     LOG("Current top level object is not a %1$dD object.", dimensions);
@@ -276,7 +276,7 @@ int info()
 }
 
 template <typename F>
-bool with_output(const bool is_stdout, const std::string& filename, const F& f,
+bool with_output(const bool is_stdout, const fs::path& output_file, const F& f,
                  std::ios::openmode mode = std::ios::out)
 {
   if (is_stdout) {
@@ -288,9 +288,9 @@ bool with_output(const bool is_stdout, const std::string& filename, const F& f,
     f(std::cout);
     return true;
   }
-  std::ofstream fstream(std::filesystem::u8path(filename), mode);
+  std::ofstream fstream(output_file, mode);
   if (!fstream.is_open()) {
-    LOG("Can't open file \"%1$s\" for export", filename);
+    LOG("Can't open file %1$s for export", quotePath(output_file));
     return false;
   } else {
     f(fstream);
@@ -407,17 +407,16 @@ static void change_current_path(const fs::path& path)
   std::error_code ec;
   fs::current_path(path, ec);
   if (ec) {
-    LOG(message_group::Warning, "Could not change the working directory to '%1$s': %2$s",
-        path.generic_string(), ec.message());
+    LOG(message_group::Warning, "Could not change the working directory to %1$s: %2$s", quotePath(path),
+        ec.message());
   }
 }
 
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
               SourceFile *root_file)
 {
-  auto filename_str = fs::path(cmd.output_file).generic_string();
   // Avoid possibility of fs::absolute throwing when passed an empty path
-  auto fpath = cmd.filename.empty() ? fs::current_path() : fs_absolute(fs::path(cmd.filename));
+  auto fpath = cmd.input_file.empty() ? fs::current_path() : fs_absolute(cmd.input_file);
   auto fparent = fpath.parent_path();
 
   // set CWD relative to source file
@@ -472,22 +471,22 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     // the current working dir and neither to the location of the input nor
     // the output.
     change_current_path(fparent);  // Force exported filenames to be relative to document path
-    with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream& stream) {
+    with_output(cmd.is_stdout, cmd.output_file, [&tree, root_node](std::ostream& stream) {
       stream << tree.getString(*root_node, "\t") << "\n";
     });
     change_current_path(cmd.original_path);
   } else if (export_format == FileFormat::AST) {
     change_current_path(fparent);  // Force exported filenames to be relative to document path
-    with_output(cmd.is_stdout, filename_str,
+    with_output(cmd.is_stdout, cmd.output_file,
                 [root_file](std::ostream& stream) { stream << root_file->dump(""); });
     change_current_path(cmd.original_path);
   } else if (export_format == FileFormat::PARAM) {
-    with_output(cmd.is_stdout, filename_str,
+    with_output(cmd.is_stdout, cmd.output_file,
                 [&root_file, &fpath](std::ostream& stream) { export_param(root_file, fpath, stream); });
   } else if (export_format == FileFormat::TERM) {
     CSGTreeEvaluator csgRenderer(tree);
     auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
-    with_output(cmd.is_stdout, filename_str, [root_raw_term](std::ostream& stream) {
+    with_output(cmd.is_stdout, cmd.output_file, [root_raw_term](std::ostream& stream) {
       if (!root_raw_term || root_raw_term->isEmptySet()) {
         stream << "No top-level CSG object\n";
       } else {
@@ -533,18 +532,19 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       }
     }
 
-    const std::string input_filename = cmd.is_stdin ? "<stdin>" : cmd.filename;
+    const fs::path input_filename = cmd.is_stdin ? fs::path{} : cmd.input_file;
+
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
     ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format),
                                              input_filename, &cmd.camera, cmd.exportOptions);
-    if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
+    if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, cmd.output_file)) {
       return 1;
     }
 
     if (export_format == FileFormat::PNG) {
       bool success = true;
       bool const wrote = with_output(
-        cmd.is_stdout, filename_str,
+        cmd.is_stdout, cmd.output_file,
         [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
           if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC ||
               cmd.viewOptions.renderer == RenderType::GEOMETRY) {
@@ -572,10 +572,11 @@ int cmdline(const CommandLine& cmd)
   if (cmd.export_format.is_initialized()) {
     export_format = cmd.export_format.get();
   } else {
-    // else extract format from file extension
-    const auto path = fs::path(cmd.output_file);
-    std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
-    boost::algorithm::to_lower(suffix);
+    // else extract format (without dot) from file extension
+    std::string suffix = pathExtensionLower(cmd.output_file);
+    if (!suffix.empty()) {
+      suffix = suffix.substr(1);
+    }
 
     if (!fileformat::fromIdentifier(suffix, export_format)) {
       LOG(
@@ -587,14 +588,14 @@ int cmdline(const CommandLine& cmd)
   }
 
   // Do some minimal checking of output directory before rendering (issue #432)
-  auto output_dir = fs::path(cmd.output_file).parent_path();
+  auto output_dir = cmd.output_file.parent_path();
   if (output_dir.empty()) {
     // If output_file_str has no directory prefix, set output directory to current directory.
     output_dir = fs::current_path();
   }
   if (!fs::is_directory(output_dir)) {
-    LOG("\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_dir.generic_string(),
-        cmd.output_file);
+    LOG("%1$s is not a directory for output file %2$s - Skipping\n", quotePath(output_dir),
+        quotePath(cmd.output_file));
     return 1;
   }
 
@@ -609,19 +610,19 @@ int cmdline(const CommandLine& cmd)
   if (cmd.is_stdin) {
     text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
   } else {
-    std::ifstream ifs(std::filesystem::u8path(cmd.filename));
+    std::ifstream ifs(cmd.input_file);
     if (!ifs.is_open()) {
-      LOG("Can't open input file '%1$s'!\n", cmd.filename);
+      LOG("Can't open input file %1$s!\n", quotePath(cmd.input_file));
       return 1;
     }
-    handle_dep(cmd.filename);
+    handle_dep(cmd.input_file);
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   }
 
 #ifdef ENABLE_PYTHON
   python_active = false;
-  if (cmd.filename.c_str() != NULL) {
-    if (boost::algorithm::ends_with(cmd.filename, ".py")) {
+  if (!cmd.input_file.empty()) {
+    if (pathExtensionLower(cmd.input_file) == ".py") {
       if (python_trusted == true) python_active = true;
       else LOG("Python is not enabled");
     }
@@ -638,12 +639,12 @@ int cmdline(const CommandLine& cmd)
   text += "\n\x03\n" + commandline_commands;
 
   SourceFile *root_file = nullptr;
-  if (!parse(root_file, text, cmd.filename, cmd.filename, false)) {
+  if (!parse(root_file, text, cmd.input_file, cmd.input_file, false)) {
     delete root_file;  // parse failed
     root_file = nullptr;
   }
   if (!root_file) {
-    LOG("Can't parse file '%1$s'!\n", cmd.filename);
+    LOG("Can't parse file %1$s!\n", quotePath(cmd.input_file));
     return 1;
   }
 
@@ -688,17 +689,16 @@ int cmdline(const CommandLine& cmd)
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
 
-      auto frame_file = fs::path(cmd.output_file);
+      auto frame_file = cmd.output_file;
       auto extension = frame_file.extension();
       frame_file.replace_extension();
       frame_file += oss.str();
-      frame_file.replace_extension(extension);
-      std::string const frame_str = frame_file.generic_string();
+      frame_file += extension;
 
-      LOG("Exporting %1$s...", cmd.filename);
+      LOG("Exporting %1$s...", quotePath(cmd.input_file));
 
       CommandLine frame_cmd = cmd;
-      frame_cmd.output_file = frame_str;
+      frame_cmd.output_file = frame_file;
 
       int const r = do_export(frame_cmd, render_variables, export_format, root_file);
       if (r != 0) {
@@ -826,17 +826,16 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
  */
 void localization_init()
 {
-  fs::path const po_dir(PlatformUtils::resourcePath("locale"));
-  const std::string& locale_path(po_dir.string());
+  fs::path const locale_path(PlatformUtils::resourcePath("locale"));
 
   if (fs::is_directory(locale_path)) {
     setlocale(LC_ALL, "");
-    bindtextdomain("openscad", locale_path.c_str());
+    bindtextdomain("openscad", locale_path.u8string().c_str());
     bind_textdomain_codeset("openscad", "UTF-8");
     textdomain("openscad");
   } else {
-    LOG("Could not initialize localization (application path is '%1$s').",
-        PlatformUtils::applicationPath());
+    LOG("Could not initialize localization (application path is %1$s).",
+        quotePath(PlatformUtils::applicationPath()));
   }
 }
 
@@ -887,10 +886,9 @@ int openscad_main(int argc, char **argv)
 #endif
 
 #ifndef __EMSCRIPTEN__
-  const auto applicationPath =
-    weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
+  const fs::path applicationPath = weakly_canonical(boost::dll::program_location()).parent_path();
 #else
-  const auto applicationPath = boost::dll::fs::current_path();
+  const fs::path applicationPath = boost::dll::fs::current_path();
 #endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
@@ -913,8 +911,8 @@ int openscad_main(int argc, char **argv)
 
   auto original_path = fs::current_path();
 
-  std::vector<std::string> output_files;
-  const char *deps_output_file = nullptr;
+  std::vector<fs::path> output_files;
+  fs::path deps_output_file{};
   boost::optional<FileFormat> export_format;
 
   ViewOptions viewOptions{};
@@ -1137,11 +1135,13 @@ int openscad_main(int argc, char **argv)
   }
 
   if (vm.count("o")) {
-    output_files = vm["o"].as<std::vector<std::string>>();
+    for (auto s : vm["o"].as<std::vector<std::string>>()) {
+      output_files.emplace_back(u8path(s));
+    }
   }
   if (vm.count("d")) {
-    if (deps_output_file) help(argv[0], desc, true);
-    deps_output_file = vm["d"].as<std::string>().c_str();
+    if (!deps_output_file.empty()) help(argv[0], desc, true);
+    deps_output_file = u8path(vm["d"].as<std::string>());
   }
   if (vm.count("m")) {
     if (make_command) help(argv[0], desc, true);
@@ -1180,9 +1180,11 @@ int openscad_main(int argc, char **argv)
     parameterSet = vm["P"].as<std::string>().c_str();
   }
 
-  std::vector<std::string> inputFiles;
+  std::vector<fs::path> inputFiles;
   if (vm.count("input-file")) {
-    inputFiles = vm["input-file"].as<std::vector<std::string>>();
+    for (auto& s : vm["input-file"].as<std::vector<std::string>>()) {
+      inputFiles.emplace_back(fs::path(s));
+    }
   }
 
   if (vm.count("colorscheme")) {
@@ -1246,9 +1248,9 @@ int openscad_main(int argc, char **argv)
       } else {
         for (const auto& filename : output_files) {
           const bool is_stdin = inputFiles[0] == "-";
-          const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
+          const fs::path input_file = is_stdin ? fs::path{} : inputFiles[0];
           const bool is_stdout = filename == "-";
-          const std::string output_file = is_stdout ? "<stdout>" : filename;
+          const fs::path output_file = is_stdout ? fs::path{} : filename;
           const auto export_options = convert_export_options(vm);
           const CommandLine cmd{is_stdin,
                                 input_file,
@@ -1272,10 +1274,9 @@ int openscad_main(int argc, char **argv)
       rc = 1;
     }
 
-    if (deps_output_file) {
-      std::string const deps_out(deps_output_file);
-      const std::vector<std::string>& geom_out(output_files);
-      if (!write_deps(deps_out, geom_out)) {
+    if (!deps_output_file.empty()) {
+      const std::vector<fs::path>& geom_out(output_files);
+      if (!write_deps(deps_output_file, geom_out)) {
         LOG("Error writing deps");
         return 1;
       }
