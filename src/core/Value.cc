@@ -546,7 +546,9 @@ public:
   {
     char buf[8];
     memset(buf, 0, 8);
-    if (v > 0) {
+    // Values that don't fit in a gunichar (e.g. inf) aren't valid characters, and
+    // converting them would be undefined behavior.
+    if (v > 0 && v <= 0x10FFFF) {
       const gunichar c = v;
       if (g_unichar_validate(c) && (c != 0)) {
         g_unichar_to_utf8(c, buf);

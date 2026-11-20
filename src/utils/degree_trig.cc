@@ -126,7 +126,9 @@ double cos_degrees(double x)
 
 double tan_degrees(double x)
 {
-  const int cycles = floor((x) / 180.0);
+  // A double, since converting Inf/NaN or huge values to int is undefined behavior.
+  const double cycles = floor((x) / 180.0);
+  const bool even_cycles = std::fmod(cycles, 2.0) == 0.0;
   // use positive tests because of possible Inf/NaN
   if (x < 180.0 && x >= 0.0) {
     // Ok for now
@@ -147,7 +149,7 @@ double tan_degrees(double x)
   const bool oppose = x > 90.0;
   if (oppose) x = 180.0 - x;
   if (x == 0.0) {
-    x = (cycles % 2) == 0 ? 0.0 : -0.0;
+    x = even_cycles ? 0.0 : -0.0;
   } else if (x == 30.0) {
     x = M_SQRT1_3;
   } else if (x == 45.0) {
@@ -155,7 +157,7 @@ double tan_degrees(double x)
   } else if (x == 60.0) {
     x = M_SQRT3;
   } else if (x == 90.0) {
-    x = (cycles % 2) == 0 ? std::numeric_limits<double>::infinity()
+    x = even_cycles ? std::numeric_limits<double>::infinity()
                           : -std::numeric_limits<double>::infinity();
   } else {
     x = tan(deg2rad(x));
