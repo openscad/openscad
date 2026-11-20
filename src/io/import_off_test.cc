@@ -56,3 +56,12 @@ TEST_CASE("OFF importer handles malformed files without crashing", "[io][OFF-Imp
     }
   }
 }
+
+TEST_CASE("nOFF headers accept tabs around the dimension", "[io][OFF-Import]")
+{
+  auto ps = import_off(get_off_file_path("ndim-tab-separated.off"), test_location);
+  REQUIRE(ps);
+  REQUIRE_FALSE(ps->isEmpty());
+  CHECK(ps->vertices.size() == 4);
+  CHECK(ps->indices.size() == 2);
+}

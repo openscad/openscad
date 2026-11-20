@@ -137,6 +137,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   std::vector<std::string> words;
 
   if (has_ndim) {
+    boost::trim_left(line);
     if (line.empty() && !getline_clean("bad header: end of file")) {
       return PolySet::createEmpty();
     }
@@ -145,13 +146,14 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       AsciiError("bad header: missing Ndim");
       return PolySet::createEmpty();
     }
-    line = line.erase(0, words[0].length() + ((words.size() > 1) ? 1 : 0));
     try {
       dimension = boost::lexical_cast<unsigned int>(words[0]) + dimension - 3;
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("bad header: bad data for Ndim");
       return PolySet::createEmpty();
     }
+    line.erase(0, words[0].length());
+    boost::trim_left(line);
   }
 
   PRINTDB("Header flags: N:%d C:%d ST:%d Ndim:%d B:%d",
