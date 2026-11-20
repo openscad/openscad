@@ -57,7 +57,7 @@ TEST_CASE("Appending warnings only measures the new error log rows", "[gui][erro
 
   const int sizeHintsAfterResize = delegate->sizeHintCalls;
   log.logTable->horizontalHeader()->sectionResized(errorLog_column::file, fileColumnWidth,
-                                                 fileColumnWidth + 20);
+                                                   fileColumnWidth + 20);
   CHECK(delegate->sizeHintCalls == sizeHintsAfterResize);
 
   log.toErrorLog({"An error", message_group::Error, Location::NONE, ""});
