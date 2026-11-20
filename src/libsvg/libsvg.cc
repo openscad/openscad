@@ -55,6 +55,33 @@ bool unlimited_use_cloned_shapes = false;
 
 using shapes_defs_list_t = std::map<std::string, std::shared_ptr<shape>>;
 
+// A <use> element that refers to an element that wasn't parsed yet, and whether it's
+// inside <defs>.
+struct pending_use_t {
+  std::shared_ptr<shape> use_shape;
+  bool in_defs;
+};
+using pending_uses_t = std::vector<pending_use_t>;
+
+// Clones the element referenced by a <use> element and adds the clones to the given list.
+static void expand_use(use *use_shape, shape *referenced, shapes_list_t *target_list)
+{
+  auto cloned_children = use_shape->set_clone_child(referenced);
+  const size_t would_be_total = use_cloned_shape_count + cloned_children.size();
+  const size_t limit =
+    unlimited_use_cloned_shapes ? std::numeric_limits<size_t>::max() : MAX_USE_CLONED_SHAPES;
+  if (would_be_total > limit) {
+    throw SvgException((boost::format("<use> elements generated too many shapes (%1%, limit %2%); "
+                                      "aborting the SVG import.") %
+                        would_be_total % limit)
+                         .str());
+  }
+  use_cloned_shape_count = would_be_total;
+  // The clones have the <use> element as their ancestor, so they need to be
+  // stored in the same list to not outlive it.
+  target_list->insert(target_list->end(), cloned_children.begin(), cloned_children.end());
+}
+
 #if SVG_DEBUG
 static std::string dump_stack()
 {
@@ -83,7 +110,7 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 }
 
 void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
-                 shapes_list_t *temp_defs_storage, void *context)
+                 shapes_list_t *temp_defs_storage, pending_uses_t *pending_uses, void *context)
 {
   const char *name = reinterpret_cast<const char *>(xmlTextReaderName(reader));
   if (name == nullptr) name = reinterpret_cast<const char *>(xmlStrdup(BAD_CAST "--"));
@@ -117,33 +144,24 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
         if (use::name == s->get_name()) {
           use *currentuse = dynamic_cast<use *>(s.get());
           auto id = currentuse->get_href_id();
-          if (!id.empty() && defs_lookup_list->find(id) != defs_lookup_list->end()) {
-            auto to_clone_child = (*defs_lookup_list)[id];
-            auto cloned_children = currentuse->set_clone_child(to_clone_child.get());
-            const size_t would_be_total = use_cloned_shape_count + cloned_children.size();
-            const size_t limit =
-              unlimited_use_cloned_shapes ? std::numeric_limits<size_t>::max() : MAX_USE_CLONED_SHAPES;
-            if (would_be_total > limit) {
-              throw SvgException(
-                (boost::format("<use> elements generated too many shapes (%1%, limit %2%); "
-                               "aborting the SVG import.") %
-                 would_be_total % limit)
-                  .str());
+          if (!id.empty()) {
+            const auto it = defs_lookup_list->find(id);
+            if (it != defs_lookup_list->end()) {
+              expand_use(currentuse, it->second.get(), in_defs ? temp_defs_storage : shape_list);
+            } else {
+              // Might refer to an element further down in the file
+              pending_uses->push_back({s, in_defs});
             }
-            use_cloned_shape_count = would_be_total;
-            // The clones have the <use> element as their ancestor, so they need to be
-            // stored in the same list to not outlive it.
-            auto *target_list = in_defs ? temp_defs_storage : shape_list;
-            target_list->insert(target_list->end(), cloned_children.begin(), cloned_children.end());
           }
         }
 
+        // Any element with an id can be referenced by <use>, not only the ones in <defs>
+        if (!s->get_id_or_default().empty()) {
+          defs_lookup_list->insert(std::make_pair(s->get_id(), s));
+        }
         if (!in_defs) {
           shape_list->push_back(s);
         } else {
-          if (!s->get_id_or_default().empty()) {
-            defs_lookup_list->insert(std::make_pair(s->get_id(), s));
-          }
           temp_defs_storage->push_back(s);
         }
       }
@@ -219,6 +237,7 @@ int streamFile(const char *filename, void *context)
   // The temp storage is needed for items in a def that don't have an id, but have a parent with an id
   shapes_list_t temp_defs_storage;
   shapes_defs_list_t defs_lookup_list;
+  pending_uses_t pending_uses;
 
   in_defs = false;
   reader = xmlNewTextReaderFilename(filename);
@@ -230,7 +249,7 @@ int streamFile(const char *filename, void *context)
 
     int ret = xmlTextReaderRead(reader);
     while (ret == 1) {
-      processNode(reader, &defs_lookup_list, &temp_defs_storage, context);
+      processNode(reader, &defs_lookup_list, &temp_defs_storage, &pending_uses, context);
       ret = xmlTextReaderRead(reader);
     }
     xmlFreeTextReader(reader);
@@ -239,6 +258,18 @@ int streamFile(const char *filename, void *context)
     }
   } else {
     throw SvgException((boost::format("Can't open file '%1%'") % filename).str());
+  }
+
+  // Resolve <use> elements that refer to elements defined after them. Go backwards, so
+  // that a <use> referring to a later <use> (or a group containing one) is resolved
+  // after that one, and clones its result.
+  for (auto it_pending = pending_uses.rbegin(); it_pending != pending_uses.rend(); ++it_pending) {
+    const auto& pending = *it_pending;
+    auto *pending_use = dynamic_cast<use *>(pending.use_shape.get());
+    const auto it = defs_lookup_list.find(pending_use->get_href_id());
+    if (it != defs_lookup_list.end()) {
+      expand_use(pending_use, it->second.get(), pending.in_defs ? &temp_defs_storage : shape_list);
+    }
   }
 
   for (const auto& shape : (*shape_list)) {

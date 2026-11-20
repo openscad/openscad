@@ -1,0 +1,11 @@
+<!-- <use> elements referring to elements outside <defs>, like Inkscape clones,
+     including references to elements further down in the file. The result is
+     the original square at 0,0 and clones at 10,0, 20,0 and 30,0. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
+  <use xlink:href="#clone" x="10"/>
+  <g id="layer1">
+    <rect id="square" x="0" y="0" width="5" height="5"/>
+  </g>
+  <use id="clone" xlink:href="#square" x="20"/>
+  <use href="#square" transform="translate(10,0)"/>
+</svg>
