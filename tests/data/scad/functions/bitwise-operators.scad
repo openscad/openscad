@@ -108,6 +108,6 @@ if (true) { a = 0x10000000000000000; }
 if (true) { a = 0x1000000000000001; }
 if (true) { a = 1152921504606846977; }
 // Expect loss-of-precision warnings, but they should convert to the same imprecise number.
-// arm64 somehow manages to convert 2^64-1 to double and back without losing anything, so
-// this uses a value that's less close to the seemingly-magic all-ones value.
 assert(0xfffffffffffffff0 == 18446744073709551600);
+// 2^64-1 rounds up to 2^64, which is out of range when converting back (no warning on arm64 before).
+assert(0xffffffffffffffff == 18446744073709551615);

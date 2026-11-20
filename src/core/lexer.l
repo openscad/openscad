@@ -97,6 +97,10 @@ extern YYLTYPE parserlloc;
 #define YY_USER_ACTION parserlloc.last_column += yyleng;
 
 extern void parsererror(char const *s);
+
+// Whether d can be converted to unsigned long long; converting values
+// outside the range is undefined behavior. 2^64 itself doesn't fit.
+static bool fits_ull(double d) { return d >= 0.0 && d < 18446744073709551616.0; }
 void to_utf8(const char *, char *);
 void includefile(const Location& loc);
 static void check_mcad_missing(const fs::path& localpath);
@@ -316,7 +320,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             if (errno != 0) {
                                 LOG(message_group::Warning, LOCATION(parserlloc), "",
                                     "Hexadecimal constant \"%1$s\" too large", yytext);
-                            } else if ((unsigned long long)parserlval.number != ull) {
+                            } else if (!fits_ull(parserlval.number) || (unsigned long long)parserlval.number != ull) {
                                 LOG(message_group::Warning, LOCATION(parserlloc), "",
                                     "Integer \"%1$s\" cannot be represented precisely",
                                     yytext);
@@ -335,7 +339,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             errno = 0;  // strtoxxx have crummy error semantics
                             unsigned long long ull = strtoull(yytext, NULL, 10);
                             parserlval.number = ull;
-                            if (errno != 0 || (unsigned long long)parserlval.number != ull) {
+                            if (errno != 0 || !fits_ull(parserlval.number) || (unsigned long long)parserlval.number != ull) {
                                 LOG(message_group::Warning, LOCATION(parserlloc), "",
                                     "Integer \"%1$s\" cannot be represented precisely",
                                     yytext);
