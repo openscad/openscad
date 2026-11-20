@@ -1281,7 +1281,9 @@ Value Value::operator<<(const Value& v) const
     if (rhs >= 64) {
       return Value::undef(STR("shift too large"));
     }
-    return (double)(lhs << rhs);
+    // Shift as unsigned: shifting a negative value, or bits out of a signed one,
+    // is undefined behavior in C++17. This wraps around like C++20 defines it.
+    return (double)static_cast<int64_t>(static_cast<uint64_t>(lhs) << rhs);
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " << ", v.typeName(), ")"));
 }
