@@ -1,0 +1,7 @@
+<!-- <polyline> elements with no or too few points. These used to crash. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <polyline stroke="black"/>
+  <polyline points="" stroke="black"/>
+  <polyline points="5" stroke="black"/>
+  <polyline points="5 5" stroke="black" stroke-width="2"/>
+</svg>
