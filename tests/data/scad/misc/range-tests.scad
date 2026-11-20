@@ -19,6 +19,10 @@ echo("[b09] ----- [1:0:5]");    for (a = [1:0:5])    echo ("[b09] ", a);
 echo("[b10] ----- [0:1:0]");    for (a = [0:1:0])    echo ("[b10] ", a);
 echo("[b11] ----- [3:-.5:-3]"); for (a = [3:-.5:-3]) echo ("[b11] ", a);
 
+// More than 2^32 - 1 values: too many elements, also when the count doesn't fit in 32 bits.
+echo("[c01] ----- [0:2^32+2]"); for (a = [0:2^32+2]) echo ("[c01] ", a);
+echo("[c02] ----- [0:0/0]");    for (a = [0:0/0])    echo ("[c02] ", a);
+
 // Check precision of fractional step sizes
 // Could check up to 9999 (max allowable range size), but takes >10s
 for (d=[1:1000]) 

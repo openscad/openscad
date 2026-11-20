@@ -69,3 +69,6 @@ ECHO: "[b11] ", -1.5
 ECHO: "[b11] ", -2
 ECHO: "[b11] ", -2.5
 ECHO: "[b11] ", -3
+ECHO: "[c01] ----- [0:2^32+2]"
+WARNING: Bad range parameter in for statement: too many elements (4294967295) in file range-tests.scad, line 23
+ECHO: "[c02] ----- [0:0/0]"

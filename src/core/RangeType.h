@@ -166,7 +166,12 @@ public:
     // Use nextafter to compensate for possible floating point inaccurary where result is just below a
     // whole number.
     const uint32_t max = std::numeric_limits<uint32_t>::max();
-    uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
+    const double steps = std::nextafter((end_val - begin_val) / step_val, max);
+    if (std::isnan(steps)) return 0;
+    // Converting a value that doesn't fit in uint32_t is undefined behavior, and x86
+    // wraps it around, so e.g. [0:2^32+2] gave 2 values instead of a warning.
+    if (steps >= max) return max;
+    const auto num_steps = static_cast<uint32_t>(steps);
     return (num_steps == max) ? max : num_steps + 1;
   }
 };
