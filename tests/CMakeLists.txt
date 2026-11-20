@@ -1409,10 +1409,6 @@ disable_tests_safe(
   preview-cgal_surface_image
   throwntogether-cgal_surface_image
 
-  # https://github.com/openscad/openscad/issues/5159
-  render-cgal_projection
-  render-csg-cgal_projection
-
   # https://github.com/openscad/openscad/issues/5158
   #render-cgal_example017
   #throwntogether-cgal_example017
