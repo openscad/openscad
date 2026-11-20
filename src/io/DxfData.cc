@@ -99,6 +99,10 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
     double _p1x = (_x1), _p1y = (_y1), _p2x = (_x2), _p2y = (_y2);                           \
     if (!in_entities_section && !in_blocks_section) break;                                   \
     if (in_entities_section && !(layername.empty() || layername == layer)) break;            \
+    /* e.g. "nan" coordinates, or an ELLIPSE without a major axis */                         \
+    if (!std::isfinite(_p1x) || !std::isfinite(_p1y) || !std::isfinite(_p2x) ||             \
+        !std::isfinite(_p2y))                                                                \
+      break;                                                                                 \
     grid.align(_p1x, _p1y);                                                                  \
     grid.align(_p2x, _p2y);                                                                  \
     grid.data(_p1x, _p1y).push_back(lines.size());                                           \

@@ -1,0 +1,72 @@
+999
+A triangle, plus a line with a "nan" coordinate and an ELLIPSE without a major axis, which must be ignored.
+  0
+SECTION
+  2
+ENTITIES
+  0
+LINE
+  8
+0
+ 10
+0
+ 20
+0
+ 11
+10
+ 21
+0
+  0
+LINE
+  8
+0
+ 10
+10
+ 20
+0
+ 11
+0
+ 21
+10
+  0
+LINE
+  8
+0
+ 10
+0
+ 20
+10
+ 11
+0
+ 21
+0
+  0
+LINE
+  8
+0
+ 10
+nan
+ 20
+0
+ 11
+10
+ 21
+10
+  0
+ELLIPSE
+  8
+0
+ 10
+5
+ 20
+5
+ 11
+0
+ 21
+0
+ 40
+0.5
+  0
+ENDSEC
+  0
+EOF
