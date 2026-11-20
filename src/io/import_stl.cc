@@ -2,18 +2,21 @@
 
 #include <boost/predef.h>
 
+#include <algorithm>
 #include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "core/AST.h"
 #include "geometry/PolySet.h"
@@ -25,22 +28,9 @@
 #endif
 
 inline constexpr size_t STL_FACET_NUMBYTES = 4ul * 3ul * 4ul + 2ul;
-// as there is no 'float32_t' standard, we assume the systems 'float'
-// is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
-union stl_facet {
-  static_assert(sizeof(unsigned char) == sizeof(uint8_t), "existence check");
-  unsigned char data8[STL_FACET_NUMBYTES];
-  struct facet_data {
-    float i, j, k;
-    float x1, y1, z1;
-    float x2, y2, z2;
-    float x3, y3, z3;
-    uint16_t attribute_byte_count;
-  } data;
-};
-
-static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4ul * 3ul * 4ul,
-              "Invalid padding in stl_facet");
+inline constexpr uint32_t STL_FACETS_PER_BATCH = 4096;
+inline constexpr uint64_t STL_MAX_RESERVED_VERTICES = 1'000'000;
+static_assert(sizeof(float) == 4, "STL requires 32-bit floating-point coordinates");
 
 #if BOOST_ENDIAN_BIG_BYTE
 static void uint32_byte_swap(unsigned char *p)
@@ -63,18 +53,20 @@ static void uint32_byte_swap(uint32_t& x)
 }
 #endif  // if BOOST_ENDIAN_BIG_BYTE
 
-static void read_stl_facet(std::ifstream& f, stl_facet& facet)
+static void appendBinaryFacet(PolySetBuilder& builder, const char *bytes)
 {
-  f.read((char *)facet.data8, STL_FACET_NUMBYTES);
-  if (static_cast<size_t>(f.gcount()) < STL_FACET_NUMBYTES) {
-    throw std::ios_base::failure("facet data truncated");
-  }
+  std::array<float, 9> coordinates;
+  // Skip the stored normal. The builder needs only the triangle's vertices.
+  std::memcpy(coordinates.data(), bytes + 3 * sizeof(float), coordinates.size() * sizeof(float));
 #if BOOST_ENDIAN_BIG_BYTE
-  for (int i = 0; i < 12; ++i) {
-    uint32_byte_swap(facet.data8 + i * 4);
+  for (auto& coordinate : coordinates) {
+    auto *coordinateBytes = reinterpret_cast<unsigned char *>(&coordinate);
+    std::reverse(coordinateBytes, coordinateBytes + sizeof(coordinate));
   }
-  // we ignore attribute byte count
 #endif
+  builder.appendTriangle(Vector3d(coordinates[0], coordinates[1], coordinates[2]),
+                         Vector3d(coordinates[3], coordinates[4], coordinates[5]),
+                         Vector3d(coordinates[6], coordinates[7], coordinates[8]));
 }
 
 std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc)
@@ -171,17 +163,24 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
   } else if (binary && !f.eof() && f.good()) {
     try {
       f.ignore(80 - 5 + 4);
-      while (!f.eof()) {
-        stl_facet facet;
-        try {
-          read_stl_facet(f, facet);
-        } catch (const std::ios_base::failure& ex) {
-          if (f.eof()) break;
-          throw;
+      const auto batchCapacity = std::min(facenum, STL_FACETS_PER_BATCH);
+      std::vector<char> facets(batchCapacity * STL_FACET_NUMBYTES);
+      for (auto remaining = facenum; remaining != 0;) {
+        const auto count = std::min(remaining, batchCapacity);
+        const auto bytes = static_cast<std::streamsize>(count * STL_FACET_NUMBYTES);
+        if (!f.read(facets.data(), bytes)) {
+          throw std::ios_base::failure("facet data truncated");
         }
-        builder.appendPolygon({Vector3d(facet.data.x1, facet.data.y1, facet.data.z1),
-                               Vector3d(facet.data.x2, facet.data.y2, facet.data.z2),
-                               Vector3d(facet.data.x3, facet.data.y3, facet.data.z3)});
+        for (uint32_t i = 0; i < count; ++i) {
+          appendBinaryFacet(builder, facets.data() + i * STL_FACET_NUMBYTES);
+        }
+        if (remaining == facenum && count < remaining) {
+          // Estimate vertex reuse from the first batch to avoid growing the hash table repeatedly.
+          const auto verticesInBatch = static_cast<uint64_t>(builder.numVertices());
+          const auto estimatedVertices = verticesInBatch * facenum / count;
+          builder.reserve(static_cast<int>(std::min(estimatedVertices, STL_MAX_RESERVED_VERTICES)));
+        }
+        remaining -= count;
       }
     } catch (const std::ios_base::failure& ex) {
       int64_t offset = -1;

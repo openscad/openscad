@@ -1,8 +1,8 @@
 #pragma once
 
-#include <algorithm>
 #include <cstddef>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "utils/hash.h"  // IWYU pragma: keep
@@ -23,12 +23,7 @@ public:
      Returns the new index. */
   int lookup(const T& val)
   {
-    auto iter = this->map.find(val);
-    if (iter != this->map.end()) return iter->second;
-    else {
-      this->map.insert(std::make_pair(val, this->map.size()));
-      return this->map.size() - 1;
-    }
+    return map.try_emplace(val, static_cast<int>(map.size())).first->second;
   }
 
   /*!
@@ -54,13 +49,12 @@ public:
   }
 
   /*!
-     Copies the internal vector to the given destination
+     Transfers the indexed array to the caller
    */
-  template <class OutputIterator>
-  void copy(OutputIterator dest)
+  std::vector<T> takeArray()
   {
-    this->getArray();
-    std::copy(this->vec.begin(), this->vec.end(), dest);
+    getArray();
+    return std::move(vec);
   }
 
 private:
