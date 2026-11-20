@@ -184,10 +184,10 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
   // Copy color indices lazily.
   if (!ps.color_indices.empty()) {
     // If we hadn't built color_indices_ yet, catch up / fill w/ -1.
-    if (color_indices_.empty() && !indices_.empty()) {
+    if (color_indices_.empty()) {
+      color_indices_.reserve(indices_.size() + ps.color_indices.size());
       color_indices_.resize(indices_.size(), -1);
     }
-    color_indices_.reserve(color_indices_.size() + ps.color_indices.size());
 
     auto nColors = ps.colors.size();
     std::vector<uint32_t> color_map(nColors);
@@ -210,7 +210,12 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
     color_indices_.resize(color_indices_.size() + ps.indices.size(), -1);
   }
 
-  reserve(numVertices() + ps.vertices.size(), numPolygons() + ps.indices.size());
+  // Reserve for the first mesh, then let the containers grow amortized. An exact
+  // reserve at each append repeatedly moves all previously accumulated faces.
+  if (indices_.empty()) {
+    vertices_.reserve(vertices_.size() + ps.vertices.size());
+    indices_.reserve(ps.indices.size());
+  }
   for (const auto& poly : ps.indices) {
     beginPolygon(poly.size());
     for (const auto& ind : poly) {
