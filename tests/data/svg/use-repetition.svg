@@ -1,0 +1,14 @@
+<!-- Security fixture: benign use of <use> elements.
+     A small def referenced a few times must still be cloned in full, with
+     no truncation by the <use> amplification cap. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <defs>
+    <g id="pair">
+      <rect x="0" y="0" width="5" height="5"/>
+      <rect x="10" y="0" width="5" height="5"/>
+    </g>
+  </defs>
+  <use href="#pair" x="0" y="0"/>
+  <use href="#pair" x="20" y="0"/>
+  <use href="#pair" x="40" y="0"/>
+</svg>

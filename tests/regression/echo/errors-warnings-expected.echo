@@ -14,16 +14,16 @@ WARNING: Unable to convert points[3] = [30] to a vec2 of numbers in file errors-
 WARNING: Unable to convert points[4] = [0] to a vec3 of numbers in file errors-warnings.scad, line 5
 WARNING: Unable to convert import(..., origin="string") parameter to vec2 in file errors-warnings.scad, line 15
 WARNING: Ignoring unknown module 'hello' in file errors-warnings.scad, line 17
-WARNING: Ignoring radius variable "r" as diameter "d" is defined too. in file errors-warnings.scad, line 21
-WARNING: Ignoring radius variable "r1" as diameter "d1" is defined too. in file errors-warnings.scad, line 22
+WARNING: Ignoring radius argument "r" as diameter "d" is defined too. in file errors-warnings.scad, line 21
+WARNING: Ignoring radius argument "r1" as diameter "d1" is defined too. in file errors-warnings.scad, line 22
 WARNING: Problem converting rotate(a=inf) parameter in file errors-warnings.scad, line 24
 WARNING: Problem converting rotate(a=[inf, inf]) parameter in file errors-warnings.scad, line 25
 WARNING: Problem converting rotate(a=nan) parameter in file errors-warnings.scad, line 26
 WARNING: variable "rad" not specified as parameter in file errors-warnings.scad, line 29
 WARNING: Too many unnamed arguments supplied in file errors-warnings.scad, line 31
-WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 33
-WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 34
-WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 35
+WARNING: Cylinder arguments ambiguous: both "r" and "r1" specified in file errors-warnings.scad, line 33
+WARNING: Cylinder arguments ambiguous: both "r" and "r1" specified in file errors-warnings.scad, line 34
+WARNING: Cylinder arguments ambiguous: both "d" and "r1" specified in file errors-warnings.scad, line 35
 WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range in file errors-warnings.scad, line 42
 WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range in file errors-warnings.scad, line 42
 WARNING: Unable to parse color "notAName" in file errors-warnings.scad, line 43

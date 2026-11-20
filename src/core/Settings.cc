@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <istream>
 #include <iterator>
@@ -45,11 +46,11 @@ std::vector<SettingsEntryEnum<std::string>::Item> axisValues()
   output.push_back({"None", "none", _("None")});
   for (size_t i = 0; i < max_axis; ++i) {
     const auto userData = (boost::format("+%d") % (i + 1)).str();
-    const auto name = (boost::format(_("axis-%d")) % i).str();
+    const auto name = (boost::format("axis-%d") % i).str();
     const auto text = (boost::format(_("Axis %d")) % i).str();
     output.push_back({userData, name, text});
     const auto userDataInv = (boost::format("-%d") % (i + 1)).str();
-    const auto nameInv = (boost::format(_("axis-inverted-%d")) % i).str();
+    const auto nameInv = (boost::format("axis-inverted-%d") % i).str();
     const auto textInv = (boost::format(_("Axis %d (inverted)")) % i).str();
     output.push_back({userDataInv, nameInv, textInv});
   }
@@ -97,6 +98,21 @@ std::string SettingsEntryInt::encode() const
   return STR(_value);
 }
 
+bool SettingsEntryBool::validate(const std::string& encoded) const
+{
+  const std::string trimmed = boost::algorithm::trim_copy(encoded);
+  if (trimmed == "true" || trimmed == "false") return true;
+  bool value;
+  return boost::conversion::try_lexical_convert(trimmed, value);
+}
+
+bool SettingsEntryInt::validate(const std::string& encoded) const
+{
+  int value;
+  if (!boost::conversion::try_lexical_convert(boost::algorithm::trim_copy(encoded), value)) return false;
+  return value >= _minimum && value <= _maximum;
+}
+
 const int SettingsEntryInt::decode(const std::string& encoded) const
 {
   try {
@@ -109,6 +125,13 @@ const int SettingsEntryInt::decode(const std::string& encoded) const
 std::string SettingsEntryDouble::encode() const
 {
   return STR(_value);
+}
+
+bool SettingsEntryDouble::validate(const std::string& encoded) const
+{
+  double value;
+  if (!boost::conversion::try_lexical_convert(boost::algorithm::trim_copy(encoded), value)) return false;
+  return std::isfinite(value) && value >= _minimum && value <= _maximum;
 }
 
 const double SettingsEntryDouble::decode(const std::string& encoded) const

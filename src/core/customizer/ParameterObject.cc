@@ -396,7 +396,9 @@ struct NumericLimits {
   boost::optional<double> maximum;
   boost::optional<double> step;
 };
-static NumericLimits parseNumericLimits(const Expression *parameter, const std::vector<double>& values)
+static NumericLimits parseNumericLimits(const std::string& name, const Expression *parameter,
+                                        const Location& location, const std::string& docPath,
+                                        const std::vector<double>& values)
 {
   NumericLimits output;
 
@@ -424,19 +426,34 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
       }
     }
   }
+
+  // output.minimum/maximum get widened multiple times when processing vectors,
+  // therefore the original values need to be cached for accurate warnings
+  const boost::optional<double> declaredMinimum = output.minimum;
+  const boost::optional<double> declaredMaximum = output.maximum;
+
   for (double value : values) {
-    if (output.minimum && value < output.minimum) {
-      output.minimum = value;
+    if (declaredMinimum && value < declaredMinimum) {
+      LOG(message_group::Warning, location, docPath,
+          "Parameter %1$s: value %2$g is below the declared minimum %3$g, adjusting minimum value",
+          quoteVar(name), value, *declaredMinimum);
+
+      if (value < output.minimum) output.minimum = value;
     }
-    if (output.maximum && value > output.maximum) {
-      output.maximum = value;
+    if (declaredMaximum && value > declaredMaximum) {
+      LOG(message_group::Warning, location, docPath,
+          "Parameter %1$s: value %2$g is above the declared maximum %3$g, adjusting maximum value",
+          quoteVar(name), value, *declaredMaximum);
+
+      if (value > output.maximum) output.maximum = value;
     }
   }
 
   return output;
 }
 
-std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment)
+std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment,
+                                                                 const std::string& docPath)
 {
   std::string name = assignment->getName();
 
@@ -501,7 +518,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 
     if (expression->isDouble()) {
       double value = expression->toDouble();
-      NumericLimits limits = parseNumericLimits(parameter, {value});
+      auto limits = parseNumericLimits(name, parameter, assignment->location(), docPath, {value});
       return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum,
                                                limits.maximum, limits.step);
     }
@@ -522,7 +539,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
       value.push_back(item->toDouble());
     }
 
-    NumericLimits limits = parseNumericLimits(parameter, value);
+    auto limits = parseNumericLimits(name, parameter, assignment->location(), docPath, value);
     return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum,
                                              limits.maximum, limits.step);
   }
@@ -531,9 +548,15 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 
 ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile)
 {
+  // Warnings logged while parsing parameters (see parseNumericLimits) need a
+  // stable docPath: an empty one makes Location::toRelativeString() fall back
+  // to the current working directory (see fs_uncomplete()), which is neither
+  // stable across invocations nor meaningful to the person reading the warning.
+  const auto docPath = fs::path(sourceFile->getFullpath()).parent_path().generic_string();
+
   ParameterObjects output;
   for (const auto& assignment : sourceFile->scope->assignments) {
-    std::unique_ptr<ParameterObject> parameter = ParameterObject::fromAssignment(assignment.get());
+    auto parameter = ParameterObject::fromAssignment(assignment.get(), docPath);
     if (parameter) {
       output.push_back(std::move(parameter));
     }

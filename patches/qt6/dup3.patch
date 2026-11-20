@@ -1,0 +1,11 @@
+--- a/qtbase/src/corelib/kernel/qcore_unix_p.h
++++ b/qtbase/src/corelib/kernel/qcore_unix_p.h
+@@ -275,7 +275,7 @@
+     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
+
+     int ret;
+-#if QT_CONFIG(dup3)
++#if QT_CONFIG(dup3) && !defined(Q_OS_DARWIN)
+     // use dup3
+     QT_EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
+     return ret;

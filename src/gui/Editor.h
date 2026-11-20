@@ -4,6 +4,7 @@
 #include <QScrollBar>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTextEdit>
 #include <QWidget>
 #include <string>
@@ -19,6 +20,17 @@ class EditorInterface : public QWidget
   Q_OBJECT
 public:
   EditorInterface(QWidget *parent) : QWidget(parent) {}
+  virtual ~EditorInterface() { clearTemporaryFile(); }
+
+  void clearTemporaryFile()
+  {
+    if (this->tempFile) {
+      parameterWidget->removeBackupFile(this->tempFile->fileName());
+      delete this->tempFile;
+      this->tempFile = nullptr;
+    }
+  }
+
   QSize sizeHint() const override
   {
     QSize size;
@@ -105,4 +117,5 @@ public:
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;
+  QTemporaryFile *tempFile{nullptr};
 };

@@ -38,6 +38,8 @@
 #include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
 
+class PolySet;
+
 class CubeNode : public LeafNode
 {
 public:
@@ -69,6 +71,12 @@ public:
 
   CurveDiscretizer discretizer;
   double r = 1;
+  // "orig": rings of latitude; "octa": subdivided octahedron, see createGeometryOcta()
+  std::string style = "orig";
+
+private:
+  std::unique_ptr<PolySet> createGeometryOrig(int num_fragments) const;
+  std::unique_ptr<PolySet> createGeometryOcta(int num_fragments) const;
 };
 
 class CylinderNode : public LeafNode

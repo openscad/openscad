@@ -11,6 +11,11 @@
 #endif
 #ifdef _WIN32
 #include "glview/offscreen-old/OffscreenContextWGL.h"
+#include "glview/OffscreenContextWGL.h"
+#endif
+
+#ifdef ENABLE_OSMESA
+#include "glview/OffscreenContextOSMesa.h"
 #endif
 #ifdef ENABLE_EGL
 #include "glview/offscreen-old/OffscreenContextEGL.h"
@@ -30,19 +35,23 @@ const char *defaultProvider()
 {
 #ifdef NULLGL
   return "nullgl";
+#elif defined(DEFAULT_OFFSCREEN_CONTEXT)
+  return DEFAULT_OFFSCREEN_CONTEXT;
 #else
-#ifdef __APPLE__
+#if defined(__APPLE__)
   return "cgl";
-#endif
-#ifdef ENABLE_EGL
+#elif defined(ENABLE_EGL)
   return "egl";
-#endif
-#ifdef ENABLE_GLX
+#elif defined(ENABLE_GLX)
   return "glx";
-#endif
-#ifdef _WIN32
+#elif defined(ENABLE_OSMESA)
+  return "osmesa";
+#elif defined(_WIN32)
   return "wgl-old";
+#else
+  return "nullgl";
 #endif
+
 #endif  // NULLGL
 }
 
@@ -75,6 +84,12 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider,
                                      attrib.minorGLVersion);
   }
 #endif
+#ifdef ENABLE_OSMESA
+  if (provider == "osmesa") {
+    return CreateOffscreenContextOSMesa(attrib.width, attrib.height, attrib.majorGLVersion,
+                                        attrib.minorGLVersion, attrib.compatibilityProfile);
+  }
+#endif
 #if ENABLE_EGL
   if (provider == "egl-old") {
     return offscreen_old::CreateOffscreenContextEGL(attrib.width, attrib.height, attrib.majorGLVersion,
@@ -102,8 +117,12 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider,
     }
     return offscreen_old::CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion,
                                                     attrib.minorGLVersion, attrib.compatibilityProfile);
+  } else if (provider == "wgl") {
+    return CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion,
+                                     attrib.minorGLVersion, attrib.compatibilityProfile);
   } else
 #endif
+
 #endif  // NULLGL
   LOG("GL context provider '%1$s' not found", provider);
   return nullptr;

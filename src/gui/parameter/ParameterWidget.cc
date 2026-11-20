@@ -29,6 +29,7 @@
 #include <QInputDialog>
 #include <QLayoutItem>
 #include <QMenu>
+#include <QFile>
 #include <QMessageBox>
 #include <QString>
 #include <QToolButton>
@@ -125,6 +126,11 @@ void ParameterWidget::saveFile(const QString& scadFile)
 
   cleanSets();
   sets.writeFile(jsonFile.toStdString());
+}
+
+void ParameterWidget::removeBackupFile(const QString& scadFile)
+{
+  QFile::remove(getJsonFile(scadFile));
 }
 
 void ParameterWidget::saveBackupFile(const QString& scadFile)
@@ -471,6 +477,5 @@ void ParameterWidget::cleanSets()
 
 void ParameterWidget::setFontFamilySize(const QString& fontFamily, uint fontSize)
 {
-  scrollArea->setStyleSheet(
-    QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
+  scrollArea->setFont(QFont(fontFamily, fontSize));
 }

@@ -20,7 +20,8 @@ public:
   enum class ParameterType { Bool, String, Number, Vector, Enum };
 
   virtual ~ParameterObject() = default;
-  static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
+  static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment,
+                                                         const std::string& docPath);
 
   [[nodiscard]] ParameterType type() const { return type_; }
   [[nodiscard]] const std::string& name() const { return name_; }

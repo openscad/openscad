@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- Internal entities used in attributes, as written by e.g. Adobe
+     Illustrator (xmlns="&ns_svg;"). Disabling entity substitution must not
+     break them: the path data comes from the "tri" entity. -->
+<!DOCTYPE svg [
+  <!ENTITY ns_svg "http://www.w3.org/2000/svg">
+  <!ENTITY tri "M 0 0 L 10 0 L 10 10 Z">
+]>
+<svg xmlns="&ns_svg;" width="100" height="100">
+  <path d="&tri;"/>
+</svg>

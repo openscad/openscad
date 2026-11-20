@@ -200,7 +200,8 @@ case $OS in
         else
             ${CMAKE} --build . -j$NUMCPU
             echo "Creating packages with CPack..."
-            ${MXE_TARGETS}-cpack
+            # CPack runs on the build host, including for cross builds.
+            "${OPENSCAD_CPACK_EXECUTABLE:-${MXE_TARGETS}-cpack}"
             echo "Packaging Complete!"
             exit
         fi
@@ -298,14 +299,6 @@ fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR
     mkdir -p $LIBRARYDIR
-    # exclude the .git stuff from MCAD which is a git submodule.
-    # tar is a relatively portable way to do exclusion, without the
-    # risks of rm
-    rm -f libraries.tar
-    tar cf libraries.tar --exclude=.git* libraries
-    cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
-    rm -f libraries.tar
-    chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
 fi
 if [ -n $TRANSLATIONDIR ]; then
   echo $TRANSLATIONDIR

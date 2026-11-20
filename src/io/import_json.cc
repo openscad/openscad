@@ -34,6 +34,7 @@
 #include "core/AST.h"
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
+#include "io/fileutils.h"
 #include "json/json.hpp"
 #include "utils/printutils.h"
 
@@ -80,14 +81,15 @@ Value import_json(const std::string& filename, EvaluationSession *session, const
 
   try {
     if (i) {
-      json j;
-      i >> j;
+      json j = json::parse(i);
       return Value{to_value(j, session)};
     } else {
-      LOG(message_group::Warning, loc, "", "Could not read file '%1$s'", filename);
+      LOG(message_group::Warning, loc, session->documentRoot(), "Could not read file '%1$s'",
+          fs_uncomplete(filename, session->documentRoot()).generic_string());
     }
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %2$s", filename, e.what());
+    LOG(message_group::Warning, loc, session->documentRoot(), "Failed to parse file '%1$s': %2$s",
+        fs_uncomplete(filename, session->documentRoot()).generic_string(), e.what());
   }
 
   return Value::undefined.clone();

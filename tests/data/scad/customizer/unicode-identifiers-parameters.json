@@ -2,8 +2,16 @@
     "fileFormatVersion": "1",
     "parameterSets": {
         "decomposedKeys": {
-            "höhe": "42",
-            "wandstärke": "3.5"
+            "ho\u0308he": "42",
+            "wandsta\u0308rke": "3.5"
+        },
+        "Gro\u0308\u00df": {
+            "ho\u0308he": "42",
+            "wandsta\u0308rke": "3.5"
+        },
+        "H\u00f6he": {
+            "ho\u0308he": "42",
+            "wandsta\u0308rke": "3.5"
         }
     }
 }

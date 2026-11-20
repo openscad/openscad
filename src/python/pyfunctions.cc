@@ -27,6 +27,7 @@
 #include <Python.h>
 
 #include <cstddef>
+#include <cstring>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -100,16 +101,17 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
 
-  char *kwlist[] = {"r", "d", NULL};
+  char *kwlist[] = {"r", "d", "style", NULL};
   double r = NAN;
   PyObject *rp = nullptr;
   double d = NAN;
+  const char *style = nullptr;
 
   double vr = 1;
 
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Od", kwlist, &rp, &d)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing sphere(r|d)");
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Ods", kwlist, &rp, &d, &style)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing sphere(r|d, style)");
     return NULL;
   }
   if (rp != nullptr) {
@@ -137,6 +139,15 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   auto node = std::make_shared<SphereNode>(instance, discretizer);
 
   node->r = vr;
+
+  if (style != nullptr) {
+    if (strcmp(style, "orig") != 0 && strcmp(style, "octa") != 0) {
+      PyErr_SetString(PyExc_TypeError,
+                      "Unknown value for style parameter, must be \"orig\" or \"octa\"");
+      return NULL;
+    }
+    node->style = style;
+  }
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
@@ -1828,8 +1839,7 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
   auto node = std::make_shared<SurfaceNode>(instance);
 
   std::string fileval = file == NULL ? "" : file;
-  std::string filename =
-    lookup_file(fileval, instance->location().filePath().parent_path().string(), "");
+  std::string filename = lookup_file(fileval, instance->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 

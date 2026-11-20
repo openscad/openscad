@@ -1,0 +1,16 @@
+<!-- Security fixture: "billion laughs" style entity bomb.  Entities are
+     nested 6 levels deep, each level referencing the previous one twice,
+     i.e. a 64-fold amplification.  If entities get expanded, the text
+     node inflates to 64 copies of "lol"; with the fix it stays empty. -->
+<!DOCTYPE svg [
+  <!ENTITY lol "lol">
+  <!ENTITY lol1 "&lol;&lol;">
+  <!ENTITY lol2 "&lol1;&lol1;">
+  <!ENTITY lol3 "&lol2;&lol2;">
+  <!ENTITY lol4 "&lol3;&lol3;">
+  <!ENTITY lol5 "&lol4;&lol4;">
+  <!ENTITY lol6 "&lol5;&lol5;">
+]>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <text>&lol6;</text>
+</svg>

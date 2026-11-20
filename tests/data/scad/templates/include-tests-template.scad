@@ -28,14 +28,14 @@ include </>
 //Test with absolute path
 include <@CMAKE_CURRENT_SOURCE_DIR@/data/scad/misc/sub2/test7.scad>
 
-// Test simple MCAD include
-include <MCAD/constants.scad>
+// Test simple library include
+include <testlib/lib-simple.scad>
 
-// Test MCAD include which includes another file
-include <MCAD/math.scad>
+// Test library include which includes another file
+include <testlib/lib-include.scad>
 
-// Test MCAD include which uses another file
-include <MCAD/servos.scad>
+// Test library include which uses another file
+include <testlib/lib-use.scad>
 
 module test1()
 {
@@ -49,10 +49,10 @@ module test1()
 	//Just to give a top level object
 	translate([0,-2,0]) sphere(test2_variable, $fn=16);
 
- 	// MCAD
-	translate([0,-4,0]) cube([TAU/4,0.5,0.5], center=true);
-	translate([-2,-4,0]) cube([deg(0.5)/20,0.5,0.5], center=true);
-	translate([2,-4,-0.5]) scale(0.05) alignds420([0,0,0], [0,0,0]);
+	// Library tests
+	translate([0,-4,0]) cube([lib_var,0.5,0.5], center=true);
+	translate([-2,-4,0]) cube([lib_func(1),0.5,0.5], center=true);
+	translate([2,-4,0]) lib_use_mod();
 }
 
 test1();

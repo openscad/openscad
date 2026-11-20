@@ -30,7 +30,6 @@
 
 %{
 
-#include "Feature.h"
 #include "handle_dep.h"
 #include "core/str_utf8_wrapper.h"
 #include "core/UnicodeIdentifier.h"
@@ -39,6 +38,8 @@
 #include "core/Assignment.h"
 #include "parser.hxx"
 #include "core/SourceFile.h"
+#include "io/fileutils.h"
+#include "platform/PlatformUtils.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <filesystem>
@@ -98,6 +99,7 @@ extern YYLTYPE parserlloc;
 extern void parsererror(char const *s);
 void to_utf8(const char *, char *);
 void includefile(const Location& loc);
+static void check_mcad_missing(const fs::path& localpath);
 static int unicode_identifier(const char *text, size_t length);
 std::shared_ptr<fs::path> sourcefile();
 std::shared_ptr<fs::path> parser_sourcefile;
@@ -185,9 +187,10 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
                             if (fullpath.empty()) {
                             LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
+                                check_mcad_missing(fs::path(filename));
                                 parserlval.text = strdup(filename.c_str());
                             } else {
-                                handle_dep(fullpath.generic_string());
+                                handle_dep(fs_generic_string(fullpath));
                                 parserlval.text = strdup(fullpath.string().c_str());
                             }
                             return TOK_USE;
@@ -380,26 +383,22 @@ static int unicode_identifier(const char *text, size_t length)
 {
   std::string message;
 
-  if (!Feature::ExperimentalUnicodeIdentifiers.is_enabled()) {
-    message = "Non-ASCII identifiers are experimental, enable the unicode-identifiers feature";
-  } else {
-    const auto result = UnicodeIdentifier::normalize(text, length);
-    switch (result.status) {
-    case UnicodeIdentifier::Status::Valid:
-      parserlval.text = strdup(result.identifier.c_str());
-      return TOK_ID;
-    case UnicodeIdentifier::Status::InvalidEncoding:
-      message = "Malformed UTF-8 sequence in identifier";
-      break;
-    case UnicodeIdentifier::Status::InvalidStart:
-      message = "Identifier cannot start with "
-                + UnicodeIdentifier::formatCodePoint(result.codepoint);
-      break;
-    case UnicodeIdentifier::Status::InvalidContinue:
-      message = "Identifier cannot contain "
-                + UnicodeIdentifier::formatCodePoint(result.codepoint);
-      break;
-    }
+  const auto result = UnicodeIdentifier::normalize(text, length);
+  switch (result.status) {
+  case UnicodeIdentifier::Status::Valid:
+    parserlval.text = strdup(result.identifier.c_str());
+    return TOK_ID;
+  case UnicodeIdentifier::Status::InvalidEncoding:
+    message = "Malformed UTF-8 sequence in identifier";
+    break;
+  case UnicodeIdentifier::Status::InvalidStart:
+    message = "Identifier cannot start with "
+              + UnicodeIdentifier::formatCodePoint(result.codepoint);
+    break;
+  case UnicodeIdentifier::Status::InvalidContinue:
+    message = "Identifier cannot contain "
+              + UnicodeIdentifier::formatCodePoint(result.codepoint);
+    break;
   }
 
   parsererror(message.c_str());
@@ -425,6 +424,19 @@ bool lexer_is_main_file()
   return loc_stack.empty();
 }
 
+static void check_mcad_missing(const fs::path& localpath)
+{
+  if (!localpath.empty() && *localpath.begin() == "MCAD") {
+    LOG(message_group::HtmlLink,
+        "The MCAD library is no longer bundled with OpenSCAD. Download "
+        "<a href=\"https://github.com/openscad/MCAD/releases/download/2026.11/MCAD.zip\">MCAD.zip</a> "
+        "from <a href=\"https://github.com/openscad/MCAD/releases/tag/2026.11\">"
+        "https://github.com/openscad/MCAD/releases/tag/2026.11</a> "
+        "and unzip it in your library folder '%1$s' (<b>File &rarr; Show Library Folder</b>).",
+        PlatformUtils::userLibraryPath());
+  }
+}
+
 /*
   Rules for include <path/file>
   1) include <sourcepath/path/file>
@@ -437,22 +449,23 @@ void includefile(const Location& loc)
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcefile()->parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootfile->registerInclude(localpath.generic_string(), fullpath.generic_string(), lexer_is_main_file() ? loc : Location::NONE);
+    rootfile->registerInclude(localpath.generic_string(), fs_generic_string(fullpath), lexer_is_main_file() ? loc : Location::NONE);
   }
   else {
     rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
     LOG(message_group::Warning,LOCATION(parserlloc),"","Can't find include file '%1$s'.",localpath.generic_string());
+    check_mcad_missing(localpath);
     return;
   };
 
-  std::string fullname = fullpath.generic_string();
+  std::string fullname = fs_generic_string(fullpath);
 
   filepath.clear();
   filename_stack.push_back(std::make_shared<fs::path>(fullpath));
 
   handle_dep(fullname);
 
-  yyin = fopen(fullname.c_str(), "r");
+  yyin = PlatformUtils::fopen(fullpath, "r");
   if (!yyin) {
     LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();

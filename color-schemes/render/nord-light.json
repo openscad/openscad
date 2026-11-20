@@ -1,0 +1,19 @@
+{
+    "name" : "Nord Light",
+    "index" : 2100,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#e5e9f0",
+        "axes-color" :         "#B8BFCC",
+        "opencsg-face-front" : "#88c0d0",
+        "opencsg-face-back" :  "#5e81ac",
+        "cgal-face-front" :    "#81a1c1",
+        "cgal-face-back" :     "#5e81ac",
+        "cgal-face-2d" :       "#81a1c1",
+        "cgal-edge-front" :    "#88c0d0",
+        "cgal-edge-back" :     "#a3be8c",
+        "cgal-edge-2d" :       "#8fbcbb",
+        "crosshair" :          "#d8dee9"
+    }
+}

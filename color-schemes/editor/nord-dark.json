@@ -1,0 +1,46 @@
+{
+    "name" : "Nord Dark",
+    "index" : 2000,
+    "paper" : "#2e3440",
+    "text" : "#d8dee9",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#d8dee9",
+        "line-background" : "#3b4252"
+    },
+    "colors" : {
+        "keyword1" : "#a3be8c",
+        "keyword2" : "#88c0d0",
+        "keyword3" : "#5e81ac",
+        "commentline" : "#4c566a",
+        "commentdoc" : "#4c566a",
+        "commentdockeyword" : "#4c566a",
+
+        "comment" : "#4c566a",
+        "number" : "#b48ead",
+        "string" : "#a3be8c",
+        "operator" : "#81a1c1",
+        "variables" : "#d8dee9",
+
+        "keywords" : "#81a1c1",
+        "transformations" : "#8fbcbb",
+        "booleans" : "#5e81ac",
+        "functions" : "#88c0d0",
+        "models" : "#81a1c1",
+        "special-variables" : "#88c0d0",
+
+        "whitespace-foreground" : "#eceff4",
+        "selection-foreground" : "#eceff4",
+        "selection-background" : "#4c566a",
+        "margin-background" : "#2e3440",
+        "margin-foreground" : "#4c566a",
+        "matched-brace-background" : "#4c566a",
+        "matched-brace-foreground" : "#88c0d0",
+        "unmatched-brace-background" : "#bf616a",
+        "unmatched-brace-foreground" : "#eceff4",
+        "error-marker" : "#bf616a",
+        "error-indicator" : "#bf616a00",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#eceff4"
+    }
+}

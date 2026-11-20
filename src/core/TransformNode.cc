@@ -63,7 +63,7 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
       scalevec.setConstant(num);
     } else {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",
+          "Unable to convert scale(%1$s) parameter to a number or a vec3 or vec2 of numbers",
           parameters["v"].toEchoStringNoThrow());
     }
   }

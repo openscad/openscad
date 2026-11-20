@@ -194,8 +194,6 @@ public:
 inline std::string STR(std::ostringstream& oss)
 {
   auto s = oss.str();
-  oss.str("");  // clear the string buffer for next STR call
-  oss.clear();  // reset stream error state for next STR call
   return s;
 }
 
@@ -206,12 +204,13 @@ std::string STR(std::ostringstream& oss, T&& t, Args&&...args)
   return STR(oss, std::forward<Args>(args)...);
 }
 
-template <typename T, typename... Args>
-std::string STR(T&& t, Args&&...args)
+template <typename... Args>
+std::string STR(Args&&...args)
 {
-  // using thread_local here so that recursive template does not instantiate excessive ostringstreams
-  thread_local std::ostringstream oss;
-  oss << t;
+  // Note that this one OSS gets passed by reference down into recursive instances
+  // of the template, but recursive calls to STR() get new instances (as they
+  // need to, to function correctly).
+  std::ostringstream oss;
   return STR(oss, std::forward<Args>(args)...);
 }
 

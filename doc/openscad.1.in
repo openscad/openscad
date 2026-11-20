@@ -19,12 +19,15 @@ A tutorial can be found at https://en.wikibooks.org/wiki/OpenSCAD_Tutorial.
 
 .TP
 \fB\-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, 3MF, DXF, SVG,
-or PNG format, depending on file extension of \fIoutputfile\fP. If this
-option is given, the GUI will not be started.
+Export the given file to \fIoutputfile\fP in STL, OFF, OBJ, VRML, 3MF, DXF,
+SVG, PDF, POV-Ray or PNG format, depending on file extension of
+\fIoutputfile\fP. If this option is given, the GUI will not be started.
+The option can be given more than once to export several files in one run.
+If \fIoutputfile\fP is \fB\-\fP, the output is written to standard output; use
+\fB\-\-export\-format\fP to select the format.
 
-Known extensions: stl, off, 3mf, csg, dxf, svg, png, echo, ast, term,
-nef3, nefdbg.
+Known extensions: stl, off, obj, wrl, 3mf, csg, dxf, svg, pdf, pov, png, echo,
+ast, term, param, nef3, nefdbg.
 
 Additional formats, which are mainly used for debugging and testing (but can
 also be used in automation), are AST (the input file as parsed and serialized
@@ -43,7 +46,7 @@ can be any of its supported file extensions. For ascii stl export, specify
 the current stl default, but binary stl is planned as the future default so
 \fBasciistl\fP should be explicitly specified in scripts when needed.
 .TP
-\fB\-q
+.B \-q [ \-\-quiet ]
 Quiet mode (don't print anything except errors)
 .TP
 \fB\-d\fP \fIfile.deps\fP
@@ -56,7 +59,7 @@ invoke \fImake_command missing_file\fP to create the missing file, and then
 read it again.
 .TP
 \fB-O\fP \fIsection/key=val\fP
-Pass settings value to the file export using the format section/key=value, e.g 
+Pass settings value to the file export using the format section/key=value, e.g
 export-pdf/paper-size=a3. Use --help-export to list all available settings.
 More than one \fB-O\fP option can be given.
 .TP
@@ -78,11 +81,15 @@ Print basic program usage.
 .B \-\-help\-export
 Print list of export parameters and values that can be set via -O
 .TP
-.B \-v
+.B \-v [ \-\-version ]
 Print version.
 .TP
 .B \-\-render
 If exporting an image, render the model fully. (Default is preview)
+.TP
+.B \-\-backend=\fIbackend
+Select the 3D geometry backend: \fBManifold\fP (the default) or \fBCGAL\fP.
+The name is not case sensitive.
 .TP
 .B \-\-preview[=throwntogether]
 If exporting an image, use an OpenCSG preview (optionally in throwntogether mode for quicker rendering).
@@ -90,22 +97,34 @@ If exporting an image, use an OpenCSG preview (optionally in throwntogether mode
 .B \-\-animate[=N]
 Export N animated frames as PNG images.
 .TP
+.B \-\-animate\-sharding=\fIshard\fB/\fInum_shards
+Together with \fB\-\-animate\fP, divide the frames into \fInum_shards\fP parts
+and export only part number \fIshard\fP (counting from 1). For example,
+\fB2/5\fP exports the second fifth of the frames. This can be used to spread
+the work over several processes or machines.
+.TP
 .B \-\-view[=axes|crosshairs|edges|scales]
 View options
 .TP
 .B \-\-csglimit=limit
 If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.
 .TP
+.B \-\-import\-unlimit=\fIlist
+Remove the given import restrictions, never use with untrusted files.
+\fIlist\fP is a comma separated list of restrictions. The currently
+supported value is \fBsvg\-use\fP, which removes the limit on the number of
+shapes that \fB<use>\fP elements may generate when importing SVG files.
+.TP
 .B \-\-camera=transx,transy,transz,rotx,roty,rotz,distance
-If exporting an image, use a Gimbal camera with the given parameters. 
-Rot is rotation around the x, y, and z axis, trans is the distance to 
-move the object in the x, y, and z directions, and distance is the 
+If exporting an image, use a Gimbal camera with the given parameters.
+Rot is rotation around the x, y, and z axis, trans is the distance to
+move the object in the x, y, and z directions, and distance is the
 distance between the camera and the center of the object.
 .TP
 .B \-\-camera=eyex,eyey,eyez,centerx,centery,centerz
-If exporting an image, use a Vector camera with the given parameters. 
-The first three are for the Eye position, while the next three are for 
-the Center (or target) that the camera will look at. The 'up' vector is 
+If exporting an image, use a Vector camera with the given parameters.
+The first three are for the Eye position, while the next three are for
+the Center (or target) that the camera will look at. The 'up' vector is
 not currently supported.
 .TP
 .B \-\-viewall
@@ -115,18 +134,20 @@ If exporting an image, adjust camera distance to fit the whole design in the fra
 If exporting an image, center the design in the frame
 .TP
 .B \-\-imgsize=width,height
-If exporting an image, specify the pixel width and height 
+If exporting an image, specify the pixel width and height
 .TP
 .B \-\-projection=[o|ortho|p|perspective]
-If exporting an image, specify whether to use orthographic or perspective 
+If exporting an image, specify whether to use orthographic or perspective
 projection
 .TP
 .B \-\-colorscheme=\fIscheme
 If exporting an image, use the specified color scheme for the rendering.
-\fIscheme\fP can be any of \fBCornfield\fP, \fBSunset\fP, \fBMetallic\fP,
-\fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP or \fBDeepOcean\fP
-\fBSolarized\fP, \fBTomorrow\fP, \fBTomorrow 2\fP, \fBTomorrow Night\fP,
-\fBMonotone\fP.
+\fIscheme\fP can be any of \fBCornfield\fP (the default), \fBMetallic\fP,
+\fBSunset\fP, \fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP,
+\fBDaylight Gem\fP, \fBNocturnal Gem\fP, \fBDeepOcean\fP, \fBSolarized\fP,
+\fBTomorrow\fP, \fBTomorrow Night\fP, \fBNord Dark\fP, \fBClearSky\fP,
+\fBNord Light\fP or \fBMonotone\fP. Run \fBopenscad \-\-help\fP to list the
+color schemes available in your installation.
 .TP
 .B \-\-hardwarnings
 Stop on the first warning
@@ -137,9 +158,34 @@ Configure the parameter check for user modules and functions
 .B \-\-check-parameter-ranges=[true|false]
 Configure the parameter range check for builtin modules
 .TP
+.B \-\-trace\-depth=\fIn
+Maximum number of trace messages.
+.TP
+.B \-\-trace\-usermodule\-parameters=[true|false]
+Configure whether the parameters of user modules are included in trace output.
+.TP
 .B \-\-info
 Show which versions of libraries were used to compile the program, and which
 OpenGL details are discovered.
+.TP
+.B \-\-summary=\fIitem
+Print additional render statistics after rendering. \fIitem\fP can be any of
+\fBall\fP, \fBcache\fP, \fBtime\fP, \fBcamera\fP, \fBgeometry\fP,
+\fBbounding-box\fP or \fBarea\fP. More than one \fB\-\-summary\fP option can be
+given.
+.TP
+.B \-\-summary\-file=\fIfile
+Write the summary information in JSON format to \fIfile\fP. If \fIfile\fP is
+\fB\-\fP, it is written to standard output.
+.TP
+.B \-\-reset\-window\-settings
+Reset the saved GUI window placement and font settings to their defaults when
+starting the GUI.
+.TP
+.B \-\-debug=\fIfiles
+Print internal debugging information. Specify \fBall\fP, or one or more
+source file names without extension (e.g. \fBGeometryEvaluator,export\fP) to
+limit the output to messages from those files.
 .SH COMMAND LINE EXAMPLES
 .PP
 
@@ -147,12 +193,12 @@ Render example001.scad into the .stl format (raw triangle data):
 .PP
 .B openscad -o example001.stl examples/example001.scad
 .PP
-Compile a 2d image using a camera rotated 25 degrees in x and 35 in z, 
+Compile a 2d image using a camera rotated 25 degrees in x and 35 in z,
 distance 500, with orthographic projection:
 .PP
 .B openscad -o o.png o.scad --camera=0,0,0,25,0,35,500 --projection=ortho
 .PP
-Set the 'mode' variable in example017 so that it will render only the 
+Set the 'mode' variable in example017 so that it will render only the
 parts of the shape. Export to a .dxf file.
 .PP
 .B openscad -o example017.dxf -D'mode="parts"' examples/example017.scad
@@ -161,5 +207,5 @@ parts of the shape. Export to a .dxf file.
 OpenSCAD was written by Claire 'Clifford' Wolf, Marius Kintel, and others.
 .PP
 This manual page was written by chrysn <chrysn@fsfe.org>,
-for the Debian project (and may be used by others). Updated by 
+for the Debian project (and may be used by others). Updated by
 the OpenSCAD team.

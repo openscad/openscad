@@ -24,7 +24,6 @@
  *
  */
 #include <cassert>
-#include <clocale>
 #include <cmath>
 #include <memory>
 #include <ostream>
@@ -35,6 +34,25 @@
 #include "geometry/Polygon2d.h"
 #include "geometry/linalg.h"
 #include "io/export.h"
+
+// Escapes a value for use in a double-quoted XML attribute. The colors come
+// unchecked from the export options, e.g. -O export-svg/fill-color=...
+static std::string xml_attribute(const std::string& value)
+{
+  std::string result;
+  result.reserve(value.size());
+  for (const char c : value) {
+    switch (c) {
+    case '&':  result += "&amp;"; break;
+    case '<':  result += "&lt;"; break;
+    case '>':  result += "&gt;"; break;
+    case '"':  result += "&quot;"; break;
+    case '\'': result += "&apos;"; break;
+    default:   result += c;
+    }
+  }
+  return result;
+}
 
 static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
 {
@@ -47,8 +65,8 @@ static void append_svg(const Polygon2d& poly, std::ostream& output, const Export
     options = &defaultSvgOptions;
   }
 
-  const std::string stroke = options->stroke ? options->strokeColor : "none";
-  const std::string fill = options->fill ? options->fillColor : "none";
+  const std::string stroke = options->stroke ? xml_attribute(options->strokeColor) : "none";
+  const std::string fill = options->fill ? xml_attribute(options->fillColor) : "none";
   const double strokeWidth = options->strokeWidth;
   output << "<path d=\"\n";
   for (const auto& o : poly.outlines()) {
@@ -90,7 +108,6 @@ static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo)
 {
-  setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
   BoundingBox bbox = geom->getBoundingBox();
   const ExportSvgOptions *options;
   const ExportSvgOptions defaultSvgOptions;
@@ -118,5 +135,4 @@ void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
          << "<title>OpenSCAD Model</title>\n";
   append_svg(geom, output, exportInfo);
   output << "</svg>\n";
-  setlocale(LC_NUMERIC, "");  // Set default locale
 }

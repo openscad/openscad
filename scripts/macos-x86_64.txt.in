@@ -2,6 +2,7 @@
 cpu_family = 'x86_64'
 cpu = 'x86_64'
 system = 'darwin'
+subsystem = 'macos'
 endian = 'little'
 
 [properties]
@@ -11,6 +12,7 @@ needs_exe_wrapper = false
 c = 'cc'
 cpp = 'c++'
 objc = 'cc'
+objcpp = 'c++'
 strip = 'strip'
 pkg-config = 'pkg-config'
 
@@ -18,6 +20,8 @@ pkg-config = 'pkg-config'
 c_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-I@DEPLOYDIR@/include']
 cpp_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-I@DEPLOYDIR@/include']
 objc_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-I@DEPLOYDIR@/include']
+objcpp_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-I@DEPLOYDIR@/include']
 c_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-L@DEPLOYDIR@/lib']
 cpp_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-L@DEPLOYDIR@/lib']
 objc_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-L@DEPLOYDIR@/lib']
+objcpp_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-L@DEPLOYDIR@/lib']

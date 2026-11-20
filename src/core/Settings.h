@@ -41,6 +41,8 @@ public:
   virtual bool isDefault() const = 0;
   virtual std::string encode() const = 0;
   virtual void set(const std::string& encoded) = 0;
+  // Returns true if the encoded value can be decoded and is within the allowed range.
+  [[nodiscard]] virtual bool validate(const std::string& encoded) const { return true; }
   virtual const std::tuple<std::string, std::string> help() const = 0;
 
 protected:
@@ -82,6 +84,7 @@ public:
   std::string encode() const override;
   const bool decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  [[nodiscard]] bool validate(const std::string& encoded) const override;
   const std::tuple<std::string, std::string> help() const override
   {
     return {"bool", defaultValue() ? "<true>/false" : "true/<false>"};
@@ -114,6 +117,7 @@ public:
   std::string encode() const override;
   const int decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  [[nodiscard]] bool validate(const std::string& encoded) const override;
   const std::tuple<std::string, std::string> help() const override
   {
     return {"int", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) +
@@ -151,6 +155,7 @@ public:
   std::string encode() const override;
   const double decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  [[nodiscard]] bool validate(const std::string& encoded) const override;
   const std::tuple<std::string, std::string> help() const override
   {
     return {"double", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) +
@@ -227,6 +232,7 @@ public:
   std::string encode() const override;
   const enum_type decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  [[nodiscard]] bool validate(const std::string& encoded) const override;
   const std::tuple<std::string, std::string> help() const override
   {
     std::string sep = "[";
@@ -286,6 +292,23 @@ template <>
 inline const std::string SettingsEntryEnum<std::string>::decode(const std::string& encoded) const
 {
   return encoded;
+}
+
+template <typename enum_type>
+bool SettingsEntryEnum<enum_type>::validate(const std::string& encoded) const
+{
+  for (const Item& item : items()) {
+    if (item.name == encoded) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <>
+inline bool SettingsEntryEnum<std::string>::validate(const std::string& encoded) const
+{
+  return true;
 }
 
 class LocalAppParameterType

@@ -57,6 +57,7 @@ public:
   void readFile(const QString& scadFile);
   void saveFile(const QString& scadFile);
   void saveBackupFile(const QString& scadFile);
+  void removeBackupFile(const QString& scadFile);
   void setParameters(const SourceFile *sourceFile, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
   bool childHasFocus();

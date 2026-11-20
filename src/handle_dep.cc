@@ -14,6 +14,7 @@
 
 #include <boost/regex.hpp>
 
+#include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
 namespace fs = std::filesystem;
@@ -72,7 +73,7 @@ void handle_dep(const std::string& filename)
 
 bool write_deps(const std::string& filename, const std::vector<std::string>& output_files)
 {
-  FILE *fp = fopen(filename.c_str(), "wt");
+  FILE *fp = PlatformUtils::fopen(std::filesystem::u8path(filename), "wt");
   if (!fp) {
     fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
     return false;

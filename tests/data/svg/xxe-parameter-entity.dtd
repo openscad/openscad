@@ -1,0 +1,4 @@
+<!-- Security fixture for xxe-parameter-entity.svg: turns the external
+     parameter entity "file" into an internal entity "leak". -->
+<!ENTITY % all "<!ENTITY leak '%file;'>">
+%all;

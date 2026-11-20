@@ -1,5 +1,5 @@
-ECHO: "basic format              ", { a = 1; b = 2; c = [3]; f = function() 1; }
-ECHO: "basic format of a copy    ", { a = 1; b = 2; c = [3]; f = function() 1; }
+ECHO: "basic format              ", { a : 1, b : 2, c : [3], f : function() 1 }
+ECHO: "basic format of a copy    ", { a : 1, b : 2, c : [3], f : function() 1 }
 ECHO: "PASS:", "o1 must not be undef"
 ECHO: "PASS:", "o1 must not be a bool"
 ECHO: "PASS:", "o1 must not be a num"
@@ -23,6 +23,7 @@ ECHO: "PASS:", "len of object with 3 entries must be 3"
 ECHO: "PASS:", "len of object with 4 entries must be 4"
 ECHO: "PASS:", "same object must be equal"
 ECHO: "PASS:", "same object with all types must be equal"
+ECHO: "PASS:", "equality is order-insensitive"
 ECHO: "PASS:", "copy must be equal"
 ECHO: "PASS:", "copy must not be equal when f removed"
 ECHO: "PASS:", "copy must not be equal when o removed for all types"
@@ -39,8 +40,8 @@ ECHO: "PASS:", "!f []... x=undef"
 ECHO: "PASS:", "check size"
 ECHO: "PASS:", "check value"
 ECHO: "PASS:", "test 100k entries"
-ECHO: Wilma = { spouse = { }; }
-ECHO: Betty = { friends = [{ spouse = { }; }]; }
+ECHO: Wilma = { spouse : { } }
+ECHO: Betty = { friends : [{ spouse : { } }] }
 ECHO: "PASS:", "optin gets this"
 ECHO: "PASS:", "optout does not get this"
 ECHO: "PASS:", "check referring to other field"

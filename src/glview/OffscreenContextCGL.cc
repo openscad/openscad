@@ -1,31 +1,43 @@
 #include "glview/OffscreenContextCGL.h"
 
-#include <sstream>
-#include <memory>
 #include <cstddef>
+#include <memory>
+#include <sstream>
 #include <string>
-#include <iostream>
 
 #include "glview/OffscreenContext.h"
 #include "glview/system-gl.h"
+#include "utils/printutils.h"
+#define GL_SILENCE_DEPRECATION
 #include <OpenGL/OpenGL.h>
 
 class OffscreenContextCGL : public OffscreenContext
 {
 public:
   OffscreenContextCGL(int width, int height) : OffscreenContext(width, height) {}
-  ~OffscreenContextCGL() { CGLDestroyContext(cglContext); }
+  ~OffscreenContextCGL()
+  {
+    if (cglContext) {
+      CGLDestroyContext(cglContext);
+    }
+  }
 
-  // FIXME: What info are we really interested in here?
   std::string getInfo() const override
   {
     std::ostringstream out;
-    out << "GL context creator: CGL (new)\n"
-        << "PNG generator: Core Foundation\n";
+    out << "GL context creator: CGL (new)\n";
     return out.str();
   }
 
-  bool makeCurrent() const override { return CGLSetCurrentContext(this->cglContext) == kCGLNoError; }
+  bool makeCurrent() const override
+  {
+    const auto err = CGLSetCurrentContext(cglContext);
+    if (err != kCGLNoError) {
+      LOG("CGLSetCurrentContext() failed: %1$s (%2$d)", CGLErrorString(err), static_cast<int>(err));
+      return false;
+    }
+    return true;
+  }
 
   CGLContextObj cglContext = nullptr;
 };
@@ -46,14 +58,14 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextCGL(size_t width, size_t
     kCGLPFADoubleBuffer,        kCGLPFASampleBuffers,
     (CGLPixelFormatAttribute)1, kCGLPFASamples,
     (CGLPixelFormatAttribute)4, (CGLPixelFormatAttribute)0};
-  CGLPixelFormatObj pixelFormat = NULL;
+  CGLPixelFormatObj pixelFormat = nullptr;
   GLint numPixelFormats = 0;
   const auto status = CGLChoosePixelFormat(attributes, &pixelFormat, &numPixelFormats);
   if (status != kCGLNoError) {
-    std::cerr << "CGLChoosePixelFormat() failed: " << CGLErrorString(status) << std::endl;
+    LOG("CGLChoosePixelFormat() failed: %1$s (%2$d)", CGLErrorString(status), static_cast<int>(status));
     return nullptr;
   }
-  CGLCreateContext(pixelFormat, NULL, &ctx->cglContext);
+  CGLCreateContext(pixelFormat, nullptr, &ctx->cglContext);
   CGLDestroyPixelFormat(pixelFormat);
 
   return ctx;

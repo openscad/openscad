@@ -42,6 +42,8 @@
 #include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QImage>
+#include <QImageWriter>
 #include <QKeySequence>
 #include <QLabel>
 #include <QList>
@@ -175,6 +177,7 @@
 #ifdef ENABLE_PYTHON
 #include "nettle/base64.h"
 #include "nettle/sha2.h"
+#include "nettle/version.h"
 #include "python/python_public.h"
 
 std::string SHA256HashString(std::string aString)
@@ -184,7 +187,11 @@ std::string SHA256HashString(std::string aString)
 
   sha256_init(&sha256_ctx);
   sha256_update(&sha256_ctx, aString.length(), (uint8_t *)aString.c_str());
+#if NETTLE_VERSION_MAJOR >= 4
+  sha256_digest(&sha256_ctx, digest);
+#else
   sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
+#endif
 
   base64_encode_ctx base64_ctx;
   char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE) + 1];
@@ -534,10 +541,10 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D =
-    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
+  scadApp->setRenderBackend3D(
+    renderBackend3DFromString(
+      GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString())
+      .value_or(DEFAULT_RENDERING_BACKEND_3D));
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -612,6 +619,17 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
+  // The QWidget destructor deletes our child docks, and deleting a QDockWidget
+  // reparents and hides it, which emits Dock::visibilityChanged and sends hide
+  // events through our event filter. Qt only severs connections in ~QObject,
+  // which runs last, so those slots would re-enter this MainWindow after its
+  // own members (exportMap, activeEditor, rubberBandManager, ...) have already
+  // been destroyed. Sever the links here, while the object is still whole.
+  for (auto& [dock, title] : docks) {
+    dock->disconnect(this);
+    dock->removeEventFilter(this);
+  }
+
   delete this->geometryWorker;
 }
 
@@ -630,11 +648,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
   isClosing = true;
   progress_report_fin();
-
-  if (this->tempFile) {
-    delete this->tempFile;
-    this->tempFile = nullptr;
-  }
 
   // Log to stdout from now on
   clearCurrentOutput();
@@ -936,6 +949,21 @@ void MainWindow::resetCompileMessageCounts()
   this->compileWarnings = 0;
 }
 
+// Preview and thrown-together are the two non-rendered view modes; which one a preview lands in
+// is the user's choice, and OpenCSG has to be compiled in for preview to be one of the options.
+void MainWindow::selectPreviewViewMode()
+{
+#ifdef ENABLE_OPENCSG
+  if (viewActionThrownTogether->isChecked()) {
+    viewModeThrownTogether();
+  } else {
+    viewModePreview();
+  }
+#else
+  viewModeThrownTogether();
+#endif
+}
+
 void MainWindow::compileEnded()
 {
   clearCurrentOutput();
@@ -997,7 +1025,8 @@ void MainWindow::instantiateRoot()
 
     AbstractNode::resetIndexCounter();
 
-    EvaluationSession session{doc.parent_path().string()};
+    auto p = doc.empty() ? fs::path{} : doc.parent_path();
+    EvaluationSession session{p.string()};
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
 
@@ -1272,35 +1301,41 @@ void MainWindow::writeBackup(QFile *file)
 
 void MainWindow::saveBackup()
 {
-  auto path = PlatformUtils::backupPath();
-  if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
-    return;
-  }
+  // There is a good argument that the management of the temporary file name belongs
+  // in EditorInterface, since that's where it lives and where the path of the file
+  // lives.  However, all management of EditorInterface::filepath appears to be in
+  // MainWindow and TabManager, *not* in EditorInterface, so I'm leaving the temporary
+  // file management here.
+  if (!activeEditor->tempFile) {
+    auto path = PlatformUtils::backupPath();
+    if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
+      LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
+      return;
+    }
 
-  auto backupPath = QString::fromLocal8Bit(path.c_str());
-  if (!backupPath.endsWith("/")) backupPath.append("/");
+    auto backupPath = QString::fromLocal8Bit(path.c_str());
+    if (!backupPath.endsWith("/")) backupPath.append("/");
 
-  QString basename = "unsaved";
-  if (!activeEditor->filepath.isEmpty()) {
-    auto fileInfo = QFileInfo(activeEditor->filepath);
-    basename = fileInfo.baseName();
-  }
+    QString basename = "unsaved";
+    if (!activeEditor->filepath.isEmpty()) {
+      auto fileInfo = QFileInfo(activeEditor->filepath);
+      basename = fileInfo.baseName();
+    }
 
-  if (!this->tempFile) {
 #ifdef ENABLE_PYTHON
     const QString suffix = this->python_active ? "py" : "scad";
 #else
     const QString suffix = "scad";
 #endif
-    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
+    activeEditor->tempFile =
+      new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
-  if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
+  if ((!activeEditor->tempFile->isOpen()) && (!activeEditor->tempFile->open())) {
     LOG(message_group::UI_Warning, "Failed to create backup file");
     return;
   }
-  return writeBackup(this->tempFile);
+  return writeBackup(activeEditor->tempFile);
 }
 
 void MainWindow::on_fileActionSave_triggered()
@@ -1844,16 +1879,7 @@ void MainWindow::csgReloadRender()
 {
   if (this->rootNode) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
+  selectPreviewViewMode();
   compileEnded();
 }
 
@@ -1902,22 +1928,18 @@ void MainWindow::csgRender()
 {
   if (this->rootNode) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
+  selectPreviewViewMode();
 
   if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
     const QImage img = this->qglview->grabFrame();
-    const QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-    img.save(filename, "PNG");
+    const QString filename = exportPath("png", QString("frame%1").arg(steps, 5, 10, QChar('0')));
+    QImageWriter writer(filename, "PNG");
+    if (!writer.write(img)) {
+      LOG(message_group::Error, "%1$s: %2$s", filename.toStdString(),
+          writer.errorString().toStdString());
+      animateWidget->pauseAnimation();
+    }
   }
 
   compileEnded();
@@ -2380,17 +2402,11 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       delete this->progresswidget;
       this->progresswidget = nullptr;
     }
-    if (versionLabel == nullptr) {
-      versionLabel =
-        new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
-      sb->addPermanentWidget(this->versionLabel);
-    }
+    versionLabel.show();
+    updateBackend3DLabel();  // shows if appropriate
   } else {
-    if (this->versionLabel != nullptr) {
-      sb->removeWidget(this->versionLabel);
-      delete this->versionLabel;
-      this->versionLabel = nullptr;
-    }
+    versionLabel.hide();
+    backend3DLabel.hide();
     sb->addPermanentWidget(progressWidget);
   }
 }
@@ -2490,7 +2506,7 @@ void MainWindow::on_designCheckValidity_triggered()
 }
 
 // Returns if we can export (true) or not(false) (bool)
-// Separated into it's own function for re-use.
+// Separated into its own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
   auto guard = scopedSetCurrentOutput();
@@ -2568,7 +2584,7 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   if (!canExport(dim)) return;
 
   auto title = QString(_("Export %1 File")).arg(type_name);
-  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
+  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, "." + suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
   auto guard2 = scopedSetCurrentOutput();
   if (exportFilename.isEmpty()) {
@@ -3442,20 +3458,27 @@ void MainWindow::processEvents()
   if (this->procevents) QApplication::processEvents();
 }
 
-QString MainWindow::exportPath(const QString& suffix)
+QString MainWindow::exportPath(const QString& suffix, const QString& basename)
 {
+  // Derive the directory.
   const auto path_it = this->exportPaths.find(suffix);
-  const auto basename =
-    activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
   QString dir;
   if (path_it != exportPaths.end()) {
     dir = QFileInfo(path_it->second).absolutePath();
-  } else if (activeEditor->filepath.isEmpty()) {
-    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
-  } else {
+  } else if (!activeEditor->filepath.isEmpty()) {
     dir = QFileInfo(activeEditor->filepath).absolutePath();
+  } else {
+    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
   }
-  return QString("%1/%2.%3").arg(dir, basename, suffix);
+
+  // Derive the base name.
+  const auto derivedBasename = !basename.isEmpty() ? basename
+                               : !activeEditor->filepath.isEmpty()
+                                 ? QFileInfo(activeEditor->filepath).completeBaseName()
+                                 : "Untitled";
+
+  // Construct the full path.
+  return QString("%1/%2.%3").arg(dir, derivedBasename, suffix);
 }
 
 void MainWindow::jumpToLine(int line, int col)
@@ -3575,7 +3598,22 @@ void MainWindow::setupPreferences()
  */
 void MainWindow::setupStatusBar()
 {
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
+  // Remove ugly frames in the QStatusBar when using additional widgets.
+  const auto stylesheet = QString(R"(
+    QStatusBar::item {
+        border: 0px solid black;
+    }
+  )");
+  this->statusBar()->setStyleSheet(stylesheet);
+
+  this->versionLabel.setText("OpenSCAD " +
+                             QString::fromStdString(std::string(openscad_displayversionnumber)));
+  this->statusBar()->addPermanentWidget(&this->versionLabel);
+
+  connect(scadApp, &OpenSCADApp::backend3DChanged, this, &MainWindow::updateBackend3DLabel);
+  updateBackend3DLabel();
+  this->statusBar()->addPermanentWidget(&this->backend3DLabel);
+
   updateStatusBar(nullptr);
 }
 
@@ -3597,12 +3635,12 @@ void MainWindow::setupConsole()
   consoleOutputRaw(
     QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber))));
   consoleOutputRaw(QString("<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>"));
-  consoleOutputRaw(
-    QString("<p>Copyright (C) 2009-2026 The OpenSCAD Developers</p>"
-            "<p>This program is free software; you can redistribute it and/or modify "
-            "it under the terms of the GNU General Public License as published by "
-            "the Free Software Foundation; either version 2 of the License, or "
-            "(at your option) any later version.</p>"));
+  consoleOutputRaw(QString("<p>Copyright (C) 2009-%1 The OpenSCAD Developers</p>"
+                           "<p>This program is free software; you can redistribute it and/or modify "
+                           "it under the terms of the GNU General Public License as published by "
+                           "the Free Software Foundation; either version 2 of the License, or "
+                           "(at your option) any later version.</p>")
+                     .arg(openscad_version_year));
 }
 
 /**
@@ -4076,6 +4114,29 @@ void MainWindow::restoreWindowState()
 #endif  // ifdef Q_OS_WIN
   }
 
+  restoreToolBarVisibility();
+}
+
+/**
+  Restore the visibility of the editor and 3D view tool bars.
+
+  Both tool bars are plain child widgets of the editor dock and of the central
+  widget, so they are not covered by the state saved by QMainWindow::saveState().
+  Their visibility is stored separately by the corresponding view actions and
+  has to be applied explicitly.
+ */
+void MainWindow::restoreToolBarVisibility()
+{
+  const QSettingsCached settings;
+  const auto hideEditorToolBar = settings.value("view/hideEditorToolbar").toBool();
+  const auto hide3DViewToolBar = settings.value("view/hide3DViewToolbar").toBool();
+
+  // QAction::setChecked() only emits toggled() when the state actually changes,
+  // therefore the visibility is applied explicitly instead of relying on the slots.
+  viewActionHideEditorToolBar->setChecked(hideEditorToolBar);
+  viewActionHide3DViewToolBar->setChecked(hide3DViewToolBar);
+  editortoolbar->setVisible(!hideEditorToolBar);
+  viewerToolBar->setVisible(!hide3DViewToolBar);
 }
 
 void MainWindow::openRemainingFiles(const QStringList& filenames)
@@ -4091,4 +4152,16 @@ void MainWindow::changeEvent(QEvent *event)
     setGlobalTheme();
   }
   QMainWindow::changeEvent(event);
+}
+
+void MainWindow::updateBackend3DLabel()
+{
+  RenderBackend3D backend = RenderSettings::inst()->backend3D;
+
+  if (backend == DEFAULT_RENDERING_BACKEND_3D) {
+    backend3DLabel.hide();
+  } else {
+    backend3DLabel.setText(QString::fromStdString(renderBackend3DToString(backend)));
+    backend3DLabel.show();
+  }
 }

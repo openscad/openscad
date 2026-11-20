@@ -44,6 +44,7 @@
 #include "core/StatCache.h"
 #include "core/node.h"
 #include "core/parsersettings.h"
+#include "io/fileutils.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 
@@ -145,10 +146,10 @@ time_t SourceFile::handleDependencies(bool is_root)
     auto found = true;
 
     // Get an absolute filename for the module
-    if (!fs::path(filename).is_absolute()) {
+    if (!fs_is_absolute(filename)) {
       auto fullpath = find_valid_path(this->path, filename);
       if (!fullpath.empty()) {
-        auto newfilename = fullpath.generic_string();
+        auto newfilename = fs_generic_string(fullpath);
         updates.emplace_back(filename, newfilename);
         filename = newfilename;
       } else {
@@ -203,10 +204,10 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
 // please call getFilename first and use this method only as a fallback
 const std::string SourceFile::getFullpath() const
 {
-  if (fs::path(this->filename).is_absolute()) {
+  if (fs_is_absolute(this->filename)) {
     return this->filename;
   } else if (!this->path.empty()) {
-    return (fs::path(this->path) / fs::path(this->filename)).generic_string();
+    return fs_generic_string(fs::path(this->path) / fs::path(this->filename));
   } else {
     return "";
   }

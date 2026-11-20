@@ -1,16 +1,17 @@
-// Identifiers may contain non-ASCII letters. Requires --enable=unicode-identifiers.
-// See https://github.com/openscad/openscad/issues/3736
-
 größe = 10;
 echo(größe);
 
 // Identifiers are normalised to NFC, so the decomposed spelling of "höhe"
-// (h, o, U+0308, h, e) names the same variable as the precomposed one.
+// names the same variable as the precomposed one.
+// Assignment identifier: NFC: U+0068, U+00F6, U+0068, U+0065; UTF-8: 68 C3 B6 68 65
+// Following echo identifier: NFD: U+0068, U+006F, U+0308, U+0068, U+0065; UTF-8: 68 6F CC 88 68 65
 höhe = 4;
 echo(höhe);
 
 // U+2126 OHM SIGN is canonically equivalent to U+03A9 GREEK CAPITAL LETTER OMEGA,
 // so the two spellings are the same identifier as well.
+// Assignment identifier: NFC: U+03A9; UTF-8: CE A9
+// Following echo identifier (before NFC normalization): Non-NFC: U+2126; UTF-8: E2 84 A6
 Ω = 30;
 echo(Ω);
 

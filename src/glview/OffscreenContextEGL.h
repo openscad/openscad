@@ -2,9 +2,11 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 
 #include "glview/OffscreenContext.h"
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t height,
                                                             size_t majorGLVersion, size_t minorGLVersion,
-                                                            bool gles, bool compatibilityProfile);
+                                                            bool gles, bool compatibilityProfile,
+                                                            const std::string& drmNode = "");

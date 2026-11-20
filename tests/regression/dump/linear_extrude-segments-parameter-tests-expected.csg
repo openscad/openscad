@@ -1,0 +1,39 @@
+group() {
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, segments = 0, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, segments = 0, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, segments = 2, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, segments = 8, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+	linear_extrude(height = 1, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [1, 1], center = false);
+	}
+}
+

@@ -28,17 +28,21 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cerrno>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <locale>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -56,6 +60,7 @@
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 
 #define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
@@ -204,9 +209,13 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
   return exportInfo;
 }
 
-static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
-                       const ExportInfo& exportInfo)
+void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
+                const ExportInfo& exportInfo)
 {
+  // Exported files always use '.' as the decimal point, whatever the global C++ locale is.
+  const std::locale previous_locale = output.imbue(std::locale::classic());
+  auto restore_locale = sg::make_scope_guard([&]() { output.imbue(previous_locale); });
+
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
   case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
@@ -231,7 +240,30 @@ bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Ex
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
-  exportFile(root_geom, std::cout, exportInfo);
+  if (exportInfo.format == FileFormat::_3MF) {
+    // lib3mf needs to seek in its output, which isn't possible when stdout is a pipe
+    // (#6895), so build the file in memory first.
+    std::stringstream buffer;
+    exportFile(root_geom, buffer, exportInfo);
+    buffer.seekp(0, std::ios::end);
+    if (buffer.tellp() <= 0) {
+      // The exporter has already logged the reason
+      LOG(message_group::Error, _("Export failed, nothing was written to standard output."));
+      return false;
+    }
+    errno = 0;
+    std::cout << buffer.rdbuf();
+  } else {
+    errno = 0;
+    exportFile(root_geom, std::cout, exportInfo);
+  }
+  std::cout.flush();
+  if (!std::cout) {
+    const int error = errno;
+    LOG(message_group::Error, _("Error writing to standard output: %1$s"),
+        error != 0 ? std::strerror(error) : "unknown error");
+    return false;
+  }
   return true;
 }
 

@@ -60,8 +60,7 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   std::string filename;
   if (parameters.contains("file")) {
     rawFilename = parameters["file"].toString();
-    filename =
-      lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
+    filename = lookup_file(rawFilename, loc.filePath().parent_path().string());
   }
   double xorigin = 0;
   double yorigin = 0;
@@ -167,8 +166,7 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
   std::string filename;
   if (parameters.contains("file")) {
     rawFilename = parameters["file"].toString();
-    filename =
-      lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
+    filename = lookup_file(rawFilename, loc.filePath().parent_path().string());
   }
   double xorigin = 0;
   double yorigin = 0;

@@ -1,0 +1,27 @@
+Backport the playback portion of Qt Multimedia fix QTBUG-145793.
+Upstream: https://github.com/qt/qtmultimedia/commit/d2c82af2c9c63c28d0af2b7c710acf204ab118ec
+Author: Tim Blechmann
+
+Only QAudioSink is needed for OpenSCAD's QSoundEffect render notification.
+The Qt 6.8.4 capture implementation differs from the upstream commit and
+is deliberately outside this playback backport.
+Apply from the qt-everywhere source root with patch -p1.
+
+diff --git a/qtmultimedia/src/multimedia/darwin/qdarwinaudiosink.mm b/qtmultimedia/src/multimedia/darwin/qdarwinaudiosink.mm
+--- a/qtmultimedia/src/multimedia/darwin/qdarwinaudiosink.mm
++++ b/qtmultimedia/src/multimedia/darwin/qdarwinaudiosink.mm
+@@ -65,14 +65,6 @@
+         return false;
+ 
+ #ifdef Q_OS_MACOS
+-    std::optional<int> bestNominalSamplingRate =
+-            audioObjectFindBestNominalSampleRate(nativeDeviceId, QAudioDevice::Output, m_format.sampleRate());
+-
+-    if (bestNominalSamplingRate) {
+-        if (!audioObjectSetSamplingRate(nativeDeviceId, *bestNominalSamplingRate))
+-            return false;
+-    }
+-
+     // register listener
+     if (!addDisconnectListener(*audioDeviceId))
+         return false;
