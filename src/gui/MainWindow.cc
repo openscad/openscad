@@ -1021,7 +1021,8 @@ void MainWindow::instantiateRoot()
 
     AbstractNode::resetIndexCounter();
 
-    EvaluationSession session{doc.parent_path().string()};
+    auto p = doc.empty() ? fs::path{} : doc.parent_path();
+    EvaluationSession session{p.string()};
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
 
