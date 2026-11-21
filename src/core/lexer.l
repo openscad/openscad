@@ -41,6 +41,7 @@
 #include "io/fileutils.h"
 #include "platform/PlatformUtils.h"
 #include <assert.h>
+#include <boost/cast.hpp>
 #include <boost/lexical_cast.hpp>
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -97,6 +98,17 @@ extern YYLTYPE parserlloc;
 #define YY_USER_ACTION parserlloc.last_column += yyleng;
 
 extern void parsererror(char const *s);
+
+// Whether d converts back to exactly ull. numeric_cast throws when d is out of range,
+// where a plain conversion would be undefined behavior.
+static bool converts_back_to(double d, unsigned long long ull)
+{
+  try {
+    return boost::numeric_cast<unsigned long long>(d) == ull;
+  } catch (const boost::bad_numeric_cast&) {
+    return false;
+  }
+}
 void to_utf8(const char *, char *);
 void includefile(const Location& loc);
 static void check_mcad_missing(const fs::path& localpath);
@@ -316,7 +328,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             if (errno != 0) {
                                 LOG(message_group::Warning, LOCATION(parserlloc), "",
                                     "Hexadecimal constant \"%1$s\" too large", yytext);
-                            } else if ((unsigned long long)parserlval.number != ull) {
+                            } else if (!converts_back_to(parserlval.number, ull)) {
                                 LOG(message_group::Warning, LOCATION(parserlloc), "",
                                     "Integer \"%1$s\" cannot be represented precisely",
                                     yytext);
@@ -335,7 +347,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             errno = 0;  // strtoxxx have crummy error semantics
                             unsigned long long ull = strtoull(yytext, NULL, 10);
                             parserlval.number = ull;
-                            if (errno != 0 || (unsigned long long)parserlval.number != ull) {
+                            if (errno != 0 || !converts_back_to(parserlval.number, ull)) {
                                 LOG(message_group::Warning, LOCATION(parserlloc), "",
                                     "Integer \"%1$s\" cannot be represented precisely",
                                     yytext);
