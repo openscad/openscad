@@ -911,7 +911,14 @@ int openscad_main(int argc, char **argv)
 #endif
   Builtins::initialize();
 
-  auto original_path = fs::current_path();
+  std::error_code cwd_error;
+  const auto original_path = fs::current_path(cwd_error);
+  if (cwd_error) {
+    // E.g. when started in a directory that has been deleted (#4244). Relative paths can't be
+    // resolved then, so stop instead of crashing later.
+    LOG(message_group::Error, "Can't access the current directory: %1$s", cwd_error.message());
+    return 1;
+  }
 
   std::vector<std::string> output_files;
   const char *deps_output_file = nullptr;
