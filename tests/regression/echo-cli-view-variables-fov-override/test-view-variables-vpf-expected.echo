@@ -1,0 +1,2 @@
+ECHO: $vpf = 5
+WARNING: Ignoring $vpf, the field of view is fixed by --fov

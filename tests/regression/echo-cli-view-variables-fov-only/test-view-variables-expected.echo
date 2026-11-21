@@ -1,0 +1,4 @@
+ECHO: $vpt = [0, 0, 0]
+ECHO: $vpr = [55, 0, 25]
+ECHO: $vpd = 140
+ECHO: $vpf = 60

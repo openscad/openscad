@@ -69,6 +69,10 @@ public:
   // (--camera option in commandline mode)
   bool locked;
 
+  // true if the field of view is fixed
+  // (--fov option in commandline mode), in which case $vpf is ignored
+  bool fovLocked{false};
+
   // Perspective settings
   double viewer_distance;
 };
