@@ -767,15 +767,11 @@ void MainWindow::compile(bool reload, bool forcedone)
           // reloading the 'same' document brings the 'old' one to front.
           this->raise();
         }
+      } else if (lastCompiledDoc.isEmpty() && !isEmpty()) {
+        shouldcompiletoplevel = true;
       }
-      // If the file has some content and there is no currently compiled content,
-      // then we force the top level compilation.
-      else {
-        auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() && lastCompiledDoc.size() == 0) {
-          shouldcompiletoplevel = true;
-        }
-      }
+      // Switching tabs can select a different document with an unchanged timestamp.
+      shouldcompiletoplevel = shouldcompiletoplevel || parsedEditor != activeEditor;
     } else {
       shouldcompiletoplevel = true;
     }
@@ -841,6 +837,10 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 void MainWindow::waitAfterReload()
 {
+  if (!activeEditor || parsedEditor != activeEditor) {
+    compileEnded();
+    return;
+  }
   no_exceptions_for_warnings();
   auto mtime = this->rootFile->handleDependencies();
   auto stop = would_have_thrown();
@@ -899,6 +899,12 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
+  if (didchange && (!activeEditor || parsedEditor != activeEditor)) {
+    procevents = false;
+    compileEnded();
+    return;
+  }
+
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try {
     const char *callslot;
@@ -995,13 +1001,19 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree. Renderers own vertex
   // buffers and delete them from their destructors, so drop them with our own
   // GL context current.
-  this->qglview->withCurrentContext([this]() {
+  const bool editorChanged = renderedEditor != activeEditor;
+  this->qglview->withCurrentContext([this, editorChanged]() {
     this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
     this->previewRenderer = nullptr;
 #endif
     this->thrownTogetherRenderer = nullptr;
+    if (editorChanged) this->geomRenderer.reset();
   });
+  if (editorChanged) {
+    if (renderedEditor) renderedEditor->contentsRendered = false;
+    this->rootGeom.reset();
+  }
 
   // Remove previous CSG tree
   this->absoluteRootNode.reset();
@@ -1818,6 +1830,7 @@ void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
 
+  parsedEditor = activeEditor;
   this->lastCompiledDoc = activeEditor->toPlainText();
 
   activeEditor->resetHighlighting();
@@ -1827,7 +1840,9 @@ void MainWindow::parseTopLevelDocument()
 
 void MainWindow::checkAutoReload()
 {
-  if (!activeEditor->filepath.isEmpty()) {
+  if (!activeEditor) return;
+  const bool editorChanged = parsedEditor != activeEditor;
+  if (!activeEditor->filepath.isEmpty() || (editorChanged && (parsedEditor || !isEmpty()))) {
     actionReloadRenderPreview();
   }
 }
@@ -2095,8 +2110,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderCompleteSoundEffect->play();
   }
 
-  renderedEditor = activeEditor;
-  activeEditor->contentsRendered = true;
+  if (renderedEditor) renderedEditor->contentsRendered = static_cast<bool>(root_geom);
   compileEnded();
 }
 
@@ -3202,6 +3216,7 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
+  if (reloadedEditor == parsedEditor) parsedEditor.clear();
   try {
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.

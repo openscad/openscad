@@ -16,6 +16,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QPoint>
+#include <QPointer>
 #include <QShortcut>
 #include <QSignalMapper>
 #include <QSoundEffect>
@@ -463,9 +464,10 @@ private:
   ProgressWidget *progresswidget{nullptr};
   GeometryWorker *geometryWorker;
   QMutex consolemutex;
-  EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
-  time_t includesMTime{0};          // latest include mod time
-  time_t depsMTime{0};              // latest dependency mod time
+  QPointer<EditorInterface> parsedEditor;
+  EditorInterface *renderedEditor{nullptr};
+  time_t includesMTime{0};                           // latest include mod time
+  time_t depsMTime{0};                               // latest dependency mod time
   std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last
   // look up the last export path and generate one if not found
   QString exportPath(const QString& suffix, const QString& basename = "");
