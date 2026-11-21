@@ -814,7 +814,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
   QSaveFile file(savefile);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-    saveError(file, _("Failed to open file for writing"), path);
+    saveError(file, _("Failed to open file for writing"), savefile);
     return false;
   }
   QTextStream writer(&file);
