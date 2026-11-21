@@ -190,6 +190,19 @@ TEST_CASE("SVG import handles <use> elements nested in <defs>", "[libsvg]")
   libsvg::libsvg_free(shapes);
 }
 
+TEST_CASE("SVG import handles <polyline> elements without points", "[libsvg]")
+{
+  auto shapes = read(svg_path("polyline-no-points.svg"));
+
+  // Only the last polyline has a point to draw, so only it has path data.
+  size_t with_paths = 0;
+  for (const auto& shape_ptr : *shapes) {
+    if (!shape_ptr->get_path_list().empty()) with_paths++;
+  }
+  CHECK(with_paths == 1);
+  libsvg::libsvg_free(shapes);
+}
+
 TEST_CASE("SVG import is not vulnerable to entity expansion bombs", "[libsvg][Security]")
 {
   SECTION("the entities are not expanded")
