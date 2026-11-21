@@ -12,7 +12,7 @@ using S = Settings::SettingsExportSvg;
 ExportSvgDialog::ExportSvgDialog()
 {
   setupUi(this);
-  // Start with the settings from the last export (#6614)
+  // Start with the settings from the last export
   checkBoxEnableFill->setChecked(S::exportSvgFill.value());
   fillColor = QColor(QString::fromStdString(S::exportSvgFillColor.value()));
   checkBoxEnableStroke->setChecked(S::exportSvgStroke.value());
