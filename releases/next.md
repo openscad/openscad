@@ -32,7 +32,7 @@ These don't change the result, but stop rendering if warnings are made fatal (--
   * fontmetrics(), returns general size information about fonts  #3684
   * object(), creates a name-value data structure akin to JavaScript object, Python dicts #6012
   * import(file), imports file (currently only JSON) as data #3891
-  * fragments(), returns the number of fragments a circle with the given r= or d= would have, based on $fn, $fa and $fs #6890
+  * fragments(), returns the number of fragments a circle with the given size would have #6890
 * text(), textmetrics(), fontmetrics()
   * Added em= to set the size of the em-square #6656
 * linear_extrude()
