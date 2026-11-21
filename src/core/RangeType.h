@@ -168,8 +168,6 @@ public:
     // whole number.
     const uint32_t max = std::numeric_limits<uint32_t>::max();
     const double steps = std::nextafter((end_val - begin_val) / step_val, max);
-    // NaN if begin or end is NaN, e.g. [0:0/0]. numeric_cast doesn't check for NaN.
-    if (std::isnan(steps)) return 0;
     uint32_t num_steps;
     try {
       num_steps = boost::numeric_cast<uint32_t>(steps);
