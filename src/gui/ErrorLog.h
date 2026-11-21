@@ -42,6 +42,7 @@ private:
 
 private:
   std::list<Message> lastMessages;
+  QHash<int, int> columnWidths;
 
 signals:
   void openFile(const QString, int);

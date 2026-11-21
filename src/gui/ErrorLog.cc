@@ -16,11 +16,13 @@ ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
   initGUI();
+  connect(logTable->horizontalHeader(), &QHeaderView::sectionResized, this, &ErrorLog::onSectionResized);
 }
 
 void ErrorLog::initGUI()
 {
   row = 0;
+  columnWidths.clear();
   QList<QString> labels = QList<QString>()
                           << QString("Group") << QString("File") << QString("Line") << QString("Info");
 
@@ -36,8 +38,6 @@ void ErrorLog::initGUI()
   logTable->setColumnWidth(errorLog_column::lineNo, 80);
   logTable->addAction(actionRowSelected);
   // last column will stretch itself
-
-  connect(logTable->horizontalHeader(), &QHeaderView::sectionResized, this, &ErrorLog::onSectionResized);
 }
 
 void ErrorLog::toErrorLog(const Message& logMsg)
@@ -93,7 +93,7 @@ void ErrorLog::showtheErrorInGUI(const Message& logMsg)
   errorLogModel->setItem(row, errorLog_column::message, msg);
   errorLogModel->setRowCount(++row);
 
-  this->resize();
+  logTable->resizeRowToContents(row - 1);
 
   if (!logTable->selectionModel()->hasSelection()) {
     logTable->selectRow(0);
@@ -105,8 +105,11 @@ void ErrorLog::resize()
   logTable->resizeRowsToContents();
 }
 
-void ErrorLog::onSectionResized(int /*logicalIndex*/, int /*oldSize*/, int /*newSize*/)
+void ErrorLog::onSectionResized(int logicalIndex, int /*oldSize*/, int newSize)
 {
+  // Qt can report the same width repeatedly for a stretched column.
+  if (columnWidths.value(logicalIndex, -1) == newSize) return;
+  columnWidths.insert(logicalIndex, newSize);
   this->resize();
 }
 
