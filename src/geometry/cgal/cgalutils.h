@@ -53,7 +53,7 @@ template <typename Polyhedron>
 std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
 
 template <typename Polyhedron>
-bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
+bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p, double grid_resolution = GRID_FINE);
 
 template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a,

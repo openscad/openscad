@@ -30,7 +30,11 @@ public:
   using CGALPoint = typename CGAL_Polybuilder::Point_3;
 
   const PolySet& ps;
-  CGAL_Build_PolySet(const PolySet& ps) : ps(ps) {}
+  double grid_resolution;
+  CGAL_Build_PolySet(const PolySet& ps, double grid_resolution)
+    : ps(ps), grid_resolution(grid_resolution)
+  {
+  }
 
 /*
    Using Grid here is important for performance reasons. See following model.
@@ -51,7 +55,7 @@ public:
   {
     CGAL_Polybuilder B(hds, true);
 
-    Grid3d<int> grid(GRID_FINE);
+    Grid3d<int> grid(grid_resolution);
     std::vector<CGALPoint> vertices;
     std::vector<std::vector<size_t>> indices;
 
@@ -332,11 +336,11 @@ template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& me
 template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_DoubleMesh& mesh);
 
 template <typename Polyhedron>
-bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
+bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p, double grid_resolution)
 {
   bool err = false;
   try {
-    CGAL_Build_PolySet<Polyhedron> builder(ps);
+    CGAL_Build_PolySet<Polyhedron> builder(ps, grid_resolution);
     p.delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
     LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
@@ -345,8 +349,9 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
   return err;
 }
 
-template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL_Polyhedron& p);
-template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epick>& p);
+template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL_Polyhedron& p, double grid_resolution);
+template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epick>& p,
+                                          double grid_resolution);
 
 template <typename Polyhedron>
 std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)

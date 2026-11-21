@@ -274,6 +274,10 @@ void shape::apply_transform()
 void shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width,
                         Clipper2Lib::EndType stroke_linecap)
 {
+  // Clipper2's offsetting reads the first point of every path it's given,
+  // so an empty path (e.g. <polyline> without points) would crash.
+  if (path.empty()) return;
+
   const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
   const double scale = std::ldexp(1.0, scale_bits);
 

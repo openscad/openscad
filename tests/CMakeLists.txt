@@ -870,6 +870,8 @@ add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS}
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # An inside-out polyhedron must be subtracted like a normal one (#7201).
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/polyhedron-inside-out.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
+# color(undef) must leave colors alone, like in preview (#5853).
+add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/color-undef.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(render-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold --hardwarnings)
 endif()
@@ -978,38 +980,38 @@ list(APPEND EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES
 
 
 # Export tests (compare actually exported files)
-add_cmdline_test(export-stl              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(export-stl-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-stl ARGS --enable=predictible-output --render --export-format asciistl)
+add_cmdline_test(export-stl              OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --render)
+add_cmdline_test(export-stl-stdout       OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-stl ARGS --render --export-format asciistl)
 if (ENABLE_MANIFOLD_TESTS)
-add_cmdline_test(export-stl-manifold     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR export-stl ARGS --enable=predictible-output --backend=manifold --render)
+add_cmdline_test(export-stl-manifold     OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR export-stl ARGS --backend=manifold --render)
 endif()
 
-add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render --export-format binstl)
-add_cmdline_test(export-binstl-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --enable=predictible-output --render --export-format binstl)
+add_cmdline_test(export-binstl           OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --render --export-format binstl)
+add_cmdline_test(export-binstl-stdout    OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --render --export-format binstl)
 
-add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(export-obj              OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES})
 
 # linear_extrude(segments=...): the exported vertices show how each outline is subdivided.
 # The expected faces depend on how the caps are triangulated, which differs without Manifold.
 if (ENABLE_MANIFOLD_TESTS)
 file(GLOB LINEAR_EXTRUDE_SEGMENTS_FILES ${TEST_SCAD_DIR}/linear_extrude/linear_extrude-segments-*.scad)
-add_cmdline_test(linear_extrude-segments EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${LINEAR_EXTRUDE_SEGMENTS_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(linear_extrude-segments OPENSCAD SUFFIX obj FILES ${LINEAR_EXTRUDE_SEGMENTS_FILES})
 endif()
 if (ENABLE_LIB3MF_TESTS)
-add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
-add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_LAZY_UNION_TEST_FILES} ARGS --enable=predictible-output --enable=lazy-union)
-add_cmdline_test(export-3mf-stdio        EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} STDIO ARGS --enable=predictible-output --export-format 3mf)
+add_cmdline_test(export-3mf              OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
+add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_LAZY_UNION_TEST_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(export-3mf-stdio        OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} STDIO ARGS --export-format 3mf)
 endif()
-add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
-add_cmdline_test(export-pov-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140)
-add_cmdline_test(export-pov-translate-2  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=10,0,0,0,0,0,140)
-add_cmdline_test(export-pov-translate-3  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,10,0,0,0,0,140)
-add_cmdline_test(export-pov-translate-4  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,10,0,0,0,140)
-add_cmdline_test(export-pov-rotate-1     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,90,0,0,140)
-add_cmdline_test(export-pov-rotate-2     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,90,0,140)
-add_cmdline_test(export-pov-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,90,140)
-add_cmdline_test(export-pov-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
-add_cmdline_test(export-pov-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
+add_cmdline_test(export-pov-as-is        OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold)
+add_cmdline_test(export-pov-translate-1  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,0,0,0,0,140)
+add_cmdline_test(export-pov-translate-2  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=10,0,0,0,0,0,140)
+add_cmdline_test(export-pov-translate-3  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,10,0,0,0,0,140)
+add_cmdline_test(export-pov-translate-4  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,10,0,0,0,140)
+add_cmdline_test(export-pov-rotate-1     OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,0,90,0,0,140)
+add_cmdline_test(export-pov-rotate-2     OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,0,0,90,0,140)
+add_cmdline_test(export-pov-rotate-3     OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,0,0,0,90,140)
+add_cmdline_test(export-pov-distance-1   OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,0,0,0,0,100)
+add_cmdline_test(export-pov-all          OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=1,2,3,4,5,6,7)
 
 # Export parameters, observe exported files and console output
 add_cmdline_test(export-param            OPENSCAD SUFFIX json FILES ${EXPORT_PARAM_TEST_FILES} ARGS --export-format param)
@@ -1380,8 +1382,11 @@ disable_tests_safe(
 
   # When exported from CGAL, the file cannot be re-imported
   render-stl_bad-stl-wing
+  render-off-cgal_bad-stl-tardis
   render-off-cgal_bad-stl-wing
   render-obj_bad-stl-wing
+  render-3mf-cgal_bad-stl-tardis
+  render-3mf-cgal_bad-stl-wing
 
   # https://github.com/openscad/openscad/issues/2301
   render-cgal_issue2301
@@ -1405,10 +1410,6 @@ disable_tests_safe(
   # OpenCSG z fighting
   preview-cgal_surface_image
   throwntogether-cgal_surface_image
-
-  # https://github.com/openscad/openscad/issues/5159
-  render-cgal_projection
-  render-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
   #render-cgal_example017
@@ -1467,8 +1468,6 @@ disable_tests_safe(
   preview-manifold_3mf-import-centered
   preview-manifold_import_3mf-tests
   render-off-manifold_issue5216
-  render-3mf-cgal_bad-stl-tardis
-  render-3mf-cgal_bad-stl-wing
   render-3mf-manifold_issue5216
 
   preview-cgal_import_3mf-tests

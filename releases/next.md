@@ -85,6 +85,7 @@ These don't change the result, but stop rendering if warnings are made fatal (--
   * SVG export options for fill and stroke #6057
   * PDF export options for fill and stroke #5863
   * Security improvements to SVG import #7180
+  * 3D mesh exports (STL, OFF, OBJ, VRML, 3MF, POV-Ray) are now sorted for predictable, diffable output #420 #4950 #7229
 
 * GUI
   * Edit call-tips fixes #3744
@@ -155,6 +156,7 @@ No longer supported. Most of these were deprecated in earlier releases:
 * The -s and -x cmd-line options #5733
 * The child() and assign() modules #6428
 * The triangles= parameter to polyhedron() #6825
+* The MCAD library is no longer bundled with OpenSCAD; it can be downloaded separately from https://github.com/openscad/MCAD/releases/tag/2026.11 #6982
 
 **Deprecations:**
 

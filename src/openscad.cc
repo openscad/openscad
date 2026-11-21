@@ -110,6 +110,7 @@
 #include "glview/RenderSettings.h"
 #include "handle_dep.h"
 #include "io/export.h"
+#include "io/fileutils.h"
 #include "libsvg/libsvg.h"
 #include "openscad_gui.h"
 #include "openscad_mimalloc.h"
@@ -416,7 +417,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   // Avoid possibility of fs::absolute throwing when passed an empty path
-  auto fpath = cmd.filename.empty() ? fs::current_path() : fs::absolute(fs::path(cmd.filename));
+  auto fpath = cmd.filename.empty() ? fs::current_path() : fs_absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
 
   // set CWD relative to source file
@@ -742,11 +743,50 @@ static CmdLineExportOptions convert_export_options(const po::variables_map& vm)
     return {};
   }
 
+  // All settings that can be given with -O, by section and name
+  std::map<std::string, std::map<std::string, const Settings::SettingsEntryBase *>> known;
+  const auto add_known = [&known](const auto& entries) {
+    for (const auto *entry : entries) {
+      known[entry->category()][entry->name()] = entry;
+    }
+  };
+  add_known(Settings::SettingsExportPdf::cmdline);
+  add_known(Settings::SettingsExport3mf::cmdline);
+  add_known(Settings::SettingsExportSvg::cmdline);
+
   CmdLineExportOptions map;
   const auto& options = vm["O"].as<std::vector<std::string>>();
   for (const auto& option : options) {
     const auto [key, value] = simple_split(option, '=');
     const auto [section, name] = simple_split(key, '/');
+    if (section.empty() || name.empty()) {
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s', expected the format <section>/<key>=value.", option);
+      continue;
+    }
+    const auto section_it = known.find(section);
+    if (section_it == known.end()) {
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s': unknown section '%2$s'. Use --help-export to list all "
+          "available settings.",
+          option, section);
+      continue;
+    }
+    const auto entry_it = section_it->second.find(name);
+    if (entry_it == section_it->second.end()) {
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s': unknown setting '%2$s' in section '%3$s'. Use --help-export "
+          "to list all available settings.",
+          option, name, section);
+      continue;
+    }
+    if (!entry_it->second->validate(value)) {
+      const auto [type, values] = entry_it->second->help();
+      LOG(message_group::Warning,
+          "Ignoring export option '%1$s': invalid value '%2$s', expected %3$s %4$s.", option, value,
+          type, values);
+      continue;
+    }
     map[section][name] = value;
   }
   return map;

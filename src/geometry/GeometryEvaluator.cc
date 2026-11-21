@@ -485,9 +485,13 @@ Response GeometryEvaluator::visit(State& state, const ColorNode& node)
       // First union all children
       ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
       if ((geom = res.constptr())) {
-        auto mutableGeom = res.asMutableGeometry();
-        if (mutableGeom) mutableGeom->setColor(node.color);
-        geom = mutableGeom;
+        // Like in preview, a color with no components set (e.g. color(undef)) leaves the
+        // colors of the children alone. A partial color (e.g. only alpha) is still applied.
+        if (node.color.hasRgb() || node.color.hasAlpha()) {
+          auto mutableGeom = res.asMutableGeometry();
+          if (mutableGeom) mutableGeom->setColor(node.color);
+          geom = mutableGeom;
+        }
       }
     } else {
       geom = smartCacheGet(node, state.preferNef());

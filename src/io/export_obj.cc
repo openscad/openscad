@@ -28,7 +28,6 @@
 #include <memory>
 #include <ostream>
 
-#include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
@@ -48,9 +47,7 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     // See: https://github.com/openscad/openscad/issues/5993
     out = PolySetUtils::tessellate_faces(*out);
   }
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    out = createSortedPolySet(*out);
-  }
+  out = createSortedPolySet(*out);
 
   output << "# OpenSCAD obj exporter\n";
 
