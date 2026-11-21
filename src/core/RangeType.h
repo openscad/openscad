@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/cast.hpp>
 #include <cmath>
 #include <cstdint>
 #include <iterator>
@@ -167,11 +168,14 @@ public:
     // whole number.
     const uint32_t max = std::numeric_limits<uint32_t>::max();
     const double steps = std::nextafter((end_val - begin_val) / step_val, max);
+    // NaN if begin or end is NaN, e.g. [0:0/0]. numeric_cast doesn't check for NaN.
     if (std::isnan(steps)) return 0;
-    // Converting a value that doesn't fit in uint32_t is undefined behavior, and x86
-    // wraps it around, so e.g. [0:2^32+2] gave 2 values instead of a warning.
-    if (steps >= max) return max;
-    const auto num_steps = static_cast<uint32_t>(steps);
+    uint32_t num_steps;
+    try {
+      num_steps = boost::numeric_cast<uint32_t>(steps);
+    } catch (const boost::bad_numeric_cast&) {
+      return max;
+    }
     return (num_steps == max) ? max : num_steps + 1;
   }
 };
