@@ -1,0 +1,2 @@
+# Test input that must keep its CRLF line endings
+tests/data/scad/customizer/crlf-line-endings.scad -text

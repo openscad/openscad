@@ -1,0 +1,79 @@
+{
+  "parameters": [
+    {
+      "caption": "combo box for string",
+      "group": "Drop down boxes",
+      "initial": "Left",
+      "name": "side",
+      "options": [
+        {
+          "name": "Left",
+          "value": "Left"
+        },
+        {
+          "name": "Right",
+          "value": "Right"
+        }
+      ],
+      "type": "string"
+    },
+    {
+      "caption": "labeled combo box for numbers",
+      "group": "Drop down boxes",
+      "initial": 20.0,
+      "name": "size",
+      "options": [
+        {
+          "name": "S",
+          "value": 10.0
+        },
+        {
+          "name": "M",
+          "value": 20.0
+        },
+        {
+          "name": "L",
+          "value": 30.0
+        }
+      ],
+      "type": "number"
+    },
+    {
+      "caption": "slider widget for number in range",
+      "group": "Sliders",
+      "initial": 20.0,
+      "max": 100.0,
+      "min": 10.0,
+      "name": "width",
+      "step": 1.0,
+      "type": "number"
+    },
+    {
+      "caption": "step slider for number",
+      "group": "Sliders",
+      "initial": 5.0,
+      "max": 100.0,
+      "min": 0.0,
+      "name": "step",
+      "step": 5.0,
+      "type": "number"
+    },
+    {
+      "caption": "spinbox with step size 0.5",
+      "group": "Other",
+      "initial": 5.5,
+      "name": "spinbox",
+      "step": 0.5,
+      "type": "number"
+    },
+    {
+      "caption": "text box for string with length 8",
+      "group": "Other",
+      "initial": "length",
+      "maxLength": 8,
+      "name": "label",
+      "type": "string"
+    }
+  ],
+  "title": "crlf-line-endings"
+}

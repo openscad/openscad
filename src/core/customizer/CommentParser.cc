@@ -81,6 +81,19 @@ static int getLineToStop(const std::string& fulltext)
 }
 
 /*
+   Returns the end of the line containing position pos: the position of
+   the '\n', or the end of the text. The '\r' of a "\r\n" line ending is
+   not part of the line.
+ */
+static std::size_t findLineEnd(const std::string& fulltext, std::size_t pos)
+{
+  std::size_t end = fulltext.find('\n', pos);
+  if (end == std::string::npos) end = fulltext.size();
+  if (end > pos && fulltext[end - 1] == '\r') end--;
+  return end;
+}
+
+/*
    Finds the given line in the given source code text, and
    extracts the comment (excluding the "//" prefix)
  */
@@ -95,8 +108,7 @@ static std::string getComment(const std::string& fulltext, int line)
     if (fulltext[start] == '\n') line--;
   }
 
-  std::size_t end = start + 1;
-  while (end < fulltext.size() && fulltext[end] != '\n') end++;
+  std::size_t end = findLineEnd(fulltext, start + 1);
 
   std::string comment = fulltext.substr(start, end - start);
 
@@ -148,7 +160,8 @@ static std::string getDescription(const std::string& fulltext, int line)
   std::string retString = "";
 
   // go till the end of the line
-  while (fulltext[start] != '\n') {
+  const std::size_t end = findLineEnd(fulltext, start);
+  while (start < end) {
     // replace // with space
     if (fulltext.compare(start, 2, "//") == 0) {
       retString += " ";
