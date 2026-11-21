@@ -29,6 +29,7 @@ public:
   void appendGeometry(const std::shared_ptr<const Geometry>& geom);
   void appendPolygon(const std::vector<int>& inds);
   void appendPolygon(const std::vector<Vector3d>& v);
+  void appendTriangle(const Vector3d& a, const Vector3d& b, const Vector3d& c);
 
   void beginPolygon(int nvertices);
   void addVertex(int ind);
