@@ -230,7 +230,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
   auto sorted_ps = createSortedPolySet(*ps);
 
   // lib3mf v1 rejects triangles that use a vertex more than once, e.g. from rotate_extrude() of a
-  // polygon touching the axis (#6716). They have no area, so leave them out, with their colors.
+  // polygon touching the axis. They have no area, so leave them out, with their colors.
   size_t kept = 0;
   for (size_t i = 0; i < sorted_ps->indices.size(); ++i) {
     const auto& t = sorted_ps->indices[i];
