@@ -4,12 +4,20 @@
 #include <QPalette>
 #include <QPushButton>
 
+#include "core/Settings.h"
+#include "gui/SettingsWriter.h"
+
+using S = Settings::SettingsExportSvg;
+
 ExportSvgDialog::ExportSvgDialog()
 {
   setupUi(this);
-  fillColor = QColor(Qt::white);
-  strokeColor = QColor(Qt::black);
-  doubleSpinBoxStrokeWidth->setValue(defaultStrokeWidth);
+  // Start with the settings from the last export (#6614)
+  checkBoxEnableFill->setChecked(S::exportSvgFill.value());
+  fillColor = QColor(QString::fromStdString(S::exportSvgFillColor.value()));
+  checkBoxEnableStroke->setChecked(S::exportSvgStroke.value());
+  strokeColor = QColor(QString::fromStdString(S::exportSvgStrokeColor.value()));
+  doubleSpinBoxStrokeWidth->setValue(S::exportSvgStrokeWidth.value());
   updateFillColor(fillColor);
   updateStrokeColor(strokeColor);
   updateFillControlsEnabled();
@@ -18,7 +26,16 @@ ExportSvgDialog::ExportSvgDialog()
 
 int ExportSvgDialog::exec()
 {
-  return QDialog::exec();
+  const auto result = QDialog::exec();
+  if (result == QDialog::Accepted) {
+    S::exportSvgFill.setValue(isFillEnabled());
+    S::exportSvgFillColor.setValue(fillColor.name().toStdString());
+    S::exportSvgStroke.setValue(isStrokeEnabled());
+    S::exportSvgStrokeColor.setValue(strokeColor.name().toStdString());
+    S::exportSvgStrokeWidth.setValue(getStrokeWidth());
+    Settings::Settings::visit(SettingsWriter());
+  }
+  return result;
 }
 
 QColor ExportSvgDialog::getFillColor() const
