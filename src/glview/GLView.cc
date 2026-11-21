@@ -579,8 +579,8 @@ void GLView::showScalemarkers(const Color4f& col)
   // Add scale ticks on large axes
   auto l = cam.zoomValue();
   // With a zero or negative distance, the tick width computed below would be zero, and
-  // the loop over the ticks would practically never end (#6780).
-  if (!(l > 0) || !std::isfinite(l)) return;
+  // the loop over the ticks would practically never end.
+  if (l <= 0 || !std::isfinite(l)) return;
   glLineWidth(this->getDPI());
   glColor3f(col.r(), col.g(), col.b());
 
