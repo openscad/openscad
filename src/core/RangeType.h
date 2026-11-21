@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/cast.hpp>
 #include <cmath>
 #include <cstdint>
 #include <iterator>
@@ -166,7 +167,13 @@ public:
     // Use nextafter to compensate for possible floating point inaccurary where result is just below a
     // whole number.
     const uint32_t max = std::numeric_limits<uint32_t>::max();
-    uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
+    const double steps = std::nextafter((end_val - begin_val) / step_val, max);
+    uint32_t num_steps;
+    try {
+      num_steps = boost::numeric_cast<uint32_t>(steps);
+    } catch (const boost::bad_numeric_cast&) {
+      return max;
+    }
     return (num_steps == max) ? max : num_steps + 1;
   }
 };
