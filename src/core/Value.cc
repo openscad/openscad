@@ -548,7 +548,7 @@ public:
     memset(buf, 0, 8);
     // Values that don't fit in a gunichar (e.g. inf) aren't valid characters, and
     // converting them would be undefined behavior.
-    if (v > 0 && v <= 0x10FFFF) {
+    if (std::isfinite(v) && v >= 0 && v <= 0x10FFFF) {
       const gunichar c = v;
       if (g_unichar_validate(c) && (c != 0)) {
         g_unichar_to_utf8(c, buf);
@@ -1283,8 +1283,8 @@ Value Value::operator<<(const Value& v) const
     if (rhs >= 64) {
       return Value::undef(STR("shift too large"));
     }
-    // Shift as unsigned: shifting a negative value, or bits out of a signed one,
-    // is undefined behavior in C++17. This wraps around like C++20 defines it.
+    // Shift as unsigned: a left shift of a negative value, or one that shifts bits out
+    // of a signed value, is undefined behavior in C++17. This wraps around like C++20.
     return (double)static_cast<int64_t>(static_cast<uint64_t>(lhs) << rhs);
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " << ", v.typeName(), ")"));

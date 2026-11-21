@@ -109,5 +109,6 @@ if (true) { a = 0x1000000000000001; }
 if (true) { a = 1152921504606846977; }
 // Expect loss-of-precision warnings, but they should convert to the same imprecise number.
 assert(0xfffffffffffffff0 == 18446744073709551600);
-// 2^64-1 rounds up to 2^64, which is out of range when converting back (no warning on arm64 before).
+// The largest 64-bit value also rounds up to 2^64. A conversion back that saturates would give
+// exactly this value, so it's the case where the imprecision is easiest to miss.
 assert(0xffffffffffffffff == 18446744073709551615);
