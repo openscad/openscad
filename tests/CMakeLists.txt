@@ -1329,12 +1329,6 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nefdbg)
 
 disable_tests_safe(
-  # Disable tests failing due to https://github.com/openscad/openscad/issues/4632
-  # relative-output_csg_run
-  # relative-output_csg_check
-  # relative-output_ast_run
-  # relative-output_ast_check
-
 ###################################
 # Disable Tests with Known Issues #
 ###################################
