@@ -75,9 +75,9 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
   int attr_count = xmlTextReaderAttributeCount(reader);
   for (int idx = 0; idx < attr_count; ++idx) {
     xmlTextReaderMoveToAttributeNo(reader, idx);
-    const char *name = reinterpret_cast<const char *>(xmlTextReaderName(reader));
-    const char *value = reinterpret_cast<const char *>(xmlTextReaderValue(reader));
-    attrs[name] = value;
+    const auto *name = reinterpret_cast<const char *>(xmlTextReaderConstName(reader));
+    const auto *value = reinterpret_cast<const char *>(xmlTextReaderConstValue(reader));
+    if (name) attrs[name] = value ? value : "";
   }
   return attrs;
 }
@@ -85,11 +85,11 @@ attr_map_t read_attributes(xmlTextReaderPtr reader)
 void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
                  shapes_list_t *temp_defs_storage, void *context)
 {
-  const char *name = reinterpret_cast<const char *>(xmlTextReaderName(reader));
-  if (name == nullptr) name = reinterpret_cast<const char *>(xmlStrdup(BAD_CAST "--"));
+  const char *name = reinterpret_cast<const char *>(xmlTextReaderConstName(reader));
+  if (name == nullptr) name = "--";
 
   bool isEmpty;
-  xmlChar *value = xmlTextReaderValue(reader);
+  const xmlChar *value = xmlTextReaderConstValue(reader);
   int node_type = xmlTextReaderNodeType(reader);
   switch (node_type) {
   case XML_READER_TYPE_ELEMENT: isEmpty = xmlTextReaderIsEmptyElement(reader); {
@@ -168,7 +168,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
   } break;
   case XML_READER_TYPE_TEXT: {
     attr_map_t attrs;
-    attrs["text"] = reinterpret_cast<const char *>(value);
+    attrs["text"] = value ? reinterpret_cast<const char *>(value) : "";
     auto s = std::shared_ptr<shape>(shape::create_from_name("data"));
     if (!stack.empty()) {
       stack.back()->add_child(s.get());
@@ -181,9 +181,6 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list,
     }
   } break;
   }
-
-  xmlFree(value);
-  xmlFree((void *)(name));
 }
 
 // Never load any external entity or DTD.
@@ -215,13 +212,15 @@ private:
 
 int streamFile(const char *filename, void *context)
 {
-  xmlTextReaderPtr reader;
   // The temp storage is needed for items in a def that don't have an id, but have a parent with an id
   shapes_list_t temp_defs_storage;
   shapes_defs_list_t defs_lookup_list;
 
   in_defs = false;
-  reader = xmlNewTextReaderFilename(filename);
+  // Also freed when processNode() throws.
+  const std::unique_ptr<xmlTextReader, decltype(&xmlFreeTextReader)> reader_ptr(
+    xmlNewTextReaderFilename(filename), &xmlFreeTextReader);
+  xmlTextReaderPtr reader = reader_ptr.get();
   if (reader != nullptr) {
     // Disable expansion of XML entities and external loading.
     xmlTextReaderSetParserProp(reader, XML_PARSER_SUBST_ENTITIES, 0);
@@ -233,7 +232,6 @@ int streamFile(const char *filename, void *context)
       processNode(reader, &defs_lookup_list, &temp_defs_storage, context);
       ret = xmlTextReaderRead(reader);
     }
-    xmlFreeTextReader(reader);
     if (ret != 0) {
       throw SvgException((boost::format("Error parsing file '%1%'") % filename).str());
     }
