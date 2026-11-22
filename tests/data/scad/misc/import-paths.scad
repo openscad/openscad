@@ -7,6 +7,10 @@
 // This main file imports the STL relative to itself, and that's what ends up in the CSG.
 // The included file, however, imports that same STL relative to *itself*, as ../.../../stl/empty.stl,
 // and ends up in the CSG relative to *this* file, as ../../stl/empty.stl.
+
+// Note:  empty.stl isn't a valid STL, and yields an error if we ever get to creating geometry
+// as part of a preview or render.  However, this is a CSG dump test and it never reaches
+// geometry creation.
 import("../../stl/empty.stl");
 
 include <sub1/import-included.scad>
