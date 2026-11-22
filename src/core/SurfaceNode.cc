@@ -71,7 +71,7 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
   auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string());
-  node->filename = filename;
+  node->filename = Filename(filename, parameters.documentRoot());
   handle_dep(fs::path(filename).generic_string());
 
   if (parameters["center"].type() == Value::Type::BOOL) {
@@ -232,7 +232,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 // FIXME: Look for faster way to generate PolySet directly
 std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
-  auto data = read_png_or_dat(filename);
+  auto data = read_png_or_dat(filename.name());
 
   int lines = data.height;
   int columns = data.width;
@@ -314,7 +314,7 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 std::string SurfaceNode::toString() const
 {
   std::ostringstream stream;
-  fs::path path{static_cast<std::string>(this->filename)};  // gcc-4.6
+  fs::path path{static_cast<std::string>(this->filename.name())};  // gcc-4.6
 
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")

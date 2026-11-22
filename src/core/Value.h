@@ -31,11 +31,19 @@ public:
 };
 std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
 
-class Filename : public QuotedString
+class Filename
 {
 public:
-  Filename() : QuotedString() {}
-  Filename(const std::string& f) : QuotedString(f) {}
+  Filename() {}
+  Filename(const std::string& f, const std::string& documentRoot) : name_(f),
+    documentRoot_(documentRoot) {
+  }
+  const std::string& name() const { return name_; }
+  const std::string& documentRoot() const { return documentRoot_; }
+
+private:
+  QuotedString name_;
+  std::string documentRoot_;
 };
 std::ostream& operator<<(std::ostream& stream, const Filename& filename);
 

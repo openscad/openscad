@@ -99,7 +99,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   auto node =
     std::make_shared<ImportNode>(inst, actualtype, CurveDiscretizer(parameters, inst->location()));
 
-  node->filename = filename;
+  node->filename = Filename(filename, parameters.documentRoot());
   const auto& layerval = parameters["layer"];
   if (layerval.isDefined()) {
     node->layer = layerval.toString();
@@ -200,35 +200,35 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 
   switch (this->type) {
   case ImportType::STL: {
-    g = optionally_center(import_stl(this->filename, loc), this->center);
+    g = optionally_center(import_stl(this->filename.name(), loc), this->center);
     break;
   }
   case ImportType::_3MF: {
-    g = optionally_center(import_3mf(this->filename, loc), this->center);
+    g = optionally_center(import_3mf(this->filename.name(), loc), this->center);
     break;
   }
   case ImportType::OFF: {
-    g = optionally_center(import_off(this->filename, loc), this->center);
+    g = optionally_center(import_off(this->filename.name(), loc), this->center);
     break;
   }
   case ImportType::OBJ: {
-    g = optionally_center(import_obj(this->filename, loc), this->center);
+    g = optionally_center(import_obj(this->filename.name(), loc), this->center);
     break;
   }
   case ImportType::SVG: {
-    g =
-      import_svg(this->discretizer, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    g = import_svg(this->discretizer, this->filename.name(), this->id, this->layer, this->dpi,
+                   this->center, loc);
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->discretizer, this->filename, this->layer.value_or(""), this->origin_x,
+    DxfData dd(this->discretizer, this->filename.name(), this->layer.value_or(""), this->origin_x,
                this->origin_y, this->scale);
     g = optionally_center(dd.toPolygon2d(), this->center);
     break;
   }
 #ifdef ENABLE_CGAL
   case ImportType::NEF3: {
-    auto nef_geom = import_nef3(this->filename, loc);
+    auto nef_geom = import_nef3(this->filename.name(), loc);
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       if (!nef_geom->isEmpty()) {
@@ -252,7 +252,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   default:
     LOG(message_group::Error,
         "Unsupported file format while trying to import file '%1$s', import() at line %2$d",
-        this->filename, loc.firstLine());
+        this->filename.name(), loc.firstLine());
     g = PolySet::createEmpty();
   }
 
@@ -263,7 +263,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 std::string ImportNode::toString() const
 {
   std::ostringstream stream;
-  fs::path path((std::string)this->filename);
+  fs::path path((std::string)this->filename.name());
 
   stream << this->name();
   stream << "(file = " << this->filename;

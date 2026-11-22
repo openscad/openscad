@@ -466,21 +466,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   Tree tree(root_node, fparent.string());
 
   if (export_format == FileFormat::CSG) {
-    // https://github.com/openscad/openscad/issues/128
-    // When I use the csg ouptput from the command line the paths in 'import'
-    // statements become relative. But unfortunately they become relative to
-    // the current working dir and neither to the location of the input nor
-    // the output.
-    change_current_path(fparent);  // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream& stream) {
       stream << tree.getString(*root_node, "\t") << "\n";
     });
-    change_current_path(cmd.original_path);
   } else if (export_format == FileFormat::AST) {
-    change_current_path(fparent);  // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str,
                 [root_file](std::ostream& stream) { stream << root_file->dump(""); });
-    change_current_path(cmd.original_path);
   } else if (export_format == FileFormat::PARAM) {
     with_output(cmd.is_stdout, filename_str,
                 [&root_file, &fpath](std::ostream& stream) { export_param(root_file, fpath, stream); });

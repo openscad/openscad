@@ -194,8 +194,8 @@ static uint32_t convert_to_uint32(const double d)
 
 std::ostream& operator<<(std::ostream& stream, const Filename& filename)
 {
-  fs::path fnpath{static_cast<std::string>(filename)};  // gcc-4.6
-  auto fpath = fs_uncomplete(fnpath, fs::current_path());
+  fs::path fnpath{static_cast<std::string>(filename.name())};  // gcc-4.6
+  auto fpath = fs_uncomplete(fnpath, filename.documentRoot());
   stream << QuotedString(fpath.generic_string());
   return stream;
 }
