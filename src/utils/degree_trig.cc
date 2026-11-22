@@ -157,8 +157,7 @@ double tan_degrees(double x)
   } else if (x == 60.0) {
     x = M_SQRT3;
   } else if (x == 90.0) {
-    x = even_cycles ? std::numeric_limits<double>::infinity()
-                          : -std::numeric_limits<double>::infinity();
+    x = even_cycles ? std::numeric_limits<double>::infinity() : -std::numeric_limits<double>::infinity();
   } else {
     x = tan(deg2rad(x));
   }
