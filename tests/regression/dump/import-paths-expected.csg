@@ -1,0 +1,3 @@
+import(file = "../../stl/empty.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4642345213);
+import(file = "../../stl/empty.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4642345213);
+
