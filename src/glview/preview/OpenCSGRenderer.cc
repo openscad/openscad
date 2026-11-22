@@ -117,10 +117,8 @@ void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
 #ifdef ENABLE_OPENCSG
-  // Only use shader if select rendering or showedges
-  bool enable_shader =
-    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
+  bool enable_shader = shaderinfo && (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING ||
+                                      shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
 
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
@@ -136,7 +134,15 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
     if (enable_shader) {
       GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
       GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
-      VBOUtils::shader_attribs_enable(*shaderinfo);
+      if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
+        GL_TRACE("glUniform1i(%d, %d)", shaderinfo->uniforms.at("show_edges") % showedges);
+        GL_CHECKD(glUniform1i(shaderinfo->uniforms.at("show_edges"), showedges));
+        if (showedges) {
+          VBOUtils::shader_attribs_enable(*shaderinfo);
+        }
+      } else {
+        VBOUtils::shader_attribs_enable(*shaderinfo);
+      }
     }
 
     for (const auto& vertex_state : product->states()) {
@@ -163,7 +169,9 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
     if (enable_shader) {
       GL_TRACE0("glUseProgram(0)");
       GL_CHECKD(glUseProgram(0));
-      VBOUtils::shader_attribs_disable(*shaderinfo);
+      if (shaderinfo->type != ShaderUtils::ShaderType::EDGE_RENDERING || showedges) {
+        VBOUtils::shader_attribs_disable(*shaderinfo);
+      }
     }
     GL_TRACE0("glDepthFunc(GL_LEQUAL)");
     GL_CHECKD(glDepthFunc(GL_LEQUAL));

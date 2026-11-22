@@ -1,5 +1,7 @@
 #version 120
 
+uniform bool show_edges;
+
 varying vec4 color;
 varying vec3 vBC;
 varying float shading;
@@ -19,6 +21,11 @@ float edgeFactor() {
 }
 
 void main(void) {
-  vec4 color_edge = vec4((color.rgb + vec3(1))/2, 1.0);
-  gl_FragColor = mix(color_edge, vec4(color.rgb * shading, color.a), edgeFactor());
+  vec4 color_shaded = vec4(color.rgb * shading, color.a);
+  if (show_edges) {
+    vec4 color_edge = vec4((color.rgb + vec3(1))/2, 1.0);
+    gl_FragColor = mix(color_edge, color_shaded, edgeFactor());
+  } else {
+    gl_FragColor = color_shaded;
+  }
 }
