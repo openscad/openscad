@@ -287,7 +287,7 @@ void ColorList::updateSelectedColor()
 {
   QPalette defaultPalette;
   const auto styleSheet = QString("QLineEdit { color: %1; background-color: %2; }");
-  const auto name = selectedColorLabel ? selectedColorLabel->text() : "";
+  const auto name = selectedColorLabel ? selectedColorLabel->colorName() : "";
   const auto colorRgb = selectedColorLabel ? selectedColorLabel->backgroundColor().name() : "";
   const auto colorRgbR =
     selectedColorLabel ? QString::number(selectedColorLabel->backgroundColor().red()) : "";
