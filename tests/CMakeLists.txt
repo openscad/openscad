@@ -1415,10 +1415,6 @@ disable_tests_safe(
   preview-cgal_surface_image
   throwntogether-cgal_surface_image
 
-  # https://github.com/openscad/openscad/issues/5158
-  #render-cgal_example017
-  #throwntogether-cgal_example017
-
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text
 

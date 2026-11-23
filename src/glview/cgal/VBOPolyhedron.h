@@ -199,6 +199,10 @@ public:
     TessUserData tess_data = {0, f->normal(), getFacetColor(f), 0, 0, 0, 0, 0, vbo_builder};
 
     gluTessBeginPolygon(tess_, &tess_data);
+    // Explicitly provide the Nef halffacet normal: with GLU_TESS_WINDING_POSITIVE, omitting this
+    // makes libtess estimate the normal from contour vertices, where floating-point noise on
+    // collinear split vertices can invert the normal and silently cull the facet (see #5158).
+    gluTessNormal(tess_, f->dx(), f->dy(), f->dz());
     // forall facet cycles of f:
     for (unsigned i = 0; i < f->number_of_facet_cycles(); ++i) {
       gluTessBeginContour(tess_);
