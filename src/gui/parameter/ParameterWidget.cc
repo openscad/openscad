@@ -105,13 +105,19 @@ void ParameterWidget::readFile(const QString& scadFile)
 
 // Write the json file if the parameter sets are not empty.
 // This prevents creating unnecessary json files.
+// If there are no parameter sets, remove a json file left over from earlier
+// saves, so that deleted parameter sets don't come back on the next load.
 void ParameterWidget::saveFile(const QString& scadFile)
 {
+  QString jsonFile = getJsonFile(scadFile);
   if (sets.empty()) {
+    // Keep a json file we failed to read, the user may still want to recover it.
+    if (jsonFile != this->invalidJsonFile) {
+      QFile::remove(jsonFile);
+    }
     return;
   }
 
-  QString jsonFile = getJsonFile(scadFile);
   if (jsonFile == this->invalidJsonFile) {
     QMessageBox msgBox;
     msgBox.setWindowTitle(_("Saving presets"));
