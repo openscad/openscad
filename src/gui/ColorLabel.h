@@ -39,6 +39,7 @@ public:
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseDoubleClickEvent(QMouseEvent *event) override;
 
+  QString colorName() const;
   QString labelText();
   void setColorInfo(const QString& message, const QColor& bgColor);
   void setSelected(const bool selected);

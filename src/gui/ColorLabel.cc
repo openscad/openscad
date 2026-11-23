@@ -115,14 +115,19 @@ void ColorLabel::mouseMoveEvent(QMouseEvent *event)
   drag->exec(Qt::CopyAction);
 }
 
+QString ColorLabel::colorName() const
+{
+  const auto isXkcdColorMap =
+    property(PROPERTY_COLOR_MAP_NAME).toString() == OpenSCAD::COLOR_MAP_NAME_XKCD_COLORS;
+  return isXkcdColorMap ? QString("xkcd:%1").arg(text()) : text();
+}
+
 QString ColorLabel::labelText()
 {
   const auto isShift = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
-  const auto isXkcdColorMap =
-    property(PROPERTY_COLOR_MAP_NAME).toString() == OpenSCAD::COLOR_MAP_NAME_XKCD_COLORS;
   const auto rightButton = QApplication::mouseButtons() == Qt::RightButton;
   const auto tmpl = isShift || rightButton ? QString("color(\"%1\") ") : QString("\"%1\"");
-  return tmpl.arg(isXkcdColorMap ? QString("xkcd:%1").arg(text()) : text());
+  return tmpl.arg(colorName());
 }
 
 void ColorLabel::setColorInfo(const QString& name, const QColor& color)
