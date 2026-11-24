@@ -139,7 +139,7 @@ void ParameterWidget::saveFile(const QString& scadFile)
   }
 
   if (sets.empty()) {
-    QFile::remove(jsonFile);
+    ParameterSets::removeFile(jsonFile.toStdString());
     return;
   }
 
