@@ -132,6 +132,8 @@ static std::string getComment(const std::string& fulltext, int line)
   if (startText + 2 > comment.length()) return "";
 
   std::string result = comment.substr(startText + 2);
+  // Files with CRLF line endings leave a \r at the end, which the annotation parser rejects.
+  if (!result.empty() && result.back() == '\r') result.pop_back();
   return result;
 }
 
@@ -171,6 +173,7 @@ static std::string getDescription(const std::string& fulltext, int line)
     }
     start++;
   }
+  if (!retString.empty() && retString.back() == '\r') retString.pop_back();
   return retString;
 }
 
