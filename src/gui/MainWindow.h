@@ -257,6 +257,7 @@ private:
 public slots:
   void updateExportActions();
   void updateRecentFiles(const QString& FileSavedOrOpened);
+  void updateDockTitles();
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
 

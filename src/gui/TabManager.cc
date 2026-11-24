@@ -532,6 +532,7 @@ void TabManager::openTabFile(const QString& filename)
   auto [fname, fpath] = getEditorTabNameWithModifier(editor);
   setEditorTabName(fname, fpath, editor);
   parent->setWindowTitle(fname);
+  parent->updateDockTitles();
   editor->clearTemporaryFile();
 
   emit editorContentReloaded(editor);
@@ -768,6 +769,7 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
     auto [fname, fpath] = getEditorTabNameWithModifier(edt);
     setEditorTabName(fname, fpath, edt);
     parent->setWindowTitle(fname);
+    parent->updateDockTitles();
     edt->clearTemporaryFile();
   }
   return saveOk;

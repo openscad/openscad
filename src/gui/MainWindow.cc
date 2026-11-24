@@ -3143,6 +3143,19 @@ void MainWindow::on_editActionFoldAll_triggered()
   activeEditor->foldUnfold();
 }
 
+// Shows the name of the current file in the titles of undocked docks.
+void MainWindow::updateDockTitles()
+{
+  const QString name = getCurrentFileName();
+  consoleDock->setNameSuffix(name);
+  errorLogDock->setNameSuffix(name);
+  animateDock->setNameSuffix(name);
+  fontListDock->setNameSuffix(name);
+  colorListDock->setNameSuffix(name);
+  viewportControlDock->setNameSuffix(name);
+  parameterDock->setNameSuffix(name);
+}
+
 QString MainWindow::getCurrentFileName() const
 {
   if (activeEditor == nullptr) return {};
@@ -3229,15 +3242,8 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   parameterDock->setWidget(newEditor->parameterWidget);
   editActionUndo->setEnabled(newEditor->canUndo());
 
-  const QString name = getCurrentFileName();
-  setWindowTitle(name);
-
-  consoleDock->setNameSuffix(name);
-  errorLogDock->setNameSuffix(name);
-  animateDock->setNameSuffix(name);
-  fontListDock->setNameSuffix(name);
-  colorListDock->setNameSuffix(name);
-  viewportControlDock->setNameSuffix(name);
+  setWindowTitle(getCurrentFileName());
+  updateDockTitles();
 
   // If there is no renderedEditor we request for a new preview if the
   // auto-reload is enabled.
