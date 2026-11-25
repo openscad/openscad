@@ -24,8 +24,6 @@
  *
  */
 
-#include <double-conversion/double-conversion.h>
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -54,36 +52,6 @@
 #endif
 
 namespace {
-/* Define values for double-conversion library. */
-#define DC_BUFFER_SIZE (128)
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO)
-#define DC_INF NULL  // Only finite values in STL outputs!
-#define DC_NAN NULL
-#define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP (-6)
-#define DC_DECIMAL_HIGH_EXP (21)
-#define DC_MAX_LEADING_ZEROES (5)
-#define DC_MAX_TRAILING_ZEROES (0)
-
-std::string toString(const Vector3d& v)
-{
-  const double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-                                                      DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-                                                      DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-
-  char buffer[DC_BUFFER_SIZE];
-
-  double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-  dc.ToShortest(v[0], &builder);
-  builder.AddCharacter(' ');
-  dc.ToShortest(v[1], &builder);
-  builder.AddCharacter(' ');
-  dc.ToShortest(v[2], &builder);
-  builder.Finalize();
-
-  return buffer;
-}
-
 int32_t flipEndianness(int32_t x)
 {
   return ((x << 24) & 0xff000000) | ((x >> 24) & 0xff) | ((x << 8) & 0xff0000) | ((x >> 8) & 0xff00);
@@ -126,7 +94,7 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
   if (!binary) {
     vertexStrings.resize(ps->vertices.size());
     std::transform(ps->vertices.begin(), ps->vertices.end(), vertexStrings.begin(),
-                   [](const auto& p) { return toString(p); });
+                   [](const auto& p) { return formatExportVector(p); });
   }
 
   // Used for binary mode only
@@ -169,7 +137,7 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
       assert(s0 != s1 && s0 != s2 && s1 != s2);
 
       output << "  facet normal ";
-      output << toString(normal) << "\n";
+      output << formatExportVector(normal) << "\n";
       output << "    outer loop\n";
       output << "      vertex " << s0 << "\n";
       output << "      vertex " << s1 << "\n";

@@ -366,4 +366,7 @@ bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const Vi
 bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
+// Format a vector as three space-separated, shortest round-trip decimals.
+std::string formatExportVector(const Vector3d& v);
+
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);
