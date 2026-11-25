@@ -397,7 +397,7 @@ struct NumericLimits {
   boost::optional<double> step;
 };
 static NumericLimits parseNumericLimits(const std::string& name, const Expression *parameter,
-                                        const Location& location, const std::string& docPath,
+                                        const Location& location, const fs::path& docPath,
                                         const std::vector<double>& values)
 {
   NumericLimits output;
@@ -453,7 +453,7 @@ static NumericLimits parseNumericLimits(const std::string& name, const Expressio
 }
 
 std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment,
-                                                                 const std::string& docPath)
+                                                                 const fs::path& docPath)
 {
   std::string name = assignment->getName();
 
@@ -552,7 +552,7 @@ ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile)
   // stable docPath: an empty one makes Location::toRelativeString() fall back
   // to the current working directory (see fs_uncomplete()), which is neither
   // stable across invocations nor meaningful to the person reading the warning.
-  const auto docPath = fs::path(sourceFile->getFullpath()).parent_path().generic_string();
+  const auto docPath = sourceFile->getFullpath().parent_path();
 
   ParameterObjects output;
   for (const auto& assignment : sourceFile->scope->assignments) {

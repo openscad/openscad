@@ -4,6 +4,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #include "core/str_utf8_wrapper.h"
 
@@ -22,6 +25,6 @@ private:
 class ParameterSets : public std::vector<ParameterSet>
 {
 public:
-  bool readFile(const std::string& filename);
-  void writeFile(const std::string& filename) const;
+  bool readFile(const fs::path& filename);
+  void writeFile(const fs::path& filename) const;
 };

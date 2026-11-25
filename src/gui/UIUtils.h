@@ -57,7 +57,7 @@ static const int maxRecentFiles = 10;
 
 QFileInfo openFile(QWidget *parent = nullptr, QStringList extensions = {});
 
-QFileInfoList openFiles(QWidget *parent = nullptr, QStringList extensions = {});
+std::vector<fs::path> openFiles(QWidget *parent = nullptr, QStringList extensions = {});
 
 QStringList recentFiles();
 
@@ -92,4 +92,6 @@ QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& ble
 
 void dumpSaveState(const QByteArray& data);
 
+fs::path QStringToPath(const QString& filename);
+QString pathToQString(const fs::path& filename);
 }  // namespace UIUtils

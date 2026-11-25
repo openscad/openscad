@@ -7,6 +7,7 @@
 #include <string>
 
 #include "io/fileutils.h"
+#include "utils/printutils.h"
 
 const Location Location::NONE(0, 0, 0, 0, std::make_shared<fs::path>(fs::path{}));
 
@@ -27,13 +28,13 @@ bool Location::isNone() const
   return ((*this) == Location::NONE);
 }
 
-std::string Location::toRelativeString(const std::string& docPath) const
+std::string Location::toRelativeString(const fs::path& docPath) const
 {
   if (this->isNone()) return "location unknown";
   if ((*path).empty()) {
     return "on line " + std::to_string(this->firstLine());
   } else {
-    return "in file " + fs_generic_string(fs_uncomplete((*path), docPath)) + ", " + "line " +
+    return "in file " + unquotePath(fs_uncomplete((*path), docPath)) + ", " + "line " +
            std::to_string(this->firstLine());
   }
 }

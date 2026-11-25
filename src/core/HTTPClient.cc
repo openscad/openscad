@@ -133,7 +133,7 @@ bool check_default_cert_path()
   }
   auto pathExists = [](const char *path) {
     std::error_code ec;
-    return path && std::filesystem::exists(path, ec);
+    return path && fs::exists(path, ec);
   };
   return pathExists(file) || pathExists(dir);
 }

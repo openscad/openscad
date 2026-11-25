@@ -37,7 +37,7 @@
 #include "gui/ScintillaEditor.h"
 #include "utils/printutils.h"
 
-TabManager::TabManager(MainWindow *o, const QString& filename)
+TabManager::TabManager(MainWindow *o, const fs::path& filename)
 {
   parent = o;
 
@@ -146,7 +146,7 @@ void TabManager::actionNew()
   createTab("");
 }
 
-void TabManager::open(const QString& filename)
+void TabManager::open(const fs::path& filename)
 {
   assert(!filename.isEmpty());
 
@@ -157,7 +157,7 @@ void TabManager::open(const QString& filename)
     }
   }
 
-  if (editor->filepath.isEmpty() && !editor->isContentModified() &&
+  if (editor->filepath.empty() && !editor->isContentModified() &&
       !editor->parameterWidget->isModified()) {
     openTabFile(filename);
   } else {
@@ -165,7 +165,7 @@ void TabManager::open(const QString& filename)
   }
 }
 
-void TabManager::createTab(const QString& filename)
+void TabManager::createTab(const fs::path& filename)
 {
   assert(parent != nullptr);
 
@@ -223,7 +223,7 @@ void TabManager::createTab(const QString& filename)
           &TabManager::onHyperlinkIndicatorClicked);
 
   // Fill the editor with the content of the file
-  if (filename.isEmpty()) {
+  if (filename.empty()) {
     editor->filepath = "";
   } else {
     openTabFile(filename);
@@ -341,7 +341,7 @@ void TabManager::updateActionUndoState()
 
 void TabManager::onHyperlinkIndicatorClicked(int val)
 {
-  const QString filename = QString::fromStdString(editor->indicatorData[val].path);
+  const fs::path filename = editor->indicatorData[val].path;
   this->open(filename);
 }
 
@@ -369,7 +369,7 @@ void TabManager::copyFileName()
 {
   applyAction(QObject::sender(), [](int, EditorInterface *edt) {
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(QFileInfo(edt->filepath).fileName());
+    clipboard->setText(UIUtils::pathToQString(edt->filepath.filename()));
   });
 }
 
@@ -377,16 +377,16 @@ void TabManager::copyFilePath()
 {
   applyAction(QObject::sender(), [](int, EditorInterface *edt) {
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(edt->filepath);
+    clipboard->setText(UIUtils::pathToQString(edt->filepath));
   });
 }
 
 void TabManager::openFolder()
 {
   applyAction(QObject::sender(), [](int, EditorInterface *edt) {
-    auto dir = QFileInfo(edt->filepath).dir();
-    if (dir.exists()) {
-      QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
+    auto dir = edt->filepath.parent_path();
+    if (fs::exists(dir)) {
+      QDesktopServices::openUrl(QUrl::fromLocalFile(UIUtils::pathToQString(fs::absolute(dir))));
     }
   });
 }
@@ -432,19 +432,19 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 
   auto *copyFileNameAction = new QAction(tabWidget);
   copyFileNameAction->setData(idx);
-  copyFileNameAction->setEnabled(!edt->filepath.isEmpty());
+  copyFileNameAction->setEnabled(!edt->filepath.empty());
   copyFileNameAction->setText(_("Copy file name"));
   connect(copyFileNameAction, &QAction::triggered, this, &TabManager::copyFileName);
 
   auto *copyFilePathAction = new QAction(tabWidget);
   copyFilePathAction->setData(idx);
-  copyFilePathAction->setEnabled(!edt->filepath.isEmpty());
+  copyFilePathAction->setEnabled(!edt->filepath.empty());
   copyFilePathAction->setText(_("Copy full path"));
   connect(copyFilePathAction, &QAction::triggered, this, &TabManager::copyFilePath);
 
   auto *openFolderAction = new QAction(tabWidget);
   openFolderAction->setData(idx);
-  openFolderAction->setEnabled(!edt->filepath.isEmpty());
+  openFolderAction->setEnabled(!edt->filepath.empty());
   openFolderAction->setText(_("Open Folder"));
   connect(openFolderAction, &QAction::triggered, this, &TabManager::openFolder);
 
@@ -504,28 +504,31 @@ void TabManager::onTabModified(EditorInterface *edt)
   setEditorTabName(fname, fpath, edt);
 }
 
-void TabManager::openTabFile(const QString& filename)
+void TabManager::openTabFile(const fs::path& filename)
 {
 #ifdef ENABLE_PYTHON
-  if (boost::algorithm::ends_with(filename, ".py")) {
+  if (filename.extension() == ".py") {
     std::string templ = "from openscad import *\n";
   } else
 #endif
     editor->setPlainText("");
 
-  QFileInfo fileinfo(filename);
-  const auto suffix = fileinfo.suffix().toLower();
+  // Is there a toLower for std::string?
+  auto suffix = QString::fromStdString(filename.extension().u8string()).toLower();
+  if (!suffix.isEmpty()) suffix = suffix.mid(1);
   const auto knownFileType = Importer::knownFileExtensions.contains(suffix);
   if (!knownFileType) return;
 
   const auto cmd = Importer::knownFileExtensions[suffix];
   if (cmd.isEmpty()) {
-    editor->filepath = fileinfo.absoluteFilePath();
-    editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
+    fs::path abspath = fs::absolute(filename);
+    editor->filepath = abspath;
+    editor->parameterWidget->readFile(abspath);
+    // NEEDSWORK Is this the right thing to put in Recent Files, or should it be absolute?
     parent->updateRecentFiles(filename);
   } else {
-    editor->filepath = "";
-    editor->setPlainText(cmd.arg(filename));
+    editor->filepath = fs::path{};
+    editor->setPlainText(cmd.arg(UIUtils::pathToQString(filename)));
   }
   refreshDocument();
 
@@ -539,29 +542,28 @@ void TabManager::openTabFile(const QString& filename)
 
 std::tuple<QString, QString> TabManager::getEditorTabName(EditorInterface *edt)
 {
-  QString fname = edt->filepath;
-  QString fpath = edt->filepath;
-  QFileInfo fileinfo(edt->filepath);
-  if (!edt->filepath.isEmpty()) {
-    fname = fileinfo.fileName().replace("&", "&&");
-    fpath = fileinfo.filePath();
+  QString tabName;
+  QString toolTip;
+  if (!edt->filepath.empty()) {
+    tabName = UIUtils::pathToQString(edt->filepath.filename()).replace("&", "&&");
+    toolTip = UIUtils::pathToQString(edt->filepath);
   } else {
-    fname = "Untitled.scad";
-    fpath = "Untitled.scad";
+    tabName = "Untitled.scad";
+    toolTip = "Untitled.scad";
   }
-  return {fname, fpath};
+  return {tabName, toolTip};
 }
 
 std::tuple<QString, QString> TabManager::getEditorTabNameWithModifier(EditorInterface *edt)
 {
-  auto [fname, fpath] = getEditorTabName(edt);
+  auto [tabName, toolTip] = getEditorTabName(edt);
 
   // Add the "modification" star if it was changed.
   bool isDirty = edt->isContentModified() || edt->parameterWidget->isModified();
 
-  if (isDirty) fname += "*";
+  if (isDirty) tabName += "*";
 
-  return {fname, fpath};
+  return {tabName, toolTip};
 }
 
 void TabManager::setEditorTabName(const QString& tabName, const QString& tabToolTip,
@@ -575,10 +577,10 @@ void TabManager::setEditorTabName(const QString& tabName, const QString& tabTool
 bool TabManager::refreshDocument()
 {
   bool file_opened = false;
-  if (!editor->filepath.isEmpty()) {
-    QFile file(editor->filepath);
+  if (!editor->filepath.empty()) {
+    QFile file(UIUtils::pathToQString(editor->filepath));
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      LOG("Failed to open file %1$s: %2$s", editor->filepath.toStdString(),
+      LOG("Failed to open file %1$s: %2$s", quotePath(editor->filepath),
           file.errorString().toStdString());
     } else {
       QTextStream reader(&file);
@@ -586,7 +588,7 @@ bool TabManager::refreshDocument()
       reader.setCodec("UTF-8");
 #endif
       auto text = reader.readAll();
-      LOG("Loaded design '%1$s'.", editor->filepath.toStdString());
+      LOG("Loaded design %1$s.", quotePath(editor->filepath));
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState();  // since last render
@@ -661,15 +663,14 @@ bool TabManager::shouldClose()
   return true;
 }
 
-void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)
+void TabManager::saveError(const QIODevice& file, const std::string& msg, const fs::path& filepath)
 {
-  const std::string fileName = filepath.toStdString();
-  LOG("%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toStdString());
+  LOG("%1$s %2$s (%3$s)", msg.c_str(), quotePath(filepath), file.errorString().toStdString());
 
   const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
   const QString dialogFormat(dialogFormatStr.c_str());
   QMessageBox::warning(parent, parent->windowTitle(),
-                       dialogFormat.arg(filepath).arg(file.errorString()));
+                       dialogFormat.arg(UIUtils::pathToQString(filepath)).arg(file.errorString()));
 }
 
 /*!
@@ -681,14 +682,14 @@ bool TabManager::save(EditorInterface *edt)
 {
   assert(edt != nullptr);
   auto guard = parent->scopedSetCurrentOutput();
-  if (edt->filepath.isEmpty()) {
+  if (edt->filepath.empty()) {
     return saveAs(edt);
   } else {
     return save(edt, edt->filepath);
   }
 }
 
-bool TabManager::save(EditorInterface *edt, const QString& path)
+bool TabManager::save(EditorInterface *edt, const fs::path& path)
 {
   // If available (>= Qt 5.1), use QSaveFile to ensure the file is not
   // destroyed if the device is full. Unfortunately this is not working
@@ -698,7 +699,7 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
   // this condition.
   // FIXME jeff hayes - i have recently seen a better way to handle this, when i have found that note
   // again i will revist this
-  QSaveFile file(path);
+  QSaveFile file(UIUtils::pathToQString(path));
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
     return false;
@@ -717,7 +718,7 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     file.cancelWriting();
   }
   if (saveOk) {
-    LOG("Saved design '%1$s'.", path.toStdString());
+    LOG("Saved design %1$s.", quotePath(path));
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);
@@ -733,24 +734,23 @@ bool TabManager::saveAs(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename =
-    QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
-  if (filename.isEmpty()) {
+  const auto dir = edt->filepath.empty() ? fs::path(_("Untitled.scad")) : edt->filepath;
+  auto filename = UIUtils::QStringToPath(QFileDialog::getSaveFileName(
+    parent, _("Save File"), UIUtils::pathToQString(dir), _("OpenSCAD Designs (*.scad)")));
+  if (filename.empty()) {
     return false;
   }
 
   auto guard = parent->scopedSetCurrentOutput();
 
-  if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+  if (filename.extension().empty()) {
+    filename.replace_extension(".scad");
 
     // Manual overwrite check since Qt doesn't do it, when using the
     // defaultSuffix property
-    const QFileInfo info(filename);
-    if (info.exists()) {
-      const auto text =
-        QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+    if (fs::exists(filename)) {
+      const auto text = QString(_("%1 already exists.\nDo you want to replace it?"))
+                          .arg(UIUtils::pathToQString(filename));
       if (QMessageBox::warning(parent, parent->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
                                QMessageBox::No) != QMessageBox::Yes) {
         return false;
@@ -761,7 +761,7 @@ bool TabManager::saveAs(EditorInterface *edt)
   return saveAs(edt, filename);
 }
 
-bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
+bool TabManager::saveAs(EditorInterface *edt, const fs::path& filepath)
 {
   bool saveOk = save(edt, filepath);
   if (saveOk) {
@@ -783,14 +783,20 @@ bool TabManager::saveACopy(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  const QString path = edt->filepath;
+  const fs::path path = edt->filepath;
 
   QDir dir(_("Untitled.scad"));
 
-  if (!path.isEmpty()) {
-    QFileInfo info(path);
-    QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
-    dir.setPath(filecopy);
+  if (!path.empty()) {
+    fs::path leafname = path.filename();
+    leafname.replace_extension("");
+    leafname += "_copy";
+    leafname.replace_extension(path.extension());
+
+    fs::path filecopy = fs::absolute(path);
+    filecopy.replace_filename(leafname);
+
+    dir.setPath(UIUtils::pathToQString(filecopy));
   }
 
   QFileDialog saveCopyDialog;
@@ -808,11 +814,11 @@ bool TabManager::saveACopy(EditorInterface *edt)
   QStringList selectedFiles = saveCopyDialog.selectedFiles();
   if (selectedFiles.isEmpty()) return false;
 
-  QString savefile = selectedFiles.first();
+  fs::path savefile = UIUtils::QStringToPath(selectedFiles.first());
 
-  if (savefile.isEmpty()) return false;
+  if (savefile.empty()) return false;
 
-  QSaveFile file(savefile);
+  QSaveFile file(UIUtils::pathToQString(savefile));
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), savefile);
     return false;
@@ -829,7 +835,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
   else {
     saveOk = file.commit();
     if (!saveOk) saveError(file, _("Error saving design"), savefile);
-    else LOG("Saved design '%1$s'.", savefile.toLocal8Bit().constData());
+    else LOG("Saved design %1$s.", quotePath(savefile));
   }
   return saveOk;
 }

@@ -150,14 +150,14 @@ void setGlobalTheme()
 namespace {
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
+fs::path assemblePath(const fs::path& absoluteBaseDir, const fs::path& fileName)
 {
-  if (fileName.empty()) return "";
-  auto qsDir = QString::fromStdString(absoluteBaseDir.generic_string());
-  auto qsFile = QString::fromStdString(fileName);
+  if (fileName.empty()) return fs::path{};
+  auto qsDir = UIUtils::pathToQString(absoluteBaseDir);
+  auto qsFile = UIUtils::pathToQString(fileName);
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   const QFileInfo fileInfo(qsDir, qsFile);
-  return fileInfo.absoluteFilePath();
+  return UIUtils::QStringToPath(fileInfo.absoluteFilePath());
 }
 
 void dialogThreadFunc(FontCacheInitializer *initializer)
@@ -210,8 +210,8 @@ void registerDefaultIcon(const QString&)
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
-        char **argv, const std::string& gui_test, const bool reset_window_settings)
+int gui(std::vector<fs::path>& inputFiles, const fs::path& original_path, int argc, char **argv,
+        const std::string& gui_test, const bool reset_window_settings)
 {
   configureOpenGLContext();
   OpenSCADApp app(argc, argv);
@@ -300,7 +300,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   if (!inputFiles.size()) {
     noInputFiles = true;
-    inputFiles.emplace_back("");
+    inputFiles.emplace_back(fs::path{});
   }
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
@@ -323,7 +323,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
       if (!files.empty()) {
         inputFiles.clear();
         for (const auto& f : files) {
-          inputFiles.push_back(f.toStdString());
+          inputFiles.push_back(UIUtils::QStringToPath(f));
         }
       }
     } else {
@@ -331,9 +331,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     }
   }
 
-  QStringList inputFilesList;
+  std::vector<fs::path> inputFilesList;
   for (const auto& infile : inputFiles) {
-    inputFilesList.append(assemblePath(original_path, infile));
+    inputFilesList.emplace_back(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
   QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {

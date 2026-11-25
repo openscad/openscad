@@ -81,7 +81,7 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 
 }  // namespace
 
-std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::string& filename,
+std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const fs::path& filename,
                                       const boost::optional<std::string>& id,
                                       const boost::optional<std::string>& layer, const double dpi,
                                       const bool center, const Location& loc)
@@ -125,10 +125,10 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
       match_args += "layer = \"" + layer.get() + "\"";
     }
 
-    const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *)&scadContext);
+    const auto shapes = libsvg::libsvg_read_file(filename.u8string().c_str(), (void *)&scadContext);
     if (!match_args.empty() && !scadContext.has_matches()) {
-      LOG(message_group::Warning, loc, "", "import() filter %2$s did not match anything", filename,
-          match_args);
+      LOG(message_group::Warning, loc, "", "importing %1$s, import() filter %2$s did not match anything",
+          quotePath(filename), match_args);
     }
 
     double width_mm = 0.0;

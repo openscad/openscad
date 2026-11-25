@@ -12,6 +12,7 @@
 
 #include "core/IndicatorData.h"
 #include "gui/parameter/ParameterWidget.h"
+#include "gui/UIUtils.h"
 
 enum class EditorSelectionIndicatorStatus { SELECTED, IMPACTED };
 
@@ -25,7 +26,7 @@ public:
   void clearTemporaryFile()
   {
     if (this->tempFile) {
-      parameterWidget->removeBackupFile(this->tempFile->fileName());
+      parameterWidget->removeBackupFile(UIUtils::QStringToPath(this->tempFile->fileName()));
       delete this->tempFile;
       this->tempFile = nullptr;
     }
@@ -113,7 +114,7 @@ private:
 public:
   bool contentsRendered;  // Set if the source code has changes since the last render (F6)
   int findState;
-  QString filepath;
+  fs::path filepath;
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;

@@ -21,7 +21,7 @@ public:
   {
   }
 
-  [[nodiscard]] std::string fileName() const { return path ? path->generic_string() : ""; }
+  [[nodiscard]] fs::path fileName() const { return path ? *path : fs::path{}; }
   [[nodiscard]] const fs::path& filePath() const
   {
     static const fs::path empty_path;
@@ -33,7 +33,7 @@ public:
   [[nodiscard]] int lastColumn() const { return last_col; }
   [[nodiscard]] bool isNone() const;
 
-  [[nodiscard]] std::string toRelativeString(const std::string& docPath) const;
+  [[nodiscard]] std::string toRelativeString(const fs::path& docPath) const;
 
   bool operator==(Location const& rhs);
   bool operator!=(Location const& rhs);

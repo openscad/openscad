@@ -77,12 +77,12 @@ struct Line {
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
  */
-DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, const std::string& layername,
+DxfData::DxfData(CurveDiscretizer discretizer, const fs::path& filename, const std::string& layername,
                  double xorigin, double yorigin, double scale)
 {
-  std::ifstream stream(std::filesystem::u8path(filename));
+  std::ifstream stream(filename);
   if (!stream.good()) {
-    LOG(message_group::Warning, "Can't open DXF file '%1$s'.", filename);
+    LOG(message_group::Warning, "Can't open DXF file %1$s.", quotePath(filename));
     return;
   }
 
@@ -144,7 +144,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
       id = boost::lexical_cast<int>(id_str);
     } catch (const boost::bad_lexical_cast& blc) {
       if (!stream.eof()) {
-        LOG(message_group::Warning, "Illegal ID '%1$s' in `%2$s'", id_str, filename);
+        LOG(message_group::Warning, "Illegal ID '%1$s' in %2$s", id_str, quotePath(filename));
       }
       break;
     }
@@ -362,19 +362,20 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
         break;
       }
     } catch (boost::bad_lexical_cast& blc) {
-      LOG(message_group::Warning, "Illegal value '%1$s'in `%2$s'", data, filename);
+      LOG(message_group::Warning, "Illegal value '%1$s'in %2$s", data, quotePath(filename));
     } catch (const std::out_of_range& oor) {
-      LOG(message_group::Warning, "Not enough input values for %1$s. in '%2$s'", data, filename);
+      LOG(message_group::Warning, "Not enough input values for %1$s. in %2$s", data,
+          quotePath(filename));
     }
   }
 
   for (const auto& i : unsupported_entities_list) {
     if (layername.empty()) {
       LOG(message_group::Warning, "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second,
-          QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+          quotePath(fs_uncomplete(filename, fs::current_path())));
     } else {
       LOG(message_group::Warning, "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",
-          i.first, i.second, layername, fs_uncomplete(filename, fs::current_path()).generic_string());
+          i.first, i.second, layername, quotePath(fs_uncomplete(filename, fs::current_path())));
     }
   }
 
@@ -397,7 +398,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
         for (const int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
             LOG(message_group::Warning, "Bad DXF line index in %1$s.",
-                QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+                quotePath(fs_uncomplete(filename, fs::current_path())));
             continue;
           }
           if (k == idx || lines[k].disabled) continue;
@@ -426,7 +427,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
       for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning, "Bad DXF line index in %1$s.",
-              QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+              quotePath(fs_uncomplete(filename, fs::current_path())));
           continue;
         }
         if (lines[k].disabled) continue;
@@ -467,7 +468,7 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
       for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning, "Bad DXF line index in %1$s.",
-              QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+              quotePath(fs_uncomplete(filename, fs::current_path())));
           continue;
         }
         if (lines[k].disabled) continue;

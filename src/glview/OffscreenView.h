@@ -5,6 +5,9 @@
 #include <memory>
 #include <string>
 #include <ostream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #include "glview/GLView.h"
 #include "glview/OpenGLContext.h"
@@ -27,7 +30,7 @@ public:
   std::unique_ptr<FBO> fbo;
 
   // overrides
-  bool save(const char *filename) const override;
+  bool save(const fs::path& filename) const override;
   [[nodiscard]] std::string getRendererInfo() const override;
 #ifdef ENABLE_OPENCSG
   void display_opencsg_warning() override;

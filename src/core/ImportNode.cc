@@ -70,23 +70,20 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     {"width", "height", "filename", "layername", "center", "dpi", "id"});
 
   const auto& v = parameters["file"];
-  std::string filename;
+  fs::path filename;
   if (v.isDefined()) {
-    filename = lookup_file(v.isUndefined() ? "" : v.toString(),
-                           inst->location().filePath().parent_path().string());
+    filename = lookup_file(v.toPath(), inst->location().filePath().parent_path());
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
       LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
-    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(),
-                           inst->location().filePath().parent_path().string());
+    filename = lookup_file(filename_val.toPath(), inst->location().filePath().parent_path());
   }
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
-    std::string extraw = fs::path(filename).extension().generic_string();
-    std::string ext = boost::algorithm::to_lower_copy(extraw);
+    std::string ext = pathExtensionLower(filename);
     if (ext == ".stl") actualtype = ImportType::STL;
     else if (ext == ".off") actualtype = ImportType::OFF;
     else if (ext == ".dxf") actualtype = ImportType::DXF;
@@ -138,12 +135,11 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   if (dpi.type() == Value::Type::NUMBER) {
     double val = dpi.toDouble();
     if (val < 0.001) {
-      std::string filePath =
-        fs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
+      fs::path filePath = fs_uncomplete(inst->location().filePath(), parameters.documentRoot());
       LOG(message_group::Warning,
           "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, "
           "file %2$s, import() at line %3$d",
-          origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine());
+          node->dpi, quotePath(filePath), inst->location().firstLine());
     } else {
       node->dpi = val;
     }
@@ -263,10 +259,9 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 std::string ImportNode::toString() const
 {
   std::ostringstream stream;
-  fs::path path((std::string)this->filename);
 
   stream << this->name();
-  stream << "(file = " << this->filename;
+  stream << "(file = " << csgPath(this->filename);
   if (this->id) {
     stream << ", id = " << QuotedString(this->id.get());
   }
@@ -279,7 +274,7 @@ std::string ImportNode::toString() const
   }
   stream << ", scale = " << this->scale << ", center = " << (this->center ? "true" : "false")
          << ", convexity = " << this->convexity << ", " << this->discretizer
-         << ", timestamp = " << fs_timestamp(path) << ")";
+         << ", timestamp = " << fs_timestamp(this->filename) << ")";
 
   return stream.str();
 }

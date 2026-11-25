@@ -50,10 +50,9 @@
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 
-extern std::vector<std::string> librarypath;
-std::vector<std::string> fontpath;
-
 namespace fs = std::filesystem;
+
+std::vector<fs::path> fontpath;
 
 std::string get_fontconfig_version()
 {
@@ -81,7 +80,7 @@ std::string get_freetype_version()
   return FontCache::instance()->get_freetype_version();
 }
 
-FontInfo::FontInfo(std::string family, std::string style, std::string file, uint32_t hash)
+FontInfo::FontInfo(std::string family, std::string style, fs::path file, uint32_t hash)
   : family(std::move(family)), style(std::move(style)), file(std::move(file)), hash(hash)
 {
 }
@@ -107,7 +106,7 @@ const std::string& FontInfo::get_style() const
   return style;
 }
 
-const std::string& FontInfo::get_file() const
+const fs::path& FontInfo::get_file() const
 {
   return file;
 }
@@ -143,7 +142,7 @@ FontCache::FontCache()
   const fs::path fontdir(PlatformUtils::resourcePath("fonts"));
   if (fs::is_regular_file(fontdir / "fonts.conf")) {
     auto abspath = fontdir.empty() ? fs::current_path() : fs::absolute(fontdir);
-    PlatformUtils::setenv("FONTCONFIG_PATH", (abspath.generic_string()).c_str(), 0);
+    PlatformUtils::setenv("FONTCONFIG_PATH", abspath.u8string(), 0);
   }
 
   // Just load the configs. We'll build the fonts once all configs are loaded
@@ -160,9 +159,9 @@ FontCache::FontCache()
 #ifndef __EMSCRIPTEN__
     builtinfontpath = fs::canonical(builtinfontpath);
 #endif
-    FcConfigParseAndLoad(
-      this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
-    add_font_dir(builtinfontpath.generic_string());
+    FcConfigParseAndLoad(this->config,
+                         reinterpret_cast<const FcChar8 *>(builtinfontpath.u8string().c_str()), false);
+    add_font_dir(builtinfontpath);
   }
 
   const char *home = getenv("HOME");
@@ -170,7 +169,7 @@ FontCache::FontCache()
   // Add Linux font folders, the system folders are expected to be
   // configured by the system configuration for fontconfig.
   if (home) {
-    add_font_dir(std::string(home) + "/.fonts");
+    add_font_dir(u8path(home) / ".fonts");
   }
 
   const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
@@ -181,10 +180,9 @@ FontCache::FontCache()
     for (string_split_iterator it =
            boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal()));
          it != string_split_iterator(); ++it) {
-      const fs::path p(boost::copy_range<std::string>(*it));
+      const fs::path p = u8path((boost::copy_range<std::string>(*it)));
       if (fs::exists(p) && fs::is_directory(p)) {
-        const std::string path = fs::absolute(p).string();
-        add_font_dir(path);
+        add_font_dir(fs::absolute(p));
       }
     }
   }
@@ -238,20 +236,22 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
   FontCache::cb_userdata = userdata;
 }
 
-void FontCache::register_font_file(const std::string& path)
+void FontCache::register_font_file(const fs::path& path)
 {
-  if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't register font '%1$s'", path);
+  if (!FcConfigAppFontAddFile(this->config,
+                              reinterpret_cast<const FcChar8 *>(path.u8string().c_str()))) {
+    LOG(message_group::Warning, Location::NONE, "", "Can't register font %1$s", quotePath(path));
   }
 }
 
-void FontCache::add_font_dir(const std::string& path)
+void FontCache::add_font_dir(const fs::path& path)
 {
   if (!fs::is_directory(path)) {
     return;
   }
-  if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't register font directory '%1$s'", path);
+  if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.u8string().c_str()))) {
+    LOG(message_group::Warning, Location::NONE, "", "Can't register font directory %1$s",
+        quotePath(path));
   }
 }
 
@@ -313,7 +313,7 @@ FontInfoList *FontCache::list_fonts() const
 
     const std::string family((const char *)family_value);
     const std::string style((const char *)style_value);
-    const std::string file((const char *)file_value);
+    const fs::path file{std::string((const char *)file_value)};
 
     list->emplace_back(family, style, file, FcPatternHash(p));
   }

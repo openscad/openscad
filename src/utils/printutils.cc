@@ -13,6 +13,7 @@
 #include <string>
 
 #include "utils/exceptions.h"
+#include "io/fileutils.h"
 
 namespace fs = std::filesystem;
 
@@ -133,21 +134,20 @@ void PRINT_NOCACHE(const Message& msgObj)
   }
 }
 
-void PRINTDEBUG(const std::string& filename, const std::string& msg)
+void PRINTDEBUG(const fs::path& filename, const std::string& msg)
 {
   // see printutils.h for usage instructions
   if (OpenSCAD::debug == "") return;
-  const std::string shortfname = fs::path(filename).stem().generic_string();
-  std::string lowshortfname(shortfname);
-  boost::algorithm::to_lower(lowshortfname);
-  std::string lowdebug(OpenSCAD::debug);
-  boost::algorithm::to_lower(lowdebug);
+  const std::string shortfname = filename.stem().generic_string();
+  const std::string lowshortfname = boost::algorithm::to_lower_copy(shortfname);
+  const std::string lowdebug = boost::algorithm::to_lower_copy(OpenSCAD::debug);
   if (OpenSCAD::debug == "all" || lowdebug.find(lowshortfname) != std::string::npos) {
     const Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
     PRINT_NOCACHE(msgObj);
   }
 }
 
+#if UNUSED
 const std::string& quoted_string(const std::string& str)
 {
   static std::string buf;
@@ -155,6 +155,7 @@ const std::string& quoted_string(const std::string& str)
   boost::replace_all(buf, "\n", "\\n");
   return buf;
 }
+#endif
 
 std::string two_digit_exp_format(std::string doublestr)
 {
@@ -223,4 +224,36 @@ bool getGroupTextPlain(const enum message_group& group)
 std::string quoteVar(const std::string& varname)
 {
   return '"' + varname + '"';
+}
+
+// NEEDSWORK maybe this should do something about the unlikely case of embedded quotes.
+// NEEDSWORK generic_string() will cause problems for some Windows paths, but u8string() yields
+// paths with backslashes that break tests.
+std::string quotePath(const fs::path& path)
+{
+  return "'" + path.generic_u8string() + "'";
+}
+
+// NEEDSWORK does this need any quoting?  Should it exist at all?
+// NEEDSWORK generic_string() will cause problems for some Windows paths, but u8string() yields
+// paths with backslashes that break tests.
+std::string unquotePath(const fs::path& path)
+{
+  return path.generic_u8string();
+}
+
+std::string csgPath(const fs::path& path)
+{
+  // NEEDSWORK existing Filename streamer uncompletes, but is that really the right answer?
+  fs::path relpath = fs_uncomplete(path, fs::current_path());
+  // NEEDSWORK generic_string means that we don't get platform-appropriate paths, but
+  // CSG tests depend on getting "/" paths.
+  std::ostringstream oss;
+  oss << QuotedString(relpath.generic_string());
+  return oss.str();
+}
+
+std::string pathExtensionLower(const fs::path& path)
+{
+  return boost::algorithm::to_lower_copy(path.extension().generic_string());
 }

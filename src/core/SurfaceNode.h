@@ -74,7 +74,7 @@ public:
   std::string toString() const override;
   std::string name() const override { return "surface"; }
 
-  Filename filename;
+  fs::path filename;
   bool center{false};
   bool invert{false};
   int convexity{1};
@@ -82,11 +82,11 @@ public:
   std::unique_ptr<const Geometry> createGeometry() const override;
   // Public, and default-constructible above, so surface_node_test.cc can exercise image
   // decoding without building a module instantiation.
-  img_data_t read_png_or_dat(std::string filename) const;
+  img_data_t read_png_or_dat(fs::path filename) const;
 
 private:
   void convert_image(img_data_t& data, const std::vector<uint8_t>& img, unsigned int width,
                      unsigned int height) const;
   bool is_png(std::vector<uint8_t>& img) const;
-  img_data_t read_dat(std::string filename) const;
+  img_data_t read_dat(fs::path filename) const;
 };

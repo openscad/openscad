@@ -192,14 +192,6 @@ static uint32_t convert_to_uint32(const double d)
   return ret;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Filename& filename)
-{
-  fs::path fnpath{static_cast<std::string>(filename)};  // gcc-4.6
-  auto fpath = fs_uncomplete(fnpath, fs::current_path());
-  stream << QuotedString(fpath.generic_string());
-  return stream;
-}
-
 // FIXME: This could probably be done more elegantly using boost::regex
 std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 {
@@ -501,6 +493,16 @@ public:
 std::string Value::toString() const
 {
   return std::visit(tostring_visitor(), this->value);
+}
+
+fs::path Value::toPath() const
+{
+  if (type() == Value::Type::STRING) {
+    return u8path(toString());
+  } else {
+    // NEEDSWORK maybe throw
+    return fs::path{};
+  }
 }
 
 std::string Value::toEchoString() const

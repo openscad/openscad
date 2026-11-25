@@ -340,7 +340,7 @@ boost::optional<const Value> Parameters::lookupRadius(std::string& found_var,
 }
 
 void print_argCnt_warning(const std::string& name, int found, const std::string& expected,
-                          const Location& loc, const std::string& documentRoot)
+                          const Location& loc, const fs::path& documentRoot)
 {
   LOG(message_group::Warning, loc, documentRoot,
       "%1$s() number of parameters does not match: expected %2$s, found %3$i", name, expected, found);
@@ -348,7 +348,7 @@ void print_argCnt_warning(const std::string& name, int found, const std::string&
 
 void print_argConvert_positioned_warning(const std::string& calledName, const std::string& where,
                                          const Value& found, std::vector<Value::Type> expected,
-                                         const Location& loc, const std::string& documentRoot)
+                                         const Location& loc, const fs::path& documentRoot)
 {
   std::stringstream message;
   message << calledName << "() parameter could not be converted: " << where << ": expected ";
@@ -368,7 +368,7 @@ void print_argConvert_positioned_warning(const std::string& calledName, const st
 
 void print_argConvert_warning(const std::string& calledName, const std::string& argName,
                               const Value& found, std::vector<Value::Type> expected, const Location& loc,
-                              const std::string& documentRoot)
+                              const fs::path& documentRoot)
 {
   std::stringstream message;
   message << calledName << "(..., " << argName << "=" << found.toEchoStringNoThrow()

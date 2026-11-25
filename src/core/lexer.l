@@ -118,10 +118,10 @@ std::shared_ptr<fs::path> parser_sourcefile;
 std::vector<std::shared_ptr<fs::path>> filename_stack;
 std::vector<YYLTYPE> loc_stack;
 std::vector<FILE*> openfiles;
-std::vector<std::string> openfilenames;
+std::vector<fs::path> openfilenames;
 
-std::string filename;
-std::string filepath;
+fs::path filename;
+fs::path filepath;
 %}
 
 %option yylineno
@@ -193,17 +193,18 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             // see merge request #4221
                             LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
 }
-[^\t\r\n>]+             { filename = yytext; }
+[^\t\r\n>]+             { filename = fs::path(yytext); }
  ">"                    {
                             BEGIN(INITIAL);
-                            fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
+                            fs::path fullpath = find_valid_path(sourcefile()->parent_path(), filename, &openfilenames);
                             if (fullpath.empty()) {
-                            LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
-                                check_mcad_missing(fs::path(filename));
-                                parserlval.text = strdup(filename.c_str());
+                            LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library %1$s.",quotePath(filename));
+                                check_mcad_missing(filename);
+                                // NEEDSWORK can we put a std::string or fs::path in parserlval?
+                                parserlval.text = strdup(filename.u8string().c_str());
                             } else {
-                                handle_dep(fs_generic_string(fullpath));
-                                parserlval.text = strdup(fullpath.string().c_str());
+                                handle_dep(fullpath);
+                                parserlval.text = strdup(fullpath.u8string().c_str());
                             }
                             return TOK_USE;
                         }
@@ -458,28 +459,28 @@ static void check_mcad_missing(const fs::path& localpath)
  */
 void includefile(const Location& loc)
 {
-  fs::path localpath = fs::path(filepath) / filename;
+  fs::path localpath = filepath / filename;
   fs::path fullpath = find_valid_path(sourcefile()->parent_path(), localpath, &openfilenames);
   if (!fullpath.empty()) {
-    rootfile->registerInclude(localpath.generic_string(), fs_generic_string(fullpath), lexer_is_main_file() ? loc : Location::NONE);
+    rootfile->registerInclude(localpath, fullpath, lexer_is_main_file() ? loc : Location::NONE);
   }
   else {
-    rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
-    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't find include file '%1$s'.",localpath.generic_string());
+    rootfile->registerInclude(localpath, localpath, Location::NONE);
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't find include file %1$s.",
+        quotePath(localpath));
     check_mcad_missing(localpath);
     return;
   };
 
-  std::string fullname = fs_generic_string(fullpath);
-
   filepath.clear();
   filename_stack.push_back(std::make_shared<fs::path>(fullpath));
 
-  handle_dep(fullname);
+  handle_dep(fullpath);
 
   yyin = PlatformUtils::fopen(fullpath, "r");
   if (!yyin) {
-    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file %1$s.",
+        quotePath(localpath));
     filename_stack.pop_back();
     return;
   }
@@ -487,7 +488,7 @@ void includefile(const Location& loc)
   loc_stack.push_back(parserlloc);
   LOCATION_INIT(parserlloc);
   openfiles.push_back(yyin);
-  openfilenames.push_back(fullname);
+  openfilenames.push_back(fullpath);
   filename.clear();
 
   yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));

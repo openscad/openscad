@@ -55,6 +55,7 @@
 #include "gui/parameter/ParameterText.h"
 #include "gui/parameter/ParameterVector.h"
 #include "gui/parameter/ParameterVirtualWidget.h"
+#include "gui/UIUtils.h"
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -85,15 +86,15 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 }
 
 // Can only be called before the initial setParameters().
-void ParameterWidget::readFile(const QString& scadFile)
+void ParameterWidget::readFile(const fs::path& scadFile)
 {
   assert(sets.empty());
   assert(parameters.empty());
   assert(widgets.empty());
 
-  QString jsonFile = getJsonFile(scadFile);
-  if (!std::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
-    this->invalidJsonFile = QString();
+  fs::path jsonFile = getJsonFile(scadFile);
+  if (!fs::exists(jsonFile) || this->sets.readFile(jsonFile)) {
+    this->invalidJsonFile = fs::path{};
   } else {
     this->invalidJsonFile = jsonFile;
   }
@@ -105,18 +106,18 @@ void ParameterWidget::readFile(const QString& scadFile)
 
 // Write the json file if the parameter sets are not empty.
 // This prevents creating unnecessary json files.
-void ParameterWidget::saveFile(const QString& scadFile)
+void ParameterWidget::saveFile(const fs::path& scadFile)
 {
   if (sets.empty()) {
     return;
   }
 
-  QString jsonFile = getJsonFile(scadFile);
+  fs::path jsonFile = getJsonFile(scadFile);
   if (jsonFile == this->invalidJsonFile) {
     QMessageBox msgBox;
     msgBox.setWindowTitle(_("Saving presets"));
     msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?"))
-                     .arg(this->invalidJsonFile));
+                     .arg(UIUtils::pathToQString(this->invalidJsonFile)));
     msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Cancel);
     if (msgBox.exec() == QMessageBox::Cancel) {
@@ -125,21 +126,21 @@ void ParameterWidget::saveFile(const QString& scadFile)
   }
 
   cleanSets();
-  sets.writeFile(jsonFile.toStdString());
+  sets.writeFile(jsonFile);
 }
 
-void ParameterWidget::removeBackupFile(const QString& scadFile)
+void ParameterWidget::removeBackupFile(const fs::path& scadFile)
 {
-  QFile::remove(getJsonFile(scadFile));
+  fs::remove(getJsonFile(scadFile));
 }
 
-void ParameterWidget::saveBackupFile(const QString& scadFile)
+void ParameterWidget::saveBackupFile(const fs::path& scadFile)
 {
   if (sets.empty()) {
     return;
   }
 
-  sets.writeFile(getJsonFile(scadFile).toStdString());
+  sets.writeFile(getJsonFile(scadFile));
 }
 
 void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::string& source)
@@ -445,10 +446,10 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
   }
 }
 
-QString ParameterWidget::getJsonFile(const QString& scadFile)
+fs::path ParameterWidget::getJsonFile(const fs::path& scadFile)
 {
-  std::filesystem::path p = scadFile.toStdString();
-  return QString::fromStdString(p.replace_extension(".json").string());
+  fs::path jsonFile = scadFile;
+  return jsonFile.replace_extension(".json");
 }
 
 // Remove set values that do not correspond to a parameter,

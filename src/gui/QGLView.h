@@ -53,7 +53,7 @@ public:
   float getDPI() override { return this->devicePixelRatio(); }
 
   const QImage& grabFrame();
-  bool save(const char *filename) const override;
+  bool save(const fs::path& filename) const override;
   void resetView();
   void viewAll();
   void selectPoint(int x, int y);

@@ -39,23 +39,25 @@
 #include "geometry/Geometry.h"
 #include "glview/Camera.h"
 #include "gui/OctoPrint.h"
+#include "gui/UIUtils.h"
 #include "io/export.h"
 #include "utils/printutils.h"
 
 namespace {
 
-QString getArgValue(const Settings::LocalAppParameter& arg, const std::string& exportedFilename,
-                    const std::string& sourceFilename)
+QString getArgValue(const Settings::LocalAppParameter& arg, const fs::path& exportedFilename,
+                    const fs::path& sourceFilename)
 {
-  const QFileInfo info(QString::fromStdString(exportedFilename));
   switch (arg.type) {
-  case Settings::LocalAppParameterType::string:    return QString::fromStdString(arg.value);
-  case Settings::LocalAppParameterType::file:      return QString::fromStdString(exportedFilename);
-  case Settings::LocalAppParameterType::dir:       return info.absoluteDir().path();
-  case Settings::LocalAppParameterType::extension: return info.suffix();
-  case Settings::LocalAppParameterType::source:    return QString::fromStdString(sourceFilename);
+  case Settings::LocalAppParameterType::string: return QString::fromStdString(arg.value);
+  case Settings::LocalAppParameterType::file:   return QString::fromStdString(exportedFilename.u8string());
+  case Settings::LocalAppParameterType::dir:
+    return UIUtils::pathToQString(fs::absolute(exportedFilename).parent_path());
+  case Settings::LocalAppParameterType::extension:
+    return UIUtils::pathToQString(exportedFilename.extension());
+  case Settings::LocalAppParameterType::source: return QString::fromStdString(sourceFilename.u8string());
   case Settings::LocalAppParameterType::sourcedir:
-    return QFileInfo(QString::fromStdString(sourceFilename)).absoluteDir().path();
+    return UIUtils::pathToQString(fs::absolute(sourceFilename).parent_path());
   default: return {};
   }
 }
@@ -82,12 +84,12 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
   }
   const QString exportFileName = exportFile.fileName();
 
-  sourceFilename_ = sourceFileName.toStdString();
-  exportedFilename_ = exportFileName.toStdString();
-  ExportInfo exportInfo = createExportInfo(exportFormat_, fileformat::info(exportFormat_),
-                                           sourceFileName.toStdString(), camera, {});
+  sourceFilename_ = UIUtils::QStringToPath(sourceFileName);
+  exportedFilename_ = UIUtils::QStringToPath(exportFileName);
+  ExportInfo exportInfo =
+    createExportInfo(exportFormat_, fileformat::info(exportFormat_), sourceFilename_, camera, {});
   const bool ok = exportFileByName(rootGeometry, exportedFilename_, exportInfo);
-  LOG("Exported temporary file %1$s", exportedFilename_);
+  LOG("Exported temporary file %1$s", quotePath(exportedFilename_));
   return ok;
 }
 
@@ -96,8 +98,8 @@ bool OctoPrintService::process(const std::string& displayName, std::function<boo
   const OctoPrint octoPrint;
 
   try {
-    const QString fileUrl = octoPrint.upload(QString::fromStdString(exportedFilename_),
-                                             QString::fromStdString(displayName), progress_cb);
+    const QString fileUrl =
+      octoPrint.upload(exportedFilename_, QString::fromStdString(displayName), progress_cb);
     if (this->action == "upload") {
       return true;
     }
@@ -177,7 +179,7 @@ bool LocalProgramService::process(const std::string& displayName,
 bool ExternalPrintService::process(const std::string& displayName,
                                    std::function<bool(double)> progress_cb)
 {
-  QFile file(QString::fromStdString(exportedFilename_));
+  QFile file(UIUtils::pathToQString(exportedFilename_));
   if (!file.open(QIODevice::ReadOnly)) {
     LOG(message_group::Error, "Unable to open exported STL file.");
     return false;
