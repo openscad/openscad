@@ -429,7 +429,11 @@ FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& par
   for (unsigned int idx = 0; idx < glyph_count; ++idx) {
     FT_Error error;
     FT_UInt glyph_index = glyph_info[idx].codepoint;
-    error = FT_Load_Glyph(face->face_, glyph_index, FT_LOAD_DEFAULT);
+    // Outlines only: these glyphs are decomposed into 2D geometry, never
+    // rasterised, so grid-fitting them is pointless. It also avoids
+    // FreeType's autohinter, whose function-pointer casts trap under
+    // Emscripten for fonts without a TrueType bytecode program.
+    error = FT_Load_Glyph(face->face_, glyph_index, FT_LOAD_NO_HINTING);
     if (error) {
       LOG(message_group::Warning, params.loc, params.documentPath,
           "Could not load glyph %1$u"
