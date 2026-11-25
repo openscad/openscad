@@ -24,4 +24,5 @@ class ParameterSets : public std::vector<ParameterSet>
 public:
   bool readFile(const std::string& filename);
   void writeFile(const std::string& filename) const;
+  static void removeFile(const std::string& filename);
 };
