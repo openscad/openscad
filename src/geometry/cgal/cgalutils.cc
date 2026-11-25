@@ -12,8 +12,8 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "core/node.h"
@@ -34,8 +34,8 @@
 #endif
 
 #include <cstddef>
-#include <map>
 #include <queue>
+#include <unordered_map>
 #include <vector>
 
 namespace CGALUtils {
@@ -171,27 +171,6 @@ CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox)
   return {vector_convert<CGAL_Point_3>(bbox.min()), vector_convert<CGAL_Point_3>(bbox.max())};
 }
 
-namespace {
-
-// lexicographic comparison
-bool operator<(Vector3d const& a, Vector3d const& b)
-{
-  for (int i = 0; i < 3; ++i) {
-    if (a[i] < b[i]) return true;
-    else if (a[i] == b[i]) continue;
-    return false;
-  }
-  return false;
-}
-}  // namespace
-
-struct VecPairCompare {
-  bool operator()(std::pair<Vector3d, Vector3d> const& a, std::pair<Vector3d, Vector3d> const& b) const
-  {
-    return a.first < b.first || (!(b.first < a.first) && a.second < b.second);
-  }
-};
-
 /*!
    Check if all faces of a polyset is within 0.1 degree of being convex.
 
@@ -208,23 +187,37 @@ bool is_approximately_convex(const PolySet& ps)
   using Point = K::Point_3;
   using Plane = K::Plane_3;
 
+  // Vertices with equal coordinates are the same vertex, even if they have different indices.
+  std::vector<uint32_t> vertex_ids(ps.vertices.size());
+  {
+    Reindexer<Vector3d> unique_vertices;
+    unique_vertices.reserve(ps.vertices.size());
+    for (size_t i = 0; i < ps.vertices.size(); ++i) {
+      vertex_ids[i] = unique_vertices.lookup(ps.vertices[i]);
+    }
+  }
+  const auto edge_key = [&](int from, int to) {
+    return (static_cast<uint64_t>(vertex_ids[from]) << 32) | vertex_ids[to];
+  };
+
   // compute edge to face relations and plane equations
-  using Edge = std::pair<Vector3d, Vector3d>;
-  using Edge_to_facet_map = std::map<Edge, int, VecPairCompare>;
-  Edge_to_facet_map edge_to_facet_map;
+  std::unordered_map<uint64_t, int> edge_to_facet_map;
+  edge_to_facet_map.reserve(3 * ps.indices.size());
   std::vector<Plane> facet_planes;
   facet_planes.reserve(ps.indices.size());
 
   for (size_t i = 0; i < ps.indices.size(); ++i) {
     Plane plane;
-    auto N = ps.indices[i].size();
+    const auto& face = ps.indices[i];
+    auto N = face.size();
     if (N >= 3) {
       std::vector<Point> v(N);
       for (size_t j = 0; j < N; ++j) {
-        v[j] = vector_convert<Point>(ps.vertices[ps.indices[i][j]]);
-        Edge edge(ps.vertices[ps.indices[i][j]], ps.vertices[ps.indices[i][(j + 1) % N]]);
-        if (edge_to_facet_map.count(edge)) return false;  // edge already exists: nonmanifold
-        edge_to_facet_map[edge] = i;
+        v[j] = vector_convert<Point>(ps.vertices[face[j]]);
+        // edge already exists: nonmanifold
+        if (!edge_to_facet_map.try_emplace(edge_key(face[j], face[(j + 1) % N]), i).second) {
+          return false;
+        }
       }
       Vector normal;
       CGAL::normal_vector_newell_3(v.begin(), v.end(), normal);
@@ -234,17 +227,15 @@ bool is_approximately_convex(const PolySet& ps)
   }
 
   for (size_t i = 0; i < ps.indices.size(); ++i) {
-    auto N = ps.indices[i].size();
+    const auto& face = ps.indices[i];
+    auto N = face.size();
     if (N < 3) continue;
     for (size_t j = 0; j < N; ++j) {
-      Edge other_edge(ps.vertices[ps.indices[i][(j + 1) % N]], ps.vertices[ps.indices[i][j]]);
-      if (edge_to_facet_map.count(other_edge) == 0) return false;  //
-      // Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
-      // if (it == edge_to_facet_map.end()) return false; // not a closed manifold
-      // int other_facet = it->second;
-      int other_facet = edge_to_facet_map[other_edge];
+      auto it = edge_to_facet_map.find(edge_key(face[(j + 1) % N], face[j]));
+      if (it == edge_to_facet_map.end()) return false;  // not a closed manifold
+      int other_facet = it->second;
 
-      auto p = vector_convert<Point>(ps.vertices[ps.indices[i][(j + 2) % N]]);
+      auto p = vector_convert<Point>(ps.vertices[face[(j + 2) % N]]);
 
       if (facet_planes[other_facet].has_on_positive_side(p)) {
         // Check angle
@@ -259,29 +250,31 @@ bool is_approximately_convex(const PolySet& ps)
     }
   }
 
-  std::set<int> explored_facets;
+  std::vector<bool> explored_facets(ps.indices.size());
+  size_t num_explored = 1;
   std::queue<int> facets_to_visit;
   facets_to_visit.push(0);
-  explored_facets.insert(0);
+  explored_facets[0] = true;
 
   while (!facets_to_visit.empty()) {
     int f = facets_to_visit.front();
     facets_to_visit.pop();
 
-    for (size_t i = 0; i < ps.indices[f].size(); ++i) {
-      int j = (i + 1) % ps.indices[f].size();
-      auto it =
-        edge_to_facet_map.find(Edge(ps.vertices[ps.indices[f][j]], ps.vertices[ps.indices[f][i]]));
+    const auto& face = ps.indices[f];
+    for (size_t i = 0; i < face.size(); ++i) {
+      int j = (i + 1) % face.size();
+      auto it = edge_to_facet_map.find(edge_key(face[j], face[i]));
       if (it == edge_to_facet_map.end()) return false;  // Nonmanifold
-      if (!explored_facets.count(it->second)) {
-        explored_facets.insert(it->second);
+      if (!explored_facets[it->second]) {
+        explored_facets[it->second] = true;
+        ++num_explored;
         facets_to_visit.push(it->second);
       }
     }
   }
 
   // Make sure that we were able to reach all polygons during our visit
-  return explored_facets.size() == ps.indices.size();
+  return num_explored == ps.indices.size();
 }
 
 std::shared_ptr<const CGALNefGeometry> getNefPolyhedronFromGeometry(
