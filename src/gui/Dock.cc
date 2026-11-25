@@ -1,36 +1,13 @@
 #include "gui/Dock.h"
 
-#include <QCloseEvent>
 #include <QDockWidget>
 #include <QRegularExpression>
 #include <QWidget>
 
-namespace {
-
-QtMessageHandler originalHandler = nullptr;
-
-void silentMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
-{
-  if (type == QtWarningMsg && msg.contains("Already setting window visible")) {
-    return;
-  }
-  if (originalHandler) {
-    originalHandler(type, context, msg);
-  }
-}
-
-class ScopedMessageSilencer
-{
-public:
-  ScopedMessageSilencer() { originalHandler = qInstallMessageHandler(silentMessageOutput); }
-  ~ScopedMessageSilencer() { qInstallMessageHandler(originalHandler); }
-};
-
-}  // namespace
-
 Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
-  connect(this, &QDockWidget::topLevelChanged, this, &Dock::onTopLevelStatusChanged);
+  // Showing a dock here would also show closed floating docks during restoreState().
+  connect(this, &QDockWidget::topLevelChanged, this, &Dock::updateTitle);
 
   dockTitleWidget = new QWidget();
 }
@@ -75,23 +52,5 @@ QString Dock::getName() const
 void Dock::setNameSuffix(const QString& namesuffix_)
 {
   namesuffix = namesuffix_;
-  updateTitle();
-}
-
-void Dock::onTopLevelStatusChanged(bool isTopLevel)
-{
-  // CAUTION:  A previous incarnation of this set the window type of an undocked window to Qt::Window
-  // (rather than its default Qt::Tool) in an attempt to enable undocked windows to float behind the
-  // main window.  That didn't work (or at least not on all platforms), and caused #6667, breaking
-  // shortcuts when undocked.  See #6765 for more discussion.
-
-  // update the title of the window so it contains the title suffix (in general filename)
-  // also update the visibility to provide interactive feedback on the user action
-  // while it is moving the dock in topLevel=true state.
-  if (isTopLevel) {
-    // show() emits an innocuous "Already setting window visible!" warning on macOS
-    ScopedMessageSilencer silencer;
-    show();
-  }
   updateTitle();
 }

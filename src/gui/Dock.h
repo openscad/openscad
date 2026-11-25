@@ -19,9 +19,6 @@ public:
   void setTitleBarVisibility(bool isVisible);
   void updateTitle();
 
-public slots:
-  void onTopLevelStatusChanged(bool);
-
 private:
   QString name;
   QString namesuffix;
