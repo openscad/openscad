@@ -59,3 +59,6 @@ module test1()
 }
 
 test1();
+
+//Test blank after other use statements
+use <>
