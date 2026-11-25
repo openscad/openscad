@@ -49,6 +49,7 @@ private:
   std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
 
   QString invalidJsonFile;  // set if a json file was read that could not be parsed
+  QString setsJsonFile;     // the json file the parameter sets were read from or written to
   QTimer autoPreviewTimer;
   bool modified = false;
 

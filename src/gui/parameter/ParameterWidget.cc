@@ -91,9 +91,13 @@ void ParameterWidget::readFile(const QString& scadFile)
   assert(parameters.empty());
   assert(widgets.empty());
 
+  this->setsJsonFile = QString();
   QString jsonFile = getJsonFile(scadFile);
-  if (!std::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
+  if (!std::filesystem::exists(jsonFile.toStdString())) {
     this->invalidJsonFile = QString();
+  } else if (this->sets.readFile(jsonFile.toStdString())) {
+    this->invalidJsonFile = QString();
+    this->setsJsonFile = jsonFile;
   } else {
     this->invalidJsonFile = jsonFile;
   }
@@ -107,11 +111,17 @@ void ParameterWidget::readFile(const QString& scadFile)
 // This prevents creating unnecessary json files.
 void ParameterWidget::saveFile(const QString& scadFile)
 {
+  QString jsonFile = getJsonFile(scadFile);
   if (sets.empty()) {
+    // The last set was deleted: remove the file the sets came from, or they would come back
+    // when the design is opened again.
+    if (jsonFile == this->setsJsonFile) {
+      QFile::remove(jsonFile);
+      this->setsJsonFile = QString();
+    }
     return;
   }
 
-  QString jsonFile = getJsonFile(scadFile);
   if (jsonFile == this->invalidJsonFile) {
     QMessageBox msgBox;
     msgBox.setWindowTitle(_("Saving presets"));
@@ -126,6 +136,7 @@ void ParameterWidget::saveFile(const QString& scadFile)
 
   cleanSets();
   sets.writeFile(jsonFile.toStdString());
+  this->setsJsonFile = jsonFile;
 }
 
 void ParameterWidget::removeBackupFile(const QString& scadFile)
