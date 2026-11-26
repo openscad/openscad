@@ -4,6 +4,8 @@
 #include "geometry/roof_vd.h"
 
 #include <algorithm>
+#include <boost/math/tools/roots.hpp>
+#include <limits>
 #include <boost/polygon/voronoi.hpp>
 #include <cmath>
 #include <cstddef>
@@ -162,36 +164,74 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
   auto y = [point_distance](double x) {
     return (x * x - point_distance * point_distance) / (2 * point_distance);
   };
-  auto y_prime = [point_distance](double x) { return x / point_distance; };
-  // angle between a segment and the parabola
-  auto segment_angle = [y, y_prime](double x1, double x2) {
-    double dx = x2 - x1, dy = y(x2) - y(x1);
-    double tx = 1, ty = (std::abs(x1) < std::abs(x2)) ? y_prime(x1) : y_prime(x2);
-    return std::abs(std::atan2(dx * ty - dy * tx, dx * tx + dy * ty));
-  };
-  // squared length of segment
-  auto segment_sqr_length = [y](double x1, double x2) {
-    double dx = x2 - x1, dy = y(x2) - y(x1);
-    return dx * dx + dy * dy;
-  };
 
-  std::vector<double> transformed_points_x = {transformed_v0_x, transformed_v1_x};
-
-  for (;;) {
-    double x1 = transformed_points_x.end()[-2];
-    double x2 = transformed_points_x.end()[-1];
-    if (discretizer.overMaxAngle(segment_angle(x1, x2)) ||
-        (discretizer.hasMaxSegmentSqrLength() &&
-         discretizer.overMaxSegmentSqrLength(segment_sqr_length(x1, x2)))) {
-      transformed_points_x.end()[-1] = 0.5 * x1 + 0.5 * x2;
-    } else {
-      if (x2 == transformed_v1_x) {
-        break;
-      } else {
-        transformed_points_x.push_back(transformed_v1_x);
+  auto angle = [point_distance](double x) { return std::atan(x / point_distance); };
+  auto angle_inv = [point_distance](double a) { return point_distance * std::tan(a); };
+  auto arc_length = [point_distance](double x) {
+    const double d = point_distance;
+    return 0.5 * (x * std::sqrt(x * x / (d * d) + 1.0) + d * std::asinh(x / d));
+  };
+  auto arc_length_prime = [point_distance](double x) {
+    const double d = point_distance;
+    return std::sqrt(x * x / (d * d) + 1.0);
+  };
+  // inverse of arc_length, solved numerically
+  auto arc_length_inv = [point_distance, arc_length, arc_length_prime](double t) {
+    const double d = point_distance;
+    if (t == 0.0) return 0.0;
+    const double bound =
+      std::sqrt(2.0 * d * std::abs(t)) * (1.0 + 16.0 * std::numeric_limits<double>::epsilon());
+    if (!(bound > 0.0)) return 0.0;  // t is far too small to move x at all
+    const double x_min = (t > 0.0) ? 0.0 : -bound;
+    const double x_max = (t > 0.0) ? bound : 0.0;
+    const double x_guess = std::copysign(std::sqrt(2.0 * d * (std::hypot(d, t) - d)), t);
+    constexpr int digits = std::numeric_limits<double>::digits;
+    try {
+      auto newton = [arc_length, arc_length_prime, t](double x) {
+        return std::make_pair(arc_length(x) - t, arc_length_prime(x));
+      };
+      std::uintmax_t max_iter = 100;
+      return boost::math::tools::newton_raphson_iterate(newton, x_guess, x_min, x_max,
+                                                        static_cast<int>(digits * 0.6), max_iter);
+    } catch (...) {
+      // fall back to bisection
+      auto bisect = [arc_length, t](double x) { return arc_length(x) - t; };
+      try {
+        const auto bracket = boost::math::tools::bisect(
+          bisect, x_min, x_max, boost::math::tools::eps_tolerance<double>(digits - 3));
+        return (bracket.first + bracket.second) / 2.0;
+      } catch (...) {
+        RAISE_ROOF_EXCEPTION("error in parabolic arc discretization");
       }
     }
+  };
+
+  const double angle_0 = angle(transformed_v0_x), angle_1 = angle(transformed_v1_x);
+  const double arc_length_0 = arc_length(transformed_v0_x), arc_length_1 = arc_length(transformed_v1_x);
+  const double max_segment_length = discretizer.maxSegmentLength();
+  const double segments_fa = (angle_1 - angle_0) / discretizer.maxAngle();
+  const double segments_fs =
+    (max_segment_length > 0.0) ? (arc_length_1 - arc_length_0) / max_segment_length : 1.0;
+
+  const bool by_arc_length = (max_segment_length > 0.0) && (segments_fs < segments_fa);
+  const double wanted = by_arc_length ? segments_fs : segments_fa;
+  if (!(wanted <= static_cast<double>(std::numeric_limits<int>::max()))) {
+    RAISE_ROOF_EXCEPTION("too many segments to discretize, try a larger $fa or $fs");
   }
+  const int segments = static_cast<int>(std::max(1.0, std::ceil(wanted)));
+  std::vector<double> transformed_points_x;
+  transformed_points_x.reserve(segments + 1);
+  transformed_points_x.push_back(transformed_v0_x);
+  for (int k = 1; k < segments; k++) {
+    if (by_arc_length) {
+      const double arc_length_k = (arc_length_0 * (segments - k) + arc_length_1 * k) / segments;
+      transformed_points_x.push_back(arc_length_inv(arc_length_k));
+    } else {
+      const double angle_k = (angle_0 * (segments - k) + angle_1 * k) / segments;
+      transformed_points_x.push_back(angle_inv(angle_k));
+    }
+  }
+  transformed_points_x.push_back(transformed_v1_x);
 
   for (auto x : transformed_points_x) {
     if (x == transformed_v0_x) {
