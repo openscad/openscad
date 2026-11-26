@@ -30,6 +30,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/Settings.h"
@@ -168,6 +169,17 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   QShortcut *shortcutAutocomplete;
   shortcutAutocomplete = new QShortcut(modifier | Qt::Key_Space, this);
   connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAPIs(); });
+#ifdef Q_OS_MACOS
+  // Qt maps Command to CTRL and the physical Control key to META on macOS.
+  // The existing META+Space shortcut above already provides Control+Space.
+  auto *shortcutDeleteLine = new QShortcut(Qt::CTRL | Qt::Key_Backspace, this);
+  connect(shortcutDeleteLine, &QShortcut::activated,
+          [=]() { qsci->SendScintilla(QsciScintilla::SCI_LINEDELETE); });
+
+  auto *shortcutFormatCode = new QShortcut(Qt::ALT | Qt::CTRL | Qt::Key_L, this);
+  shortcutFormatCode->setContext(Qt::WidgetWithChildrenShortcut);
+  connect(shortcutFormatCode, &QShortcut::activated, this, &ScintillaEditor::formatSelection);
+#endif
   // NOLINTEND(bugprone-suspicious-enum-usage)
 
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
@@ -988,35 +1000,311 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
+  const char *commentMarker = isPythonFile() ? "#" : "//";
   auto hasSelection = qsci->hasSelectedText();
 
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
+  qsci->beginUndoAction();
   for (int line = lineFrom; line <= lineTo; ++line) {
-    qsci->insertAt("//", line, 0);
+    const QString lineText = qsci->text(line);
+    int marker = 0;
+    while (marker < lineText.size() &&
+           (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
+      ++marker;
+    }
+    qsci->insertAt(commentMarker, line, marker);
   }
 
   if (hasSelection) {
     qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
   }
+  qsci->endUndoAction();
 }
 
 void ScintillaEditor::uncommentSelection()
 {
+  const QString commentMarker = isPythonFile() ? QStringLiteral("#") : QStringLiteral("//");
   auto hasSelection = qsci->hasSelectedText();
 
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
+  qsci->beginUndoAction();
   for (int line = lineFrom; line <= lineTo; ++line) {
-    QString lineText = qsci->text(line);
-    if (lineText.startsWith("//")) {
-      qsci->setSelection(line, 0, line, 2);
+    const QString lineText = qsci->text(line);
+    int marker = 0;
+    while (marker < lineText.size() &&
+           (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
+      ++marker;
+    }
+    if (lineText.mid(marker, commentMarker.size()) == commentMarker) {
+      qsci->setSelection(line, marker, line, marker + commentMarker.size());
       qsci->removeSelectedText();
     }
   }
   if (hasSelection) {
     qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
   }
+  qsci->endUndoAction();
+}
+
+bool ScintillaEditor::isPythonFile() const
+{
+  return filepath.endsWith(QStringLiteral(".py"), Qt::CaseInsensitive);
+}
+
+void ScintillaEditor::formatPythonSelection()
+{
+  struct Bracket {
+    QChar closing;
+    int indentation;
+  };
+
+  int lineFrom = 0;
+  int lineTo = qsci->lines() - 1;
+  if (qsci->hasSelectedText()) getRange(&lineFrom, &lineTo);
+  if (lineTo < lineFrom) return;
+
+  std::vector<int> indentations(qsci->lines(), -1);
+  std::vector<std::vector<std::pair<int, int>>> spacesBeforeAttributeDot(qsci->lines());
+  std::vector<Bracket> brackets;
+  int blockDepth = 0;
+  int explicitContinuationIndent = 0;
+  int previousCodeIndent = 0;
+  int dotContinuationIndent = 0;
+  bool explicitContinuation = false;
+  bool inDotChain = false;
+  QChar stringQuote;
+  bool inTripleString = false;
+  bool escaped = false;
+
+  auto startsWord = [](const QString& text, const QString& word) {
+    return text.startsWith(word) &&
+           (text.size() == word.size() || text.at(word.size()).isSpace() ||
+            text.at(word.size()) == QLatin1Char(':') || text.at(word.size()) == QLatin1Char('*'));
+  };
+
+  for (int line = 0; line < qsci->lines(); ++line) {
+    const QString text = qsci->text(line);
+    int first = 0;
+    while (first < text.size() && (text.at(first) == QLatin1Char(' ') ||
+                                   text.at(first) == QLatin1Char('\t'))) {
+      ++first;
+    }
+    if (first == text.size()) continue;
+
+    const QString code = text.mid(first);
+    if (inTripleString) {
+      indentations[line] = first;
+      for (int i = 0; i + 2 < text.size(); ++i) {
+        if (text.at(i) == stringQuote && text.at(i + 1) == stringQuote &&
+            text.at(i + 2) == stringQuote) {
+          inTripleString = false;
+          i += 2;
+        }
+      }
+      continue;
+    }
+
+    const bool startsDotContinuation = code.size() > 1 && code.at(0) == QLatin1Char('.') &&
+                                       (code.at(1).isLetter() || code.at(1) == QLatin1Char('_'));
+    if (!startsDotContinuation) inDotChain = false;
+
+    bool closesBracket = !brackets.empty() && code.at(0) == brackets.back().closing;
+    if (!startsDotContinuation && brackets.empty() && !explicitContinuation &&
+        (startsWord(code, QStringLiteral("elif")) || startsWord(code, QStringLiteral("else")) ||
+         startsWord(code, QStringLiteral("except")) || startsWord(code, QStringLiteral("finally")))) {
+      blockDepth = std::max(0, blockDepth - 1);
+    }
+
+    int indentation = blockDepth * 4;
+    if (startsDotContinuation) {
+      if (!inDotChain) dotContinuationIndent = previousCodeIndent + 4;
+      indentation = dotContinuationIndent;
+      inDotChain = true;
+    } else if (!brackets.empty()) {
+      indentation = closesBracket ? brackets.back().indentation : brackets.back().indentation + 4;
+    } else if (explicitContinuation) {
+      indentation = explicitContinuationIndent;
+    }
+    indentations[line] = indentation;
+
+    bool hasCode = false;
+    QChar lastCode;
+    for (int i = 0; i < text.size(); ++i) {
+      const QChar ch = text.at(i);
+      const QChar next = i + 1 < text.size() ? text.at(i + 1) : QChar();
+      const QChar next2 = i + 2 < text.size() ? text.at(i + 2) : QChar();
+      if (stringQuote != QChar()) {
+        if (inTripleString) {
+          if (ch == stringQuote && next == stringQuote && next2 == stringQuote) {
+            stringQuote = QChar();
+            inTripleString = false;
+            i += 2;
+          }
+        } else if (escaped) {
+          escaped = false;
+        } else if (ch == QLatin1Char('\\')) {
+          escaped = true;
+        } else if (ch == stringQuote) {
+          stringQuote = QChar();
+        }
+        continue;
+      }
+      if (ch == QLatin1Char('#')) break;
+      if ((ch == QLatin1Char('\'') || ch == QLatin1Char('"')) && next == ch && next2 == ch) {
+        stringQuote = ch;
+        inTripleString = true;
+        hasCode = true;
+        lastCode = ch;
+        i += 2;
+      } else if (ch == QLatin1Char('\'') || ch == QLatin1Char('"')) {
+        stringQuote = ch;
+        hasCode = true;
+        lastCode = ch;
+      } else if (ch == QLatin1Char(' ') || ch == QLatin1Char('\t')) {
+        int next = i + 1;
+        while (next < text.size() &&
+               (text.at(next) == QLatin1Char(' ') || text.at(next) == QLatin1Char('\t'))) {
+          ++next;
+        }
+        const QChar afterDot = next + 1 < text.size() ? text.at(next + 1) : QChar();
+        const bool previousCanHaveAttribute = lastCode.isLetterOrNumber() ||
+                                              lastCode == QLatin1Char('_') ||
+                                              lastCode == QLatin1Char(')') ||
+                                              lastCode == QLatin1Char(']') ||
+                                              lastCode == QLatin1Char('}') ||
+                                              lastCode == QLatin1Char('.') ||
+                                              lastCode == QLatin1Char('\'') ||
+                                              lastCode == QLatin1Char('"');
+        if (previousCanHaveAttribute && next + 1 < text.size() &&
+            text.at(next) == QLatin1Char('.') &&
+            (afterDot.isLetter() || afterDot == QLatin1Char('_'))) {
+          spacesBeforeAttributeDot[line].push_back({i, next - i});
+        }
+        i = next - 1;
+      } else if (!ch.isSpace()) {
+        hasCode = true;
+        lastCode = ch;
+        if (ch == QLatin1Char('(')) brackets.push_back({QLatin1Char(')'), indentation});
+        else if (ch == QLatin1Char('[')) brackets.push_back({QLatin1Char(']'), indentation});
+        else if (ch == QLatin1Char('{')) brackets.push_back({QLatin1Char('}'), indentation});
+        else if (!brackets.empty() && ch == brackets.back().closing) brackets.pop_back();
+      }
+    }
+    if (stringQuote != QChar() && !inTripleString) {
+      stringQuote = QChar();
+      escaped = false;
+    }
+
+    explicitContinuation = hasCode && lastCode == QLatin1Char('\\');
+    explicitContinuationIndent = indentation + 4;
+    if (hasCode && lastCode == QLatin1Char(':') && brackets.empty()) ++blockDepth;
+    if (hasCode) previousCodeIndent = indentation;
+  }
+
+  const bool useTabs = Settings::Settings::indentStyle.value() == "Tabs";
+  qsci->setIndentationsUseTabs(false);
+  qsci->beginUndoAction();
+  for (int line = lineFrom; line <= lineTo; ++line) {
+    for (auto it = spacesBeforeAttributeDot[line].rbegin();
+         it != spacesBeforeAttributeDot[line].rend(); ++it) {
+      qsci->setSelection(line, it->first, line, it->first + it->second);
+      qsci->removeSelectedText();
+    }
+    if (indentations[line] >= 0) qsci->setIndentation(line, indentations[line]);
+  }
+  qsci->endUndoAction();
+  qsci->setIndentationsUseTabs(useTabs);
+}
+
+void ScintillaEditor::formatSelection()
+{
+  if (isPythonFile()) {
+    formatPythonSelection();
+    return;
+  }
+  int lineFrom = 0;
+  int lineTo = qsci->lines() - 1;
+  if (qsci->hasSelectedText()) {
+    getRange(&lineFrom, &lineTo);
+  }
+  if (lineTo < lineFrom) return;
+
+  int depth = 0;
+  int continuationDepth = 0;
+  bool inBlockComment = false;
+  auto updateDepth = [&depth, &continuationDepth, &inBlockComment](const QString& line,
+                                                                  bool adjustIndent) {
+    int first = 0;
+    while (first < line.size() && line.at(first).isSpace()) ++first;
+    int lineDepth = depth + continuationDepth;
+    if (adjustIndent && first < line.size() && line.at(first) == QLatin1Char('}')) {
+      lineDepth = std::max(0, depth - 1) + continuationDepth;
+    }
+
+    bool inString = false;
+    bool escaped = false;
+    bool hasCode = false;
+    bool hasBrace = false;
+    QChar lastCodeChar;
+    for (int i = 0; i < line.size(); ++i) {
+      const QChar ch = line.at(i);
+      const QChar next = i + 1 < line.size() ? line.at(i + 1) : QChar();
+      if (inBlockComment) {
+        if (ch == QLatin1Char('*') && next == QLatin1Char('/')) {
+          inBlockComment = false;
+          ++i;
+        }
+        continue;
+      }
+      if (inString) {
+        lastCodeChar = ch;
+        if (escaped) escaped = false;
+        else if (ch == QLatin1Char('\\')) escaped = true;
+        else if (ch == QLatin1Char('"')) inString = false;
+        continue;
+      }
+      if (ch == QLatin1Char('/') && next == QLatin1Char('/')) break;
+      if (ch == QLatin1Char('/') && next == QLatin1Char('*')) {
+        inBlockComment = true;
+        ++i;
+      } else if (ch == QLatin1Char('"')) {
+        hasCode = true;
+        lastCodeChar = ch;
+        inString = true;
+      } else if (!ch.isSpace()) {
+        hasCode = true;
+        lastCodeChar = ch;
+        if (ch == QLatin1Char('{') || ch == QLatin1Char('}')) hasBrace = true;
+        if (ch == QLatin1Char('{')) {
+          ++depth;
+        } else if (ch == QLatin1Char('}')) {
+          depth = std::max(0, depth - 1);
+        }
+      }
+    }
+    if (hasCode) {
+      if (hasBrace || lastCodeChar == QLatin1Char(';')) continuationDepth = 0;
+      else ++continuationDepth;
+    }
+    return std::pair<int, int>{lineDepth, first};
+  };
+
+  for (int line = 0; line < lineFrom; ++line) {
+    updateDepth(qsci->text(line), false);
+  }
+
+  qsci->beginUndoAction();
+  const int indentWidth = std::max(1, qsci->indentationWidth());
+  for (int line = lineFrom; line <= lineTo; ++line) {
+    const QString lineText = qsci->text(line);
+    const auto [lineDepth, first] = updateDepth(lineText, true);
+    if (first < lineText.size()) {
+      qsci->setIndentation(line, lineDepth * indentWidth);
+    }
+  }
+  qsci->endUndoAction();
 }
 
 QString ScintillaEditor::selectedText()
@@ -1031,6 +1319,20 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
     if (keyEvent->key() == Qt::Key_Escape) {
       emit escapePressed();
     }
+#ifdef Q_OS_MACOS
+    // On macOS ControlModifier is Command; MetaModifier is physical Control.
+    const auto modifiers = keyEvent->modifiers();
+    if (keyEvent->key() == Qt::Key_L &&
+        modifiers == (Qt::ControlModifier | Qt::AltModifier)) {
+      formatSelection();
+      return true;
+    }
+    if (keyEvent->key() == Qt::Key_P &&
+        modifiers == (Qt::ControlModifier | Qt::ShiftModifier)) {
+      toggleHighlightCurrentLine();
+      return true;
+    }
+#endif
   }
   if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) ||
       QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
@@ -1066,6 +1368,36 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
     if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
       auto *keyEvent = static_cast<QKeyEvent *>(e);
 
+#ifdef Q_OS_MACOS
+      if (e->type() == QEvent::KeyPress &&
+          (keyEvent->modifiers() == Qt::NoModifier || keyEvent->modifiers() == Qt::ShiftModifier)) {
+        const bool extend = keyEvent->modifiers() == Qt::ShiftModifier;
+        unsigned int command = 0;
+        switch (keyEvent->key()) {
+        case Qt::Key_PageUp:
+          command = extend ? QsciScintilla::SCI_DOCUMENTSTARTEXTEND
+                           : QsciScintilla::SCI_DOCUMENTSTART;
+          break;
+        case Qt::Key_PageDown:
+          command = extend ? QsciScintilla::SCI_DOCUMENTENDEXTEND
+                           : QsciScintilla::SCI_DOCUMENTEND;
+          break;
+        case Qt::Key_Home:
+          command = extend ? QsciScintilla::SCI_HOMEEXTEND : QsciScintilla::SCI_HOME;
+          break;
+        case Qt::Key_End:
+          command = extend ? QsciScintilla::SCI_LINEENDEXTEND : QsciScintilla::SCI_LINEEND;
+          break;
+        default:
+          break;
+        }
+        if (command != 0) {
+          qsci->SendScintilla(command);
+          return true;
+        }
+      }
+#endif
+
       PRINTDB("%10s - modifiers: %s %s %s %s %s %s",
               (e->type() == QEvent::KeyPress ? "KeyPress" : "KeyRelease") %
                 (keyEvent->modifiers() & Qt::ShiftModifier ? "SHIFT" : "shift") %
@@ -1075,9 +1407,6 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
                 (keyEvent->modifiers() & Qt::KeypadModifier ? "KEYPAD" : "keypad") %
                 (keyEvent->modifiers() & Qt::GroupSwitchModifier ? "GROUP" : "group"));
 
-      if (handleKeyEventNavigateNumber(keyEvent)) {
-        return true;
-      }
       if (handleKeyEventBlockCopy(keyEvent)) {
         return true;
       }
@@ -1089,6 +1418,29 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
   } else return EditorInterface::eventFilter(obj, e);
 
   return false;
+}
+
+void ScintillaEditor::toggleHighlightCurrentLine()
+{
+  int line, column;
+  qsci->getCursorPosition(&line, &column);
+  (void)column;
+  const QString lineText = qsci->text(line);
+  int marker = 0;
+  while (marker < lineText.size() &&
+         (lineText.at(marker) == QLatin1Char(' ') || lineText.at(marker) == QLatin1Char('\t'))) {
+    ++marker;
+  }
+
+  qsci->beginUndoAction();
+  if (lineText.mid(marker, 1) == "#") {
+    qsci->setSelection(line, marker, line, marker + 1);
+    qsci->removeSelectedText();
+  } else {
+    qsci->insertAt("#", line, marker);
+  }
+  qsci->endUndoAction();
+  emit previewRequest();
 }
 
 bool ScintillaEditor::handleKeyEventBlockMove(QKeyEvent *keyEvent)
@@ -1195,47 +1547,6 @@ bool ScintillaEditor::handleKeyEventBlockCopy(QKeyEvent *keyEvent)
   return true;
 }
 
-bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
-{
-  static bool previewAfterUndo = false;
-
-#ifdef Q_OS_MACOS
-  unsigned int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier;
-#else
-  unsigned int navigateOnNumberModifiers = Qt::AltModifier;
-#endif
-  if (keyEvent->modifiers() == navigateOnNumberModifiers) {
-    switch (keyEvent->key()) {
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-      if (keyEvent->type() == QEvent::KeyPress) {
-        navigateOnNumber(keyEvent->key());
-      }
-      return true;
-
-    case Qt::Key_Up:
-    case Qt::Key_Down:
-      if (keyEvent->type() == QEvent::KeyPress) {
-        if (modifyNumber(keyEvent->key())) {
-          previewAfterUndo = true;
-        }
-      }
-      return true;
-    }
-  }
-  if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
-    int k = keyEvent->key() | keyEvent->modifiers();
-    auto *cmd = qsci->standardCommands()->boundTo(k);
-    if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo))
-      QTimer::singleShot(0, this, &ScintillaEditor::previewRequest);
-    else if (cmd || !keyEvent->text().isEmpty()) {
-      // any insert or command (but not undo/redo) cancels the preview after undo
-      previewAfterUndo = false;
-    }
-  }
-  return false;
-}
-
 bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
 {
   const auto& modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
@@ -1279,39 +1590,6 @@ bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
     }
   }
   return false;
-}
-
-void ScintillaEditor::navigateOnNumber(int key)
-{
-  int line, index;
-  qsci->getCursorPosition(&line, &index);
-  auto text = qsci->text(line);
-  auto left = text.left(index);
-  auto dotOnLeft = left.contains(QRegularExpression("\\.\\d*$"));
-  auto dotJustLeft = index > 1 && text[index - 2] == '.';
-  auto dotJustRight = text[index] == '.';
-  auto numOnLeft = left.contains(QRegularExpression("\\d\\.?$")) || left.endsWith("-.");
-  auto numOnRight = text.indexOf(QRegularExpression("\\.?\\d"), index) == index;
-
-  switch (key) {
-  case Qt::Key_Left:
-    if (numOnLeft) qsci->setCursorPosition(line, index - (dotJustLeft ? 2 : 1));
-    break;
-
-  case Qt::Key_Right:
-    if (numOnRight) qsci->setCursorPosition(line, index + (dotJustRight ? 2 : 1));
-    else if (numOnLeft) {
-      // add trailing zero
-      if (!dotOnLeft) {
-        qsci->insert(".0");
-        index++;
-      } else {
-        qsci->insert("0");
-      }
-      qsci->setCursorPosition(line, index + 1);
-    }
-    break;
-  }
 }
 
 bool ScintillaEditor::modifyNumber(int key)
