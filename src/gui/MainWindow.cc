@@ -1822,7 +1822,11 @@ void MainWindow::parseTopLevelDocument()
 
   activeEditor->resetHighlighting();
   this->rootFile = parseDocument(activeEditor);
-  this->parsedFile = this->rootFile;
+  // After a parse error, keep the last successful parse of the same file, so that a change to one of
+  // its include files (e.g. fixing the error) still triggers an automatic reload.
+  const bool keepLastParse = !this->rootFile && this->parsedFile &&
+                             this->parsedFile->getFullpath() == activeEditor->filepath.toStdString();
+  if (!keepLastParse) this->parsedFile = this->rootFile;
 }
 
 void MainWindow::checkAutoReload()
