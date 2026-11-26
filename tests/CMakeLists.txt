@@ -1005,6 +1005,7 @@ add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES 
 add_cmdline_test(export-3mf-stdio        OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} STDIO ARGS --export-format 3mf)
 endif()
 add_cmdline_test(export-pov-as-is        OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold)
+add_cmdline_test(export-pov-as-is        OPENSCAD SUFFIX pov FILES ${TEST_SCAD_DIR}/pov/pov-export-sphere.scad ARGS --backend=manifold)
 add_cmdline_test(export-pov-translate-1  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,0,0,0,0,0,140)
 add_cmdline_test(export-pov-translate-2  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=10,0,0,0,0,0,140)
 add_cmdline_test(export-pov-translate-3  OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --backend=manifold --camera=0,10,0,0,0,0,140)
