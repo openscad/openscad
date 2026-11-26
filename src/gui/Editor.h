@@ -65,6 +65,8 @@ public:
   virtual QMenu *createStandardContextMenu() = 0;
   virtual QPoint mapToGlobal(const QPoint&) = 0;
   virtual void setCursorPosition(int /*line*/, int /*col*/) {}
+  virtual void selectRange(int lineFrom, int colFrom, int lineTo, int colTo) = 0;
+  virtual void clearSelection() = 0;
   virtual void setFocus() = 0;
 
 signals:
