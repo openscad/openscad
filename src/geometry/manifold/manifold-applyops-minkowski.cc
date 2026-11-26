@@ -65,6 +65,8 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     std::vector<Hull_kernel::Point_3> out;
     out.reserve(mesh.number_of_vertices());
     for (auto idx : mesh.vertices()) {
+      // Points not used by any face, e.g. unused polyhedron() points, aren't part of the shape.
+      if (mesh.is_isolated(idx)) continue;
       out.push_back(conv(mesh.point(idx)));
     }
     return out;

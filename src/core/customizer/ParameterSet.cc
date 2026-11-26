@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <system_error>
 
 #include "core/str_utf8_wrapper.h"
 #include "utils/printutils.h"
@@ -71,5 +72,15 @@ void ParameterSets::writeFile(const std::string& filename) const
     boost::property_tree::write_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
     LOG(message_group::Error, "Cannot write Parameter Set '%1$s': %2$s", filename, e.what());
+  }
+}
+
+// Remove a parameter set file. A file that doesn't exist is not an error.
+void ParameterSets::removeFile(const std::string& filename)
+{
+  std::error_code ec;
+  std::filesystem::remove(std::filesystem::u8path(filename), ec);
+  if (ec) {
+    LOG(message_group::Error, "Cannot remove Parameter Set '%1$s': %2$s", filename, ec.message());
   }
 }

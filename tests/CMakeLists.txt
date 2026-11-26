@@ -872,6 +872,7 @@ add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFO
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/polyhedron-inside-out.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # color(undef) must leave colors alone, like in preview (#5853).
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/color-undef.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
+add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/3D/misc/minkowski-unused-points.scad EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(render-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold --hardwarnings)
 endif()
@@ -1414,10 +1415,6 @@ disable_tests_safe(
   # OpenCSG z fighting
   preview-cgal_surface_image
   throwntogether-cgal_surface_image
-
-  # https://github.com/openscad/openscad/issues/5158
-  #render-cgal_example017
-  #throwntogether-cgal_example017
 
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text

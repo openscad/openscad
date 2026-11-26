@@ -116,7 +116,10 @@ void GLView::setupShader()
   edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
     .resource = resource,
     .type = ShaderUtils::ShaderType::EDGE_RENDERING,
-    .uniforms = {},
+    .uniforms =
+      {
+        {"show_edges", glGetUniformLocation(resource.shader_program, "show_edges")},
+      },
     .attributes =
       {
         {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},

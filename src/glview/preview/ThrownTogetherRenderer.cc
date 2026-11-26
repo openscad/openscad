@@ -126,6 +126,10 @@ void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo 
   if (enable_shader) {
     GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
     GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
+    if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
+      GL_TRACE("glUniform1i(%d, %d)", shaderinfo->uniforms.at("show_edges") % showedges);
+      GL_CHECKD(glUniform1i(shaderinfo->uniforms.at("show_edges"), showedges));
+    }
     VBOUtils::shader_attribs_enable(*shaderinfo);
   }
 

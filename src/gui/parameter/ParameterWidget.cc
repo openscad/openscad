@@ -105,23 +105,42 @@ void ParameterWidget::readFile(const QString& scadFile)
 
 // Write the json file if the parameter sets are not empty.
 // This prevents creating unnecessary json files.
+// If there are no parameter sets, remove a json file left over from earlier
+// saves, so that deleted parameter sets don't come back on the next load.
+// If the existing json file could not be read, ask before overwriting or
+// deleting it.
 void ParameterWidget::saveFile(const QString& scadFile)
 {
-  if (sets.empty()) {
-    return;
-  }
-
   QString jsonFile = getJsonFile(scadFile);
   if (jsonFile == this->invalidJsonFile) {
-    QMessageBox msgBox;
-    msgBox.setWindowTitle(_("Saving presets"));
-    msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?"))
-                     .arg(this->invalidJsonFile));
-    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
-    if (msgBox.exec() == QMessageBox::Cancel) {
-      return;
+    if (sets.empty()) {
+      QMessageBox deleteBox;
+      deleteBox.setWindowTitle(_("Deleting last preset"));
+      deleteBox.setText(QString(_("%1 was found, but was unreadable. Do you want to delete %1?"))
+                          .arg(this->invalidJsonFile));
+      deleteBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+      deleteBox.setDefaultButton(QMessageBox::No);
+      if (deleteBox.exec() != QMessageBox::Yes) {
+        return;
+      }
+    } else {
+      QMessageBox overwriteBox;
+      overwriteBox.setWindowTitle(_("Saving presets"));
+      overwriteBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?"))
+                             .arg(this->invalidJsonFile));
+      overwriteBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+      overwriteBox.setDefaultButton(QMessageBox::Cancel);
+      if (overwriteBox.exec() == QMessageBox::Cancel) {
+        return;
+      }
     }
+    // The unreadable file is about to be replaced or removed, don't ask again.
+    this->invalidJsonFile.clear();
+  }
+
+  if (sets.empty()) {
+    ParameterSets::removeFile(jsonFile.toStdString());
+    return;
   }
 
   cleanSets();
