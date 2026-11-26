@@ -1381,6 +1381,7 @@ set(GUI_SOURCES
   src/gui/ScadLexer.cc
   src/gui/ScintillaEditor.cc
   src/gui/SettingsWriter.cc
+  src/gui/Stereo3dView.cc
   src/gui/TabManager.cc
   src/gui/UIUtils.cc
   src/gui/WindowManager.cc
@@ -1458,6 +1459,7 @@ set(GUI_HEADERS
     src/gui/ScadLexer.h
     src/gui/ScintillaEditor.h
     src/gui/SettingsWriter.h
+    src/gui/Stereo3dView.h
     src/gui/TabManager.h
     src/gui/UIUtils.h
     src/gui/ViewportControl.h

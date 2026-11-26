@@ -72,6 +72,7 @@ public:
   Camera cam;
   double far_far_away;
   double aspectratio;
+  double stereoEyeOffset;  // sideways offset of the eye in the camera's view, 0 for a single eye
   bool showaxes;
   bool showedges;
   bool showcrosshairs;

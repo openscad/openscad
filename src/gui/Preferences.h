@@ -80,6 +80,8 @@ public slots:
   void on_enableHidapiTraceCheckBox_toggled(bool);
   void on_checkBoxShowWarningsIn3dView_toggled(bool);
   void on_checkBoxMouseCentricZoom_toggled(bool);
+  void on_checkBoxStereo3dView_toggled(bool);
+  void on_doubleSpinBoxStereo3dEyeSeparation_valueChanged(double);
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
   void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
@@ -218,6 +220,7 @@ private:
   void removeDefaultSettings();
   void setupFeaturesPage();
   void setup3DPrintPage();
+  void updateStereo3dOptions();
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
