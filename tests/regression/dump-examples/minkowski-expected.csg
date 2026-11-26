@@ -1,0 +1,22 @@
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
+	difference() {
+		group() {
+			minkowski(convexity = 0) {
+				cube(size = [52, 32, 12], center = true);
+				sphere($fn = 0, $fa = 6, $fs = 0.5, r = 4, style = "orig");
+			}
+		}
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 2], [0, 0, 0, 1]]) {
+			group() {
+				minkowski(convexity = 0) {
+					cube(size = [52, 32, 16], center = true);
+					sphere($fn = 0, $fa = 6, $fs = 0.5, r = 2, style = "orig");
+				}
+			}
+		}
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 16], [0, 0, 0, 1]]) {
+			cube(size = [61, 41, 20], center = true);
+		}
+	}
+}
+
