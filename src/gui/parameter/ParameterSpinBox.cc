@@ -20,33 +20,36 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter,
   doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
   doubleSpinBox->setKeyboardTracking(true);
 
-  int decimals = decimalsRequired(parameter->defaultValue);
-  double minimum;
-  if (parameter->minimum) {
-    minimum = *parameter->minimum;
-    decimals = std::max(decimals, decimalsRequired(minimum));
-  } else if (parameter->maximum && *parameter->maximum > 0) {
-    minimum = 0;
-  } else {
-    minimum = std::numeric_limits<double>::lowest();
-  }
-  double maximum;
-  if (parameter->maximum) {
-    maximum = *parameter->maximum;
-    decimals = std::max(decimals, decimalsRequired(maximum));
-  } else if (parameter->minimum && *parameter->minimum < 0) {
-    maximum = 0;
-  } else {
-    maximum = std::numeric_limits<double>::max();
-  }
-  double step;
-  if (parameter->step) {
-    step = *parameter->step;
-    decimals = std::max(decimals, decimalsRequired(step));
-  } else {
+ int decimals = decimalsRequired(parameter->defaultValue);
+ double minimum;
+ if (parameter->minimum) {
+   minimum = *parameter->minimum;
+   decimals = std::max(decimals, decimalsRequired(minimum));
+ } else if (parameter->maximum && *parameter->maximum > 0) {
+   minimum = 0;
+ } else {
+   minimum = std::numeric_limits<double>::lowest();
+ }
+ double maximum;
+ if (parameter->maximum) {
+   maximum = *parameter->maximum;
+   decimals = std::max(decimals, decimalsRequired(maximum));
+ } else if (parameter->minimum && *parameter->minimum < 0) {
+   maximum = 0;
+ } else {
+   maximum = std::numeric_limits<double>::max();
+ }
+ double step;
+ if (parameter->step) {
+   step = *parameter->step;
+   decimals = std::max(decimals, decimalsRequired(step));
+ } else {
+    // If no step is given, we allow up to 7 decimal places for arbitrary precision
+    // but we also consider the decimals from the default value (so if the default value has 2 decimals, we at least show 2)
+    decimals = std::max(decimals, 7);
     step = pow(0.1, decimals);
-  }
-  doubleSpinBox->setDecimals(decimals);
+ }
+ doubleSpinBox->setDecimals(decimals);
   doubleSpinBox->setRange(minimum, maximum);
   doubleSpinBox->setSingleStep(step);
 
