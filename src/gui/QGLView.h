@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -78,8 +79,8 @@ public:
   QLabel *statusLabel;
 
   void zoom(double v, bool relative);
-  void zoomFov(double v);
-  void zoomCursor(int x, int y, int zoom);
+  void zoomFov(double v, bool relative);
+  void zoomCursor(int x, int y, double zoom, bool relative);
   void rotate(double x, double y, double z, bool relative);
   void rotate2(double x, double y, double z);
   void translate(double x, double y, double z, bool relative, bool viewPortRelative = true);
@@ -100,6 +101,7 @@ private:
 #endif
   QImage frame;  // Used by grabFrame() and save()
 
+  bool event(QEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
@@ -111,6 +113,10 @@ private:
 
   void paintGL() override;
   void normalizeAngle(GLdouble& angle);
+
+  int getModifierIndex();
+  void applyMouseActions(float *selectedMouseActions, double dx, double dy, std::optional<QPointF> pos,
+                         bool fromScroll);
 
 #ifdef ENABLE_OPENCSG
   void display_opencsg_warning() override;
