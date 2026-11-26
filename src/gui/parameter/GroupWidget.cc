@@ -12,6 +12,8 @@ GroupWidget::GroupWidget(const QString& title, QWidget *parent) : QWidget(parent
   this->toggleButton.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
   this->toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
   this->toggleButton.setCheckable(true);
+  this->toggleButton.setStyleSheet(
+    "QToolButton:checked { color: palette(highlighted-text); }");
   setExpanded(false);
 
   // don't waste space
