@@ -229,6 +229,19 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 
   auto sorted_ps = createSortedPolySet(*ps);
 
+  // lib3mf v1 rejects triangles that use a vertex more than once, e.g. from rotate_extrude() of a
+  // polygon touching the axis. They have no area, so leave them out, with their colors.
+  size_t kept = 0;
+  for (size_t i = 0; i < sorted_ps->indices.size(); ++i) {
+    const auto& t = sorted_ps->indices[i];
+    if (t[0] == t[1] || t[1] == t[2] || t[2] == t[0]) continue;
+    sorted_ps->indices[kept] = t;
+    if (i < sorted_ps->color_indices.size()) sorted_ps->color_indices[kept] = sorted_ps->color_indices[i];
+    ++kept;
+  }
+  sorted_ps->indices.resize(kept);
+  if (sorted_ps->color_indices.size() > kept) sorted_ps->color_indices.resize(kept);
+
   for (const auto& v : sorted_ps->vertices) {
     if (!vertexFunc(v)) {
       export_3mf_error("Can't add vertex to 3MF model.", ctx.model);

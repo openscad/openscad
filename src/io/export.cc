@@ -295,8 +295,15 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
     }
     if (onerror) {
       LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), filename);
+      return false;
     }
-    return !onerror;
+    std::error_code ec;
+    if (std::filesystem::file_size(path, ec) == 0 && !ec) {
+      // The exporter has already logged the reason, e.g. lib3mf rejecting the mesh.
+      LOG(message_group::Error, _("Export failed, nothing was written to \"%1$s\"."), filename);
+      return false;
+    }
+    return true;
   }
 }
 
