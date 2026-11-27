@@ -141,7 +141,7 @@ void configureOpenGLContext()
 
 void setGlobalTheme()
 {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
   static auto lastColorScheme = QGuiApplication::styleHints()->colorScheme();
   const auto colorScheme = QGuiApplication::styleHints()->colorScheme();
   if (colorScheme != lastColorScheme) {
