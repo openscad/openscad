@@ -8,7 +8,13 @@ if(USE_MIMALLOC)
     message(AUTHOR_WARNING "Target OpenSCADLibInternal appears to have libraries linked before mimalloc (${OSCAD_LIBS}).  This might cause problems.")
   endif()
 
-  find_package(mimalloc QUIET)
+  # Older installed versions, e.g. 3.0.1 (an alpha) in Debian 13 and 2.x in Ubuntu 24.04,
+  # are skipped in favor of the bundled copy: OpenSCAD crashed at startup with Debian's.
+  find_package(mimalloc 3.2 QUIET)
+  if(NOT mimalloc_FOUND AND mimalloc_CONSIDERED_VERSIONS)
+    list(REMOVE_DUPLICATES mimalloc_CONSIDERED_VERSIONS)
+    message(STATUS "Ignoring installed mimalloc ${mimalloc_CONSIDERED_VERSIONS} (3.2 or newer needed), using the bundled copy")
+  endif()
   if(TARGET mimalloc)
     # MSYS2 provides a mimalloc package with both static and shared builds
     message(STATUS "Using already installed mimalloc package, version ${mimalloc_VERSION}")
