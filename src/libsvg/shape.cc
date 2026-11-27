@@ -26,6 +26,7 @@
 
 #include <clipper2/clipper.offset.h>
 
+#include <Eigen/SVD>
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/tokenizer.hpp>
@@ -300,12 +301,34 @@ void shape::offset_path(path_list_t& path_list, path_t& path, double stroke_widt
   }
 }
 
+/*!
+   Returns the size in OpenSCAD units of one local user unit of this shape, i.e. including the
+   transforms of this shape and its ancestors and the scale of the root page.
+   Non-uniform transforms use the largest scale factor.
+ */
+double shape::get_output_scale(const fnContext *ctx)
+{
+  std::vector<Eigen::Matrix3d> matrices;
+  for (shape *s = this; s->get_parent() != nullptr; s = s->get_parent()) {
+    collect_transform_matrices(matrices, s);
+  }
+  Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
+  for (auto it = matrices.rbegin(); it != matrices.rend(); ++it) {
+    m = *it * m;
+  }
+  const Eigen::Matrix2d linear = m.topLeftCorner<2, 2>();
+  const double max_scale = Eigen::JacobiSVD<Eigen::Matrix2d>(linear).singularValues()(0);
+  return ctx->unit_scale * max_scale;
+}
+
 void shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context)
 {
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  double rmax = fmax(rx, ry);
-  unsigned long fn = fValues->getCircularSegmentCount(rmax, 360.0).value_or(3);
-  if (fn < 40) fn = 40;  // Use the old value as a minimum
+  unsigned long fn = 40;  // OpenSCAD 2021.01
+  if (!fValues->legacy_segments) {
+    const double rmax = fmax(rx, ry) * get_output_scale(fValues);
+    fn = fValues->getCircularSegmentCount(rmax, 360.0).value_or(3);
+  }
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * 360.0 / fn;
     const double xx = rx * sin_degrees(a) + x;

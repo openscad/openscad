@@ -29,6 +29,8 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <algorithm>
+#include <cmath>
 #include <exception>
 #include <memory>
 #include <string>
@@ -79,6 +81,53 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
   }
 }
 
+struct PageMapping {
+  double width_mm = 0.0;
+  double height_mm = 0.0;
+  Eigen::Vector2d scale{1.0, 1.0};
+  Eigen::Vector2d align{0.0, 0.0};
+  Eigen::Vector2d viewbox{0.0, 0.0};
+};
+
+// Maps SVG user units of the given page to OpenSCAD units.
+PageMapping page_mapping(const libsvg::svgpage& page, const double dpi)
+{
+  PageMapping m;
+  const auto w = page.get_width();
+  const auto h = page.get_height();
+  const auto alignment = page.get_alignment();
+
+  const bool viewbox_valid = page.get_viewbox().is_valid;
+  m.width_mm = to_mm(w, page.get_viewbox().width, viewbox_valid, dpi);
+  m.height_mm = to_mm(h, page.get_viewbox().height, viewbox_valid, dpi);
+
+  if (viewbox_valid) {
+    const double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
+    const double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
+    m.viewbox << px * page.get_viewbox().x, py * page.get_viewbox().y;
+
+    m.scale << m.width_mm / page.get_viewbox().width, m.height_mm / page.get_viewbox().height;
+
+    if (alignment.x != libsvg::align_t::NONE) {
+      double scaling;
+      if (alignment.meet) {
+        // preserve aspect ratio and fit into viewport, so
+        // select the smaller of the 2 scale factors
+        scaling = m.scale.x() < m.scale.y() ? m.scale.x() : m.scale.y();
+      } else {
+        // preserve aspect ratio and fill viewport, so select
+        // the bigger of the 2 scale factors
+        scaling = m.scale.x() > m.scale.y() ? m.scale.x() : m.scale.y();
+      }
+      m.scale = Eigen::Vector2d{scaling, scaling};
+
+      m.align << calc_alignment(alignment.x, m.width_mm, m.scale.x(), page.get_viewbox().width),
+        calc_alignment(alignment.y, m.height_mm, m.scale.y(), page.get_viewbox().height);
+    }
+  }
+  return m;
+}
+
 }  // namespace
 
 std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::string& filename,
@@ -88,8 +137,14 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
 {
   try {
     fnContext scadContext(
-      [&discretizer](double r, double angle) { return discretizer.getCircularSegmentCount(r, angle); },
-      discretizer.getPathSegmentCount());
+      [&discretizer](double r, double angle) { return discretizer.getCircularSegmentCount(r, angle); });
+    scadContext.legacy_segments = discretizer.isDefault();
+    // Curves are tessellated while parsing, in SVG user units. Tell the parser how big a user
+    // unit is in the imported geometry, so that $fn/$fa/$fs see the same radius as circle().
+    scadContext.page_unit_scale = [dpi](const libsvg::svgpage& page) {
+      const auto m = page_mapping(page, dpi);
+      return std::max(std::fabs(m.scale.x()), std::fabs(m.scale.y()));
+    };
     if (id) {
       scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
         bool layer_match = true;
@@ -150,38 +205,12 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
     for (const auto& shape_ptr : *shapes) {
       const auto page = dynamic_cast<libsvg::svgpage *>(shape_ptr.get());
       if (page) {
-        const auto w = page->get_width();
-        const auto h = page->get_height();
-        const auto alignment = page->get_alignment();
-
-        const bool viewbox_valid = page->get_viewbox().is_valid;
-        width_mm = to_mm(w, page->get_viewbox().width, viewbox_valid, dpi);
-        height_mm = to_mm(h, page->get_viewbox().height, viewbox_valid, dpi);
-
-        if (viewbox_valid) {
-          const double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
-          const double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
-          viewbox << px * page->get_viewbox().x, py * page->get_viewbox().y;
-
-          scale << width_mm / page->get_viewbox().width, height_mm / page->get_viewbox().height;
-
-          if (alignment.x != libsvg::align_t::NONE) {
-            double scaling;
-            if (alignment.meet) {
-              // preserve aspect ratio and fit into viewport, so
-              // select the smaller of the 2 scale factors
-              scaling = scale.x() < scale.y() ? scale.x() : scale.y();
-            } else {
-              // preserve aspect ratio and fill viewport, so select
-              // the bigger of the 2 scale factors
-              scaling = scale.x() > scale.y() ? scale.x() : scale.y();
-            }
-            scale = Eigen::Vector2d{scaling, scaling};
-
-            align << calc_alignment(alignment.x, width_mm, scale.x(), page->get_viewbox().width),
-              calc_alignment(alignment.y, height_mm, scale.y(), page->get_viewbox().height);
-          }
-        }
+        const auto m = page_mapping(*page, dpi);
+        width_mm = m.width_mm;
+        height_mm = m.height_mm;
+        scale = m.scale;
+        align = m.align;
+        viewbox = m.viewbox;
       }
 
       if (!shape_ptr->is_excluded()) {

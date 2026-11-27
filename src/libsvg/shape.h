@@ -34,20 +34,21 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "clipper2/clipper.h"
 
 namespace libsvg {
 class shape;
-}
+class svgpage;
+}  // namespace libsvg
 
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(std::function<std::optional<int>(double, double)> getCircularSegmentCount_fn,
-            int pathSegmentCount)
-    : getCircularSegmentCount(getCircularSegmentCount_fn), pathSegmentCount(pathSegmentCount)
+  explicit fnContext(std::function<std::optional<int>(double, double)> getCircularSegmentCount_fn)
+    : getCircularSegmentCount(std::move(getCircularSegmentCount_fn))
   {
   }
   bool match(bool val)
@@ -59,7 +60,13 @@ struct fnContext {
 
   std::function<bool(const libsvg::shape *)> selector;
   std::function<std::optional<int>(double, double)> getCircularSegmentCount;
-  const int pathSegmentCount;
+  // Returns the size of one user unit of the given (root) page in OpenSCAD units.
+  std::function<double(const libsvg::svgpage&)> page_unit_scale;
+  // Size of one user unit of the root page in OpenSCAD units, set when the root <svg> is parsed.
+  double unit_scale{1.0};
+  // Use the fixed segment counts of OpenSCAD 2021.01 (used when $fn/$fa/$fs are all at
+  // their defaults, so existing designs keep their geometry).
+  bool legacy_segments{false};
 
 private:
   std::atomic<int> matches{0};
@@ -99,6 +106,7 @@ protected:
   void offset_path(path_list_t& path_list, path_t& path, double stroke_width,
                    Clipper2Lib::EndType stroke_linecap);
   void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
+  [[nodiscard]] double get_output_scale(const fnContext *ctx);
 
 public:
   shape() = default;
