@@ -28,6 +28,7 @@
 
 #include <QtCore/qstringliteral.h>
 
+#include <QApplication>
 #include <QDialog>
 #include <QDir>
 #include <QFileInfo>
@@ -36,8 +37,10 @@
 #include <QIcon>
 #include <QObject>
 #include <QPalette>
-#include <QSurfaceFormat>
 #include <QStringList>
+#include <QStyle>
+#include <QStyleHints>
+#include <QSurfaceFormat>
 #include <Qt>
 #include <QtConcurrentRun>
 #include <QtGlobal>
@@ -138,6 +141,14 @@ void configureOpenGLContext()
 
 void setGlobalTheme()
 {
+#ifdef Q_OS_LINUX
+  static auto lastColorScheme = QGuiApplication::styleHints()->colorScheme();
+  const auto colorScheme = QGuiApplication::styleHints()->colorScheme();
+  if (colorScheme != lastColorScheme) {
+    lastColorScheme = colorScheme;
+    QApplication::setPalette(QApplication::style()->standardPalette());
+  }
+#endif
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 }
 
