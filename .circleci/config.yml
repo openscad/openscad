@@ -200,6 +200,8 @@ jobs:
                   $CMAKE_EXTRA_ARGS
               cmake --build . -j
               DESTDIR=../AppDir cmake --install .
+              mkdir -p ../AppDir/apprun-hooks
+              echo 'export QT_QPA_PLATFORMTHEME=xdgdesktopportal' > ../AppDir/apprun-hooks/zz-openscad-theme.sh
               cd ..
 
               export PATH=/appimage/usr/bin:"$PATH"

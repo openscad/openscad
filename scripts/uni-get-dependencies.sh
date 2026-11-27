@@ -104,7 +104,9 @@ get_debian_deps()
   python3-setuptools python3-venv ragel xvfb
  apt-get -y install catch2 || echo "catch2 pkg deprecated on Debian, so if you're seeing this, it's probably been removed from the repo"
  apt-get -y install libcatch2-dev || echo "libcatch2-dev package not found on ubuntu or older Debian, so ignoring."
- if [ "$USE_QT6" = "1" ]; then
+ if [ "$SKIP_QT" = "1" ]; then
+  echo "Skipping Qt dependencies"
+ elif [ "$USE_QT6" = "1" ]; then
   get_qt6_deps_debian
  else
   get_qt5_deps_debian
@@ -226,12 +228,17 @@ detect_and_install()
 
 # Main
 
-# Usage: $0 [qt6]
+# Usage: $0 [qt6] [no-qt]
 # Qt5 is default
 if [ "`echo $* | grep qt6`" ]; then
   USE_QT6=1
 else
   USE_QT6=0
+fi
+if [ "`echo $* | grep no-qt`" ]; then
+  SKIP_QT=1
+else
+  SKIP_QT=0
 fi
 
 detect_and_install
