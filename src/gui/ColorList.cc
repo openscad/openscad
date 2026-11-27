@@ -98,7 +98,7 @@ ColorList::ColorList(QWidget *parent) : QWidget(parent), ui(new Ui_ColorListWidg
   ui->actionResetSampleTextBackground->trigger();
 
   selectedColorLabel = nullptr;
-  layout = new ColorLayout(ui->scrollAreaWidgetContentsColorList);
+  layout = new ColorLayout(ui->scrollAreaWidgetContentsColorList, 0);
 
   for (const auto& colorMapEntry : OpenSCAD::getColorMaps()) {
     const auto mapName = QString::fromStdString(colorMapEntry.first);
