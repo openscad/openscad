@@ -207,6 +207,11 @@ jobs:
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
               export QMAKE=/usr/bin/qmake6
+              echo "Checking Qt plugin directory..."
+              qmake6 -query QT_INSTALL_PLUGINS
+              echo "Checking Wayland platform plugins..."
+              find /usr -type f \( -name 'libqwayland-*.so' -o -name 'libqwayland*.so' \) 2>/dev/null
+
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
               sccache --show-stats
               mkdir -p /tmp/artifacts
