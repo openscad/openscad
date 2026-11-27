@@ -146,7 +146,11 @@ void setGlobalTheme()
   const auto colorScheme = QGuiApplication::styleHints()->colorScheme();
   if (colorScheme != lastColorScheme) {
     lastColorScheme = colorScheme;
-    QApplication::setPalette(QApplication::style()->standardPalette());
+    const bool paletteDark = isDarkMode();
+    const bool schemeDark = colorScheme == Qt::ColorScheme::Dark;
+    if (paletteDark != schemeDark) {
+      QApplication::setPalette(QApplication::style()->standardPalette());
+    }
   }
 #endif
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
