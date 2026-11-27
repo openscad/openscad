@@ -228,7 +228,7 @@ detect_and_install()
 
 # Main
 
-# Usage: $0 [qt6] [no-qt]
+# Usage: $0 [qt6|no-qt]
 # Qt5 is default
 if [ "`echo $* | grep qt6`" ]; then
   USE_QT6=1

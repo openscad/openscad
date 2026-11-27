@@ -221,7 +221,7 @@ RUN apt-get update && apt-get -y full-upgrade && \
 WORKDIR /openscad
 
 RUN --mount=type=bind,source=scripts/uni-get-dependencies.sh,target=./uni-get-dependencies.sh \
-    ./uni-get-dependencies.sh qt6 no-qt && \
+    ./uni-get-dependencies.sh no-qt && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
