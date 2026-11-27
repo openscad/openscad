@@ -4,12 +4,15 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QLineEdit>
+#include <QMainWindow>
+#include <QSignalSpy>
 #include <QString>
 #include <QStringList>
 #include <QTest>
 
 #include "gui/ColorLabel.h"
 #include "gui/ColorList.h"
+#include "gui/Dock.h"
 #include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
@@ -72,4 +75,45 @@ void TestMainWindow::copyColorName()
   QCOMPARE(selectedName->text(), name);
   copy->trigger();
   QCOMPARE(QApplication::clipboard()->text(), name);
+}
+
+void TestMainWindow::restoreFloatingDockVisibility_data()
+{
+  QTest::addColumn<bool>("visible");
+  QTest::newRow("closed") << false;
+  QTest::newRow("open") << true;
+}
+
+void TestMainWindow::restoreFloatingDockVisibility()
+{
+  QFETCH(bool, visible);
+  QMainWindow original;
+  Dock dock(&original);
+  dock.setObjectName("testDock");
+  original.addDockWidget(Qt::LeftDockWidgetArea, &dock);
+  original.show();
+  dock.setFloating(true);
+  QVERIFY(dock.isVisible());
+  if (!visible) QVERIFY(dock.close());
+  const auto state = original.saveState();
+
+  QMainWindow restored;
+  Dock restoredDock(&restored);
+  restoredDock.setObjectName(dock.objectName());
+  restoredDock.setName("Console");
+  restoredDock.setNameSuffix("part.scad");
+  restored.addDockWidget(Qt::LeftDockWidgetArea, &restoredDock);
+  QSignalSpy visibility(&restoredDock, &QDockWidget::visibilityChanged);
+  QVERIFY(restored.restoreState(state));
+  restored.show();
+
+  QVERIFY(restoredDock.isFloating());
+  QCOMPARE(restoredDock.windowTitle(), "Console (part.scad)");
+  QCOMPARE(restoredDock.isVisible(), visible);
+  QCOMPARE(visibility.contains({true}), visible);
+  if (!visible) {
+    restoredDock.toggleViewAction()->trigger();
+    QVERIFY(restoredDock.isVisible());
+    QVERIFY(restoredDock.isFloating());
+  }
 }

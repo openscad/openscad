@@ -10,4 +10,6 @@ private slots:
   void checkSaveToShouldUpdateWindowTitle();
   void copyColorName_data();
   void copyColorName();
+  void restoreFloatingDockVisibility_data();
+  void restoreFloatingDockVisibility();
 };
