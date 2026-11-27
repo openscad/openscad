@@ -26,6 +26,8 @@
 
 #include "io/export.h"
 
+#include <double-conversion/double-conversion.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cerrno>
@@ -344,6 +346,24 @@ std::string get_current_iso8601_date_time_utc()
   auto time = std::chrono::system_clock::to_time_t(now);
   return STR(
     std::put_time(gmtime(&time), "%Y-%m-%dT%H:%M:%SZ"));  // %F/%T not fully supported everywhere
+}
+
+std::string formatExportVector(const Vector3d& v)
+{
+  // The mesh exporters only write finite values.
+  constexpr int decimalLowExponent = -6;
+  constexpr int decimalHighExponent = 21;
+  static const double_conversion::DoubleToStringConverter converter(
+    double_conversion::DoubleToStringConverter::UNIQUE_ZERO, nullptr, nullptr, 'e',
+    decimalLowExponent, decimalHighExponent, 5, 0);
+  char buffer[128];
+  double_conversion::StringBuilder builder(buffer, sizeof(buffer));
+  converter.ToShortest(v[0], &builder);
+  builder.AddCharacter(' ');
+  converter.ToShortest(v[1], &builder);
+  builder.AddCharacter(' ');
+  converter.ToShortest(v[2], &builder);
+  return builder.Finalize();
 }
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)

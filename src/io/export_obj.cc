@@ -52,7 +52,7 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   output << "# OpenSCAD obj exporter\n";
 
   for (const auto& v : out->vertices) {
-    output << "v " << v[0] << " " << v[1] << " " << v[2] << "\n";
+    output << "v " << formatExportVector(v) << "\n";
   }
 
   for (const auto& poly : out->indices) {
