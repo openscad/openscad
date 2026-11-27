@@ -4,6 +4,7 @@
 #ifdef ENABLE_MANIFOLD
 
 #include <memory>
+#include <vector>
 
 #include "core/AST.h"
 #include "core/enums.h"
@@ -63,43 +64,54 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
     return std::make_shared<ManifoldGeometry>(manifold::Manifold::Hull(pts));
   }
 
-  std::shared_ptr<ManifoldGeometry> geom;
+  // Minkowski is not a batched boolean; keep the pairwise fold.
+  if (op == OpenSCADOperator::MINKOWSKI) {
+    std::shared_ptr<ManifoldGeometry> geom;
+    bool foundFirst = false;
+    for (const auto& item : children) {
+      auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
+      if (!chN || chN->isEmpty()) continue;
+      if (!foundFirst) {
+        geom = std::make_shared<ManifoldGeometry>(*chN);
+        foundFirst = true;
+        continue;
+      }
+      *geom = geom->minkowski(*chN);
+      if (item.first) item.first->progress_report();
+    }
+    return geom;
+  }
 
-  bool foundFirst = false;
+  manifold::OpType opType;
+  switch (op) {
+  case OpenSCADOperator::UNION:        opType = manifold::OpType::Add; break;
+  case OpenSCADOperator::INTERSECTION: opType = manifold::OpType::Intersect; break;
+  case OpenSCADOperator::DIFFERENCE:   opType = manifold::OpType::Subtract; break;
+  default:
+    LOG(message_group::Error, "Unsupported manifold operator: %1$d", static_cast<int>(op));
+    return nullptr;
+  }
 
+  // Collect the non-empty operands (preserving order and the same empty-geometry short-circuits as
+  // the pairwise fold), then evaluate them all at once with Manifold's batched BatchBoolean, which
+  // does a balanced/parallel reduction instead of re-processing a growing accumulator each step.
+  std::vector<std::shared_ptr<const ManifoldGeometry>> operands;
+  operands.reserve(children.size());
   for (const auto& item : children) {
     auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
-
-    // Intersecting something with nothing results in nothing
     if (!chN || chN->isEmpty()) {
-      if (op == OpenSCADOperator::INTERSECTION) {
-        geom = nullptr;
-        break;
-      }
-      if (op == OpenSCADOperator::DIFFERENCE && !foundFirst) {
-        geom = nullptr;
-        break;
-      }
+      // Intersecting with nothing, or subtracting from nothing, results in nothing.
+      if (op == OpenSCADOperator::INTERSECTION) return nullptr;
+      if (op == OpenSCADOperator::DIFFERENCE && operands.empty()) return nullptr;
       continue;
     }
-
-    // Initialize geom with first expected geometric object
-    if (!foundFirst) {
-      geom = std::make_shared<ManifoldGeometry>(*chN);
-      foundFirst = true;
-      continue;
-    }
-
-    switch (op) {
-    case OpenSCADOperator::UNION:        *geom = *geom + *chN; break;
-    case OpenSCADOperator::INTERSECTION: *geom = *geom * *chN; break;
-    case OpenSCADOperator::DIFFERENCE:   *geom = *geom - *chN; break;
-    case OpenSCADOperator::MINKOWSKI:    *geom = geom->minkowski(*chN); break;
-    default:                             LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
-    }
+    operands.push_back(chN);
     if (item.first) item.first->progress_report();
   }
-  return geom;
+
+  if (operands.empty()) return nullptr;
+  if (operands.size() == 1) return std::make_shared<ManifoldGeometry>(*operands.front());
+  return std::make_shared<ManifoldGeometry>(ManifoldGeometry::boolOp(opType, operands));
 }
 
 };  // namespace ManifoldUtils
