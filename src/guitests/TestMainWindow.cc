@@ -2,6 +2,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QByteArray>
 #include <QClipboard>
 #include <QLineEdit>
 #include <QString>
@@ -10,6 +11,7 @@
 
 #include "gui/ColorLabel.h"
 #include "gui/ColorList.h"
+#include "gui/ScintillaEditor.h"
 #include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
@@ -72,4 +74,44 @@ void TestMainWindow::copyColorName()
   QCOMPARE(selectedName->text(), name);
   copy->trigger();
   QCOMPARE(QApplication::clipboard()->text(), name);
+}
+
+void TestMainWindow::highlightMatchingBraceContents()
+{
+  if (QSCINTILLA_VERSION < 0x020b02) QSKIP("Requires QScintilla's public brace matcher");
+  ScintillaEditor editor(nullptr);
+  auto *qsci = editor.qsci;
+  qsci->setBraceMatching(QsciScintilla::SloppyBraceMatch);
+  qsci->setText(QString::fromUtf8("é{\n  [10,20]\n}"));
+  editor.show();
+
+  // Read the shaded bytes from this editor, which has no search or model selection.
+  auto highlighted = [qsci]() {
+    const auto bytes = qsci->text().toUtf8();
+    QByteArray result;
+    for (int pos = 0; pos < bytes.size(); ++pos) {
+      if (qsci->SendScintilla(QsciScintilla::SCI_INDICATORALLONFOR, pos)) result += bytes.at(pos);
+    }
+    return result;
+  };
+
+  qsci->setCursorPosition(0, 1);  // Before the opening brace, after a multibyte character.
+  QTRY_COMPARE(highlighted(), QByteArray("\n  [10,20]\n"));
+  qsci->setCursorPosition(1, 9);  // After the inner closing bracket.
+  QTRY_COMPARE(highlighted(), QByteArray("10,20"));
+  QVERIFY(!qsci->hasSelectedText());
+  qsci->setCursorPosition(0, 2);
+  QTRY_COMPARE(highlighted(), QByteArray("\n  [10,20]\n"));
+  qsci->insertAt("}", 1, 0);  // Changes the match without moving the caret.
+  QTRY_COMPARE(highlighted(), QByteArray("\n"));
+  qsci->setCursorPosition(2, 1);  // The original closing brace is now unmatched.
+  QTRY_COMPARE(highlighted(), QByteArray());
+
+  // Scrolling styles the comment and can change the match without an edit or caret movement.
+  const QByteArray block = "\n" + QByteArray("  cube();\n").repeated(200) + "// }\n";
+  qsci->setText(QString::fromLatin1("{" + block + "}"));
+  qsci->setCursorPosition(0, 1);
+  QTRY_VERIFY(!highlighted().isEmpty());
+  qsci->setFirstVisibleLine(200);
+  QTRY_COMPARE(highlighted(), block);
 }

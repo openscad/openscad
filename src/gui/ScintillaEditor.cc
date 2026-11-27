@@ -179,6 +179,15 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, findIndicatorNumber);
+#if QSCINTILLA_VERSION >= 0x020b02
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, braceIndicatorNumber);
+  qsci->setIndicatorDrawUnder(true, braceIndicatorNumber);
+  connect(qsci, &QsciScintilla::SCN_UPDATEUI, this, [this](int updated) {
+    if (updated & (QsciScintilla::SC_UPDATE_CONTENT | QsciScintilla::SC_UPDATE_SELECTION)) {
+      updateBraceHighlight();
+    }
+  });
+#endif
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsActiveNumber);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsActiveNumber + 1);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsImpactedNumber);
@@ -328,10 +337,35 @@ void ScintillaEditor::applySettings()
   qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value()
                            ? QsciScintilla::SloppyBraceMatch
                            : QsciScintilla::NoBraceMatch);
+  updateBraceHighlight();
   qsci->setCaretLineVisible(Settings::Settings::highlightCurrentLine.value());
   onTextChanged();
 
   setupAutoComplete(false);
+}
+
+void ScintillaEditor::updateBraceHighlight()
+{
+#if QSCINTILLA_VERSION >= 0x020b02
+  long brace = -1, other = -1;
+  if (qsci->braceMatching() != QsciScintilla::NoBraceMatch) {
+    qsci->findMatchingBrace(brace, other, qsci->braceMatching());
+  }
+  const auto current = qsci->SendScintilla(QsciScintilla::SCI_GETINDICATORCURRENT);
+  const auto value = qsci->SendScintilla(QsciScintilla::SCI_GETINDICATORVALUE);
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, braceIndicatorNumber);
+  if (brace >= 0 && other >= 0) {
+    if (brace > other) std::swap(brace, other);
+    // Leave the existing interior in place. Changing an indicator triggers another content update.
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, brace + 1);
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, brace + 1, other - brace - 1);
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, other, qsci->length() - other);
+  } else {
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+  }
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, current);
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, value);
+#endif
 }
 
 void ScintillaEditor::setupAutoComplete(const bool forceOff)
@@ -656,8 +690,8 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     qsci->setMarginsBackgroundColor(marginBackgroundColor);
     qsci->setMarginsForegroundColor(marginForegroundColor);
     qsci->setFoldMarginColors(marginBackgroundColor, marginBackgroundColor);
-    qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
-    qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
+    setMatchedBraceColors(readColor(colors, "matched-brace-background", paperColor),
+                          readColor(colors, "matched-brace-foreground", textColor));
     qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
     qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
     qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
@@ -737,8 +771,7 @@ void ScintillaEditor::noColor()
   qsci->setWhitespaceForegroundColor(Qt::black);
   qsci->setSelectionForegroundColor(Qt::black);
   qsci->setSelectionBackgroundColor(QColor("LightSkyBlue"));
-  qsci->setMatchedBraceBackgroundColor(QColor("LightBlue"));
-  qsci->setMatchedBraceForegroundColor(Qt::black);
+  setMatchedBraceColors(QColor("LightBlue"), Qt::black);
   qsci->setUnmatchedBraceBackgroundColor(QColor("pink"));
   qsci->setUnmatchedBraceForegroundColor(Qt::black);
   qsci->setMarginsBackgroundColor(QColor("whiteSmoke"));
@@ -765,6 +798,18 @@ void ScintillaEditor::setHighlightScheme(const QString& name)
   } else {
     noColor();
   }
+}
+
+void ScintillaEditor::setMatchedBraceColors(const QColor& background, const QColor& foreground)
+{
+  qsci->setMatchedBraceBackgroundColor(background);
+  qsci->setMatchedBraceForegroundColor(foreground);
+  // Some themes distinguish matched braces using only their foreground.
+  const bool useForeground = background.rgb() == lexer->paper(lexer->defaultStyle()).rgb();
+  QColor tint = useForeground ? foreground : background;
+  tint.setAlpha(useForeground ? 32 : 112);
+  qsci->setIndicatorForegroundColor(tint, braceIndicatorNumber);
+  qsci->setIndicatorOutlineColor(tint, braceIndicatorNumber);
 }
 
 void ScintillaEditor::insert(const QString& text)
@@ -1505,7 +1550,7 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
   // checking if indicator clicked is hyperlinkIndicator
   if (val >= hyperlinkIndicatorOffset &&
       val <= hyperlinkIndicatorOffset + static_cast<int>(indicatorData.size())) {
-    if (!indicatorsActive) {
+    if (!indicatorsActive && !qsci->hasSelectedText()) {
       QTimer::singleShot(0, this, [this] {
 #ifdef Q_OS_MACOS
         QToolTip::showText(QCursor::pos(), "Use <b>Cmd + Click</b> to open the file", this, rect(),

@@ -10,4 +10,5 @@ private slots:
   void checkSaveToShouldUpdateWindowTitle();
   void copyColorName_data();
   void copyColorName();
+  void highlightMatchingBraceContents();
 };
