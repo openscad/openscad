@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <lib3mf_implicit.hpp>
 #include <memory>
+#include <ios>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -81,17 +82,28 @@ struct ExportContext {
 // triggered "function signature mismatch" at run time on the wasm
 // build. x86_64 desktop happens to forgive the ABI difference; wasm32
 // is strict. Fixes #6818.
+//
+// They are called from lib3mf, so they must not throw: the stream may have exceptions enabled.
+// The callbacks can't report errors; a failed write leaves the stream's error state set instead.
 void lib3mf_write_callback(Lib3MF_uint64 nByteData, Lib3MF_uint64 nNumBytes, Lib3MF_pvoid pUserData)
 {
   auto *stream = static_cast<std::ostream *>(pUserData);
+  if (!*stream) return;
   const char *data = reinterpret_cast<const char *>(static_cast<uintptr_t>(nByteData));
-  stream->write(data, static_cast<std::streamsize>(nNumBytes));
+  try {
+    stream->write(data, static_cast<std::streamsize>(nNumBytes));
+  } catch (const std::ios::failure&) {
+  }
 }
 
 void lib3mf_seek_callback(Lib3MF_uint64 pos, Lib3MF_pvoid pUserData)
 {
   auto *stream = static_cast<std::ostream *>(pUserData);
-  stream->seekp(static_cast<std::streamoff>(pos));
+  if (!*stream) return;
+  try {
+    stream->seekp(static_cast<std::streamoff>(pos));
+  } catch (const std::ios::failure&) {
+  }
 }
 
 void export_3mf_error(std::string msg)
@@ -433,5 +445,5 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   } catch (Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
   }
-  output.flush();
+  if (output) output.flush();
 }

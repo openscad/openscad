@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <ios>
 #include <ostream>
 #include <string>
 
@@ -73,16 +74,29 @@ struct ExportContext {
   const std::shared_ptr<const Export3mfOptions> options;
 };
 
+// These are called from lib3mf, so they must not throw: the stream may have exceptions enabled.
+// They also always report success. When a callback reports an error, lib3mf 1.x throws, and its
+// package writer's destructor then throws again while finishing the archive, which terminates
+// the program. Instead, a failed write leaves the stream's error state set, the callbacks skip
+// everything after it, and the caller checks the state afterwards.
 uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
-  stream->write(data, bytes);
-  return !(*stream);
+  if (!*stream) return 0;
+  try {
+    stream->write(data, bytes);
+  } catch (const std::ios::failure&) {
+  }
+  return 0;
 }
 
 uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 {
-  stream->seekp(pos);
-  return !(*stream);
+  if (!*stream) return 0;
+  try {
+    stream->seekp(pos);
+  } catch (const std::ios::failure&) {
+  }
+  return 0;
 }
 
 void export_3mf_error(std::string msg, PLib3MFModel *& model)
@@ -469,10 +483,10 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback,
                                          (void *)lib3mf_seek_callback, &output);
-  output.flush();
   lib3mf_release(writer);
   lib3mf_release(model);
   if (result != LIB3MF_OK) {
     LOG(message_group::Export_Error, "Error writing 3MF model.");
   }
+  if (output) output.flush();
 }

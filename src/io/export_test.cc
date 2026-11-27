@@ -1,10 +1,12 @@
 #include "io/export.h"
 
 #include <catch2/catch_all.hpp>
+#include <filesystem>
 #include <locale>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "geometry/Polygon2d.h"
 #include "utils/scope_guard.hpp"
@@ -61,5 +63,25 @@ TEST_CASE("Exports use '.' as the decimal point whatever the global C++ locale i
     const std::string output = export_to_string(shape, format);
     CHECK(output.find("0.25") != std::string::npos);
     CHECK(output.find("0,25") == std::string::npos);
+  }
+}
+
+TEST_CASE("Write errors during export are reported instead of aborting", "[io][export]")
+{
+  // /dev/full accepts the open but fails every write with ENOSPC.
+  if (!std::filesystem::exists("/dev/full")) SKIP("no /dev/full on this system");
+
+  Outline2d outline;
+  outline.vertices = {{0, 0}, {1, 0}, {0, 1}};
+  const auto shape = std::make_shared<const Polygon2d>(outline);
+
+  std::vector<FileFormat> formats = {FileFormat::DXF, FileFormat::SVG};
+#ifdef ENABLE_CAIRO
+  formats.push_back(FileFormat::PDF);
+#endif
+  for (const auto format : formats) {
+    INFO(fileformat::info(format).identifier);
+    const ExportInfo info{.format = format, .info = fileformat::info(format)};
+    CHECK_FALSE(exportFileByName(shape, "/dev/full", info));
   }
 }

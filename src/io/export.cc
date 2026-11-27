@@ -214,7 +214,16 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
 {
   // Exported files always use '.' as the decimal point, whatever the global C++ locale is.
   const std::locale previous_locale = output.imbue(std::locale::classic());
-  auto restore_locale = sg::make_scope_guard([&]() { output.imbue(previous_locale); });
+  // Restore the caller's locale only after everything has been written. Changing the locale of a
+  // file stream that has pending output flushes it first, and if that write fails, the stream is
+  // left without a conversion facet, so closing it throws std::bad_cast.
+  auto restore_locale = sg::make_scope_guard([&]() noexcept {
+    try {
+      if (output.good() && output.flush().good()) output.imbue(previous_locale);
+    } catch (...) {
+      // The stream's error state reports the failure to the caller.
+    }
+  });
 
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
@@ -288,6 +297,7 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
     } catch (std::ios::failure&) {
       onerror = true;
     }
+    if (!fstream) onerror = true;
     try {  // make sure file closed - resources released
       fstream.close();
     } catch (std::ios::failure&) {
