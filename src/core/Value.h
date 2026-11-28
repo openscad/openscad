@@ -35,8 +35,8 @@ class Filename
 {
 public:
   Filename() {}
-  Filename(const std::string& f, const std::string& documentRoot) : name_(f),
-    documentRoot_(documentRoot) {
+  Filename(const std::string& f, const std::string& documentRoot) : name_(f), documentRoot_(documentRoot)
+  {
   }
   const std::string& name() const { return name_; }
   const std::string& documentRoot() const { return documentRoot_; }
