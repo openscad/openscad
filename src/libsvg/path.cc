@@ -79,6 +79,40 @@ static double vector_angle(double ux, double uy, double vx, double vy)
   return angle;
 }
 
+/*!
+   Returns the number of segments for a Bézier curve with the given control points.
+
+   The curve is treated like a circular arc with the same length and the same total
+   turning angle, so that $fn, $fa and $fs give the same result as for a circle.
+   Both are estimated from the control polygon: the turning angle of the control
+   polygon bounds the curve's total turning, and the average of the chord and the
+   control polygon length approximates the arc length.
+ */
+int path::bezier_segment_count(const std::vector<Eigen::Vector2d>& points, const fnContext *ctx)
+{
+  if (ctx->legacy_segments) return 20;  // OpenSCAD 2021.01
+
+  double polygon_length = 0.0;
+  double turning = 0.0;  // degrees
+  Eigen::Vector2d prev_dir{0, 0};
+  for (size_t i = 1; i < points.size(); ++i) {
+    const Eigen::Vector2d d = points[i] - points[i - 1];
+    const double len = d.norm();
+    if (len == 0.0) continue;
+    polygon_length += len;
+    if (prev_dir.squaredNorm() > 0.0) {
+      const double cross = prev_dir.x() * d.y() - prev_dir.y() * d.x();
+      turning += std::fabs(atan2_degrees(cross, prev_dir.dot(d)));
+    }
+    prev_dir = d;
+  }
+  const double chord = (points.back() - points.front()).norm();
+  const double length = (chord + polygon_length) / 2.0 * get_output_scale(ctx);
+  if (turning < 1e-6 || length <= 0.0) return 1;
+  const double radius = length / (turning * M_PI / 180.0);
+  return ctx->getCircularSegmentCount(radius, turning).value_or(1);
+}
+
 void path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2,
                   double angle, bool large, bool sweep, void *context)
 {
@@ -130,11 +164,13 @@ void path::arc_to(path_t& path, double x1, double y1, double rx, double ry, doub
     delta -= 360;
   }
 
-  double rmax = std::max(rx, ry);
-  unsigned int fn =
-    fValues->getCircularSegmentCount(rmax, delta)
-      .value_or(3);  // because we are creating a section of an ellipse, not the full ellipse
-  unsigned int steps = std::max(fn, static_cast<unsigned int>((std::fabs(delta) * 10.0 / 180) + 4));
+  unsigned int steps;
+  if (fValues->legacy_segments) {
+    steps = static_cast<unsigned int>(std::fabs(delta) * 10.0 / 180 + 4);  // OpenSCAD 2021.01
+  } else {
+    const double rmax = std::max(rx, ry) * get_output_scale(fValues);
+    steps = fValues->getCircularSegmentCount(rmax, delta).value_or(1);
+  }
   for (unsigned int a = 0; a <= steps; ++a) {
     double phi = theta + delta * a / steps;
 
@@ -148,13 +184,8 @@ void path::arc_to(path_t& path, double x1, double y1, double rx, double ry, doub
 void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2,
                     void *context)
 {
-  // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
-  // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
-  // fn was set to a fixed value of 20 where this is now used.
-  // The author decided it should never be smaller than this original value.
-  int fn = std::max(fValues->pathSegmentCount, 20);
+  const int fn = bezier_segment_count({{x, y}, {cx1, cy1}, {x2, y2}}, fValues);
   for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
@@ -166,13 +197,8 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
 void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2,
                     double x2, double y2, void *context)
 {
-  // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
-  // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
-  // fn was set to a fixed value of 20 where this is now used.
-  // The author decided it should never be smaller than this original value.
-  int fn = std::max(fValues->pathSegmentCount, 20);
+  const int fn = bezier_segment_count({{x, y}, {cx1, cy1}, {cx2, cy2}, {x2, y2}}, fValues);
   for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;

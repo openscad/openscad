@@ -101,7 +101,7 @@ size_t path_point_count(const libsvg::shapes_list_t& shapes)
 
 libsvg::shapes_list_t *read(const std::string& svg)
 {
-  fnContext ctx(nullptr, 0);
+  fnContext ctx(nullptr);
   return libsvg::libsvg_read_file(svg.c_str(), &ctx);
 }
 

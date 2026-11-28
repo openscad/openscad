@@ -26,6 +26,9 @@
 
 #include <cmath>
 #include <string>
+#include <vector>
+
+#include <Eigen/Core>
 
 #include "libsvg/shape.h"
 
@@ -40,6 +43,7 @@ private:
   [[nodiscard]] inline double t(double t, int exp) const { return std::pow(1.0 - t, exp); }
 
   bool is_open_path(path_t& path) const;
+  int bezier_segment_count(const std::vector<Eigen::Vector2d>& points, const fnContext *ctx);
   void arc_to(path_t& path, double x, double y, double rx, double ry, double x2, double y2, double angle,
               bool large, bool sweep, void *context);
   void curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2,
