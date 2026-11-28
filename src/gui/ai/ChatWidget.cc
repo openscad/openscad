@@ -3,6 +3,7 @@
 #include "json/json.hpp"
 #include <future>
 #include <algorithm>
+#include <cctype>
 #include <QScrollBar>
 #include <QFrame>
 #include <QLabel>
@@ -27,6 +28,7 @@
 #include "gui/QGLView.h"
 #include "glview/Camera.h"
 #include "gui/Console.h"
+#include "gui/Preferences.h"
 
 // MessageBubble implementation
 MessageBubble::MessageBubble(const QString& text, bool isUser,
@@ -138,7 +140,32 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   titleLabel->setText(_("AI Assistant"));
   clearButton->setText(_("Clear"));
   clearButton->setToolTip(_("Clear chat history"));
-  sendButton->setText(_("Send"));
+  sendButton->setText(_("➜"));
+  sendButton->setAccessibleName(_("Send"));
+  sendButton->setStyleSheet(
+    "QPushButton { background-color: #2563eb; color: white; border: none; border-radius: 18px; "
+    "font-size: 15pt; font-weight: bold; } QPushButton:hover { background-color: #1d4ed8; }");
+  inputField->setPlaceholderText(_("Ask anything about your OpenSCAD model…"));
+  providerLabel->hide();
+  providerBarWidget->hide();
+  quickCommandsScrollArea->hide();
+  providerComboBox->setToolTip(_("Choose a configured AI profile. Add API keys in AI Preferences."));
+  // Keep the selector flexible so the composer still fits in a narrow dock.
+  providerComboBox->setMinimumWidth(0);
+  providerComboBox->setMaximumWidth(280);
+  providerBarLayout->removeWidget(providerComboBox);
+  providerComboBox->setParent(inputWidget);
+  inputLayout->removeWidget(sendButton);
+  sendButton->setParent(inputWidget);
+  actionButtonsLayout->removeWidget(analyzeScreenButton);
+  actionButtonsLayout->removeWidget(attachImageButton);
+  // These actions are available from the composer's + menu. Hide the legacy
+  // standalone buttons after removing them from the old toolbar layout.
+  analyzeScreenButton->hide();
+  attachImageButton->hide();
+  agentModeCheckBox->hide();
+  actionButtonsLayout->insertWidget(1, providerComboBox);
+  actionButtonsLayout->addWidget(sendButton);
 
   // Connections
   connect(sendButton, &QPushButton::clicked, this, &ChatWidget::onSendPressed);
@@ -147,6 +174,8 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   connect(analyzeScreenButton, &QPushButton::clicked, this, &ChatWidget::onAnalyzeScreenPressed);
   connect(attachImageButton, &QPushButton::clicked, this, &ChatWidget::onAttachImagePressed);
   connect(agentModeCheckBox, &QCheckBox::toggled, this, [this](bool checked) { agenticMode = checked; });
+  connect(providerComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &ChatWidget::onProviderChanged);
 
   // Setup chat options menu
   QMenu *chatMenu = new QMenu(this);
@@ -154,11 +183,23 @@ ChatWidget::ChatWidget(QWidget *parent) : QWidget(parent)
   chatMenu->addAction(_("Import Chat..."), this, &ChatWidget::importChat);
   chatMenu->addSeparator();
   chatMenu->addAction(_("Copy as Markdown"), this, &ChatWidget::copyAsMarkdown);
+  chatMenu->addSeparator();
+  chatMenu->addAction(_("AI Preferences..."), this, []() {
+    GlobalPreferences::inst()->show();
+  });
   menuButton->setMenu(chatMenu);
 
   // Initialize backend and state
   aiService = std::make_shared<AIService>();
   aliveState = std::make_shared<bool>(true);
+
+  // Populate provider profiles and select active profile
+  updateProviderList();
+  connect(GlobalPreferences::inst(), &Preferences::aiProfilesChanged,
+          this, &ChatWidget::updateProviderList);
+
+  // Initialize quick-command action pills above the chatbox
+  setupQuickCommandsBar();
 
   // Register tool executor callback
   aiService->registerToolExecutor([this](const std::string& name, const std::string& arguments_json) {
@@ -323,20 +364,6 @@ void ChatWidget::onSendPressed()
     return;
   }
 
-  if (pendingAttachments.empty() && aiService && aiService->getAutoAttachViewport()) {
-    MainWindow *mw = nullptr;
-    for (auto *win : scadApp->windowManager.getWindows()) {
-      mw = win;
-      break;
-    }
-    if (mw && mw->qglview) {
-      std::string base64_img = ViewportGrabber::captureViewportBase64(mw->qglview, 1024);
-      if (!base64_img.empty()) {
-        pendingAttachments.push_back({"image/png", base64_img});
-      }
-    }
-  }
-
   inputField->clear();
   addMessage(prompt, true, pendingAttachments);
 
@@ -349,13 +376,90 @@ void ChatWidget::onSendPressed()
   // Set active request states
   isRequestRunning = true;
   startNewResponseTurn();
-
-  // Disable input during streaming
   enableInput(false);
-
-  auto alive = this->aliveState;
-
   agentModeCheckBox->setEnabled(false);
+
+  MainWindow *mw = nullptr;
+  for (auto *win : scadApp->windowManager.getWindows()) {
+    mw = win;
+    break;
+  }
+  const std::string currentCode = mw && mw->activeEditor
+                                    ? mw->activeEditor->toPlainText().toStdString()
+                                    : std::string{};
+  auto alive = this->aliveState;
+  aiService->generateOpenSCADCode(
+    prompt.toStdString(), currentCode,
+    [this, alive](const std::string& chunk) {
+      QMetaObject::invokeMethod(qApp, [this, alive, chunk]() {
+        if (!*alive || !isRequestRunning || !activeResponseText) return;
+        *activeResponseText += chunk;
+        if (activeAIBubble) activeAIBubble->updateText(QString::fromStdString(*activeResponseText));
+        this->scrollArea->verticalScrollBar()->setValue(
+          this->scrollArea->verticalScrollBar()->maximum());
+      });
+    },
+    [this, alive](const std::string& error) {
+      QMetaObject::invokeMethod(qApp, [this, alive, error]() {
+        if (!*alive || !isRequestRunning) return;
+        if (activeAIBubble) activeAIBubble->updateText(QString::fromStdString("Error: " + error));
+        isRequestRunning = false;
+        activeAIBubble = nullptr;
+        activeResponseText = nullptr;
+        enableInput(true);
+        agentModeCheckBox->setEnabled(true);
+      });
+    },
+    [this, alive]() {
+      QMetaObject::invokeMethod(qApp, [this, alive]() {
+        if (!*alive || !isRequestRunning) return;
+        const std::string response = activeResponseText ? *activeResponseText : std::string{};
+        std::string code = response;
+        // Be tolerant of providers that wrap source in a Markdown code fence.
+        const size_t fence = code.find("```");
+        if (fence != std::string::npos) {
+          const size_t lineEnd = code.find('\n', fence);
+          const size_t closing = lineEnd == std::string::npos ? std::string::npos
+                                                               : code.find("```", lineEnd + 1);
+          if (lineEnd != std::string::npos && closing != std::string::npos)
+            code = code.substr(lineEnd + 1, closing - lineEnd - 1);
+        }
+        while (!code.empty() && std::isspace(static_cast<unsigned char>(code.front()))) code.erase(code.begin());
+        while (!code.empty() && std::isspace(static_cast<unsigned char>(code.back()))) code.pop_back();
+
+        MainWindow *window = nullptr;
+        for (auto *win : scadApp->windowManager.getWindows()) {
+          window = win;
+          break;
+        }
+        if (!window || !window->activeEditor) {
+          activeAIBubble->updateText(tr("Code was generated, but there is no active editor tab. Open or create a .scad document and try again."));
+          isRequestRunning = false;
+          activeAIBubble = nullptr;
+          activeResponseText = nullptr;
+          enableInput(true);
+          agentModeCheckBox->setEnabled(true);
+          return;
+        }
+        if (code.empty() || code.find(';') == std::string::npos) {
+          activeAIBubble->updateText(tr("The provider response did not look like OpenSCAD source, so the editor was left unchanged. Try a more specific model prompt."));
+        } else {
+          window->activeEditor->setText(QString::fromStdString(code));
+          history.push_back({"assistant", code});
+          activeAIBubble->updateText(tr("OpenSCAD code is in the editor. Click Render to see the model."));
+        }
+        isRequestRunning = false;
+        activeAIBubble = nullptr;
+        activeResponseText = nullptr;
+        enableInput(true);
+        agentModeCheckBox->setEnabled(true);
+      });
+    });
+}
+
+void ChatWidget::startAIStream(int retryCount)
+{
+  auto alive = this->aliveState;
   aiService->chatCompletionStream(
     history,
     [this, alive](const std::string& chunk) {
@@ -368,14 +472,28 @@ void ChatWidget::onSendPressed()
           this->scrollArea->verticalScrollBar()->maximum());
       });
     },
-    [this, alive](const std::string& error_msg) {
-      QMetaObject::invokeMethod(qApp, [this, alive, error_msg]() {
+    [this, alive, retryCount](const std::string& error_msg) {
+      QMetaObject::invokeMethod(qApp, [this, alive, retryCount, error_msg]() {
         if (!*alive || !isRequestRunning) return;
+        if (error_msg.find("HTTP status 503") != std::string::npos && retryCount < 2 &&
+            activeResponseText && activeResponseText->empty()) {
+          const int delayMs = 1500 * (1 << retryCount);
+          activeAIBubble->updateText(
+            QString(_("Gemini is busy. Retrying automatically (%1/2)…"))
+              .arg(retryCount + 1));
+          QTimer::singleShot(delayMs, this, [this, alive, retryCount]() {
+            if (!*alive || !isRequestRunning) return;
+            activeResponseText = std::make_shared<std::string>();
+            if (activeAIBubble) activeAIBubble->updateText(_("Retrying Gemini request…"));
+            startAIStream(retryCount + 1);
+          });
+          return;
+        }
         std::string display_err = "Error: " + error_msg;
         if (error_msg.find("Connection refused") != std::string::npos) {
           display_err +=
-            "\n\n*Troubleshooting Tip: Connection refused. Please check if your local model server "
-            "(such as Ollama or LM Studio) is running and listening on the configured port.*";
+            "\n\n*Troubleshooting Tip: Connection refused. Check your internet connection and verify "
+            "that the configured AI provider endpoint is reachable.*";
         } else if (error_msg.find("Host not found") != std::string::npos ||
                    error_msg.find("unreachable") != std::string::npos) {
           display_err +=
@@ -394,6 +512,10 @@ void ChatWidget::onSendPressed()
           display_err +=
             "\n\n*Troubleshooting Tip: Not Found. Please check if the endpoint URL and model name are "
             "configured correctly in Preferences.*";
+        } else if (error_msg.find("HTTP status 503") != std::string::npos) {
+          display_err +=
+            "\n\n*Gemini is temporarily overloaded. The app retried automatically; please try again "
+            "in a moment or select another configured model.*";
         }
         if (activeResponseText && activeResponseText->empty()) {
           activeAIBubble->updateText(QString::fromStdString(display_err));
@@ -412,9 +534,11 @@ void ChatWidget::onSendPressed()
         if (!*alive || !isRequestRunning) return;
         if (activeResponseText && activeResponseText->empty()) {
           if (activeAIBubble) {
-            scrollLayout->removeWidget(activeAIBubble);
-            delete activeAIBubble;
-            activeAIBubble = nullptr;
+            // Keep an empty completion visible. Removing the thinking bubble
+            // made failed or unsupported provider responses look like the send
+            // button did nothing at all.
+            activeAIBubble->updateText(
+              tr("The AI provider returned an empty response. Check the provider/model settings and try again."));
           }
         } else if (activeResponseText) {
           this->history.push_back({"assistant", *activeResponseText});
@@ -627,11 +751,15 @@ void ChatWidget::enableInput(bool enabled)
   inputField->setEnabled(enabled);
   clearButton->setEnabled(enabled);
   if (enabled) {
-    sendButton->setText(_("Send"));
+    sendButton->setText(_("➜"));
+    sendButton->setAccessibleName(_("Send"));
+    sendButton->setToolTip(_("Send prompt"));
     inputField->setFocus();
     activeToolBubble = nullptr;
   } else {
     sendButton->setText(_("Stop"));
+    sendButton->setAccessibleName(_("Stop"));
+    sendButton->setToolTip(_("Stop generation"));
   }
 }
 
@@ -674,8 +802,8 @@ void ChatWidget::logToolExecution(const std::string& name, const std::string& re
     detail = tr("Tool: get_editor_code\nResult: Read %1 lines.")
                .arg(QString::fromStdString(result).count('\n'));
   } else if (name == "set_editor_code") {
-    summary = tr("Applied code changes");
-    detail = tr("Tool: set_editor_code\nResult: Applied code changes to the active editor.");
+    summary = tr("Staged code proposal");
+    detail = tr("Tool: set_editor_code\nResult: Code changes staged for manual review.");
   } else if (name == "trigger_preview") {
     summary = tr("Triggered render preview");
     detail = QString::fromStdString("Tool: trigger_preview\nResult: " + result);
@@ -743,16 +871,15 @@ std::string ChatWidget::executeTool(const std::string& name, const std::string& 
     } else {
       if (mw && mw->activeEditor) {
         if (agenticMode) {
-          // Agentic mode: apply directly so the loop can validate immediately
-          mw->activeEditor->setPlainText(QString::fromStdString(code));
-          result_val = "Success: Code applied directly to the active editor.";
+          // In agent mode, put generated code in the active document so the next
+          // trigger_preview call renders exactly what the AI just created.
+          mw->activeEditor->setText(QString::fromStdString(code));
+          result_val = "Success: Replaced the active editor contents with the generated OpenSCAD code. "
+                       "Now call trigger_preview to compile and display the model.";
         } else {
-          // Interactive mode: stage a diff for user review
           this->proposeCodeChange(code);
-          result_val =
-            "Success: Code change proposed for user review. "
-            "The diff banner is now visible. "
-            "Do NOT call trigger_preview — it will fire automatically after the user accepts.";
+          result_val = "Success: Code change staged for manual review. The user will edit or accept it; "
+                       "stop calling tools for this request.";
         }
       } else {
         result_val = "Error: No active editor found.";
@@ -916,6 +1043,7 @@ void ChatWidget::exportChat()
     m["role"] = msg.role;
     m["content"] = msg.content;
     m["tool_call_id"] = msg.tool_call_id;
+    m["tool_name"] = msg.tool_name;
     m["tool_calls"] = msg.tool_calls;
 
     if (!msg.images.empty()) {
@@ -983,6 +1111,7 @@ void ChatWidget::importChat()
     msg.role = m.value("role", "");
     msg.content = m.value("content", "");
     msg.tool_call_id = m.value("tool_call_id", "");
+    msg.tool_name = m.value("tool_name", "");
     msg.tool_calls = m.value("tool_calls", "");
 
     if (m.contains("images") && m["images"].is_array()) {
@@ -1133,5 +1262,300 @@ void ChatWidget::rebuildChatUI()
         }
       }
     }
+  }
+}
+
+void ChatWidget::updateProviderList()
+{
+  isUpdatingProviders = true;
+  providerComboBox->clear();
+
+  std::vector<std::string> profiles = AIService::getConfiguredProfileNames();
+  std::string activeProfile = AIService::getActiveProfileName();
+
+  if (profiles.empty()) {
+    providerComboBox->addItem(_("Set up an API in AI Preferences"), QString{});
+    providerComboBox->setToolTip(_("No API keys are configured. Open the + menu and choose AI Preferences."));
+    providerComboBox->setCurrentIndex(0);
+    isUpdatingProviders = false;
+    return;
+  }
+
+  int activeIndex = 0;
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    const auto& name = profiles[i];
+    QString displayName = QString::fromStdString(name);
+    if (name == "Google Gemini") displayName = _("Gemini");
+    else if (name == "OpenAI ChatGPT") displayName = _("ChatGPT");
+    else if (name == "Anthropic Claude") displayName = _("Claude");
+    providerComboBox->addItem(displayName, QString::fromStdString(name));
+    if (name == activeProfile) {
+      activeIndex = static_cast<int>(i);
+    }
+  }
+
+  if (providerComboBox->count() > 0) {
+    if (std::find(profiles.begin(), profiles.end(), activeProfile) == profiles.end()) {
+      activeProfile = profiles.front();
+      AIService::setActiveProfileName(activeProfile);
+    }
+    providerComboBox->setCurrentIndex(activeIndex);
+  }
+  isUpdatingProviders = false;
+}
+
+void ChatWidget::onProviderChanged(int index)
+{
+  if (isUpdatingProviders || index < 0) return;
+  QString profileData = providerComboBox->itemData(index).toString();
+  if (!profileData.isEmpty()) {
+    AIService::setActiveProfileName(profileData.toStdString());
+  }
+}
+
+void ChatWidget::setupQuickCommandsBar()
+{
+  struct CommandDef {
+    QString label;
+    QString prompt;
+    QString tooltip;
+    bool autoSend;
+  };
+
+  const std::vector<CommandDef> promptPills = {
+    {_("✨ Create 3D Model..."),
+     _("Create a detailed 3D model of "),
+     _("Type any object to model (e.g. car, bracket, robot, phone stand)"),
+     false},
+    {_("🔧 Fix Syntax Errors"),
+     _("Inspect the current code with get_editor_code and fix all syntax, compilation, and geometry errors"),
+     _("Automatically diagnose and fix code errors"),
+     true},
+    {_("👁️ Render 3D Preview"),
+     _("Compile and trigger a preview render of the current 3D model"),
+     _("Trigger 3D viewport preview (F5)"),
+     true},
+    {_("🎨 Add Colors & Materials"),
+     _("Add colorful realistic material styling to the current model using color() modifiers"),
+     _("Colorize all parts of the 3D model"),
+     true},
+    {_("🎛️ Make Parametric"),
+     _("Refactor this script to use customizer variables and parameters at the top so dimensions can be easily adjusted"),
+     _("Turn dimensions into adjustable parameters"),
+     true},
+    {_("📐 Center at Origin"),
+     _("Center the current 3D model around origin [0, 0, 0]"),
+     _("Center model at origin"),
+     true},
+    {_("⭕ Smooth Curves ($fn)"),
+     _("Improve surface smoothness and mesh resolution by setting appropriate $fn, $fa, and $fs values"),
+     _("Smooth out curved surfaces"),
+     true},
+    {_("🔲 Round Sharp Edges"),
+     _("Round the sharp corners and edges of the model using minkowski() or hull() fillets"),
+     _("Add fillets/chamfers to sharp edges"),
+     true},
+    {_("🕳️ Add Mounting Holes"),
+     _("Add screw mounting holes to the model using cylinder() difference()"),
+     _("Cut screw/bolt mounting holes"),
+     true},
+    {_("🐚 Make Hollow Shell"),
+     _("Hollow out the 3D model to create a shell with uniform wall thickness"),
+     _("Create hollow interior with wall thickness"),
+     true},
+    {_("✂️ Cut / Split Model"),
+     _("Create a clean cross-section cut of the model using difference() with a cutting cube"),
+     _("Cut or split model in half"),
+     true},
+    {_("🧹 Clean & Optimize Code"),
+     _("Clean up the code, organize it into clean reusable modules with comments, and optimize CSG performance"),
+     _("Modularize and clean up code"),
+     true},
+    {_("📝 Explain Current Code"),
+     _("Explain how the current OpenSCAD script is structured, what modules it defines, and what 3D geometry it builds"),
+     _("Get a detailed explanation of the code"),
+     true}
+  };
+
+  bool dark = isDarkTheme();
+  QString pillStyle = dark
+    ? "QPushButton {"
+      "  background-color: #1e293b;"
+      "  color: #93c5fd;"
+      "  border: 1px solid #334155;"
+      "  border-radius: 11px;"
+      "  padding: 3px 10px;"
+      "  font-size: 8.5pt;"
+      "  font-weight: 500;"
+      "}"
+      "QPushButton:hover {"
+      "  background-color: #2563eb;"
+      "  color: #ffffff;"
+      "  border-color: #3b82f6;"
+      "}"
+      "QPushButton:pressed {"
+      "  background-color: #1d4ed8;"
+      "}"
+    : "QPushButton {"
+      "  background-color: #f1f5f9;"
+      "  color: #1e40af;"
+      "  border: 1px solid #cbd5e1;"
+      "  border-radius: 11px;"
+      "  padding: 3px 10px;"
+      "  font-size: 8.5pt;"
+      "  font-weight: 500;"
+      "}"
+      "QPushButton:hover {"
+      "  background-color: #3b82f6;"
+      "  color: #ffffff;"
+      "  border-color: #2563eb;"
+      "}"
+      "QPushButton:pressed {"
+      "  background-color: #1d4ed8;"
+      "}";
+
+  QString menuBtnStyle = dark
+    ? "QToolButton {"
+      "  background-color: #0f172a;"
+      "  color: #38bdf8;"
+      "  border: 1px solid #0284c7;"
+      "  border-radius: 11px;"
+      "  padding: 3px 10px;"
+      "  font-size: 8.5pt;"
+      "  font-weight: bold;"
+      "}"
+      "QToolButton:hover {"
+      "  background-color: #0284c7;"
+      "  color: #ffffff;"
+      "}"
+    : "QToolButton {"
+      "  background-color: #e0f2fe;"
+      "  color: #0369a1;"
+      "  border: 1px solid #0284c7;"
+      "  border-radius: 11px;"
+      "  padding: 3px 10px;"
+      "  font-size: 8.5pt;"
+      "  font-weight: bold;"
+      "}"
+      "QToolButton:hover {"
+      "  background-color: #0284c7;"
+      "  color: #ffffff;"
+      "}";
+
+  // Categorized Prompts Dropdown Menu
+  QToolButton *promptsMenuBtn = new QToolButton(quickCommandsContent);
+  promptsMenuBtn->setText(_("📋 All Prompts ▾"));
+  promptsMenuBtn->setToolTip(_("Browse and select from all available AI prompt templates"));
+  promptsMenuBtn->setPopupMode(QToolButton::InstantPopup);
+  promptsMenuBtn->setStyleSheet(menuBtnStyle);
+  promptsMenuBtn->setCursor(Qt::PointingHandCursor);
+
+  QMenu *promptsMenu = new QMenu(promptsMenuBtn);
+
+  // Group 1: 3D Generation Prompts
+  QMenu *genMenu = promptsMenu->addMenu(_("✨ Create & Generate 3D Models"));
+  genMenu->addAction(_("Create 3D Model of [object]..."), this, [this]() {
+    this->onQuickCommandClicked(_("Create a detailed 3D model of "), false);
+  });
+  genMenu->addAction(_("Create Parametric Enclosure Box"), this, [this]() {
+    this->onQuickCommandClicked(_("Create a 3D parametric electronics enclosure box with lid and screw holes"), true);
+  });
+  genMenu->addAction(_("Create Functional Mechanical Bracket"), this, [this]() {
+    this->onQuickCommandClicked(_("Create a 3D functional mechanical mounting bracket with counterbored holes"), true);
+  });
+
+  // Group 2: Code Quality & Fixes
+  QMenu *fixMenu = promptsMenu->addMenu(_("🔧 Code Fixes & Optimization"));
+  fixMenu->addAction(_("Fix Syntax & Compilation Errors"), this, [this]() {
+    this->onQuickCommandClicked(_("Inspect the current code with get_editor_code and fix all syntax, compilation, and geometry errors"), true);
+  });
+  fixMenu->addAction(_("Clean Up & Modularize Code"), this, [this]() {
+    this->onQuickCommandClicked(_("Clean up the code, organize it into clean reusable modules with comments, and optimize CSG performance"), true);
+  });
+  fixMenu->addAction(_("Explain Current Code"), this, [this]() {
+    this->onQuickCommandClicked(_("Explain how the current OpenSCAD script is structured, what modules it defines, and what 3D geometry it builds"), true);
+  });
+
+  // Group 3: Geometry & Dimensions
+  QMenu *geomMenu = promptsMenu->addMenu(_("📐 Geometry & Dimensions"));
+  geomMenu->addAction(_("Center Model at Origin [0, 0, 0]"), this, [this]() {
+    this->onQuickCommandClicked(_("Center the current 3D model around origin [0, 0, 0]"), true);
+  });
+  geomMenu->addAction(_("Smooth Curved Surfaces ($fn)"), this, [this]() {
+    this->onQuickCommandClicked(_("Improve surface smoothness and mesh resolution by setting appropriate $fn, $fa, and $fs values"), true);
+  });
+  geomMenu->addAction(_("Round Sharp Edges (Fillets)"), this, [this]() {
+    this->onQuickCommandClicked(_("Round the sharp corners and edges of the model using minkowski() or hull() fillets"), true);
+  });
+  geomMenu->addAction(_("Add Screw Mounting Holes"), this, [this]() {
+    this->onQuickCommandClicked(_("Add screw mounting holes to the model using cylinder() difference()"), true);
+  });
+  geomMenu->addAction(_("Make Hollow Shell"), this, [this]() {
+    this->onQuickCommandClicked(_("Hollow out the 3D model to create a shell with uniform wall thickness"), true);
+  });
+  geomMenu->addAction(_("Cut / Split Model"), this, [this]() {
+    this->onQuickCommandClicked(_("Create a clean cross-section cut of the model using difference() with a cutting cube"), true);
+  });
+
+  // Group 4: Appearance & Rendering
+  QMenu *renderMenu = promptsMenu->addMenu(_("🎨 Appearance & Preview"));
+  renderMenu->addAction(_("Add Colors & Materials"), this, [this]() {
+    this->onQuickCommandClicked(_("Add colorful realistic material styling to the current model using color() modifiers"), true);
+  });
+  renderMenu->addAction(_("Make Model Parametric (Customizer)"), this, [this]() {
+    this->onQuickCommandClicked(_("Refactor this script to use customizer variables and parameters at the top so dimensions can be easily adjusted"), true);
+  });
+  renderMenu->addAction(_("Render 3D Viewport Preview"), this, [this]() {
+    this->onQuickCommandClicked(_("Compile and trigger a preview render of the current 3D model"), true);
+  });
+
+  promptsMenu->addSeparator();
+  promptsMenu->addAction(_("Analyze OpenSCAD viewport"), this, &ChatWidget::onAnalyzeScreenPressed);
+  promptsMenu->addAction(_("Attach image…"), this, &ChatWidget::onAttachImagePressed);
+  promptsMenu->addAction(_("Refresh configured profiles"), this, &ChatWidget::updateProviderList);
+  promptsMenu->addAction(_("AI Preferences…"), this, []() { GlobalPreferences::inst()->show(); });
+  QAction *agentModeAction = promptsMenu->addAction(_("Agent mode"));
+  agentModeAction->setCheckable(true);
+  agentModeAction->setChecked(agentModeCheckBox->isChecked());
+  connect(agentModeAction, &QAction::toggled, agentModeCheckBox, &QCheckBox::setChecked);
+
+  promptsMenuBtn->setMenu(promptsMenu);
+  quickCommandsLayout->addWidget(promptsMenuBtn);
+  composerActionsButton->setText(_("＋"));
+  composerActionsButton->setMenu(promptsMenu);
+
+  // Horizontal Quick-Prompt Pills
+  // The full set is available from the categorized menu. Keep only the
+  // primary model creation shortcut inline so narrow docks remain tidy.
+  bool primaryPromptAdded = false;
+  for (const auto& cmd : promptPills) {
+    if (primaryPromptAdded) break;
+    primaryPromptAdded = true;
+    QPushButton *btn = new QPushButton(cmd.label, quickCommandsContent);
+    btn->setToolTip(cmd.tooltip);
+    btn->setStyleSheet(pillStyle);
+    btn->setCursor(Qt::PointingHandCursor);
+
+    QString promptText = cmd.prompt;
+    bool autoSend = cmd.autoSend;
+    connect(btn, &QPushButton::clicked, this, [this, promptText, autoSend]() {
+      this->onQuickCommandClicked(promptText, autoSend);
+    });
+
+    quickCommandsLayout->addWidget(btn);
+  }
+}
+
+void ChatWidget::onQuickCommandClicked(const QString& promptText, bool autoSend)
+{
+  if (isRequestRunning) return;
+  inputField->setPlainText(promptText);
+  if (autoSend) {
+    onSendPressed();
+  } else {
+    inputField->setFocus();
+    QTextCursor cursor = inputField->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    inputField->setTextCursor(cursor);
   }
 }

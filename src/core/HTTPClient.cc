@@ -453,7 +453,16 @@ private:
     }
 
     if (on_response_) {
-      on_response_(parser_.get().result_int(), parser_.get().body());
+      // Application callbacks run on the networking thread. An exception must
+      // never escape an Asio handler: that would terminate the io_context
+      // worker and can close the whole application during provider failures.
+      try {
+        on_response_(parser_.get().result_int(), parser_.get().body());
+      } catch (const std::exception& e) {
+        LOG("HTTP response callback failed: %1$s", e.what());
+      } catch (...) {
+        LOG("HTTP response callback failed with an unknown exception.");
+      }
     }
 
     close_connection();
@@ -476,13 +485,17 @@ private:
         std::string new_data = body.substr(body_offset_);
         body_offset_ = body.size();
         if (on_chunk_) {
-          on_chunk_(parser_.get().result_int(), new_data);
+          try { on_chunk_(parser_.get().result_int(), new_data); }
+          catch (const std::exception& e) { LOG("HTTP stream callback failed: %1$s", e.what()); }
+          catch (...) { LOG("HTTP stream callback failed with an unknown exception."); }
         }
       }
 
       if (parser_.is_done()) {
         if (on_complete_) {
-          on_complete_();
+          try { on_complete_(); }
+          catch (const std::exception& e) { LOG("HTTP completion callback failed: %1$s", e.what()); }
+          catch (...) { LOG("HTTP completion callback failed with an unknown exception."); }
         }
         close_connection();
       } else {
@@ -494,11 +507,15 @@ private:
         std::string new_data = body.substr(body_offset_);
         body_offset_ = body.size();
         if (on_chunk_) {
-          on_chunk_(parser_.get().result_int(), new_data);
+          try { on_chunk_(parser_.get().result_int(), new_data); }
+          catch (const std::exception& e) { LOG("HTTP stream callback failed: %1$s", e.what()); }
+          catch (...) { LOG("HTTP stream callback failed with an unknown exception."); }
         }
       }
       if (on_complete_) {
-        on_complete_();
+        try { on_complete_(); }
+        catch (const std::exception& e) { LOG("HTTP completion callback failed: %1$s", e.what()); }
+        catch (...) { LOG("HTTP completion callback failed with an unknown exception."); }
       }
       close_connection();
     } else {
@@ -536,7 +553,9 @@ private:
 
     std::string msg = std::string(what) + ": " + ec.message();
     if (on_error_) {
-      on_error_(msg);
+      try { on_error_(msg); }
+      catch (const std::exception& e) { LOG("HTTP error callback failed: %1$s", e.what()); }
+      catch (...) { LOG("HTTP error callback failed with an unknown exception."); }
     }
   }
 };

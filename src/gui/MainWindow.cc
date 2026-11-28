@@ -4055,6 +4055,22 @@ void MainWindow::restoreWindowState()
 #endif
   restoreState(windowState);
 
+  if (!windowState.isEmpty()) {
+    // Keep AI Chat docked at the right edge, even when older builds saved it
+    // in the bottom Console area or as a floating window.
+    if (dockWidgetArea(aiDock) != Qt::RightDockWidgetArea) {
+      const bool wasHidden = aiDock->isHidden();
+      removeDockWidget(aiDock);
+      addDockWidget(Qt::RightDockWidgetArea, aiDock);
+      tabifyDockWidget(parameterDock, aiDock);
+      if (!wasHidden) {
+        aiDock->show();
+        aiDock->raise();
+      }
+    }
+    resizeDocks({aiDock}, {380}, Qt::Horizontal);
+  }
+
   if (windowState.size() == 0) {
     /*
      * This triggers only in case the configuration file has no
@@ -4075,6 +4091,7 @@ void MainWindow::restoreWindowState()
     tabifyDockWidget(colorListDock, animateDock);
     tabifyDockWidget(animateDock, viewportControlDock);
     tabifyDockWidget(parameterDock, aiDock);
+    resizeDocks({aiDock}, {380}, Qt::Horizontal);
     parameterDock->hide();
     aiDock->hide();
     errorLogDock->hide();

@@ -3039,7 +3039,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="labelAIProfile">
                  <property name="text">
-                  <string>Active Profile</string>
+                  <string>AI Provider</string>
                  </property>
                 </widget>
                </item>
@@ -3066,32 +3066,83 @@
             <item>
              <widget class="QGroupBox" name="groupBoxAIConfig">
               <property name="title">
-               <string>API Configuration</string>
+               <string>Provider Setup</string>
               </property>
               <layout class="QGridLayout" name="gridLayoutAIConfig">
                <item row="0" column="0">
-                <widget class="QLabel" name="labelAIApiEndpoint">
-                 <property name="text">
-                  <string>API Endpoint</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="lineEditAIApiEndpoint"/>
-               </item>
-               <item row="1" column="0">
                 <widget class="QLabel" name="labelAIApiKey">
                  <property name="text">
                   <string>API Key</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
+               <item row="0" column="1">
                 <widget class="QLineEdit" name="lineEditAIApiKey">
                  <property name="echoMode">
                   <enum>QLineEdit::Password</enum>
                  </property>
                 </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="labelAIModel">
+                 <property name="text"><string>Model</string></property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboBoxAIModel">
+                 <property name="editable"><bool>true</bool></property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="labelAIEndpointDisplay">
+                 <property name="text"><string>API Endpoint</string></property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="lineEditAIEndpointDisplay">
+                 <property name="readOnly"><bool>true</bool></property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="labelAIProviderInfo">
+                 <property name="text">
+                  <string>Gemini offers free API usage on selected models with limits. OpenAI and Claude API billing is separate from their consumer subscriptions.</string>
+                 </property>
+                 <property name="wordWrap"><bool>true</bool></property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QPushButton" name="pushButtonAITestConnection">
+                 <property name="text"><string>Test Connection</string></property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QPushButton" name="pushButtonAISaveProfile">
+                 <property name="text"><string>Save Profile</string></property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QLabel" name="labelAIConnectionStatus">
+                 <property name="text"><string>Not tested</string></property>
+                 <property name="wordWrap"><bool>true</bool></property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBoxAIAdvanced">
+              <property name="title"><string>Advanced Settings</string></property>
+              <property name="checkable"><bool>true</bool></property>
+              <property name="checked"><bool>false</bool></property>
+              <layout class="QGridLayout" name="gridLayoutAIAdvanced">
+               <item row="0" column="0">
+                <widget class="QLabel" name="labelAIApiEndpoint">
+                 <property name="text"><string>API Base URL</string></property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEditAIApiEndpoint"/>
                </item>
               </layout>
              </widget>

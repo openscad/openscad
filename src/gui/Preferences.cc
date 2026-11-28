@@ -51,6 +51,7 @@
 #include <QRegularExpressionValidator>
 #include <QSettings>
 #include <QSizePolicy>
+#include <QPointer>
 #include <QSpacerItem>
 #include <QStatusBar>
 #include <QString>
@@ -67,6 +68,9 @@
 #include "Feature.h"
 #include "OctoPrintApiKeyDialog.h"
 #include "core/Settings.h"
+#include "core/AIService.h"
+#include "core/AIProvider.h"
+#include "core/AIProfileManager.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "utils/printutils.h"
@@ -248,7 +252,7 @@ void Preferences::init()
   this->defaultmap["editor/autoCompleteIncludeFunctions"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
-  this->defaultmap["ai/activeProfile"] = "Ollama Local";
+  this->defaultmap["ai/activeProfile"] = "Google Gemini";
 
   // Toolbar
   auto *group = new QActionGroup(this);
@@ -279,71 +283,54 @@ void Preferences::init()
   this->tableWidgetAIParams->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   this->tableWidgetAIParams->setSelectionBehavior(QAbstractItemView::SelectRows);
   this->tableWidgetAIParams->setSelectionMode(QAbstractItemView::SingleSelection);
+  this->comboBoxAIModel->setEditable(true);
 
   this->inMemoryAISettings = readAISettings();
-  std::string activeProfile = this->inMemoryAISettings.value("activeProfile", "Ollama Local");
+  std::string activeProfile = this->inMemoryAISettings.value("activeProfile", "Google Gemini");
   QString activeProfileQS = QString::fromStdString(activeProfile);
 
   nlohmann::json profilesObj = this->inMemoryAISettings.value("profiles", nlohmann::json::object());
   QStringList profiles;
-  for (auto it = profilesObj.begin(); it != profilesObj.end(); ++it) {
-    profiles.append(QString::fromStdString(it.key()));
-  }
-
-  if (profiles.isEmpty()) {
-    profiles = QStringList{_("Ollama Local")};
-    for (const auto& p : profiles) {
+  for (const auto& preset : AIService::getProviderPresets()) {
+    const QString name = QString::fromStdString(preset.name);
+    profiles.append(name);
+    if (!profilesObj.contains(preset.name)) {
       nlohmann::json prof = nlohmann::json::object();
+      prof["endpoint"] = preset.endpoint;
+      prof["apiKeyEncrypted"] = "";
       nlohmann::json params = nlohmann::json::object();
-      std::string pStr = p.toStdString();
-      if (p == _("Ollama Local")) {
-        prof["endpoint"] = "http://localhost:11434/v1";
-        params["model"] = "deepseek-coder";
-        params["temperature"] = 0.7;
-        params["max_tokens"] = 2048;
-        params["system_prompt"] =
-          "You are the OpenSCAD Expert Assistant. You provide high-quality, surgical, and logical "
-          "OpenSCAD code fixes.\n\n"
-          "### YOUR CORE RULES:\n"
-          "1. **Surgical Excellence**: If the user has a minor error (missing semicolon, wrong "
-          "bracket), fix ONLY that specific line. Do NOT rewrite the entire script, do NOT rename "
-          "variables, and do NOT change the overall logic unless explicitly asked.\n"
-          "2. **OpenSCAD Syntax Mastery**:\n"
-          "   - **Modifiers**: `color()`, `rotate()`, `translate()`, etc., are MODIFIERS. They apply to "
-          "the next child or block. NEVER assign them to variables like `c = color(\"red\");`. Instead, "
-          "use `color(\"red\") cube(10);`.\n"
-          "   - **Semicolons**: Every assignment (e.g., `x = 5;`) and every module instantiation (e.g., "
-          "`cube(10);`) MUST end with a semicolon. Semicolons are NOT used after module definitions "
-          "`module name() { ... }` or after blocks `{ ... }`.\n"
-          "3. **Tool Workflow**:\n"
-          "   - YOU MUST USE `set_editor_code` to propose any code changes so they are set for user "
-          "review.\n"
-          "   - You can output code blocks in markdown format in the chat for explanation, but you MUST "
-          "also "
-          "call the `set_editor_code` tool so the changes are set for review and can be applied "
-          "automatically.\n"
-          "   - Use `get_editor_code()` if you need to see the latest script state.\n"
-          "   - Use `trigger_preview()` once after setting the code to validate the result.\n"
-          "4. **Response and Engagement**: Explain the reasoning behind your proposed code changes. "
-          "Output standard text to explain your thoughts and keep the user engaged while proposing code "
-          "changes via tools.\n"
-          "5. **Formatting**: Use ACTUAL NEWLINES in your code output. Never use literal '\\n' "
-          "sequences.\n"
-          "6. **Tone**: Technical, concise, and helpful. Avoid long conversational filler.";
-        params["default_prompt"] = "Create a sphere with radius 10 and detail level $fn=50.";
-        params["context_limit"] = 10;
-        params["payload_limit"] = 50000;
-        params["auto_attach_viewport"] = false;
-        params["max_auto_turns"] = 5;
-      }
+      params["model"] = preset.defaultModel;
+      params["temperature"] = 0.7;
+      params["max_tokens"] = 4096;
+      params["default_prompt"] = "Create a 3D model of a school bus";
+      params["context_limit"] = 10;
+      params["payload_limit"] = 50000;
+      params["auto_attach_viewport"] = false;
+      params["max_auto_turns"] = 5;
       prof["params"] = params;
-      prof["apiKey"] = "";
-      profilesObj[pStr] = prof;
+      profilesObj[preset.name] = prof;
     }
-    this->inMemoryAISettings["profiles"] = profilesObj;
-    this->inMemoryAISettings["activeProfile"] = activeProfile;
-    writeAISettings(this->inMemoryAISettings);
   }
+  this->inMemoryAISettings["profiles"] = profilesObj;
+  if (activeProfile != "Google Gemini" && activeProfile != "OpenAI ChatGPT" &&
+      activeProfile != "Anthropic Claude") {
+    activeProfile = "Google Gemini";
+    activeProfileQS = QString::fromStdString(activeProfile);
+    this->inMemoryAISettings["activeProfile"] = activeProfile;
+  }
+  this->pushButtonAINewProfile->hide();
+  this->pushButtonAIDeleteProfile->hide();
+  this->groupBoxAIAdvanced->setChecked(false);
+  this->labelAIApiEndpoint->hide();
+  this->lineEditAIApiEndpoint->hide();
+  this->lineEditAIApiEndpoint->setReadOnly(true);
+  connect(this->groupBoxAIAdvanced, &QGroupBox::toggled, this, [this](bool checked) {
+    this->labelAIApiEndpoint->setVisible(checked);
+    this->lineEditAIApiEndpoint->setVisible(checked);
+    this->lineEditAIApiEndpoint->setReadOnly(!checked);
+  });
+  this->labelAIConnectionStatus->setText(_("Not tested"));
+  writeAISettings(this->inMemoryAISettings);
 
   this->comboBoxAIProfile->clear();
   this->comboBoxAIProfile->addItems(profiles);
@@ -355,6 +342,8 @@ void Preferences::init()
           &Preferences::saveAIParams);
   connect(this->plainTextEditAIDefaultPrompt, &QPlainTextEdit::textChanged, this,
           &Preferences::saveAIParams);
+  connect(this->comboBoxAIModel, &QComboBox::currentTextChanged,
+          this, &Preferences::on_comboBoxAIModel_currentTextChanged);
 
   this->aiSaveTimer = new QTimer(this);
   this->aiSaveTimer->setSingleShot(true);
@@ -1480,6 +1469,9 @@ void Preferences::on_comboBoxAIProfile_currentIndexChanged(int index)
   writeAISettings(this->inMemoryAISettings);
 
   loadAIParams(profileName);
+  this->labelAIConnectionStatus->setStyleSheet("color: #64748b;");
+  this->labelAIConnectionStatus->setText(_("Provider changed. Test its API key and model."));
+  emit aiProfilesChanged();
 }
 
 void Preferences::on_pushButtonAINewProfile_clicked()
@@ -1500,13 +1492,25 @@ void Preferences::on_pushButtonAINewProfile_clicked()
   nlohmann::json profilesObj = this->inMemoryAISettings.value("profiles", nlohmann::json::object());
 
   nlohmann::json newProfile = nlohmann::json::object();
-  newProfile["endpoint"] = "http://localhost:8080/v1";
+  nlohmann::json params = nlohmann::json::object();
+
+  if (trimmed.contains("OpenAI", Qt::CaseInsensitive) || trimmed.contains("ChatGPT", Qt::CaseInsensitive) || trimmed.contains("Codex", Qt::CaseInsensitive)) {
+    newProfile["endpoint"] = "https://api.openai.com/v1";
+    params["model"] = "gpt-4o";
+  } else if (trimmed.contains("Gemini", Qt::CaseInsensitive) || trimmed.contains("Google", Qt::CaseInsensitive)) {
+    newProfile["endpoint"] = "https://generativelanguage.googleapis.com/v1beta/openai";
+    params["model"] = "gemini-3.8-flash";
+  } else if (trimmed.contains("Claude", Qt::CaseInsensitive) || trimmed.contains("Anthropic", Qt::CaseInsensitive)) {
+    newProfile["endpoint"] = "https://api.anthropic.com/v1";
+    params["model"] = "claude-3-7-sonnet-20250219";
+  } else {
+    newProfile["endpoint"] = "http://localhost:8080/v1";
+    params["model"] = "custom";
+  }
   newProfile["apiKey"] = "";
 
-  nlohmann::json params = nlohmann::json::object();
-  params["model"] = "custom";
   params["temperature"] = 0.7;
-  params["max_tokens"] = 2048;
+  params["max_tokens"] = 4096;
   params["system_prompt"] =
     "You are the OpenSCAD Expert Assistant. You provide high-quality, surgical, and logical OpenSCAD "
     "code fixes.\n\n"
@@ -1524,8 +1528,7 @@ void Preferences::on_pushButtonAINewProfile_clicked()
     "3. **Tool Workflow**:\n"
     "   - YOU MUST USE `set_editor_code` to propose any code changes so they are set for user review.\n"
     "   - You can output code blocks in markdown format in the chat for explanation, but you MUST also "
-    "call the `set_editor_code` tool so the changes are set for review and can be applied "
-    "automatically.\n"
+    "call the `set_editor_code` tool so the changes are staged for your manual review and editing.\n"
     "   - Use `get_editor_code()` if you need to see the latest script state.\n"
     "   - Use `trigger_preview()` once after setting the code to validate the result.\n"
     "4. **Response and Engagement**: Explain the reasoning behind your proposed code changes. Output "
@@ -1570,14 +1573,76 @@ void Preferences::on_pushButtonAIDeleteProfile_clicked()
 
 void Preferences::on_lineEditAIApiEndpoint_textChanged(const QString& text)
 {
-  Q_UNUSED(text);
+  BlockSignals<QLineEdit *>(this->lineEditAIEndpointDisplay)->setText(text);
   saveAIParams();
 }
 
 void Preferences::on_lineEditAIApiKey_textChanged(const QString& text)
 {
   Q_UNUSED(text);
+  this->labelAIConnectionStatus->setStyleSheet("color: #64748b;");
+  this->labelAIConnectionStatus->setText(_("Settings changed. Test the connection again."));
   saveAIParams();
+}
+
+void Preferences::on_comboBoxAIModel_currentTextChanged(const QString& text)
+{
+  Q_UNUSED(text);
+  this->labelAIConnectionStatus->setStyleSheet("color: #64748b;");
+  this->labelAIConnectionStatus->setText(_("Settings changed. Test the connection again."));
+  saveAIParams();
+}
+
+void Preferences::on_pushButtonAISaveProfile_clicked()
+{
+  if (!this->lineEditAIApiKey->text().isEmpty() && !AIProfileManager::secureStorageAvailable()) {
+    this->labelAIConnectionStatus->setStyleSheet("color: #b91c1c; font-weight: bold;");
+    this->labelAIConnectionStatus->setText(_("Secure API key storage is not available on this platform."));
+    return;
+  }
+  saveAIParams();
+  writeAISettings(this->inMemoryAISettings);
+  emit aiProfilesChanged();
+  this->labelAIConnectionStatus->setStyleSheet("color: #64748b;");
+  this->labelAIConnectionStatus->setText(_("Profile saved. Test the connection before generating."));
+}
+
+void Preferences::on_pushButtonAITestConnection_clicked()
+{
+  if (!this->lineEditAIApiKey->text().isEmpty() && !AIProfileManager::secureStorageAvailable()) {
+    this->labelAIConnectionStatus->setStyleSheet("color: #b91c1c; font-weight: bold;");
+    this->labelAIConnectionStatus->setText(_("Secure API key storage is not available on this platform."));
+    return;
+  }
+  saveAIParams();
+  writeAISettings(this->inMemoryAISettings);
+  this->pushButtonAITestConnection->setEnabled(false);
+  this->labelAIConnectionStatus->setStyleSheet("color: #64748b;");
+  this->labelAIConnectionStatus->setText(_("Checking API key, endpoint, and model…"));
+
+  this->aiConnectionTestService = std::make_shared<AIService>();
+  QPointer<Preferences> self(this);
+  this->aiConnectionTestService->testConnection(
+    [self]() {
+      if (!self) return;
+      QMetaObject::invokeMethod(self.data(), [self]() {
+        if (!self) return;
+        self->pushButtonAITestConnection->setEnabled(true);
+        self->labelAIConnectionStatus->setStyleSheet("color: #15803d; font-weight: bold;");
+        self->labelAIConnectionStatus->setText(_("Connection successful. The API key and selected model responded."));
+        self->aiConnectionTestService.reset();
+      }, Qt::QueuedConnection);
+    },
+    [self](const std::string& error) {
+      if (!self) return;
+      QMetaObject::invokeMethod(self.data(), [self, error]() {
+        if (!self) return;
+        self->pushButtonAITestConnection->setEnabled(true);
+        self->labelAIConnectionStatus->setStyleSheet("color: #b91c1c; font-weight: bold;");
+        self->labelAIConnectionStatus->setText(QString::fromStdString(error));
+        self->aiConnectionTestService.reset();
+      }, Qt::QueuedConnection);
+    });
 }
 
 void Preferences::on_pushButtonAIParamAdd_clicked()
@@ -1619,35 +1684,41 @@ void Preferences::loadAIParams(const QString& profileName)
   std::string profileNameStr = profileName.toStdString();
   nlohmann::json profileObj = profilesObj.value(profileNameStr, nlohmann::json::object());
 
-  std::string endpoint = profileObj.value("endpoint", "");
-  std::string apiKey = profileObj.value("apiKey", "");
-
-  if (endpoint.empty()) {
-    if (profileName.contains("Ollama") || profileName.toLower() == "ollamaprofile") {
-      endpoint = "http://localhost:11434/v1";
-    } else if (profileName.contains("OpenAI") || profileName.toLower() == "openai") {
-      endpoint = "https://api.openai.com/v1";
-    } else if (profileName.contains("Anthropic")) {
-      endpoint = "https://api.anthropic.com/v1";
-    } else {
-      endpoint = "http://localhost:8080/v1";
-    }
-  }
+  std::string endpoint = profileObj.value("endpoint", AIProviderManager::defaultEndpoint(profileNameStr));
+  const std::string apiKey = AIProfileManager::apiKeyFromProfile(profileObj);
 
   BlockSignals<QLineEdit *>(this->lineEditAIApiEndpoint)->setText(QString::fromStdString(endpoint));
+  BlockSignals<QLineEdit *>(this->lineEditAIEndpointDisplay)->setText(QString::fromStdString(endpoint));
   BlockSignals<QLineEdit *>(this->lineEditAIApiKey)->setText(QString::fromStdString(apiKey));
 
   this->tableWidgetAIParams->blockSignals(true);
   this->tableWidgetAIParams->setRowCount(0);
 
   nlohmann::json paramsObj = profileObj.value("params", nlohmann::json::object());
+  std::string model = paramsObj.value("model", AIProviderManager::defaultModel(profileNameStr));
+  this->comboBoxAIModel->blockSignals(true);
+  this->comboBoxAIModel->clear();
+  if (profileName.contains("Gemini", Qt::CaseInsensitive) || profileName.contains("Google", Qt::CaseInsensitive)) {
+    this->comboBoxAIModel->addItems({"gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash-lite"});
+  } else if (profileName.contains("Claude", Qt::CaseInsensitive) || profileName.contains("Anthropic", Qt::CaseInsensitive)) {
+    this->comboBoxAIModel->addItems({"claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5"});
+  } else {
+    this->comboBoxAIModel->addItems({"gpt-6.2-sol", "gpt-6.2-astra", "gpt-6-luna"});
+  }
+  this->comboBoxAIModel->setCurrentText(QString::fromStdString(model));
+  this->comboBoxAIModel->blockSignals(false);
 
   // Fill in missing default parameters
   if (!paramsObj.contains("model")) {
-    paramsObj["model"] =
-      (profileName.contains("Ollama") || profileName.toLower() == "ollamaprofile")
-        ? "deepseek-coder"
-        : ((profileName.contains("OpenAI") || profileName.toLower() == "openai") ? "gpt-4o" : "custom");
+    if (profileName.contains("OpenAI", Qt::CaseInsensitive) || profileName.contains("ChatGPT", Qt::CaseInsensitive) || profileName.contains("Codex", Qt::CaseInsensitive)) {
+      paramsObj["model"] = "gpt-4o";
+    } else if (profileName.contains("Gemini", Qt::CaseInsensitive) || profileName.contains("Google", Qt::CaseInsensitive)) {
+      paramsObj["model"] = "gemini-3.8-flash";
+    } else if (profileName.contains("Anthropic", Qt::CaseInsensitive) || profileName.contains("Claude", Qt::CaseInsensitive)) {
+      paramsObj["model"] = "claude-3-7-sonnet-20250219";
+    } else {
+      paramsObj["model"] = "custom";
+    }
   }
   if (!paramsObj.contains("temperature")) {
     paramsObj["temperature"] = 0.7;
@@ -1689,8 +1760,7 @@ void Preferences::loadAIParams(const QString& profileName)
       "review.\n"
       "   - You can output code blocks in markdown format in the chat for explanation, but you MUST "
       "also "
-      "call the `set_editor_code` tool so the changes are set for review and can be applied "
-      "automatically.\n"
+      "call the `set_editor_code` tool so the changes are staged for manual review and editing.\n"
       "   - Use `get_editor_code()` if you need to see the latest script state.\n"
       "   - Use `trigger_preview()` once after setting the code to validate the result.\n"
       "4. **Response and Engagement**: Explain the reasoning behind your proposed code changes. Output "
@@ -1716,7 +1786,7 @@ void Preferences::loadAIParams(const QString& profileName)
   keys.sort();
 
   for (const auto& key : keys) {
-    if (key == "system_prompt" || key == "default_prompt") {
+    if (key == "system_prompt" || key == "default_prompt" || key == "model") {
       continue;
     }
     int row = this->tableWidgetAIParams->rowCount();
@@ -1755,12 +1825,20 @@ void Preferences::saveAIParams()
   nlohmann::json profilesObj = this->inMemoryAISettings.value("profiles", nlohmann::json::object());
   nlohmann::json profileObj = profilesObj.value(profileNameStr, nlohmann::json::object());
 
-  profileObj["endpoint"] = this->lineEditAIApiEndpoint->text().toStdString();
-  profileObj["apiKey"] = this->lineEditAIApiKey->text().toStdString();
+  profileObj["endpoint"] = this->lineEditAIApiEndpoint->text().trimmed().toStdString();
+  const std::string protectedKey = AIProfileManager::protectApiKey(this->lineEditAIApiKey->text().toStdString());
+  if (!protectedKey.empty()) {
+    profileObj["apiKeyEncrypted"] = protectedKey;
+    profileObj.erase("apiKey");
+  } else if (this->lineEditAIApiKey->text().isEmpty()) {
+    profileObj["apiKeyEncrypted"] = "";
+    profileObj.erase("apiKey");
+  }
 
   nlohmann::json paramsObj = nlohmann::json::object();
   paramsObj["system_prompt"] = this->plainTextEditAISystemPrompt->toPlainText().toStdString();
   paramsObj["default_prompt"] = this->plainTextEditAIDefaultPrompt->toPlainText().toStdString();
+  paramsObj["model"] = this->comboBoxAIModel->currentText().trimmed().toStdString();
 
   for (int row = 0; row < this->tableWidgetAIParams->rowCount(); ++row) {
     QTableWidgetItem *keyItem = this->tableWidgetAIParams->item(row, 0);
@@ -1768,7 +1846,7 @@ void Preferences::saveAIParams()
     if (!keyItem) continue;
 
     const QString key = keyItem->text().trimmed();
-    if (key.isEmpty() || key == "system_prompt" || key == "default_prompt") continue;
+    if (key.isEmpty() || key == "system_prompt" || key == "default_prompt" || key == "model") continue;
 
     const QString valText = valItem ? valItem->text().trimmed() : "";
     std::string keyStr = key.toStdString();
@@ -1865,6 +1943,7 @@ void Preferences::closeEvent(QCloseEvent *e)
 {
   saveAIParams();
   writeAISettings(this->inMemoryAISettings);
+  emit aiProfilesChanged();
   hidePasswords();
   QMainWindow::closeEvent(e);
 }
@@ -2054,14 +2133,14 @@ void Preferences::updateGUI()
                  Settings::Settings::octoPrintSlicerProfile.value());
 
   // AI tab: populate fields from current profile settings
-  std::string activeProfile = this->inMemoryAISettings.value("activeProfile", "Ollama Local");
+  std::string activeProfile = this->inMemoryAISettings.value("activeProfile", "Google Gemini");
   QString activeProfileQS = QString::fromStdString(activeProfile);
   int activeIdx = this->comboBoxAIProfile->findText(activeProfileQS);
   if (activeIdx >= 0) {
     BlockSignals<QComboBox *>(this->comboBoxAIProfile)->setCurrentIndex(activeIdx);
     loadAIParams(activeProfileQS);
   } else {
-    loadAIParams("Ollama Local");
+    loadAIParams("Google Gemini");
   }
   this->prefsActionAI->setVisible(Feature::ExperimentalAiFeatures.is_enabled());
   updateComboBox(this->comboBoxAutoCompletionMode, Settings::SettingsAutoCompletion::autocompleteMode);

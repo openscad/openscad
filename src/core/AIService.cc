@@ -4,6 +4,8 @@
 
 #include "HTTPClient.h"
 #include "AIClient.h"
+#include "AIProvider.h"
+#include "AIProfileManager.h"
 #include "platform/PlatformUtils.h"
 #include "json/json.hpp"
 #include <fstream>
@@ -23,8 +25,258 @@ static std::string getAISettingsPath()
   return configPath + "/ai_settings.json";
 }
 
+std::vector<AIProviderPreset> AIService::getProviderPresets()
+{
+  return {
+    {
+      "OpenAI ChatGPT",
+      "https://api.openai.com/v1",
+      "gpt-6.2-sol",
+      "OPENAI_API_KEY",
+      "OpenAI Responses API"
+    },
+    {
+      "Google Gemini",
+      "https://generativelanguage.googleapis.com/v1beta",
+      "gemini-3.8-flash",
+      "GEMINI_API_KEY",
+      "Gemini API; free tier availability depends on model, project and limits"
+    },
+    {
+      "Anthropic Claude",
+      "https://api.anthropic.com/v1",
+      "claude-sonnet-5-5",
+      "ANTHROPIC_API_KEY",
+      "Anthropic Messages API; API credits or billing required"
+    },
+  };
+}
+
+void AIService::ensureDefaultProfiles()
+{
+  std::string path = getAISettingsPath();
+  nlohmann::json root;
+  bool fileExists = false;
+
+  {
+    std::ifstream in(path);
+    if (in.is_open()) {
+      try {
+        in >> root;
+        fileExists = true;
+      } catch (...) {
+        root = nlohmann::json::object();
+      }
+    }
+  }
+
+  bool modified = false;
+  if (!root.contains("profiles") || !root["profiles"].is_object()) {
+    root["profiles"] = nlohmann::json::object();
+    modified = true;
+  }
+
+  auto& profiles = root["profiles"];
+  auto presets = getProviderPresets();
+
+  for (const auto& preset : presets) {
+    if (!profiles.contains(preset.name)) {
+      nlohmann::json p = nlohmann::json::object();
+      p["endpoint"] = preset.endpoint;
+      p["apiKey"] = "";
+      nlohmann::json params = nlohmann::json::object();
+      params["model"] = preset.defaultModel;
+      params["temperature"] = 0.7;
+      params["max_tokens"] = 4096;
+      p["params"] = params;
+      profiles[preset.name] = p;
+      modified = true;
+    } else if (profiles[preset.name].is_object()) {
+      auto& profile = profiles[preset.name];
+      const std::string oldEndpoint = profile.value("endpoint", std::string{});
+      if (oldEndpoint.empty() || oldEndpoint == "https://generativelanguage.googleapis.com/v1beta/openai") {
+        profile["endpoint"] = preset.endpoint;
+        modified = true;
+      }
+      if (!profile.contains("params") || !profile["params"].is_object()) {
+        profile["params"] = nlohmann::json::object();
+        modified = true;
+      }
+      auto& params = profile["params"];
+      const std::string oldModel = params.value("model", std::string{});
+      if (oldModel.empty() || oldModel == "gpt-4o" || oldModel == "claude-3-7-sonnet-20250219") {
+        params["model"] = preset.defaultModel;
+        modified = true;
+      }
+      if (profile.contains("apiKey") && profile["apiKey"].is_string() && !profile["apiKey"].get<std::string>().empty()) {
+        const std::string protectedKey = AIProfileManager::protectApiKey(profile["apiKey"].get<std::string>());
+        if (!protectedKey.empty()) {
+          profile["apiKeyEncrypted"] = protectedKey;
+          profile.erase("apiKey");
+          modified = true;
+        }
+      }
+    }
+  }
+
+  if (!root.contains("activeProfile") || !root["activeProfile"].is_string() ||
+      !profiles.contains(root["activeProfile"].get<std::string>())) {
+    root["activeProfile"] = "Google Gemini";
+    modified = true;
+  }
+  const std::string activeProfile = root["activeProfile"].get<std::string>();
+  // Prefer the user's explicitly configured Gemini key when older settings
+  // still point at the OpenRouter profile from the initial AI integration.
+  if (activeProfile == "OpenRouter" || activeProfile == "Custom" || activeProfile == "custom") {
+    root["activeProfile"] = "Google Gemini";
+    modified = true;
+  }
+  if (modified || !fileExists) {
+    std::ofstream out(path);
+    if (out.is_open()) {
+      out << root.dump(2);
+    }
+  }
+}
+
+std::vector<std::string> AIService::getAvailableProfileNames()
+{
+  ensureDefaultProfiles();
+  std::vector<std::string> names;
+  std::ifstream in(getAISettingsPath());
+  if (!in.is_open()) return names;
+  try {
+    nlohmann::json root;
+    in >> root;
+    if (root.contains("profiles") && root["profiles"].is_object()) {
+      for (const auto& preset : getProviderPresets()) {
+        if (root["profiles"].contains(preset.name)) names.push_back(preset.name);
+      }
+    }
+  } catch (...) {}
+  return names;
+}
+
+std::vector<std::string> AIService::getConfiguredProfileNames()
+{
+  ensureDefaultProfiles();
+  std::vector<std::string> names;
+  std::ifstream in(getAISettingsPath());
+  if (!in.is_open()) return names;
+  try {
+    nlohmann::json root;
+    in >> root;
+    if (root.contains("profiles") && root["profiles"].is_object()) {
+      for (const auto& preset : getProviderPresets()) {
+        if (!root["profiles"].contains(preset.name) || !root["profiles"][preset.name].is_object()) continue;
+        const std::string apiKey = AIProfileManager::apiKeyFromProfile(root["profiles"][preset.name]);
+        if (!apiKey.empty()) names.push_back(preset.name);
+      }
+    }
+  } catch (...) {
+  }
+  return names;
+}
+
+std::string AIService::getProfileModelName(const std::string& profileName)
+{
+  ensureDefaultProfiles();
+  std::ifstream in(getAISettingsPath());
+  if (!in.is_open()) return {};
+  try {
+    nlohmann::json root;
+    in >> root;
+    const auto& profiles = root.at("profiles");
+    const auto& profile = profiles.at(profileName);
+    const auto& params = profile.at("params");
+    if (params.contains("model") && params["model"].is_string()) {
+      return params["model"].get<std::string>();
+    }
+  } catch (...) {
+  }
+  return {};
+}
+
+std::string AIService::getActiveProfileName()
+{
+  ensureDefaultProfiles();
+  std::ifstream in(getAISettingsPath());
+  if (!in.is_open()) return "Google Gemini";
+  try {
+    nlohmann::json root;
+    in >> root;
+    if (root.contains("activeProfile") && root["activeProfile"].is_string()) {
+      return root["activeProfile"].get<std::string>();
+    }
+  } catch (...) {}
+  return "Google Gemini";
+}
+
+bool AIService::setActiveProfileName(const std::string& name)
+{
+  ensureDefaultProfiles();
+  std::string path = getAISettingsPath();
+  nlohmann::json root;
+  {
+    std::ifstream in(path);
+    if (!in.is_open()) return false;
+    try {
+      in >> root;
+    } catch (...) {
+      return false;
+    }
+  }
+
+  if (!root.contains("profiles") || !root["profiles"].contains(name)) {
+    return false;
+  }
+
+  root["activeProfile"] = name;
+  std::ofstream out(path);
+  if (!out.is_open()) return false;
+  out << root.dump(2);
+  return true;
+}
+
+bool AIService::createProfileFromPreset(const std::string& presetName, const std::string& apiKey)
+{
+  auto presets = getProviderPresets();
+  for (const auto& preset : presets) {
+    if (preset.name == presetName) {
+      std::string path = getAISettingsPath();
+      nlohmann::json root;
+      {
+        std::ifstream in(path);
+        if (in.is_open()) {
+          try { in >> root; } catch (...) {}
+        }
+      }
+      if (!root.contains("profiles") || !root["profiles"].is_object()) {
+        root["profiles"] = nlohmann::json::object();
+      }
+      nlohmann::json p = nlohmann::json::object();
+      p["endpoint"] = preset.endpoint;
+      p["apiKeyEncrypted"] = AIProfileManager::protectApiKey(apiKey);
+      nlohmann::json params = nlohmann::json::object();
+      params["model"] = preset.defaultModel;
+      params["temperature"] = 0.7;
+      params["max_tokens"] = 4096;
+      p["params"] = params;
+      root["profiles"][preset.name] = p;
+      root["activeProfile"] = preset.name;
+      std::ofstream out(path);
+      if (out.is_open()) {
+        out << root.dump(2);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
 {
+  AIService::ensureDefaultProfiles();
   std::ifstream file(getAISettingsPath());
   if (!file.is_open()) {
     error_msg = "Could not open ai_settings.json config file.";
@@ -57,7 +309,8 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
   }
   auto& profile = profiles[active_profile_name];
 
-  config.endpoint = profile.value("endpoint", "");
+  config.provider = active_profile_name;
+  config.endpoint = profile.value("endpoint", AIProviderManager::defaultEndpoint(active_profile_name));
   if (config.endpoint.empty()) {
     error_msg = "API endpoint is empty. Please configure a valid API URL in Preferences -> AI tab.";
     return false;
@@ -67,7 +320,34 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
       "Invalid API endpoint: '" + config.endpoint + "'. Must start with 'http://' or 'https://'";
     return false;
   }
-  config.apiKey = profile.value("apiKey", "");
+  config.apiKey = AIProfileManager::apiKeyFromProfile(profile);
+
+  // Fallback to environment variables if API key is not configured in file
+  if (config.apiKey.empty()) {
+    std::string lowerName = active_profile_name;
+    std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+    std::string lowerEndpoint = config.endpoint;
+    std::transform(lowerEndpoint.begin(), lowerEndpoint.end(), lowerEndpoint.begin(), ::tolower);
+
+    const char *env_val = nullptr;
+    if (lowerName.find("openrouter") != std::string::npos || lowerEndpoint.find("openrouter") != std::string::npos) {
+      env_val = std::getenv("OPENROUTER_API_KEY");
+    } else if (lowerName.find("openai") != std::string::npos || lowerEndpoint.find("openai") != std::string::npos) {
+      env_val = std::getenv("OPENAI_API_KEY");
+    } else if (lowerName.find("gemini") != std::string::npos || lowerEndpoint.find("googleapis") != std::string::npos) {
+      env_val = std::getenv("GEMINI_API_KEY");
+      if (!env_val) env_val = std::getenv("GOOGLE_API_KEY");
+    } else if (lowerName.find("claude") != std::string::npos || lowerName.find("anthropic") != std::string::npos || lowerEndpoint.find("anthropic") != std::string::npos) {
+      env_val = std::getenv("ANTHROPIC_API_KEY");
+      if (!env_val) env_val = std::getenv("CLAUDE_API_KEY");
+    }
+    if (!env_val) {
+      env_val = std::getenv("AI_API_KEY");
+    }
+    if (env_val && std::strlen(env_val) > 0) {
+      config.apiKey = env_val;
+    }
+  }
 
   if (profile.contains("params") && profile["params"].is_object()) {
     auto& params = profile["params"];
@@ -77,6 +357,8 @@ static bool loadActiveProfile(AIProfileConfig& config, std::string& error_msg)
     config.model = "";
     config.parameters = nlohmann::json::object();
   }
+
+  if (config.model.empty()) config.model = AIProviderManager::defaultModel(active_profile_name);
 
   return true;
 }
@@ -143,13 +425,18 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
 
   std::vector<AIChatMessage> ai_history;
   std::string sys_prompt =
-    "You are the OpenSCAD Expert Assistant. You provide high-quality, surgical, and logical OpenSCAD "
-    "code fixes.\n\n"
+    "You are the OpenSCAD Expert Assistant. You can create complete 3D models of ANY object from scratch, write high-quality OpenSCAD code, and provide surgical fixes.\n\n"
     "### YOUR CORE RULES:\n"
-    "1. **Surgical Excellence**: If the user has a minor error (missing semicolon, wrong bracket), fix "
+    "1. **3D Model Creation & Generation**: When the user asks to create, model, generate, or design ANY 3D object whatsoever (e.g. vehicles like cars, buses, or planes; furniture like chairs, tables, or desks; household items like mugs, vases, or lamps; tools & gadgets like phone stands, brackets, or clips; mechanical parts like gears, pulleys, or bolts; buildings like houses or castles; or any other custom geometry):\n"
+    "   - Create a complete, detailed, fully recognizable 3D model using OpenSCAD primitives (`cube`, `cylinder`, `sphere`), transformations (`translate`, `rotate`), CSG boolean operations (`difference`, `union`, `intersection`), and rich colors (`color(...)`).\n"
+    "   - Structure the model into clear, modular OpenSCAD modules with parameters and comments (e.g. `module main_body()`, `module details()`).\n"
+    "   - Set sensible `$fn` (e.g. `$fn = 50;`) for smooth curved surfaces.\n"
+    "   - You MUST call `set_editor_code` with the complete generated code to stage it for manual user review.\n"
+    "   - Never edit the active editor directly; the user edits and accepts proposed code manually.\n"
+    "2. **Surgical Excellence**: If the user has an existing script with a minor error (missing semicolon, wrong bracket), fix "
     "ONLY that specific line. Do NOT rewrite the entire script, do NOT rename variables, and do NOT "
     "change the overall logic unless explicitly asked.\n"
-    "2. **OpenSCAD Syntax Mastery**:\n"
+    "3. **OpenSCAD Syntax Mastery**:\n"
     "   - **Modifiers**: `color()`, `rotate()`, `translate()`, etc., are MODIFIERS. They apply to the "
     "next child or block. NEVER assign them to variables like `c = color(\"red\");`. Instead, use "
     "`color(\"red\") cube(10);`.\n"
@@ -157,7 +444,7 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     "`cube(10);`) MUST end with a semicolon. Semicolons are NOT used after module definitions `module "
     "name() { ... }` or after blocks `{ ... }`.\n"
     "3. **Tool Workflow**:\n"
-    "   - YOU MUST USE `set_editor_code` to apply code changes. Behaviour differs by mode (see below).\n"
+    "   - YOU MUST USE `set_editor_code` to propose code changes for manual review.\n"
     "   - You can output code blocks in markdown format in the chat for explanation, but you MUST also "
     "call `set_editor_code` to update the script.\n"
     "   - Use `get_editor_code()` if you need to see the latest script state.\n"
@@ -187,10 +474,8 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     sys_prompt +=
       "\n\n### Current Operating Mode: AUTONOMOUS AGENTIC\n"
       "You are in autonomous mode. Follow these rules:\n"
-      "- Apply code changes directly with `set_editor_code`, then immediately call `trigger_preview` "
-      "to validate the result.\n"
-      "- If `trigger_preview` reports errors, read the error messages and call `set_editor_code` again "
-      "with a fix. Repeat until the code compiles cleanly or you exhaust your turn limit.";
+      "- Call `set_editor_code` to stage a proposal, then STOP for manual user review. Never write directly to the editor.\n"
+      "- Do not call `trigger_preview`; the user edits and accepts the proposal manually.";
   }
 
   int context_limit = 10;
@@ -257,6 +542,7 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    am.tool_name = msg.tool_name;
     for (const auto& img : msg.images) {
       am.images.push_back({img.mime_type, img.base64_data});
     }
@@ -291,7 +577,9 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
   // In interactive mode the model gets at most 2 LLM calls: one to call tools
   // (e.g. get_editor_code then set_editor_code) and one final response after
   // seeing those results. We enforce this by capping the effective turn limit.
-  const int effective_max_turns = interactiveMode ? std::min(max_auto_turns, 2) : max_auto_turns;
+  // A model creation normally needs one call to write code and one to render;
+  // allow one final response while avoiding long agent loops for simple prompts.
+  const int effective_max_turns = std::min(max_auto_turns, interactiveMode ? 2 : 3);
 
   auto on_complete_wrapper = [this, config, &history, on_chunk, on_error, on_complete, current_auto_turn,
                               effective_max_turns,
@@ -309,7 +597,11 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
     nlohmann::json tcs_arr = nlohmann::json::array();
     for (const auto& tc : tool_calls) {
       nlohmann::json t = nlohmann::json::object();
-      t["id"] = tc.id;
+      const std::string toolCallId =
+        (config.endpoint.find("generativelanguage.googleapis.com") != std::string::npos && tc.id.empty())
+          ? "call_" + tc.name
+          : tc.id;
+      t["id"] = toolCallId;
       t["type"] = "function";
       nlohmann::json fn = nlohmann::json::object();
       fn["name"] = tc.name;
@@ -330,8 +622,22 @@ void AIService::chatCompletionStream(std::vector<ChatMessage>& history, ChunkCal
       ChatMessage tool_msg;
       tool_msg.role = "tool";
       tool_msg.content = result;
-      tool_msg.tool_call_id = tc.id;
+      tool_msg.tool_call_id =
+        (config.endpoint.find("generativelanguage.googleapis.com") != std::string::npos && tc.id.empty())
+          ? "call_" + tc.name
+          : tc.id;
+      tool_msg.tool_name = tc.name;
       history.push_back(tool_msg);
+    }
+
+    // Staged editor changes always return control to the user for manual review.
+    const bool stagedCode = std::any_of(tool_calls.begin(), tool_calls.end(),
+                                        [](const AIToolCall& call) {
+                                          return call.name == "set_editor_code";
+                                        });
+    if (stagedCode && interactiveMode) {
+      if (on_complete) on_complete();
+      return;
     }
 
     // Allow the UI layer to inject additional context messages (e.g. a
@@ -369,13 +675,18 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
 
   std::vector<AIChatMessage> ai_history;
   std::string sys_prompt =
-    "You are the OpenSCAD Expert Assistant. You provide high-quality, surgical, and logical OpenSCAD "
-    "code fixes.\n\n"
+    "You are the OpenSCAD Expert Assistant. You can create complete 3D models of ANY object from scratch, write high-quality OpenSCAD code, and provide surgical fixes.\n\n"
     "### YOUR CORE RULES:\n"
-    "1. **Surgical Excellence**: If the user has a minor error (missing semicolon, wrong bracket), fix "
+    "1. **3D Model Creation & Generation**: When the user asks to create, model, generate, or design ANY 3D object whatsoever (e.g. vehicles like cars, buses, or planes; furniture like chairs, tables, or desks; household items like mugs, vases, or lamps; tools & gadgets like phone stands, brackets, or clips; mechanical parts like gears, pulleys, or bolts; buildings like houses or castles; or any other custom geometry):\n"
+    "   - Create a complete, detailed, fully recognizable 3D model using OpenSCAD primitives (`cube`, `cylinder`, `sphere`), transformations (`translate`, `rotate`), CSG boolean operations (`difference`, `union`, `intersection`), and rich colors (`color(...)`).\n"
+    "   - Structure the model into clear, modular OpenSCAD modules with parameters and comments (e.g. `module main_body()`, `module details()`).\n"
+    "   - Set sensible `$fn` (e.g. `$fn = 50;`) for smooth curved surfaces.\n"
+    "   - You MUST call `set_editor_code` with the complete generated code to place it directly into the editor.\n"
+    "   - In autonomous mode, call `trigger_preview()` immediately after `set_editor_code` to compile and display the 3D model in the viewport.\n"
+    "2. **Surgical Excellence**: If the user has an existing script with a minor error (missing semicolon, wrong bracket), fix "
     "ONLY that specific line. Do NOT rewrite the entire script, do NOT rename variables, and do NOT "
     "change the overall logic unless explicitly asked.\n"
-    "2. **OpenSCAD Syntax Mastery**:\n"
+    "3. **OpenSCAD Syntax Mastery**:\n"
     "   - **Modifiers**: `color()`, `rotate()`, `translate()`, etc., are MODIFIERS. They apply to the "
     "next child or block. NEVER assign them to variables like `c = color(\"red\");`. Instead, use "
     "`color(\"red\") cube(10);`.\n"
@@ -383,7 +694,7 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     "`cube(10);`) MUST end with a semicolon. Semicolons are NOT used after module definitions `module "
     "name() { ... }` or after blocks `{ ... }`.\n"
     "3. **Tool Workflow**:\n"
-    "   - YOU MUST USE `set_editor_code` to propose any code changes so they are set for user review.\n"
+    "   - YOU MUST USE `set_editor_code` to apply any code changes in the active editor.\n"
     "   - You can output code blocks in markdown format in the chat for explanation, but you MUST also "
     "call the `set_editor_code` tool so the changes are set for review and can be applied "
     "automatically.\n"
@@ -428,8 +739,7 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
       "import(\"file.stl\")\n\n"
       "### Available Tools\n"
       "- **get_editor_code()**: Returns the current contents of the active editor tab.\n"
-      "- **set_editor_code({\"code\": \"...\"})**:  Proposes code changes for user review in a "
-      "side-by-side diff dialog. "
+      "- **set_editor_code({\"code\": \"...\"})**: Applies code in the editor in agent mode, or proposes it for review in interactive mode. "
       "Always use this instead of pasting code in chat.\n"
       "- **trigger_preview()**: Renders the current editor code in the 3D viewport. "
       "Automatically postponed if code changes are pending review.";
@@ -441,6 +751,7 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
     am.role = msg.role;
     am.content = msg.content;
     am.tool_call_id = msg.tool_call_id;
+    am.tool_name = msg.tool_name;
     for (const auto& img : msg.images) {
       am.images.push_back({img.mime_type, img.base64_data});
     }
@@ -480,6 +791,64 @@ void AIService::chatCompletion(const std::vector<ChatMessage>& history, Response
       }
     },
     on_error);
+}
+
+void AIService::generateOpenSCADCode(const std::string& prompt, const std::string& currentCode,
+                                     ChunkCallback on_chunk, ErrorCallback on_error,
+                                     CompleteCallback on_complete)
+{
+  AIProfileConfig config;
+  std::string error;
+  if (!loadActiveProfile(config, error)) {
+    if (on_error) on_error(error);
+    return;
+  }
+  if (config.apiKey.empty()) {
+    if (on_error) on_error("No API key is configured for " + getActiveProfileName() +
+                           ". Add its provider API key in Preferences → AI.");
+    return;
+  }
+  if (config.model.empty()) {
+    if (on_error) on_error("No model is configured for this provider in Preferences → AI.");
+    return;
+  }
+
+  const std::string systemPrompt =
+    "You generate valid, complete OpenSCAD source code from the user's request. "
+    "Return only OpenSCAD code, without Markdown fences or explanation. "
+    "OpenSCAD has no physical unit system: use millimeters for dimensions and convert meters to millimeters "
+    "(1 meter = 1000 mm). Preserve existing code and modify it only when the request asks to edit the current model. "
+    "Use valid OpenSCAD syntax, sensible parameters, and avoid external dependencies or imports. "
+    "For a new model, return a complete standalone script that can be pasted into the editor and rendered. "
+    "For edits, return the complete updated script. Do not attempt to call tools, edit files, or render.";
+  std::string userPrompt = prompt;
+  if (!currentCode.empty()) {
+    userPrompt += "\n\nCurrent OpenSCAD editor source (use as context for requested edits):\n```scad\n";
+    userPrompt += currentCode;
+    userPrompt += "\n```";
+  }
+  impl->ai_client->generateOpenSCADCodeStream(config, systemPrompt, userPrompt,
+                                              std::move(on_chunk), std::move(on_error),
+                                              std::move(on_complete));
+}
+
+void AIService::testConnection(CompleteCallback on_success, ErrorCallback on_error)
+{
+  AIProfileConfig config;
+  std::string error;
+  if (!loadActiveProfile(config, error)) {
+    if (on_error) on_error(error);
+    return;
+  }
+  if (config.apiKey.empty()) {
+    if (on_error) on_error("Paste an API key for the selected provider before testing the connection.");
+    return;
+  }
+  if (config.model.empty()) {
+    if (on_error) on_error("Select a model before testing the connection.");
+    return;
+  }
+  impl->ai_client->testConnection(config, std::move(on_success), std::move(on_error));
 }
 
 std::string AIService::getDefaultPrompt() const

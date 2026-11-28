@@ -108,6 +108,44 @@
     </widget>
    </item>
    <item>
+    <widget class="QWidget" name="providerBarWidget" native="true">
+     <layout class="QHBoxLayout" name="providerBarLayout">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="providerLabel">
+        <property name="text">
+         <string>Model:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="providerComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Select AI Provider (ChatGPT, Gemini, Claude, Ollama)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -212,13 +250,80 @@
         </widget>
        </item>
        <item>
+        <widget class="QScrollArea" name="quickCommandsScrollArea">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>34</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>34</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="quickCommandsContent">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>292</width>
+            <height>34</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="quickCommandsLayout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
+            <number>2</number>
+           </property>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="inputLayout">
          <item>
           <widget class="ChatInputEdit" name="inputField">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>64</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
              <width>16777215</width>
-             <height>50</height>
+             <height>100</height>
             </size>
            </property>
           </widget>
@@ -227,18 +332,21 @@
           <widget class="QPushButton" name="sendButton">
            <property name="minimumSize">
             <size>
-             <width>60</width>
-             <height>50</height>
+             <width>64</width>
+             <height>36</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>60</width>
-             <height>50</height>
+             <width>64</width>
+             <height>36</height>
             </size>
            </property>
            <property name="text">
-            <string>Send</string>
+            <string>➜</string>
+           </property>
+           <property name="toolTip">
+            <string>Send prompt</string>
            </property>
           </widget>
          </item>
@@ -250,7 +358,35 @@
           <number>4</number>
          </property>
          <item>
+          <widget class="QToolButton" name="composerActionsButton">
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Attach an image, analyze the viewport, or choose a prompt template</string>
+           </property>
+           <property name="text">
+            <string>＋</string>
+           </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="analyzeScreenButton">
+          <property name="visible">
+           <bool>false</bool>
+          </property>
            <property name="toolTip">
             <string>Grab active 3D viewport frame and camera metadata</string>
            </property>
@@ -261,6 +397,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="attachImageButton">
+          <property name="visible">
+           <bool>false</bool>
+          </property>
            <property name="toolTip">
             <string>Attach local image file</string>
            </property>
@@ -278,6 +417,9 @@
          </item>
          <item>
           <widget class="QCheckBox" name="agentModeCheckBox">
+          <property name="visible">
+           <bool>false</bool>
+          </property>
            <property name="toolTip">
             <string>Agentic mode: allow the AI to call tools in multiple automatic turns per request</string>
            </property>

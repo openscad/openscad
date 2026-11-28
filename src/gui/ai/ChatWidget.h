@@ -51,15 +51,22 @@ private slots:
   void onAnalyzeScreenPressed();
   void onAttachImagePressed();
   void removeAttachment(size_t index);
+  void onProviderChanged(int index);
+  void onQuickCommandClicked(const QString& promptText, bool autoSend = true);
 
 private:
   MessageBubble *addMessage(const QString& text, bool isUser,
                             const std::vector<ImageAttachment>& images = {});
   void rebuildChatUI();
   void updateAttachmentPreviewBar();
+  void updateProviderList();
+  void setupQuickCommandsBar();
+  void startAIStream(int retryCount = 0);
   bool isDarkTheme() const;
   void enableInput(bool enabled);
   std::string executeTool(const std::string& name, const std::string& arguments_json);
+
+  bool isUpdatingProviders = false;
 
   std::shared_ptr<AIService> aiService;
   std::vector<ChatMessage> history;
