@@ -74,7 +74,12 @@ std::string lookup_file(const std::string& path, const std::string& parent)
   }
 
   if (parent.empty()) {
-    return "";
+    // If the parent path is empty, it's because the .SCAD file is unsaved.  We don't have any
+    // solid base for relative names, but we might as well use the supplied path as-is,
+    // relative to the current directory, so that there's a meaningful default.
+    // This also supports the case where the user has controlled the current folder when starting
+    // the GUI.
+    return fs_absolute(path).string();
   }
 
   return fs_absolute(fs::path(parent) / path).string();
