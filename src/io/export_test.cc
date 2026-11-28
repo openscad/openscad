@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
 #include "utils/scope_guard.hpp"
 
@@ -83,5 +84,18 @@ TEST_CASE("Write errors during export are reported instead of aborting", "[io][e
     INFO(fileformat::info(format).identifier);
     const ExportInfo info{.format = format, .info = fileformat::info(format)};
     CHECK_FALSE(exportFileByName(shape, "/dev/full", info));
+  }
+
+  auto tetrahedron = std::make_shared<PolySet>(3);
+  tetrahedron->vertices = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+  tetrahedron->indices = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 3, 2}};
+  std::vector<FileFormat> formats3d = {FileFormat::OFF, FileFormat::ASCII_STL, FileFormat::BINARY_STL};
+#ifdef ENABLE_LIB3MF
+  formats3d.push_back(FileFormat::_3MF);
+#endif
+  for (const auto format : formats3d) {
+    INFO(fileformat::info(format).identifier);
+    const ExportInfo info{.format = format, .info = fileformat::info(format)};
+    CHECK_FALSE(exportFileByName(tetrahedron, "/dev/full", info));
   }
 }

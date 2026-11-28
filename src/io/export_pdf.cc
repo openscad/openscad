@@ -2,7 +2,6 @@
 #include <cassert>
 #include <cmath>
 #include <memory>
-#include <ios>
 #include <ostream>
 #include <string>
 
@@ -195,14 +194,10 @@ void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr)
   }
 }
 
-// Called from cairo, so it must not throw: the stream may have exceptions enabled.
 cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
 {
   auto *stream = static_cast<std::ostream *>(closure);
-  try {
-    stream->write(reinterpret_cast<const char *>(data), length);
-  } catch (const std::ios::failure&) {
-  }
+  stream->write(reinterpret_cast<const char *>(data), length);
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
 

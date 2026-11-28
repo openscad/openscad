@@ -32,8 +32,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <ios>
 #include <ostream>
+#include <sstream>
 #include <string>
 
 #include "core/ColorUtil.h"
@@ -74,29 +74,16 @@ struct ExportContext {
   const std::shared_ptr<const Export3mfOptions> options;
 };
 
-// These are called from lib3mf, so they must not throw: the stream may have exceptions enabled.
-// They also always report success. When a callback reports an error, lib3mf 1.x throws, and its
-// package writer's destructor then throws again while finishing the archive, which terminates
-// the program. Instead, a failed write leaves the stream's error state set, the callbacks skip
-// everything after it, and the caller checks the state afterwards.
 uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
-  if (!*stream) return 0;
-  try {
-    stream->write(data, bytes);
-  } catch (const std::ios::failure&) {
-  }
-  return 0;
+  stream->write(data, bytes);
+  return !(*stream);
 }
 
 uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 {
-  if (!*stream) return 0;
-  try {
-    stream->seekp(pos);
-  } catch (const std::ios::failure&) {
-  }
-  return 0;
+  stream->seekp(pos);
+  return !(*stream);
 }
 
 void export_3mf_error(std::string msg, PLib3MFModel *& model)
@@ -481,12 +468,19 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     return;
   }
 
+  // Let lib3mf write to memory, then copy the result to the output. Write errors on the output are
+  // then reported by the caller from the stream state. If a callback reported an error instead,
+  // lib3mf 1.x would throw, and its package writer's destructor would throw again while finishing
+  // the archive, which terminates the program. (lib3mf_writer_writetobuffer() would avoid the
+  // callbacks, but needs lib3mf_writer_getstreamsize(), which writes the whole model once more.)
+  std::stringstream buffer;
   result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback,
-                                         (void *)lib3mf_seek_callback, &output);
+                                         (void *)lib3mf_seek_callback, &buffer);
   lib3mf_release(writer);
   lib3mf_release(model);
   if (result != LIB3MF_OK) {
     LOG(message_group::Export_Error, "Error writing 3MF model.");
+    return;
   }
-  if (output) output.flush();
+  output << buffer.rdbuf();
 }
