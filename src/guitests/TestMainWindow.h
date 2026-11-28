@@ -11,4 +11,5 @@ private slots:
   void copyColorName_data();
   void copyColorName();
   void highlightMatchingBraceContents();
+  void invalidBraceBlockTintUsesFallback();
 };

@@ -115,7 +115,7 @@ public slots:
 
   // Display
   void on_checkBoxHighlightCurrentLine_toggled(bool);
-  void on_checkBoxEnableBraceMatching_toggled(bool);
+  void on_comboBoxBraceMatching_activated(int);
   void on_checkBoxEnableLineNumbers_toggled(bool);
 
   // Print

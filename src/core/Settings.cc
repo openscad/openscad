@@ -213,7 +213,14 @@ SettingsEntryEnum<std::string> Settings::tabKeyFunction("editor", "tabKeyFunctio
                                                          {"InsertTab", "tab", _("Insert Tab")}},
                                                         "Indent");
 SettingsEntryBool Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
-SettingsEntryBool Settings::enableBraceMatching("editor", "enableBraceMatching", true);
+SettingsEntryEnum<BraceMatchingMode> Settings::braceMatching(
+  "editor", "braceMatching",
+  {
+    {BraceMatchingMode::off, "off", _("Off")},
+    {BraceMatchingMode::braces, "braces", _("Highlight braces")},
+    {BraceMatchingMode::block, "block", _("Highlight block")},
+  },
+  BraceMatchingMode::braces);
 SettingsEntryBool Settings::enableLineNumbers("editor", "enableLineNumbers", true);
 SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
 SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel(

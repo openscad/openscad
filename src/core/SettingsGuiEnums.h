@@ -7,6 +7,12 @@
  * depend on any GUI or Qt classes.
  */
 
+enum class BraceMatchingMode : std::uint8_t {
+  off,
+  braces,
+  block,
+};
+
 enum class ColorListFilterType : std::uint8_t {
   fixed,
   wildcard,

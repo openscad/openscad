@@ -50,6 +50,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
+#include <Qsci/qsciglobal.h>
 #include <QSizePolicy>
 #include <QSpacerItem>
 #include <QStatusBar>
@@ -406,9 +407,25 @@ void Preferences::init()
   menu->addAction(actionLocalAppParameterSourceDir);
   toolButtonLocalAppParameterAddFile->setMenu(menu);
 
+  QSettingsCached settings;
+  const auto legacyBraceMatching = settings.value("editor/enableBraceMatching");
+  if (legacyBraceMatching.isValid()) {
+    const auto newKey = QString::fromStdString(S::braceMatching.key());
+    const auto oldValue = legacyBraceMatching.toString().trimmed();
+    bool numeric;
+    if (!settings.contains(newKey) &&
+        (oldValue == "false" || (oldValue.toInt(&numeric) == 0 && numeric))) {
+      settings.setValue(newKey, "off");
+    }
+    settings.remove("editor/enableBraceMatching");
+  }
   Settings::Settings::visit(SettingsReader());
 
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
+  initComboBox(this->comboBoxBraceMatching, S::braceMatching);
+#if QSCINTILLA_VERSION < 0x020b02
+  comboBoxBraceMatching->removeItem(comboBoxBraceMatching->findData("block"));
+#endif
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
   initComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
@@ -875,9 +892,9 @@ void Preferences::on_checkBoxHighlightCurrentLine_toggled(bool val)
   writeSettings();
 }
 
-void Preferences::on_checkBoxEnableBraceMatching_toggled(bool val)
+void Preferences::on_comboBoxBraceMatching_activated(int index)
 {
-  Settings::Settings::enableBraceMatching.setValue(val);
+  S::braceMatching.setIndex(index);
   writeSettings();
 }
 
@@ -2026,7 +2043,12 @@ void Preferences::updateGUI()
   initUpdateCheckBox(this->checkBoxAutoIndent, Settings::Settings::autoIndent);
   initUpdateCheckBox(this->checkBoxBackspaceUnindents, Settings::Settings::backspaceUnindents);
   initUpdateCheckBox(this->checkBoxHighlightCurrentLine, Settings::Settings::highlightCurrentLine);
-  initUpdateCheckBox(this->checkBoxEnableBraceMatching, Settings::Settings::enableBraceMatching);
+  updateComboBox(comboBoxBraceMatching, S::braceMatching);
+#if QSCINTILLA_VERSION < 0x020b02
+  if (S::braceMatching.value() == BraceMatchingMode::block) {
+    comboBoxBraceMatching->setCurrentIndex(comboBoxBraceMatching->findData("braces"));
+  }
+#endif
   initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
   initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
   initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);

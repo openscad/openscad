@@ -45,6 +45,8 @@ const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 // In setCursorPosition, how many lines should be visible above and below the cursor
 const int setCursorPositionVisibleLines = 3;
 
+static const QColor defaultBraceBlockColor(128, 160, 192, 64);
+
 class SettingsConverter
 {
 public:
@@ -183,7 +185,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, braceIndicatorNumber);
   qsci->setIndicatorDrawUnder(true, braceIndicatorNumber);
   connect(qsci, &QsciScintilla::SCN_UPDATEUI, this, [this](int updated) {
-    if (updated & (QsciScintilla::SC_UPDATE_CONTENT | QsciScintilla::SC_UPDATE_SELECTION)) {
+    if (braceBlockEnabled &&
+        (updated & (QsciScintilla::SC_UPDATE_CONTENT | QsciScintilla::SC_UPDATE_SELECTION))) {
       updateBraceHighlight();
     }
   });
@@ -334,10 +337,23 @@ void ScintillaEditor::applySettings()
   const auto& tabKeyFunction = Settings::Settings::tabKeyFunction.value();
   qsci->setTabIndents(tabKeyFunction == "Indent");
 
-  qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value()
-                           ? QsciScintilla::SloppyBraceMatch
-                           : QsciScintilla::NoBraceMatch);
-  updateBraceHighlight();
+  const auto mode = Settings::Settings::braceMatching.value();
+  const auto nativeMode =
+    mode == BraceMatchingMode::off ? QsciScintilla::NoBraceMatch : QsciScintilla::SloppyBraceMatch;
+  if (nativeMode != qsci->braceMatching()) {
+    qsci->setBraceMatching(nativeMode);
+    // QScintilla stores the mode without refreshing the braces at the current caret.
+    if (nativeMode == QsciScintilla::NoBraceMatch) {
+      qsci->SendScintilla(QsciScintilla::SCI_BRACEHIGHLIGHT, -1, -1);
+      qsci->SendScintilla(QsciScintilla::SCI_SETHIGHLIGHTGUIDE, 0UL);
+    } else {
+      emit qsci->SCN_UPDATEUI(0);
+    }
+  }
+  if (braceBlockEnabled != (mode == BraceMatchingMode::block)) {
+    braceBlockEnabled = mode == BraceMatchingMode::block;
+    updateBraceHighlight();
+  }
   qsci->setCaretLineVisible(Settings::Settings::highlightCurrentLine.value());
   onTextChanged();
 
@@ -348,7 +364,7 @@ void ScintillaEditor::updateBraceHighlight()
 {
 #if QSCINTILLA_VERSION >= 0x020b02
   long brace = -1, other = -1;
-  if (qsci->braceMatching() != QsciScintilla::NoBraceMatch) {
+  if (braceBlockEnabled) {
     qsci->findMatchingBrace(brace, other, qsci->braceMatching());
   }
   const auto current = qsci->SendScintilla(QsciScintilla::SCI_GETINDICATORCURRENT);
@@ -496,9 +512,9 @@ void ScintillaEditor::setLexer(ScadLexer *newLexer)
 }
 #endif  // if ENABLE_LEXERTL
 
-void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
+void ScintillaEditor::setColormap(const EditorColorScheme& colorScheme)
 {
-  const auto& pt = colorScheme->propertyTree();
+  const auto& pt = colorScheme.propertyTree();
 
   try {
     auto font = this->lexer->font(this->lexer->defaultStyle());
@@ -690,8 +706,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     qsci->setMarginsBackgroundColor(marginBackgroundColor);
     qsci->setMarginsForegroundColor(marginForegroundColor);
     qsci->setFoldMarginColors(marginBackgroundColor, marginBackgroundColor);
-    setMatchedBraceColors(readColor(colors, "matched-brace-background", paperColor),
-                          readColor(colors, "matched-brace-foreground", textColor));
+    qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
+    qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
+    setBraceBlockColor(readColor(colors, "brace-block-indicator", defaultBraceBlockColor));
     qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
     qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
     qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
@@ -771,7 +788,9 @@ void ScintillaEditor::noColor()
   qsci->setWhitespaceForegroundColor(Qt::black);
   qsci->setSelectionForegroundColor(Qt::black);
   qsci->setSelectionBackgroundColor(QColor("LightSkyBlue"));
-  setMatchedBraceColors(QColor("LightBlue"), Qt::black);
+  qsci->setMatchedBraceBackgroundColor(QColor("LightBlue"));
+  qsci->setMatchedBraceForegroundColor(Qt::black);
+  setBraceBlockColor(defaultBraceBlockColor);
   qsci->setUnmatchedBraceBackgroundColor(QColor("pink"));
   qsci->setUnmatchedBraceForegroundColor(Qt::black);
   qsci->setMarginsBackgroundColor(QColor("whiteSmoke"));
@@ -794,20 +813,15 @@ void ScintillaEditor::setHighlightScheme(const QString& name)
 {
   auto scheme = EditorColorMap::inst()->getColorScheme(name);
   if (scheme) {
-    setColormap(scheme.get());
+    setColormap(*scheme);
   } else {
     noColor();
   }
 }
 
-void ScintillaEditor::setMatchedBraceColors(const QColor& background, const QColor& foreground)
+void ScintillaEditor::setBraceBlockColor(const QColor& color)
 {
-  qsci->setMatchedBraceBackgroundColor(background);
-  qsci->setMatchedBraceForegroundColor(foreground);
-  // Some themes distinguish matched braces using only their foreground.
-  const bool useForeground = background.rgb() == lexer->paper(lexer->defaultStyle()).rgb();
-  QColor tint = useForeground ? foreground : background;
-  tint.setAlpha(useForeground ? 32 : 112);
+  const auto& tint = color.isValid() ? color : defaultBraceBlockColor;
   qsci->setIndicatorForegroundColor(tint, braceIndicatorNumber);
   qsci->setIndicatorOutlineColor(tint, braceIndicatorNumber);
 }

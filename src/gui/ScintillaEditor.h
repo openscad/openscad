@@ -45,6 +45,7 @@ public:
   void insertOrReplaceText(const QString&) override;
   void replaceAll(const QString& findText, const QString& replaceText) override;
   QStringList colorSchemes() override;
+  void setColormap(const EditorColorScheme& colorScheme);
   bool canUndo() override;
   void addTemplate() override;
   void resetHighlighting() override;
@@ -71,8 +72,7 @@ public:
 
 private:
   void getRange(int *lineFrom, int *lineTo);
-  void setColormap(const EditorColorScheme *colorScheme);
-  void setMatchedBraceColors(const QColor& background, const QColor& foreground);
+  void setBraceBlockColor(const QColor& color);
   int readInt(const boost::property_tree::ptree& pt, const std::string& name, const int defaultValue);
   std::string readString(const boost::property_tree::ptree& pt, const std::string& name,
                          const std::string& defaultValue);
@@ -165,6 +165,7 @@ private:
     14;  // Represents the impacted selected area text 14-15-16
 
   bool indicatorsActive = false;
+  bool braceBlockEnabled = false;
 
 #if ENABLE_LEXERTL
   ScadLexer2 *lexer;
