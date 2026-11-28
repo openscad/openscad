@@ -214,7 +214,12 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
 {
   // Exported files always use '.' as the decimal point, whatever the global C++ locale is.
   const std::locale previous_locale = output.imbue(std::locale::classic());
-  auto restore_locale = sg::make_scope_guard([&]() { output.imbue(previous_locale); });
+  // Restore the caller's locale only after a successful flush. This works around libstdc++:
+  // basic_filebuf::imbue() writes out pending output, and if that write fails, it drops the
+  // stream's codecvt facet, so that close() then throws std::bad_cast instead of failing.
+  auto restore_locale = sg::make_scope_guard([&]() noexcept {
+    if (output.flush().good()) output.imbue(previous_locale);
+  });
 
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
@@ -280,24 +285,16 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
   if (!fstream.is_open()) {
     LOG(_("Can't open file \"%1$s\" for export"), filename);
     return false;
-  } else {
-    bool onerror = false;
-    fstream.exceptions(std::ios::badbit | std::ios::failbit);
-    try {
-      exportFile(root_geom, fstream, exportInfo);
-    } catch (std::ios::failure&) {
-      onerror = true;
-    }
-    try {  // make sure file closed - resources released
-      fstream.close();
-    } catch (std::ios::failure&) {
-      onerror = true;
-    }
-    if (onerror) {
-      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), filename);
-    }
-    return !onerror;
   }
+  // The stream doesn't throw: some exporters write through callbacks from C libraries (cairo,
+  // lib3mf), so write errors are detected from the stream state instead.
+  exportFile(root_geom, fstream, exportInfo);
+  fstream.close();
+  if (!fstream) {
+    LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), filename);
+    return false;
+  }
+  return true;
 }
 
 namespace {
