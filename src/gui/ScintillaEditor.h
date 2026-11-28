@@ -45,6 +45,7 @@ public:
   void insertOrReplaceText(const QString&) override;
   void replaceAll(const QString& findText, const QString& replaceText) override;
   QStringList colorSchemes() override;
+  void setColormap(const EditorColorScheme& colorScheme);
   bool canUndo() override;
   void addTemplate() override;
   void resetHighlighting() override;
@@ -71,7 +72,7 @@ public:
 
 private:
   void getRange(int *lineFrom, int *lineTo);
-  void setColormap(const EditorColorScheme *colorScheme);
+  void setBraceBlockColor(const QColor& color);
   int readInt(const boost::property_tree::ptree& pt, const std::string& name, const int defaultValue);
   std::string readString(const boost::property_tree::ptree& pt, const std::string& name,
                          const std::string& defaultValue);
@@ -95,6 +96,7 @@ private:
   void replaceSelectedText(QString&);
   void addTemplate(const fs::path& path);
   void updateSymbolMarginVisibility();
+  void updateBraceHighlight();
   void findMarker(int, int, const std::function<int(int)>&);
 
 signals:
@@ -149,6 +151,7 @@ private:
   static const int errorIndicatorNumber = 8;  // first 8 are used by lexers
   static const int findIndicatorNumber = 9;
   static const int hyperlinkIndicatorNumber = 10;
+  static const int braceIndicatorNumber = 13;
   static const int hyperlinkIndicatorOffset = 100;
 
   // Note:  Marker numbers 25-31 are reserved for line-folding markers.
@@ -162,6 +165,7 @@ private:
     14;  // Represents the impacted selected area text 14-15-16
 
   bool indicatorsActive = false;
+  bool braceBlockEnabled = false;
 
 #if ENABLE_LEXERTL
   ScadLexer2 *lexer;

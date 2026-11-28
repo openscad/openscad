@@ -45,6 +45,8 @@ const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 // In setCursorPosition, how many lines should be visible above and below the cursor
 const int setCursorPositionVisibleLines = 3;
 
+static const QColor defaultBraceBlockColor(128, 160, 192, 64);
+
 class SettingsConverter
 {
 public:
@@ -179,6 +181,16 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, findIndicatorNumber);
+#if QSCINTILLA_VERSION >= 0x020b02
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, braceIndicatorNumber);
+  qsci->setIndicatorDrawUnder(true, braceIndicatorNumber);
+  connect(qsci, &QsciScintilla::SCN_UPDATEUI, this, [this](int updated) {
+    if (braceBlockEnabled &&
+        (updated & (QsciScintilla::SC_UPDATE_CONTENT | QsciScintilla::SC_UPDATE_SELECTION))) {
+      updateBraceHighlight();
+    }
+  });
+#endif
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsActiveNumber);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsActiveNumber + 1);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsImpactedNumber);
@@ -325,13 +337,51 @@ void ScintillaEditor::applySettings()
   const auto& tabKeyFunction = Settings::Settings::tabKeyFunction.value();
   qsci->setTabIndents(tabKeyFunction == "Indent");
 
-  qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value()
-                           ? QsciScintilla::SloppyBraceMatch
-                           : QsciScintilla::NoBraceMatch);
+  const auto mode = Settings::Settings::braceMatching.value();
+  const auto nativeMode =
+    mode == BraceMatchingMode::off ? QsciScintilla::NoBraceMatch : QsciScintilla::SloppyBraceMatch;
+  if (nativeMode != qsci->braceMatching()) {
+    qsci->setBraceMatching(nativeMode);
+    // QScintilla stores the mode without refreshing the braces at the current caret.
+    if (nativeMode == QsciScintilla::NoBraceMatch) {
+      qsci->SendScintilla(QsciScintilla::SCI_BRACEHIGHLIGHT, -1, -1);
+      qsci->SendScintilla(QsciScintilla::SCI_SETHIGHLIGHTGUIDE, 0UL);
+    } else {
+      emit qsci->SCN_UPDATEUI(0);
+    }
+  }
+  if (braceBlockEnabled != (mode == BraceMatchingMode::block)) {
+    braceBlockEnabled = mode == BraceMatchingMode::block;
+    updateBraceHighlight();
+  }
   qsci->setCaretLineVisible(Settings::Settings::highlightCurrentLine.value());
   onTextChanged();
 
   setupAutoComplete(false);
+}
+
+void ScintillaEditor::updateBraceHighlight()
+{
+#if QSCINTILLA_VERSION >= 0x020b02
+  long brace = -1, other = -1;
+  if (braceBlockEnabled) {
+    qsci->findMatchingBrace(brace, other, qsci->braceMatching());
+  }
+  const auto current = qsci->SendScintilla(QsciScintilla::SCI_GETINDICATORCURRENT);
+  const auto value = qsci->SendScintilla(QsciScintilla::SCI_GETINDICATORVALUE);
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, braceIndicatorNumber);
+  if (brace >= 0 && other >= 0) {
+    if (brace > other) std::swap(brace, other);
+    // Leave the existing interior in place. Changing an indicator triggers another content update.
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, brace + 1);
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, brace + 1, other - brace - 1);
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, other, qsci->length() - other);
+  } else {
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+  }
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, current);
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, value);
+#endif
 }
 
 void ScintillaEditor::setupAutoComplete(const bool forceOff)
@@ -462,9 +512,9 @@ void ScintillaEditor::setLexer(ScadLexer *newLexer)
 }
 #endif  // if ENABLE_LEXERTL
 
-void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
+void ScintillaEditor::setColormap(const EditorColorScheme& colorScheme)
 {
-  const auto& pt = colorScheme->propertyTree();
+  const auto& pt = colorScheme.propertyTree();
 
   try {
     auto font = this->lexer->font(this->lexer->defaultStyle());
@@ -658,6 +708,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     qsci->setFoldMarginColors(marginBackgroundColor, marginBackgroundColor);
     qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
     qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
+    setBraceBlockColor(readColor(colors, "brace-block-indicator", defaultBraceBlockColor));
     qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
     qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
     qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
@@ -739,6 +790,7 @@ void ScintillaEditor::noColor()
   qsci->setSelectionBackgroundColor(QColor("LightSkyBlue"));
   qsci->setMatchedBraceBackgroundColor(QColor("LightBlue"));
   qsci->setMatchedBraceForegroundColor(Qt::black);
+  setBraceBlockColor(defaultBraceBlockColor);
   qsci->setUnmatchedBraceBackgroundColor(QColor("pink"));
   qsci->setUnmatchedBraceForegroundColor(Qt::black);
   qsci->setMarginsBackgroundColor(QColor("whiteSmoke"));
@@ -761,10 +813,17 @@ void ScintillaEditor::setHighlightScheme(const QString& name)
 {
   auto scheme = EditorColorMap::inst()->getColorScheme(name);
   if (scheme) {
-    setColormap(scheme.get());
+    setColormap(*scheme);
   } else {
     noColor();
   }
+}
+
+void ScintillaEditor::setBraceBlockColor(const QColor& color)
+{
+  const auto& tint = color.isValid() ? color : defaultBraceBlockColor;
+  qsci->setIndicatorForegroundColor(tint, braceIndicatorNumber);
+  qsci->setIndicatorOutlineColor(tint, braceIndicatorNumber);
 }
 
 void ScintillaEditor::insert(const QString& text)
@@ -1505,7 +1564,7 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
   // checking if indicator clicked is hyperlinkIndicator
   if (val >= hyperlinkIndicatorOffset &&
       val <= hyperlinkIndicatorOffset + static_cast<int>(indicatorData.size())) {
-    if (!indicatorsActive) {
+    if (!indicatorsActive && !qsci->hasSelectedText()) {
       QTimer::singleShot(0, this, [this] {
 #ifdef Q_OS_MACOS
         QToolTip::showText(QCursor::pos(), "Use <b>Cmd + Click</b> to open the file", this, rect(),

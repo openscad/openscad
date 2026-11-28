@@ -1,6 +1,14 @@
 Color Schemes
 =============
 
+Editor bracket highlighting
+---------------------------
+
+The `brace-block-indicator` entry in an editor scheme's `colors` object sets
+the tint between matched brackets in "Highlight block" mode. Use `#AARRGGBB`
+with the opacity first (`00` is transparent, `ff` is opaque). A missing or
+invalid tint uses `#4080a0c0`, as does the Off syntax color scheme.
+
 Solarized
 ---------
 

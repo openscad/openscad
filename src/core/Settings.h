@@ -422,7 +422,7 @@ public:
   static SettingsEntryEnum<std::string> indentStyle;
   static SettingsEntryEnum<std::string> tabKeyFunction;
   static SettingsEntryBool highlightCurrentLine;
-  static SettingsEntryBool enableBraceMatching;
+  static SettingsEntryEnum<BraceMatchingMode> braceMatching;
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
   static SettingsEntryEnum<std::string> modifierNumberScrollWheel;
