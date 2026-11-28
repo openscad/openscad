@@ -1096,6 +1096,8 @@ set(CORE_SOURCES
   src/core/control.cc
   src/core/HTTPClient.cc
   src/core/AIClient.cc
+  src/core/AIProvider.cc
+  src/core/AIProfileManager.cc
   src/core/AIService.cc
   src/core/customizer/Annotation.cc
   src/core/customizer/CommentParser.cc
@@ -1640,7 +1642,9 @@ endif()
 
 target_sources(OpenSCADLibInternal PUBLIC ${RESOURCE_FILES})
 target_sources(OpenSCADLibInternal PRIVATE ${Sources})
-find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
+# Do not prefer the user's interactive shell here: on Windows it may be
+# PowerShell, which cannot execute this POSIX translation script.
+find_program(SHELL_EXE NAMES sh bash REQUIRED)
 add_custom_command(TARGET OpenSCADExe POST_BUILD
     COMMAND "${SHELL_EXE}"
     ARGS "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
@@ -1733,7 +1737,13 @@ else()
 endif()
 
 if(NOT APPLE OR APPLE_UNIX)
-  set_target_properties(OpenSCADExe PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  if(WIN32)
+    # Keep the user's previous build intact and publish the AI-enabled build
+    # under a separate name so Windows can link it while the old EXE is locked.
+    set_target_properties(OpenSCADExe PROPERTIES OUTPUT_NAME openscad-ai-gemini)
+  else()
+    set_target_properties(OpenSCADExe PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  endif()
   install(TARGETS OpenSCADExe RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(ENABLE_PYTHON)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openscad-python DESTINATION "${OPENSCAD_BINDIR}")

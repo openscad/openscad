@@ -26,9 +26,11 @@ struct AIChatMessage {
   std::string tool_call_id;
   std::vector<AIToolCall> tool_calls;
   std::vector<AIImageAttachment> images;
+  std::string tool_name;
 };
 
 struct AIProfileConfig {
+  std::string provider;
   std::string endpoint;
   std::string apiKey;
   std::string model;
@@ -58,6 +60,15 @@ public:
   // Asynchronous OpenAI-compatible POST request
   void sendChatCompletion(const AIProfileConfig& config, const std::vector<AIChatMessage>& history,
                           ResponseCallback on_response, ErrorCallback on_error);
+
+  // One-shot plain-text completion for natural-language to OpenSCAD source.
+  // This deliberately sends no tools and does not start an agent/tool loop.
+  void generateOpenSCADCodeStream(const AIProfileConfig& config, const std::string& systemPrompt,
+                                  const std::string& userPrompt, ChunkCallback on_chunk,
+                                  ErrorCallback on_error, std::function<void()> on_complete);
+
+  void testConnection(const AIProfileConfig& config, std::function<void()> on_success,
+                      ErrorCallback on_error);
 
   // Asynchronous OpenAI-compatible POST request with streaming response
   void sendChatCompletionStream(const AIProfileConfig& config, const std::vector<AIChatMessage>& history,

@@ -37,8 +37,9 @@ const Feature Feature::ExperimentalDiscretizationByError(
   "discretization-by-error",
   "Specify the maximum error in $fe and shapes will be segmented appropriately.");
 const Feature Feature::ExperimentalAiFeatures("ai-features",
-                                              "Enable AI features (Note: AI integration is under "
-                                              "development and does not connect to external APIs yet).");
+                                              "Enable the experimental AI assistant and provider "
+                                              "integrations. Configure a provider and credentials "
+                                              "in Preferences before sending requests.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(

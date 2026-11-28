@@ -15,6 +15,7 @@
 #include <QStringList>
 #include <QVariant>
 #include <QWidget>
+#include <memory>
 #include <string>
 
 #include "core/Settings.h"
@@ -26,6 +27,7 @@
 #include "json/json.hpp"
 
 class GlobalPreferences;
+class AIService;
 class QTimer;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
@@ -167,15 +169,20 @@ public slots:
   void on_pushButtonAIDeleteProfile_clicked();
   void on_lineEditAIApiEndpoint_textChanged(const QString&);
   void on_lineEditAIApiKey_textChanged(const QString&);
+  void on_comboBoxAIModel_currentTextChanged(const QString&);
+  void on_pushButtonAITestConnection_clicked();
+  void on_pushButtonAISaveProfile_clicked();
   void on_pushButtonAIParamAdd_clicked();
   void on_pushButtonAIParamRemove_clicked();
   void on_tableWidgetAIParams_itemChanged(class QTableWidgetItem *item);
 
 private:
+  std::shared_ptr<AIService> aiConnectionTestService;
   void loadAIParams(const QString& profileName);
   void saveAIParams();
 
 signals:
+  void aiProfilesChanged() const;
   void requestRedraw() const;
   void updateUndockMode(bool undockMode) const;
   void updateReorderMode(bool undockMode) const;
