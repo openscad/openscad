@@ -94,26 +94,69 @@ RUN cmake .. \
     cmake --install .
 
 # -----------------------------------------------------------------------------
-# QScintilla
+# Qt
 # -----------------------------------------------------------------------------
-FROM base AS qscintilla-builder
+FROM base AS qt
 
-# Install Qt5 dependencies specifically for QScintilla
+ARG QT_VERSION=6.10.3
+ARG AQTINSTALL_VERSION=3.3.0
+ARG QSCINTILLA_VERSION=2.14.1
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        qmake6 \
-        qt6-base-dev \
-        libqt6svg6-dev \
+        libb2-1 \
+        libdbus-1-3 \
+        libegl1 \
+        libfontconfig1 \
+        libfreetype6 \
+        libgl1 \
+        libgl1-mesa-dev \
+        libglib2.0-0 \
+        libglu1-mesa-dev \
+        libharfbuzz0b \
+        libmd4c0 \
+        libpcre2-16-0 \
+        libpng16-16 \
+        libpulse0 \
+        libssl3 \
+        libwayland-cursor0 \
+        libwayland-egl1 \
+        libx11-6 \
+        libx11-xcb1 \
+        libxcb-icccm4 \
+        libxcb-image0 \
+        libxcb-keysyms1 \
+        libxcb-randr0 \
+        libxcb-render-util0 \
+        libxcb-shape0 \
+        libxcb-sync1 \
+        libxcb-xfixes0 \
+        libxcb-xinerama0 \
+        libxcb-xkb1 \
+        libxcb-cursor0 \
+        libxkbcommon-x11-0 \
+        libxrandr2 \
+        libzstd1 \
+        python3-pip \
         && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /build
-RUN wget -q https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.14.1/QScintilla_src-2.14.1.tar.gz && \
-    tar xvf QScintilla_src-2.14.1.tar.gz
+ENV QT_ROOT=/opt/Qt/${QT_VERSION}/gcc_64
+ENV PATH=${QT_ROOT}/bin:${PATH}
+ENV CMAKE_PREFIX_PATH=${QT_ROOT}
 
-WORKDIR /build/QScintilla_src-2.14.1/src
-RUN qmake6 && \
+RUN pip3 install --no-cache-dir aqtinstall==${AQTINSTALL_VERSION} && \
+    aqt install-qt linux desktop ${QT_VERSION} linux_gcc_64 \
+        -m qt5compat qtmultimedia -O /opt/Qt
+
+RUN echo "${QT_ROOT}/lib" > /etc/ld.so.conf.d/qt.conf && ldconfig
+
+WORKDIR /tmp/qscintilla
+RUN wget -q "https://www.riverbankcomputing.com/static/Downloads/QScintilla/${QSCINTILLA_VERSION}/QScintilla_src-${QSCINTILLA_VERSION}.tar.gz" && \
+    tar xf "QScintilla_src-${QSCINTILLA_VERSION}.tar.gz" && \
+    cd "QScintilla_src-${QSCINTILLA_VERSION}/src" && \
+    qmake && \
     make -j$(nproc) && \
-    make install INSTALL_ROOT=/inst
+    make install
 
 # -----------------------------------------------------------------------------
 # AppImage Tooling (LinuxDeploy)
@@ -153,7 +196,7 @@ RUN set -e; \
 # -----------------------------------------------------------------------------
 # Appimage builder setup
 # -----------------------------------------------------------------------------
-FROM base AS appimage-base
+FROM qt AS appimage-base
 
 # Install Runtime/Link-time dependencies required for the final OpenSCAD aggregation
 # These are things that OpenSCAD itself needs to compile or run the dependency scripts.
@@ -172,20 +215,20 @@ RUN apt-get update && apt-get -y full-upgrade && \
         nettle-dev \
         openssh-client \
         python3-dev \
-	qmake6 \
         software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /openscad
 
 RUN --mount=type=bind,source=scripts/uni-get-dependencies.sh,target=./uni-get-dependencies.sh \
-    ./uni-get-dependencies.sh qt6 && \
+    ./uni-get-dependencies.sh no-qt && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN ln -sf ${QT_ROOT}/bin/qmake /usr/bin/qmake6
+
 COPY --from=lib3mf-builder /inst /usr/
 COPY --from=cgal-builder /inst /usr/
-COPY --from=qscintilla-builder /inst/usr /usr/
 RUN ldconfig
 
 COPY --from=deploy-tools /appimage /appimage
